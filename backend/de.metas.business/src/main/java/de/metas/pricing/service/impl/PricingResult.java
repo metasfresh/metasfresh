@@ -114,6 +114,12 @@ final class PricingResult implements IPricingResult
 
 	private boolean isDiscountCalculated;
 
+	/**
+	 * If this flag is set to true, then the discount should not be changed.
+	 *
+	 */
+	private boolean dontOverrideDiscountAdvice = false;
+
 	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
 	@Getter(AccessLevel.NONE)
@@ -180,6 +186,10 @@ final class PricingResult implements IPricingResult
 			throw new AdempiereException("Attempt to set the discount although isDisallowDiscount()==true")
 					.appendParametersToMessage()
 					.setParameter("this", this);
+		}
+		if (isDontOverrideDiscountAdvice())
+		{
+			return;
 		}
 		this.discount = discount;
 		this.isDiscountCalculated = true;

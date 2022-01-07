@@ -7,12 +7,15 @@ import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
 
 import java.util.List;
@@ -101,7 +104,7 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * Creates new a C_Async_Batch if needed and sets the temporary dynamic attribute for the given modelRecords to reference it.
-	 * Those modelRecords that already reference an async batch retain it.
+	 * Those modelRecords that already reference any async batch - also a different one - retain it.
 	 *
 	 * @param asyncBatchInternalName see {@link Async_Constants}
 	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object).
@@ -110,7 +113,17 @@ public interface IAsyncBatchBL extends ISingletonService
 			@NonNull List<T> model,
 			@NonNull String asyncBatchInternalName);
 
+	IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull Object model, @NonNull AsyncBatchId asyncBatchId);
+
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
+
+	Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch);
+
+	boolean isAsyncBatchTypeInternalName(@NonNull I_C_Async_Batch asyncBatch, @NonNull String expectedInternalName);
+
+	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
+
+	AsyncBatchType getAsyncBatchTypeById(@NonNull AsyncBatchTypeId asyncBatchTypeId);
 }

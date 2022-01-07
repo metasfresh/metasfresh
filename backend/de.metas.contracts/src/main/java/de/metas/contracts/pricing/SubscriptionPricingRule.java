@@ -119,9 +119,13 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (subscriptionDiscountLine != null
 				&& !subscriptionPricingResult.isDisallowDiscount()
-				&& (subscriptionDiscountLine.isPrioritiseOwnDiscount() || !subscriptionPricingResult.isDiscountCalculated()) )
+				&& (subscriptionDiscountLine.isPrioritiseOwnDiscount() || !subscriptionPricingResult.isDiscountCalculated()))
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
+			if (subscriptionDiscountLine.isPrioritiseOwnDiscount())
+			{
+				subscriptionPricingResult.setDontOverrideDiscountAdvice(true);
+			}
 		}
 		return subscriptionPricingResult;
 	}
@@ -218,7 +222,6 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setTaxCategoryId(subscriptionPricingResult.getTaxCategoryId());
 
 		result.setPriceEditable(subscriptionPricingResult.isPriceEditable());
-		result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
 	}
 
 	private static void copyDiscountIntoResultIfAllowedByPricingContext(
@@ -228,7 +231,12 @@ public class SubscriptionPricingRule implements IPricingRule
 	{
 		if (!pricingCtx.isDisallowDiscount())
 		{
-			result.setDiscount(subscriptionPricingResult.getDiscount());
+			if (result.isDiscountEditable())
+			{
+				result.setDiscount(subscriptionPricingResult.getDiscount());
+				result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
+				result.setDontOverrideDiscountAdvice(subscriptionPricingResult.isDontOverrideDiscountAdvice());
+			}
 		}
 	}
 

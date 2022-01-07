@@ -5,7 +5,10 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -70,4 +73,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 * fetch the notifyable record for a given workpackage
 	 */
 	I_C_Queue_WorkPackage_Notified fetchWorkPackagesNotified(I_C_Queue_WorkPackage workPackage);
+
+	void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId);
+
 }
