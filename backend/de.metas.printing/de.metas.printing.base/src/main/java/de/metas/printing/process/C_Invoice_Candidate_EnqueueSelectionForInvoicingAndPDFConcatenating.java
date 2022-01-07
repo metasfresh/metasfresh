@@ -27,6 +27,7 @@ package de.metas.printing.process;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -65,14 +66,15 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	// Services
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	// Parameters
 	private IInvoicingParams invoicingParams;
 
 	@Param(parameterName = I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, mandatory = true)
-	private OrgId p_AD_Org_ID;
+	private OrgId p_OrgId;
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = true)
-	private ProductCategoryId p_M_Product_Category_ID;
+	private ProductCategoryId p_ProductCategoryId;
 
 	@Override
 	@RunOutOfTrx
@@ -101,7 +103,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	{
 		final AsyncBatchId asyncBatchId = createAsyncBatch();
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-		asyncBatchBL.setPInstance_IDAndSave(asyncBatch, getPinstanceId());
+		asyncBatchDAO.setPInstance_IDAndSave(asyncBatch, getPinstanceId());
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), InvoiceEnqueueingWorkpackageProcessor.class);
 		queue.newBlock()
@@ -137,9 +139,9 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	{
 		final IQuery<I_M_Product_Category> subQuery_ProductcategFilter = queryBL
 				.createQueryBuilder(I_M_Product_Category.class)
-				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, p_ProductCategoryId)
 				.setJoinOr()
-				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID, p_M_Product_Category_ID)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID, p_ProductCategoryId)
 				.create();
 
 		final IQuery<I_M_Product> subQuery_Product = queryBL
@@ -152,7 +154,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_AD_Org_ID)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_OrgId)
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
 				.subQuery(subQuery_Product)

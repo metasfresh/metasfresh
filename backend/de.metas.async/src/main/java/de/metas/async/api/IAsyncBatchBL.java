@@ -119,8 +119,6 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
 
-	void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId);
-
 	Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch);
 
 	boolean isAsyncBatchTypeInternalName(@NonNull I_C_Async_Batch asyncBatch, @NonNull String expectedInternalName);
