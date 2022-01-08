@@ -1,17 +1,14 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service;
 
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceMod;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-
-import java.math.BigDecimal;
-
 import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceMod;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -35,10 +32,16 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
  * #L%
  */
 
+/**
+ * Equivalent to both {@code ServiceExType} in 4.5 and {@code RecordTarmedType} type
+ */
 @Value
 @Builder(toBuilder = true)
-public class XmlRecordTarmed implements XmlService
+public class XmlServiceEx implements XmlService
 {
+	@Nullable
+	XmlXtraServiceExType xtraServiceExType;
+
 	@NonNull
 	Integer recordId;
 
@@ -90,15 +93,21 @@ public class XmlRecordTarmed implements XmlService
 	@NonNull
 	BigDecimal unitFactorMt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal scaleFactorMt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal externalFactorMt;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal amountMt;
 
@@ -108,30 +117,42 @@ public class XmlRecordTarmed implements XmlService
 	@NonNull
 	BigDecimal unitFactorTt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal scaleFactorTt;
 
-	/** expecting default = 1 */
+	/**
+	 * expecting default = 1
+	 */
 	@NonNull
 	BigDecimal externalFactorTt;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal amountTt;
 
 	@NonNull
 	BigDecimal amount;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	BigDecimal vatRate;
 
-	/** expecting default = false */
-	@NonNull
+	/**
+	 * expecting default = false
+	 */
+	@Nullable
 	Boolean validate;
 
-	/** expecting default = true */
+	/**
+	 * expecting default = true
+	 */
 	@NonNull
 	Boolean obligation;
 
@@ -141,19 +162,21 @@ public class XmlRecordTarmed implements XmlService
 	@Nullable
 	String remark;
 
-	/** expecting default = 0 */
+	/**
+	 * expecting default = 0
+	 */
 	@NonNull
 	Long serviceAttributes;
 
 	@Override
 	public BigDecimal getExternalFactor()
 	{
-		throw new UnsupportedOperationException("XmlRecordTarmed has two external factors, not one");
+		throw new UnsupportedOperationException("XmlServiceEx has two external factors, not one");
 	}
 
 	@Override
 	public XmlService withModNonNull(@NonNull final ServiceMod serviceMod)
 	{
-		throw new UnsupportedOperationException("XmlRecordTarmed can't be modified unless we take care of both the MT and TT parts");
+		throw new UnsupportedOperationException("XmlServiceEx can't be modified unless we take care of both the MT and TT parts");
 	}
 }

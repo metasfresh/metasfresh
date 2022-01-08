@@ -31,8 +31,7 @@ import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.Invoice450RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -46,9 +45,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
-public class HealthcareXMLToInvoiceDetailPersisterTest
+public class HealthcareXMLToInvoiceDetailPersister450Test
 {
 	private final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 	private OrgId orgId;
@@ -65,16 +65,13 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder()
-										 .productId(ProductId.ofRepoId(20))
-										 .externalIds("doesnt_really_matter_1")
-										 .uomId(UomId.ofRepoId(1))
-										 .build())
+				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
-		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");
 
-		final Invoice440RequestConversionService requestConverter = new Invoice440RequestConversionService();
+		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
+		assertThat(inputStream).isNotNull();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
 	}
 
@@ -94,16 +91,13 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder()
-										 .productId(ProductId.ofRepoId(20))
-										 .externalIds("doesnt_really_matter_1")
-										 .uomId(UomId.ofRepoId(1))
-										 .build())
+				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
 				.build().createInvoiceRecord();
 
-		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/streha_invoice_03.xml");
 
-		final Invoice440RequestConversionService requestConverter = new Invoice440RequestConversionService();
+		final Invoice450RequestConversionService requestConverter = new Invoice450RequestConversionService();
+		assertThat(inputStream).isNotNull();
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
 
 		// when
@@ -114,7 +108,6 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 		final int invoiceId = InvoiceId.toRepoId(testInvoice.getInvoiceId());
 
 		assertThat(records)
-				//.hasSize(39)
 				.extracting("C_Invoice_ID", "C_InvoiceLine_ID", "Label", "Description", "Date")
 				.containsExactlyInAnyOrder(
 						//.contains(
@@ -128,37 +121,27 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 
 						tuple(invoiceId, 0, "Biller_GivenName", "Biller AG", null),
 						tuple(invoiceId, 0, "Biller_FamilyName", "Abteilung Inkasso", null),
-						tuple(invoiceId, 0, "Guarantor_Salutation", "Herr", null),
-						tuple(invoiceId, 0, "Guarantor_GivenName", "Xaver", null),
-						tuple(invoiceId, 0, "Guarantor_FamilyName", "Garant", null),
-						tuple(invoiceId, 0, "Guarantor_Street", "Garantenallee 12", null),
-						tuple(invoiceId, 0, "Guarantor_ZIP", "7300", null),
-						tuple(invoiceId, 0, "Guarantor_City", "Chur", null),
-						tuple(invoiceId, 0, "Patient_Salutation", "Herr", null),
-						tuple(invoiceId, 0, "Patient_GivenName", "Peter", null),
+						tuple(invoiceId, 0, "Guarantor_Salutation", "Frau", null),
+						tuple(invoiceId, 0, "Guarantor_GivenName", "Petra", null),
+						tuple(invoiceId, 0, "Guarantor_FamilyName", "Muster", null),
+						tuple(invoiceId, 0, "Guarantor_Street", "Musterstrasse 5", null),
+						tuple(invoiceId, 0, "Guarantor_ZIP", "7304", null),
+						tuple(invoiceId, 0, "Guarantor_City", "Maienfeld", null),
+						tuple(invoiceId, 0, "Patient_Salutation", "Frau", null),
+						tuple(invoiceId, 0, "Patient_GivenName", "Petra", null),
 						tuple(invoiceId, 0, "Patient_FamilyName", "Muster", null),
-						tuple(invoiceId, 0, "Patient_BirthDate", null, parseTimestamp("1964-02-28")),
+						tuple(invoiceId, 0, "Patient_BirthDate", null, parseTimestamp("2004-02-02")),
 						tuple(invoiceId, 0, "Patient_Street", "Musterstrasse 5", null),
 						tuple(invoiceId, 0, "Patient_ZIP", "7304", null),
 						tuple(invoiceId, 0, "Patient_City", "Maienfeld", null),
 						tuple(invoiceId, 0, "Patient_SSN", "7561234567890", null),
 						tuple(invoiceId, 0, "Insurance_CompanyName", "Krankenkasse AG", null),
 						tuple(invoiceId, 0, "KVG_InsuredId", "123.45.678-012", null),
-						tuple(invoiceId, 0, "Referrer_Salutation", "Herr", null),
-						tuple(invoiceId, 0, "Referrer_Title", "Dr. med.", null),
-						tuple(invoiceId, 0, "Referrer_GivenName", "Herbert", null),
-						tuple(invoiceId, 0, "Referrer_FamilyName", "Ueberweiser", null),
-						tuple(invoiceId, 0, "Referrer_Street", "Referrerstrasse 11", null),
-						tuple(invoiceId, 0, "Referrer_ZIP", "5000", null),
-						tuple(invoiceId, 0, "Referrer_City", "Aarau", null),
-						tuple(invoiceId, 0, "Referrer_ZSR", "R234567", null),
-						tuple(invoiceId, 0, "Referrer_GLN", "2034567890333", null),
-						tuple(invoiceId, 0, "Referrer_Phone", "061 956 99 00", null),
-						tuple(invoiceId, 0, "Treatment_Date_Begin", null, parseTimestamp("2013-03-08")),
-						tuple(invoiceId, 0, "Treatment_Date_End", null, parseTimestamp("2013-03-20")),
+						tuple(invoiceId, 0, "Treatment_Date_Begin", null, parseTimestamp("2021-02-10")),
+						tuple(invoiceId, 0, "Treatment_Date_End", null, parseTimestamp("2021-04-23")),
 
-						tuple(invoiceId, invoiceLineId(0), "Service_Date", null, parseTimestamp("2013-03-08")),
-						tuple(invoiceId, invoiceLineId(0), "Service_Name", "Konsultation, erste 5 Min. (Grundkonsultation)", null)
+						tuple(invoiceId, invoiceLineId(0), "Service_Date", null, parseTimestamp("2021-02-10")),
+						tuple(invoiceId, invoiceLineId(0), "Service_Name", "Rehabilitation für Kinder und Jugendliche, Alter kleiner 19 Jahre, mit komplizierender Diagnose", null)
 				);
 	}
 

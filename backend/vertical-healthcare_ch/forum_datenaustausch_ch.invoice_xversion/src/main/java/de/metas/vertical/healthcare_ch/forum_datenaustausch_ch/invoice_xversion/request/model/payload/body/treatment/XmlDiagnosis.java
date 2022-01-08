@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
@@ -34,5 +36,9 @@ public class XmlDiagnosis
 	@NonNull
 	String type;
 
+	@Nullable
 	String code;
+
+	@Nullable
+	String value;
 }
