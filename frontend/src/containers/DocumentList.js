@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import currentDevice from 'current-device';
-import { get, debounce } from 'lodash';
+import { debounce, get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
-import { locationSearchRequest, getViewRowsByIds } from '../api';
+import { getViewRowsByIds, locationSearchRequest } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
 import history from '../services/History';
@@ -15,35 +15,35 @@ import { getEntityRelatedId } from '../reducers/filters';
 import {
   addViewLocationData,
   createView,
+  deleteView,
   fetchDocument,
+  fetchHeaderProperties,
   fetchLayout,
   fetchLocationConfig,
-  fetchHeaderProperties,
   filterView,
   resetView,
-  deleteView,
-  showIncludedView,
   setIncludedView,
+  showIncludedView,
   unsetIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
-  updateGridTableData,
   deselectTableRows,
+  updateGridTableData,
 } from '../actions/TableActions';
 import {
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
-import { updateRawModal, indicatorState } from '../actions/WindowActions';
+import { indicatorState, updateRawModal } from '../actions/WindowActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { deleteFilter } from '../actions/FiltersActions';
-import { fetchQuickActions, deleteQuickActions } from '../actions/Actions';
+import { deleteQuickActions, fetchQuickActions } from '../actions/Actions';
 
 import {
-  DLpropTypes,
   DLmapStateToProps,
+  DLpropTypes,
   GEO_PANEL_STATES,
   getSortingQuery,
   mergeColumnInfosIntoViewRows,
@@ -282,11 +282,11 @@ class DocumentListContainer extends Component {
           }
 
           updateGridTableData({
-              tableId,
-              rows,
-              preserveCollapsedStateToRowIds: changedRowIdsInPage,
-              customLayoutFlags: { uncollapseRowsOnChange },
-            });
+            tableId,
+            rows,
+            preserveCollapsedStateToRowIds: changedRowIdsInPage,
+            customLayoutFlags: { uncollapseRowsOnChange },
+          });
         }
       );
     }
