@@ -70,10 +70,11 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 
 	private File concatenateFiles(final I_C_Queue_WorkPackage workpackage) throws IOException, DocumentException
 	{
-		final Document document = new Document();
-
 		final File file = createNewTemporaryPDFFile(workpackage);
-		try (final FileOutputStream fos = new FileOutputStream(file, false))
+		final Document document = new Document();
+		final FileOutputStream fos = new FileOutputStream(file, false);
+		
+		try
 		{
 			final PdfCopy copy = new PdfCopy(document, fos);
 			document.open();
@@ -99,13 +100,13 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 				}
 			}
 
-			return file;
 		}
 		finally
 		{
 			document.close();
+			fos.close();
+			return file;
 		}
-
 	}
 
 	@NonNull
