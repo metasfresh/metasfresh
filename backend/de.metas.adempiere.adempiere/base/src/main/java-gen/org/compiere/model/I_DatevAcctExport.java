@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DatevAcctExport
@@ -53,7 +54,7 @@ public interface I_DatevAcctExport
 	 * Set Period.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -63,7 +64,7 @@ public interface I_DatevAcctExport
 	 * Get Period.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -121,6 +122,47 @@ public interface I_DatevAcctExport
 
 	ModelColumn<I_DatevAcctExport, Object> COLUMN_DatevAcctExport_ID = new ModelColumn<>(I_DatevAcctExport.class, "DatevAcctExport_ID", null);
 	String COLUMNNAME_DatevAcctExport_ID = "DatevAcctExport_ID";
+
+	/**
+	 * Set Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExportBy_ID (int ExportBy_ID);
+
+	/**
+	 * Get Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExportBy_ID();
+
+	String COLUMNNAME_ExportBy_ID = "ExportBy_ID";
+
+	/**
+	 * Set Export date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExportDate (@Nullable java.sql.Timestamp ExportDate);
+
+	/**
+	 * Get Export date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getExportDate();
+
+	ModelColumn<I_DatevAcctExport, Object> COLUMN_ExportDate = new ModelColumn<>(I_DatevAcctExport.class, "ExportDate", null);
+	String COLUMNNAME_ExportDate = "ExportDate";
 
 	/**
 	 * Set Export Type.
