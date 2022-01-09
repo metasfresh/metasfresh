@@ -22,18 +22,6 @@ package de.metas.event.impl;
  * #L%
  */
 
-import java.util.IdentityHashMap;
-
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
@@ -183,6 +171,12 @@ final class EventBus implements IEventBus
 		if (destroyed)
 		{
 			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
+			return;
+		}
+
+		if (subscribedEventListener2GuavaListener.get(listener) != null)
+		{
+			logger.warn("Attempt to register a listener that was already registered. Ignored. \n Bus: {} \n Listener: {}", this, listener);
 			return;
 		}
 
