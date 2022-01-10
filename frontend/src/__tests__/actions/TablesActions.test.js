@@ -167,7 +167,12 @@ describe('TableActions grid', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    }).catch(err => { console.log(err) });
+    }).catch(err => { 
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+      console.log('Test failed because of:', err);
+    });
   });
 
   it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, () => {
@@ -214,7 +219,12 @@ describe('TableActions grid', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    }).catch(err => { console.log(err) });
+    }).catch(err => { 
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+      console.log('Test failed because of: ', err);
+    });
   });
 
   it.todo(
@@ -258,7 +268,12 @@ describe('TableActions grid', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    }).catch(err => { console.log(err) });
+    }).catch(err => { 
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+      console.log('Test failed because of: ', err);
+    });
   });
 
   it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
@@ -319,7 +334,10 @@ describe('TableActions grid', () => {
 
     return store.dispatch(updateTableSelection(params)).then(
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { console.log(err) });
+    ).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      console.log('Test failed because of: ', err);
+    });
   });
 
   it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
@@ -408,7 +426,10 @@ describe('TableActions grid', () => {
 
     return store.dispatch(deselectTableRows(params)).then(
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { console.log(err) });
+    ).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+      console.log('Test failed because of: ', err);
+    });
   });
 });
 
@@ -450,7 +471,9 @@ describe('TableActions tab', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    }).catch(err => { console.log(err) });
+    }).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      console.log('Test failed because of: ', err) });
   });
 
   it(`dispatches 'UPDATE_TABLE' action when loading details view layout`, () => {
@@ -526,7 +549,10 @@ describe('TableActions tab', () => {
       expect(store.getActions()).toEqual(
         expect.arrayContaining(expectedActions)
       );
-    }).catch(err => { console.log(err) });
+    }).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+      console.log('Test failed because of: ', err);
+    });
   });
 
   it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, () => {
