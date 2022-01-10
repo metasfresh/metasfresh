@@ -177,7 +177,7 @@
     "redux": "4.1.1",
     "redux-actions": "2.6.5",
     "redux-promise": "0.6.0",
-    "redux-thunk": "2.3.0",
+    "redux-thunk": "2.4.1",
     "reselect": "4.0.0",
     "sockjs-client": "1.5.2",
     "throttle-debounce": "3.0.1",
