@@ -232,19 +232,17 @@ describe.skip('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${windowId}/${viewId}/quickActions?childViewId=${includedViewId}&childViewSelectedIds=${
-            includedData.result[0].id}&selectedIds=${data.result[0].id
-          }`
+        .post(
+          `/documentView/${windowId}/${viewId}/quickActions`, 
+          { childViewId: includedViewId, childViewSelectedIds: includedData.result[0].id, selectedIds: data.result[0].id }
         )
         .reply(200, quickActionsData.parent_quickactions2);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?parentViewId=${viewId}&parentViewSelectedIds=${
-            data.result[0].id}&selectedIds=${includedData.result[0].id
-          }`
+        .post(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions`, 
+          { parentViewId: viewId, parentViewSelectedIds: data.result[0].id, selectedIds: includedData.result[0].id }
         )
         .reply(200, quickActionsData.included_quickactions);
 
