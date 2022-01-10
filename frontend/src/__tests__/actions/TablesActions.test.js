@@ -620,6 +620,9 @@ describe('TableActions tab', () => {
         expect(store.getActions()).toEqual(
           expect.arrayContaining(expectedActions)
         );
-      }).catch(err => { console.log(err) });
+      }).catch(err => {
+        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        console.log('Test failed because of: ', err);
+      });
   });
 });
