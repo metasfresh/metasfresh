@@ -491,7 +491,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull final Object model, @NonNull final AsyncBatchId asyncBatchId)
+	public IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull final Object model, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_TEMPORARY_BATCH_ID, asyncBatchId);
 
