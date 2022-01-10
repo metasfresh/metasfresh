@@ -29,5 +29,7 @@ cypress.json
 yarn-error.log
 /cypress.json
 yarn.lock
+.yarn
+.yarnrc.yml
 /metasfresh-webui-frontend.iml
 *.diff
