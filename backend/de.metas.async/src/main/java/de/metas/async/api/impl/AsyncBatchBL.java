@@ -100,7 +100,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return;
 		}
 
-		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
 		if (asyncBatchType != null && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
 		{
@@ -130,7 +130,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		try
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 			final Timestamp processed = SystemTime.asTimestamp();
 			asyncBatch.setLastProcessed(processed);
 			asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
@@ -174,7 +174,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public boolean updateProcessedOutOfTrx(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 		if (asyncBatchRecord.isProcessed())
 		{
 			return true;
@@ -266,7 +266,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public boolean keepAliveTimeExpired(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatchRecord.getC_Async_Batch_Type();
 		if (asyncBatchType == null)
@@ -360,7 +360,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+		return asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 	}
 
 	public void updateProcessedFromMilestones(@NonNull final AsyncBatchId asyncBatchId)
@@ -371,7 +371,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		if (allMilestonesAreProcessed)
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 			asyncBatch.setProcessed(true);
 			asyncBatch.setIsProcessing(false);
@@ -442,7 +442,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		lock.lock();
 		try
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 			final Timestamp enqueued = de.metas.common.util.time.SystemTime.asTimestamp();
 			if (asyncBatch.getFirstEnqueued() == null)
 			{

@@ -52,7 +52,7 @@ public class C_OLCandToOrderEnqueuer
 
 		if (asyncBatchId != null)
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 			workPackageBuilder.setC_Async_Batch(asyncBatch);
 		}
 
