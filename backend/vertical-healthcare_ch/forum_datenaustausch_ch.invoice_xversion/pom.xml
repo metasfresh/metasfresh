@@ -1,56 +1,56 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <modelVersion>4.0.0</modelVersion>
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>de.metas.vertical.healthcare_ch</groupId>
-        <artifactId>vertical-healthcare_ch</artifactId>
-        <version>10.0.0</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+	<parent>
+		<groupId>de.metas.vertical.healthcare_ch</groupId>
+		<artifactId>vertical-healthcare_ch</artifactId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-    <artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
-    <version>10.0.0</version>
+	<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
+	<version>10.0.0</version>
 
-    <properties>
-        <!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
-        and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
-        -->
-        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+	<properties>
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>10.0.0</metasfresh.version>
 
-    </properties>
+	</properties>
 
-    <packaging>jar</packaging>
+	<packaging>jar</packaging>
 
-    <dependencies>
+	<dependencies>
 
-        <dependency>
-            <groupId>de.metas.vertical.healthcare_ch</groupId>
-            <artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>annotations</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
+	</dependencies>
 </project>

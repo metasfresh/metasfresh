@@ -37,12 +37,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
