@@ -18,6 +18,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutablePair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,7 +114,7 @@ public interface IAsyncBatchBL extends ISingletonService
 			@NonNull List<T> model,
 			@NonNull String asyncBatchInternalName);
 
-	IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull Object model, @NonNull AsyncBatchId asyncBatchId);
+	IAutoCloseable assignTempAsyncBatchIdToModel(@NonNull Object model, @Nullable AsyncBatchId asyncBatchId);
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
