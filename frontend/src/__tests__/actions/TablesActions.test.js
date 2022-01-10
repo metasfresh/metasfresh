@@ -1,31 +1,40 @@
+// noinspection JSUnresolvedFunction
+
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
-import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
-import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
-
+import tablesHandler, {
+  getTableId,
+  initialTableState
+} from '../../reducers/tables';
+import viewHandler, {
+  initialState as initialViewsState
+} from '../../reducers/viewHandler';
 
 import {
-  createTableData,
   createGridTable,
+  createTableData,
   createTabTable,
-  updateGridTable,
-  updateTabTable,
   deleteTable,
-  setActiveSort,
-  updateTableSelection,
   deselectTableRows,
+  setActiveSort,
+  updateGridTable,
+  updateTableSelection,
+  updateTabTable,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
 
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
-import masterDataFixtures from '../../../test_setup/fixtures/master_window/data.json';
-import masterLayoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
-import masterRowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
+import masterDataFixtures
+  from '../../../test_setup/fixtures/master_window/data.json';
+import masterLayoutFixtures
+  from '../../../test_setup/fixtures/master_window/layout.json';
+import masterRowFixtures
+  from '../../../test_setup/fixtures/master_window/row_data.json';
 
 import gridProps from '../../../test_setup/fixtures/grid.json';
 import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
@@ -48,7 +57,7 @@ const createState = function(state = {}) {
 };
 
 describe('TableActions general', () => {
-  it('should call DELETE_TABLE action with correct payload', () => {
+  it('should call DELETE_TABLE action with correct payload', async () => {
     const { windowType, viewId } = gridProps.props1;
     const id = getTableId({ windowId: windowType, viewId });
     const payload = { id };
@@ -65,11 +74,11 @@ describe('TableActions general', () => {
       { type: ACTION_TYPES.DELETE_TABLE, payload }
     ];
 
-    store.dispatch(deleteTable(id));
+    await store.dispatch(deleteTable(id));
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {
+  it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, async () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const id = getTableId({ windowId: windowType, viewId });
@@ -89,11 +98,11 @@ describe('TableActions general', () => {
     };
     const expectedActions = [{ type: ACTION_TYPES.SET_ACTIVE_SORT, payload }];
 
-    store.dispatch(setActiveSort(id, payload.active));
+    await store.dispatch(setActiveSort(id, payload.active));
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it('should call UPDATE_TABLE_SELECTION action with correct payload', () => {
+  it('should call UPDATE_TABLE_SELECTION action with correct payload', async () => {
     const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
     const tableId = getTableId({ windowId, tabId, docId: id });
     const keyProperty = 'rowId';
@@ -106,15 +115,11 @@ describe('TableActions general', () => {
     const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }];
     const params = { id: tableId, selection: [rowId], keyProperty };
 
-    return store.dispatch(updateTableSelection(params)).then(
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-      console.log('Test failed because of: ', err) 
-    });
+    await store.dispatch(updateTableSelection(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
+  it('should call DESELECT_TABLE_ROWS action with correct payload', async () => {
     const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
     const tableId = getTableId({ windowId, tabId, docId: id });
     const payload = {
@@ -125,13 +130,9 @@ describe('TableActions general', () => {
     const expectedActions = [{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }];
     const params = { id: tableId, selection: [] };
 
-    return store.dispatch(deselectTableRows(params)).then(
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-      console.log('Test failed because of: ', err) 
-    });
-  }); 
+    await store.dispatch(deselectTableRows(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
 });
 
 describe('TableActions grid', () => {
@@ -147,7 +148,7 @@ describe('TableActions grid', () => {
     nock.cleanAll();
   });
 
-  it(`dispatches 'CREATE_TABLE' action when creating a new view`, () => {
+  it(`dispatches 'CREATE_TABLE' action when creating a new view`, async () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
@@ -169,19 +170,11 @@ describe('TableActions grid', () => {
     };
     const expectedActions = [{ type: ACTION_TYPES.CREATE_TABLE, payload }];
 
-    return store.dispatch(createGridTable(id, dataResponse)).then(() => {
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-    }).catch(err => { 
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-      console.log('Test failed because of:', err);
-    });
+    await store.dispatch(createGridTable(id, dataResponse));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, () => {
+  it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, async () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
@@ -221,23 +214,15 @@ describe('TableActions grid', () => {
     };
     const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE, payload }];
 
-    return store.dispatch(updateGridTable(id, rowResponse)).then(() => {
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-    }).catch(err => { 
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-      console.log('Test failed because of: ', err);
-    });
+    await store.dispatch(updateGridTable(id, rowResponse));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
   it.todo(
     `dispatches 'UPDATE_TABLE' action after loading collapsible data to the view`
   );
 
-  it(`dispatches 'CREATE_TABLE' action when browsing an existing view but table is not yet created`, () => {
+  it(`dispatches 'CREATE_TABLE' action when browsing an existing view but table is not yet created`, async () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
@@ -270,19 +255,11 @@ describe('TableActions grid', () => {
     };
     const expectedActions = [{ type: ACTION_TYPES.CREATE_TABLE, payload }];
 
-    return store.dispatch(updateGridTable(id, rowResponse)).then(() => {
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-    }).catch(err => { 
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-      console.log('Test failed because of: ', err);
-    });
+    await store.dispatch(updateGridTable(id, rowResponse));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
+  it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, async () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const rowResponse = gridRowFixtures.data3_parent;
     const { windowId, viewId , result} = rowResponse;
@@ -338,15 +315,11 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload4 },
     ];
 
-    return store.dispatch(updateTableSelection(params)).then(
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-      console.log('Test failed because of: ', err);
-    });
+    await store.dispatch(updateTableSelection(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
+  it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, async () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -430,17 +403,13 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.UNSET_INCLUDED_VIEW, payload: payload4 },
     ];
 
-    return store.dispatch(deselectTableRows(params)).then(
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-      console.log('Test failed because of: ', err);
-    });
+    await store.dispatch(deselectTableRows(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 });
 
 describe('TableActions tab', () => {
-  it(`dispatches 'CREATE_TABLE' action when creating a new tab`, () => {
+  it(`dispatches 'CREATE_TABLE' action when creating a new tab`, async () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -473,16 +442,11 @@ describe('TableActions tab', () => {
       expectedActions.push({ type: ACTION_TYPES.CREATE_TABLE, payload });
     });
 
-    return Promise.all(dispatchedActions).then(() => {
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-    }).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-      console.log('Test failed because of: ', err) });
+    await Promise.all(dispatchedActions);
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`dispatches 'UPDATE_TABLE' action when loading details view layout`, () => {
+  it(`dispatches 'UPDATE_TABLE' action when loading details view layout`, async () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -545,23 +509,15 @@ describe('TableActions tab', () => {
         data: tableData,
       };
 
-      dispatchedActions.push(
-        store.dispatch(updateTabTable(tableId, dataResponse))
-      );
+      dispatchedActions.push(store.dispatch(updateTabTable(tableId, dataResponse)));
       expectedActions.push({ type: ACTION_TYPES.UPDATE_TABLE, payload });
     });
 
-    return Promise.all(dispatchedActions).then(() => {
-      expect(store.getActions()).toEqual(
-        expect.arrayContaining(expectedActions)
-      );
-    }).catch(err => { 
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-      console.log('Test failed because of: ', err);
-    });
+    await Promise.all(dispatchedActions);
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, () => {
+  it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, async () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -620,15 +576,7 @@ describe('TableActions tab', () => {
 
     const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE, payload }];
 
-    return store
-      .dispatch(updateTabTable(tableId, { result: rowDataResponse }))
-      .then(() => {
-        expect(store.getActions()).toEqual(
-          expect.arrayContaining(expectedActions)
-        );
-      }).catch(err => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-        console.log('Test failed because of: ', err);
-      });
+    await store.dispatch(updateTabTable(tableId, { result: rowDataResponse }));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 });
