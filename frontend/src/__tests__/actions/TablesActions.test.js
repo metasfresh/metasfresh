@@ -108,7 +108,10 @@ describe('TableActions general', () => {
 
     return store.dispatch(updateTableSelection(params)).then(
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { console.log(err) });
+    ).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+      console.log('Test failed because of: ', err) 
+    });
   });
 
   it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
@@ -124,7 +127,10 @@ describe('TableActions general', () => {
 
     return store.dispatch(deselectTableRows(params)).then(
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
-    ).catch(err => { console.log(err) });
+    ).catch(err => { 
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+      console.log('Test failed because of: ', err) 
+    });
   }); 
 });
 
