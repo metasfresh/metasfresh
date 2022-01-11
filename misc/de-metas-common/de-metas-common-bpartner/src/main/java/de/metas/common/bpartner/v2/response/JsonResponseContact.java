@@ -65,6 +65,9 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String ROLES = "roles";
+	public static final String PHONE2 = "phone2";
+	public static final String TITLE = "title";
+	public static final String POSITION = "position";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -108,6 +111,15 @@ public class JsonResponseContact
 
 	@JsonInclude(Include.NON_EMPTY)
 	String description;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String phone2;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String title;
+
+	@JsonInclude(Include.NON_EMPTY)
+	JsonResponseContactPosition position;
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean newsletter;
@@ -161,6 +173,9 @@ public class JsonResponseContact
 			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
+			@JsonProperty(PHONE2) final String phone2,
+			@JsonProperty(TITLE) final String title,
+			@JsonProperty(POSITION) @Nullable final JsonResponseContactPosition position,
 
 			@JsonProperty(MOBILE_PHONE) final String mobilePhone,
 			@JsonProperty(FAX) final String fax,
@@ -211,5 +226,9 @@ public class JsonResponseContact
 		this.roles = roles;
 
 		this.changeInfo = changeInfo;
+
+		this.phone2 = phone2;
+		this.title = title;
+		this.position = position;
 	}
 }

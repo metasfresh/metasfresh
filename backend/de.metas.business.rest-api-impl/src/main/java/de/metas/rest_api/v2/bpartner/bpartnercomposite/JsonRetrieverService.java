@@ -51,6 +51,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
@@ -73,6 +74,8 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.job.Job;
+import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -161,6 +164,9 @@ public class JsonRetrieverService
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
 			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
+			.put(BPartnerContact.TITLE, JsonResponseContact.TITLE)
+			.put(BPartnerContact.PHONE2, JsonResponseContact.PHONE2)
+			.put(BPartnerContact.JOB_ID, JsonResponseContact.POSITION)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -197,6 +203,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
+			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -206,6 +213,7 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
+	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
@@ -218,6 +226,7 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final JobRepository jobRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
@@ -225,6 +234,7 @@ public class JsonRetrieverService
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
+		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -392,6 +402,13 @@ public class JsonRetrieverService
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
 				greetingTrl = greeting.getGreeting(ad_language);
 			}
+
+			Job job = null;
+			if (contact.getJobId() != null)
+			{
+				job = jobRepository.getById(contact.getJobId());
+			}
+
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
 					.map(role -> JsonResponseContactRole.builder()
@@ -426,6 +443,9 @@ public class JsonRetrieverService
 					.subjectMatter(contact.isSubjectMatterContact())
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
+					.title(contact.getTitle())
+					.phone2(contact.getPhone2())
+					.position(toJson(job))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -464,6 +484,7 @@ public class JsonRetrieverService
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -751,6 +772,20 @@ public class JsonRetrieverService
 		return JsonResponseSalesRep.builder()
 				.salesRepId(JsonMetasfreshId.of(salesRep.getId().getRepoId()))
 				.salesRepValue(salesRep.getValue())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseContactPosition toJson(@Nullable final Job job)
+	{
+		if (job == null)
+		{
+			return null;
+		}
+
+		return JsonResponseContactPosition.builder()
+				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
+				.name(job.getName())
 				.build();
 	}
 }
