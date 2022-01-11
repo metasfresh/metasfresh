@@ -24,8 +24,12 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -33,6 +37,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -41,7 +46,9 @@ import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
@@ -58,6 +65,8 @@ public class C_BPartner_StepDef
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
 	public C_BPartner_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
@@ -85,6 +94,16 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> row : dataRows)
 		{
 			changeBPartner(row);
+		}
+	}
+
+	@And("locate bpartner by external identifier")
+	public void locate_bpartner_by_external_identifier(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			locate_bpartner_by_external_identifier(tableRow);
 		}
 	}
 
@@ -165,5 +184,19 @@ public class C_BPartner_StepDef
 		bPartner.setName2(name2);
 
 		InterfaceWrapperHelper.save(bPartner);
+	}
+
+	private void locate_bpartner_by_external_identifier(@NonNull final Map<String, String> row)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(DataTableUtil.extractStringForColumnName(row, "externalIdentifier"));
+
+		final Optional<JsonMetasfreshId> bpartnerIdOptional = externalReferenceRestControllerService.getJsonMetasfreshIdFromExternalReference(ORG_ID, externalIdentifier, BPartnerExternalReferenceType.BPARTNER);
+		assertThat(bpartnerIdOptional).isPresent();
+
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartnerIdOptional.get().getValue());
+		assertThat(bPartnerRecord).isNotNull();
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 }

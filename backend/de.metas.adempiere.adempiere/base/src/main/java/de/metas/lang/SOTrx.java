@@ -1,8 +1,9 @@
 package de.metas.lang;
 
-import java.util.Optional;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -30,12 +31,19 @@ public enum SOTrx
 {
 	SALES, PURCHASE;
 
+	@Nullable
 	public static SOTrx ofBoolean(@Nullable final Boolean isSOTrx)
 	{
 		if (isSOTrx == null)
 		{
 			return null;
 		}
+		return ofBooleanNonNull(isSOTrx);
+	}
+
+	@NonNull
+	public static SOTrx ofBooleanNonNull(@NonNull final Boolean isSOTrx)
+	{
 		return isSOTrx ? SALES : PURCHASE;
 	}
 

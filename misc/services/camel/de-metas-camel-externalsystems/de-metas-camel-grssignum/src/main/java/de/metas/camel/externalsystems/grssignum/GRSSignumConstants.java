@@ -38,4 +38,6 @@ public interface GRSSignumConstants
 	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
 
 	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+
+	String EXCLUSION_FROM_PURCHASE_REASON = "Imported setting";
 }
