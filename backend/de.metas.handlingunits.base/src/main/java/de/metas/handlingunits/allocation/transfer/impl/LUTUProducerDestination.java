@@ -22,19 +22,6 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -62,6 +49,15 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class LUTUProducerDestination
 		extends AbstractProducerDestination
@@ -319,10 +315,9 @@ public class LUTUProducerDestination
 	/**
 	 * Gets/Creates the TU Producer for given LU.
 	 *
-	 * @param luHU
 	 * @return TU producer; never return null
 	 */
-	private final TUProducerDestination getCreateTUProducerDestination(final I_M_HU luHU)
+	private TUProducerDestination getCreateTUProducerDestination(final I_M_HU luHU)
 	{
 		//
 		// Get existing TU Producer
@@ -357,18 +352,6 @@ public class LUTUProducerDestination
 		luId2tuProducer.put(luId, tuProducer);
 
 		return tuProducer;
-	}
-
-	/**
-	 * Intended use is for unit testing only.
-	 */
-	@VisibleForTesting
-	void setTUProducer(
-			@NonNull final I_M_HU luHU,
-			@NonNull final TUProducerDestination tuProducerDestination)
-	{
-		final int luId = luHU.getM_HU_ID();
-		luId2tuProducer.put(luId, tuProducerDestination);
 	}
 
 	@Override
@@ -467,6 +450,12 @@ public class LUTUProducerDestination
 		addCUPerTU(tuCapacity);
 	}
 
+	public void addCUPerTU(final ProductId cuProductId, final Quantity qtyCUPerTU)
+	{
+		final Capacity tuCapacity = createCapacity(cuProductId, qtyCUPerTU.toBigDecimal(), qtyCUPerTU.getUOM());
+		addCUPerTU(tuCapacity);
+	}
+
 
 	@Override
 	public Capacity getSingleCUPerTU()
@@ -488,11 +477,10 @@ public class LUTUProducerDestination
 	@Override
 	public Capacity getCUPerTU(@NonNull final ProductId cuProductId)
 	{
-		final Capacity tuCapacity = productId2tuCapacity.get(cuProductId);
-		return tuCapacity;
+		return productId2tuCapacity.get(cuProductId);
 	}
 
-	private final Capacity createCapacity(
+	private Capacity createCapacity(
 			@NonNull final ProductId cuProductId,
 			@NonNull final BigDecimal qtyCUPerTU,
 			@NonNull final I_C_UOM cuUOM)
@@ -568,7 +556,7 @@ public class LUTUProducerDestination
 		//
 		// Update Max TUs/LU that were actually created
 		final int createdTUsCount = createdTUs.size();
-		if (createdTUsCount >= 0 && createdTUsCount > maxTUsForRemainingQty_ActuallyCreated)
+		if (createdTUsCount > maxTUsForRemainingQty_ActuallyCreated)
 		{
 			maxTUsForRemainingQty_ActuallyCreated = createdTUsCount;
 		}
@@ -584,7 +572,7 @@ public class LUTUProducerDestination
 		loadExistingHUIfAny();
 	}
 
-	private final void loadExistingHUIfAny()
+	private void loadExistingHUIfAny()
 	{
 		//
 		// Get current assignments to this receipt schedule line
@@ -797,7 +785,7 @@ public class LUTUProducerDestination
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
-	private final Quantity calculateTotalQtyCU(final Capacity tuCapacity)
+	private Quantity calculateTotalQtyCU(final Capacity tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
 		final BigDecimal qtyCUsPerTU = tuCapacity.toBigDecimal();
