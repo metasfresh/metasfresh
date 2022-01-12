@@ -30,6 +30,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -56,6 +57,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	private String _name;
 	private String _description;
 	private I_C_Async_Batch_Type _asyncBatchType;
+	private OrgId orgId;
 
 	AsyncBatchBuilder(final AsyncBatchBL asyncBatchBL)
 	{
@@ -76,6 +78,10 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		asyncBatch.setParent_Async_Batch_ID(AsyncBatchId.toRepoId(getParentAsyncBatchId()));
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
+		if (orgId != null)
+		{
+			asyncBatch.setAD_Org_ID(orgId.getRepoId());
+		}
 		if (getCountExpected()>0)
 		{
 			asyncBatch.setCountExpected(getCountExpected());
@@ -176,6 +182,13 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	{
 		Check.assumeNotNull(_asyncBatchType, "_asyncBatchType not null");
 		return _asyncBatchType;
+	}
+
+	@Override
+	public IAsyncBatchBuilder setOrgId(final OrgId orgId)
+	{
+		this.orgId = orgId;
+		return this;
 	}
 
 }
