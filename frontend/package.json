@@ -55,6 +55,7 @@
     "@babel/register": "7.16.8",
     "@babel/runtime": "7.16.7",
     "@storybook/addon-actions": "6.4.12",
+    "@storybook/addon-docs": "6.4.12",
     "@storybook/addon-essentials": "6.4.12",
     "@storybook/addon-links": "6.4.12",
     "@storybook/react": "6.4.12",
