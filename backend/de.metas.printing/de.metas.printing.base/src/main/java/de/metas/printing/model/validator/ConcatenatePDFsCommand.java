@@ -36,7 +36,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.service.ISysConfigBL;
@@ -46,7 +45,6 @@ import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -122,16 +120,6 @@ class ConcatenatePDFsCommand
 				.build();
 	}
 
-	@Builder
-	@Value
-	private class PrintingQueueQueryRequest
-    {
-		@NonNull
-        final String queryName;
-		@NonNull
-        final IQuery<I_C_Printing_Queue> query;
-    }
-
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
 		Map<String, String> filersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
@@ -163,4 +151,5 @@ class ConcatenatePDFsCommand
 				.filter(TypedSqlQueryFilter.of(whereClause))
 				.create();
 	}
+
 }
