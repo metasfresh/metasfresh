@@ -266,7 +266,10 @@ class SubHeader extends Component {
       {
         action: 'advancedEdit',
         handler: () => {
-          openModal(windowId, 'window', counterpart.translate('window.advancedEdit.caption'), true);
+          openModal(windowId,
+            'window',
+            counterpart.translate('window.advancedEdit.caption'),
+            true);
         },
         icon: 'meta-icon-edit',
         caption: counterpart.translate('window.advancedEdit.caption'),
