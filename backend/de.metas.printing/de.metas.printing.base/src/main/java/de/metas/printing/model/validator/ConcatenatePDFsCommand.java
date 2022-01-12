@@ -95,7 +95,7 @@ class ConcatenatePDFsCommand
 		final List<I_C_Printing_Queue> printingQueues = queryRequest.getQuery().list();
 		if (printingQueues.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("*** There is nothing to enqueue. Skipping it: {}", query);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** There is nothing to enqueue. Skipping it: {}", queryRequest);
 			return;
 		}
 
