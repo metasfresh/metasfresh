@@ -28,6 +28,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "visitorsAddress" : false,
         "changeInfo" : {
           "createdMillis" : 1563553074,
           "createdBy" : 30,
@@ -62,8 +63,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "leftToRight" : true,
-        "decimalPoint" : false,
-        "baseLanguage" : true
+        "baseLanguage" : true,
+        "decimalPoint" : false
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -286,6 +287,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "l1_poBox",
@@ -341,6 +346,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }
@@ -619,6 +628,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -892,6 +905,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -1098,6 +1115,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }
@@ -1308,6 +1329,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -1363,6 +1388,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }
@@ -1452,6 +1481,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "visitorsAddress" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1479,6 +1509,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "visitorsAddress" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1506,6 +1537,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "visitorsAddress" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1552,6 +1584,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "visitorsAddress" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1627,6 +1660,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "visitorsAddress" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1702,6 +1736,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "visitorsAddress" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1783,6 +1818,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "visitorsAddress" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 30,
@@ -1854,6 +1890,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "visitorsAddress" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 31,
@@ -1933,6 +1970,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "visitorsAddress" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 32,
@@ -2004,6 +2042,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "visitorsAddress" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 33,
@@ -2082,6 +2121,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "visitorsAddress" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 34,

@@ -23,6 +23,7 @@
 package de.metas.job;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -44,6 +45,12 @@ public class JobId implements RepoIdAware
 	public static JobId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new JobId(repoId) : null;
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
 	}
 
 	private JobId(final int repoId)
