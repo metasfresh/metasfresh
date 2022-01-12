@@ -120,7 +120,12 @@
     "webpack": "5.65.0",
     "webpack-cli": "4.9.1",
     "webpack-dev-server": "4.7.2",
-    "webpack-node-externals": "3.0.0"
+    "webpack-node-externals": "3.0.0",
+    "@mdx-js/loader": "1.6.22",
+    "@mdx-js/mdx": "1.6.22",
+    "@mdx-js/react": "1.6.22",
+    "@mdx-js/runtime": "1.6.22",
+    "@next/mdx": "12.0.8"
   },
   "dependencies": {
     "@fullcalendar/core": "5.10.1",
