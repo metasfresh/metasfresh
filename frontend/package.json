@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "start": "node server.js",
-    "storybook": "node .storybook/findStories && start-storybook -p 6006",
+    "storybook": "start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
     "test:watch": "jest --watch --verbose false --env=./test_setup/custom_test_env.js --detectOpenHandles",
     "test": "jest --env=./test_setup/custom_test_env.js"
@@ -54,7 +54,11 @@
     "@babel/preset-react": "7.16.7",
     "@babel/register": "7.16.8",
     "@babel/runtime": "7.16.7",
-    "@storybook/react": "6.2.9",
+    "@storybook/addon-actions": "6.4.12",
+    "@storybook/addon-docs": "6.4.12",
+    "@storybook/addon-essentials": "6.4.12",
+    "@storybook/addon-links": "6.4.12",
+    "@storybook/react": "6.4.12",
     "@testing-library/dom": "8.11.1",
     "@testing-library/react": "12.1.2",
     "@welldone-software/why-did-you-render": "6.2.3",
@@ -116,7 +120,12 @@
     "webpack": "5.65.0",
     "webpack-cli": "4.9.1",
     "webpack-dev-server": "4.7.2",
-    "webpack-node-externals": "3.0.0"
+    "webpack-node-externals": "3.0.0",
+    "@mdx-js/loader": "1.6.22",
+    "@mdx-js/mdx": "1.6.22",
+    "@mdx-js/react": "1.6.22",
+    "@mdx-js/runtime": "1.6.22",
+    "@next/mdx": "12.0.8"
   },
   "dependencies": {
     "@fullcalendar/core": "5.10.1",
