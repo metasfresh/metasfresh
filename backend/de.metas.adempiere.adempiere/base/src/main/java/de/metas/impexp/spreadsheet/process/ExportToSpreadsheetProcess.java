@@ -27,16 +27,19 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.impexp.spreadsheet.csv.JdbcCSVExporter;
 import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
 import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.SpreadsheetExportOptions;
 import de.metas.process.SpreadsheetFormat;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_DatevAcctExport;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -48,6 +51,7 @@ import java.util.ArrayList;
 public class ExportToSpreadsheetProcess extends JavaProcess
 {
 	final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
+	final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Param(parameterName = "SpreadsheetFormat")
 	private	String  p_SpreadsheetFormat;
@@ -108,7 +112,15 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 		{
 			final int recordId = getRecord_ID();
 			final I_DatevAcctExport datevAcctExport = InterfaceWrapperHelper.create(getCtx(), recordId, I_DatevAcctExport.class, getTrxName());
-			datevAcctExport.setExportDate(SystemTime.asTimestamp());
+
+			final AdProcessId adProcessId = getProcessInfo().getAdProcessId();
+			final I_AD_Process processRecord = adProcessDAO.getById(adProcessId);
+			final String processValue = processRecord != null ? processRecord.getValue() : "<NULL>";
+
+			if (processValue.equals("AccountingExportBodymed_ExportLinesToExcel"))
+			{
+				datevAcctExport.setExportDate(SystemTime.asTimestamp());
+			}
 			datevAcctExport.setExportBy_ID(getAD_User_ID());
 			InterfaceWrapperHelper.saveRecord(datevAcctExport);
 		}
