@@ -78,9 +78,10 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		asyncBatch.setParent_Async_Batch_ID(AsyncBatchId.toRepoId(getParentAsyncBatchId()));
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
-		if (orgId != null)
+		if (getOrgId() != null)
 		{
-			asyncBatch.setAD_Org_ID(orgId.getRepoId());
+			final int orgIdRepoId = getOrgId().getRepoId();
+			asyncBatch.setAD_Org_ID(orgIdRepoId);
 		}
 		if (getCountExpected()>0)
 		{
@@ -169,6 +170,11 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	private String getDescription()
 	{
 		return _description;
+	}
+
+	private OrgId getOrgId()
+	{
+		return orgId;
 	}
 
 	@Override
