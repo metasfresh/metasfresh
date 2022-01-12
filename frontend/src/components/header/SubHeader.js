@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
 import { updateBreadcrumb } from '../../actions/MenuActions';
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 
 import Actions from './Actions';
@@ -266,10 +266,12 @@ class SubHeader extends Component {
       {
         action: 'advancedEdit',
         handler: () => {
-          openModal(windowId,
+          openModal(
+            windowId,
             'window',
             counterpart.translate('window.advancedEdit.caption'),
-            true);
+            true
+          );
         },
         icon: 'meta-icon-edit',
         caption: counterpart.translate('window.advancedEdit.caption'),
