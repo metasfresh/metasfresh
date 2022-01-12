@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO implements I_ExternalSystem_Config_GRSSignum, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -195605805L;
+	private static final long serialVersionUID = 1146452755L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_GRSSignum (final Properties ctx, final int ExternalSystem_Config_GRSSignum_ID, @Nullable final String trxName)
@@ -122,6 +122,30 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setIsAutoSendCustomers (final boolean IsAutoSendCustomers)
+	{
+		set_Value (COLUMNNAME_IsAutoSendCustomers, IsAutoSendCustomers);
+	}
+
+	@Override
+	public boolean isAutoSendCustomers() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendCustomers);
+	}
+
+	@Override
+	public void setIsAutoSendVendors (final boolean IsAutoSendVendors)
+	{
+		set_Value (COLUMNNAME_IsAutoSendVendors, IsAutoSendVendors);
+	}
+
+	@Override
+	public boolean isAutoSendVendors() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendVendors);
 	}
 
 	@Override

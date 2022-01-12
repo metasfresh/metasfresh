@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.rabbitmqhttp;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
@@ -30,6 +31,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.bpartner.ExportToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import lombok.NonNull;
@@ -93,5 +95,11 @@ public class ExportToRabbitMQService extends ExportToExternalSystemService
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER;
+	}
+
+	@Override
+	protected ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartner)
+	{
+		return ImmutableSet.of();
 	}
 }

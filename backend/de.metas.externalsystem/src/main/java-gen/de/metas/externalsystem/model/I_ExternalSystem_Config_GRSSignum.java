@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -140,7 +139,7 @@ public interface I_ExternalSystem_Config_GRSSignum
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set ExternalSystem_Config_GRSSignum.
+	 * Set GRSSignum Config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -149,7 +148,7 @@ public interface I_ExternalSystem_Config_GRSSignum
 	void setExternalSystem_Config_GRSSignum_ID (int ExternalSystem_Config_GRSSignum_ID);
 
 	/**
-	 * Get ExternalSystem_Config_GRSSignum.
+	 * Get GRSSignum Config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -228,6 +227,48 @@ public interface I_ExternalSystem_Config_GRSSignum
 
 	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Auto-send customers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendCustomers (boolean IsAutoSendCustomers);
+
+	/**
+	 * Get Auto-send customers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendCustomers();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsAutoSendCustomers = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsAutoSendCustomers", null);
+	String COLUMNNAME_IsAutoSendCustomers = "IsAutoSendCustomers";
+
+	/**
+	 * Set Auto-send vendors.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendVendors (boolean IsAutoSendVendors);
+
+	/**
+	 * Get Auto-send vendors.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendVendors();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsAutoSendVendors = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsAutoSendVendors", null);
+	String COLUMNNAME_IsAutoSendVendors = "IsAutoSendVendors";
 
 	/**
 	 * Set Send business partners.

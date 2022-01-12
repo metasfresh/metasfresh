@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,37 +20,32 @@
  * #L%
  */
 
-package de.metas.externalsystem.grssignum.export.interceptor;
+package de.metas.audit.apirequest.config;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.grssignum.ExportToGRSService;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_API_Audit_Config;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_C_BPartner.class)
 @Component
-public class C_BPartner
+@Interceptor(I_API_Audit_Config.class)
+public class API_Audit_Config
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	private final ExportToGRSService exportToGRSService;
-
-	public C_BPartner(@NonNull final ExportToGRSService exportToGRSService)
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_API_Audit_Config.COLUMNNAME_IsSynchronousAuditLoggingEnabled,  I_API_Audit_Config.COLUMNNAME_IsForceProcessedAsync})
+	public void updateSyncAuditFlags(@NonNull final I_API_Audit_Config record)
 	{
-		this.exportToGRSService = exportToGRSService;
-	}
+		if (record.isForceProcessedAsync())
+		{
+			record.setIsSynchronousAuditLoggingEnabled(true);
+		}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_C_BPartner bPartner)
-	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
-
-		trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+		if (!record.isSynchronousAuditLoggingEnabled())
+		{
+			record.setIsWrapApiResponse(false);
+		}
 	}
 }

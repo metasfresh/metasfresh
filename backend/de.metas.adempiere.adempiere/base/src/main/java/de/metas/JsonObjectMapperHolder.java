@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -59,6 +60,7 @@ public class JsonObjectMapperHolder
 
 		final ObjectMapper objectMapper = new ObjectMapper()
 				.findAndRegisterModules()
+				.registerModule(new GuavaModule())
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 				.enable(MapperFeature.USE_ANNOTATIONS);
