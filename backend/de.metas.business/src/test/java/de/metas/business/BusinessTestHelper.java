@@ -19,11 +19,12 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -169,20 +170,17 @@ public class BusinessTestHelper
 
 	public ProductId createProductId(final String name, final I_C_UOM uom)
 	{
-		final I_M_Product product = createProduct(name, uom);
-		return ProductId.ofRepoId(product.getM_Product_ID());
+		return product().name(name).uom(uom).buildAndGetProductId();
 	}
 
 	public I_M_Product createProduct(final String name, @Nullable final I_C_UOM uom)
 	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uom, weightKg);
+		return product().name(name).uom(uom).build();
 	}
 
 	public I_M_Product createProduct(final String name, final UomId uomId)
 	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uomId, weightKg);
+		return product().name(name).uomId(uomId).build();
 	}
 
 	public I_M_Product createProduct(
@@ -190,8 +188,7 @@ public class BusinessTestHelper
 			@Nullable final I_C_UOM uom,
 			@Nullable final BigDecimal weightKg)
 	{
-		final UomId uomId = uom == null ? null : UomId.ofRepoIdOrNull(uom.getC_UOM_ID());
-		return createProduct(name, uomId, weightKg);
+		return product().name(name).uom(uom).weightKg(weightKg).build();
 	}
 
 	/**
@@ -202,21 +199,63 @@ public class BusinessTestHelper
 			@Nullable final UomId uomId,
 			@Nullable final BigDecimal weightKg)
 	{
+		return product().name(name).uomId(uomId).weightKg(weightKg).build();
+	}
+
+	@Builder(builderMethodName = "product", builderClassName = "ProductBuilder")
+	private static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final UomId uomId,
+			@Nullable final BigDecimal weightKg,
+			@Nullable final ProductCategoryId productCategoryId,
+			@Nullable final I_M_Product_Category productCategory,
+			@Nullable final String minimumIndivisibleUnitType)
+	{
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
 		POJOWrapper.setInstanceName(product, name);
 		product.setValue(name);
 		product.setName(name);
-		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
+
+		if (uomId != null)
+		{
+			product.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+		else if (uom != null)
+		{
+			product.setC_UOM_ID(uom.getC_UOM_ID());
+		}
 
 		if (weightKg != null)
 		{
 			product.setWeight(weightKg);
 		}
+
+		if (productCategoryId != null)
+		{
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+		}
+		else if (productCategory != null)
+		{
+			product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		}
+
+		product.setMinimumIndivisibleUnitType(minimumIndivisibleUnitType);
+
 		saveRecord(product);
 
 		return product;
+	}
+
+	public static class ProductBuilder
+	{
+		public ProductId buildAndGetProductId()
+		{
+			final I_M_Product product = build();
+			return ProductId.ofRepoId(product.getM_Product_ID());
+		}
 	}
 
 	public ProductCategoryId createProductCategory(@NonNull final String name, @Nullable final AttributeSetId attributeSetId)
@@ -240,25 +279,17 @@ public class BusinessTestHelper
 	}
 
 	public ProductId createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@Nullable final ProductCategoryId categoryId)
+								   @Nullable final I_C_UOM uom,
+								   @Nullable final ProductCategoryId categoryId)
 	{
-		final I_M_Product product = createProduct(name, uom);
-
-		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(categoryId));
-		save(product);
-		return ProductId.ofRepoId(product.getM_Product_ID());
+		return product().name(name).uom(uom).productCategoryId(categoryId).buildAndGetProductId();
 	}
 
 	public I_M_Product createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@NonNull final I_M_Product_Category category)
+									 @Nullable final I_C_UOM uom,
+									 @NonNull final I_M_Product_Category category)
 	{
-		final I_M_Product product = createProduct(name, uom);
-
-		product.setM_Product_Category_ID(category.getM_Product_Category_ID());
-		save(product);
-		return product;
+		return product().name(name).uom(uom).productCategory(category).build();
 	}
 
 	public ResourceId createManufacturingResource(
