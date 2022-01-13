@@ -103,4 +103,14 @@ public class JsonMetasfreshId
 		}
 		return String.valueOf(externalId.getValue());
 	}
+
+	@Nullable
+	public static String toValueStrOrNull(@Nullable final JsonMetasfreshId externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
+		}
+		return String.valueOf(externalId.getValue());
+	}
 }

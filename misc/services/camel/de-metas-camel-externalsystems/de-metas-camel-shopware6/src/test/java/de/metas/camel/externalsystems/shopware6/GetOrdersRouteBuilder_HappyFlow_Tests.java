@@ -509,12 +509,16 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	protected static JsonExternalSystemRequest creatJsonExternalSystemRequest(
 			@Nullable final String orderId,
 			@Nullable final String orderNo,
-			@Nullable final JsonProductLookup productLookup) throws IOException
+			@Nullable final JsonProductLookup productLookup,
+			@Nullable final String customJsonShopwareMappingPath) throws IOException
 	{
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 
-		final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+		final InputStream shopwareMappingsIS = Optional.ofNullable(customJsonShopwareMappingPath)
+				.map(GetOrdersRouteBuilder_HappyFlow_Tests.class::getResourceAsStream)
+				.orElse(GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS));
+
 		final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
 
 		final JsonProductLookup lookup = CoalesceUtil.coalesceNotNull(productLookup, JsonProductLookup.ProductNumber);
