@@ -122,14 +122,14 @@ class ConcatenatePDFsCommand
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
-		Map<String, String> filersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
-		final Collection<String> keys = filersMap.keySet();
+		Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+		final Collection<String> keys = filtersMap.keySet();
 
 		final ArrayList<PrintingQueueQueryRequest> queries = new ArrayList<>();
 
 		for (final String key : keys)
 		{
-			final String whereClause = filersMap.get(key);
+			final String whereClause = filtersMap.get(key);
 			final IQuery<I_C_Printing_Queue> query = createPrintingQueueQuery(whereClause);
 			final PrintingQueueQueryRequest request = PrintingQueueQueryRequest.builder()
 					.queryName(key)
