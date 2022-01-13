@@ -29,7 +29,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,11 +67,6 @@ public class PMMProductBLTest
 	private Date date;
 	private I_M_Product product1;
 
-	/**
-	 * for testing simplification I will use the same uom for all the products
-	 */
-	private I_C_UOM productUOM;
-
 	private I_M_HU_PI_Item_Product hupip1;
 
 	private I_C_BPartner partner1;
@@ -89,8 +83,7 @@ public class PMMProductBLTest
 
 		partner1 = createPartner("Partner1");
 
-		productUOM = createUOM();
-
+		I_C_UOM productUOM = createUOM();
 		hupip1 = createHUPIP("TU1", product1, BigDecimal.TEN, productUOM);
 	}
 
@@ -117,14 +110,11 @@ public class PMMProductBLTest
 		attributeInstance2.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
-		final int seqNo = 10;
-
 		final I_PMM_Product pmmProductExpected = createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi1,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
@@ -136,7 +126,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProductExpected, pmmProductActual);
+		assertThat(pmmProductActual).as("pmmProductExpected != pmmProductActual ").isEqualTo(pmmProductExpected);
 	}
 
 	@Test
@@ -162,15 +152,12 @@ public class PMMProductBLTest
 		attributeInstance2.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
-		final int seqNo = 10;
-
 		// make sure there is a pmm in the db, to prove that it is not selected if it has another attribute value
 		createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi1,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
@@ -182,7 +169,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertNull(pmmProductActual);
+		assertThat(pmmProductActual).isNull();
 	}
 
 	@Test
@@ -215,14 +202,11 @@ public class PMMProductBLTest
 		attributeInstance3.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance3);
 
-		final int seqNo = 10;
-
 		final I_PMM_Product pmmProductExpected = createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi2,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
@@ -234,7 +218,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProductExpected, pmmProductActual);
+		assertThat(pmmProductActual).as("pmmProductExpected != pmmProductActual ").isEqualTo(pmmProductExpected);
 	}
 
 	@Test
@@ -267,14 +251,11 @@ public class PMMProductBLTest
 		attributeInstance3.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance3);
 
-		final int seqNo = 10;
-
 		createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi1,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
@@ -286,7 +267,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi2);
 
-		Assert.assertNull(pmmProductActual);
+		assertThat(pmmProductActual).isNull();
 	}
 
 	@Test
@@ -324,24 +305,20 @@ public class PMMProductBLTest
 		attributeInstance4.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance4);
 
-		int seqNo = 10;
 		final I_PMM_Product pmmProduct1 = createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi2,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
 
-		seqNo = 20;
 		final I_PMM_Product pmmProduct2 = createPMMProduct(
 				product1,
 				partner1,
 				hupip1,
 				asi3,
-				seqNo,
 				warehouse,
 				validFrom1,
 				validTo1);
@@ -353,7 +330,7 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProduct1, pmmProductActual);
+		assertThat(pmmProductActual).as("pmmProductExpected != pmmProductActual ").isEqualTo(pmmProduct1);
 
 		// change seqNO
 		pmmProduct1.setSeqNo(20);
@@ -369,9 +346,10 @@ public class PMMProductBLTest
 				hupip1.getM_HU_PI_Item_Product_ID(),
 				asi1);
 
-		Assert.assertEquals("pmmProductExpected != pmmProductActual ", pmmProduct2, pmmProductActual);
+		assertThat(pmmProductActual).as("pmmProductExpected != pmmProductActual ").isEqualTo(pmmProduct2);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_HU_PI_Item_Product createHUPIP(
 			final String tuName,
 			final I_M_Product product,
@@ -394,6 +372,7 @@ public class PMMProductBLTest
 		return asi;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_Warehouse createWarehouse(String name)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
@@ -410,7 +389,6 @@ public class PMMProductBLTest
 			final I_C_BPartner partner,
 			final I_M_HU_PI_Item_Product hupip,
 			final I_M_AttributeSetInstance asi,
-			final int seqNo,
 			final I_M_Warehouse warehouse,
 			final Timestamp validFrom,
 			final Timestamp validTo)
@@ -428,6 +406,7 @@ public class PMMProductBLTest
 		return pmmProduct;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_BPartner createPartner(String value)
 	{
 		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
@@ -440,6 +419,7 @@ public class PMMProductBLTest
 
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_Product createProduct(final String value)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
@@ -457,30 +437,19 @@ public class PMMProductBLTest
 		hu.setName(name);
 		InterfaceWrapperHelper.save(hu);
 
-		// // Create some several dummy versions
-		// createVersion(hu, false);
-		// createVersion(hu, false);
-
 		// Create the current version
 		final Integer huPIVersionId = null;
-		createVersion(hu, true, huUnitType, huPIVersionId);
+		createVersion(hu, huUnitType, huPIVersionId);
 
 		return hu;
 	}
 
-	public I_M_HU_PI_Version createVersion(final I_M_HU_PI handlingUnit, final boolean current)
-	{
-		final String huUnitType = null;
-		final Integer huPIVersionId = null;
-		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
-	}
-
-	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
+	private void createVersion(final I_M_HU_PI pi, final String huUnitType, final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Version.class);
 		version.setName(pi.getName());
 		version.setM_HU_PI(pi);
-		version.setIsCurrent(current);
+		version.setIsCurrent(true);
 		if (huUnitType != null)
 		{
 			version.setHU_UnitType(huUnitType);
@@ -490,7 +459,6 @@ public class PMMProductBLTest
 			version.setM_HU_PI_Version_ID(huPIVersionId);
 		}
 		InterfaceWrapperHelper.save(version);
-		return version;
 	}
 
 	public I_C_UOM createUOM()
