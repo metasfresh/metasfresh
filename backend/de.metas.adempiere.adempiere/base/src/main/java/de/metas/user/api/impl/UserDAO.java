@@ -1,6 +1,6 @@
 package de.metas.user.api.impl;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.cache.annotation.CacheCtx;
@@ -315,16 +315,14 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public List<UserId> retrieveUsersByJobId(@NonNull final JobId jobId)
+	public ImmutableSet<UserId> retrieveUsersByJobId(@NonNull final JobId jobId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_Job_ID, jobId)
 				.create()
-				.stream()
-				.map(adUser -> UserId.ofRepoId(adUser.getAD_User_ID()))
-				.collect(ImmutableList.toImmutableList());
+				.listIds(UserId::ofRepoId);
 	}
 
 	private Optional<OrgMappingId> getOrgMappingId(@NonNull final UserId sourceUserId)

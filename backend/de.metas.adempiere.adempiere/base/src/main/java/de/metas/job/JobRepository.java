@@ -51,6 +51,7 @@ public class JobRepository
 		return Job.builder()
 				.id(JobId.ofRepoId(record.getC_Job_ID()))
 				.name(record.getName())
+				.isActive(record.isActive())
 				.build();
 	}
 }

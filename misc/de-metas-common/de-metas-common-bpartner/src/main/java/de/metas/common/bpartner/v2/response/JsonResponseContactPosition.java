@@ -36,11 +36,12 @@ public class JsonResponseContactPosition
 {
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String NAME = "name";
+	public static final String ACTIVE = "active";
 
 	@ApiModelProperty( //
 			required = true, //
 			dataType = "java.lang.Integer", //
-			value = "This translates to `C_Job.Id`.")
+			value = "This translates to `C_Job.C_Job_ID`.")
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
@@ -49,13 +50,20 @@ public class JsonResponseContactPosition
 	@JsonProperty(NAME)
 	String name;
 
+	@ApiModelProperty(required = false, value = "This translates to `C_Job.IsActive`.")
+	@JsonProperty(ACTIVE)
+	boolean active;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonResponseContactPosition(
 			@JsonProperty(METASFRESH_ID) @NonNull final JsonMetasfreshId metasfreshId,
-			@JsonProperty(NAME) @NonNull final String name)
+			@JsonProperty(NAME) @NonNull final String name,
+			@JsonProperty(ACTIVE) final boolean active)
 	{
 		this.metasfreshId = metasfreshId;
 		this.name = name;
+
+		this.active = active;
 	}
 }

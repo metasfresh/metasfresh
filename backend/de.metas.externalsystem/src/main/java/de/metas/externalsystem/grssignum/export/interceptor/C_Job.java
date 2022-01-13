@@ -22,12 +22,12 @@
 
 package de.metas.externalsystem.grssignum.export.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.grssignum.ExportToGRSService;
 import de.metas.job.JobId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -36,8 +36,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Job;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Interceptor(I_C_Job.class)
 @Component
@@ -57,18 +55,15 @@ public class C_Job
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void triggerSyncBPartnerLocationWithExternalSystem(@NonNull final I_C_Job cJob)
 	{
-		final List<UserId> contactIds = userDAO.retrieveUsersByJobId(JobId.ofRepoId(cJob.getC_Job_ID()));
+		final ImmutableSet<UserId> contactIds = userDAO.retrieveUsersByJobId(JobId.ofRepoId(cJob.getC_Job_ID()));
 
-		if (!Check.isEmpty(contactIds))
-		{
-			contactIds.forEach(contactId -> {
-				final BPartnerId bpartnerId = userDAO.getBPartnerIdByUserId(contactId);
+		for(final UserId contactId: contactIds){
+			final BPartnerId bpartnerId = userDAO.getBPartnerIdByUserId(contactId);
 
-				if (bpartnerId != null)
-				{
-					trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
-				}
-			});
+			if (bpartnerId != null)
+			{
+				trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+			}
 		}
 	}
 }

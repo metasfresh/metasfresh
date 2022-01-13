@@ -786,6 +786,7 @@ public class JsonRetrieverService
 		return JsonResponseContactPosition.builder()
 				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
 				.name(job.getName())
+				.active(job.isActive())
 				.build();
 	}
 }

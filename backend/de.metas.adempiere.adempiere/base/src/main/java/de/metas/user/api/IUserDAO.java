@@ -22,6 +22,7 @@ package de.metas.user.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.job.JobId;
 import de.metas.organization.OrgId;
@@ -100,5 +101,5 @@ public interface IUserDAO extends ISingletonService
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
 
-	List<UserId> retrieveUsersByJobId(JobId jobId);
+	ImmutableSet<UserId> retrieveUsersByJobId(JobId jobId);
 }

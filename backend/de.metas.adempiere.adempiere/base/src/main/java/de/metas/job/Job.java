@@ -32,4 +32,5 @@ public class Job
 {
 	@NonNull JobId id;
 	@NonNull String name;
+	boolean isActive;
 }
