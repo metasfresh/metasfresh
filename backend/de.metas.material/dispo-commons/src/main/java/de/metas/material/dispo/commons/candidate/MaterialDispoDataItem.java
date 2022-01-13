@@ -40,6 +40,9 @@ import java.math.BigDecimal;
 public class MaterialDispoDataItem
 {
 	@NonNull
+	CandidateId candidateId;
+
+	@NonNull
 	CandidateType type;
 
 	@Nullable
@@ -58,6 +61,7 @@ public class MaterialDispoDataItem
 	{
 		return MaterialDispoDataItem.builder()
 				.materialDescriptor(dataCanddiate.getMaterialDescriptor())
+				.candidateId(dataCanddiate.getId())
 				.type(dataCanddiate.getType())
 				.businessCase(dataCanddiate.getBusinessCase())
 				.businessCaseDetail(dataCanddiate.getBusinessCaseDetail())

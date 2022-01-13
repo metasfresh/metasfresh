@@ -22,20 +22,27 @@ package de.metas.acct.gljournal.impl;
  * #L%
  */
 
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal.IGLJournalBL;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_GL_Journal;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_GL_Journal;
 
 import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_GL_Journal;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_GL_Journal;
-
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.gljournal.IGLJournalBL;
-import de.metas.util.Services;
-
 public class GLJournalBL implements IGLJournalBL
 {
+	private IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	@Override
 	public boolean isComplete(final I_GL_Journal glJournal)
 	{
@@ -56,5 +63,19 @@ public class GLJournalBL implements IGLJournalBL
 		
 		glJournal.setPosted(false);
 		InterfaceWrapperHelper.save(glJournal);
+	}
+
+	@Override
+	public DocTypeId getDocTypeGLJournal(@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.docBaseType(X_C_DocType.DOCBASETYPE_GLJournal)
+				.build();
+
+		return docTypeDAO
+				.getDocTypeId(docTypeQuery);
 	}
 }

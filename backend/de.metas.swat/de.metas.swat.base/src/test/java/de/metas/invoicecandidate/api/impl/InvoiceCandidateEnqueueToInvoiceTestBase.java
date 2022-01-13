@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -81,7 +82,7 @@ import de.metas.util.Services;
  *
  * @author tsa
  */
-public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
+abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 {
 	protected PlainLockManager lockManager;
 	protected PlainLockDatabase locksDatabase;
@@ -223,13 +224,13 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		}
 	}
 
-	protected void assertWorkpackageInvoiceCandidatesValid(I_C_Queue_WorkPackage workpackage)
+	protected void assertWorkpackageInvoiceCandidatesValid(@NonNull final I_C_Queue_WorkPackage workpackage)
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 
 		final IParams workpackageParams = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
-		final List<I_C_Invoice_Candidate> ics = queueDAO.retrieveItems(workpackage, I_C_Invoice_Candidate.class, ITrx.TRXNAME_None);
+		final List<I_C_Invoice_Candidate> ics = queueDAO.retrieveAllItems(workpackage, I_C_Invoice_Candidate.class);
 
 		//
 		// Create the invoice candidates processor.

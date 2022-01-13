@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.handlingunits.receiptschedule.impl;
 
 import ch.qos.logback.classic.Level;
@@ -21,6 +18,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -68,6 +66,7 @@ import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -129,6 +128,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 	private static final transient Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
@@ -157,6 +158,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
+	@NonNull
 	public BigDecimal getQtyToMoveTU(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
@@ -225,24 +227,24 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				continue;
 			}
 
-			final List<I_M_HU> husToUnassign = new ArrayList<>(2);
+			final List<HuId> husToUnassign = new ArrayList<>(2);
 
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 			if (tuHU != null && tuHU.isActive()
-			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(tuHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, tuHU);
-				husToUnassign.add(tuHU);
+				husToUnassign.add(HuId.ofRepoId(tuHU.getM_HU_ID()));
 			}
 
 			final I_M_HU luHU = rsa.getM_LU_HU();
 			if (luHU != null && luHU.isActive()
-			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(luHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, luHU);
-				husToUnassign.add(luHU);
+				husToUnassign.add(HuId.ofRepoId(luHU.getM_HU_ID()));
 			}
 
 			//
@@ -309,7 +311,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	/**
 	 * Actually process receipt schedules.
-	 *
+	 * <p>
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
 	private InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
@@ -366,7 +368,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 	}
 
-	/** Generate receipt from selected receipt schedules and return the result */
+	/**
+	 * Generate receipt from selected receipt schedules and return the result
+	 */
 	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -396,7 +400,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
 		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(parameters.getCtx(), threadTrx);
 
-		executorService.<de.metas.inoutcandidate.model.I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
+		executorService.<de.metas.inoutcandidate.model.I_M_ReceiptSchedule, InOutGenerateResult>createExecutor()
 				.setContext(processorCtx)
 				.setProcessor(producer)
 				// Configure executor to fail on first error
@@ -534,8 +538,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			else if (priceActual.compareTo(receiptSchedule_priceActual) != 0)
 			{
 				throw new HUException("Got different PriceActual."
-						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
-						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
+											  + "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
+											  + "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
 
 			final int orderLineId = receiptSchedule.getC_OrderLine_ID();
@@ -662,6 +666,33 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.filter(huId -> huId > 0)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void adjustPlanningHUStorageFromNetWeight(final IAttributeSet attributeSet)
+	{
+		final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet);
+
+		if (hu == null)
+		{
+			return;
+		}
+
+		if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+		{
+			return;
+		}
+
+		final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+		huWeightNetAdjuster.setInScopeHU_IDs(org.elasticsearch.common.collect.Set.of(HuId.ofRepoId(hu.getM_HU_ID())));
+
+		final List<I_M_ReceiptSchedule> receiptSchedules = huAssignmentDAO.retrieveModelsForHU(hu, I_M_ReceiptSchedule.class);
+
+		for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
+		{
+			// Adjust HU's product storages to their Weight Net Attribute
+			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
+		}
 	}
 
 }

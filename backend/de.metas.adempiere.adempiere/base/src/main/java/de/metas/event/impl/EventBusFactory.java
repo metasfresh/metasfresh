@@ -1,21 +1,5 @@
 package de.metas.event.impl;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -24,7 +8,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
-
+import com.google.common.util.concurrent.AtomicDouble;
 import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -34,7 +18,26 @@ import de.metas.event.Type;
 import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.adempiere.util.jmx.JMXRegistry;
+import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class EventBusFactory implements IEventBusFactory
@@ -54,19 +57,23 @@ public class EventBusFactory implements IEventBusFactory
 			.build(new CacheLoader<Topic, EventBus>()
 			{
 				@Override
-				public EventBus load(final @NonNull Topic topic) throws Exception
+				public EventBus load(final @NonNull Topic topic)
 				{
-					return createEventBus(topic);
+					return createEventBus(topic, meterRegistry);
 				}
 			});
 
 	private final IEventBusRemoteEndpoint remoteEndpoint;
+	private final MeterRegistry meterRegistry;
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
-	public EventBusFactory(@NonNull final IEventBusRemoteEndpoint remoteEndpoint)
+	public EventBusFactory(
+			@NonNull final IEventBusRemoteEndpoint remoteEndpoint,
+			@NonNull final MeterRegistry meterRegistry)
 	{
 		this.remoteEndpoint = remoteEndpoint;
+		this.meterRegistry = meterRegistry;
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
@@ -135,10 +142,12 @@ public class EventBusFactory implements IEventBusFactory
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
 	 */
-	private EventBus createEventBus(@NonNull final Topic topic)
+	private EventBus createEventBus(@NonNull final Topic topic, @NonNull final MeterRegistry meterRegistry)
 	{
+		final MicrometerEventBusStatsCollector statsCollector = createMicrometerEventBusStatsCollector(topic, meterRegistry);
+
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic));
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic), statsCollector);
 
 		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
@@ -165,6 +174,26 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
+	static MicrometerEventBusStatsCollector createMicrometerEventBusStatsCollector(
+			@NonNull final Topic topic,
+			@NonNull final MeterRegistry meterRegistry)
+	{
+		final ImmutableList<Tag> tags = ImmutableList.of(
+				Tag.of("type", topic.getType().toString()));
+
+		final Timer eventProcessing = meterRegistry.timer("mf.eventBus.processor", tags);
+
+		final AtomicLong queueLength = meterRegistry.gauge("mf.eventBus." + topic.getFullName() + ".queueSize", tags, new AtomicLong(0));
+		final Counter enqueued = meterRegistry.counter("mf.eventBus." + topic.getFullName() + ".enqueued", tags);
+		final Counter dequeued = meterRegistry.counter("mf.eventBus." + topic.getFullName() + ".dequeued", tags);
+
+		return MicrometerEventBusStatsCollector.builder()
+				.eventsEnqueued(enqueued)
+				.eventsDequeued(dequeued)
+				.eventProcessingTimer(eventProcessing)
+				.queueLength(queueLength).build();
+	}
+
 	@Nullable
 	private ExecutorService createExecutorOrNull(@NonNull final Topic topic)
 	{
@@ -172,9 +201,9 @@ public class EventBusFactory implements IEventBusFactory
 		if (EventBusConfig.isEventBusPostAsync(topic))
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
-					.setDaemon(true)
-					.build());
+															 .setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
+															 .setDaemon(true)
+															 .build());
 		}
 		else
 		{
@@ -192,18 +221,18 @@ public class EventBusFactory implements IEventBusFactory
 			@NonNull final Topic topic,
 			@NonNull final IEventListener listener)
 	{
-		//
-		// Add the listener to our global listeners multimap.
+		// Register the listener to EventBus
+		getEventBus(topic).subscribe(listener);
+
+		// Add the listener to our global listeners-multimap.
+		// Note that getEventBus(topic) creates the bus on the fly if needed **and subscribes all global listeners to it**
+		// Therefore we need to add this listener to the global map *after* having gotten and possibly on-the-fly-created the event bus.
 		if (!globalEventListeners.put(topic, listener))
 		{
 			// listener already exists => do nothing
 			return;
 		}
 		logger.info("Registered global listener to {}: {}", topic, listener);
-
-		//
-		// Also register the listener to EventBus
-		getEventBus(topic).subscribe(listener);
 	}
 
 	@Override

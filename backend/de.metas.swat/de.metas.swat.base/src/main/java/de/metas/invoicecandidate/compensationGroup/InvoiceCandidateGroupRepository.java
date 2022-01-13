@@ -1,16 +1,7 @@
 package de.metas.invoicecandidate.compensationGroup;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
-import org.springframework.stereotype.Component;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -35,6 +26,15 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -61,8 +61,10 @@ import lombok.NonNull;
 @Component
 public class InvoiceCandidateGroupRepository implements GroupRepository
 {
-	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
@@ -71,13 +73,15 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	@Override
-	public GroupCreator prepareNewGroup()
+	public GroupCreator.GroupCreatorBuilder prepareNewGroup()
 	{
-		return new GroupCreator(this, compensationLineCreateRequestFactory);
+		return GroupCreator.builder()
+				.groupsRepo(this)
+				.compensationLineCreateRequestFactory(compensationLineCreateRequestFactory);
 	}
 
 	@Override
-	public Group retrieveGroup(final GroupId groupId)
+	public Group retrieveGroup(@NonNull final GroupId groupId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = retrieveInvoiceCandidatesForGroup(groupId);
 		if (invoiceCandidates.isEmpty())
@@ -102,6 +106,10 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final GroupId groupId = extractSingleGroupId(invoiceCandidates);
 
 		final I_C_Order order = invoiceCandidates.get(0).getC_Order();
+		if (order == null)
+		{
+			throw new AdempiereException("Invoice candidate has no order: " + invoiceCandidates);
+		}
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
@@ -139,8 +147,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	 */
 	private GroupCompensationLine createCompensationLine(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
 		final BigDecimal qtyToInvoice = invoiceCandidate.getQtyToInvoice();
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
 
@@ -169,9 +175,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.build();
 	}
 
-	public int extractLineId(final I_C_Invoice_Candidate invoiceCandidate)
+	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		return invoiceCandidate.getC_Invoice_Candidate_ID();
+		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
 
 	private GroupId extractSingleGroupId(final List<I_C_Invoice_Candidate> invoiceCandidates)
@@ -183,10 +189,10 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Invoice candidates are not part of the same group: " + invoiceCandidates)));
 	}
 
-	public GroupId extractGroupId(final I_C_Invoice_Candidate invoiceCandidate)
+	public GroupId extractGroupId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InvoiceCandidateCompensationGroupUtils.assertInGroup(invoiceCandidate);
-		OrderId orderId = OrderId.ofRepoId(invoiceCandidate.getC_Order_ID());
+		final OrderId orderId = OrderId.ofRepoId(invoiceCandidate.getC_Order_ID());
 		return OrderGroupRepository.createGroupId(orderId, invoiceCandidate.getC_Order_CompensationGroup_ID());
 	}
 
@@ -203,7 +209,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		// Save compensation lines
 		for (final GroupCompensationLine compensationLine : group.getCompensationLines())
 		{
-			final int invoiceCandidateId = compensationLine.getRepoId();
+			final InvoiceCandidateId invoiceCandidateId = extractInvoiceCandidateId(compensationLine);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidatesStorage.getByIdIfPresent(invoiceCandidateId);
 			if (invoiceCandidate == null)
 			{
@@ -216,6 +222,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		}
 	}
 
+	private InvoiceCandidateId extractInvoiceCandidateId(final GroupCompensationLine compensationLine)
+	{
+		return (InvoiceCandidateId)compensationLine.getRepoId();
+	}
+
 	/**
 	 * note to dev: keep in sync with {@link #createCompensationLine(I_C_Invoice_Candidate)}
 	 */
@@ -226,8 +237,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		invoiceCandidate.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
 
 		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyToInvoice = uomConversionBL.convertToProductUOM(productId,
 				compensationLine.getQtyEntered(),
@@ -248,12 +257,12 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		throw new UnsupportedOperationException();
 	}
 
-	private List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroup(final GroupId groupId)
+	private List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroup(@NonNull final GroupId groupId)
 	{
 		return retrieveInvoiceCandidatesForGroupQuery(groupId).create().list(I_C_Invoice_Candidate.class);
 	}
 
-	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(final GroupId groupId)
+	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(@NonNull final GroupId groupId)
 	{
 		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
 		final int orderCompensationGroupId = groupId.getOrderCompensationGroupId();
@@ -286,8 +295,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.lineNetAmt(compensationLine.getBaseAmt())
 				.build();
 
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final I_C_Order order = invoiceCandidate.getC_Order();
+		if (order == null)
+		{
+			throw new AdempiereException("Invoice candidate has no order: " + invoiceCandidate);
+		}
 
 		return Group.builder()
 				.groupId(extractGroupId(invoiceCandidate))
@@ -312,6 +324,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final IQuery<I_C_Invoice_Candidate> query = retrieveInvoiceCandidatesForGroupQuery(groupId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsGroupCompensationLine, true) // only compensation lines
 				.create();
-		Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query);
+		invoiceCandDAO.invalidateCandsFor(query);
 	}
 }

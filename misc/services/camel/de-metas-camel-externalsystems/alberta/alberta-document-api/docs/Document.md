@@ -1,0 +1,15 @@
+# Document
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**_id** | **String** |  |  [optional]
+**name** | **String** | Name der Dokumentenvorlage |  [optional]
+**patientId** | **String** | Id des Patienten in Alberta |  [optional]
+**therapyId** | [**BigDecimal**](BigDecimal.md) | Id der Therapie (0&#x3D; Unbekannt, 1 &#x3D; Parenterale Ernährung, 2 &#x3D; Enterale Ernährung, 3 &#x3D; Stoma, 4 &#x3D; Tracheostoma, 5 &#x3D; Inkontinenz ableitend, 6 &#x3D; Wundversorgung, 7 &#x3D; IV-Therapien, 8 &#x3D; Beatmung, 9 &#x3D; Sonstiges, 10 &#x3D; OSA, 11 &#x3D; Hustenhilfen, 12 &#x3D; Absaugung, 13 &#x3D; Patientenüberwachung, 14 &#x3D; Sauerstoff, 15 &#x3D; Inhalations- und Atemtherapie) |  [optional]
+**therapyTypeId** | [**BigDecimal**](BigDecimal.md) | Id der Therapieart (Schwerkraft_PE &#x3D; 0, Pumpe_immobil_PE &#x3D; 1, Pumpe_mobil_PE &#x3D; 2, Schwerkraft_EE &#x3D; 3, Pumpe_immobil_EE &#x3D; 4, Pumpe_mobil_EE &#x3D; 5, Bolus &#x3D; 6, Trinknahrung &#x3D; 7, Kolostoma &#x3D; 8, Urostoma &#x3D; 9, Ileostoma &#x3D; 10, Tracheostoma_beatmet &#x3D; 11, Laryngektomie_beatmet &#x3D; 12, Inkontinenz_ableitend &#x3D; 13, Ulcus_cruris &#x3D; 14, Dekubitus &#x3D; 15, Diabetisches_Fußsyndrom &#x3D; 16, Ulzerierte_Tumore &#x3D; 17, Wundfisteln &#x3D; 18, sonstige_chronische_Wunden &#x3D; 19, Diabetes &#x3D; 20, Pflegehilfsmittel &#x3D; 21, Inkontinenz_aufsaugend &#x3D; 22, Compounding &#x3D; 23, Fistel &#x3D; 24, Antibiose &#x3D; 25, Tracheostoma_unbeatmet &#x3D; 26, Laryngektomie_unbeatmet &#x3D; 27, Absaugung_außerhalb_von_TS &#x3D; 28, Beatmung &#x3D; 29, sonstige_Wunden &#x3D; 30, Schmerztherapie &#x3D; 31,  Beatmung_invasiv &#x3D; 32, Beatmung_nicht_invasiv &#x3D; 33, Befeuchtung_aktiv&#x3D; 34, Befeuchtung_passiv &#x3D; 35, Befeuchtung_integriert &#x3D; 36, High_Flow&#x3D; 37, CPAP &#x3D; 38, APAP &#x3D; 39, Bilevel &#x3D; 40, Bilevel_ST &#x3D; 41, Auto_Bilevel &#x3D; 42, CS &#x3D; 43, Hustenhilfen &#x3D; 44, Sekretmobilisation &#x3D; 45, Absaugung_oral &#x3D; 46, Absaugung_subglottisch &#x3D; 47, Monitoring &#x3D; 48, Pulsoximetrie &#x3D; 49, Fingerpulsoximetrie &#x3D; 50, Kapnometer &#x3D; 51, Blutdruckmessgeraet &#x3D; 52, Sauerstoff_mobil &#x3D; 53, Sauerstoff_fluessig &#x3D; 54, Inhalation &#x3D; 55, Medikamentenvernebler &#x3D; 56, Ultraschallvernebler &#x3D; 57, PEP_Systeme &#x3D; 58, IPPB_Inhalation &#x3D; 59,  Atemtherapie &#x3D; 60) |  [optional]
+**archived** | **Boolean** | Kennzeichen, ob das Dokument vom Benutzer archiviert wurde |  [optional]
+**createdBy** | **String** | Id des erstellenden Benutzers (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich der Benutzer in WaWi vorhanden) |  [optional]
+**updatedBy** | **String** | Id des zuletzt ändernden Benutzers (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich der Benutzer in WaWi vorhanden) |  [optional]
+**createdAt** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel des Erstellens |  [optional]
+**updatedAt** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

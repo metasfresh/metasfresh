@@ -1,0 +1,43 @@
+{
+  "productId": 2005604,
+  "article": {
+    "customerNumber": "1000004",
+    "name": "My new Product updated",
+    "description": "My new description updated",
+    "additionalDescription": "AlbertaAdditionalDecUpdated",
+    "manufacturer": "myManufacturerName",
+    "manufacturerNumber": "myNewManufacturerNumber",
+    "therapyIds": null,
+    "billableTherapies": [
+      "1"
+    ],
+    "productGroupId": "82d3d688-4035-48fa-90cb-d9d39b8975bd",
+    "size": "20",
+    "inventoryType": 1,
+    "status": 2,
+    "medicalAidPositionNumber": "myMedicalAidPositionNumberUpdated",
+    "unavailableFrom": "2021-06-07",
+    "stars": 4,
+    "assortmentType": 2,
+    "pharmacyPrice": "1600.00",
+    "fixedPrice": "11.00",
+    "purchaseRating": 0,
+    "packagingUnits": [
+      {
+        "unit": "Stk",
+        "quantity": 10,
+        "pcn": null,
+        "defaultPackagingUnit": null,
+        "archived": null
+      },
+      {
+        "unit": "Ktn",
+        "quantity": 15,
+        "pcn": null,
+        "defaultPackagingUnit": null,
+        "archived": null
+      }
+    ]
+  },
+  "firstExport": false
+}

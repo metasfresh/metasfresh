@@ -1,101 +1,106 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Greeting
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_Greeting 
 {
 
-    /** TableName=C_Greeting */
-    public static final String Table_Name = "C_Greeting";
+	String Table_Name = "C_Greeting";
 
-    /** AD_Table_ID=346 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=346 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(3);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Greeting (ID).
+	 * Greeting to print on correspondence
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Greeting_ID (int C_Greeting_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Greeting (ID).
+	 * Greeting to print on correspondence
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Greeting_ID();
 
-    /** Column name C_Greeting_ID */
-    public static final String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
+	ModelColumn<I_C_Greeting, Object> COLUMN_C_Greeting_ID = new ModelColumn<>(I_C_Greeting.class, "C_Greeting_ID", null);
+	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
-	/** Set Greeting.
-	  * Greeting to print on correspondence
-	  */
-	public void setC_Greeting_ID (int C_Greeting_ID);
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-	/** Get Greeting.
-	  * Greeting to print on correspondence
-	  */
-	public int getC_Greeting_ID();
+	ModelColumn<I_C_Greeting, Object> COLUMN_Created = new ModelColumn<>(I_C_Greeting.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
-
-    /** Column name Greeting */
-    public static final String COLUMNNAME_Greeting = "Greeting";
-
-	/** Set Greeting.
-	  * For letters, e.g. "Dear 
+	/**
+	 * Set Greeting.
+	 * For letters, e.g. "Dear 
 {
 0}
 " or "Dear Mr. 
@@ -105,11 +110,16 @@ public interface I_C_Greeting
 {
 0}
 " is replaced by the name
-	  */
-	public void setGreeting (String Greeting);
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGreeting (@Nullable java.lang.String Greeting);
 
-	/** Get Greeting.
-	  * For letters, e.g. "Dear 
+	/**
+	 * Get Greeting.
+	 * For letters, e.g. "Dear 
 {
 0}
 " or "Dear Mr. 
@@ -119,74 +129,151 @@ public interface I_C_Greeting
 {
 0}
 " is replaced by the name
-	  */
-	public String getGreeting();
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGreeting();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Greeting, Object> COLUMN_Greeting = new ModelColumn<>(I_C_Greeting.class, "Greeting", null);
+	String COLUMNNAME_Greeting = "Greeting";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Greeting Standard Type.
+	 * This field defines the salutation in the letter / document based on the type of member contacts.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGreetingStandardType (@Nullable java.lang.String GreetingStandardType);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Greeting Standard Type.
+	 * This field defines the salutation in the letter / document based on the type of member contacts.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGreetingStandardType();
 
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
+	ModelColumn<I_C_Greeting, Object> COLUMN_GreetingStandardType = new ModelColumn<>(I_C_Greeting.class, "GreetingStandardType", null);
+	String COLUMNNAME_GreetingStandardType = "GreetingStandardType";
 
-	/** Set Default.
-	  * Default value
-	  */
-	public void setIsDefault (boolean IsDefault);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Default.
-	  * Default value
-	  */
-	public boolean isDefault();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsFirstNameOnly */
-    public static final String COLUMNNAME_IsFirstNameOnly = "IsFirstNameOnly";
+	ModelColumn<I_C_Greeting, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Greeting.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set First name only.
-	  * Print only the first name in greetings
-	  */
-	public void setIsFirstNameOnly (boolean IsFirstNameOnly);
+	/**
+	 * Set Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefault (boolean IsDefault);
 
-	/** Get First name only.
-	  * Print only the first name in greetings
-	  */
-	public boolean isFirstNameOnly();
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_Greeting, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_Greeting.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Nur erster Name.
+	 * Nur den ersten Namen bei Anreden drucken
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFirstNameOnly (boolean IsFirstNameOnly);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Nur erster Name.
+	 * Nur den ersten Namen bei Anreden drucken
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFirstNameOnly();
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Greeting, Object> COLUMN_IsFirstNameOnly = new ModelColumn<>(I_C_Greeting.class, "IsFirstNameOnly", null);
+	String COLUMNNAME_IsFirstNameOnly = "IsFirstNameOnly";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	ModelColumn<I_C_Greeting, Object> COLUMN_Name = new ModelColumn<>(I_C_Greeting.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_Greeting, Object> COLUMN_Updated = new ModelColumn<>(I_C_Greeting.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

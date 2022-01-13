@@ -1,7 +1,9 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
@@ -73,6 +75,7 @@ public class OLCandCreateRequest
 
 	LocalDate dateOrdered;
 	LocalDate dateRequired;
+	LocalDate dateCandidate;
 
 	LocalDate presetDateInvoiced;
 	DocTypeId docTypeInvoiceId;
@@ -105,6 +108,25 @@ public class OLCandCreateRequest
 
 	PaymentTermId paymentTermId;
 	OrderLineGroup orderLineGroup;
+
+	Integer line;
+	String description;
+
+	Boolean isManualPrice;
+	Boolean isImportedWithIssues;
+
+	String deliveryViaRule;
+	String deliveryRule;
+
+	String importWarningMessage;
+
+	AsyncBatchId asyncBatchId;
+
+	BigDecimal qtyShipped;
+
+	AssignSalesRepRule assignSalesRepRule;
+
+	BPartnerId salesRepInternalId;
 
 	@Builder
 	private OLCandCreateRequest(
@@ -140,7 +162,19 @@ public class OLCandCreateRequest
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
-			@Nullable final OrderLineGroup orderLineGroup)
+			@Nullable final OrderLineGroup orderLineGroup,
+			@Nullable final LocalDate dateCandidate,
+			@Nullable final Integer line,
+			@Nullable final String description,
+			@Nullable final Boolean isManualPrice,
+			@Nullable final Boolean isImportedWithIssues,
+			@Nullable final String deliveryViaRule,
+			@Nullable final String deliveryRule,
+			@Nullable final String importWarningMessage,
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped,
+			@Nullable final AssignSalesRepRule assignSalesRepRule,
+			@Nullable final BPartnerId salesRepInternalId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -158,6 +192,8 @@ public class OLCandCreateRequest
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+
+		this.dateCandidate = dateCandidate;
 
 		this.dateOrdered = dateOrdered;
 		this.presetDateInvoiced = presetDateInvoiced;
@@ -187,5 +223,17 @@ public class OLCandCreateRequest
 
 		this.paymentTermId = paymentTermId;
 		this.orderLineGroup = orderLineGroup;
+		this.line = line;
+		this.description = description;
+		this.isManualPrice = isManualPrice;
+		this.isImportedWithIssues = isImportedWithIssues;
+		this.deliveryViaRule = deliveryViaRule;
+		this.deliveryRule = deliveryRule;
+		this.importWarningMessage = importWarningMessage;
+		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
+
+		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
+		this.salesRepInternalId = salesRepInternalId;
 	}
 }

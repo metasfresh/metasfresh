@@ -1,18 +1,20 @@
 package de.metas.inoutcandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule_QtyPicked
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_ShipmentSchedule_QtyPicked 
 {
 
-    /** TableName=M_ShipmentSchedule_QtyPicked */
-    public static final String Table_Name = "M_ShipmentSchedule_QtyPicked";
+	String Table_Name = "M_ShipmentSchedule_QtyPicked";
 
-    /** AD_Table_ID=540542 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540542 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Catch UOM.
@@ -59,7 +59,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCatch_UOM_ID (int Catch_UOM_ID);
+	void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
 	 * Get Catch UOM.
@@ -69,10 +69,9 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCatch_UOM_ID();
+	int getCatch_UOM_ID();
 
-    /** Column name Catch_UOM_ID */
-    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -82,12 +81,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Created = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -97,10 +94,9 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -109,7 +105,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -118,12 +114,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Description = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.
@@ -133,7 +127,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -143,12 +137,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Anonymous HU Picked On the Fly.
@@ -157,7 +149,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
 
 	/**
 	 * Get Anonymous HU Picked On the Fly.
@@ -166,12 +158,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAnonymousHuPickedOnTheFly();
+	boolean isAnonymousHuPickedOnTheFly();
 
-    /** Column definition for IsAnonymousHuPickedOnTheFly */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "IsAnonymousHuPickedOnTheFly", null);
-    /** Column name IsAnonymousHuPickedOnTheFly */
-    public static final String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
 
 	/**
 	 * Set Receipt Line.
@@ -181,7 +171,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
+	void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
 	 * Get Receipt Line.
@@ -191,16 +181,14 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOutLine_ID();
+	int getM_InOutLine_ID();
 
-	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+	@Nullable org.compiere.model.I_M_InOutLine getM_InOutLine();
 
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
 
-    /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_M_InOutLine>(I_M_ShipmentSchedule_QtyPicked.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
 	 * Set Shipment Candidate.
@@ -209,7 +197,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
 	 * Get Shipment Candidate.
@@ -218,16 +206,14 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ShipmentSchedule_ID();
+	int getM_ShipmentSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
+	@Nullable de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
 
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
+	void setM_ShipmentSchedule(@Nullable de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
 
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_ShipmentSchedule_QtyPicked.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set ShipmentSchedule QtyPicked.
@@ -236,7 +222,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ShipmentSchedule_QtyPicked_ID (int M_ShipmentSchedule_QtyPicked_ID);
+	void setM_ShipmentSchedule_QtyPicked_ID (int M_ShipmentSchedule_QtyPicked_ID);
 
 	/**
 	 * Get ShipmentSchedule QtyPicked.
@@ -245,12 +231,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ShipmentSchedule_QtyPicked_ID();
+	int getM_ShipmentSchedule_QtyPicked_ID();
 
-    /** Column definition for M_ShipmentSchedule_QtyPicked_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_M_ShipmentSchedule_QtyPicked_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "M_ShipmentSchedule_QtyPicked_ID", null);
-    /** Column name M_ShipmentSchedule_QtyPicked_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID = "M_ShipmentSchedule_QtyPicked_ID";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_M_ShipmentSchedule_QtyPicked_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_ShipmentSchedule_QtyPicked_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID = "M_ShipmentSchedule_QtyPicked_ID";
 
 	/**
 	 * Set Processed.
@@ -259,7 +243,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -268,12 +252,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Processed = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Delivered catch.
@@ -283,7 +265,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch);
+	void setQtyDeliveredCatch (@Nullable BigDecimal QtyDeliveredCatch);
 
 	/**
 	 * Get Delivered catch.
@@ -293,12 +275,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredCatch();
+	BigDecimal getQtyDeliveredCatch();
 
-    /** Column definition for QtyDeliveredCatch */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyDeliveredCatch = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "QtyDeliveredCatch", null);
-    /** Column name QtyDeliveredCatch */
-    public static final String COLUMNNAME_QtyDeliveredCatch = "QtyDeliveredCatch";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyDeliveredCatch = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "QtyDeliveredCatch", null);
+	String COLUMNNAME_QtyDeliveredCatch = "QtyDeliveredCatch";
 
 	/**
 	 * Set Quantity (stock unit).
@@ -307,7 +287,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPicked (java.math.BigDecimal QtyPicked);
+	void setQtyPicked (BigDecimal QtyPicked);
 
 	/**
 	 * Get Quantity (stock unit).
@@ -316,12 +296,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyPicked();
+	BigDecimal getQtyPicked();
 
-    /** Column definition for QtyPicked */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "QtyPicked", null);
-    /** Column name QtyPicked */
-    public static final String COLUMNNAME_QtyPicked = "QtyPicked";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyPicked = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "QtyPicked", null);
+	String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
 	 * Get Updated.
@@ -331,12 +309,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_Updated = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -346,8 +322,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

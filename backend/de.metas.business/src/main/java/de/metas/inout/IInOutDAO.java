@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -19,6 +20,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -118,9 +120,13 @@ public interface IInOutDAO extends ISingletonService
 
 	I_M_InOut getInOutByDocumentNumber(String documentNo, DocTypeId docTypeId, OrgId orgId);
 
-	ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
+	ImmutableMap<InOutLineId, I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
 
 	void save(@NonNull I_M_InOut inout);
 
 	void save(@NonNull I_M_InOutLine inoutLine);
+
+	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
+
+	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 }

@@ -45,8 +45,7 @@ import lombok.NonNull;
 public class AllocationStrategySupportingServicesFacade
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	// private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+		private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private IHandlingUnitsDAO getHandlingUnitsDAO()
 	{

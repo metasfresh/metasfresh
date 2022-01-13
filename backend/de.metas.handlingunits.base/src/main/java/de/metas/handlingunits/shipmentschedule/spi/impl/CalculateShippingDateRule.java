@@ -24,7 +24,12 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 public enum CalculateShippingDateRule
 {
+	/** The shipment date is today's date. */
 	FORCE_SHIPMENT_DATE_TODAY,
+	
+	/** the shipment date is the shipment schedule's effective delivery date, even if that date is in the past */
 	FORCE_SHIPMENT_DATE_DELIVERY_DATE,
+	
+	/** the shipment date is the shipment schedule's effective delivery date or today if that effective delivery date would be in the past. */
 	NONE
 }

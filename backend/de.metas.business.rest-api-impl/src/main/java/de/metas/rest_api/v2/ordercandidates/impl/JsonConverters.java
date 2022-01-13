@@ -5,17 +5,24 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineGroup;
+import de.metas.order.impl.DocTypeService;
+import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -24,8 +31,8 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.CurrencyService;
-import de.metas.rest_api.v2.util.DocTypeService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -44,6 +51,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -77,6 +85,7 @@ public class JsonConverters
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -100,7 +109,8 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 
-		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
+		final String jsonProductIdentifier = request.getProductIdentifier();
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
 		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
@@ -123,8 +133,8 @@ public class JsonConverters
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
 		{
 			Check.assumeNotNull(request.getDateRequired(),
-								"dateRequired may not be null, unless dataDestInternalName={}; this={}",
-								"DEST.de.metas.invoicecandidate", this);
+					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
+					"DEST.de.metas.invoicecandidate", this);
 		}
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
@@ -145,6 +155,34 @@ public class JsonConverters
 			uomId = productInfo.getUomId();
 		}
 
+		final JsonOrderLineGroup jsonOrderLineGroup = request.getOrderLineGroup();
+		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null
+				? null
+				: OrderLineGroup.builder()
+				.groupKey(jsonOrderLineGroup.getGroupKey())
+				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
+				.discount(Percent.ofNullable(jsonOrderLineGroup.getDiscount()))
+				.build();
+
+		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
+		{
+			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
+		}
+
+		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocBaseType)
+				.orElse(null);
+
+		final String subType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocSubType)
+				.orElse(null);
+
+		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+
+		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
+
+		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -154,7 +192,7 @@ public class JsonConverters
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//
-				.bpartner(masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId))
+				.bpartner(bPartnerInfo)
 				.billBPartner(masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null))
 				.dropShipBPartner(masterdataProvider.getBPartnerInfo(request.getDropShipBPartner(), orgId).orElse(null))
 				.handOverBPartner(masterdataProvider.getBPartnerInfo(request.getHandOverBPartner(), orgId).orElse(null))
@@ -163,8 +201,9 @@ public class JsonConverters
 				//
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
+				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -193,7 +232,20 @@ public class JsonConverters
 				.salesRepId(salesRepId)
 
 				.paymentTermId(paymentTermId)
+
+				.orderLineGroup(orderLineGroup)
+
+				.description(request.getDescription())
+				.line(request.getLine())
+				.isManualPrice(request.getIsManualPrice())
+				.isImportedWithIssues(request.getIsImportedWithIssues())
+				.importWarningMessage(request.getImportWarningMessage())
+				.deliveryRule(request.getDeliveryRule())
+				.deliveryViaRule(request.getDeliveryViaRule())
+				.qtyShipped(request.getQtyShipped())
 				//
+				.assignSalesRepRule(assignSalesRepRule)
+				.salesRepInternalId(salesRepInternalId)
 				;
 	}
 
@@ -239,6 +291,7 @@ public class JsonConverters
 		return dataSourceId;
 	}
 
+	@Nullable
 	private JsonResponseBPartnerLocationAndContact toJson(
 			@Nullable final String orgCode,
 			@Nullable final BPartnerInfo bpartnerInfo,
@@ -265,8 +318,8 @@ public class JsonConverters
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
-													   .map(olCand -> toJson(olCand, masterdataProvider))
-													   .collect(ImmutableList.toImmutableList()));
+				.map(olCand -> toJson(olCand, masterdataProvider))
+				.collect(ImmutableList.toImmutableList()));
 	}
 
 	private JsonOLCand toJson(
@@ -276,6 +329,14 @@ public class JsonConverters
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
 		final String orgCode = orgDAO.retrieveOrgValue(orgId);
+
+		final OrderLineGroup orderLineGroup = olCand.getOrderLineGroup();
+		final JsonOrderLineGroup jsonOrderLineGroup = orderLineGroup == null
+				? null
+				: JsonOrderLineGroup.builder()
+				.groupKey(orderLineGroup.getGroupKey())
+				.isGroupMainItem(orderLineGroup.isGroupMainItem())
+				.build();
 
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -290,6 +351,7 @@ public class JsonConverters
 				.dropShipBPartner(toJson(orgCode, olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
+				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
@@ -307,6 +369,26 @@ public class JsonConverters
 				//
 				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
 				//
+				.jsonOrderLineGroup(jsonOrderLineGroup)
+
+				.description(olCand.unbox().getDescription())
+				.line(olCand.getLine())
 				.build();
+	}
+
+	@NonNull
+	private static AssignSalesRepRule getAssignSalesRepRule(@NonNull final JsonApplySalesRepFrom jsonApplySalesRepFrom)
+	{
+		switch (jsonApplySalesRepFrom)
+		{
+			case Candidate:
+				return AssignSalesRepRule.Candidate;
+			case BPartner:
+				return AssignSalesRepRule.BPartner;
+			case CandidateFirst:
+				return AssignSalesRepRule.CandidateFirst;
+			default:
+				throw new AdempiereException("Unsupported JsonApplySalesRepFrom " + jsonApplySalesRepFrom);
+		}
 	}
 }

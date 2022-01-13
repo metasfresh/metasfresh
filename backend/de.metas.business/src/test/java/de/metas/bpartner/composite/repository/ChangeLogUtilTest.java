@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.tuple;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -66,7 +68,7 @@ class ChangeLogUtilTest
 	{
 		final I_AD_User userRecord = createUserRecordWith(20/* createdBy */, -1/* updatedBy */);
 
-		final CompositeRelatedRecords relatedRecords = createEmptyRelatedRecords();
+		final CompositeRelatedRecords relatedRecords = CompositeRelatedRecords.builder().build();
 
 		// invoke the method under test
 		final RecordChangeLog result = ChangeLogUtil.createContactChangeLog(userRecord, relatedRecords);
@@ -84,7 +86,7 @@ class ChangeLogUtilTest
 	{
 		final I_AD_User userRecord = createUserRecordWith(-1/* createBy */, -1/* updatedBy */);
 
-		final CompositeRelatedRecords relatedRecords = createEmptyRelatedRecords();
+		final CompositeRelatedRecords relatedRecords = CompositeRelatedRecords.builder().build();
 
 		// invoke the method under test
 		final RecordChangeLog result = ChangeLogUtil.createContactChangeLog(userRecord, relatedRecords);
@@ -114,10 +116,9 @@ class ChangeLogUtilTest
 
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = ImmutableListMultimap.of(
 				TableRecordReference.of(userRecord), recordChangeLogEntry);
-		final CompositeRelatedRecords relatedRecords = createRelatedRecordsWith(
-				ImmutableMap.of()/* locationId2Location */,
-				ImmutableMap.of()/* countryId2Country */,
-				recordRef2LogEntries);
+		final CompositeRelatedRecords relatedRecords = CompositeRelatedRecords.builder()
+				.recordRef2LogEntries(recordRef2LogEntries)
+				.build();
 
 		// invoke the method under test
 		final RecordChangeLog result = ChangeLogUtil.createContactChangeLog(userRecord, relatedRecords);
@@ -159,10 +160,9 @@ class ChangeLogUtilTest
 
 		assertThat(ChangeLogUtil.C_BPARTNER_LOCATION_COLUMN_MAP).containsEntry(I_C_BPartner_Location.COLUMNNAME_Name, BPartnerLocation.NAME); // guard
 
-		final CompositeRelatedRecords relatedRecords = createRelatedRecordsWith(
-				ImmutableMap.of(locationRecord.getC_Location_ID(), locationRecord)/* locationId2Location */,
-				ImmutableMap.of(countryRecord.getC_Country_ID(), countryRecord)/* countryId2Country */,
-				ImmutableListMultimap.of() /* recordRef2LogEntries */);
+		final CompositeRelatedRecords relatedRecords = CompositeRelatedRecords.builder()
+				.locationId2Location(ImmutableMap.of(LocationId.ofRepoId(locationRecord.getC_Location_ID()), locationRecord))
+				.build();
 
 		// invoke the method under test
 		final RecordChangeLog result = ChangeLogUtil.createBPartnerLocationChangeLog(bpartnerLocalocationRecord, relatedRecords);
@@ -208,34 +208,4 @@ class ChangeLogUtilTest
 		assertThat(bpartnerLocationRecord.getUpdatedBy()).isEqualTo(-1);
 		return bpartnerLocationRecord;
 	}
-
-	private CompositeRelatedRecords createRelatedRecordsWith(
-			@NonNull final ImmutableMap<Integer, I_C_Location> locationId2Location,
-			@NonNull final ImmutableMap<Integer, I_C_Country> countryId2Country,
-			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries)
-	{
-		final CompositeRelatedRecords relatedRecords = new CompositeRelatedRecords(
-				ImmutableListMultimap.of(), /* bpartnerId2Users */
-				ImmutableListMultimap.of(), /* bpartnerId2BPartnerLocations */
-				locationId2Location,
-				ImmutableMap.of(), /* postalId2Postal */
-				countryId2Country,
-				ImmutableListMultimap.of(), /* bank accounts */
-				recordRef2LogEntries);
-		return relatedRecords;
-	}
-
-	private CompositeRelatedRecords createEmptyRelatedRecords()
-	{
-		final CompositeRelatedRecords relatedRecords = new CompositeRelatedRecords(
-				ImmutableListMultimap.of(), /* bpartnerId2Users */
-				ImmutableListMultimap.of(), /* bpartnerId2BPartnerLocations */
-				ImmutableMap.of(), /* locationId2Location */
-				ImmutableMap.of(), /* postalId2Postal */
-				ImmutableMap.of(), /* countryId2Country */
-				ImmutableListMultimap.of(), /* bank accounts */
-				ImmutableListMultimap.of() /* recordRef2LogEntries */);
-		return relatedRecords;
-	}
-
 }

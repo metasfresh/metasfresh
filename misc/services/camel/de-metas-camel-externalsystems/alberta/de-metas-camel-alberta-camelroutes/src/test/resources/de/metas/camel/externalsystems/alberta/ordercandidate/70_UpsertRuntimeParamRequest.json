@@ -1,0 +1,10 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 100,
+      "request": "getSalesOrders",
+      "name": "UpdatedAfter",
+      "value": "2021-03-03T15:08:10.631Z"
+    }
+  ]
+}

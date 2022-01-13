@@ -27,8 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
@@ -39,7 +39,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
@@ -72,6 +72,11 @@ public class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
+	@ApiModelProperty(position = 60)
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("compositeAlbertaBPartner")
+	JsonCompositeAlbertaBPartner compositeAlbertaBPartner;
+
 	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
 			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
 	@JsonInclude(Include.NON_NULL)
@@ -85,6 +90,7 @@ public class JsonRequestComposite
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("bankAccounts") @Nullable final JsonRequestBankAccountsUpsert bankAccounts,
+			@JsonProperty("compositeAlbertaBPartner") @Nullable final JsonCompositeAlbertaBPartner compositeAlbertaBPartner,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
@@ -92,24 +98,25 @@ public class JsonRequestComposite
 		this.locations = locations;
 		this.contacts = contacts;
 		this.bankAccounts = bankAccounts;
+		this.compositeAlbertaBPartner = compositeAlbertaBPartner;
 		this.syncAdvise = syncAdvise;
 	}
 
 	@JsonIgnore
 	public JsonRequestLocationUpsert getLocationsNotNull()
 	{
-		return coalesce(locations, JsonRequestLocationUpsert.builder().build());
+		return coalesceNotNull(locations, JsonRequestLocationUpsert.builder().build());
 	}
 
 	@JsonIgnore
 	public JsonRequestContactUpsert getContactsNotNull()
 	{
-		return coalesce(contacts, JsonRequestContactUpsert.builder().build());
+		return coalesceNotNull(contacts, JsonRequestContactUpsert.builder().build());
 	}
 
 	@JsonIgnore
 	public JsonRequestBankAccountsUpsert getBankAccountsNotNull()
 	{
-		return CoalesceUtil.coalesce(bankAccounts, JsonRequestBankAccountsUpsert.NONE);
+		return coalesceNotNull(bankAccounts, JsonRequestBankAccountsUpsert.NONE);
 	}
 }

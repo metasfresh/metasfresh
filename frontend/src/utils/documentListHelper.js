@@ -49,7 +49,6 @@ const DLpropTypes = {
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
@@ -72,12 +71,14 @@ const DLmapStateToProps = (state, props) => {
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
+
   let master = getView(state, windowId, isModal);
 
   // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;
   }
+
   // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
   let sort = querySort || master.sort;
@@ -141,7 +142,7 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: filters ? filters : {},
+    filters,
     filterId,
   };
 };
@@ -162,7 +163,7 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
  * @todo TODO: rewrite this to not modify `initialMap`. This will also require
  * changes in TableActions
  */
-const doesSelectionExist = function({
+const doesSelectionExist = function ({
   data,
   selected,
   keyProperty = 'id',
@@ -220,10 +221,13 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
 /**
  * @method mergeColumnInfosIntoViewRow
  * @summary add additional data to row's fields
- * @param {*} rows
- * @param {object} map
  */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
+  // mainly guard for unit tests which are not defining fieldsByName property
+  if (!row.fieldsByName) {
+    return row;
+  }
+
   const fieldsByName = Object.values(row.fieldsByName)
     .map((viewRowField) =>
       mergeColumnInfoIntoViewRowField(
@@ -236,14 +240,11 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
       return acc;
     }, {});
 
-  return Object.assign({}, row, { fieldsByName });
+  return { ...row, fieldsByName };
 }
 
 /**
- * @method mergeColumnInfoIntoViewRowField
  * @summary merge field's widget data of the row with additional data
- * @param {*} rows
- * @param {object} map
  */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
@@ -264,19 +265,16 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
 }
 
 /**
- * @method indexRows
- * @summary create a key/value map of rows with their ids as keys (including nested rows)
- * @param {*} rows
- * @param {object} map
+ * @summary create a key/value map of rows array with their ids as keys (including nested rows)
  */
-function indexRows(rows, map) {
+function indexRowsRecursively(rows, map = {}) {
   for (const row of rows) {
     const { id, includedDocuments } = row;
 
     map[id] = row;
 
     if (includedDocuments) {
-      indexRows(includedDocuments, map);
+      indexRowsRecursively(includedDocuments, map);
     }
   }
 
@@ -284,87 +282,106 @@ function indexRows(rows, map) {
 }
 
 /**
- * @method mapRows
- * @summary TODO
- * @param {*} rows
- * @param {*} map
- * @param {*} columnInfosByFieldName
+ * @summary From requiredRowIds retain only those rowIds which are present in rows array or in any of its included rows
  */
-function mapRows(rows, map, columnInfosByFieldName) {
-  return rows.map((row) => {
-    const { id, includedDocuments } = row;
+export function retainExistingRowIds(rows, requiredRowIds) {
+  if (!Array.isArray(rows) || rows.length <= 0) {
+    return [];
+  }
+  if (!Array.isArray(requiredRowIds) || requiredRowIds.length <= 0) {
+    return [];
+  }
 
-    if (includedDocuments) {
-      row.includedDocuments = mapRows(
-        includedDocuments,
-        map,
-        columnInfosByFieldName
-      );
-    }
+  const rowsById = indexRowsRecursively(rows);
 
-    const entry = map[id];
-
-    if (entry) {
-      return mergeColumnInfosIntoViewRow(columnInfosByFieldName, entry);
-    } else {
-      return row;
-    }
-  });
-}
-
-export function removeRows(rowsList, changedRows) {
-  const removedRows = [];
-  const changedRowsById = changedRows.reduce((acc, id) => {
-    acc[id] = true;
-    return acc;
-  }, {});
-
-  rowsList = rowsList.filter((row) => {
-    if (!changedRowsById[row.id]) {
-      removedRows.push(row.id);
-      return false;
-    }
-
-    return true;
-  });
-
-  return {
-    rows: rowsList,
-    removedRows,
-  };
+  return requiredRowIds.filter((rowId) => rowId in rowsById);
 }
 
 /**
- * @method mergeRows
  * @summary merge existing rows with new rows
- * @param {*} toRows
- * @param {*} fromRows
- * @param {*} columnInfosByFieldName
- * @param {*} changedIds
  */
 export function mergeRows({
   toRows,
-  fromRows,
-  columnInfosByFieldName = {},
   changedIds,
+  changedRows,
+  columnInfosByFieldName = {},
 }) {
   // unfreeze rows from the store
   toRows = deepUnfreeze(toRows);
-  if (!fromRows && !changedIds) {
-    return {
-      rows: toRows,
-      removedRows: [],
-    };
-  } else if (!fromRows.length) {
-    return removeRows(toRows, changedIds);
+
+  const changedRowsById = indexRowsRecursively(changedRows);
+
+  const result = {
+    hasChanges: false,
+    rows: [],
+    removedRowIds: [],
+  };
+
+  toRows.forEach((row) => {
+    //
+    // Case: row was changed or was deleted
+    let resultingRow;
+    let rowWasChanged = false;
+    if (changedIds.includes(row.id)) {
+      resultingRow = changedRowsById[row.id];
+      if (resultingRow) {
+        rowWasChanged = true;
+        resultingRow = mergeColumnInfosIntoViewRow(
+          columnInfosByFieldName,
+          resultingRow
+        );
+      }
+    }
+    //
+    // Case: row was not changed => preserve it as is
+    else {
+      rowWasChanged = false;
+      resultingRow = row;
+    }
+
+    //
+    // Recursively update the resulting row (if not already deleted)
+    if (
+      resultingRow != null && // not deleted
+      Array.isArray(resultingRow.includedDocuments) &&
+      resultingRow.includedDocuments.length > 0
+    ) {
+      const includedRowsResult = mergeRows({
+        toRows: resultingRow.includedDocuments,
+        changedIds,
+        changedRows,
+        columnInfosByFieldName,
+      });
+
+      if (includedRowsResult.hasChanges) {
+        rowWasChanged = true;
+        resultingRow = {
+          ...resultingRow,
+          includedDocuments: includedRowsResult.rows,
+        };
+      }
+    }
+
+    //
+    // Update the result
+    if (resultingRow != null) {
+      result.rows.push(resultingRow);
+      if (rowWasChanged) {
+        result.hasChanges = true;
+      }
+    } else {
+      result.removedRowIds.push(row.id);
+      result.hasChanges = true;
+    }
+  });
+
+  //
+  // Optimization: if no changes, return the original rows
+  if (!result.hasChanges) {
+    return { hasChanges: false, rows: toRows, removedRowIds: [] };
   }
 
-  const fromRowsById = indexRows(fromRows, {});
-
-  return {
-    rows: mapRows(toRows, fromRowsById, columnInfosByFieldName),
-    removedRows: [],
-  };
+  return result;
 }
 
 export function getScope(isModal) {

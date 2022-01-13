@@ -82,6 +82,7 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -141,6 +142,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
+			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -149,7 +151,6 @@ public class JsonRetrieverService
 			.put(BPartnerContactType.SALES_DEFAULT, JsonResponseContact.SALES_DEFAULT)
 			.put(BPartnerContactType.PURCHASE, JsonResponseContact.PURCHASE)
 			.put(BPartnerContactType.PURCHASE_DEFAULT, JsonResponseContact.PURCHASE_DEFAULT)
-			.put(BPartnerContactType.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.build();
 
@@ -208,7 +209,7 @@ public class JsonRetrieverService
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
 	}
 
-	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull OrgId orgId, @NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final OrgId orgId, @NonNull final IdentifierString bpartnerIdentifier)
 	{
 		return getBPartnerComposite(orgId, bpartnerIdentifier).map(this::toJson);
 	}
@@ -358,8 +359,9 @@ public class JsonRetrieverService
 			String greetingTrl = null;
 			if (contact.getGreetingId() != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-				greetingTrl = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
+				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
@@ -383,7 +385,7 @@ public class JsonRetrieverService
 					.salesDefault(contactType.getIsSalesDefaultOr(false))
 					.purchase(contactType.getIsPurchaseOr(false))
 					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
-					.subjectMatter(contactType.getIsSubjectMatterOr(false))
+					.subjectMatter(contact.isSubjectMatterContact())
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}
@@ -424,6 +426,11 @@ public class JsonRetrieverService
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.handoverLocation(location.isHandOverLocation())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.visitorsAddress(location.isVisitorsAddress())
 					.build();
 		}
 		catch (final RuntimeException rte)

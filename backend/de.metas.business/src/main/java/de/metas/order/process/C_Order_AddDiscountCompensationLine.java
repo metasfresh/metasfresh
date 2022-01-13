@@ -1,5 +1,6 @@
 package de.metas.order.process;
 
+import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -7,7 +8,7 @@ import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequest;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
-import de.metas.order.compensationGroup.GroupTemplateLine;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
@@ -50,7 +51,7 @@ public class C_Order_AddDiscountCompensationLine extends OrderCompensationGroupP
 	private int compensationProductId;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
 		return acceptIfEligibleOrder(context)
 				.and(() -> acceptIfOrderLinesHaveSameGroupId(context));
@@ -69,7 +70,7 @@ public class C_Order_AddDiscountCompensationLine extends OrderCompensationGroupP
 
 	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(final Group group)
 	{
-		final GroupTemplateLine templateLine = GroupTemplateLine.ofProductId(ProductId.ofRepoId(compensationProductId));
+		final GroupTemplateCompensationLine templateLine = GroupTemplateCompensationLine.ofProductId(ProductId.ofRepoId(compensationProductId));
 		return compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group);
 	}
 }

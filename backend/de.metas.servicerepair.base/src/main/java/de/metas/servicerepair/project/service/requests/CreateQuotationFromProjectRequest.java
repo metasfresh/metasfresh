@@ -22,7 +22,6 @@
 
 package de.metas.servicerepair.project.service.requests;
 
-import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,5 +32,4 @@ import lombok.Value;
 public class CreateQuotationFromProjectRequest
 {
 	@NonNull ProjectId projectId;
-	@NonNull ProductId serviceProductId;
 }

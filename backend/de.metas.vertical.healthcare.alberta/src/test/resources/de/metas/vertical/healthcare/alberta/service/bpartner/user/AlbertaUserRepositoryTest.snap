@@ -1,0 +1,20 @@
+de.metas.vertical.healthcare.alberta.service.bpartner.user.AlbertaUserRepositoryTest.save_allFields=[
+  {
+    "userAlbertaId" : 100001,
+    "userId" : 1,
+    "title" : "DiplMed",
+    "gender" : "MALE",
+    "timestamp" : {
+      "seconds" : 1574380800,
+      "nanos" : 0
+    }
+  }
+]
+
+
+de.metas.vertical.healthcare.alberta.service.bpartner.user.AlbertaUserRepositoryTest.save_onlyMandatory=[
+  {
+    "userAlbertaId" : 100001,
+    "userId" : 1
+  }
+]

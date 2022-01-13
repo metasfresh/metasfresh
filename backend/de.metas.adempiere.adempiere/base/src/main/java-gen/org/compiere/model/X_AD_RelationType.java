@@ -1,160 +1,118 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_RelationType
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_RelationType, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1444338840L;
+	private static final long serialVersionUID = -2036240777L;
 
     /** Standard Constructor */
-    public X_AD_RelationType (Properties ctx, int AD_RelationType_ID, String trxName)
+    public X_AD_RelationType (final Properties ctx, final int AD_RelationType_ID, @Nullable final String trxName)
     {
       super (ctx, AD_RelationType_ID, trxName);
-      /** if (AD_RelationType_ID == 0)
-        {
-			setAD_RelationType_ID (0);
-			setEntityType (null); // de.metas.swat
-			setIsDirected (false); // N
-			setIsTableRecordIdTarget (false); // N
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_RelationType (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_RelationType (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Source() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Source()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Source_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
-	public void setAD_Reference_Source(org.compiere.model.I_AD_Reference AD_Reference_Source)
+	public void setAD_Reference_Source(final org.compiere.model.I_AD_Reference AD_Reference_Source)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Source_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Source);
 	}
 
-	/** Set Source Reference.
-		@param AD_Reference_Source_ID 
-		For directed relation types, the where clause of this reference's AD_Ref_Table is used to decide if a given record is a possible relation source.
-	  */
 	@Override
-	public void setAD_Reference_Source_ID (int AD_Reference_Source_ID)
+	public void setAD_Reference_Source_ID (final int AD_Reference_Source_ID)
 	{
 		if (AD_Reference_Source_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Source_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_Source_ID, Integer.valueOf(AD_Reference_Source_ID));
+			set_Value (COLUMNNAME_AD_Reference_Source_ID, AD_Reference_Source_ID);
 	}
 
-	/** Get Source Reference.
-		@return For directed relation types, the where clause of this reference's AD_Ref_Table is used to decide if a given record is a possible relation source.
-	  */
 	@Override
-	public int getAD_Reference_Source_ID () 
+	public int getAD_Reference_Source_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Source_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Source_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Target() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Target()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Target_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
-	public void setAD_Reference_Target(org.compiere.model.I_AD_Reference AD_Reference_Target)
+	public void setAD_Reference_Target(final org.compiere.model.I_AD_Reference AD_Reference_Target)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Target_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Target);
 	}
 
-	/** Set Target Reference.
-		@param AD_Reference_Target_ID 
-		For directed relation types, the table and where clause of this reference's AD_Ref_Table is used to select the relation partners for a given source-record (e.g. the shipments for a given order).
-	  */
 	@Override
-	public void setAD_Reference_Target_ID (int AD_Reference_Target_ID)
+	public void setAD_Reference_Target_ID (final int AD_Reference_Target_ID)
 	{
 		if (AD_Reference_Target_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Target_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_Target_ID, Integer.valueOf(AD_Reference_Target_ID));
+			set_Value (COLUMNNAME_AD_Reference_Target_ID, AD_Reference_Target_ID);
 	}
 
-	/** Get Target Reference.
-		@return For directed relation types, the table and where clause of this reference's AD_Ref_Table is used to select the relation partners for a given source-record (e.g. the shipments for a given order).
-	  */
 	@Override
-	public int getAD_Reference_Target_ID () 
+	public int getAD_Reference_Target_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Target_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Target_ID);
 	}
 
-	/** Set Relation Type.
-		@param AD_RelationType_ID Relation Type	  */
 	@Override
-	public void setAD_RelationType_ID (int AD_RelationType_ID)
+	public void setAD_RelationType_ID (final int AD_RelationType_ID)
 	{
 		if (AD_RelationType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_RelationType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_RelationType_ID, Integer.valueOf(AD_RelationType_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_RelationType_ID, AD_RelationType_ID);
 	}
 
-	/** Get Relation Type.
-		@return Relation Type	  */
 	@Override
-	public int getAD_RelationType_ID () 
+	public int getAD_RelationType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_RelationType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_RelationType_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -162,111 +120,52 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_ValueNoCheck (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
-	/** Set Directed.
-		@param IsDirected 
-		Tells whether one "sees" the other end of the relation from each end or just from the source.
-	  */
 	@Override
-	public void setIsDirected (boolean IsDirected)
+	public void setIsTableRecordIdTarget (final boolean IsTableRecordIdTarget)
 	{
-		set_Value (COLUMNNAME_IsDirected, Boolean.valueOf(IsDirected));
+		set_Value (COLUMNNAME_IsTableRecordIdTarget, IsTableRecordIdTarget);
 	}
 
-	/** Get Directed.
-		@return Tells whether one "sees" the other end of the relation from each end or just from the source.
-	  */
 	@Override
-	public boolean isDirected () 
+	public boolean isTableRecordIdTarget() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDirected);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsTableRecordIdTarget);
 	}
 
-	/** Set IsTableRecordIdTarget .
-		@param IsTableRecordIdTarget IsTableRecordIdTarget 	  */
 	@Override
-	public void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget)
-	{
-		set_Value (COLUMNNAME_IsTableRecordIdTarget, Boolean.valueOf(IsTableRecordIdTarget));
-	}
-
-	/** Get IsTableRecordIdTarget .
-		@return IsTableRecordIdTarget 	  */
-	@Override
-	public boolean isTableRecordIdTarget () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsTableRecordIdTarget);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -326,21 +225,26 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	public static final String ROLE_SOURCE_ESRImport = "ESR_Import";
 	/** MD_Candidate_PRODUCTION = MD_Candidate_PRODUCTION */
 	public static final String ROLE_SOURCE_MD_Candidate_PRODUCTION = "MD_Candidate_PRODUCTION";
-	/** Set Source Role.
-		@param Role_Source Source Role	  */
+	/** RefundInvoiceCandidate = RefundInvoiceCandidate */
+	public static final String ROLE_SOURCE_RefundInvoiceCandidate = "RefundInvoiceCandidate";
+	/** Effort sub-issues = Effort sub-issues */
+	public static final String ROLE_SOURCE_EffortSub_Issues = "Effort sub-issues";
+	/** Budget sub-issues = Budget sub-issues */
+	public static final String ROLE_SOURCE_BudgetSub_Issues = "Budget sub-issues";
+	/** Parent effort issue = Parent effort issue */
+	public static final String ROLE_SOURCE_ParentEffortIssue = "Parent effort issue";
+	/** Parent budget issue = Parent budget issue */
+	public static final String ROLE_SOURCE_ParentBudgetIssue = "Parent budget issue";
 	@Override
-	public void setRole_Source (java.lang.String Role_Source)
+	public void setRole_Source (final @Nullable java.lang.String Role_Source)
 	{
-
 		set_Value (COLUMNNAME_Role_Source, Role_Source);
 	}
 
-	/** Get Source Role.
-		@return Source Role	  */
 	@Override
-	public java.lang.String getRole_Source () 
+	public java.lang.String getRole_Source() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Role_Source);
+		return get_ValueAsString(COLUMNNAME_Role_Source);
 	}
 
 	/** 
@@ -400,20 +304,25 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	public static final String ROLE_TARGET_ESRImport = "ESR_Import";
 	/** MD_Candidate_PRODUCTION = MD_Candidate_PRODUCTION */
 	public static final String ROLE_TARGET_MD_Candidate_PRODUCTION = "MD_Candidate_PRODUCTION";
-	/** Set Target Role.
-		@param Role_Target Target Role	  */
+	/** RefundInvoiceCandidate = RefundInvoiceCandidate */
+	public static final String ROLE_TARGET_RefundInvoiceCandidate = "RefundInvoiceCandidate";
+	/** Effort sub-issues = Effort sub-issues */
+	public static final String ROLE_TARGET_EffortSub_Issues = "Effort sub-issues";
+	/** Budget sub-issues = Budget sub-issues */
+	public static final String ROLE_TARGET_BudgetSub_Issues = "Budget sub-issues";
+	/** Parent effort issue = Parent effort issue */
+	public static final String ROLE_TARGET_ParentEffortIssue = "Parent effort issue";
+	/** Parent budget issue = Parent budget issue */
+	public static final String ROLE_TARGET_ParentBudgetIssue = "Parent budget issue";
 	@Override
-	public void setRole_Target (java.lang.String Role_Target)
+	public void setRole_Target (final @Nullable java.lang.String Role_Target)
 	{
-
 		set_Value (COLUMNNAME_Role_Target, Role_Target);
 	}
 
-	/** Get Target Role.
-		@return Target Role	  */
 	@Override
-	public java.lang.String getRole_Target () 
+	public java.lang.String getRole_Target() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Role_Target);
+		return get_ValueAsString(COLUMNNAME_Role_Target);
 	}
 }

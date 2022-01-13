@@ -22,24 +22,10 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -50,6 +36,22 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public abstract class AbstractMaterialReturnTests extends AbstractNewAggregationEngineTests
 {
@@ -62,8 +64,9 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -123,7 +126,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 		assertThat(invoice1.getPOReference(), is(IC_PO_REFERENCE));
 		assertThat(invoice1.getDateAcct(), is(IC_DATE_ACCT)); // task 08437
 
-		assertThat(Services.get(IInvoiceBL.class).isCreditMemo(invoice1.getDocBaseType()), is(true)); // we are expecting a credit memo
+		Assertions.assertThat(invoice1.getDocBaseType().isCreditMemo()).isTrue(); // we are expecting a credit memo
 		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());

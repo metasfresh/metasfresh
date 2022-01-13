@@ -1,12 +1,5 @@
 package de.metas.dunning.document.archive;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.springframework.stereotype.Component;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -16,7 +9,7 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -25,6 +18,11 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -84,10 +82,9 @@ public class DunningDocOutboundLogMailRecipientProvider
 	 * Note that we don't have a dunning-contact field in {@code C_DunningDoc}.
 	 */
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		final I_C_DunningDoc dunningRecord = TableRecordReference
-				.ofReferenced(docOutboundLogRecord)
+		final I_C_DunningDoc dunningRecord = request.getRecordRef()
 				.getModel(I_C_DunningDoc.class);
 
 		final DunningDocId dunningDocId = DunningDocId.ofRepoId(dunningRecord.getC_DunningDoc_ID());
@@ -109,15 +106,14 @@ public class DunningDocOutboundLogMailRecipientProvider
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningRecord.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID());
-		final RetrieveContactRequest request = RetrieveContactRequest
-				.builder()
-				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(bPartnerLocationId)
-				.contactType(ContactType.BILL_TO_DEFAULT)
-				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
-				.build();
-
-		final User billContact = bpartnerBL.retrieveContactOrNull(request);
+		final User billContact = bpartnerBL.retrieveContactOrNull(
+				RetrieveContactRequest
+						.builder()
+						.bpartnerId(bpartnerId)
+						.bPartnerLocationId(bPartnerLocationId)
+						.contactType(ContactType.BILL_TO_DEFAULT)
+						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
+						.build());
 		if (billContact != null)
 		{
 			Loggables.addLog("Found billContact={} with a mail address for bpartnerId={} and bPartnerLocationId={}", billContact, bpartnerId, bPartnerLocationId);

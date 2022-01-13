@@ -35,6 +35,7 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@Deprecated
 public class BPRelationRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
@@ -64,7 +65,7 @@ public class BPRelationRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
+				.toD("{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
 
 	}
 }

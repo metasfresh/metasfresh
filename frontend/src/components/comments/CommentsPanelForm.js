@@ -83,10 +83,7 @@ const mapStateToProps = ({ commentsPanel }) => ({
   textInput: commentsPanel.textInput,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    updateText: updateCommentsPanelTextInput,
-    postComment: callAPI,
-  }
-)(CommentsPanelForm);
+export default connect(mapStateToProps, {
+  updateText: updateCommentsPanelTextInput,
+  postComment: callAPI,
+})(CommentsPanelForm);

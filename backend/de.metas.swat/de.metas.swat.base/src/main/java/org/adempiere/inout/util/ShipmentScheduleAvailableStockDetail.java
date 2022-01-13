@@ -132,6 +132,7 @@ public class ShipmentScheduleAvailableStockDetail
 		}
 	}
 
+	@Nullable
 	private Quantity computeQtyAvailableToPick()
 	{
 		if (pickingBOM == null)

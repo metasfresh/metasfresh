@@ -161,8 +161,15 @@ export class Product {
     cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
-    const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
-    cy.selectInListField('C_TaxCategory_ID', taxCategory, true);
+    // don't set TaxCategory if there's a default one already selected
+    cy.get('.form-field-C_TaxCategory_ID input')
+      .invoke('val')
+      .then((val) => {
+        if (!val) {
+          const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
+          cy.selectInListField('C_TaxCategory_ID', taxCategory, true);
+        }
+      });
 
     cy.pressDoneButton();
   }
@@ -192,7 +199,7 @@ export class ProductCategory {
     cy.visitWindow('144', 'NEW');
     cy.writeIntoStringField('Name', productCategory.name);
 
-    cy.writeIntoStringField('Value', productCategory.name);
+    // cy.writeIntoStringField('Value', productCategory.name + '_value');
     if (productCategory.attributeSet) {
       cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
     }

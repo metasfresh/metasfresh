@@ -29,6 +29,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.purchasecandidate.base
@@ -99,6 +101,7 @@ public class C_PurchaseCandidate_PostMaterialEvent
 		postMaterialEventService.postEventAfterNextCommit(purchaseCandidateCreatedEvent);
 	}
 
+	@Nullable
 	private SupplyRequiredDescriptor createSupplyRequiredDescritproOrNull(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		if (purchaseCandidateRecord.getC_OrderLineSO_ID() <= 0)

@@ -205,4 +205,10 @@ public class CustomizedWindowInfoMap
 	{
 		return Optional.ofNullable(effectiveCustomizedWindowInfos.get(baseWindowId));
 	}
+
+	public boolean isTopLevelCustomizedWindow(@NonNull final AdWindowId adWindowId)
+	{
+		final CustomizedWindowInfo customizedWindowInfo = effectiveCustomizedWindowInfos.get(adWindowId);
+		return customizedWindowInfo == null || AdWindowId.equals(customizedWindowInfo.getCustomizationWindowId(), adWindowId);
+	}
 }

@@ -1,0 +1,19 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "Alberta",
+  "command": "getDocuments",
+  "adPInstanceId": 10,
+  "externalSystemConfigId": 100,
+  "traceId": "traceId",
+  "externalSystemChildConfigValue": "ChildConfigValue",
+  "parameters": {
+    "APIKey": "APIKey",
+    "Tenant": "Tenant",
+    "ChildConfigValue": "ChildConfigValue",
+    "BasePath": "https://basePath",
+    "CreatedAfter": "2020-01-01T02:17:20Z",
+    "UpdatedAfterDocument": "2011-01-01T02:17:20Z",
+    "UpdatedAfterAttachment": "2012-01-01T02:17:20Z",
+    "RootBPartnerID": 1000
+  }
+}

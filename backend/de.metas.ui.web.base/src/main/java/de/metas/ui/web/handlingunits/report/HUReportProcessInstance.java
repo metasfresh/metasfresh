@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
@@ -210,7 +211,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	}
 
 	@Override
-	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
+	public LookupValuesPage getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}

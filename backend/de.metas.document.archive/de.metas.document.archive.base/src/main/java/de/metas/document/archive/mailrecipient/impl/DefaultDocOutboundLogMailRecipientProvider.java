@@ -1,18 +1,5 @@
 package de.metas.document.archive.mailrecipient.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
-
-import java.util.Optional;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_DocType;
-import org.springframework.stereotype.Component;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -20,18 +7,27 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
-import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_DocType;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 
 /*
  * #%L
@@ -87,15 +83,15 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		if (docOutboundLogRecord.getRecord_ID() <= 0 || docOutboundLogRecord.getAD_Table_ID() <= 0)
+		if (request.getRecordRef() == null)
 		{
-			Loggables.addLog("provideMailRecipient - docOutboundLogRecord has no AD_Table_ID/Record_ID => return 'no recipient'; docOutboundLogRecord={}", docOutboundLogRecord);
+			Loggables.addLog("provideMailRecipient - docOutboundLogRecord has no AD_Table_ID/Record_ID => return 'no recipient'; request={}", request);
 			return Optional.empty();
 		}
 
-		final Mailbox mailbox = findMailboxOrNull(docOutboundLogRecord);
+		final Mailbox mailbox = findMailboxOrNull(request);
 		if (mailbox == null)
 		{
 			Loggables.addLog("provideMailRecipient - return 'no recipient'; mailbox={}", mailbox);
@@ -108,14 +104,14 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		{
 
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-			final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
+			final String tableName = request.getRecordRef().getTableName();
 			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, userToColumnName);
 
 			Loggables.addLog("provideMailRecipient - Mail config has userToColumnName={}; column exists: {}; mailbox={}", userToColumnName, existsColumn, mailbox);
 			if (existsColumn)
 			{
 				final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
-				final Object referencedModel = TableRecordReference.ofReferenced(docOutboundLogRecord).getModel(context);
+				final Object referencedModel = request.getRecordRef().getModel(context);
 
 				// load the column content
 				final Integer userRepoId = getValueOrNull(referencedModel, userToColumnName);
@@ -144,37 +140,35 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		return Optional.empty();
 	}
 
-	private Mailbox findMailboxOrNull(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	private Mailbox findMailboxOrNull(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		try
 		{
-			final ClientEMailConfig tenantEmailConfig = extractTenantEmailConfig(docOutboundLogRecord);
-			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
+			final ClientEMailConfig tenantEmailConfig = extractTenantEmailConfig(request);
+			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(request);
 
 			return mailService.findMailBox(
 					tenantEmailConfig,
-					OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
-					(AdProcessId)null, // don't filter by processID
+					request.getOrgId(),
+					null, // don't filter by processID
 					docBaseAndSubType,
-					(EMailCustomType)null); // mailCustomType
+					null); // mailCustomType
 		}
 		catch (final MailboxNotFoundException e)
 		{
-			Loggables.addLog("findMailboxOrNull. DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox for record (system-user) => return null; exception message: {}; docOutboundLogRecord={}", e.getMessage(), docOutboundLogRecord);
+			Loggables.addLog("findMailboxOrNull. DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox for record (system-user) => return null; exception message: {}; request={}", e.getMessage(), request);
 			return null;
 		}
 	}
 
-	private ClientEMailConfig extractTenantEmailConfig(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	private ClientEMailConfig extractTenantEmailConfig(final DocOutboundLogMailRecipientRequest request)
 	{
-		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
-		return tenantEmailConfig;
+		return clientsRepo.getEMailConfigById(request.getClientId());
 	}
 
-	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	private DocBaseAndSubType extractDocBaseAndSubType(final DocOutboundLogMailRecipientRequest request)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID());
+		final DocTypeId docTypeId = request.getDocTypeId();
 		if (docTypeId == null)
 		{
 			return null;

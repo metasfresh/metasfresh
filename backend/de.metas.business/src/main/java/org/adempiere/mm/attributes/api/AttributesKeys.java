@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
@@ -15,7 +16,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -94,17 +94,24 @@ public final class AttributesKeys
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
 			final String valueStr = attributeSet.getValueAsString(attributeCode);
-			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+
+			return Check.isNotBlank(valueStr)
+					? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
-			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+			return BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) != 0
+					? AttributesKeyPart.ofNumberAttribute(attributeId, valueBD)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
-			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+			return valueDate != null
+					? AttributesKeyPart.ofDateAttribute(attributeId, valueDate)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
@@ -188,12 +195,14 @@ public final class AttributesKeys
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
-			if (isNull)
+
+			final BigDecimal valueBD = ai.getValueNumber();
+
+			if (BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) == 0)
 			{
 				return null;
 			}
-			final BigDecimal valueBD = ai.getValueNumber();
+
 			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))

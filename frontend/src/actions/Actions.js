@@ -101,9 +101,8 @@ function getQuickActionRequests({
   return (dispatch, getState) => {
     const requestPromises = [];
     const state = getState();
-    let [parentWindowId, parentViewId, childWindowId, childViewId] = Array(
-      2
-    ).fill(null);
+    let [parentWindowId, parentViewId, childWindowId, childViewId] =
+      Array(2).fill(null);
 
     if (isParent) {
       parentWindowId = windowId;

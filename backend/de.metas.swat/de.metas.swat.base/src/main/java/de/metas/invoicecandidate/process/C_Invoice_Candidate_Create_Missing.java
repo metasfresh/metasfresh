@@ -65,7 +65,7 @@ public class C_Invoice_Candidate_Create_Missing extends JavaProcess
 		final Properties ctx = getCtx();
 		Check.assume(Env.getAD_Client_ID(ctx) > 0, "No point in calling this process with AD_Client_ID=0");
 
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			handlerBL.createMissingCandidates(retrieveHandlers());
 		}
@@ -74,8 +74,6 @@ public class C_Invoice_Candidate_Create_Missing extends JavaProcess
 
 	/**
 	 * May be overridden. Called by {@link #doIt()}. Returns a empty list, which will cause the system to invoke <b>all</b> the handlers we have.
-	 *
-	 * @return
 	 */
 	protected List<I_C_ILCandHandler> retrieveHandlers()
 	{

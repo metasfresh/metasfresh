@@ -1,22 +1,16 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { push, replace } from 'react-router-redux';
-import queryString from 'query-string';
 
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
-import { getUserSession } from '../api';
+import {
+  getNotificationsRequest,
+  getNotificationsEndpointRequest,
+  getUserSession,
+} from '../api';
 
 // TODO: All requests should be moved to API
-
-export function getNotifications() {
-  return axios.get(`${config.API_URL}/notifications/all?limit=20`);
-}
-
-export function getNotificationsEndpoint() {
-  return axios.get(`${config.API_URL}/notifications/websocketEndpoint`);
-}
 
 export function markAllAsRead() {
   return axios.put(`${config.API_URL}/notifications/all/read`);
@@ -77,122 +71,19 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function logoutSuccess(auth) {
-  auth.close();
-  localStorage.removeItem('isLogged');
-}
-
 // REDUX ACTIONS
-
-export function loginSuccess(auth) {
-  return async (dispatch) => {
-    localStorage.setItem('isLogged', true);
-
-    const requests = [];
-
-    requests.push(
-      getUserSession()
-        .then(({ data }) => {
-          dispatch(userSessionInit(data));
-          setCurrentActiveLocale(data.language['key']);
-          initNumeralLocales(data.language['key'], data.locale);
-          MomentTZ.tz.setDefault(data.timeZone);
-
-          auth.initSessionClient(data.websocketEndpoint, (msg) => {
-            const me = JSON.parse(msg.body);
-            dispatch(userSessionUpdate(me));
-            me.language && setCurrentActiveLocale(me.language['key']);
-            me.locale && initNumeralLocales(me.language['key'], me.locale);
-
-            getNotifications().then((response) => {
-              dispatch(
-                getNotificationsSuccess(
-                  response.data.notifications,
-                  response.data.unreadCount
-                )
-              );
-            });
-          });
-        })
-        .catch((e) => e)
-    );
-
-    requests.push(
-      getNotificationsEndpoint()
-        .then((topic) => {
-          auth.initNotificationClient(topic, (msg) => {
-            const notification = JSON.parse(msg.body);
-
-            if (notification.eventType === 'Read') {
-              dispatch(
-                readNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'ReadAll') {
-              dispatch(readAllNotifications());
-            } else if (notification.eventType === 'Delete') {
-              dispatch(
-                removeNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'DeleteAll') {
-              dispatch(deleteAllNotifications());
-            } else if (notification.eventType === 'New') {
-              dispatch(
-                newNotification(
-                  notification.notification,
-                  notification.unreadCount
-                )
-              );
-              const notif = notification.notification;
-              if (notif.important) {
-                dispatch(
-                  addNotification(
-                    'Important notification',
-                    notif.message,
-                    5000,
-                    'primary'
-                  )
-                );
-              }
-            }
-          });
-        })
-        .catch((e) => {
-          if (e.response) {
-            let { status } = e.response;
-            if (status === 401) {
-              window.location.href = '/';
-            }
-          }
-        })
-    );
-
-    requests.push(
-      getNotifications()
-        .then((response) => {
-          dispatch(
-            getNotificationsSuccess(
-              response.data.notifications,
-              response.data.unreadCount
-            )
-          );
-        })
-        .catch((e) => e)
-    );
-
-    return await Promise.all(requests);
-  };
-}
 
 export function enableTutorial(flag = true) {
   return {
     type: types.ENABLE_TUTORIAL,
     flag: flag,
+  };
+}
+
+export function connectionError({ errorType }) {
+  return {
+    type: types.CONNECTION_ERROR,
+    errorType,
   };
 }
 
@@ -232,28 +123,23 @@ export function deleteNotification(key) {
 }
 
 export function clearNotifications() {
-  return {
-    type: types.CLEAR_NOTIFICATIONS,
+  return (dispatch, getState) => {
+    const { appHandler } = getState();
+
+    if (
+      appHandler.inbox.notifications.length === 0 ||
+      appHandler.inbox.pending
+    ) {
+      return;
+    }
+
+    dispatch({ type: types.CLEAR_NOTIFICATIONS });
   };
 }
 
-/**
- * @method updateUri
- * @summary Prepends viewId/page/sorting to the url
- */
-export function updateUri(pathname, query, updatedQuery) {
-  const fullPath = window.location.href;
-
-  return (dispatch) => {
-    const queryObject = {
-      ...query,
-      ...updatedQuery,
-    };
-
-    const queryUrl = queryString.stringify(queryObject);
-    const url = `${pathname}?${queryUrl}`;
-
-    !fullPath.includes('viewId') ? dispatch(replace(url)) : dispatch(push(url));
+export function requestNotifications() {
+  return {
+    type: types.GET_NOTIFICATIONS_REQUEST,
   };
 }
 
@@ -327,6 +213,17 @@ export function userSessionUpdate(me) {
   };
 }
 
+/**
+ * @summary updates the lastBackPage in the store to have it for comparison when back button is used
+ * @param {string} lastBackPage
+ */
+export function updateLastBackPage(lastBackPage) {
+  return {
+    type: types.UPDATE_LAST_BACK_PAGE,
+    lastBackPage,
+  };
+}
+
 export function setLanguages(data) {
   return {
     type: types.SET_LANGUAGES,
@@ -359,5 +256,108 @@ export function updateHotkeys(hotkeys) {
   return {
     type: types.UPDATE_HOTKEYS,
     payload: hotkeys,
+  };
+}
+
+export function getNotificationsEndpoint(auth) {
+  return (dispatch) => {
+    return getNotificationsEndpointRequest().then((topic) => {
+      auth.initNotificationClient(topic, (msg) => {
+        const notification = JSON.parse(msg.body);
+
+        if (notification.eventType === 'Read') {
+          dispatch(
+            readNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'ReadAll') {
+          dispatch(readAllNotifications());
+        } else if (notification.eventType === 'Delete') {
+          dispatch(
+            removeNotification(
+              notification.notificationId,
+              notification.unreadCount
+            )
+          );
+        } else if (notification.eventType === 'DeleteAll') {
+          dispatch(deleteAllNotifications());
+        } else if (notification.eventType === 'New') {
+          dispatch(
+            newNotification(notification.notification, notification.unreadCount)
+          );
+          const notif = notification.notification;
+          if (notif.important) {
+            dispatch(
+              addNotification(
+                'Important notification',
+                notif.message,
+                5000,
+                'primary'
+              )
+            );
+          }
+        }
+      });
+    });
+  };
+}
+
+export function getNotifications() {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.appHandler.inbox.pending) {
+      return Promise.resolve(true);
+    }
+
+    dispatch(requestNotifications());
+
+    return getNotificationsRequest()
+      .then((response) => {
+        dispatch(
+          getNotificationsSuccess(
+            response.data.notifications,
+            response.data.unreadCount
+          )
+        );
+      })
+      .catch((e) => e);
+  };
+}
+
+export function loginSuccess(auth) {
+  return async (dispatch) => {
+    const requests = [];
+
+    dispatch({ type: types.LOGIN_SUCCESS });
+
+    requests.push(
+      getUserSession()
+        .then(({ data }) => {
+          dispatch(userSessionInit(data));
+
+          setCurrentActiveLocale(data.language['key']);
+          initNumeralLocales(data.language['key'], data.locale);
+          MomentTZ.tz.setDefault(data.timeZone);
+
+          auth.initSessionClient(data.websocketEndpoint, (msg) => {
+            const me = JSON.parse(msg.body);
+            dispatch(userSessionUpdate(me));
+
+            me.language && setCurrentActiveLocale(me.language['key']);
+            me.locale && initNumeralLocales(me.language['key'], me.locale);
+
+            dispatch(getNotifications());
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(dispatch(getNotificationsEndpoint(auth)));
+    requests.push(dispatch(getNotifications()));
+
+    return await Promise.all(requests);
   };
 }

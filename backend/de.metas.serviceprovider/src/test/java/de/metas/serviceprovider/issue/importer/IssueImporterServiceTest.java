@@ -24,17 +24,17 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
@@ -55,6 +55,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -104,37 +105,50 @@ class IssueImporterServiceTest
 	@Nested
 	public class importIssue
 	{
-		private final ImportIssueInfo initialImportIssueInfo = ImportIssueInfo.builder()
-				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
-				.status(Status.PENDING)
-				.orgId(OrgId.ofRepoId(1))
-				.externalProjectType(ExternalProjectType.BUDGET)
-				.effortUomId(UomId.ofRepoId(1))
-				.name("test issue")
-				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
-				.issueLabels(ImmutableList.of())
-				.build();
-		private final IssueEntity expectedIssue = IssueEntity.builder()
-				.issueId(null) // will be set later
-				.status(Status.PENDING)
-				.orgId(OrgId.ofRepoId(1))
-				.effortUomId(UomId.ofRepoId(1))
-				.budgetedEffort(new BigDecimal("0"))
-				.estimatedEffort(new BigDecimal("0"))
-				.roughEstimation(new BigDecimal("0"))
-				.issueEffort(Effort.ZERO)
-				.aggregatedEffort(Effort.ZERO)
-				.name("test issue")
-				.searchKey("test issue")
-				.type(IssueType.EXTERNAL)
-				.isEffortIssue(false)
-				.processed(false)
-				.externalIssueNo(new BigDecimal("0"))
-				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
-				.build();
+		private ImportIssueInfo initialImportIssueInfo;
+
+		private IssueEntity expectedIssue;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
+
+			initialImportIssueInfo = ImportIssueInfo.builder()
+					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
+					.status(Status.PENDING)
+					.orgId(OrgId.ofRepoId(1))
+					.externalProjectType(ExternalProjectType.BUDGET)
+					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
+					.name("test issue")
+					.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
+					.issueLabels(ImmutableList.of())
+					.build();
+
+			expectedIssue = IssueEntity.builder()
+					.issueId(null) // will be set later
+					.status(Status.PENDING)
+					.orgId(OrgId.ofRepoId(1))
+					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
+					.budgetedEffort(new BigDecimal("0"))
+					.estimatedEffort(new BigDecimal("0"))
+					.roughEstimation(new BigDecimal("0"))
+					.issueEffort(Effort.ZERO)
+					.aggregatedEffort(Effort.ZERO)
+					.invoicableChildEffort(Quantity.zero(mockUOMRecord))
+					.name("test issue")
+					.searchKey("test issue")
+					.type(IssueType.EXTERNAL)
+					.isEffortIssue(false)
+					.processed(false)
+					.externalIssueNo(new BigDecimal("0"))
+					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
+					.build();
+		}
 
 		@Test
-		public void createNewIssue()
+		void createNewIssue()
 		{
 			final List<IssueId> importedIdsCollector = new ArrayList<>();
 			issueImporterService.importIssue(initialImportIssueInfo, importedIdsCollector);
@@ -146,14 +160,20 @@ class IssueImporterServiceTest
 		}
 
 		@Test
-		public void updateNotProcessedIssue()
+		void updateNotProcessedIssue()
 		{
 			// Create new Issue
 			final IssueId issueId;
 			{
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
-				issueImporterService.importIssue(initialImportIssueInfo, importedIdsCollector);
+				issueImporterService.importIssue(initialImportIssueInfo.toBuilder()
+														 .budget(BigDecimal.TEN)
+														 .build(),
+												 importedIdsCollector);
+
 				issueId = CollectionUtils.singleElement(importedIdsCollector);
+
+				Assertions.assertThat(issueRepository.getById(issueId).getBudgetedEffort()).isEqualTo(BigDecimal.TEN);
 			}
 
 			// Update
@@ -161,7 +181,8 @@ class IssueImporterServiceTest
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
 				issueImporterService.importIssue(
 						initialImportIssueInfo.toBuilder()
-								.roughEstimation(new BigDecimal("123"))
+								.roughEstimation(BigDecimal.valueOf(123))
+								.budget(BigDecimal.valueOf(8))
 								.build(),
 						importedIdsCollector);
 				Assertions.assertThat(importedIdsCollector).containsExactly(issueId);
@@ -169,9 +190,10 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-								.issueId(issueId)
-								.roughEstimation(new BigDecimal("123"))
-								.build());
+										   .issueId(issueId)
+										   .roughEstimation(BigDecimal.valueOf(123))
+										   .budgetedEffort(BigDecimal.valueOf(8))
+										   .build());
 			}
 		}
 
@@ -206,9 +228,9 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-								.issueId(issueId)
-								.processed(true)
-								.build());
+										   .issueId(issueId)
+										   .processed(true)
+										   .build());
 			}
 		}
 	}

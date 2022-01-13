@@ -127,7 +127,7 @@ class PieChartComponent extends Component {
     const slice = this.svg
       .select('.slices')
       .selectAll('.pie-path')
-      .data(pie(data), function(d) {
+      .data(pie(data), function (d) {
         return d;
       });
 
@@ -144,7 +144,7 @@ class PieChartComponent extends Component {
         this.setState({
           prevData: prevData,
         });
-        return function(t) {
+        return function (t) {
           return arc(interpolate(t));
         };
       });
@@ -160,7 +160,7 @@ class PieChartComponent extends Component {
     const slice = this.svg
       .select('.slices')
       .selectAll('.pie-path')
-      .data(pie(data), function(d) {
+      .data(pie(data), function (d) {
         return d;
       });
 
@@ -180,7 +180,7 @@ class PieChartComponent extends Component {
           prevData: prevData,
         });
 
-        return function(t) {
+        return function (t) {
           return arc(interpolate(t));
         };
       });
@@ -209,7 +209,7 @@ class PieChartComponent extends Component {
       .enter()
       .append('g')
       .attr('class', 'legend')
-      .attr('transform', function(d, i) {
+      .attr('transform', function (d, i) {
         const height = legendRectSize + legendSpacing;
         const vert = i * height;
         return 'translate(' + 0 + ',' + vert + ')';
@@ -227,7 +227,7 @@ class PieChartComponent extends Component {
       .attr('x', legendRectSize + legendSpacing)
       .attr('y', legendRectSize - legendSpacing)
       .attr('font-size', 12)
-      .text(function(d, i) {
+      .text(function (d, i) {
         return (
           data[i][groupBy.fieldName] +
           (groupBy.unit ? ' [' + groupBy.unit + ']' : '')
@@ -266,22 +266,13 @@ class PieChartComponent extends Component {
   };
 
   clearChart = () => {
-    this.svg
-      .select('.slices')
-      .selectAll('path')
-      .remove();
+    this.svg.select('.slices').selectAll('path').remove();
     this.svg.selectAll('.legends').remove();
   };
 
   render() {
-    const {
-      chartClass,
-      data,
-      fields,
-      groupBy,
-      isMaximized,
-      chartTitle,
-    } = this.props;
+    const { chartClass, data, fields, groupBy, isMaximized, chartTitle } =
+      this.props;
 
     return (
       <div className={chartClass + '-wrapper' + ' chart-wrapper'}>

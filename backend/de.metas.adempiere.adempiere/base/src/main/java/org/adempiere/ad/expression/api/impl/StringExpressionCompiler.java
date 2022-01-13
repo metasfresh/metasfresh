@@ -16,8 +16,6 @@ public final class StringExpressionCompiler extends AbstractChunkBasedExpression
 
 	/**
 	 * Escape '@' char, by replacing one @ with double @@  
-	 * @param str
-	 * @return
 	 */
 	public static String escape(final String str)
 	{

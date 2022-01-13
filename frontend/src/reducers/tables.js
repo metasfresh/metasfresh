@@ -1,7 +1,7 @@
 import { produce, original } from 'immer';
 import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
@@ -57,10 +57,7 @@ const selectTableHelper = (state, id) => {
  * @method getTable
  * @summary Memoized selector for getting table object by id from the state
  */
-export const getTable = createSelector(
-  selectTableHelper,
-  (table) => table
-);
+export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
@@ -70,13 +67,10 @@ const getSelectionData = (state, tableId) =>
  * @summary Memoized selector for getting selections in a table
  */
 export const getSelection = () => {
-  return createSelector(
-    getSelectionData,
-    (table) => table
-  );
+  return createSelector(getSelectionData, (table) => table);
 };
 
-const setSupportAttribute = (selected, rows) => {
+export const getSupportAttribute = (selected, rows) => {
   if (!selected.length || !rows.length) {
     return;
   }
@@ -101,7 +95,7 @@ const reducer = produce((draftState, action) => {
         const selected = [data.rows[0][data.keyProperty]];
         updatedSelected = {
           selected,
-          supportAttribute: setSupportAttribute(selected, data.rows),
+          supportAttribute: getSupportAttribute(selected, data.rows),
         };
       }
 
@@ -138,7 +132,7 @@ const reducer = produce((draftState, action) => {
           const newSelected = [data.rows[0][data.keyProperty]];
           updatedSelected = {
             selected: newSelected,
-            supportAttribute: setSupportAttribute(newSelected, data.rows),
+            supportAttribute: getSupportAttribute(newSelected, data.rows),
           };
         }
       }
@@ -178,7 +172,7 @@ const reducer = produce((draftState, action) => {
         const newSelected = [rows[0][keyProperty]];
         updatedSelected = {
           selected: newSelected,
-          supportAttribute: setSupportAttribute(newSelected, rows),
+          supportAttribute: getSupportAttribute(newSelected, rows),
         };
       }
 
@@ -198,7 +192,7 @@ const reducer = produce((draftState, action) => {
 
       const newRows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
-          return merge.recursive(true, row, change);
+          return merge(row, change);
         }
         return row;
       });
@@ -256,7 +250,7 @@ const reducer = produce((draftState, action) => {
 
       if (selectionValid) {
         draftState[id].selected = selection;
-        draftState[id].supportAttribute = setSupportAttribute(selection, rows);
+        draftState[id].supportAttribute = getSupportAttribute(selection, rows);
       }
 
       return;
@@ -274,7 +268,7 @@ const reducer = produce((draftState, action) => {
             draftState[id].selected,
             selection
           );
-          draftState[id].supportAttribute = setSupportAttribute(
+          draftState[id].supportAttribute = getSupportAttribute(
             draftState[id].selected,
             rows
           );

@@ -1,12 +1,12 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.testsupport.MetasfreshAssertions.assertThat;
-
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
+import de.metas.material.event.EventTestHelper;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,13 +17,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
-import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.util.Services;
+import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 
 /*
  * #%L
@@ -102,7 +101,7 @@ public class AvailableToPromiseSqlHelperTest
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(10)
 				.productId(20)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
 				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
@@ -123,8 +122,8 @@ public class AvailableToPromiseSqlHelperTest
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
 				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 
@@ -147,9 +146,9 @@ public class AvailableToPromiseSqlHelperTest
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(AttributesKey.OTHER))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofAttributeValueIds(1, 2)))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofAttributeValueIds(3)))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.OTHER))
 				.date(TimeUtil.asZonedDateTime(NOW))
 				.build();
 

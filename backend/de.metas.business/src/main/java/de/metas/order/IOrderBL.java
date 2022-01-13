@@ -24,7 +24,7 @@ package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -32,6 +32,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.project.ProjectId;
 import de.metas.request.RequestTypeId;
+import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -39,14 +40,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -75,18 +73,18 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	BPartnerLocationId getShipToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	BPartnerLocationId getBillToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getBillToLocationId(I_C_Order order);
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
-		
+
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
@@ -120,17 +118,16 @@ public interface IOrderBL extends ISingletonService
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
 	/**
-	 * Set Target Sales Document Type.
-	 * This method is also setting IsSOTrx to true.
-	 *
-	 * @param soDocSubType sales DocSubType
-	 */
-	void setDocTypeTargetId(I_C_Order order, String soDocSubType);
-
-	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
-	void setDocTypeTargetId(I_C_Order order);
+	void setDefaultDocTypeTargetId(I_C_Order order);
+
+	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+
+	/**
+	 * Set Target Sales Document Type.
+	 */
+	void setSODocTypeTargetId(I_C_Order order, final String soDocSubType);
 
 	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
 
@@ -143,12 +140,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
 	 */
-	void updateAddresses(I_C_Order order);
-
-	/**
-	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
-	 */
-	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
+	void updateOrderLineAddressesFromOrder(I_C_Order order);
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -181,10 +173,10 @@ public interface IOrderBL extends ISingletonService
 	 * Is Tax Included in Amount.
 	 *
 	 * @param tax optional
-	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
+	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
 	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
-	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Order order, Tax tax);
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
@@ -229,6 +221,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
+	boolean isMediated(@NonNull I_C_Order order);
+
 	boolean isPrepay(OrderId orderId);
 
 	boolean isPrepay(I_C_Order order);
@@ -258,4 +252,10 @@ public interface IOrderBL extends ISingletonService
 	void validateHaddexDate(I_C_Order order);
 
 	boolean isHaddexOrder(I_C_Order order);
+
+	void closeOrder(OrderId orderId);
+
+	Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull I_C_Order orderRecord);
+
+	String getDocumentNoById(OrderId orderId);
 }

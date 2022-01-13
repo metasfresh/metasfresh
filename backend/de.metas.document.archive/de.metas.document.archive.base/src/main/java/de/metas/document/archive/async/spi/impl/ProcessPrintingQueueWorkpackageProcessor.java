@@ -29,7 +29,7 @@ public class ProcessPrintingQueueWorkpackageProcessor implements IWorkpackagePro
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
-		final List<PO> list = queueDAO.retrieveItems(workpackage, PO.class, localTrxName);
+		final List<PO> list = queueDAO.retrieveAllItems(workpackage, PO.class);
 		for (final PO po : list)
 		{
 			fireVoidDocumentForArchive(po);

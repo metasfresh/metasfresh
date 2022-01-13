@@ -7,12 +7,14 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingChangeRequest;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
@@ -30,6 +32,7 @@ import de.metas.util.lang.Percent;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
@@ -55,6 +58,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -84,6 +88,8 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	private static final AdMessageKey  MSG_AD_Workflow_Missing_Node = AdMessageKey.of("AD_Workflow_StartNode_NotSet");
 
 	private final CCache<PPRoutingId, PPRouting> routingsById = CCache.<PPRoutingId, PPRouting>builder()
 			.tableName(I_AD_Workflow.Table_Name)
@@ -130,12 +136,18 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.map(productRecord -> toRoutingProduct(productRecord, nodeIdToActivityIds))
 				.collect(ImmutableList.toImmutableList());
 
-		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, routingRecord.getAD_WF_Node_ID());
+		final int wfNodeId = routingRecord.getAD_WF_Node_ID();
+
+		if(wfNodeId <= 0)
+		{
+			throw new AdempiereException(MSG_AD_Workflow_Missing_Node, routingRecord.getName());
+		}
+		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, wfNodeId);
 
 		return PPRouting.builder()
 				.id(routingId)
 				.valid(routingRecord.isValid())
-				.validDates(TimeUtil.toLocalDateRange(routingRecord.getValidFrom(), routingRecord.getValidTo()))
+				.validDates(TimeUtil.toInstantsRange(routingRecord.getValidFrom(), routingRecord.getValidTo()))
 				.code(routingRecord.getValue())
 				.durationUnit(durationUnit)
 				.duration(duration)
@@ -193,9 +205,10 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		return PPRoutingActivity.builder()
 				.id(activityId)
+				.type(PPRoutingActivityType.ofNullableCode(activityRecord.getPP_Activity_Type()).orElse(PPRoutingActivityType.WorkReport))
 				.code(activityRecord.getValue())
 				.name(activityRecord.getName())
-				.validDates(TimeUtil.toLocalDateRange(activityRecord.getValidFrom(), activityRecord.getValidTo()))
+				.validDates(TimeUtil.toInstantsRange(activityRecord.getValidFrom(), activityRecord.getValidTo()))
 				//
 				.resourceId(ResourceId.ofRepoId(activityRecord.getS_Resource_ID()))
 				//
@@ -320,7 +333,19 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		//
 		// Save all
 		routingActivityRecords.forEach(InterfaceWrapperHelper::saveRecord);
-		InterfaceWrapperHelper.save(routingRecord);
+		save(routingRecord);
+	}
+
+	@Override
+	public boolean nodesAlreadyExistInWorkflow(@NonNull final PPRoutingActivityId excludeActivityId)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_WF_Node.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, excludeActivityId.getRoutingId())
+				.addNotEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID, excludeActivityId.getRepoId())
+				.create()
+				.anyMatch();
 	}
 
 	private List<I_AD_WF_Node> retrieveNodes(@NonNull final I_AD_Workflow routingRecord)
@@ -361,6 +386,16 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.create()
 				.firstIdOnlyOptional(PPRoutingId::ofRepoIdOrNull);
 
+	}
+
+	@Override
+	public void setFirstNodeToWorkflow(@NonNull final PPRoutingActivityId ppRoutingActivityId)
+	{
+		final I_AD_Workflow workflow = load(ppRoutingActivityId.getRoutingId(), I_AD_Workflow.class);
+
+		workflow.setAD_WF_Node_ID(ppRoutingActivityId.getRepoId());
+
+		save(workflow);
 	}
 
 }

@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 
 import {
   openModal,
+  closeModal,
   patch,
   updatePropertyValue,
   allowShortcut,
@@ -27,6 +28,8 @@ import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
 import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 
+const EMPTY_WIDGET_DATA = [{}];
+
 /**
  * @file Class based component.
  * @module WidgetWrapper
@@ -38,6 +41,13 @@ import InlineTabWrapper from '../components/widget/InlineTabWrapper';
  * wrap them in `WidgetWrapper` and if needed add another data selector.
  */
 class WidgetWrapper extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    // this will be referenced by the top level components
+    this.childRef = React.createRef();
+  }
+
   render() {
     const { renderMaster, widgetType } = this.props;
 
@@ -46,9 +56,9 @@ class WidgetWrapper extends PureComponent {
     }
 
     if (renderMaster) {
-      return <MasterWidget {...this.props} />;
+      return <MasterWidget ref={this.childRef} {...this.props} />;
     } else {
-      return <RawWidget {...this.props} />;
+      return <RawWidget ref={this.childRef} {...this.props} />;
     }
   }
 }
@@ -66,15 +76,21 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-
   const data = getData(state, isModal);
-
   let widgetData = null;
   let fieldsCopy = null;
 
   switch (dataSource) {
     case 'doc-status':
       widgetData = getMasterDocStatus(state);
+
+      break;
+    case 'filter-item':
+    case 'overlay-field':
+    case 'attributes-dropdown':
+    case 'quick-input':
+    case 'selection-attributes':
+      widgetData = props.widgetData;
 
       break;
     case 'modal':
@@ -124,7 +140,7 @@ const mapStateToProps = (state, props) => {
     }
 
     default:
-      widgetData = [{}];
+      widgetData = EMPTY_WIDGET_DATA;
 
       break;
   }
@@ -162,6 +178,7 @@ WidgetWrapper.propTypes = {
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
@@ -174,6 +191,7 @@ export default connect(
     allowShortcut,
     disableShortcut,
     openModal,
+    closeModal,
     patch,
     updatePropertyValue,
   },

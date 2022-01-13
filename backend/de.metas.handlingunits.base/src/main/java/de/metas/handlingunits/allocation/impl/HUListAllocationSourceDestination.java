@@ -62,6 +62,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * An Allocation Source/Destination which has a list of HUs in behind. Usually used to load from HUs.
  *
@@ -293,6 +295,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		}
 	}
 
+	@Nullable
 	private I_M_HU nextHU()
 	{
 		currentIndex++;

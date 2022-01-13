@@ -1,43 +1,35 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.lang.SOTrx;
+import de.metas.order.InvoiceRule;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -45,6 +37,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -57,36 +52,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.business.BusinessTestHelper;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
-import de.metas.order.InvoiceRule;
-import de.metas.order.invoicecandidate.C_OrderLine_Handler;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.UomId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
+@SuppressWarnings("FieldCanBeLocal")
 @ExtendWith(AdempiereTestWatcher.class)
 public class QtyDeliveredFromOrderToInvoiceTest
 {
-	protected final Properties ctx = Env.getCtx();
-	protected final String trxName = ITrx.TRXNAME_None;
+	private final Properties ctx = Env.getCtx();
+	private final String trxName = ITrx.TRXNAME_None;
 
-	protected C_OrderLine_Handler olHandler;
-	protected I_C_ILCandHandler handler;
+	private C_OrderLine_Handler olHandler;
+	private I_C_ILCandHandler handler;
 
 	// task 07442
 	private final ClientId clientId = ClientId.ofRepoId(2);
@@ -94,15 +78,19 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	private ProductId productId;
 	private final ActivityId activityId = ActivityId.ofRepoId(4);
 
-	protected I_C_Order order;
-	protected I_C_OrderLine orderLine;
+	private I_C_Order order;
+	private I_C_OrderLine orderLine;
 
-	protected I_M_InOut mInOut;
-	protected I_M_InOutLine mInOutLine;
+	private I_M_InOut mInOut;
+	private I_M_InOutLine mInOutLine;
 
-	protected I_C_BPartner bPartner;
+	private BPartnerLocationId bpartnerAndLocationId;
 
 	private UomId stockUomId;
+
+	private I_C_DocType docType;
+
+	private final DocTypeId docTypeId = DocTypeId.ofRepoId(1000016);
 
 	@BeforeEach
 	public void beforeEach()
@@ -144,6 +132,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 			initM_InOutLine();
 		}
 
+		initC_DocType();
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		mockTaxAndProductAcctServices();
@@ -155,35 +144,41 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	private void mockTaxAndProductAcctServices()
 	{
 		final IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		final IDocTypeBL docTypeBL = Mockito.mock(IDocTypeBL.class);
 		final ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(IDocTypeBL.class, docTypeBL);
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
+		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
+
 
 		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						ctx,
 						order,
-						(TaxCategoryId)null, // taxCategoryId
+						null, // taxCategoryId
 						orderLine.getM_Product_ID(),
 						order.getDatePromised(),
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-						order.getC_BPartner_Location_ID(),
-						order.isSOTrx()))
+						BPartnerLocationAndCaptureId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID()),
+						SOTrx.ofBoolean(order.isSOTrx())))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	private void initC_BPartner()
 	{
-		bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		InterfaceWrapperHelper.save(bpartner);
 
-		// ...
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		InterfaceWrapperHelper.save(bpLocation);
 
-		InterfaceWrapperHelper.save(bPartner);
+		bpartnerAndLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 	}
 
 	private void initHandlers()
@@ -202,13 +197,31 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		olHandler.setHandlerRecord(handler);
 	}
 
+	private void initC_DocType()
+	{
+		docType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, trxName);
+		docType.setAD_Org_ID(orgId.getRepoId());
+		docType.setC_DocType_ID(1000016);
+		InterfaceWrapperHelper.save(docType);
+	}
+
 	private void initC_Order()
 	{
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
-		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+
+		order.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
+
+		order.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setBill_Location_ID(bpartnerAndLocationId.getRepoId());
+
 		order.setDocStatus(DocStatus.Completed.getCode());
 		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+		order.setC_DocTypeTarget_ID(1000016);
+		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order.setC_Currency_ID(10);
+		order.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order);
 	}
 

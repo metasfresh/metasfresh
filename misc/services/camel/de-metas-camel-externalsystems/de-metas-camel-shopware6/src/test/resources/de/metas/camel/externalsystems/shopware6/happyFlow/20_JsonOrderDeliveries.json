@@ -1,0 +1,76 @@
+{
+  "total": 2,
+  "data": [
+    {
+      "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
+      "shippingOrderAddress": {
+        "countryId": "the",
+        "firstName": "whole",
+        "lastName": "JSON",
+        "street": "Object",
+        "zipcode": "will",
+        "city": "be",
+        "phoneNumber": "ignored",
+        "additionalAddressLine1": "as",
+        "additionalAddressLine2": "we",
+        "orderId": "only",
+        "versionId": "pick",
+        "createdAt": "2021-02-25T15:27:34.518+00:00",
+        "updatedAt": "2021-02-26T15:27:34.518+00:00",
+        "id": "the"
+      },
+      "shippingCosts": {
+        "calculatedTaxes": [
+          {
+            "taxRate": 7.7,
+            "price": 5.75
+          }
+        ]
+      },
+      "stateId": "last",
+      "id": "address"
+    },
+    {
+      "shippingMethodId": "shippingMethodId",
+      "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
+      "shippingOrderAddress": {
+        "countryId": "countryId",
+        "firstName": "firstName",
+        "lastName": "lastName",
+        "street": "ShippingAddressStreet",
+        "zipcode": "0000123",
+        "city": "Test City",
+        "phoneNumber": "phoneNumber",
+        "additionalAddressLine1": "additionalAddressLine1",
+        "additionalAddressLine2": "additionalAddressLine2",
+        "orderId": "orderId",
+        "versionId": "shippingAddressVersion_notUpToDate",
+        "createdAt": "2021-02-25T15:27:34.518+00:00",
+        "updatedAt": "2021-02-26T15:27:34.518+00:00",
+        "company": "company",
+        "department": "department",
+        "title": "title",
+        "id": "shippingAddressId",
+        "salutationId": "salutationId",
+        "customFields": {
+          "deliveryNotificationEmailAddress": "emailAddress"
+        }
+      },
+      "shippingCosts": {
+        "calculatedTaxes": [
+          {
+            "taxRate": 19,
+            "price": 10
+          },
+          {
+            "taxRate": 5.5,
+            "price": 7
+          }
+        ]
+      },
+      "stateId": "notImportant",
+      "id": "deliveryId"
+    }
+  ],
+  "aggregations": []
+}

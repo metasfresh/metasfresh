@@ -1,16 +1,15 @@
 package de.metas.material.event.pporder;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -66,6 +65,6 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	public void validate()
 	{
 		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
-		Check.errorIf(ppOrder.getMaterialDispoGroupId() == null, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+		Check.errorIf(ppOrder.getPpOrderData().getMaterialDispoGroupId() == null, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
 	}
 }

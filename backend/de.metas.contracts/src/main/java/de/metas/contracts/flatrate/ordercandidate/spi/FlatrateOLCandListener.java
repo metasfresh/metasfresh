@@ -41,15 +41,12 @@ public class FlatrateOLCandListener implements IOLCandListener
 	 * If the given order line already has a <code>C_Flatrate_Conditions_ID</code>, then the method assumes that the
 	 * value is the same as that of <code>olCand</code>.
 	 * 
-	 * @param olCand
-	 * @param orderLine
-	 * 
 	 * @see FlatrateGroupingProvider
 	 */
 	@Override
 	public void onOrderLineCreated(final OLCand olCand, final I_C_OrderLine orderLine)
 	{
-		de.metas.contracts.order.model.I_C_OrderLine flatrateOrderLine = InterfaceWrapperHelper.create(orderLine, de.metas.contracts.order.model.I_C_OrderLine.class);
+		final de.metas.contracts.order.model.I_C_OrderLine flatrateOrderLine = InterfaceWrapperHelper.create(orderLine, de.metas.contracts.order.model.I_C_OrderLine.class);
 
 		final int flatrateConditionsId = olCand.getFlatrateConditionsId();
 		if (flatrateConditionsId <= 0)

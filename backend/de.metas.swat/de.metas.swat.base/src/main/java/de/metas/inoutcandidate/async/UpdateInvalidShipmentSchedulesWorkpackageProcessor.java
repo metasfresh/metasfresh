@@ -22,18 +22,9 @@ package de.metas.inoutcandidate.async;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import ch.qos.logback.classic.Level;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
@@ -45,35 +36,45 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.
  *
  * @author tsa
- *
  */
 public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	private static final Logger logger = LogManager.getLogger(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
 
-	/**
-	 * Schedule a new "update invalid shipment schedules" run.
-	 *
-	 * @param ctx context
-	 * @param trxName optional transaction name. In case is provided, the workpackage will be marked as ready for processing when given transaction is committed.
-	 */
-	public static final void schedule(final Properties ctx, final String trxName)
+	public static void schedule()
 	{
-		SCHEDULER.schedule(PlainContextAware.newWithTrxName(ctx, trxName));
+		final IContextAware contextAwareWithThreadInherit = PlainContextAware.newWithThreadInheritedTrx();
+
+		final ShipmentSchedulesUpdateSchedulerRequest request = ShipmentSchedulesUpdateSchedulerRequest.builder()
+				.ctx(contextAwareWithThreadInherit.getCtx())
+				.trxName(contextAwareWithThreadInherit.getTrxName())
+				.build();
+
+		_schedule(request);
 	}
 
-	public static final void schedule()
+	public static void schedule(@NonNull final ShipmentSchedulesUpdateSchedulerRequest request)
 	{
-		SCHEDULER.schedule(PlainContextAware.newWithThreadInheritedTrx());
+		_schedule(request);
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
-	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newContextAwareSchedulerNoCollect(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
+	private static void _schedule(@NonNull final ShipmentSchedulesUpdateSchedulerRequest request)
+	{
+		SCHEDULER.schedule(request);
+	}
+
+	private static final UpdateInvalidShipmentSchedulesScheduler //
+			SCHEDULER = new UpdateInvalidShipmentSchedulesScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
 
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
@@ -86,7 +87,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		loggable.addLog("Using revalidation ID: {}", selectionId);
 
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putRevalidationId(selectionId))
+		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
 					.ctx(InterfaceWrapperHelper.getCtx(workpackage))

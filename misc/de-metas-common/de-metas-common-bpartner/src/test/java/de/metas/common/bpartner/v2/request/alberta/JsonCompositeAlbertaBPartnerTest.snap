@@ -1,0 +1,92 @@
+de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.serializeDeserialize=[
+  {
+    "jsonAlbertaBPartner" : {
+      "isArchived" : true,
+      "archivedSet" : true,
+      "title" : "title",
+      "titleSet" : true,
+      "titleShort" : "titleShort",
+      "titleShortSet" : true,
+      "timestamp" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "timestampSet" : true
+    },
+    "role" : "Patient",
+    "jsonAlbertaPatient" : {
+      "hospitalIdentifier" : "1111111",
+      "hospitalIdentifierSet" : true,
+      "dischargeDate" : {
+        "year" : 2019,
+        "month" : 11,
+        "day" : 22,
+        "leapYear" : false
+      },
+      "dischargeDateSet" : true,
+      "payerIdentifier" : "2222222",
+      "payerIdentifierSet" : true,
+      "payerType" : "payerType",
+      "payerTypeSet" : true,
+      "numberOfInsured" : "333333",
+      "numberOfInsuredSet" : true,
+      "copaymentFrom" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "copaymentFromSet" : true,
+      "copaymentTo" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "copaymentToSet" : true,
+      "isTransferPatient" : true,
+      "transferPatientSet" : true,
+      "isIVTherapy" : true,
+      "ivTherapySet" : true,
+      "fieldNurseIdentifier" : "4444444",
+      "fieldNurseIdentifierSet" : true,
+      "deactivationReason" : "reason",
+      "deactivationReasonSet" : true,
+      "deactivationDate" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "deactivationDateSet" : true,
+      "deactivationComment" : "comment",
+      "deactivationCommentSet" : true,
+      "classification" : "classification",
+      "classificationSet" : true,
+      "careDegree" : 2.2,
+      "careDegreeSet" : true,
+      "createdAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "createdAtSet" : true,
+      "createdByIdentifier" : "6666666",
+      "createdByIdentifierSet" : true,
+      "updatedAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "updatedAtSet" : true,
+      "updateByIdentifierSet" : false
+    },
+    "jsonAlbertaCareGivers" : [
+      {
+        "caregiverIdentifier" : "11111",
+        "type" : "type",
+        "typeSet" : true,
+        "isLegalCarer" : true,
+        "legalCarerSet" : true
+      }
+    ]
+  }
+]

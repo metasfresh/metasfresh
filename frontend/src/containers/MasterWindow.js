@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
@@ -9,7 +8,7 @@ import { getTabRequest, getRowsData } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
-import { addNotification } from '../actions/AppActions';
+import { addNotification, updateLastBackPage } from '../actions/AppActions';
 import {
   attachFileAction,
   clearMasterData,
@@ -49,6 +48,14 @@ class MasterWindowContainer extends PureComponent {
     }
   }
 
+  componentDidMount() {
+    const fullPath = window.location.href;
+    const { updateLastBackPage } = this.props;
+    if (!fullPath.includes('viewId')) {
+      updateLastBackPage('');
+    }
+  }
+
   componentWillUnmount() {
     const { clearMasterData } = this.props;
 
@@ -71,7 +78,7 @@ class MasterWindowContainer extends PureComponent {
       const { params, fireUpdateData } = this.props;
 
       fireUpdateData({
-        windowId: params.windowType,
+        windowId: params.windowId,
         documentId: params.docId,
       });
     }
@@ -97,12 +104,12 @@ class MasterWindowContainer extends PureComponent {
 
   getTabRows(tabId, rows) {
     const {
-      params: { windowType, docId },
+      params: { windowId, docId },
     } = this.props;
 
     return getRowsData({
       entity: 'window',
-      docType: windowType,
+      docType: windowId,
       docId,
       tabId,
       rows,
@@ -118,7 +125,7 @@ class MasterWindowContainer extends PureComponent {
   mergeDataIntoIncludedTab({ response, tabId }) {
     const {
       updateTabRowsData,
-      params: { windowType, docId },
+      params: { windowId, docId },
     } = this.props;
     const {
       data: { result, missingIds },
@@ -156,7 +163,7 @@ class MasterWindowContainer extends PureComponent {
     }
 
     forEach(changedTabs, (rowsChanged, tabId) => {
-      const tableId = getTableId({ windowId: windowType, docId, tabId });
+      const tableId = getTableId({ windowId: windowId, docId, tabId });
       updateTabRowsData(tableId, rowsChanged);
     });
   }
@@ -164,7 +171,7 @@ class MasterWindowContainer extends PureComponent {
   refreshActiveTab = () => {
     const {
       master,
-      params: { windowType, docId },
+      params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
     } = this.props;
@@ -174,31 +181,27 @@ class MasterWindowContainer extends PureComponent {
       return;
     }
     const tableId = getTableId({
-      windowId: windowType,
+      windowId: windowId,
       docId,
       tabId: activeTabId,
     });
 
     const tabLayout = getTab(master.layout, activeTabId);
     const orderBy = tabLayout ? tabLayout.orderBy : null;
-    let sortingOrder = null;
 
-    if (orderBy && orderBy.length) {
-      const ordering = orderBy[0];
-      sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
-    }
-
-    updateTabLayout(windowType, activeTabId).then(() => {
-      getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
-        updateTabTableData(tableId, rows)
-      );
-    });
+    updateTabLayout(windowId, activeTabId)
+      .then(() => {
+        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
+          updateTabTableData(tableId, rows)
+        );
+      })
+      .catch((error) => error);
   };
 
   deleteTabsTables = () => {
     const {
       master: { includedTabsInfo },
-      params: { windowType, docId },
+      params: { windowId, docId },
       deleteTable,
     } = this.props;
 
@@ -208,7 +211,7 @@ class MasterWindowContainer extends PureComponent {
 
       if (tabs) {
         tabs.forEach((tabId) => {
-          const tableId = getTableId({ windowId: windowType, docId, tabId });
+          const tableId = getTableId({ windowId: windowId, docId, tabId });
           deleteTable(tableId);
         });
       }
@@ -224,7 +227,7 @@ class MasterWindowContainer extends PureComponent {
       updateTabTableData,
       sortTab,
       master,
-      params: { windowType, docId },
+      params: { windowId, docId },
     } = this.props;
     const orderBy = (asc ? '+' : '-') + field;
     const dataId = master.docId;
@@ -234,13 +237,13 @@ class MasterWindowContainer extends PureComponent {
       return;
     }
     const tableId = getTableId({
-      windowId: windowType,
+      windowId,
       docId,
       tabId: activeTabId,
     });
 
     sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowType, dataId, orderBy).then((rows) => {
+    getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
       updateTabTableData(tableId, rows);
     });
   };
@@ -302,10 +305,10 @@ MasterWindowContainer.propTypes = {
   fireUpdateData: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
   updateTabRowsData: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
+  updateLastBackPage: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -323,18 +326,15 @@ const mapStateToProps = (state) => ({
   breadcrumb: state.menuHandler.breadcrumb,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    addNotification,
-    attachFileAction,
-    clearMasterData,
-    fireUpdateData,
-    sortTab,
-    updateTabRowsData,
-    updateTabTableData,
-    push,
-    deleteTable,
-    updateTabLayout,
-  }
-)(MasterWindowContainer);
+export default connect(mapStateToProps, {
+  addNotification,
+  attachFileAction,
+  clearMasterData,
+  fireUpdateData,
+  sortTab,
+  updateTabRowsData,
+  updateTabTableData,
+  deleteTable,
+  updateTabLayout,
+  updateLastBackPage,
+})(MasterWindowContainer);

@@ -27,7 +27,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -205,6 +205,39 @@ public class AttributesKeysTest
 					.build();
 
 			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+			assertThat(attributesKey).isNull();
+		}
+
+		@Test
+		public void nullAttributeValues()
+		{
+			final I_M_Attribute stringAttribute = attributesTestHelper.createM_Attribute("stringAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+			final I_M_Attribute numberAttribute = attributesTestHelper.createM_Attribute("numberAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+			final I_M_Attribute dateAttribute = attributesTestHelper.createM_Attribute("dateAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+
+			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+					.attributeValue(stringAttribute, "")
+					.attributeValue(numberAttribute, null)
+					.attributeValue(dateAttribute, null)
+					.build();
+
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+
+			assertThat(attributesKey).isNull();
+		}
+
+
+		@Test
+		public void zeroAttributeValues()
+		{
+			final I_M_Attribute numberAttribute = attributesTestHelper.createM_Attribute("numberAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+
+			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+					.attributeValue(numberAttribute, 0)
+					.build();
+
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+
 			assertThat(attributesKey).isNull();
 		}
 	}

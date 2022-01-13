@@ -13,6 +13,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -23,7 +24,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -45,8 +45,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -96,11 +95,13 @@ public class StockCandidateServiceTests
 		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
 		parentIdSequence = 1;
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);
@@ -461,16 +462,16 @@ public class StockCandidateServiceTests
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(records).hasSize(5);
-			assertDateAndQty(records.get(0), t1, "10");
-			assertDateAndQty(records.get(1), t2, "7");
-			assertDateAndQty(records.get(2), t3, "4");
-			assertDateAndQty(records.get(3), t4, "6");
-			assertDateAndQty(records.get(4), t6, "11");
+			assertDateAndQty(records.get(0), t1, "10"); 
+			assertDateAndQty(records.get(1), t2, "7"); // 10 - 3
+			assertDateAndQty(records.get(2), t3, "4"); //  7 - 3
+			assertDateAndQty(records.get(3), t4, "6"); //  4 + 2
+			assertDateAndQty(records.get(4), t6, "11");//  6 + 5
 		}
 
 		// now "move" t2 => t5
 		final Candidate t2ToT5Candidate = t2SaveResult.getCandidate()
-				.withQuantity(new BigDecimal("6"))
+				.withQuantity(new BigDecimal("3"))
 				.withDate(t5);
 		final SaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
 
@@ -491,10 +492,10 @@ public class StockCandidateServiceTests
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 		assertThat(records).hasSize(5);
 		assertDateAndQty(records.get(0), t1, "10");
-		assertDateAndQty(records.get(1), t3, "7");
-		assertDateAndQty(records.get(2), t4, "9");
-		assertDateAndQty(records.get(3), t5, "6");
-		assertDateAndQty(records.get(4), t6, "11");
+		assertDateAndQty(records.get(1), t3, "7"); // 10 - 3 (the t3's "-3")
+		assertDateAndQty(records.get(2), t4, "9"); //  7 + 2 
+		assertDateAndQty(records.get(3), t5, "6"); //  9 - 3 (the -3 of the previous ts that is now t5)
+		assertDateAndQty(records.get(4), t6, "11"); // 6 + 5 (as before)
 	}
 
 	private void assertDateAndQty(

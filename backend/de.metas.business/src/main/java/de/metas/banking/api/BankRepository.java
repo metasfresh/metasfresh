@@ -41,6 +41,8 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 @Repository
 public class BankRepository
 {
@@ -72,7 +74,7 @@ public class BankRepository
 		return bank;
 	}
 
-	private static Bank toBank(final I_C_Bank record)
+	private static Bank toBank(@NonNull final I_C_Bank record)
 	{
 		return Bank.builder()
 				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))

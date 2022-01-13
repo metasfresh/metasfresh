@@ -78,10 +78,12 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -119,13 +121,15 @@ public class HUTransformService
 		return builderForHUcontext().huContext(huContext).build();
 	}
 
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 
 	//
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
@@ -150,7 +154,7 @@ public class HUTransformService
 
 		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
 		final String effectiveTrxName = CoalesceUtil.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
-		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
+		final IMutableHUContext mutableHUContext = huContextFactory.createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
 		{
 			mutableHUContext.addEmptyHUListener(emptyHUListener);
@@ -160,11 +164,10 @@ public class HUTransformService
 
 	/**
 	 * When running unit tests, then use this builder to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
-	 *
 	 */
 	@Builder(builderClassName = "BuilderForHUcontext", builderMethodName = "builderForHUcontext")
 	private HUTransformService(@NonNull final IHUContext huContext,
-			@Nullable final List<TableRecordReference> referencedObjects)
+							   @Nullable final List<TableRecordReference> referencedObjects)
 	{
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 		this.huContext = huContext;
@@ -510,7 +513,11 @@ public class HUTransformService
 				// de-aggregate tuHU. we only want to add "real" TUs.
 				// It might be the case that luHU only has "real" HUs already and in that case, we might be able to add an aggregate TU..
 				// but it make this BL more complicated and i'm not sure we need it, or that it is even a good thing in terms of predictability for the user.
-				tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU);
+				// sourceTuHU is also the parent for the new TU we will create, so make sure to destroy it. It will receive the new TU a child a few lines below.
+				try (final IAutoCloseable ignore = huContext.temporarilyDontDestroyHU(HuId.ofRepoId(luHU.getM_HU_ID())))
+				{
+					tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU);
+				}
 			}
 			else
 			{
@@ -524,13 +531,17 @@ public class HUTransformService
 			tuHUsToAttachToLU = tuToNewTUs(sourceTuHU, qtyTU);
 		}
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(tuToAttach);
 
 			final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, piOfChildHU, huContext);
-			Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", luHU, piOfChildHU);
+			if (parentPIItem == null)
+			{
+				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
+						.setParameter("tuToAttach", tuToAttach)
+						.setParameter("piOfChildHU", piOfChildHU)
+						.setParameter("luHU", luHU);
+			}
 
 			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 
@@ -554,21 +565,17 @@ public class HUTransformService
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
-	 * @param cuHU                  the currently selected source CU line
-	 * @param qtyCU                 the CU-quantity to join or split
-	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
-	 * @param isOwnPackingMaterials
+	 * @param cuHU            the currently selected source CU line
+	 * @param qtyCU                 optional; the CU-quantity to join or split. If {@code null}, then the whole CU is consumed.
+	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
+	 * @param isOwnPackingMaterials indicates if the packaging material (e.g. palox boxes) are owned by to us (true) or by respective bPartner (false).   
 	 */
 	public List<I_M_HU> cuToNewTUs(
-			final I_M_HU cuHU,
-			final Quantity qtyCU,
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_HU cuHU,
+			@Nullable final Quantity qtyCU,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(cuHU, "Param 'cuHU' may not be null");
-		Preconditions.checkNotNull(qtyCU, "Param 'qtyCU' may not be null");
-		Preconditions.checkNotNull(tuPIItemProduct, "Param 'tuPIItemProduct' may not be null");
-
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
@@ -576,18 +583,22 @@ public class HUTransformService
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
-		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
+		final Capacity capacity = huCapacityBL.getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
 		destination.setNoLU();
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
+		final IHUProductStorage singleCUStorage = storages.get(0);
+		
+		final Quantity qtyCUToUse = CoalesceUtil.coalesceSuppliersNotNull(() -> qtyCU, singleCUStorage::getQty);
+		
 		HUSplitBuilderCoreEngine.builder()
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
-				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getProductId(), qtyCU, false))
+				// forceAllocation = false; we want to create as many new TUs as are implied by the qtyCU and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, singleCUStorage.getProductId(), qtyCUToUse, false))
 				.destination(destination)
 				.build()
 				.withPropagateHUValues()
@@ -611,7 +622,7 @@ public class HUTransformService
 	{
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU
 		{
-			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but there sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
+			if (handlingUnitsDAO.retrieveParentItem(sourceTuHU) == null) // ..but the sourceTuHU is not attached to a parent, so there isn't anything to do at all.)
 			{
 				return ImmutableList.of(sourceTuHU);
 			}
@@ -638,6 +649,9 @@ public class HUTransformService
 		);
 	}
 
+	/**
+	 * Extract a given number of TUs from an LU or TU/AggregatedTU.
+	 */
 	@lombok.Value
 	public static class HUsToNewTUsRequest
 	{
@@ -645,7 +659,7 @@ public class HUTransformService
 
 		int qtyTU;
 
-		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull I_M_HU sourceHU, int qtyTU)
+		public static HUsToNewTUsRequest forSourceHuAndQty(@NonNull final I_M_HU sourceHU, final int qtyTU)
 		{
 			return HUsToNewTUsRequest.builder().sourceHU(sourceHU).qtyTU(qtyTU).build();
 		}
@@ -796,10 +810,7 @@ public class HUTransformService
 	}
 
 	/**
-	 * @param childHU
-	 * @param parentItem         may be {@code null} if the childHU in question is removed from it's parent HU.
-	 * @param beforeParentChange
-	 * @param afterParentChange
+	 * @param parentItem may be {@code null} if the childHU in question is removed from it's parent HU.
 	 */
 	private void setParent(
 			@NonNull final I_M_HU childHU,
@@ -842,10 +853,9 @@ public class HUTransformService
 	 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
 	 * Otherwise, the source is split and distributed over many LUs.
 	 *
-	 * @param sourceTuHU            the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
-	 * @param qtyTU                 the number of TUs to join or split onto the destination LU(s).
-	 * @param luPIItem              the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
-	 * @param isOwnPackingMaterials
+	 * @param sourceTuHU the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
+	 * @param qtyTU      the number of TUs to join or split onto the destination LU(s).
+	 * @param luPIItem   the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
 	 */
 	public List<I_M_HU> tuToNewLUs(
 			@NonNull final I_M_HU sourceTuHU,
@@ -853,8 +863,9 @@ public class HUTransformService
 			@NonNull final I_M_HU_PI_Item luPIItem,
 			final boolean isOwnPackingMaterials)
 	{
-		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
-				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
+		final BigDecimal qtyTU_of_sourceTuHU = getMaximumQtyTU(sourceTuHU);
+		if (qtyTU.compareTo(qtyTU_of_sourceTuHU) >= 0 // the complete sourceTuHU shall be processed
+				&& qtyTU_of_sourceTuHU.compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
 		{
 			// don't split; just create a new LU and "move" the TU
@@ -884,7 +895,14 @@ public class HUTransformService
 					// create the new parent-item that will link sourceTuHU with newLuHU
 					final I_M_HU_PI piOfChildHU = handlingUnitsBL.getPI(sourceTuHU);
 					final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(newLuHU, piOfChildHU, huContext);
-					Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", newLuHU, piOfChildHU);
+					if (parentPIItem == null)
+					{
+						throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(newLuHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(sourceTuHU) + "` because there is no link between them.")
+								.setParameter("sourceTuHU", sourceTuHU)
+								.setParameter("piOfChildHU", piOfChildHU)
+								.setParameter("newLuHU", newLuHU);
+					}
+
 					newParentItemOfSourceTuHU = handlingUnitsDAO.createHUItemIfNotExists(newLuHU, parentPIItem).getLeft();
 				}
 			}
@@ -915,8 +933,10 @@ public class HUTransformService
 
 			return ImmutableList.of(newLuHU);
 		}
-
-		return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		else
+		{
+			return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
+		}
 	}
 
 	/**
@@ -930,10 +950,10 @@ public class HUTransformService
 	private List<I_M_HU> tuToTopLevelHUs(
 			@NonNull final I_M_HU sourceTuHU,
 			@NonNull final BigDecimal qtyTU,
-			final I_M_HU_PI_Item luPIItem,
+			@Nullable final I_M_HU_PI_Item luPIItem,
 			final boolean newPackingMaterialsAreOurOwn)
 	{
-		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(sourceTuHU);
+		final List<IHUProductStorage> productStorages = retrieveAllProductStoragesOfTU(sourceTuHU);
 
 		final List<I_M_HU> createdTUs;
 
@@ -1018,13 +1038,16 @@ public class HUTransformService
 			final IHUProductStorage currentHuProductStorage = productStorages.get(i);
 
 			final Quantity qtyCU = currentHuProductStorage.getQty();
-			createdTUs.forEach(createdTU -> cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU));
+			for (final I_M_HU createdTU : createdTUs)
+			{
+				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
+			}
 		}
 
 		return createdTUs;
 	}
 
-	private List<IHUProductStorage> retrieveAllProductStorages(final I_M_HU tuHU)
+	private List<IHUProductStorage> retrieveAllProductStoragesOfTU(final I_M_HU tuHU)
 	{
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 
@@ -1037,20 +1060,18 @@ public class HUTransformService
 		else
 		{
 			handlingUnitsDAO.retrieveIncludedHUs(tuHU)
-					.forEach(cuHU -> {
-						productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages());
-					});
+					.forEach(cuHU -> productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages()));
 		}
 		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;
 	}
 
-	@lombok.Value
+	@Value
 	public static class HUsToNewCUsRequest
 	{
-		List<I_M_HU> sourceHUs;
-
-		Quantity qtyCU;
+		@NonNull ImmutableList<I_M_HU> sourceHUs;
+		@NonNull ProductId productId;
+		@NonNull Quantity qtyCU;
 
 		/**
 		 * if true, the extract CUs, but don't let them end up stand alone;
@@ -1059,33 +1080,35 @@ public class HUTransformService
 		boolean keepNewCUsUnderSameParent;
 
 		/**
-		 * if true, then only unreserved VHUs are split on order to get our new CUs
+		 * only the VHUs allowed by this policy are split in order to get our new CUs
 		 */
-		boolean onlyFromUnreservedHUs;
-
-		/**
-		 * Mandatory, to cover the case of HUs with multiple products
-		 */
-		ProductId productId;
+		@NonNull ReservedHUsPolicy reservedVHUsPolicy;
 
 		@lombok.Builder(toBuilder = true)
 		private HUsToNewCUsRequest(
-				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
-				@NonNull ProductId productId,
+				@Singular("sourceHU") @NonNull final ImmutableList<I_M_HU> sourceHUs,
+				@NonNull final ProductId productId,
 				@NonNull final Quantity qtyCU,
 				@Nullable final Boolean keepNewCUsUnderSameParent,
-				@Nullable final Boolean onlyFromUnreservedHUs)
+				@Nullable final ReservedHUsPolicy reservedVHUsPolicy)
 		{
 			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
 
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;
-			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesce(keepNewCUsUnderSameParent, false);
-			this.onlyFromUnreservedHUs = CoalesceUtil.coalesce(onlyFromUnreservedHUs, false);
+			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesceNotNull(keepNewCUsUnderSameParent, false);
+			this.reservedVHUsPolicy = CoalesceUtil.coalesceNotNull(reservedVHUsPolicy, ReservedHUsPolicy.CONSIDER_ALL);
 
 			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}
+	}
+
+	public I_M_HU huToNewSingleCU(@NonNull final HUsToNewCUsRequest newCURequest)
+	{
+		Check.assume(newCURequest.getSourceHUs().size() == 1, "Only one source HU expected: {}", newCURequest);
+		final List<I_M_HU> splitCUs = husToNewCUs(newCURequest);
+		return CollectionUtils.singleElement(splitCUs);
 	}
 
 	/**
@@ -1146,6 +1169,7 @@ public class HUTransformService
 		final I_M_HU sourceLU = CollectionUtils.singleElement(singleSourceLuRequest.getSourceHUs());
 
 		// in this number, aggregate HUs count according to the number of TUs that they represent.
+		// reminder: one "aggregated" TU can represent many TUs
 		final int logicalNumberOfIncludedHUs = handlingUnitsDAO
 				.retrieveIncludedHUs(sourceLU)
 				.stream()
@@ -1164,19 +1188,70 @@ public class HUTransformService
 
 			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
-			final I_M_HU extractedTU = CollectionUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
 
-			final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
-					.clearSourceHUs()
-					.sourceHU(extractedTU)
-					.qtyCU(qtyCUsRemaining).build();
+			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds);
 
-			final List<I_M_HU> cusFromTU = tuExtractCUs(singleSourceTuRequest);
+			// There are no real TUs in the LU. Extract the virtual HUs (CUs) directly, if found
+			if (extractedTUs.isEmpty())
+			{
+				extractedCUs.addAll(extractCUsDirectlyFromLU(sourceLU, qtyCUsRemaining));
+			}
 
-			extractedCUs.addAll(cusFromTU);
+			else
+			{
+				final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
+				final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
+						.clearSourceHUs()
+						.sourceHU(extractedTU)
+						.qtyCU(qtyCUsRemaining).build();
 
-			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCUsRemaining.getUOM()));
+				final List<I_M_HU> cusFromTU = tuExtractCUs(singleSourceTuRequest);
+
+				extractedCUs.addAll(cusFromTU);
+
+				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCUsRemaining.getUOM()));
+			}
+
 		}
+		return extractedCUs.build();
+	}
+
+	private ImmutableList<I_M_HU> extractCUsDirectlyFromLU(@NonNull final I_M_HU sourceLU, @NonNull Quantity qtyCUsRemaining)
+	{
+		if (qtyCUsRemaining.signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
+		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU);
+
+		for (final I_M_HU hu : includedHUs)
+		{
+			if (qtyCUsRemaining.signum() <= 0)
+			{
+				break;
+			}
+
+			if (!handlingUnitsBL.isVirtual(hu))
+			{
+				// Skip all that is not a VHU
+				continue;
+			}
+
+			final Quantity qtyCUsAvailable = getMaximumQtyCU(hu, qtyCUsRemaining.getUOM());
+			if (qtyCUsAvailable.signum() <= 0)
+			{
+				continue;
+			}
+			final Quantity qtyToExtract = qtyCUsAvailable.min(qtyCUsRemaining);
+
+			final List<I_M_HU> newCUs = cuToNewCU(hu, qtyToExtract);
+
+			extractedCUs.addAll(newCUs);
+			qtyCUsRemaining = qtyCUsRemaining.subtract(qtyToExtract);
+		}
+
 		return extractedCUs.build();
 	}
 
@@ -1189,10 +1264,11 @@ public class HUTransformService
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{
-			if (singleSourceTuRequest.isOnlyFromUnreservedHUs() && cu.isReserved())
+			if (!singleSourceTuRequest.getReservedVHUsPolicy().isConsiderVHU(cu))
 			{
 				continue; // the request only wants us to use unreserved source HUs
 			}
+
 			final IHUProductStorage productStorageOrNull = handlingUnitsBL
 					.getStorageFactory()
 					.getStorage(cu)
@@ -1245,23 +1321,21 @@ public class HUTransformService
 		// finally do the attaching
 
 		// iterate the child CUs and set their parent item
-		childCUs.forEach(childCU -> {
-			setParent(childCU,
-					tuMaterialItem,
+		childCUs.forEach(childCU -> setParent(childCU,
+				tuMaterialItem,
 
-					// before the newChildCU's parent item is set,
-					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
-						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-						updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
-					},
+				// before the newChildCU's parent item is set,
+				localHuContext -> {
+					final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
+					final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+					updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
+				},
 
-					// after the newChildCU's parent item is set,
-					localHuContext -> {
-						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
-						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-						updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
-					});
-		});
+				// after the newChildCU's parent item is set,
+				localHuContext -> {
+					final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
+					final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+					updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
+				}));
 	}
 }

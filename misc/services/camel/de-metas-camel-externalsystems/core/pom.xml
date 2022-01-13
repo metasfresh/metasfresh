@@ -1,25 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-externalsystems
-  ~ %%
-  ~ Copyright (C) 2021 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -38,8 +17,7 @@
     <properties>
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <camel.version>3.7.2</camel.version>
-        <guava.version>28.0-jre</guava.version>
+        <camel.version>3.7.3</camel.version>
         <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.12.1</jackson.version>
         <!--
@@ -104,6 +82,23 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-rabbitmq</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-woocommerce</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-grssignum</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
             <version>${metasfresh-common.version}</version>
@@ -128,6 +123,21 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -136,6 +146,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- Camel -->
@@ -163,6 +182,12 @@
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-http-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-rabbitmq-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
 
@@ -217,17 +242,17 @@
                 <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
-                        <id>camel-externalsystems-repackage</id>
+                        <id>spring-boot-externalsystems-build-info</id>
                         <goals>
-                            <goal>repackage</goal>
+                            <goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
                         </goals>
                         <configuration>
-                            <!-- we *also* need the normal main jar to be used in app
-                            so don't replace the normal jar, but create the executable jar with this classifier -->
-                            <classifier>exec</classifier>
-
-                            <executable>true</executable>
-                            <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
+                            <additionalProperties>
+                                <jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+                                <jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+                                <jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+                                <jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+                            </additionalProperties>
                         </configuration>
                     </execution>
                 </executions>
@@ -271,6 +296,12 @@
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
                         <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- we authenticate on pulls to avoid the rate limit -->
+                            <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                 </configuration>
                 <executions>

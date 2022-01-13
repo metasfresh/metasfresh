@@ -7,21 +7,17 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Moment from 'moment-timezone';
 
+import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+
+import { convertDateToReadable } from '../../utils/dateHelpers';
+import { isFocusableWidgetType } from '../../utils/widgetHelpers';
 import keymap from '../../shortcuts/keymap';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
-import {
-  openFilterBox,
-  closeFilterBox,
-  allowShortcut,
-  disableShortcut,
-} from '../../actions/WindowActions';
-
 import OverlayField from '../app/OverlayField';
-import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
-import RawWidget from '../widget/RawWidget';
-import { convertDateToReadable } from '../../utils/dateHelpers';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -69,6 +65,8 @@ class FiltersItem extends PureComponent {
   }
 
   componentDidMount() {
+    this.mounted = true;
+
     if (this.widgetsContainer) {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
     }
@@ -103,6 +101,8 @@ class FiltersItem extends PureComponent {
   }
 
   componentWillUnmount() {
+    this.mounted = false;
+
     const { closeFilterBox } = this.props;
 
     if (this.widgetsContainer) {
@@ -146,18 +146,8 @@ class FiltersItem extends PureComponent {
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
-   * @param {*} filterId
-   * @param {*} defaultValue
    */
-  setValue = (parameter, value, id, valueTo = '', filterId, defaultValue) => {
-    const { resetInitialValues } = this.props;
-
-    // if user changed field value and defaultValue is not null, then we need
-    // to reset it's initial value so that it won't be set
-    if (defaultValue != null) {
-      resetInitialValues && resetInitialValues(filterId, parameter);
-    }
-
+  setValue = (parameter, value, id, valueTo = '') => {
     if (!Array.isArray(parameter)) {
       parameter = [parameter];
     }
@@ -266,26 +256,7 @@ class FiltersItem extends PureComponent {
     const parametersArray = [];
 
     newActiveFilter.parameters.forEach((param) => {
-      if (updatedParameters[param.parameterName]) {
-        const { value, activeValue, activeValueTo } = paramsMap[
-          param.parameterName
-        ];
-
-        // if there's no value but param exists in the updated parameters,
-        // remove the parameter from active filter.
-        // Otherwise just update it's value
-        if (value !== null && value !== '') {
-          parametersArray.push({
-            ...param,
-            value: convertDateToReadable(param.widgetType, activeValue),
-            valueTo: convertDateToReadable(param.widgetType, activeValueTo),
-            defaultValue: null,
-            defaultValueTo: null,
-          });
-        }
-
-        delete updatedParameters[param.parameterName];
-      } else {
+      if (!updatedParameters[param.parameterName]) {
         // copy params that were not updated
         parametersArray.push({
           ...param,
@@ -346,14 +317,49 @@ class FiltersItem extends PureComponent {
    */
   handleScroll = () => {
     const { openFilterBox } = this.props;
-    const {
-      top,
-      left,
-      bottom,
-      right,
-    } = this.widgetsContainer.getBoundingClientRect();
+    const { top, left, bottom, right } =
+      this.widgetsContainer.getBoundingClientRect();
 
     openFilterBox({ top, left, bottom, right });
+  };
+
+  /**
+   * @method checkFilterTypeByName
+   * @summary Gets the corresponding widgetType from the filters data
+   * @param {*} filterItem - the active one that does not contain the widgetType
+   * @returns {string} widgetType
+   */
+  checkFilterTypeByName = (filterItem) => {
+    const {
+      filter: { parameters },
+    } = this.state;
+
+    const targetFilter = parameters.filter(
+      (item) => item.field === filterItem.parameterName
+    );
+    return targetFilter[0] ? targetFilter[0].widgetType : '';
+  };
+
+  /**
+   * updates the items for the case when there is no active filters, does this update within the existing default values
+   * @param {array} toChange
+   */
+  updateItems = (toChange) => {
+    if (this.mounted) {
+      const { filter } = this.state;
+
+      if (filter.parameters) {
+        filter.parameters.map((filterItem) => {
+          if (filterItem.parameterName === toChange.widgetField) {
+            filterItem.defaultValue = toChange.value;
+            filterItem.value = toChange.value;
+            filterItem.valueTo = toChange.valueTo;
+          }
+          return filterItem;
+        });
+      }
+      this.setState({ filter });
+    }
   };
 
   /**
@@ -362,7 +368,8 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleApply = () => {
-    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const { applyFilters, closeFilterMenu, returnBackToDropdown, isActive } =
+      this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -388,16 +395,18 @@ class FiltersItem extends PureComponent {
       );
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
-      const activeFilterClone = _.cloneDeep(activeFilter);
-      activeFilterClone.parameters.map((afcItem, index) => {
-        // YesNo filters (checkboxes) can be either null, true or false
-        afcItem.value =
-          !afcItem.value && afcItem.value !== false
-            ? filter.parameters[index].defaultValue
-            : afcItem.value;
-        return afcItem;
-      });
-
+      let activeFilterClone = _.cloneDeep(activeFilter);
+      if (!isActive) {
+        activeFilterClone = filter;
+        activeFilterClone.parameters.map((afcItem) => {
+          let filterType = this.checkFilterTypeByName(afcItem);
+          if (filterType === 'YesNo') {
+            // YesNo filters (checkboxes) can be either null, true or false
+            afcItem.value = afcItem.defaultValue;
+          }
+          return afcItem;
+        });
+      }
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
@@ -410,15 +419,9 @@ class FiltersItem extends PureComponent {
    * @summary clears this filter completely, removing it from the active filters
    */
   handleClear = () => {
-    const {
-      clearFilters,
-      closeFilterMenu,
-      returnBackToDropdown,
-      resetInitialValues,
-    } = this.props;
+    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter } = this.state;
 
-    resetInitialValues && resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
@@ -452,13 +455,10 @@ class FiltersItem extends PureComponent {
       closeFilterMenu,
       captionValue,
       openedFilter,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
+    let autoFocusedField = false;
 
     if (maxWidth) {
       style.width = maxWidth;
@@ -504,18 +504,26 @@ class FiltersItem extends PureComponent {
               )}
             </div>
             <div
-              className={`form-group row filter-content filter-${
-                data.filterId
-              }`}
+              className={`form-group row filter-content filter-${data.filterId}`}
             >
               <div className="col-sm-12">
                 {filter.parameters &&
                   filter.parameters.map((item, index) => {
                     const { widgetType } = item;
+                    let autoFocus = false;
                     item.field = item.parameterName;
 
+                    if (
+                      !autoFocusedField &&
+                      isFocusableWidgetType(widgetType)
+                    ) {
+                      autoFocusedField = true;
+                      autoFocus = true;
+                    }
+
                     return (
-                      <RawWidget
+                      <WidgetWrapper
+                        dataSource="filter-item"
                         entity="documentView"
                         subentity="filter"
                         subentityId={filter.filterId}
@@ -545,7 +553,6 @@ class FiltersItem extends PureComponent {
                             );
                           }
                         }}
-                        widgetType={item.widgetType}
                         fields={[item]}
                         type={item.type}
                         widgetData={[item]}
@@ -558,12 +565,12 @@ class FiltersItem extends PureComponent {
                         {...{
                           viewId,
                           windowType,
+                          widgetType,
                           onShow,
                           onHide,
-                          allowShortcut,
-                          disableShortcut,
-                          timeZone,
-                          modalVisible,
+                          isFilterActive: isActive,
+                          updateItems: this.updateItems,
+                          autoFocus,
                         }}
                       />
                     );
@@ -590,28 +597,33 @@ class FiltersItem extends PureComponent {
                     pin: ['bottom'],
                   },
                 ]}
-              >
-                {filter.isActive && !filter.parameters ? (
-                  <span />
-                ) : (
-                  <button
-                    className="applyBtn btn btn-sm btn-success"
-                    onClick={this.handleApply}
-                    onMouseEnter={this.showTooltip}
-                    onMouseLeave={this.hideTooltip}
-                  >
-                    {counterpart.translate('window.apply.caption')}
-                  </button>
-                )}
-                {isTooltipShow && (
-                  <Tooltips
-                    className="filter-tooltip"
-                    name={keymap.DONE}
-                    action={counterpart.translate('window.apply.caption')}
-                    type={''}
-                  />
-                )}
-              </TetherComponent>
+                renderTarget={(ref) =>
+                  filter.isActive && !filter.parameters ? (
+                    <span ref={ref} />
+                  ) : (
+                    <button
+                      ref={ref}
+                      className="applyBtn btn btn-sm btn-success"
+                      onClick={this.handleApply}
+                      onMouseEnter={this.showTooltip}
+                      onMouseLeave={this.hideTooltip}
+                    >
+                      {counterpart.translate('window.apply.caption')}
+                    </button>
+                  )
+                }
+                renderElement={(ref) =>
+                  isTooltipShow && (
+                    <Tooltips
+                      ref={ref}
+                      className="filter-tooltip"
+                      name={keymap.DONE}
+                      action={counterpart.translate('window.apply.caption')}
+                      type={''}
+                    />
+                  )
+                }
+              />
             </div>
           </div>
         )}
@@ -624,19 +636,9 @@ class FiltersItem extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
-
-  return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-  };
-};
-
 /**
  * @typedef {object} Props Component props
  * @prop {func} applyFilters
- * @prop {func} [resetInitialValues]
  * @prop {func} [clearFilters]
  * @prop {*} [filterWrapper]
  * @prop {string} [panelCaption]
@@ -653,16 +655,11 @@ const mapStateToProps = (state) => {
  * @prop {*} captionValue
  * @prop {*} openedFilter
  * @prop {*} returnBackToDropdown
- * @prop {bool} modalVisible
- * @prop {string} timeZone
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
  * @prop {func} openFilterBox
  * @prop {func} closeFilterBox
  */
 FiltersItem.propTypes = {
   applyFilters: PropTypes.func.isRequired,
-  resetInitialValues: PropTypes.func,
   clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,
@@ -679,20 +676,11 @@ FiltersItem.propTypes = {
   captionValue: PropTypes.any,
   openedFilter: PropTypes.any,
   returnBackToDropdown: PropTypes.any,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
   openFilterBox: PropTypes.func.isRequired,
   closeFilterBox: PropTypes.func.isRequired,
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    allowShortcut,
-    disableShortcut,
-    openFilterBox,
-    closeFilterBox,
-  }
-)(FiltersItem);
+export default connect(null, {
+  openFilterBox,
+  closeFilterBox,
+})(FiltersItem);

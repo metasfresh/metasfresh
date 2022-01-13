@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
@@ -38,12 +39,15 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.service.AlbertaCompositeProductInfo;
 import de.metas.vertical.healthcare.alberta.service.AlbertaPackagingUnit;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
@@ -54,17 +58,23 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class GetProductsCommand
 {
 	private static final Instant DEFAULT_SINCE = Instant.ofEpochMilli(0);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@NonNull
 	private final ProductsServicesFacade servicesFacade;
@@ -82,6 +92,8 @@ public class GetProductsCommand
 	private final String externalSystemConfigValue;
 
 	private ImmutableListMultimap<ProductId, JsonProductBPartner> productBPartners;
+
+	private ImmutableMap<JsonMetasfreshId, String> bpartnerId2Name;
 
 	@Nullable
 	private ImmutableMap<ProductId, AlbertaCompositeProductInfo> productId2AlbertaInfo;
@@ -121,14 +133,32 @@ public class GetProductsCommand
 
 		productBPartners = retrieveJsonProductVendors(productIds);
 
+		final ImmutableSet<BPartnerId> manufacturerIds = productsToExport.stream()
+				.map(I_M_Product::getManufacturer_ID)
+				.map(BPartnerId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		bpartnerId2Name = retrieveBPartnerNames(manufacturerIds);
+
 		final ImmutableList<JsonProduct> products = productsToExport.stream()
-				.filter(product -> since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
+				.filter(product -> since.equals(DEFAULT_SINCE) || since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
 				.map(this::toJsonProduct)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonGetProductsResponse.builder()
 				.products(products)
 				.build();
+	}
+
+	private ImmutableMap<JsonMetasfreshId, String> retrieveBPartnerNames(@NonNull final ImmutableSet<BPartnerId> manufacturerIds)
+	{
+		return servicesFacade
+				.getPartnerRecords(manufacturerIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> JsonMetasfreshId.of(record.getC_BPartner_ID()),
+						record -> record.getName()));
 	}
 
 	@NonNull
@@ -154,16 +184,25 @@ public class GetProductsCommand
 
 		final UomId uomId = UomId.ofRepoId(productRecord.getC_UOM_ID());
 
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
+
+		final LocalDate discontinuedFrom = productRecord.isDiscontinued()
+				? TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId)
+				: null;
+
 		return JsonProduct.builder()
 				.id(JsonMetasfreshId.of(productId.getRepoId()))
 				.externalId(productRecord.getExternalId())
 				.productNo(productRecord.getValue())
+				.productCategoryId(JsonMetasfreshId.of(productRecord.getM_Product_Category_ID()))
 				.manufacturerId(manufacturerId)
+				.manufacturerName(bpartnerId2Name.get(manufacturerId))
 				.manufacturerNumber(productRecord.getManufacturerArticleNumber())
 				.name(trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()).translate(adLanguage))
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
+				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
 				.build();
@@ -278,6 +317,7 @@ public class GetProductsCommand
 				.fixedPrice(albertaCompositeProductInfo.getFixedPrice())
 				.billableTherapies(albertaCompositeProductInfo.getBillableTherapyIds())
 				.packagingUnits(jsonPackagingUnitList)
+				.productGroupId(albertaCompositeProductInfo.getProductGroupId())
 				.build();
 	}
 

@@ -1,10 +1,10 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateScheduler;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -57,12 +57,13 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
-	public static final void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
+	public static void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
 	{
 		SCHEDULER.schedule(request);
 	}
 
-	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler();
+	private static final UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler //
+			SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true/*createOneWorkpackagePerAsyncBatch*/);
 
 	private static final String SYSCONFIG_MaxInvoiceCandidatesToUpdate = "de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate";
 
@@ -116,7 +117,9 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 
 			if (countRemaining > 0)
 			{
-				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
+				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName, asyncBatchId);
 				schedule(request);
 
 				Loggables.addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);
@@ -125,7 +128,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 		return Result.SUCCESS;
 	}
 
-	private final int getMaxInvoiceCandidatesToUpdate()
+	private int getMaxInvoiceCandidatesToUpdate()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_MaxInvoiceCandidatesToUpdate, DEFAULT_MaxInvoiceCandidatesToUpdate);
 	}

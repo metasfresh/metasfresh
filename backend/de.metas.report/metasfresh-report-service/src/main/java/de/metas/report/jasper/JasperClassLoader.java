@@ -70,16 +70,16 @@ public final class JasperClassLoader extends ClassLoader
 	private boolean alwaysPrependPrefix = false;
 
 	// Hooks
-	private final OrgLogoClassLoaderHook logoHook;
+	private final OrgImageClassLoaderHook imagesHook;
 	private final AttachmentImageFileClassLoaderHook imgAttachmentHook;
 
-	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent, @Nullable PrintFormatId printFormatId)
+	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent, @Nullable final PrintFormatId printFormatId)
 	{
 		super(parent);
 
 		this.adOrgId = adOrgId;
 		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
-		this.logoHook = OrgLogoClassLoaderHook.newInstance();
+		this.imagesHook = OrgImageClassLoaderHook.newInstance();
 		this.imgAttachmentHook = AttachmentImageFileClassLoaderHook.newInstance();
 		this.printFormatId = printFormatId;
 	}
@@ -115,7 +115,7 @@ public final class JasperClassLoader extends ClassLoader
 		try
 		{
 			final URL url = new URL(urlStr);
-			logger.debug("URL: {} for {}", new Object[] { url, name });
+			logger.debug("URL: {} for {}", url, name);
 
 			if (isJarInJarURL(url))
 			{
@@ -130,7 +130,7 @@ public final class JasperClassLoader extends ClassLoader
 		// Keeping this log for debug mode only.
 		// In the past this could not happen so often but now, this class loader can try to find any kind of resource for a jasper report and they are not all URLs.
 		//
-		catch (MalformedURLException e)
+		catch (final MalformedURLException e)
 		{
 			logger.debug("Got invalid URL '{}' for '{}'. Returning null.", urlStr, name, e);
 		}
@@ -138,9 +138,9 @@ public final class JasperClassLoader extends ClassLoader
 	}
 
 	@Override
-	public URL getResource(String name)
+	public URL getResource(final String name)
 	{
-		final URL url = logoHook.getResourceURLOrNull(adOrgId, name);
+		final URL url = imagesHook.getResourceURLOrNull(adOrgId, name);
 		if (url != null)
 		{
 			return url;
@@ -172,7 +172,7 @@ public final class JasperClassLoader extends ClassLoader
 		//
 		// Get resource's URL
 		final URL url = getResource(name);
-		logger.debug("URL: {} for {}", new Object[] { url, name });
+		logger.debug("URL: {} for {}", url, name);
 
 		if (url == null)
 		{
@@ -199,21 +199,19 @@ public final class JasperClassLoader extends ClassLoader
 			is.close();
 			jasperFile.close();
 
-			final InputStream result = new ByteArrayInputStream(out.toByteArray());
-
-			return result;
+			return new ByteArrayInputStream(out.toByteArray());
 		}
-		catch (org.apache.commons.vfs2.FileNotFoundException e)
+		catch (final org.apache.commons.vfs2.FileNotFoundException e)
 		{
 			logger.debug("Resource not found. Skipping.", e);
 			return getParent().getResourceAsStream(name);
 		}
-		catch (FileSystemException e)
+		catch (final FileSystemException e)
 		{
 			logger.warn("Error while retrieving bytes for resource " + url + ". Skipping.", e);
 			return getParent().getResourceAsStream(name);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException("IO error while retrieving bytes for resource " + url, e);
 		}
@@ -222,12 +220,9 @@ public final class JasperClassLoader extends ClassLoader
 	/**
 	 * Returns true, e.g. for <code>file:/opt/metasfresh/metasfresh-server.jar!/lib/spring-beans-4.2.5.RELEASE.jar</code>.<br>
 	 * Such URLs can't be handled by our vfs implementation.
-	 *
-	 * @param url
-	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ static boolean isJarInJarURL(final URL url)
+	/* package */ static boolean isJarInJarURL(@Nullable final URL url)
 	{
 		if (url == null)
 		{
@@ -241,7 +236,6 @@ public final class JasperClassLoader extends ClassLoader
 	/**
 	 * Converts given resource name to URL string. Mainly it will parse {@link #PLACEHOLDER}.
 	 *
-	 * @param resourceName
 	 * @return resource's URL string
 	 */
 	private String convertResourceNameToURLString(final String resourceName)

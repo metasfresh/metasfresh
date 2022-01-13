@@ -22,21 +22,36 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
+import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
 
 /**
  * Process work packages from queue and:
@@ -49,21 +64,33 @@ import java.util.List;
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
+		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
+		{
+			return Result.SUCCESS;
+		}
 
-		final List<Object> records = queueDAO.retrieveItems(workpackage, Object.class, localTrxName);
+		final UserId userId = UserId.ofRepoIdOrNull(workpackage.getAD_User_ID());
+		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch_ID() > 0 ? workpackage.getC_Async_Batch() : null;
+
+		final List<Object> records = queueDAO.retrieveAllItems(workpackage, Object.class);
 		for (final Object record : records)
 		{
-			if (workpackage.getC_Async_Batch_ID() > 0)
+			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
+			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : -1)))
 			{
-				InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, workpackage.getC_Async_Batch());
+				generateOutboundDocument(record, userId);
 			}
-			generateOutboundDocument(record, UserId.ofRepoIdOrNull(workpackage.getAD_User_ID()));
 		}
 		return Result.SUCCESS;
 	}
@@ -72,7 +99,11 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			@NonNull final Object record,
 			@Nullable final UserId userId)
 	{
-		final ArchiveResult archiveResult = DefaultModelArchiver.of(record).archive();
+		final boolean isInvoiceEmailEnabledEffective = computeInvoiceEmailEnabledFromRecord(record);
+
+		final ArchiveResult archiveResult = DefaultModelArchiver.of(record)
+				.flavor(isInvoiceEmailEnabledEffective ? DocumentReportFlavor.EMAIL : DocumentReportFlavor.PRINT)
+				.archive();
 		if (archiveResult.isNoArchive())
 		{
 			Loggables.addLog("Created *no* AD_Archive for record={}", record);
@@ -82,5 +113,20 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
 			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
 		}
+	}
+
+	private boolean computeInvoiceEmailEnabledFromRecord(@NonNull final Object record)
+	{
+		final TableRecordReference recordRef = TableRecordReference.of(record);
+		return docOutboundLogMailRecipientRegistry
+				.getRecipient(
+						DocOutboundLogMailRecipientRequest.builder()
+								.recordRef(recordRef)
+								.clientId(InterfaceWrapperHelper.getClientId(record).orElseThrow(() -> new AdempiereException("Cannot get AD_Client_ID from " + record)))
+								.orgId(InterfaceWrapperHelper.getOrgId(record).orElseThrow(() -> new AdempiereException("Cannot get AD_Org_ID from " + record)))
+								.docTypeId(documentBL.getDocTypeId(record).orElse(null))
+								.build())
+				.map(DocOutBoundRecipient::isInvoiceAsEmail)
+				.orElse(false);
 	}
 }

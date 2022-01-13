@@ -3,38 +3,6 @@
  */
 package de.metas.payment.esr;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
-import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.calendar.IPeriodBL;
@@ -56,6 +24,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.esr.actionhandler.impl.DuplicatePaymentESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
@@ -67,10 +36,43 @@ import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
+import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
+import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * This class tests the entire module of importing ESR
@@ -172,10 +174,10 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-067789-3",
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-067789-3",
+															 currencyEUR);
 
 		// doc type
 		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
@@ -215,13 +217,16 @@ public class ESRImportTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
+
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 		// register listeners
 		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText).getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile,
+												   new ByteArrayInputStream((esrLineText + '\n' + esrLineText).getBytes()));
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -243,7 +248,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		assertThat(esrImportLine2.isValid(), is(true));
 		assertThat(esrImportLine2.isProcessed(), is(false));
-		assertThat(esrImportLine2.getESR_Payment_Action(), nullValue());
+		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
 		assertThat(esrImportLine2.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine2.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-25)));
 
@@ -670,6 +675,8 @@ public class ESRImportTest extends ESRTestBase
 		org.setValue("106");
 		save(org);
 
+
+
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
@@ -677,10 +684,10 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-067789-3",
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-067789-3",
+															 currencyEUR);
 
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
@@ -690,7 +697,9 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -805,6 +814,7 @@ public class ESRImportTest extends ESRTestBase
 		partner.setAD_Org_ID(org.getAD_Org_ID());
 		save(partner);
 
+
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
@@ -817,6 +827,13 @@ public class ESRImportTest extends ESRTestBase
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -825,12 +842,15 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -958,6 +978,13 @@ public class ESRImportTest extends ESRTestBase
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -966,12 +993,15 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -1077,7 +1107,7 @@ public class ESRImportTest extends ESRTestBase
 		// Wait until all threads finished
 		while (!threadsRunning.isEmpty())
 		{
-			for (Iterator<Thread> it = threadsRunning.iterator(); it.hasNext();)
+			for (Iterator<Thread> it = threadsRunning.iterator(); it.hasNext(); )
 			{
 				final Thread thread = it.next();
 				try
@@ -1151,10 +1181,10 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				ESR_Rendered_AccountNo,
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 ESR_Rendered_AccountNo,
+															 currencyEUR);
 
 		// doc type
 		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
@@ -1196,7 +1226,9 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		esrImportBL.process(esrImport);
 
@@ -1261,10 +1293,10 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				ESR_Rendered_AccountNo,
-				currencyEUR);
+															 org.getAD_Org_ID(),
+															 Env.getAD_User_ID(getCtx()),
+															 ESR_Rendered_AccountNo,
+															 currencyEUR);
 
 		// doc type
 		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
@@ -1308,7 +1340,9 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		esrImportBL.process(esrImport);
 
@@ -1369,6 +1403,13 @@ public class ESRImportTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -1377,6 +1418,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
 		account.setC_Currency_ID(999);
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		// currency
@@ -1423,7 +1465,9 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		esrImportBL.process(esrImport);
 
@@ -1476,6 +1520,13 @@ public class ESRImportTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -1484,6 +1535,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(999);
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		// currency
@@ -1535,11 +1587,14 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		// esr line
 		// first line
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText + '\n' + esrLineText).getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile,
+												   new ByteArrayInputStream((esrLineText + '\n' + esrLineText + '\n' + esrLineText).getBytes()));
 
 		esrImportBL.process(esrImport);
 
@@ -1572,6 +1627,51 @@ public class ESRImportTest extends ESRTestBase
 
 		refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));
+	}
+
+	@Test
+	public void testDuplicatePayments()
+	{
+		final String grandTotal = "50";
+		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+		final String partnerValue = "123456";
+		final String invDocNo = "654321";
+		final String ESR_Rendered_AccountNo = "01-067789-3";
+
+		final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+		esrImportLine1.setESRLineText(esrLineText);
+		save(esrImportLine1);
+
+		final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
+
+		esrImportBL.process(esrImport);
+
+
+		final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+		esrImportLine2.setESRLineText(esrLineText);
+		save(esrImportLine2);
+		final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
+		esrImportBL.process(esrImport2);
+
+
+		// check import line
+		refresh(esrImportLine1, true);
+		assertThat(esrImportLine1.isValid(), is(true));
+		assertThat(esrImportLine1.isProcessed(), is(true));
+		assertThat(esrImportLine1.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
+		assertThat(esrImportLine1.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
+		assertThat(esrImportLine1.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine1.getMatchErrorMsg(), nullValue());
+
+		refresh(esrImportLine2, true);
+		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
+		assertThat(esrImportLine2.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine2.getMatchErrorMsg(), is("Rechnung " + invDocNo + " wurde im System als bereits bezahlt markiert"));
+
+		// check the payment
+		assertThat(esrImportLine2.getC_Payment_ID(), is(esrImportLine2.getC_Payment_ID()));
 	}
 
 }

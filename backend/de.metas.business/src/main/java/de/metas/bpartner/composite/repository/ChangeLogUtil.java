@@ -1,14 +1,26 @@
 package de.metas.bpartner.composite.repository;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.CountryId;
+import de.metas.location.LocationId;
+import de.metas.location.PostalId;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -20,21 +32,11 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerBankAccount;
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerContactType;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.user.UserId;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -61,7 +63,7 @@ import lombok.experimental.UtilityClass;
 final class ChangeLogUtil
 {
 	private static final ImmutableMap<String, String> BPARTNER_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_C_BPartner.COLUMNNAME_Value, BPartner.VALUE)
 			.put(I_C_BPartner.COLUMNNAME_CompanyName, BPartner.COMPANY_NAME)
 			.put(I_C_BPartner.COLUMNNAME_ExternalId, BPartner.EXTERNAL_ID)
@@ -80,13 +82,25 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
 			.put(I_C_BPartner.COLUMNNAME_IsVendor, BPartner.VENDOR)
 			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
+			.put(I_C_BPartner.COLUMNNAME_SalesPartnerCode, BPartner.SALES_PARTNER_CODE)
+			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
+			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
+			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_Greeting_ID, BPartner.GREETING_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID, BPartner.CUSTOMER_PAYMENTTERM_ID)
+			.put(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID, BPartner.CUSTOMER_PRICING_SYSTEM_ID)
+			.put(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID, BPartner.VENDOR_PAYMENTTERM_ID)
+			.put(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID, BPartner.VENDOR_PRICING_SYSTEM_ID)
+			.put(I_C_BPartner.COLUMNNAME_ExcludeFromPromotions, BPartner.EXCLUDE_FROM_PROMOTIONS)
+			.put(I_C_BPartner.COLUMNNAME_Referrer, BPartner.REFERRER)
+			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
 			.build();
 
 	@VisibleForTesting
 	static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_AD_User.COLUMNNAME_AD_User_ID, BPartnerContact.ID)
 			.put(I_AD_User.COLUMNNAME_C_BPartner_ID, BPartnerContact.BPARTNER_ID)
 			.put(I_AD_User.COLUMNNAME_EMail, BPartnerContact.EMAIL)
@@ -95,6 +109,7 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Firstname, BPartnerContact.FIRST_NAME)
 			.put(I_AD_User.COLUMNNAME_Lastname, BPartnerContact.LAST_NAME)
 			.put(I_AD_User.COLUMNNAME_Name, BPartnerContact.NAME)
+			.put(I_AD_User.COLUMNNAME_Birthday, BPartnerContact.BIRTHDAY)
 			.put(I_AD_User.COLUMNNAME_Phone, BPartnerContact.PHONE)
 			.put(I_AD_User.COLUMNNAME_IsDefaultContact, BPartnerContactType.DEFAULT_CONTACT)
 			.put(I_AD_User.COLUMNNAME_IsBillToContact_Default, BPartnerContactType.BILL_TO_DEFAULT)
@@ -103,18 +118,22 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_IsSalesContact_Default, BPartnerContactType.SALES_DEFAULT)
 			.put(I_AD_User.COLUMNNAME_IsPurchaseContact, BPartnerContactType.PURCHASE)
 			.put(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, BPartnerContactType.PURCHASE_DEFAULT)
-			.put(I_AD_User.COLUMNNAME_IsSubjectMatterContact, BPartnerContactType.SUBJECT_MATTER)
-			.put(I_AD_User.COLUMNNAME_IsActive, BPartnerContact.ACTIVE)
+			.put(I_AD_User.COLUMNNAME_IsSubjectMatterContact, BPartnerContact.SUBJECT_MATTER)
 			.put(I_AD_User.COLUMNNAME_IsNewsletter, BPartnerContact.NEWSLETTER)
+			.put(I_AD_User.COLUMNNAME_IsMembershipContact, BPartnerContact.MEMBERSHIP)
+			.put(I_AD_User.COLUMNNAME_IsActive, BPartnerContact.ACTIVE)
 			.put(I_AD_User.COLUMNNAME_Fax, BPartnerContact.FAX)
 			.put(I_AD_User.COLUMNNAME_MobilePhone, BPartnerContact.MOBILE_PHONE)
 			.put(I_AD_User.COLUMNNAME_Description, BPartnerContact.DESCRIPTION)
 			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, BPartnerContact.GREETING_ID)
+			.put(I_AD_User.COLUMNNAME_C_BPartner_Location_ID, BPartnerContact.BPARTNER_LOCATION_ID)
+			.put(I_AD_User.COLUMNNAME_EMail2, BPartnerContact.EMAIL2)
+			.put(I_AD_User.COLUMNNAME_EMail3, BPartnerContact.EMAIL3)
 			.build();
 
 	@VisibleForTesting
 	static final ImmutableMap<String, String> C_BPARTNER_LOCATION_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_C_BPartner_Location.COLUMNNAME_ExternalId, BPartnerLocation.EXTERNAL_ID)
 			.put(I_C_BPartner_Location.COLUMNNAME_GLN, BPartnerLocation.GLN)
 			.put(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, BPartnerLocation.ID)
@@ -125,6 +144,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, BPartnerLocationType.SHIP_TO_DEFAULT)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, BPartnerLocationType.SHIP_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, BPartnerLocation.ACTIVE)
+			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
+			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,
@@ -141,18 +162,18 @@ final class ChangeLogUtil
 			.build();
 
 	private static final ImmutableMap<String, String> C_POSTAL_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_C_Postal.COLUMNNAME_District, BPartnerLocation.DISTRICT)
 			.build();
 
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
 			.build();
 
 	@VisibleForTesting
 	private static final ImmutableMap<String, String> C_BP_BANKACCOUNT_COLUMN_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, BPartnerBankAccount.ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, BPartnerBankAccount.BPARTNER_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
@@ -243,7 +264,9 @@ final class ChangeLogUtil
 		}
 
 		// location
-		final I_C_Location locationRecord = relatedRecords.getLocationId2Location().get(bpartnerLocationRecord.getC_Location_ID());
+		final LocationId locationId = LocationId.ofRepoId(bpartnerLocationRecord.getC_Location_ID());
+		final I_C_Location locationRecord = relatedRecords.getLocationById(locationId)
+				.orElseThrow(() -> new AdempiereException("No location found in cache for " + locationId));
 		if (locationRecord.getCreated().before(created))
 		{
 			created = locationRecord.getCreated();
@@ -251,8 +274,8 @@ final class ChangeLogUtil
 		}
 
 		// country
-		final I_C_Country countryRecord = relatedRecords.getCountryId2Country().get(locationRecord.getC_Country_ID());
-		final ImmutableList<RecordChangeLogEntry> countryEntries = recordRef2LogEntries.get(TableRecordReference.of(countryRecord));
+		final CountryId countryId = CountryId.ofRepoId(locationRecord.getC_Country_ID());
+		final ImmutableList<RecordChangeLogEntry> countryEntries = recordRef2LogEntries.get(TableRecordReference.of(I_C_Country.Table_Name, countryId));
 		for (final RecordChangeLogEntry countryEntry : countryEntries)
 		{
 			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(countryEntry, C_COUNTRY_COLUMN_MAP);
@@ -261,7 +284,9 @@ final class ChangeLogUtil
 		}
 
 		// postal
-		final I_C_Postal postalRecord = relatedRecords.getPostalId2Postal().get(locationRecord.getC_Postal_ID());
+		final I_C_Postal postalRecord = PostalId.optionalOfRepoId(locationRecord.getC_Postal_ID())
+				.flatMap(relatedRecords::getPostalById)
+				.orElse(null);
 		if (postalRecord != null)
 		{
 			final ImmutableList<RecordChangeLogEntry> postalEntries = recordRef2LogEntries.get(TableRecordReference.of(postalRecord));

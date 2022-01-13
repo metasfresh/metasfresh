@@ -13,10 +13,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Value;
-import org.compiere.util.Util;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
-import java.io.File;
 
 /*
  * #%L
@@ -114,14 +113,7 @@ public class ProcessInstanceResult
 		String contentType;
 
 		@NonNull
-		@Setter(AccessLevel.NONE)
-		@Getter(AccessLevel.NONE)
-		File tempFile;
-
-		public byte[] getReportData()
-		{
-			return Util.readBytes(tempFile);
-		}
+		Resource reportData;
 	}
 
 	@lombok.Value

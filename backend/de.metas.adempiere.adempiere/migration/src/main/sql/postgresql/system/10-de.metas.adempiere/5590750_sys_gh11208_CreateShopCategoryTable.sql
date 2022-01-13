@@ -1,0 +1,4 @@
+-- 2021-06-02T08:49:05.494Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ CREATE TABLE public.M_Shop_Category (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(255), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Shop_Category_ID NUMERIC(10) NOT NULL, Name VARCHAR(40) NOT NULL, Parent_Shop_Category_ID NUMERIC(10), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT M_Shop_Category_Key PRIMARY KEY (M_Shop_Category_ID), CONSTRAINT ParentShopCategory_MShopCategory FOREIGN KEY (Parent_Shop_Category_ID) REFERENCES public.M_Shop_Category DEFERRABLE INITIALLY DEFERRED)
+;

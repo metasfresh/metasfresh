@@ -1,0 +1,16 @@
+{
+  "_id": "hospitalId",
+  "customerId": null,
+  "additionalCompanyName": null,
+  "address": "testaddress1",
+  "city": "testcity",
+  "company": "testcompany",
+  "companyName": "testcompanyName",
+  "email": "test@test-hostpital.com",
+  "fax": "1",
+  "name": "testname",
+  "phone": "2",
+  "postalCode": "postalCode",
+  "timestamp": "2019-02-20T21:58:14.000Z",
+  "website": "http://hospital.com/"
+}

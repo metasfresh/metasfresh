@@ -22,6 +22,7 @@
 
 package de.metas.remittanceadvice;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
@@ -39,6 +40,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -78,7 +80,7 @@ public class RemittanceAdviceService
 
 		if (!invoiceOptional.isPresent())
 		{
-			logger.warn("*** WARN no invoice found for remittanceLine: {}", remittanceAdviceLine);
+			Loggables.withLogger(logger, Level.WARN).addLog("*** WARN no invoice found for remittanceLine: {}", remittanceAdviceLine);
 			return;
 		}
 

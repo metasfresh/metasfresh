@@ -1,16 +1,14 @@
 package de.metas.bpartner.composite;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -36,6 +34,7 @@ import lombok.Data;
 
 @Data
 @JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class BPartnerContactType
 {
 
@@ -46,31 +45,38 @@ public class BPartnerContactType
 	public static final String SALES_DEFAULT = "salesDefault";
 	public static final String PURCHASE = "purchase";
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
-	public static final String SUBJECT_MATTER = "subjectMatter";
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private Optional<Boolean> defaultContact;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private Optional<Boolean> billToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private Optional<Boolean> shipToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private final Optional<Boolean> sales;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private Optional<Boolean> salesDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private final Optional<Boolean> purchase;
 
 	@JsonInclude(Include.NON_ABSENT)
+	@NonNull
 	private Optional<Boolean> purchaseDefault;
 
-	@JsonInclude(Include.NON_ABSENT)
-	private final Optional<Boolean> subjectMatter;
+	//
+	// NOTE to dev: if you have more flags to add, consider adding them to BPartnerContact model (like we did with newsletter, membershipContact etc)
+	//
 
 	@Builder
 	public BPartnerContactType(
@@ -80,8 +86,7 @@ public class BPartnerContactType
 			@Nullable final Boolean sales,
 			@Nullable final Boolean salesDefault,
 			@Nullable final Boolean purchase,
-			@Nullable final Boolean purchaseDefault,
-			@Nullable final Boolean subjectMatter)
+			@Nullable final Boolean purchaseDefault)
 	{
 		this.defaultContact = Optional.ofNullable(defaultContact);
 		this.billToDefault = Optional.ofNullable(billToDefault);
@@ -106,34 +111,25 @@ public class BPartnerContactType
 		{
 			this.purchase = Optional.ofNullable(purchase);
 		}
-
-		this.subjectMatter = Optional.ofNullable(subjectMatter);
 	}
 
-	/** copy constructor */
-	private BPartnerContactType(
-			@Nullable final Optional<Boolean> defaultContact,
-			@Nullable final Optional<Boolean> billToDefault,
-			@Nullable final Optional<Boolean> shipToDefault,
-			@Nullable final Optional<Boolean> sales,
-			@Nullable final Optional<Boolean> salesDefault,
-			@Nullable final Optional<Boolean> purchase,
-			@Nullable final Optional<Boolean> purchaseDefault,
-			@Nullable final Optional<Boolean> subjectMatter)
+	/**
+	 * copy constructor
+	 */
+	private BPartnerContactType(@NonNull final BPartnerContactType from)
 	{
-		this.defaultContact = defaultContact;
-		this.billToDefault = billToDefault;
-		this.shipToDefault = shipToDefault;
-		this.sales = sales;
-		this.salesDefault = salesDefault;
-		this.purchase = purchase;
-		this.purchaseDefault = purchaseDefault;
-		this.subjectMatter = subjectMatter;
+		this.defaultContact = from.defaultContact;
+		this.billToDefault = from.billToDefault;
+		this.shipToDefault = from.shipToDefault;
+		this.sales = from.sales;
+		this.salesDefault = from.salesDefault;
+		this.purchase = from.purchase;
+		this.purchaseDefault = from.purchaseDefault;
 	}
 
 	public BPartnerContactType deepCopy()
 	{
-		return new BPartnerContactType(defaultContact, billToDefault, shipToDefault, sales, salesDefault, purchase, purchaseDefault, subjectMatter);
+		return new BPartnerContactType(this);
 	}
 
 	public boolean getIsDefaultContactOr(final boolean defaultValue)
@@ -169,12 +165,6 @@ public class BPartnerContactType
 	public boolean getIsPurchaseOr(final boolean defaultValue)
 	{
 		return purchase.orElse(defaultValue);
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getIsSubjectMatterOr(final boolean defaultValue)
-	{
-		return subjectMatter.orElse(defaultValue);
 	}
 
 	public void setDefaultContact(final boolean defaultContact)

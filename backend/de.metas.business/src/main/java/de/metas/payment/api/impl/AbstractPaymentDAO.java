@@ -1,55 +1,8 @@
 package de.metas.payment.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_Fact_Acct;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
@@ -60,8 +13,34 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.*;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -88,7 +67,8 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@Nullable
-	public ExternalId getExternalOrderId(@NonNull final PaymentId paymentId){
+	public ExternalId getExternalOrderId(@NonNull final PaymentId paymentId)
+	{
 		final List<String> externalIDs = queryBL
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMN_C_Payment_ID, paymentId)
@@ -249,6 +229,11 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 			queryBuilder.addNotInArrayFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, query.getExcludePaymentIds());
 		}
 
+		if(query.getDateTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_DateTrx, query.getDateTrx());
+		}
+
 		return queryBuilder
 				.setLimit(query.getLimit())
 				.create()
@@ -259,5 +244,33 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public void save(final @NonNull I_C_Payment payment)
 	{
 		InterfaceWrapperHelper.save(payment);
+	}
+
+	@Override
+	public Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(
+			@NonNull final OrgId orgId,
+			@NonNull final BankAccountId bankAccountId,
+			@NonNull final Instant startDate,
+			@NonNull final Instant endDate)
+	{
+		final IQuery<I_C_BPartner> employeePartnerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEmployee, true)
+				.create();
+
+		final Iterator<I_C_Payment> paymentsForEmployees = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
+				.addBetweenFilter(I_C_Payment.COLUMNNAME_DateTrx, startDate, endDate)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
+				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID,
+									 I_C_BPartner.COLUMNNAME_C_BPartner_ID,
+									 employeePartnerQuery)
+				.create()
+				.iterate(I_C_Payment.class);
+
+		return paymentsForEmployees;
 	}
 }

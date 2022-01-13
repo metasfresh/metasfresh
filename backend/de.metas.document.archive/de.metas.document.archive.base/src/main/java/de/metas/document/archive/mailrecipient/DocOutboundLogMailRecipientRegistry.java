@@ -70,33 +70,32 @@ public class DocOutboundLogMailRecipientRegistry
 		this.tableName2provider = mapBuilder.build();
 	}
 
-	public Optional<DocOutBoundRecipient> invokeProvider(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> getRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		if (docOutboundLogRecord.getAD_Table_ID() <= 0)
+		if(request.getRecordRef() == null)
 		{
-			return invokeDefaultProviderIfPossible(docOutboundLogRecord);
+			return invokeDefaultProviderIfPossible(request);
 		}
 
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
+		final String tableName = request.getRecordRef().getTableName();
 
 		if (!tableName2provider.containsKey(tableName))
 		{
-			return invokeDefaultProviderIfPossible(docOutboundLogRecord);
+			return invokeDefaultProviderIfPossible(request);
 		}
 
 		return tableName2provider
 				.get(tableName)
-				.provideMailRecipient(docOutboundLogRecord);
+				.provideMailRecipient(request);
 	}
 
-	private Optional<DocOutBoundRecipient> invokeDefaultProviderIfPossible(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	private Optional<DocOutBoundRecipient> invokeDefaultProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		if (defaultProvider == null)
 		{
 			return Optional.empty(); // nothing we can do
 		}
-		return defaultProvider.provideMailRecipient(docOutboundLogRecord);
+		return defaultProvider.provideMailRecipient(request);
 	}
 
 	public Optional<DocOutboundLogMailRecipientProvider> getDefaultProvider()

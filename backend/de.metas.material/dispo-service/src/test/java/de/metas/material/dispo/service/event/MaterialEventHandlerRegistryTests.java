@@ -6,6 +6,8 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -13,6 +15,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -21,7 +24,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
-import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
@@ -58,7 +60,7 @@ import java.util.Optional;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -114,10 +116,12 @@ public class MaterialEventHandlerRegistryTests
 		eventLogUserService = Mockito.spy(EventLogUserService.class);
 		availableToPromiseRepository = Mockito.mock(AvailableToPromiseRepository.class);
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -141,12 +145,9 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
-
-		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
-				candidateChangeHandler,
-				candidateRepositoryRetrieval,
-				postMaterialEventService);
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
+				new DDOrderDetailRequestHandler(),
+				new MainDataRequestHandler());
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -162,7 +163,6 @@ public class MaterialEventHandlerRegistryTests
 		@SuppressWarnings("rawtypes")
 		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
 				distributionAdvisedEventHandler,
-				ppOrderAdvisedHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
 				shipmentScheduleEventHandler));
@@ -219,19 +219,19 @@ public class MaterialEventHandlerRegistryTests
 				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.plantId(800)
-						.productPlanningId(810)
-						.shipperId(820)
-						.datePromised(shipmentScheduleEventTime)
-						.line(DDOrderLine.builder()
-								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getCustomerId().getRepoId())
-								.qty(BigDecimal.TEN)
-								.durationDays(0)
-								.networkDistributionLineId(900)
-								.build())
-						.build())
+								 .orgId(ORG_ID)
+								 .plantId(800)
+								 .productPlanningId(810)
+								 .shipperId(820)
+								 .datePromised(shipmentScheduleEventTime)
+								 .line(DDOrderLine.builder()
+											   .productDescriptor(orderedMaterial)
+											   .bPartnerId(orderedMaterial.getCustomerId().getRepoId())
+											   .qty(BigDecimal.TEN)
+											   .durationDays(0)
+											   .networkDistributionLineId(900)
+											   .build())
+								 .build())
 				.build();
 		ddOrderAdvisedEvent.validate();
 

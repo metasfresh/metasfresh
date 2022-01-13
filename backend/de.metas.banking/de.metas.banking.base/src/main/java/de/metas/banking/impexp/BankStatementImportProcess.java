@@ -328,7 +328,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		{
 			return X_I_BankStatement.AMTFORMAT_DebitPlusCredit;
 		}
-		else if (importRecord.getTrxAmt().signum() != 0)
+		else if (importRecord.getTrxAmt() != null)
 		{
 			return X_I_BankStatement.AMTFORMAT_Straight;
 		}

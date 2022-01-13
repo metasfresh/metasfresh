@@ -43,7 +43,9 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 	private static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	@Override
-	public GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	public GenericZoomIntoTableInfo retrieveTableInfo(
+			@NonNull final String tableName,
+			final boolean ignoreExcludeFromZoomTargetsFlag)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if(poInfo == null)
@@ -51,20 +53,11 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 			throw new AdempiereException("No table info found for "+tableName);
 		}
 
-		final String keyColumnName = poInfo.getKeyColumnName();
-		if (keyColumnName == null)
-		{
-			throw new AdempiereException("Table without single key column does not support zoom into: " + tableName);
-		}
-
-		final @NonNull List<GenericZoomIntoTableWindow> windows = DB.retrieveRows(
-				"SELECT * FROM ad_table_windows_v where TableName=?",
-				ImmutableList.of(tableName),
-				this::retrieveTableWindow);
+		final List<GenericZoomIntoTableWindow> windows = retrieveTableWindows(tableName, ignoreExcludeFromZoomTargetsFlag);
 
 		final GenericZoomIntoTableInfo.GenericZoomIntoTableInfoBuilder builder = GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
-				.keyColumnName(keyColumnName)
+				.keyColumnNames(poInfo.getKeyColumnNames())
 				.hasIsSOTrxColumn(poInfo.hasColumnName(COLUMNNAME_IsSOTrx))
 				.windows(windows);
 
@@ -78,6 +71,24 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 		}
 
 		return builder.build();
+	}
+
+	@NonNull
+	private List<GenericZoomIntoTableWindow> retrieveTableWindows(
+			final @NonNull String tableName,
+			final boolean ignoreExcludeFromZoomTargetsFlag)
+	{
+		String sql = "SELECT * FROM ad_table_windows_v where TableName=?";
+		if(!ignoreExcludeFromZoomTargetsFlag)
+		{
+			sql += " AND IsExcludeFromZoomTargets='N'";
+		}
+
+		final @NonNull List<GenericZoomIntoTableWindow> windows = DB.retrieveRows(
+				sql,
+				ImmutableList.of(tableName),
+				this::retrieveTableWindow);
+		return windows;
 	}
 
 	private GenericZoomIntoTableWindow retrieveTableWindow(final ResultSet rs) throws SQLException

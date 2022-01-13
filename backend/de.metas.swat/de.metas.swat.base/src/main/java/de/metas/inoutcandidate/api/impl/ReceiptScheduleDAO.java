@@ -80,8 +80,13 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public I_M_ReceiptSchedule retrieveForRecord(Object model)
+	@Nullable
+	public I_M_ReceiptSchedule retrieveForRecord(@Nullable final Object model)
 	{
+		if (model == null)
+		{
+			return null;
+		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);

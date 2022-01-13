@@ -17,6 +17,7 @@ import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
+import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
 
 /*
  * #%L
@@ -64,13 +67,20 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient org.adempiere.archive.api.IArchiveDAO archiveDAO = Services.get(org.adempiere.archive.api.IArchiveDAO.class);
 	private final transient IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public Result processWorkPackage(
 			@NonNull final I_C_Queue_WorkPackage workpackage,
 			@NonNull final String localTrxName)
 	{
-		final List<I_AD_Archive> archives = queueDAO.retrieveItems(workpackage, I_AD_Archive.class, localTrxName);
+		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
+		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
+		{
+			return Result.SUCCESS;
+		}
+
+		final List<I_AD_Archive> archives = queueDAO.retrieveAllItems(workpackage, I_AD_Archive.class);
 		for (final I_AD_Archive archive : archives)
 		{
 			writeCCFile(archive);

@@ -638,6 +638,7 @@ input:checked + .input-slider:before {
     border-bottom-right-radius: 3px;
     left: 0;
     top: calc(100% + 1px);
+    z-index: 1002;
 }
 
 .input-dropdown-list-header {
@@ -800,6 +801,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     align-items: center;
     padding: 0;
     flex: 1;
+
+    :first-child {
+        width: 100%;
+    }
 
     &.input-icon {
         flex: 0.05;
@@ -1003,4 +1008,29 @@ table {
   transition: opacity 200ms, transform 200ms;
 }
 
+.input-dropdown-hasmore {
+    position:absolute;
+    top: calc(100% + 197px);
+    left: 0;
+    border: 1px solid #C9D5DC;
+    background: #f8fafb;
+    padding: 6px 0px 4px 8px;
+    border-radius: 5px;
+    text-align: center;
+    z-index: 1001;
+    box-sizing: border-box;
+}
 
+.lookup-widget-wrapper > div > .input-mandatory {
+    border: 2px solid $brand-mandatory-color;
+    border-radius: 3px;
+}
+
+.btn-borderless:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.input-qr-scanner-wrapper {
+    padding: 20px 30px 20px 28px;
+}

@@ -41,7 +41,7 @@ public class Bank
 
 	@Nullable
 	String swiftCode;
-	@NonNull
+	@Nullable
 	String routingNo;
 
 	boolean cashBank;

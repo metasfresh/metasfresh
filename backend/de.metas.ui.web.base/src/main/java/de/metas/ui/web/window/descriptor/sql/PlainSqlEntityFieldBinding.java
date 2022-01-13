@@ -30,11 +30,12 @@ import lombok.Value;
 @Value
 public class PlainSqlEntityFieldBinding implements SqlEntityFieldBinding
 {
-	public static final PlainSqlEntityFieldBinding intField(final String columnName)
+	public static PlainSqlEntityFieldBinding mandatoryIntField(final String columnName)
 	{
 		return builder()
 				.columnName(columnName)
 				.widgetType(DocumentFieldWidgetType.Integer)
+				.mandatory(true)
 				.build();
 	}
 
@@ -44,6 +45,7 @@ public class PlainSqlEntityFieldBinding implements SqlEntityFieldBinding
 	Class<?> sqlValueClass;
 	SqlOrderByValue sqlOrderBy;
 	boolean virtualColumn;
+	boolean mandatory;
 
 	@Builder
 	private PlainSqlEntityFieldBinding(
@@ -52,7 +54,8 @@ public class PlainSqlEntityFieldBinding implements SqlEntityFieldBinding
 			@NonNull final DocumentFieldWidgetType widgetType,
 			final Class<?> sqlValueClass,
 			final SqlOrderByValue sqlOrderBy,
-			final boolean virtualColumn)
+			final boolean virtualColumn,
+			final boolean mandatory)
 	{
 		this.columnName = columnName;
 		this.sqlSelectValue = sqlSelectValue;
@@ -60,6 +63,12 @@ public class PlainSqlEntityFieldBinding implements SqlEntityFieldBinding
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlOrderBy = sqlOrderBy;
 		this.virtualColumn = virtualColumn;
+		this.mandatory = mandatory;
 	}
 
+	@Override
+	public boolean isMandatory()
+	{
+		return mandatory;
+	}
 }

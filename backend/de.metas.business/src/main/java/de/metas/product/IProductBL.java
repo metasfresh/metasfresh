@@ -22,33 +22,34 @@ package de.metas.product;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
-	
-	ProductId getProductIdByValue(String productValue);
+
+	I_M_Product getByIdInTrx(ProductId productId);
+
+	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
 
@@ -77,7 +78,9 @@ public interface IProductBL extends ISingletonService
 	boolean isDiverse(ProductId productId);
 
 	/**
-	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
+	 * Take the Attribute Set Id from the product category of the product.
+	 * !! Do **not** take the from the product itself !!
+	 * The product's Attribute Set Id is there for the product's dedicated ASI and is not to be used anywhere else.
 	 *
 	 * @return {@link AttributeSetId}; never returns null
 	 */
@@ -194,4 +197,9 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
+
+	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);
 }

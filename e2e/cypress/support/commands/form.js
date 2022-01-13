@@ -21,9 +21,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
   cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
   const path = createFieldPath(fieldName, modal);
-  cy.get(path)
-    .find('input')
-    .clear();
+  cy.get(path).find('input').clear();
 });
 
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
@@ -32,20 +30,14 @@ Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
-  return cy
-    .get(path)
-    .find('input')
-    .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+  return cy.get(path).find('input').invoke('val'); /* note: beats me why .its('value'); returned undefined */
 });
 
 Cypress.Commands.add('getTextFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
   const path = createFieldPath(fieldName, modal);
-  return cy
-    .get(path)
-    .find('textarea')
-    .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+  return cy.get(path).find('textarea').invoke('val'); /* note: beats me why .its('value'); returned undefined */
 });
 
 Cypress.Commands.add('assertFieldNotShown', (fieldName, modal) => {
@@ -68,12 +60,10 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 
   const path = createFieldPath(fieldName, modal);
 
-  return cy.get(path).then(el => {
+  return cy.get(path).then((el) => {
     // noinspection RedundantIfStatementJS
-    if (el.find('checked').length || el.find('.checked').length) {
-      return true;
-    }
-    return false;
+    const input = el.find('input');
+    return input.hasClass('is-checked') ? true : false;
   });
 });
 
@@ -83,18 +73,18 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
+  cy.get('.notification-item').should('not.exist');
 
-  const timeout = { timeout: 20000 };
   if (isChecked) {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('exist');
+    cy.get(path).then((el) => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? true : false;
+    });
   } else {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('not.exist');
+    cy.get(path).then((el) => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? false : true;
+    });
   }
 });
 
@@ -104,14 +94,11 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
   const patchListValueAliasName = `patchListValue-${fieldName}-${new Date().getTime()}`;
 
-  cy.server();
-  cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
+  cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
 
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('.meta-icon-close-alt')
-    .click();
+  cy.get(path).find('.meta-icon-close-alt').click();
 
   // todo rename resetListValue to something with Clear, so that all "clearing" methods have the same name (ie clear Field value)
   // todo make this work for lists as well, and rename properly
@@ -119,12 +106,10 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
   cy.get(path).waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
 });
 
-Cypress.Commands.add('clickOnIsActive', modal => {
+Cypress.Commands.add('clickOnIsActive', (modal) => {
   const path = createFieldPath('IsActive', modal);
 
-  cy.get(path)
-    .find('.input-slider')
-    .click();
+  cy.get(path).find('.input-slider').click();
 });
 
 /*
@@ -137,16 +122,13 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
   const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
   if (!skipPatch) {
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
+    cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
   }
   cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('.input-checkbox-tick')
-    .click(); // we don't care if the checkbox scrolled out of view
+  cy.get(path).find('.input-checkbox-tick').click(); // we don't care if the checkbox scrolled out of view
   if (!skipPatch) {
     cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
   }
@@ -160,21 +142,17 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
 Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('.datepicker')
-    .click();
+  cy.get(path).find('.datepicker').click();
 
   confirmCalendarDay();
 
-  cy.get(`${path} input`).should($input => {
+  cy.get(`${path} input`).should(($input) => {
     const val = $input.val();
 
     assert.isOk(val, 'date set');
   });
 
-  cy.get(path)
-    .find('.form-control-label')
-    .click();
+  cy.get(path).find('.form-control-label').click();
 });
 
 /**Selects a date in the picker
@@ -186,17 +164,13 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
 Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) => {
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('.datepicker')
-    .click();
-  cy.get('.rdtPicker td').then(e => {
+  cy.get(path).find('.datepicker').click();
+  cy.get('.rdtPicker td').then((e) => {
     /**get the index of the day to select in the date picker */
     let dayIndex = e.index(e.filter('.rdtToday')) + dayOffset;
-    e.filter(i => dayIndex == i).click();
+    e.filter((i) => dayIndex == i).click();
   });
-  cy.get(path)
-    .find('.form-control-label')
-    .click();
+  cy.get(path).find('.form-control-label').click();
 });
 
 /**
@@ -216,15 +190,11 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
 
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('input')
-    .type('{selectall}');
+  cy.get(path).find('input').type('{selectall}');
 
   cy.get('.indicator-pending').should('not.exist');
 
-  cy.get(path)
-    .find('input')
-    .type(stringValue, { delay: 20 });
+  cy.get(path).find('input').type(stringValue, { delay: 20 });
 
   // ^^ the Code above removes the flakyness and does not use wait !!!
   //
@@ -244,13 +214,10 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   //  https://www.cypress.io/blog/2018/02/05/when-can-the-test-start/
 
   if (!noRequest) {
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+    cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
 
-  cy.get(path)
-    .find('input')
-    .type('{enter}');
+  cy.get(path).find('input').type('{enter}');
 
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
@@ -276,15 +243,11 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
   const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
   // here we want to match URLs that don *not* end with "/NEW"
-  cy.server();
-  cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+  cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
   if (stringValue) {
     const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('textarea')
-      .wait(500)
-      .type(`${stringValue}{enter}`);
+    cy.get(path).find('textarea').wait(500).type(`${stringValue}{enter}`);
   }
 
   if (!skipRequest) {
@@ -313,10 +276,9 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window';
   if (!skipRequest) {
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+    cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
-  cy.get(path).within(el => {
+  cy.get(path).within((el) => {
     if (el.find('.lookup-widget-wrapper input').length) {
       return (
         cy
@@ -356,19 +318,14 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
 
   // here we want to match URLs that don *not* end with "/NEW"
   if (!skipRequest) {
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
+    cy.intercept('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
   }
   const path = createFieldPath(fieldName, modal);
 
-  cy.get(path)
-    .find('.input-dropdown')
-    .click(); // -- removed click as dropdown shows up when you clear and type
+  cy.get(path).find('.input-dropdown').click(); // -- removed click as dropdown shows up when you clear and type
 
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
-  cy.get('.input-dropdown-list')
-    .contains(listValue)
-    .click();
+  cy.get('.input-dropdown-list').contains(listValue).click();
 
   if (!skipRequest) {
     cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
@@ -386,11 +343,9 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
   cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
 
   const path = createFieldPath(fieldName, modal);
-  cy.get(path)
-    .find('.input-dropdown')
-    .click();
+  cy.get(path).find('.input-dropdown').click();
 
-  cy.get('.input-dropdown-list-option').then(options => {
+  cy.get('.input-dropdown-list-option').then((options) => {
     for (let i = 0; i < options.length; i += 1) {
       if (i === index) {
         cy.get(options[i]).click();
@@ -411,7 +366,7 @@ Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, r
     return;
   }
 
-  cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
+  cy.getCheckboxValue(fieldName, modal).then((theCheckboxValue) => {
     if (isChecked) {
       if (!theCheckboxValue) {
         cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);

@@ -29,22 +29,27 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -52,16 +57,21 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
@@ -86,6 +96,7 @@ public class ShipmentScheduleRepository
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -232,7 +243,8 @@ public class ShipmentScheduleRepository
 				.orderedQuantity(shipmentScheduleBL.getQtyOrdered(record))
 				.numberOfItemsForSameShipment(record.getNrOfOLCandsWithSamePOReference())
 				.deliveredQuantity(shipmentScheduleBL.getQtyDelivered(record))
-				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()));
+				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
+				.isProcessed(record.isProcessed());
 
 		if (record.getDateOrdered() != null)
 		{
@@ -286,6 +298,84 @@ public class ShipmentScheduleRepository
 			result.put(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()), ofRecord(record));
 		}
 		return result.build();
+	}
+
+	public Stream<ShipmentSchedule> streamFromSegment(@NonNull final IShipmentScheduleSegment shipmentScheduleSegment)
+	{
+		final IQueryBuilder<I_M_ShipmentSchedule> shipmentScheduleIQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (!Check.isEmpty(shipmentScheduleSegment.getBpartnerIds()) && !shipmentScheduleSegment.isAnyBPartner())
+		{
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> bPartnerFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, null)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID, shipmentScheduleSegment.getBpartnerIds());
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> bPartnerOverrideFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, shipmentScheduleSegment.getBpartnerIds());
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> orJoinedBPartnerFilters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.setJoinOr()
+					.addFilter(bPartnerFilter)
+					.addFilter(bPartnerOverrideFilter);
+
+			shipmentScheduleIQueryBuilder.filter(orJoinedBPartnerFilters);
+		}
+
+		if (!Check.isEmpty(shipmentScheduleSegment.getBillBPartnerIds()) && !shipmentScheduleSegment.isAnyBillBPartner())
+		{
+			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID, shipmentScheduleSegment.getBillBPartnerIds());
+		}
+
+		if (!Check.isEmpty(shipmentScheduleSegment.getLocatorIds()) && !shipmentScheduleSegment.isAnyLocator())
+		{
+			final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilder(I_M_Locator.class)
+					.addInArrayFilter(I_M_Locator.COLUMNNAME_M_Locator_ID, shipmentScheduleSegment.getLocatorIds())
+					.create()
+					.stream()
+					.map(I_M_Locator::getM_Warehouse_ID)
+					.map(WarehouseId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> warehouseFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseIds);
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> warehouseOverrideFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, warehouseIds);
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> orJoinedWarehouseFilters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.setJoinOr()
+					.addFilter(warehouseFilter)
+					.addFilter(warehouseOverrideFilter);
+
+			shipmentScheduleIQueryBuilder.filter(orJoinedWarehouseFilters);
+		}
+
+		if (!Check.isEmpty(shipmentScheduleSegment.getProductIds()) && !shipmentScheduleSegment.isAnyProduct())
+		{
+			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, shipmentScheduleSegment.getProductIds());
+		}
+
+		Stream<ShipmentSchedule> shipmentScheduleStream = shipmentScheduleIQueryBuilder.create()
+				.stream()
+				.map(this::ofRecord);
+
+		if (!Check.isEmpty(shipmentScheduleSegment.getAttributes()))
+		{
+			final ImmutableSet<AttributeSetInstanceId> targetAsiIds = shipmentScheduleSegment.getAttributes()
+					.stream()
+					.map(ShipmentScheduleAttributeSegment::getAttributeSetInstanceId)
+					.filter(Objects::nonNull)
+					.filter(asiId -> !asiId.equals(AttributeSetInstanceId.NONE))
+					.collect(ImmutableSet.toImmutableSet());
+
+			shipmentScheduleStream = shipmentScheduleStream.filter(shipmentSchedule -> shipmentSchedule.hasAttributes(targetAsiIds, attributeDAO));
+		}
+
+		return shipmentScheduleStream;
 	}
 
 	@Value

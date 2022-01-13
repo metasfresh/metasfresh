@@ -59,15 +59,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * Event that can be sent/received on {@link IEventBus}.
  *
  * @author tsa
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public final class Event
+public class Event
 {
 	public static Builder builder()
 	{
@@ -81,59 +82,61 @@ public final class Event
 	@JsonProperty("properties")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ImmutableMap<String, Object> properties;
+	ImmutableMap<String, Object> properties;
 
 	@JsonProperty("uuid")
-	@NonNull
-	private final UUID uuid;
+	UUID uuid;
 
 	@JsonProperty("when")
-	@NonNull
-	private final Instant when;
+	Instant when;
 
 	@JsonProperty("summary")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String summary;
+	String summary;
 
 	@JsonProperty("detailPlain")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String detailPlain;
+	String detailPlain;
 
 	@JsonProperty("detailADMessage")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String detailADMessage;
+	String detailADMessage;
 
 	@JsonProperty("senderId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String senderId;
+	String senderId;
 
 	@JsonProperty("recipientUserIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ImmutableSet<Integer> recipientUserIds;
+	ImmutableSet<Integer> recipientUserIds;
 
 	private enum LoggingStatus
 	{
 		SHALL_NOT_BE_LOGGED,
 
-		/** With this status, the system shall store the event before it is posted to the event bus. See {@link Event#withStatusIsLogged()}. */
+		/**
+		 * With this status, the system shall store the event before it is posted to the event bus. See {@link Event#withStatusWasLogged()}.
+		 */
 		SHALL_BE_LOGGED,
 
-		/** Indicate that the event itself was logged; with this status, the event handlers will invoke {@link EventLogEntryCollector#createThreadLocalForEvent(Event)} so that event handling business logic can log event-related info. */
-		WAS_LOGGED;
+		/**
+		 * Indicate that the event itself was logged; with this status, the event handlers will invoke {@link EventLogEntryCollector#createThreadLocalForEvent(Event)} so that event handling business logic can log event-related info.
+		 */
+		WAS_LOGGED
 	}
 
 	@JsonProperty("loggingStatus")
 	@Getter(value = AccessLevel.NONE)
-	private final LoggingStatus loggingStatus;
+	LoggingStatus loggingStatus;
 
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
-	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
+	transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 
 	private Event(final Builder builder)
 	{
-		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
-		when = CoalesceUtil.coalesceSuppliers(() -> builder.when, () -> Instant.now());
+		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, UUID::randomUUID);
+		when = CoalesceUtil.coalesceSuppliers(() -> builder.when, Instant::now);
 
 		summary = builder.summary;
 		detailPlain = builder.getDetailPlain();
@@ -146,8 +149,8 @@ public final class Event
 
 	@JsonCreator
 	public Event(
-			@JsonProperty("uuid") final UUID uuid,
-			@JsonProperty("when") final Instant when,
+			@JsonProperty("uuid") @NonNull final UUID uuid,
+			@JsonProperty("when") @NonNull final Instant when,
 			@JsonProperty("summary") final String summary,
 			@JsonProperty("detailPlain") final String detailPlain,
 			@JsonProperty("detailADMessage") final String detailADMessage,
@@ -206,7 +209,7 @@ public final class Event
 
 	public int getSingleRecipientUserId()
 	{
-		if (recipientUserIds.isEmpty() || recipientUserIds.size() > 1)
+		if (recipientUserIds.size() != 1)
 		{
 			throw new AdempiereException("Event does not have a single recipient: " + this);
 		}
@@ -219,8 +222,6 @@ public final class Event
 	}
 
 	/**
-	 *
-	 * @param name
 	 * @return the property with the given name or {@code null}
 	 */
 	public <T> T getProperty(final String name)
@@ -230,6 +231,7 @@ public final class Event
 		return value;
 	}
 
+	@Nullable
 	public String getPropertyAsString(final String name)
 	{
 		final Object value = getProperty(name);
@@ -248,12 +250,14 @@ public final class Event
 		return NumberUtils.asInt(value, defaultValue);
 	}
 
+	@Nullable
 	public Date getPropertyAsDate(final String name)
 	{
 		final Supplier<Date> defaultValue = null;
 		return getPropertyAsDate(name, defaultValue);
 	}
 
+	@Nullable
 	public Date getPropertyAsDate(final String name, final Supplier<Date> defaultValue)
 	{
 		final Object value = getProperty(name);
@@ -278,16 +282,14 @@ public final class Event
 	 */
 	public ITableRecordReference getRecord()
 	{
-		final ITableRecordReference record = getProperty(PROPERTY_Record);
-		return record;
+		return getProperty(PROPERTY_Record);
 	}
 
 	/**
-	 * @return
-	 *         <ul>
-	 *         <li>true if event was successfully marked
-	 *         <li>false if event was already received by given event bus ID
-	 *         </ul>
+	 * @return <ul>
+	 * <li>true if event was successfully marked
+	 * <li>false if event was already received by given event bus ID
+	 * </ul>
 	 */
 	public boolean markReceivedByEventBusId(final String eventBusId)
 	{
@@ -295,8 +297,6 @@ public final class Event
 	}
 
 	/**
-	 *
-	 * @param eventBusId
 	 * @return true if this event was received by a even bus with given ID.
 	 */
 	public boolean wasReceivedByEventBusId(final String eventBusId)
@@ -392,7 +392,7 @@ public final class Event
 
 		/**
 		 * Sets the detail AD_Message.
-		 *
+		 * <p>
 		 * NOTE: the message will not be translated, but it will be stored as it is and is expected to be translated when it's used (using the language of the recipient). If any parameters were
 		 * provided, they will be added to event properties, using following convention:
 		 * <ul>
@@ -402,7 +402,6 @@ public final class Event
 		 * </ul>
 		 * Because the message parameters are stored as Event properties, please make sure the parameter type is supported (see <code>putProperty</code> methods).
 		 *
-		 * @param adMessage
 		 * @param params AD_Message parameters
 		 */
 		public Builder setDetailADMessage(final String adMessage, final Object... params)

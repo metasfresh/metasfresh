@@ -7,6 +7,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -58,12 +59,20 @@ public class BPartnerLocationId implements RepoIdAware
 				: null;
 	}
 
+	public static Optional<BPartnerLocationId> optionalOfRepoId(
+			@Nullable final Integer bpartnerId,
+			@Nullable final Integer bpartnerLocationId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(bpartnerId, bpartnerLocationId));
+	}
+
+
 	@Nullable
 	public static BPartnerLocationId ofRepoIdOrNull(
 			@Nullable final BPartnerId bpartnerId,
-			final int bpartnerLocationId)
+			@Nullable final Integer bpartnerLocationId)
 	{
-		return bpartnerId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
+		return bpartnerId != null && bpartnerLocationId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
 	}
 
 	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
@@ -75,6 +84,12 @@ public class BPartnerLocationId implements RepoIdAware
 	public static int toRepoId(@Nullable final BPartnerLocationId bpLocationId)
 	{
 		return bpLocationId != null ? bpLocationId.getRepoId() : -1;
+	}
+
+	@Nullable
+	public static Integer toRepoIdOrNull(@Nullable final BPartnerLocationId bpLocationId)
+	{
+		return bpLocationId != null ? bpLocationId.getRepoId() : null;
 	}
 
 	public static boolean equals(final BPartnerLocationId id1, final BPartnerLocationId id2)

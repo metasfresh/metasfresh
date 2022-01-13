@@ -16,26 +16,23 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Window;
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.swing.JFrame;
-
+import com.google.common.base.Supplier;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.model.I_AD_Role;
+import de.metas.cache.CacheMgt;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -57,24 +54,22 @@ import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 
-import com.google.common.base.Supplier;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_Role;
-import de.metas.cache.CacheMgt;
-import de.metas.i18n.ILanguageDAO;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.security.UserRolePermissionsKey;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.time.SystemTime;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * System Environment and static variables.
@@ -316,6 +311,11 @@ public final class Env
 	 * To be used when setting the tabNo in context
 	 */
 	public static final String DYNATTR_TabNo = "TabNo";
+
+	/**
+	 * To be used when setting the current user ID in context
+	 */
+	public static final String DYNATTR_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Matches any key which is about window context (i.e. starts with "WindowNo|").
@@ -1177,11 +1177,11 @@ public final class Env
 		final Timestamp timestamp = parseTimestamp(timestampStr);
 		if (timestamp == null)
 		{
-			final Timestamp sysDate = de.metas.common.util.time.SystemTime.asTimestamp();
+			final Timestamp sysDate = SystemTime.asTimestamp();
 			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
-				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+				s_log.warn("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate);
 			}
 			return sysDate;
 		}
@@ -1327,6 +1327,11 @@ public final class Env
 	public static RoleId getLoggedRoleId(final Properties ctx)
 	{
 		return RoleId.ofRepoId(getAD_Role_ID(ctx));
+	}
+
+	public static Optional<RoleId> getLoggedRoleIdIfExists(final Properties ctx)
+	{
+		return Optional.ofNullable(RoleId.ofRepoIdOrNull(Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID, -1)));
 	}
 
 	public static RoleId getLoggedRoleId()
@@ -1562,6 +1567,12 @@ public final class Env
 	public static String getADLanguageOrBaseLanguage()
 	{
 		final String adLanguage = getAD_Language();
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+	}
+
+	public static String getADLanguageOrBaseLanguage(@NonNull final Properties ctx)
+	{
+		final String adLanguage = getAD_Language(ctx);
 		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
 	}
 
@@ -2500,6 +2511,16 @@ public final class Env
 	public static void autowireBean(final Object bean)
 	{
 		SpringContextHolder.instance.autowire(bean);
+	}
+
+	/**
+	 * Gets Login/System date using the current context
+	 *
+	 * @return login/system date; never return null
+	 */
+	public static Timestamp getDate()
+	{
+		return getContextAsDate(getCtx(), WINDOW_MAIN, CTXNAME_Date);
 	}
 
 	/**

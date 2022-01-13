@@ -25,11 +25,12 @@ package de.metas.ui.web.dashboard.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.dashboard.KPIDataResult;
-import de.metas.ui.web.dashboard.TimeRange;
 import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
 import de.metas.ui.web.exceptions.WebuiError;
 import de.metas.ui.web.exceptions.json.JsonWebuiError;
+import de.metas.ui.web.kpi.TimeRange;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,8 +48,10 @@ public class JsonKPIDataResult
 
 	@JsonInclude(JsonInclude.Include.NON_NULL) TimeRange range;
 	@JsonInclude(JsonInclude.Include.NON_NULL) List<JsonKPIDataSet> datasets;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY) String took;
 	@JsonInclude(JsonInclude.Include.NON_NULL) JsonWebuiError error;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String took;
+	@JsonInclude(JsonInclude.Include.NON_NULL) String computedTimestamp;
 
 	public static JsonKPIDataResult of(
 			@NonNull final UserDashboardItemDataResponse itemData,
@@ -81,7 +84,9 @@ public class JsonKPIDataResult
 						.stream()
 						.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
 						.collect(ImmutableList.toImmutableList()))
-				.took(kpiData.getTook())
+				.took(kpiData.getDatasetsComputedTime().toString())
+				.computedTimestamp(DateTimeConverters.toJson(kpiData.getDatasetsComputedTime(), jsonOpts.getZoneId()))
+				.error(kpiData.getError() != null ? JsonWebuiError.of(kpiData.getError(), jsonOpts) : null)
 				.build();
 
 	}

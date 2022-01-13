@@ -78,7 +78,7 @@ Lane.propTypes = {
   onCaptionClick: PropTypes.func,
   onReject: PropTypes.func,
   onDelete: PropTypes.func,
-  placeholder: PropTypes.string,
+  placeholder: PropTypes.bool,
   onDrop: PropTypes.func,
   targetIndicator: PropTypes.any,
 };

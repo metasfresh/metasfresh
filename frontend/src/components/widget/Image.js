@@ -118,7 +118,7 @@ class Image extends Component {
       .then((blob) => {
         return new Promise((resolve) => {
           let reader = new FileReader();
-          reader.onload = function() {
+          reader.onload = function () {
             return resolve(reader.result);
           };
           reader.readAsDataURL(blob);

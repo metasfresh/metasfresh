@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1588880971L;
+	private static final long serialVersionUID = 1522330060L;
 
     /** Standard Constructor */
-    public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
+    public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Process_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_Process (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Process (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,7 +29,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
@@ -51,16 +52,15 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/** ClientOnly = 2 */
 	public static final String ACCESSLEVEL_ClientOnly = "2";
 	@Override
-	public void setAccessLevel (java.lang.String AccessLevel)
+	public void setAccessLevel (final java.lang.String AccessLevel)
 	{
-
 		set_Value (COLUMNNAME_AccessLevel, AccessLevel);
 	}
 
 	@Override
 	public java.lang.String getAccessLevel() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccessLevel);
+		return get_ValueAsString(COLUMNNAME_AccessLevel);
 	}
 
 	@Override
@@ -70,18 +70,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form)
+	public void setAD_Form(final org.compiere.model.I_AD_Form AD_Form)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class, AD_Form);
 	}
 
 	@Override
-	public void setAD_Form_ID (int AD_Form_ID)
+	public void setAD_Form_ID (final int AD_Form_ID)
 	{
 		if (AD_Form_ID < 1) 
 			set_Value (COLUMNNAME_AD_Form_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Form_ID, Integer.valueOf(AD_Form_ID));
+			set_Value (COLUMNNAME_AD_Form_ID, AD_Form_ID);
 	}
 
 	@Override
@@ -97,18 +97,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setAD_PrintFormat(org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
+	public void setAD_PrintFormat(final org.compiere.model.I_AD_PrintFormat AD_PrintFormat)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class, AD_PrintFormat);
 	}
 
 	@Override
-	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
+	public void setAD_PrintFormat_ID (final int AD_PrintFormat_ID)
 	{
 		if (AD_PrintFormat_ID < 1) 
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+			set_Value (COLUMNNAME_AD_PrintFormat_ID, AD_PrintFormat_ID);
 	}
 
 	@Override
@@ -118,12 +118,12 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
 	@Override
@@ -139,18 +139,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setAD_ReportView(org.compiere.model.I_AD_ReportView AD_ReportView)
+	public void setAD_ReportView(final org.compiere.model.I_AD_ReportView AD_ReportView)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class, AD_ReportView);
 	}
 
 	@Override
-	public void setAD_ReportView_ID (int AD_ReportView_ID)
+	public void setAD_ReportView_ID (final int AD_ReportView_ID)
 	{
 		if (AD_ReportView_ID < 1) 
 			set_Value (COLUMNNAME_AD_ReportView_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_ReportView_ID, Integer.valueOf(AD_ReportView_ID));
+			set_Value (COLUMNNAME_AD_ReportView_ID, AD_ReportView_ID);
 	}
 
 	@Override
@@ -160,24 +160,12 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
-	}
-
-	@Override
-	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class, AD_Workflow);
-	}
-
-	@Override
-	public void setAD_Workflow_ID (int AD_Workflow_ID)
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
 			set_Value (COLUMNNAME_AD_Workflow_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Workflow_ID, Integer.valueOf(AD_Workflow_ID));
+			set_Value (COLUMNNAME_AD_Workflow_ID, AD_Workflow_ID);
 	}
 
 	@Override
@@ -187,9 +175,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setAllowProcessReRun (boolean AllowProcessReRun)
+	public void setAllowProcessReRun (final boolean AllowProcessReRun)
 	{
-		set_Value (COLUMNNAME_AllowProcessReRun, Boolean.valueOf(AllowProcessReRun));
+		set_Value (COLUMNNAME_AllowProcessReRun, AllowProcessReRun);
 	}
 
 	@Override
@@ -199,7 +187,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setClassname (java.lang.String Classname)
+	public void setClassname (final @Nullable java.lang.String Classname)
 	{
 		set_Value (COLUMNNAME_Classname, Classname);
 	}
@@ -207,11 +195,11 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getClassname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Classname);
+		return get_ValueAsString(COLUMNNAME_Classname);
 	}
 
 	@Override
-	public void setCopyFromProcess (java.lang.String CopyFromProcess)
+	public void setCopyFromProcess (final @Nullable java.lang.String CopyFromProcess)
 	{
 		set_Value (COLUMNNAME_CopyFromProcess, CopyFromProcess);
 	}
@@ -219,11 +207,23 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getCopyFromProcess() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyFromProcess);
+		return get_ValueAsString(COLUMNNAME_CopyFromProcess);
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setCSVFieldDelimiter (final @Nullable java.lang.String CSVFieldDelimiter)
+	{
+		set_Value (COLUMNNAME_CSVFieldDelimiter, CSVFieldDelimiter);
+	}
+
+	@Override
+	public java.lang.String getCSVFieldDelimiter() 
+	{
+		return get_ValueAsString(COLUMNNAME_CSVFieldDelimiter);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -231,7 +231,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -240,20 +240,19 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
 	@Override
 	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -261,13 +260,13 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
 	@Override
-	public void setIsApplySecuritySettings (boolean IsApplySecuritySettings)
+	public void setIsApplySecuritySettings (final boolean IsApplySecuritySettings)
 	{
-		set_Value (COLUMNNAME_IsApplySecuritySettings, Boolean.valueOf(IsApplySecuritySettings));
+		set_Value (COLUMNNAME_IsApplySecuritySettings, IsApplySecuritySettings);
 	}
 
 	@Override
@@ -277,9 +276,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsBetaFunctionality (boolean IsBetaFunctionality)
+	public void setIsBetaFunctionality (final boolean IsBetaFunctionality)
 	{
-		set_Value (COLUMNNAME_IsBetaFunctionality, Boolean.valueOf(IsBetaFunctionality));
+		set_Value (COLUMNNAME_IsBetaFunctionality, IsBetaFunctionality);
 	}
 
 	@Override
@@ -289,9 +288,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsDirectPrint (boolean IsDirectPrint)
+	public void setIsDirectPrint (final boolean IsDirectPrint)
 	{
-		set_Value (COLUMNNAME_IsDirectPrint, Boolean.valueOf(IsDirectPrint));
+		set_Value (COLUMNNAME_IsDirectPrint, IsDirectPrint);
 	}
 
 	@Override
@@ -301,9 +300,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsNotifyUserAfterExecution (boolean IsNotifyUserAfterExecution)
+	public void setIsNotifyUserAfterExecution (final boolean IsNotifyUserAfterExecution)
 	{
-		set_Value (COLUMNNAME_IsNotifyUserAfterExecution, Boolean.valueOf(IsNotifyUserAfterExecution));
+		set_Value (COLUMNNAME_IsNotifyUserAfterExecution, IsNotifyUserAfterExecution);
 	}
 
 	@Override
@@ -313,9 +312,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsOneInstanceOnly (boolean IsOneInstanceOnly)
+	public void setIsOneInstanceOnly (final boolean IsOneInstanceOnly)
 	{
-		set_Value (COLUMNNAME_IsOneInstanceOnly, Boolean.valueOf(IsOneInstanceOnly));
+		set_Value (COLUMNNAME_IsOneInstanceOnly, IsOneInstanceOnly);
 	}
 
 	@Override
@@ -325,9 +324,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsReport (boolean IsReport)
+	public void setIsReport (final boolean IsReport)
 	{
-		set_Value (COLUMNNAME_IsReport, Boolean.valueOf(IsReport));
+		set_Value (COLUMNNAME_IsReport, IsReport);
 	}
 
 	@Override
@@ -337,9 +336,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsServerProcess (boolean IsServerProcess)
+	public void setIsServerProcess (final boolean IsServerProcess)
 	{
-		set_Value (COLUMNNAME_IsServerProcess, Boolean.valueOf(IsServerProcess));
+		set_Value (COLUMNNAME_IsServerProcess, IsServerProcess);
 	}
 
 	@Override
@@ -349,9 +348,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders)
+	public void setIsTranslateExcelHeaders (final boolean IsTranslateExcelHeaders)
 	{
-		set_Value (COLUMNNAME_IsTranslateExcelHeaders, Boolean.valueOf(IsTranslateExcelHeaders));
+		set_Value (COLUMNNAME_IsTranslateExcelHeaders, IsTranslateExcelHeaders);
 	}
 
 	@Override
@@ -361,9 +360,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsUseBPartnerLanguage (boolean IsUseBPartnerLanguage)
+	public void setIsUseBPartnerLanguage (final boolean IsUseBPartnerLanguage)
 	{
-		set_Value (COLUMNNAME_IsUseBPartnerLanguage, Boolean.valueOf(IsUseBPartnerLanguage));
+		set_Value (COLUMNNAME_IsUseBPartnerLanguage, IsUseBPartnerLanguage);
 	}
 
 	@Override
@@ -373,7 +372,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setJasperReport (java.lang.String JasperReport)
+	public void setJasperReport (final @Nullable java.lang.String JasperReport)
 	{
 		set_Value (COLUMNNAME_JasperReport, JasperReport);
 	}
@@ -381,11 +380,11 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getJasperReport() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_JasperReport);
+		return get_ValueAsString(COLUMNNAME_JasperReport);
 	}
 
 	@Override
-	public void setJasperReport_Tabular (java.lang.String JasperReport_Tabular)
+	public void setJasperReport_Tabular (final @Nullable java.lang.String JasperReport_Tabular)
 	{
 		set_Value (COLUMNNAME_JasperReport_Tabular, JasperReport_Tabular);
 	}
@@ -393,11 +392,11 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getJasperReport_Tabular() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_JasperReport_Tabular);
+		return get_ValueAsString(COLUMNNAME_JasperReport_Tabular);
 	}
 
 	@Override
-	public void setJSONPath (java.lang.String JSONPath)
+	public void setJSONPath (final @Nullable java.lang.String JSONPath)
 	{
 		set_Value (COLUMNNAME_JSONPath, JSONPath);
 	}
@@ -405,13 +404,13 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getJSONPath() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_JSONPath);
+		return get_ValueAsString(COLUMNNAME_JSONPath);
 	}
 
 	@Override
-	public void setLockWaitTimeout (int LockWaitTimeout)
+	public void setLockWaitTimeout (final int LockWaitTimeout)
 	{
-		set_Value (COLUMNNAME_LockWaitTimeout, Integer.valueOf(LockWaitTimeout));
+		set_Value (COLUMNNAME_LockWaitTimeout, LockWaitTimeout);
 	}
 
 	@Override
@@ -421,7 +420,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -429,7 +428,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -442,20 +441,19 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/** json = json */
 	public static final String POSTGRESTRESPONSEFORMAT_Json = "json";
 	@Override
-	public void setPostgrestResponseFormat (java.lang.String PostgrestResponseFormat)
+	public void setPostgrestResponseFormat (final java.lang.String PostgrestResponseFormat)
 	{
-
 		set_Value (COLUMNNAME_PostgrestResponseFormat, PostgrestResponseFormat);
 	}
 
 	@Override
 	public java.lang.String getPostgrestResponseFormat() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PostgrestResponseFormat);
+		return get_ValueAsString(COLUMNNAME_PostgrestResponseFormat);
 	}
 
 	@Override
-	public void setProcedureName (java.lang.String ProcedureName)
+	public void setProcedureName (final @Nullable java.lang.String ProcedureName)
 	{
 		set_Value (COLUMNNAME_ProcedureName, ProcedureName);
 	}
@@ -463,13 +461,13 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getProcedureName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProcedureName);
+		return get_ValueAsString(COLUMNNAME_ProcedureName);
 	}
 
 	@Override
-	public void setRefreshAllAfterExecution (boolean RefreshAllAfterExecution)
+	public void setRefreshAllAfterExecution (final boolean RefreshAllAfterExecution)
 	{
-		set_Value (COLUMNNAME_RefreshAllAfterExecution, Boolean.valueOf(RefreshAllAfterExecution));
+		set_Value (COLUMNNAME_RefreshAllAfterExecution, RefreshAllAfterExecution);
 	}
 
 	@Override
@@ -490,20 +488,40 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/** Run silently - Take Defaults = S */
 	public static final String SHOWHELP_RunSilently_TakeDefaults = "S";
 	@Override
-	public void setShowHelp (java.lang.String ShowHelp)
+	public void setShowHelp (final @Nullable java.lang.String ShowHelp)
 	{
-
 		set_Value (COLUMNNAME_ShowHelp, ShowHelp);
 	}
 
 	@Override
 	public java.lang.String getShowHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ShowHelp);
+		return get_ValueAsString(COLUMNNAME_ShowHelp);
+	}
+
+	/** 
+	 * SpreadsheetFormat AD_Reference_ID=541369
+	 * Reference name: SpreadsheetFormat
+	 */
+	public static final int SPREADSHEETFORMAT_AD_Reference_ID=541369;
+	/** Excel = xls */
+	public static final String SPREADSHEETFORMAT_Excel = "xls";
+	/** CSV = csv */
+	public static final String SPREADSHEETFORMAT_CSV = "csv";
+	@Override
+	public void setSpreadsheetFormat (final @Nullable java.lang.String SpreadsheetFormat)
+	{
+		set_Value (COLUMNNAME_SpreadsheetFormat, SpreadsheetFormat);
 	}
 
 	@Override
-	public void setSQLStatement (java.lang.String SQLStatement)
+	public java.lang.String getSpreadsheetFormat() 
+	{
+		return get_ValueAsString(COLUMNNAME_SpreadsheetFormat);
+	}
+
+	@Override
+	public void setSQLStatement (final @Nullable java.lang.String SQLStatement)
 	{
 		set_Value (COLUMNNAME_SQLStatement, SQLStatement);
 	}
@@ -511,11 +529,11 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getSQLStatement() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_SQLStatement);
+		return get_ValueAsString(COLUMNNAME_SQLStatement);
 	}
 
 	@Override
-	public void setTechnicalNote (java.lang.String TechnicalNote)
+	public void setTechnicalNote (final @Nullable java.lang.String TechnicalNote)
 	{
 		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
 	}
@@ -523,7 +541,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getTechnicalNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
+		return get_ValueAsString(COLUMNNAME_TechnicalNote);
 	}
 
 	/** 
@@ -544,20 +562,19 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/** PostgREST = PostgREST */
 	public static final String TYPE_PostgREST = "PostgREST";
 	@Override
-	public void setType (java.lang.String Type)
+	public void setType (final java.lang.String Type)
 	{
-
 		set_Value (COLUMNNAME_Type, Type);
 	}
 
 	@Override
 	public java.lang.String getType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type);
+		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
@@ -565,11 +582,11 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
 	@Override
-	public void setWorkflowValue (java.lang.String WorkflowValue)
+	public void setWorkflowValue (final @Nullable java.lang.String WorkflowValue)
 	{
 		set_Value (COLUMNNAME_WorkflowValue, WorkflowValue);
 	}
@@ -577,6 +594,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	@Override
 	public java.lang.String getWorkflowValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WorkflowValue);
+		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
 }

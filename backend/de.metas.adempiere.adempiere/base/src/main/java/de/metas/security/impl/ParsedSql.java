@@ -1,14 +1,7 @@
 package de.metas.security.impl;
 
-import java.util.List;
-import java.util.StringTokenizer;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,6 +11,11 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.StringTokenizer;
 
 @ToString
 @EqualsAndHashCode
@@ -162,7 +160,7 @@ public final class ParsedSql
 				sql = sql.substring(0, index + 1) + "##" + sql.substring(endIndex);
 				index = sql.indexOf("(SELECT ", 7);
 			}
-			result.add(sql);	// last SQL
+			result.add(sql);    // last SQL
 		}
 
 		return result.build();
@@ -185,6 +183,10 @@ public final class ParsedSql
 			sql = sql.substring(1, sql.length() - 1);
 		}
 
+		// Lower case: IS DISTINCT FROM, IS NOT DISTINCT FROM
+		sql = sql.replace(" IS DISTINCT FROM ", " is distinct from ");
+		sql = sql.replace(" IS NOT DISTINCT FROM ", " is not distinct from ");
+
 		int fromIndex = sql.indexOf(FROM);
 		if (fromIndex != sql.lastIndexOf(FROM))
 		{
@@ -194,7 +196,7 @@ public final class ParsedSql
 		while (fromIndex != -1)
 		{
 			String from = sql.substring(fromIndex + FROM_LENGTH);
-			int index = from.lastIndexOf(WHERE);	// end at where
+			int index = from.lastIndexOf(WHERE);    // end at where
 			if (index != -1)
 			{
 				from = from.substring(0, index);
@@ -374,6 +376,16 @@ public final class ParsedSql
 			}
 
 			return tableNameAndAliases.get(0).getAliasOrTableName();
+		}
+
+		public String getFirstTableNameOrEmpty()
+		{
+			if (tableNameAndAliases.isEmpty())
+			{
+				return "";
+			}
+
+			return tableNameAndAliases.get(0).getTableName();
 		}
 	}
 }

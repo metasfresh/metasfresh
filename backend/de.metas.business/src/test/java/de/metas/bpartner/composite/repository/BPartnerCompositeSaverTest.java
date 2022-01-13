@@ -45,8 +45,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +54,6 @@ import java.util.Optional;
 import static de.metas.bpartner.composite.MockedBPartnerCompositeUtil.GROUP_ID;
 import static de.metas.bpartner.composite.MockedBPartnerCompositeUtil.ORG_ID;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +71,8 @@ public class BPartnerCompositeSaverTest
 	public static final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	public static final String HU_CITY = "Szolnok";
 
+	private BPartnerBL bpartnerBL;
+
 	@BeforeEach
 	void init()
 	{
@@ -81,8 +80,9 @@ public class BPartnerCompositeSaverTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-		Services.registerService(IBPartnerDAO.class, new BPartnerDAO());
+		bpartnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, bpartnerBL);
+		//Services.registerService(IBPartnerDAO.class, new BPartnerDAO());
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(GROUP_ID);
@@ -126,7 +126,7 @@ public class BPartnerCompositeSaverTest
 		final ExternalId locExternalId = ExternalId.of("loc-123");
 		//Location added with postal code that already exists in C_Postal, but it set to another city&country
 		bpartnerComposite.getLocations().add(MockedBPartnerCompositeUtil.addLocation(locExternalId, HU_CITY, CH_POSTAL_CODE, HU_COUNTRY_CODE));
-		new BPartnerCompositeSaver().save(bpartnerComposite);
+		new BPartnerCompositeSaver(bpartnerBL).save(bpartnerComposite, true);
 
 		final Optional<BPartnerId> bpId = bPartnerDAO.getBPartnerIdByExternalId(externalId);
 		assertThat(bpId).isPresent();

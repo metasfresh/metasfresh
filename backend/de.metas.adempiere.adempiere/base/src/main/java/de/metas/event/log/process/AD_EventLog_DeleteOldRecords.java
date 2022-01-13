@@ -1,17 +1,16 @@
 package de.metas.event.log.process;
 
-import java.sql.Timestamp;
-
+import de.metas.event.model.I_AD_EventLog;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.event.model.I_AD_EventLog;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.util.Services;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -44,7 +43,7 @@ public class AD_EventLog_DeleteOldRecords extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Timestamp maxUpdated = TimeUtil.addDays(Env.getDate(Env.getCtx()), -p_lastUpdatedDaysBack);
+		final Timestamp maxUpdated = TimeUtil.addDays(Env.getDate(), -p_lastUpdatedDaysBack);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_AD_EventLog> noErrorFilter = queryBL.createCompositeQueryFilter(I_AD_EventLog.class)

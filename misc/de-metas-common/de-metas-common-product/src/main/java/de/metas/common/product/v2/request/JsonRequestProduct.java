@@ -22,6 +22,7 @@
 
 package de.metas.common.product.v2.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -29,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
@@ -92,28 +94,35 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean discontinuedSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.isActive`")
+	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate discontinuedFrom;
+
+	@ApiModelProperty(hidden = true)
+	private boolean discontinuedFromSet;
+
+	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isStocked`")
+	@ApiModelProperty(position = 120, value = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
 	@ApiModelProperty(hidden = true)
 	private boolean stockedSet;
 
-	@ApiModelProperty(position = 120, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
+	@ApiModelProperty(position = 130, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
 	private String productCategoryIdentifier;
 
 	@ApiModelProperty(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
-	@ApiModelProperty(position = 130, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 140)
+	@ApiModelProperty(position = 150)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
 
 	public void setCode(final @NonNull String code)
@@ -162,6 +171,12 @@ public class JsonRequestProduct
 	{
 		this.discontinued = discontinued;
 		this.discontinuedSet = true;
+	}
+
+	public void setDiscontinuedFrom(final LocalDate discontinuedFrom)
+	{
+		this.discontinuedFrom = discontinuedFrom;
+		this.discontinuedFromSet = true;
 	}
 
 	public void setActive(final Boolean active)

@@ -49,3 +49,14 @@ export function setUserDashboardWidgets(payload) {
 export function getAvailableKPIsToAdd() {
   return axios.get(`${config.API_URL}/dashboard/kpis/available`);
 }
+
+/**
+ * @method getTargetIndicatorsDetails
+ * @summary calls the API to get the details info
+ * @param {string} indicatorId
+ */
+export function getTargetIndicatorsDetails(indicatorId) {
+  return axios.get(
+    `${config.API_URL}/dashboard/targetIndicators/${indicatorId}/details`
+  );
+}

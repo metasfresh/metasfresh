@@ -4,14 +4,18 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
+import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
+import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -24,12 +28,17 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 
@@ -60,17 +69,25 @@ import java.util.Set;
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
+	private final AvailableForSaleAdapter availableForSaleAdapter;
+	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
 	private final OrderLineQuickInputCallout callout;
 
 	public OrderLineQuickInputDescriptorFactory(
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
+			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
+			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
+		this.availableForSaleAdapter = availableForSaleAdapter;
+		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
 
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
+				.packingItemProductFieldHelper(packingItemProductFieldHelper)
 				.build();
 	}
 
@@ -88,7 +105,6 @@ import java.util.Set;
 			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(
-				documentType,
 				documentTypeId,
 				detailId,
 				soTrx);
@@ -102,27 +118,28 @@ import java.util.Set;
 	}
 
 	private DocumentEntityDescriptor createEntityDescriptor(
-			final DocumentType documentType,
-			final DocumentId documentTypeId,
-			final DetailId detailId,
+			final DocumentId rootDocumentTypeId,
+			final DetailId tabId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.setDocumentType(DocumentType.QuickInput, rootDocumentTypeId)
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
-				.setDetailId(detailId)
+				.setDetailId(tabId)
 				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
 				//
-				.addField(createProductFieldBuilder(soTrx))
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
-				.addField(createQuantityFieldBuilder())
-				.addFieldIf(QuickInputConstants.isEnableBestBeforePolicy(), () -> createBestBeforePolicyFieldBuilder())
+				.addField(createProductField(soTrx))
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionField)
+				.addField(createCompensationGroupSchemaField())
+				.addField(createContractConditionsField())
+				.addField(createQuantityField())
+				.addFieldIf(QuickInputConstants.isEnableBestBeforePolicy(), this::createBestBeforePolicyField)
 				//
 				.build();
 	}
 
-	private DocumentFieldDescriptor.Builder createProductFieldBuilder(@NonNull final Optional<SOTrx> soTrx)
+	private DocumentFieldDescriptor.Builder createProductField(@NonNull final Optional<SOTrx> soTrx)
 	{
 		final ProductLookupDescriptor productLookupDescriptor = createProductLookupDescriptor(soTrx);
 		final ITranslatableString caption = msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID);
@@ -150,6 +167,8 @@ import java.util.Set;
 					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.availableForSaleAdapter(availableForSaleAdapter)
+					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.build();
 		}
 		else
@@ -161,11 +180,13 @@ import java.util.Set;
 					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.availableForSaleAdapter(availableForSaleAdapter)
+					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.build();
 		}
 	}
 
-	private DocumentFieldDescriptor.Builder createPackingInstructionFieldBuilder()
+	private DocumentFieldDescriptor.Builder createPackingInstructionField()
 	{
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
@@ -185,7 +206,7 @@ import java.util.Set;
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
-	private DocumentFieldDescriptor.Builder createQuantityFieldBuilder()
+	private DocumentFieldDescriptor.Builder createQuantityField()
 	{
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_Qty))
@@ -197,7 +218,7 @@ import java.util.Set;
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
-	private DocumentFieldDescriptor.Builder createBestBeforePolicyFieldBuilder()
+	private DocumentFieldDescriptor.Builder createBestBeforePolicyField()
 	{
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy))
@@ -212,12 +233,69 @@ import java.util.Set;
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
+	private DocumentFieldDescriptor.Builder createCompensationGroupSchemaField()
+	{
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID))
+				.setWidgetType(DocumentFieldWidgetType.Integer)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.FALSE);
+	}
+
+	private DocumentFieldDescriptor.Builder createContractConditionsField()
+	{
+		final ILogicExpression compensationGroupSchemaIsSet = LogicExpressionCompiler.instance.compile("@" + IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID + "/0@ > 0");
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(SqlLookupDescriptor.searchInTable(I_C_Flatrate_Conditions.Table_Name))
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(compensationGroupSchemaIsSet)
+				.setDisplayLogic(compensationGroupSchemaIsSet)
+				.addCharacteristic(Characteristic.PublicField);
+
+	}
+
+	private DocumentFieldDescriptor.Builder createInternalIntegerField(
+			@NonNull final String fieldName,
+			@Nullable final Integer defaultValue)
+	{
+		return DocumentFieldDescriptor.builder(fieldName)
+				.setCaption(msgBL.translatable(fieldName))
+				.setWidgetType(DocumentFieldWidgetType.Integer)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.FALSE)
+				.setDefaultValueExpression(defaultValue != null ? ConstantStringExpression.of(defaultValue.toString()) : null);
+	}
+
+	private DocumentFieldDescriptor.Builder createInternalYesNoField(
+			@NonNull final String fieldName,
+			final boolean defaultValue)
+	{
+		return DocumentFieldDescriptor.builder(fieldName)
+				.setCaption(msgBL.translatable(fieldName))
+				.setWidgetType(DocumentFieldWidgetType.YesNo)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.FALSE)
+				.setDefaultValueExpression(ConstantStringExpression.of(StringUtils.ofBoolean(defaultValue)));
+	}
+
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
 		// IMPORTANT: if Qty is not the last field then frontend will not react on pressing "ENTER" to complete the entry
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
 				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
 				{ "ShipmentAllocation_BestBefore_Policy" },
+				{ "C_Flatrate_Conditions_ID" },
 				{ "Qty" },
 		});
 	}

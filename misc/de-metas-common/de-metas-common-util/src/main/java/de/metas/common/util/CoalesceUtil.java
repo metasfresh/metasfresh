@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -43,10 +44,21 @@ public class CoalesceUtil
 		return value1 == null ? value2 : value1;
 	}
 
-	@Nullable
-	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
-		return value1 != null ? value1 : value2.get();
+		final T result = value1 == null ? value2 : value1;
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+		}
+		return result;
+	}
+
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @Nullable final Supplier<T> value2)
+	{
+		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
 	/**
@@ -58,6 +70,17 @@ public class CoalesceUtil
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+	}
+
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		final T result = value1 != null ? value1 : (value2 != null ? value2 : value3);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1, value2 or value3 has to be not-null");
+		}
+		return result;
 	}
 
 	/**
@@ -81,20 +104,41 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@SafeVarargs
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T... values)
+	{
+		final T result = coalesce(values);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one parameter has to be not-null");
+		}
+		return result;
+	}
+
 	/**
 	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
 	 * Note that it also works if some of the given supplier themselves are {@code null}.
 	 */
 	@SafeVarargs
 	@Nullable
-	public static <T> T coalesceSuppliers(final Supplier<T>... values)
+	public static <T> T coalesceSuppliers(@Nullable final Supplier<T>... values)
 	{
 		return firstValidValue(Objects::nonNull, values);
 	}
 
 	@SafeVarargs
+	@NonNull
+	public static <T> T coalesceSuppliersNotNull(@NonNull final Supplier<T>... values)
+	{
+		return Check.assumeNotNull(
+				firstValidValue(Objects::nonNull, values),
+				"At least one of the given suppliers={} has to return not-null", (Object[])values);
+	}
+	
+	@SafeVarargs
 	@Nullable
-	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
+	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -157,17 +201,56 @@ public class CoalesceUtil
 	 * @return the first non-empty string or {@code null}.
 	 */
 	@Nullable
-	public String firstNotEmptyTrimmed(@NonNull final String... values)
+	public String firstNotEmptyTrimmed(@Nullable final String... values)
 	{
+		return firstNotBlank(values);
+	}
+
+	@Nullable
+	public String firstNotBlank(@Nullable final String... values)
+	{
+		if(values == null || values.length == 0)
+		{
+			return null;
+		}
+
 		for (final String value : values)
 		{
-			if (EmptyUtil.isNotBlank(value))
+			if (value != null && EmptyUtil.isNotBlank(value))
 			{
 				return value.trim();
 			}
 		}
+
 		return null;
 	}
+
+	@SafeVarargs
+	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
+	{
+		if(valueSuppliers == null || valueSuppliers.length == 0)
+		{
+			return null;
+		}
+
+		for (final Supplier<String> valueSupplier : valueSuppliers)
+		{
+			if(valueSupplier == null)
+			{
+				continue;
+			}
+
+			final String value = valueSupplier.get();
+			if (value != null && EmptyUtil.isNotBlank(value))
+			{
+				return value.trim();
+			}
+		}
+
+		return null;
+	}
+
+
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
@@ -186,5 +269,22 @@ public class CoalesceUtil
 		}
 
 		return count;
+	}
+
+	@NonNull
+	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
 	}
 }

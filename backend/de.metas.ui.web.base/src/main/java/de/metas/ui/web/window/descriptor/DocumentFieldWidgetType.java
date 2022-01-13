@@ -175,7 +175,7 @@ public enum DocumentFieldWidgetType
 
 	public final boolean isSupportZoomInto()
 	{
-		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton;
+		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton || this == DocumentFieldWidgetType.Labels;
 	}
 
 	public final boolean isBoolean()

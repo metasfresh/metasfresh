@@ -1,0 +1,5 @@
+-- 2021-06-24T12:21:14.056Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET ValueName='STOCK_CHANGE',Updated=TO_TIMESTAMP('2021-06-24 15:21:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542679
+;
+

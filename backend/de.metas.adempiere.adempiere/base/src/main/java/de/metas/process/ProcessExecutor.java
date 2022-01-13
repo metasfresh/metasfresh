@@ -42,7 +42,6 @@ import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
@@ -58,7 +57,7 @@ import java.util.function.Consumer;
  * Process executor: executes a process (sync or async) which was defined by given {@link ProcessInfo}.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, Low Heng Sin, Teo Sarca
- * @author metas-dev <dev@metasfresh.com>
+ * @author metas-dev dev@metasfresh.com>
  */
 public final class ProcessExecutor
 {
@@ -216,7 +215,7 @@ public final class ProcessExecutor
 					final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
 					final DocumentReportResult reportResult = documentReportService.createReport(toDocumentReportRequest(pi));
 					pi.getResult().setSummary("Report");
-					pi.getResult().setReportData(reportResult.getData());
+					pi.getResult().setReportData(reportResult.getReportResultData());
 				}
 			}
 
@@ -758,8 +757,6 @@ public final class ProcessExecutor
 		 * If the callback fails, the exception is propagated, so the process will not be started.
 		 * <p>
 		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this process instance.
-		 *
-		 * @param beforeCallback
 		 */
 		public Builder callBefore(final Consumer<ProcessInfo> beforeCallback)
 		{

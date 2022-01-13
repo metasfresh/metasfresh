@@ -1,15 +1,16 @@
 package de.metas;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -36,6 +37,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class JsonObjectMapperHolder
 {
+	private static final Logger logger = LogManager.getLogger(JsonObjectMapperHolder.class);
+
 	public static ObjectMapper sharedJsonObjectMapper()
 	{
 		return sharedJsonObjectMapper.get();
@@ -47,7 +50,7 @@ public class JsonObjectMapperHolder
 		sharedJsonObjectMapper.forget();
 	}
 
-	private static final ExtendedMemorizingSupplier<ObjectMapper> sharedJsonObjectMapper = ExtendedMemorizingSupplier.of(() -> newJsonObjectMapper());
+	private static final ExtendedMemorizingSupplier<ObjectMapper> sharedJsonObjectMapper = ExtendedMemorizingSupplier.of(JsonObjectMapperHolder::newJsonObjectMapper);
 
 	public static ObjectMapper newJsonObjectMapper()
 	{
@@ -55,11 +58,16 @@ public class JsonObjectMapperHolder
 		// which is needed to serialize/deserialize java.time.Instant
 		Check.assumeNotNull(com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.class, ""); // just to get a compile error if not present
 
-		return new ObjectMapper()
+		final ObjectMapper objectMapper = new ObjectMapper()
 				.findAndRegisterModules()
+				.registerModule(new GuavaModule())
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 				.enable(MapperFeature.USE_ANNOTATIONS);
+
+		logger.info("Created a new JSON ObjectMapper: {} \nRegistered modules: {}", objectMapper, objectMapper.getRegisteredModuleIds());
+
+		return objectMapper;
 	}
 
 }

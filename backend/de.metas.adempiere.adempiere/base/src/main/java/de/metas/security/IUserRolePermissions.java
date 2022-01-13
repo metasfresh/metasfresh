@@ -1,15 +1,7 @@
 package de.metas.security;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-
 import de.metas.document.engine.DocActionOptionsContext;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
@@ -21,8 +13,16 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IUserRolePermissions
 {
@@ -163,10 +163,8 @@ public interface IUserRolePermissions
 
 	/**
 	 * Checks if given record can be viewed by this role.
-	 *
-	 * @return error message or <code>null</code> if it's OK and can be viewed
 	 */
-	@Nullable String checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	BooleanWithReason checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
 	/**
 	 * Checks if given record can be updated by this role.
@@ -188,11 +186,10 @@ public interface IUserRolePermissions
 	 * @param orgId record's AD_Org_ID
 	 * @param AD_Table_ID record table
 	 * @param Record_ID record id
-	 * @return error message or <code>null</code> if it's OK and can be updated
 	 **/
-	@Nullable String checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
-	@Nullable String checkCanCreateNewRecord(ClientId clientId, OrgId orgId, int AD_Table_ID);
+	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
@@ -203,18 +200,20 @@ public interface IUserRolePermissions
 
 	boolean isCanReport(int AD_Table_ID);
 
-	boolean isOrgAccess(OrgId OrgId, Access access);
+	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 
 	// FRESH-560: Retrieve the org IDs also as a list
 	Set<OrgId> getAD_Org_IDs_AsSet();
 
-	Set<KeyNamePair> getLoginClients();
+	Set<ClientId> getLoginClientIds();
+
+	OrgIdAccessList getOrgAccess(@Nullable String tableName, Access access);
 
 	Set<OrgResource> getLoginOrgs();
 

@@ -33,16 +33,22 @@ import org.adempiere.exceptions.AdempiereException;
 @AllArgsConstructor
 public enum ServiceRepairProjectCostCollectorType implements ReferenceListAwareEnum
 {
-	SparePartsToBeInvoiced(X_C_Project_Repair_CostCollector.TYPE_SparePartsToBeInvoiced),
-	SparePartsOwnedByCustomer(X_C_Project_Repair_CostCollector.TYPE_SparePartsOwnedByCustomer),
-	RepairedProductToReturn(X_C_Project_Repair_CostCollector.TYPE_RepairProductToReturn),
-	RepairingConsumption(X_C_Project_Repair_CostCollector.TYPE_RepairingConsumption),
+	SparePartsToBeInvoiced(X_C_Project_Repair_CostCollector.TYPE_SparePartsToBeInvoiced, false),
+	SparePartsOwnedByCustomer(X_C_Project_Repair_CostCollector.TYPE_SparePartsOwnedByCustomer, true),
+	RepairedProductToReturn(X_C_Project_Repair_CostCollector.TYPE_RepairProductToReturn, true),
+	/**
+	 * Materials consumed while repairing the main product (via repair/manufacturing order)
+	 */
+	RepairingConsumption(X_C_Project_Repair_CostCollector.TYPE_RepairingConsumption, false),
+
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ServiceRepairProjectCostCollectorType> index = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
+	@Getter
+	private final boolean zeroPrice;
 
 	public static ServiceRepairProjectCostCollectorType ofCode(@NonNull final String code)
 	{
@@ -51,17 +57,17 @@ public enum ServiceRepairProjectCostCollectorType implements ReferenceListAwareE
 
 	public static ServiceRepairProjectCostCollectorType ofSparePartOwnership(@NonNull final PartOwnership partOwnership)
 	{
-		if(PartOwnership.OWNED_BY_COMPANY.equals(partOwnership))
+		if (PartOwnership.OWNED_BY_COMPANY.equals(partOwnership))
 		{
 			return SparePartsToBeInvoiced;
 		}
-		else if(PartOwnership.OWNED_BY_CUSTOMER.equals(partOwnership))
+		else if (PartOwnership.OWNED_BY_CUSTOMER.equals(partOwnership))
 		{
 			return SparePartsOwnedByCustomer;
 		}
 		else
 		{
-			throw new AdempiereException("Unknown PartOwnership: "+partOwnership);
+			throw new AdempiereException("Unknown PartOwnership: " + partOwnership);
 		}
 	}
 }

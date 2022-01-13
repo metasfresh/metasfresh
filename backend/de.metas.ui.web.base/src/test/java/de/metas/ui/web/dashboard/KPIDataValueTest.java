@@ -23,11 +23,11 @@
 package de.metas.ui.web.dashboard;
 
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
-import lombok.NonNull;
+import de.metas.ui.web.kpi.data.KPIDataValue;
+import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 

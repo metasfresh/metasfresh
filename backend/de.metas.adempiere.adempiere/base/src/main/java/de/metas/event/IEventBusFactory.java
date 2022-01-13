@@ -1,16 +1,15 @@
 package de.metas.event;
 
-import java.util.List;
-
 import de.metas.util.ISingletonService;
+
+import java.util.List;
 
 /**
  * Creates and manages {@link IEventBus}es.
- *
+ * <p>
  * This is the main entry point for events module.
  *
  * @author tsa
- *
  */
 public interface IEventBusFactory extends ISingletonService
 {
@@ -40,13 +39,11 @@ public interface IEventBusFactory extends ISingletonService
 
 	/**
 	 * Register a global {@link IEventListener}.
-	 *
+	 * <p>
 	 * Global event listeners will be automatically registered when the {@link IEventBus} is created. Also, the listener will be registered to event bus.
-	 *
+	 * <p>
 	 * The advantage of using this method instead of {@link IEventBus#subscribe(IEventListener)} is that those listeners will survive also after an reset (i.e. {@link #destroyAllEventBusses()}).
 	 *
-	 * @param topic
-	 * @param listener
 	 * @see #initEventBussesWithGlobalListeners()
 	 */
 	void registerGlobalEventListener(final Topic topic, final IEventListener listener);

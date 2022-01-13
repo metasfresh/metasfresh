@@ -1,85 +1,73 @@
 package de.metas.invoicecandidate.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate_HeaderAggregation
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Invoice_Candidate_HeaderAggregation 
 {
 
-    /** TableName=C_Invoice_Candidate_HeaderAggregation */
-    public static final String Table_Name = "C_Invoice_Candidate_HeaderAggregation";
+	String Table_Name = "C_Invoice_Candidate_HeaderAggregation";
 
-    /** AD_Table_ID=540648 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540648 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Abrechnungsgruppe.
@@ -88,7 +76,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Candidate_HeaderAggregation_ID (int C_Invoice_Candidate_HeaderAggregation_ID);
+	void setC_Invoice_Candidate_HeaderAggregation_ID (int C_Invoice_Candidate_HeaderAggregation_ID);
 
 	/**
 	 * Get Abrechnungsgruppe.
@@ -97,40 +85,35 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Candidate_HeaderAggregation_ID();
+	int getC_Invoice_Candidate_HeaderAggregation_ID();
 
-    /** Column definition for C_Invoice_Candidate_HeaderAggregation_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_C_Invoice_Candidate_HeaderAggregation_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "C_Invoice_Candidate_HeaderAggregation_ID", null);
-    /** Column name C_Invoice_Candidate_HeaderAggregation_ID */
-    public static final String COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID = "C_Invoice_Candidate_HeaderAggregation_ID";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_C_Invoice_Candidate_HeaderAggregation_ID = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "C_Invoice_Candidate_HeaderAggregation_ID", null);
+	String COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID = "C_Invoice_Candidate_HeaderAggregation_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Created = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Kopf-Aggregationsmerkmal.
@@ -139,7 +122,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHeaderAggregationKey (java.lang.String HeaderAggregationKey);
+	void setHeaderAggregationKey (java.lang.String HeaderAggregationKey);
 
 	/**
 	 * Get Kopf-Aggregationsmerkmal.
@@ -148,12 +131,10 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHeaderAggregationKey();
+	java.lang.String getHeaderAggregationKey();
 
-    /** Column definition for HeaderAggregationKey */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_HeaderAggregationKey = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "HeaderAggregationKey", null);
-    /** Column name HeaderAggregationKey */
-    public static final String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_HeaderAggregationKey = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "HeaderAggregationKey", null);
+	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
 	 * Set Header aggregation builder.
@@ -162,7 +143,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHeaderAggregationKeyBuilder_ID (int HeaderAggregationKeyBuilder_ID);
+	void setHeaderAggregationKeyBuilder_ID (int HeaderAggregationKeyBuilder_ID);
 
 	/**
 	 * Get Header aggregation builder.
@@ -171,12 +152,10 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getHeaderAggregationKeyBuilder_ID();
+	int getHeaderAggregationKeyBuilder_ID();
 
-    /** Column definition for HeaderAggregationKeyBuilder_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_HeaderAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "HeaderAggregationKeyBuilder_ID", null);
-    /** Column name HeaderAggregationKeyBuilder_ID */
-    public static final String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_HeaderAggregationKeyBuilder_ID = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "HeaderAggregationKeyBuilder_ID", null);
+	String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
 
 	/**
 	 * Set Abrechnungsgruppe.
@@ -186,7 +165,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoicingGroupNo (int InvoicingGroupNo);
+	void setInvoicingGroupNo (int InvoicingGroupNo);
 
 	/**
 	 * Get Abrechnungsgruppe.
@@ -196,37 +175,33 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getInvoicingGroupNo();
+	int getInvoicingGroupNo();
 
-    /** Column definition for InvoicingGroupNo */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_InvoicingGroupNo = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "InvoicingGroupNo", null);
-    /** Column name InvoicingGroupNo */
-    public static final String COLUMNNAME_InvoicingGroupNo = "InvoicingGroupNo";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_InvoicingGroupNo = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "InvoicingGroupNo", null);
+	String COLUMNNAME_InvoicingGroupNo = "InvoicingGroupNo";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Sales Transaction.
@@ -236,7 +211,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSOTrx (boolean IsSOTrx);
+	void setIsSOTrx (boolean IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
@@ -246,63 +221,54 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSOTrx();
+	boolean isSOTrx();
 
-    /** Column definition for IsSOTrx */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_IsSOTrx = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "IsSOTrx", null);
-    /** Column name IsSOTrx */
-    public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Processed = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object>(I_C_Invoice_Candidate_HeaderAggregation.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, Object> COLUMN_Updated = new ModelColumn<>(I_C_Invoice_Candidate_HeaderAggregation.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

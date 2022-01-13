@@ -98,7 +98,7 @@ run_metasfresh()
 # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
 local MEMORY_PARAMS="-Xmx1024M"
 
- local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
+ local es_params="-Dmetasfresh.elasticsearch.host=${es_host}:${es_port}"
 
  local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
  -Dspring.rabbitmq.port=${rabbitmq_port}\

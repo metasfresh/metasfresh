@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -53,8 +56,7 @@ import de.metas.util.Services;
 /**
  * Group selected order lines in multiple groups, one group for each {@link I_M_Product_Category#getM_Product_Category_Parent_ID()}.
  * 
- * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui-api/issues/853
+ * Task https://github.com/metasfresh/metasfresh-webui-api/issues/853
  */
 public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGroupProcess
 {
@@ -62,7 +64,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 	private GroupTemplateRepository groupTemplateRepo;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
 		return acceptIfEligibleOrder(context)
 				.and(() -> acceptIfOrderLinesNotInGroup(context));
@@ -112,6 +114,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 		return orderLineIdsByGroupTemplate;
 	}
 
+	@Nullable
 	private GroupTemplate extractGroupTemplate(final I_C_OrderLine orderLine)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
@@ -135,9 +138,8 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 	private Group createGroup(final GroupTemplate groupTemplate, final Collection<OrderLineId> orderLineIds)
 	{
 		return groupsRepo.prepareNewGroup()
-				.linesToGroup(orderLineIds)
 				.groupTemplate(groupTemplate)
-				.createGroup();
+				.createGroup(orderLineIds);
 	}
 
 }

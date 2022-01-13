@@ -10,8 +10,8 @@ import de.metas.util.Services;
 /**
  * An {@link ILockAutoCloseable} implementation which when {@link #close()} is called it will
  * <ul>
- * <li>if transaction is null or no longer exist, it will close the lock immediatelly
- * <li>if transaction exists, it will close the lock asynchronously when the transaction is commited or rolled back.
+ * <li>if transaction is null or no longer exist, it will close the lock immediately
+ * <li>if transaction exists, it will close the lock asynchronously when the transaction is committed or rolled back.
  * </ul>
  *
  * @author tsa

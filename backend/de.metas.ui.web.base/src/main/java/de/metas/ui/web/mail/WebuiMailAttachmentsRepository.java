@@ -1,6 +1,7 @@
 package de.metas.ui.web.mail;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -9,6 +10,8 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -126,19 +129,22 @@ public class WebuiMailAttachmentsRepository implements InitializingBean
 					.setParameter("filename", originalFilename);
 		}
 
-		return createAttachment(emailId, originalFilename, fileContent);
+		return createAttachment(emailId, originalFilename, new ByteArrayResource(fileContent));
 	}
 
-	public LookupValue createAttachment(@NonNull final String emailId, @NonNull final String filename, @NonNull byte[] fileContent)
+	public LookupValue createAttachment(
+			@NonNull final String emailId, 
+			@NonNull final String filename, 
+			@NonNull Resource fileContent)
 	{
 		final String attachmentId = UUID.randomUUID().toString();
 
 		//
 		// Store it to internal attachments storage
 		final File attachmentFile = getAttachmentFile(emailId, attachmentId);
-		try
+		try(final FileOutputStream fileOutputStream = new FileOutputStream(attachmentFile))
 		{
-			FileCopyUtils.copy(fileContent, attachmentFile);
+			FileCopyUtils.copy(fileContent.getInputStream(), fileOutputStream);
 		}
 		catch (final IOException e)
 		{

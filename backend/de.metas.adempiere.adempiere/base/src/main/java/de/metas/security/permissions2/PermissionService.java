@@ -22,6 +22,7 @@
 
 package de.metas.security.permissions2;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.security.IUserRolePermissions;
@@ -31,9 +32,9 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
@@ -49,7 +50,7 @@ public class PermissionService
 	@Getter
 	private final OrgId defaultOrgId;
 
-	private final Set<PermissionRequest> permissionsGranted = new HashSet<>();
+	private final HashSet<PermissionRequest> permissionsGranted = new HashSet<>();
 
 	@Builder
 	private PermissionService(
@@ -122,10 +123,10 @@ public class PermissionService
 
 		final IUserRolePermissions userPermissions = userRolePermissionsRepo.getUserRolePermissions(userRolePermissionsKey);
 
-		final String errmsg;
+		final BooleanWithReason allowed;
 		if (request.getRecordId() >= 0)
 		{
-			errmsg = userPermissions.checkCanUpdate(
+			allowed = userPermissions.checkCanUpdate(
 					userPermissions.getClientId(),
 					request.getOrgId(),
 					request.getAdTableId(),
@@ -133,17 +134,20 @@ public class PermissionService
 		}
 		else
 		{
-			errmsg = userPermissions.checkCanCreateNewRecord(
+			allowed = userPermissions.checkCanCreateNewRecord(
 					userPermissions.getClientId(),
 					request.getOrgId(),
-					request.getAdTableId());
+					AdTableId.ofRepoId(request.getAdTableId()));
 		}
 
-		if (errmsg != null)
+		if (allowed.isFalse())
 		{
-			throw new PermissionNotGrantedException(errmsg);
+			throw new PermissionNotGrantedException(allowed.getReason());
 		}
-		permissionsGranted.add(request);
+		else
+		{
+			permissionsGranted.add(request);
+		}
 	}
 
 	@lombok.Value

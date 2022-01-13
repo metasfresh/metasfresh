@@ -1,13 +1,12 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import org.compiere.SpringContextHolder;
-
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -63,7 +62,7 @@ abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 				.moneyService(moneyService)
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
 				//
-				.paymentRow(getSingleSelectedPaymentRowOrNull())
+				.paymentRows(getPaymentRowsSelectedForAllocation())
 				.invoiceRows(getInvoiceRowsSelectedForAllocation())
 				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed());
 

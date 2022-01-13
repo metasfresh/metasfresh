@@ -1,0 +1,10 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 100,
+      "request": "getDocuments",
+      "name": "UpdatedAfterAttachment",
+      "value": "2021-05-25T06:50:24.568Z"
+    }
+  ]
+}

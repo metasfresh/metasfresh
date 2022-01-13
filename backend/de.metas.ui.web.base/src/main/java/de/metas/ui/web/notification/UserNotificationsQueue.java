@@ -1,27 +1,27 @@
 package de.metas.ui.web.notification;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.session.json.WebuiSessionId;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -52,7 +52,7 @@ public class UserNotificationsQueue
 	private final UserId userId;
 	private JSONOptions jsonOptions;
 
-	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
+	private final Set<WebuiSessionId> activeSessions = ConcurrentHashMap.newKeySet();
 
 	private final INotificationRepository notificationsRepo;
 
@@ -94,16 +94,16 @@ public class UserNotificationsQueue
 		return websocketEndpoint;
 	}
 
-	private final void fireEventOnWebsocket(final JSONNotificationEvent event)
+	private void fireEventOnWebsocket(final JSONNotificationEvent event)
 	{
 		websocketSender.convertAndSend(websocketEndpoint, event);
 		logger.trace("Fired notification to WS {}: {}", websocketEndpoint, event);
 	}
 
-	public UserNotificationsList getNotificationsAsList(final int limit)
+	public UserNotificationsList getNotificationsAsList(@NonNull final QueryLimit limit)
 	{
 		final List<UserNotification> notifications = notificationsRepo.getByUserId(userId, limit);
-		final boolean fullyLoaded = limit <= 0 || notifications.size() <= limit;
+		final boolean fullyLoaded = limit.isNoLimit() || notifications.size() <= limit.toInt();
 
 		final int totalCount;
 		final int unreadCount;
@@ -121,14 +121,14 @@ public class UserNotificationsQueue
 		return UserNotificationsList.of(notifications, totalCount, unreadCount);
 	}
 
-	public void addActiveSessionId(final String sessionId)
+	public void addActiveSessionId(final WebuiSessionId sessionId)
 	{
 		Check.assumeNotNull(sessionId, "Parameter sessionId is not null");
 		activeSessions.add(sessionId);
 		logger.debug("Added sessionId '{}' to {}", sessionId, this);
 	}
 
-	public void removeActiveSessionId(final String sessionId)
+	public void removeActiveSessionId(final WebuiSessionId sessionId)
 	{
 		activeSessions.remove(sessionId);
 		logger.debug("Removed sessionId '{}' to {}", sessionId, this);

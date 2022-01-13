@@ -36,6 +36,7 @@ package de.metas.procurement.base.rabbitmq;
  import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
  import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
  import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUserChangedRequest;
  import de.metas.procurement.base.IServerSyncBL;
  import de.metas.util.Services;
  import lombok.NonNull;
@@ -95,6 +96,10 @@ public class ReceiverFromProcurementWeb
 		{
 			final String infoMessage = serverSyncBL.getInfoMessage();
 			senderToProcurementWebUI.send(PutInfoMessageRequest.of(infoMessage));
+		}
+		else if (requestToMetasfresh instanceof PutUserChangedRequest)
+		{
+			serverSyncBL.reportUserChanged((PutUserChangedRequest)requestToMetasfresh);
 		}
 		else
 		{

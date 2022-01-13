@@ -3,15 +3,16 @@ package de.metas.handlingunits.material.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorFromInventoryLineService;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorsFromHUAssignmentService;
-import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -30,6 +31,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -43,8 +45,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.util.TimeUtil.asInstant;
 
 /*
@@ -119,12 +120,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
+		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				new InventoryRepository(),
-				new HUDescriptorService());
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -150,12 +153,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
+		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				new InventoryRepository(),
-				new HUDescriptorService());
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -185,12 +190,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
+		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				new InventoryRepository(),
-				new HUDescriptorService());
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		//
 		// invoke the method under test
@@ -218,7 +225,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(10)
 				.productDescriptor(productDescriptor)
 				.quantity(new BigDecimal(huQty))
-				.quantityDelta(new BigDecimal(huQty))
 				.build();
 
 		return new HUDescriptorsFromHUAssignmentService(new HUDescriptorService())
@@ -263,12 +269,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
+		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				new InventoryRepository(),
-				new HUDescriptorService());
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -295,12 +303,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createReceiptTransaction();
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
+		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				new InventoryRepository(),
-				new HUDescriptorService());
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -350,7 +360,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor1)
 				.quantity(SEVEN)
-				.quantityDelta(SEVEN)
 				.build();
 
 		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(10, 20);
@@ -359,7 +368,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor2)
 				.quantity(THREE)
-				.quantityDelta(THREE)
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();
@@ -405,7 +413,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor1)
 				.quantity(SEVEN)
-				.quantityDelta(SEVEN)
 				.build();
 
 		// despite the different ASI-ID we will expect just one result.
@@ -414,7 +421,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor2)
 				.quantity(THREE)
-				.quantityDelta(THREE)
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();

@@ -4,14 +4,13 @@ import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import tableFilterProps from '../../../../test_setup/fixtures/table/table_context_menu.json';
 import TableFilter from '../../../components/table/TableFilter';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,

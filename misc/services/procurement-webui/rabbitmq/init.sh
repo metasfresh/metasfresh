@@ -1,8 +1,6 @@
 #!/bin/sh
 
 reset_config_file="/etc/rabbitmq/delete_me_to_reset_config.txt"
-
-reset_config_file="/etc/rabbitmq/delete_me_to_reset_config.txt"
 if [ ! -f "$reset_config_file" ]; then
         echo "init.sh - before rabbitmq start - $reset_config_file does not exist; -> resetting config files"
         cp --recursive --verbose /etc/rabbitmq_default_configs/* /etc/rabbitmq/

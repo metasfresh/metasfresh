@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_OrgInfo
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -771889961L;
+	private static final long serialVersionUID = 1622689770L;
 
     /** Standard Constructor */
-    public X_AD_OrgInfo (Properties ctx, int AD_OrgInfo_ID, String trxName)
+    public X_AD_OrgInfo (final Properties ctx, final int AD_OrgInfo_ID, @Nullable final String trxName)
     {
       super (ctx, AD_OrgInfo_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_OrgInfo (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_OrgInfo (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,18 +29,18 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAD_OrgInfo_ID (int AD_OrgInfo_ID)
+	public void setAD_OrgInfo_ID (final int AD_OrgInfo_ID)
 	{
 		if (AD_OrgInfo_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, Integer.valueOf(AD_OrgInfo_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, AD_OrgInfo_ID);
 	}
 
 	@Override
@@ -55,18 +56,18 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setAD_OrgType(org.compiere.model.I_AD_OrgType AD_OrgType)
+	public void setAD_OrgType(final org.compiere.model.I_AD_OrgType AD_OrgType)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_OrgType_ID, org.compiere.model.I_AD_OrgType.class, AD_OrgType);
 	}
 
 	@Override
-	public void setAD_OrgType_ID (int AD_OrgType_ID)
+	public void setAD_OrgType_ID (final int AD_OrgType_ID)
 	{
 		if (AD_OrgType_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgType_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_OrgType_ID, Integer.valueOf(AD_OrgType_ID));
+			set_Value (COLUMNNAME_AD_OrgType_ID, AD_OrgType_ID);
 	}
 
 	@Override
@@ -76,24 +77,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
-	}
-
-	@Override
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
-	}
-
-	@Override
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID)
+	public void setAD_WF_Responsible_ID (final int AD_WF_Responsible_ID)
 	{
 		if (AD_WF_Responsible_ID < 1) 
 			set_Value (COLUMNNAME_AD_WF_Responsible_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_WF_Responsible_ID, Integer.valueOf(AD_WF_Responsible_ID));
+			set_Value (COLUMNNAME_AD_WF_Responsible_ID, AD_WF_Responsible_ID);
 	}
 
 	@Override
@@ -103,24 +92,78 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
+	public org.compiere.model.I_AD_UserGroup getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
+	}
+
+	@Override
+	public void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup(final org.compiere.model.I_AD_UserGroup C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class, C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup);
+	}
+
+	@Override
+	public void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID (final int C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID)
+	{
+		if (C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public int getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_UserGroup getC_BP_SupplierApproval_Expiration_Notify_UserGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
+	}
+
+	@Override
+	public void setC_BP_SupplierApproval_Expiration_Notify_UserGroup(final org.compiere.model.I_AD_UserGroup C_BP_SupplierApproval_Expiration_Notify_UserGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class, C_BP_SupplierApproval_Expiration_Notify_UserGroup);
+	}
+
+	@Override
+	public void setC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID (final int C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID)
+	{
+		if (C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public int getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Calendar getC_Calendar()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
 	}
 
 	@Override
-	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar)
+	public void setC_Calendar(final org.compiere.model.I_C_Calendar C_Calendar)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
 	}
 
 	@Override
-	public void setC_Calendar_ID (int C_Calendar_ID)
+	public void setC_Calendar_ID (final int C_Calendar_ID)
 	{
 		if (C_Calendar_ID < 1) 
 			set_Value (COLUMNNAME_C_Calendar_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Calendar_ID, Integer.valueOf(C_Calendar_ID));
+			set_Value (COLUMNNAME_C_Calendar_ID, C_Calendar_ID);
 	}
 
 	@Override
@@ -130,12 +173,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setDropShip_Warehouse_ID (int DropShip_Warehouse_ID)
+	public void setDropShip_Warehouse_ID (final int DropShip_Warehouse_ID)
 	{
 		if (DropShip_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_DropShip_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_DropShip_Warehouse_ID, Integer.valueOf(DropShip_Warehouse_ID));
+			set_Value (COLUMNNAME_DropShip_Warehouse_ID, DropShip_Warehouse_ID);
 	}
 
 	@Override
@@ -145,24 +188,36 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
+	public void setIsAutoInvoiceFlatrateTerm (final boolean IsAutoInvoiceFlatrateTerm)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoiceFlatrateTerm, IsAutoInvoiceFlatrateTerm);
+	}
+
+	@Override
+	public boolean isAutoInvoiceFlatrateTerm() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoInvoiceFlatrateTerm);
+	}
+
+	@Override
 	public org.compiere.model.I_AD_Image getLogo()
 	{
 		return get_ValueAsPO(COLUMNNAME_Logo_ID, org.compiere.model.I_AD_Image.class);
 	}
 
 	@Override
-	public void setLogo(org.compiere.model.I_AD_Image Logo)
+	public void setLogo(final org.compiere.model.I_AD_Image Logo)
 	{
 		set_ValueFromPO(COLUMNNAME_Logo_ID, org.compiere.model.I_AD_Image.class, Logo);
 	}
 
 	@Override
-	public void setLogo_ID (int Logo_ID)
+	public void setLogo_ID (final int Logo_ID)
 	{
 		if (Logo_ID < 1) 
 			set_Value (COLUMNNAME_Logo_ID, null);
 		else 
-			set_Value (COLUMNNAME_Logo_ID, Integer.valueOf(Logo_ID));
+			set_Value (COLUMNNAME_Logo_ID, Logo_ID);
 	}
 
 	@Override
@@ -172,12 +227,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
+	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
 	@Override
@@ -187,12 +242,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
 	@Override
@@ -202,12 +257,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setM_WarehousePO_ID (int M_WarehousePO_ID)
+	public void setM_WarehousePO_ID (final int M_WarehousePO_ID)
 	{
 		if (M_WarehousePO_ID < 1) 
 			set_Value (COLUMNNAME_M_WarehousePO_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_WarehousePO_ID, Integer.valueOf(M_WarehousePO_ID));
+			set_Value (COLUMNNAME_M_WarehousePO_ID, M_WarehousePO_ID);
 	}
 
 	@Override
@@ -217,12 +272,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setOrg_BPartner_ID (int Org_BPartner_ID)
+	public void setOrg_BPartner_ID (final int Org_BPartner_ID)
 	{
 		if (Org_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_Org_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_Org_BPartner_ID, Integer.valueOf(Org_BPartner_ID));
+			set_Value (COLUMNNAME_Org_BPartner_ID, Org_BPartner_ID);
 	}
 
 	@Override
@@ -232,12 +287,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setOrgBP_Location_ID (int OrgBP_Location_ID)
+	public void setOrgBP_Location_ID (final int OrgBP_Location_ID)
 	{
 		if (OrgBP_Location_ID < 1) 
 			set_Value (COLUMNNAME_OrgBP_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_OrgBP_Location_ID, Integer.valueOf(OrgBP_Location_ID));
+			set_Value (COLUMNNAME_OrgBP_Location_ID, OrgBP_Location_ID);
 	}
 
 	@Override
@@ -247,12 +302,12 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setParent_Org_ID (int Parent_Org_ID)
+	public void setParent_Org_ID (final int Parent_Org_ID)
 	{
 		if (Parent_Org_ID < 1) 
 			set_Value (COLUMNNAME_Parent_Org_ID, null);
 		else 
-			set_Value (COLUMNNAME_Parent_Org_ID, Integer.valueOf(Parent_Org_ID));
+			set_Value (COLUMNNAME_Parent_Org_ID, Parent_Org_ID);
 	}
 
 	@Override
@@ -262,7 +317,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setReceiptFooterMsg (java.lang.String ReceiptFooterMsg)
+	public void setReceiptFooterMsg (final @Nullable java.lang.String ReceiptFooterMsg)
 	{
 		set_Value (COLUMNNAME_ReceiptFooterMsg, ReceiptFooterMsg);
 	}
@@ -270,11 +325,38 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	@Override
 	public java.lang.String getReceiptFooterMsg() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReceiptFooterMsg);
+		return get_ValueAsString(COLUMNNAME_ReceiptFooterMsg);
 	}
 
 	@Override
-	public void setReportPrefix (java.lang.String ReportPrefix)
+	public org.compiere.model.I_AD_Image getReportBottom_Logo()
+	{
+		return get_ValueAsPO(COLUMNNAME_ReportBottom_Logo_ID, org.compiere.model.I_AD_Image.class);
+	}
+
+	@Override
+	public void setReportBottom_Logo(final org.compiere.model.I_AD_Image ReportBottom_Logo)
+	{
+		set_ValueFromPO(COLUMNNAME_ReportBottom_Logo_ID, org.compiere.model.I_AD_Image.class, ReportBottom_Logo);
+	}
+
+	@Override
+	public void setReportBottom_Logo_ID (final int ReportBottom_Logo_ID)
+	{
+		if (ReportBottom_Logo_ID < 1) 
+			set_Value (COLUMNNAME_ReportBottom_Logo_ID, null);
+		else 
+			set_Value (COLUMNNAME_ReportBottom_Logo_ID, ReportBottom_Logo_ID);
+	}
+
+	@Override
+	public int getReportBottom_Logo_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ReportBottom_Logo_ID);
+	}
+
+	@Override
+	public void setReportPrefix (final java.lang.String ReportPrefix)
 	{
 		set_Value (COLUMNNAME_ReportPrefix, ReportPrefix);
 	}
@@ -282,7 +364,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	@Override
 	public java.lang.String getReportPrefix() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReportPrefix);
+		return get_ValueAsString(COLUMNNAME_ReportPrefix);
 	}
 
 	/** 
@@ -297,25 +379,24 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	/** letzte 4 Stellen = LAST4 */
 	public static final String STORECREDITCARDDATA_Letzte4Stellen = "LAST4";
 	@Override
-	public void setStoreCreditCardData (java.lang.String StoreCreditCardData)
+	public void setStoreCreditCardData (final java.lang.String StoreCreditCardData)
 	{
-
 		set_Value (COLUMNNAME_StoreCreditCardData, StoreCreditCardData);
 	}
 
 	@Override
 	public java.lang.String getStoreCreditCardData() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_StoreCreditCardData);
+		return get_ValueAsString(COLUMNNAME_StoreCreditCardData);
 	}
 
 	@Override
-	public void setSupervisor_ID (int Supervisor_ID)
+	public void setSupervisor_ID (final int Supervisor_ID)
 	{
 		if (Supervisor_ID < 1) 
 			set_Value (COLUMNNAME_Supervisor_ID, null);
 		else 
-			set_Value (COLUMNNAME_Supervisor_ID, Integer.valueOf(Supervisor_ID));
+			set_Value (COLUMNNAME_Supervisor_ID, Supervisor_ID);
 	}
 
 	@Override
@@ -325,7 +406,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setTimeZone (java.lang.String TimeZone)
+	public void setTimeZone (final @Nullable java.lang.String TimeZone)
 	{
 		set_Value (COLUMNNAME_TimeZone, TimeZone);
 	}
@@ -333,16 +414,16 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	@Override
 	public java.lang.String getTimeZone() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TimeZone);
+		return get_ValueAsString(COLUMNNAME_TimeZone);
 	}
 
 	@Override
-	public void setTransferBank_ID (int TransferBank_ID)
+	public void setTransferBank_ID (final int TransferBank_ID)
 	{
 		if (TransferBank_ID < 1) 
 			set_Value (COLUMNNAME_TransferBank_ID, null);
 		else 
-			set_Value (COLUMNNAME_TransferBank_ID, Integer.valueOf(TransferBank_ID));
+			set_Value (COLUMNNAME_TransferBank_ID, TransferBank_ID);
 	}
 
 	@Override
@@ -358,18 +439,18 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public void setTransferCashBook(org.compiere.model.I_C_CashBook TransferCashBook)
+	public void setTransferCashBook(final org.compiere.model.I_C_CashBook TransferCashBook)
 	{
 		set_ValueFromPO(COLUMNNAME_TransferCashBook_ID, org.compiere.model.I_C_CashBook.class, TransferCashBook);
 	}
 
 	@Override
-	public void setTransferCashBook_ID (int TransferCashBook_ID)
+	public void setTransferCashBook_ID (final int TransferCashBook_ID)
 	{
 		if (TransferCashBook_ID < 1) 
 			set_Value (COLUMNNAME_TransferCashBook_ID, null);
 		else 
-			set_Value (COLUMNNAME_TransferCashBook_ID, Integer.valueOf(TransferCashBook_ID));
+			set_Value (COLUMNNAME_TransferCashBook_ID, TransferCashBook_ID);
 	}
 
 	@Override

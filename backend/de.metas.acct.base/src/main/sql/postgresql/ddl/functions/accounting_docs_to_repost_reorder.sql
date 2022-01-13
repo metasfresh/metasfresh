@@ -32,7 +32,7 @@ BEGIN
 	AND t.record_id = docs.record_id;
 
     GET DIAGNOSTICS rowcount = ROW_COUNT;
-	raise notice 'Reordered % rows', rowcount;
+	raise notice 'accounting_docs_to_repost: Reordered % rows by their document date', rowcount;
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE

@@ -1,0 +1,21 @@
+{
+    "menu1":
+    {
+        "nodeId": "1000010",
+        "caption": "Sales",
+        "captionBreadcrumb": "Sales",
+        "type": "group",
+        "children":
+        [
+            {
+                "nodeId": "1000040",
+                "caption": "Sales Order",
+                "captionBreadcrumb": "Sales Order",
+                "type": "window",
+                "elementId": "143",
+                "favorite": false
+            }
+        ],
+        "favorite": false
+    }
+}

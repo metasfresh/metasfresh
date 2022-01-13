@@ -1,22 +1,6 @@
 package de.metas.banking.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_BP_BankAccount;
-
 import com.google.common.collect.ImmutableListMultimap;
-
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
@@ -30,6 +14,20 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BP_BankAccount;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount> builder()
+	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount>builder()
 			.tableName(I_C_BP_BankAccount.Table_Name)
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(100)
@@ -80,7 +78,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	{
 		return BankAccount.builder()
 				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
-				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID())) // C_BP_BankAccount.C_Bank_ID is not mandatory!
 				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
@@ -89,6 +87,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.accountNo(record.getAccountNo())
 				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.routingNo(record.getRoutingNo())
 				.build();
 	}
 
@@ -110,7 +109,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	}
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID)
+	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
@@ -121,15 +120,13 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyID);
 		}
 
-		final List<I_C_BP_BankAccount> bpBankAccounts = qb.addOnlyActiveRecordsFilter()
+		return qb.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last) // DESC (Y, then N)
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
 				.list();
-
-		return bpBankAccounts;
 	}
 
 	@Override
@@ -181,5 +178,13 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	public BankId getBankId(@NonNull final BankAccountId bankAccountId)
 	{
 		return getById(bankAccountId).getBankId();
+	}
+
+	@Override
+	@NonNull
+	public Optional<BankAccount> getDefaultBankAccount(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveDefaultBankAccountInTrx(bPartnerId)
+				.map(BPBankAccountDAO::toBankAccount);
 	}
 }

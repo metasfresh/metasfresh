@@ -36,14 +36,30 @@ class Sidenav extends Component {
     } else {
       createView(boardId).then((res) => {
         setViewId(res.data.viewId);
-        getView(boardId, res.data.viewId, 0).then((res) =>
-          this.setState({
-            view: res.data,
-            loading: false,
-          })
-        );
+        this.getBoardView({ boardId, viewId: res.data.viewId, firstRow: 0 });
       });
     }
+  };
+
+  /**
+   * @method refreshView
+   * @summary refreshes the view for the given boardId
+   * @param {string} boardId
+   */
+  refreshView = (boardId) => {
+    const { viewId } = this.state.view;
+    this.getBoardView({ boardId, viewId, firstRow: 0 });
+  };
+
+  /**
+   * @method getBoardView
+   * @summary Fetches the view info for a given board
+   * @param {object}
+   */
+  getBoardView = ({ boardId, viewId, firstRow }) => {
+    getView(boardId, viewId, firstRow).then((res) =>
+      this.setState({ view: res.data, loading: false })
+    );
   };
 
   getCardIndex = (cardId) => {
@@ -59,23 +75,6 @@ class Sidenav extends Component {
     }
 
     return result;
-  };
-
-  removeCard = (cardId) => {
-    const { view } = this.state;
-    if (view && view.result) {
-      let cardIndex = this.getCardIndex(cardId);
-      if (cardIndex >= 0) {
-        this.setState((prev) =>
-          update(prev, {
-            view: {
-              result: { $unset: [cardIndex] },
-            },
-            loading: { $set: false },
-          })
-        );
-      }
-    }
   };
 
   componentDidMount = () => {
@@ -146,7 +145,7 @@ class Sidenav extends Component {
 
 Sidenav.propTypes = {
   boardId: PropTypes.number,
-  viewId: PropTypes.number,
+  viewId: PropTypes.string,
   setViewId: PropTypes.func,
   onClickOutside: PropTypes.func,
 };

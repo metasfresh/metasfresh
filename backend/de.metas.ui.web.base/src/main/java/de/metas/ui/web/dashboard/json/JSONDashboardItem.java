@@ -3,9 +3,9 @@ package de.metas.ui.web.dashboard.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
+import de.metas.ui.web.kpi.descriptor.KPI;
 import lombok.NonNull;
 import lombok.Value;
 

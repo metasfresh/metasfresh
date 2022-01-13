@@ -22,21 +22,38 @@
 
 package de.metas.common.pricing.v2.productprice;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Arrays;
 
 public enum TaxCategory
 {
-	@ApiEnum("Specifies in which type the tax category is")
+	@ApiEnum("Specifies in which type the tax category is. The internal name translates `C_TaxCategory.InternalName`.")
 	NORMAL("Normal"),
 	REDUCED("Reduced"),
 	TAXFREE("TaxFree");
 
 	@Getter
-	private final String value;
+	private final String internalName;
 
-	TaxCategory(final String value)
+	TaxCategory(final String internalName)
 	{
-		this.value = value;
+		this.internalName = internalName;
+	}
+	
+	private static final ImmutableMap<String, TaxCategory> typesByInternalName = Maps.uniqueIndex(Arrays.asList(values()), TaxCategory::getInternalName);
+
+	public static TaxCategory ofInternalName(@NonNull final String internalName)
+	{
+		final TaxCategory type = typesByInternalName.get(internalName);
+		if (type == null)
+		{
+			throw new RuntimeException("No " + TaxCategory.class + " found for internalName: " + internalName);
+		}
+		return type;
 	}
 }

@@ -1,18 +1,17 @@
 package org.adempiere.service;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -40,7 +39,6 @@ import lombok.Value;
  * AD_Client_ID
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -68,6 +66,7 @@ public class ClientId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
+	@Nullable
 	public static ClientId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == SYSTEM.repoId)
@@ -128,12 +127,12 @@ public class ClientId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final ClientId clientId)
+	public static int toRepoId(@Nullable final ClientId clientId)
 	{
 		return clientId != null ? clientId.getRepoId() : -1;
 	}
 
-	public static boolean equals(final ClientId id1, final ClientId id2)
+	public static boolean equals(@Nullable final ClientId id1, @Nullable final ClientId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

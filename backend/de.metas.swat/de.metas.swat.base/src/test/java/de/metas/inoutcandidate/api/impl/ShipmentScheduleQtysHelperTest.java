@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -56,6 +57,7 @@ public class ShipmentScheduleQtysHelperTest
 {
 	private String deliveryStopStatusMessage;
 	private String closedStatusMessage;
+	private IShipmentScheduleAllocDAO shipmentScheduleAllocDAO;
 
 	@BeforeEach
 	public void init()
@@ -65,6 +67,8 @@ public class ShipmentScheduleQtysHelperTest
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		deliveryStopStatusMessage = msgBL.getMsg(Env.getCtx(), ShipmentScheduleQtysHelper.MSG_DeliveryStopStatus);
 		closedStatusMessage = msgBL.getMsg(Env.getCtx(), ShipmentScheduleQtysHelper.MSG_ClosedStatus);
+
+		shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	}
 
 	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
@@ -182,12 +186,12 @@ public class ShipmentScheduleQtysHelperTest
 			final OlAndSched olAndSched = createOlAndSchedForSchedAndQtyOrdered(sched, "14");
 
 			sched.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates, shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver()).isEqualByComparingTo("10");
 
 			sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 			sched.setQtyOrdered_Override(new BigDecimal("14"));
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates, shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver())
 					.as("Even with DeliveryRule=F and a different QtyOrdered_Override, the deliveryLineCandidate's Qty shall be used")
 					.isEqualByComparingTo("10");
@@ -207,13 +211,13 @@ public class ShipmentScheduleQtysHelperTest
 			final IShipmentSchedulesDuringUpdate shipmentCandidates = new ShipmentSchedulesDuringUpdate();
 
 			sched.setIsDeliveryStop(false);
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates, shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver())
 					.as("QtyToDeliver (with NO delivery stop and DeliveryRule=Force)")
 					.isEqualByComparingTo("10");
 
 			sched.setIsDeliveryStop(true);
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates, shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver())
 					.as("QtyToDeliver (with delivery stop, despite DeliveryRule=Force)")
 					.isZero();
@@ -231,11 +235,11 @@ public class ShipmentScheduleQtysHelperTest
 
 			final OlAndSched olAndSched = createOlAndSchedForSchedAndQtyOrdered(sched, "14");
 
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate());
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate(), shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver()).isEqualByComparingTo("10"); // guard
 
 			sched.setIsClosed(true);
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate());
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate(), shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver()).isZero();
 			assertThat(sched.getStatus()).contains(closedStatusMessage);
 		}
@@ -253,7 +257,7 @@ public class ShipmentScheduleQtysHelperTest
 
 			sched.setIsClosed(true);
 			sched.setIsDeliveryStop(true);
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate());
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, new ShipmentSchedulesDuringUpdate(), shipmentScheduleAllocDAO);
 			assertThat(sched.getQtyToDeliver()).isZero();
 			assertThat(sched.getStatus()).contains(closedStatusMessage);
 			assertThat(sched.getStatus()).contains(deliveryStopStatusMessage);

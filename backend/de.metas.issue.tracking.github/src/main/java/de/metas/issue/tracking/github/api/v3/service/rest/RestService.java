@@ -91,7 +91,7 @@ public class RestService
 	private HttpHeaders buildHttpHeaders(final String oAuthToken)
 	{
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add(HttpHeaders.ACCEPT, GITHUB_API_VERSION);
 		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken);
 

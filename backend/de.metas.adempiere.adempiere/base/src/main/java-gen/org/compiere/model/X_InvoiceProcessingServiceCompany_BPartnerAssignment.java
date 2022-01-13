@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -12,16 +13,16 @@ import java.util.Properties;
 public class X_InvoiceProcessingServiceCompany_BPartnerAssignment extends org.compiere.model.PO implements I_InvoiceProcessingServiceCompany_BPartnerAssignment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1900044376L;
+	private static final long serialVersionUID = 664748012L;
 
     /** Standard Constructor */
-    public X_InvoiceProcessingServiceCompany_BPartnerAssignment (Properties ctx, int InvoiceProcessingServiceCompany_BPartnerAssignment_ID, String trxName)
+    public X_InvoiceProcessingServiceCompany_BPartnerAssignment (final Properties ctx, final int InvoiceProcessingServiceCompany_BPartnerAssignment_ID, @Nullable final String trxName)
     {
       super (ctx, InvoiceProcessingServiceCompany_BPartnerAssignment_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_InvoiceProcessingServiceCompany_BPartnerAssignment (Properties ctx, ResultSet rs, String trxName)
+    public X_InvoiceProcessingServiceCompany_BPartnerAssignment (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +30,18 @@ public class X_InvoiceProcessingServiceCompany_BPartnerAssignment extends org.co
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -50,7 +51,22 @@ public class X_InvoiceProcessingServiceCompany_BPartnerAssignment extends org.co
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setC_DocType_ID (final int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
+	}
+
+	@Override
+	public int getC_DocType_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -58,29 +74,29 @@ public class X_InvoiceProcessingServiceCompany_BPartnerAssignment extends org.co
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setFeePercentageOfGrandTotal (java.math.BigDecimal FeePercentageOfGrandTotal)
+	public void setFeePercentageOfGrandTotal (final BigDecimal FeePercentageOfGrandTotal)
 	{
 		set_Value (COLUMNNAME_FeePercentageOfGrandTotal, FeePercentageOfGrandTotal);
 	}
 
 	@Override
-	public java.math.BigDecimal getFeePercentageOfGrandTotal() 
+	public BigDecimal getFeePercentageOfGrandTotal() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FeePercentageOfGrandTotal);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FeePercentageOfGrandTotal);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setInvoiceProcessingServiceCompany_BPartnerAssignment_ID (int InvoiceProcessingServiceCompany_BPartnerAssignment_ID)
+	public void setInvoiceProcessingServiceCompany_BPartnerAssignment_ID (final int InvoiceProcessingServiceCompany_BPartnerAssignment_ID)
 	{
 		if (InvoiceProcessingServiceCompany_BPartnerAssignment_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_BPartnerAssignment_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_BPartnerAssignment_ID, Integer.valueOf(InvoiceProcessingServiceCompany_BPartnerAssignment_ID));
+			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_BPartnerAssignment_ID, InvoiceProcessingServiceCompany_BPartnerAssignment_ID);
 	}
 
 	@Override
@@ -96,18 +112,18 @@ public class X_InvoiceProcessingServiceCompany_BPartnerAssignment extends org.co
 	}
 
 	@Override
-	public void setInvoiceProcessingServiceCompany(org.compiere.model.I_InvoiceProcessingServiceCompany InvoiceProcessingServiceCompany)
+	public void setInvoiceProcessingServiceCompany(final org.compiere.model.I_InvoiceProcessingServiceCompany InvoiceProcessingServiceCompany)
 	{
 		set_ValueFromPO(COLUMNNAME_InvoiceProcessingServiceCompany_ID, org.compiere.model.I_InvoiceProcessingServiceCompany.class, InvoiceProcessingServiceCompany);
 	}
 
 	@Override
-	public void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID)
+	public void setInvoiceProcessingServiceCompany_ID (final int InvoiceProcessingServiceCompany_ID)
 	{
 		if (InvoiceProcessingServiceCompany_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, Integer.valueOf(InvoiceProcessingServiceCompany_ID));
+			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, InvoiceProcessingServiceCompany_ID);
 	}
 
 	@Override

@@ -22,16 +22,17 @@ package de.metas.acct.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
 
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {
@@ -46,21 +47,25 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * 
 	 * Unit testing note: note preparing a plain implementation. Use jmockit to unit test.
 	 */
-	AcctSchema getByCliendAndOrg(Properties ctx);
+	AcctSchema getByClientAndOrg(Properties ctx);
 
 	/**
-	 * Similar to {@link #getByCliendAndOrg(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.
+	 * Similar to {@link #getByClientAndOrg(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.
 	 */
-	AcctSchema getByCliendAndOrg(ClientId clientId, OrgId orgId);
+	@NonNull
+	AcctSchema getByClientAndOrg(ClientId clientId, OrgId orgId);
 
+	@Nullable
+	AcctSchema getByClientAndOrgOrNull(ClientId clientId, OrgId orgId);
+
+	@NonNull
 	AcctSchemaId getAcctSchemaIdByClientAndOrg(ClientId clientId, OrgId orgId);
 
 	/**
 	 * Retrieves all accounting schemas for given AD_Client_ID.
 	 * 
-	 * if given AD_Client_ID is ZERO, all accountign schemas from all clients will be fetched.
+	 * if given AD_Client_ID is ZERO, all accounting schemas from all clients will be fetched.
 	 * 
-	 * @param ctx
 	 * @param adClientId AD_Client_ID
 	 * @return client accounting schemas
 	 */

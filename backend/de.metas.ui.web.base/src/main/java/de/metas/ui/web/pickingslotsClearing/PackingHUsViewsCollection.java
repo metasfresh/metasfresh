@@ -1,12 +1,12 @@
 package de.metas.ui.web.pickingslotsClearing;
 
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pickingslotsClearing.process.HUExtractedFromPickingSlotEvent;
 import lombok.NonNull;
+
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -48,6 +48,11 @@ import lombok.NonNull;
 	public HUEditorView computeIfAbsent(@NonNull final PackingHUsViewKey key, @NonNull final PackingHUsViewSupplier packingHUsViewFactory)
 	{
 		return packingHUsViewsByKey.computeIfAbsent(key, packingHUsViewFactory::createPackingHUsView);
+	}
+
+	public void put(@NonNull final PackingHUsViewKey key, @NonNull final HUEditorView packingHUsView)
+	{
+		packingHUsViewsByKey.put(key, packingHUsView);
 	}
 
 	public Optional<HUEditorView> removeIfExists(@NonNull final PackingHUsViewKey key)

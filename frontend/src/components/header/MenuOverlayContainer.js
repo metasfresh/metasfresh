@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { getWindowBreadcrumb } from '../../actions/MenuActions';
-import MenuOverlayItem from './MenuOverlayItem';
 import classnames from 'classnames';
 
-class MenuOverlayContainer extends Component {
-  constructor(props) {
-    super(props);
-  }
+import { getWindowBreadcrumb } from '../../actions/MenuActions';
+import MenuOverlayItem from './MenuOverlayItem';
 
+class MenuOverlayContainer extends Component {
   handleClick = () => {
     const { dispatch, handleRedirect, elementId } = this.props;
+
     handleRedirect(elementId);
     dispatch(getWindowBreadcrumb(elementId));
   };
@@ -51,15 +49,19 @@ class MenuOverlayContainer extends Component {
           'menu-overlay-sitemap-col-2': menuType === 'sitemap', // we apply this only for the sitemap
         })}
       >
-        {type === 'group' && !deep && menuType === 'sitemap' && (
-          <div className="menu-overlay-header-main sitemap-box-header">
+        {type === 'group' && !deep && (
+          <div
+            className={classnames('menu-overlay-header-main', {
+              'sitemap-box-header': menuType === 'sitemap',
+            })}
+          >
             {caption}
           </div>
         )}
 
         {type === 'group' && deep && (
           <span
-            className={classnames('menu-overlay-heade', {
+            className={classnames('menu-overlay-header', {
               'menu-overlay-header-spaced': !printChildren,
               'sitemap-level-one': menuType === 'sitemapLevelOne',
             })}

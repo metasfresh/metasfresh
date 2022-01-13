@@ -1,11 +1,13 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.User;
@@ -18,7 +20,6 @@ import lombok.Value;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -61,7 +62,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * make full address
 	 */
-	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
+	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
@@ -128,14 +129,6 @@ public interface IBPartnerBL extends ISingletonService
 	Optional<Language> getLanguage(@NonNull I_C_BPartner bpartner);
 
 	/**
-	 * Creates BPartner, Location and contact from given template.
-	 *
-	 * @return created bpartner
-	 * Task https://github.com/metasfresh/metasfresh/issues/1090
-	 */
-	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
-
-	/**
 	 * Retrieves the discount schema for the given BPartner. If the BPartner has none, it falls back to the partner's C_BP_Group.
 	 * If the partner has no group or that group hasn't a discount schema either, it returns <code>-1</code>.
 	 *
@@ -154,12 +147,15 @@ public interface IBPartnerBL extends ISingletonService
 	 * <p>
 	 * See {@link RetrieveContactRequest}.
 	 */
+	@Nullable
 	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
+	@Nullable
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	@Nullable
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
 
 	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId, BPartnerId salesRepBPartnerId);
@@ -167,9 +163,14 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * @return previous sales rep or null
 	 */
+	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
+
+	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
 	@Value
 	@Builder
@@ -218,9 +219,13 @@ public interface IBPartnerBL extends ISingletonService
 		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
-	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+	CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryId(@NonNull BPartnerInfo bpartnerInfo);
+
+	LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
@@ -234,4 +239,8 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
+
+	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
+
+	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
 }

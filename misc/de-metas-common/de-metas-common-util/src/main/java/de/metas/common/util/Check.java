@@ -870,4 +870,14 @@ public final class Check
 		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection.size(), collection);
 		return collection.iterator().next();
 	}
+
+	public static <T> boolean isSingleElement(@Nullable final Collection<T> collection)
+	{
+		if (isEmpty(collection))
+		{
+			return false;
+		}
+
+		return collection.size() == 1;
+	}
 }

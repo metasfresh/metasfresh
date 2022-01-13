@@ -295,7 +295,7 @@ public class JsonPersisterService
 
 		syncJsonToContact(contactIdentifier, jsonContact, contact, parentSyncAdvise);
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// might be different from contactIdentifier
 		final IdentifierString identifierAfterUpdate = jsonRequestConsolidateService.extractIdentifier(contactIdentifier.getType(), contact);
@@ -367,7 +367,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getLocationIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect the metasfreshIds that we got after having invoked save
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -417,7 +417,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getContactIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -467,7 +467,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getIban(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -514,7 +514,7 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
@@ -769,16 +769,16 @@ public class JsonPersisterService
 		{
 			if (jsonBPartner.getInvoiceRule() == null)
 			{
-				bpartner.setInvoiceRule(null);
+				bpartner.setCustomerInvoiceRule(null);
 			}
 			else
 			{
-				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+				bpartner.setCustomerInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)
 		{
-			bpartner.setInvoiceRule(null);
+			bpartner.setCustomerInvoiceRule(null);
 		}
 
 		// metasfreshId - we will never update it
@@ -1135,6 +1135,19 @@ public class JsonPersisterService
 			}
 		}
 
+		// subjectMatter
+		if (jsonBPartnerContact.isSubjectMatterSet())
+		{
+			if (jsonBPartnerContact.getSubjectMatter() == null)
+			{
+				logger.debug("Ignoring boolean property \"subjectMatter\" : null ");
+			}
+			else
+			{
+				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
+			}
+		}
+
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
 	}
@@ -1218,17 +1231,6 @@ public class JsonPersisterService
 			else
 			{
 				contactType.salesDefault(jsonBPartnerContact.getSalesDefault());
-			}
-		}
-		if (jsonBPartnerContact.isSubjectMatterSet())
-		{
-			if (jsonBPartnerContact.getSubjectMatter() == null)
-			{
-				logger.debug("Ignoring boolean property \"subjectMatter\" : null ");
-			}
-			else
-			{
-				contactType.subjectMatter(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
 

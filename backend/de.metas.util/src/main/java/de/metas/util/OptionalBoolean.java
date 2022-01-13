@@ -82,4 +82,21 @@ public enum OptionalBoolean
 			return other;
 		}
 	}
+
+	@Nullable
+	public Boolean toBooleanOrNull()
+	{
+		switch (this)
+		{
+			case TRUE:
+				return Boolean.TRUE;
+			case FALSE:
+				return Boolean.FALSE;
+			case UNKNOWN:
+				return null;
+			default:
+				throw new IllegalStateException("Type not handled: " + this);
+		}
+	}
+
 }

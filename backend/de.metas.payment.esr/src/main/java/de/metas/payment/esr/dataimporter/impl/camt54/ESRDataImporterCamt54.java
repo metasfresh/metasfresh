@@ -1,34 +1,38 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
+import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
+import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
-
-import ch.qos.logback.classic.Level;
-import de.metas.i18n.AdMessageKey;
-import de.metas.logging.LogManager;
-import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
-import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
-import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.IESRDataImporter;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.util.Loggables;
-import lombok.NonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,55 +72,65 @@ import lombok.NonNull;
  * Also see <a href="https://www.six-interbank-clearing.com/dam/downloads/en/standardization/iso/swiss-recommendations/implementation-guidelines-camt.pdf">Swiss Implementation Guidelines for Cash Management</a>.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
+	private static final Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
+
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
 
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
-	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P =  AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
-
-	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P =  AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
-	
+	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
+	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
 	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 
-	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
+	@NonNull private final InputStream input;
+	@Nullable private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull private final String adLanguage;
 
-	private final I_ESR_Import header;
-	private final InputStream input;
-
-	public ESRDataImporterCamt54(@NonNull final I_ESR_Import header, @NonNull final InputStream input)
+	public ESRDataImporterCamt54(
+			@NonNull final I_ESR_ImportFile header,
+			@NonNull final InputStream input)
 	{
 		this.input = input;
-		this.header = header;
+		this.bankAccountCurrencyCode = extractBankAccountCurrencyCodeOrNull(header);
+		this.adLanguage = extractAdLanguage(header);
 	}
 
-	/**
-	 * Constructor only to unit test particular methods. Wont't work in production.
-	 */
-	@VisibleForTesting
-	ESRDataImporterCamt54()
+	@Nullable
+	private static CurrencyCode extractBankAccountCurrencyCodeOrNull(@NonNull final I_ESR_ImportFile header)
 	{
-		this.input = null;
-		this.header = null;
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(header.getC_BP_BankAccount_ID());
+		if (bankAccountId != null)
+		{
+			final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
+			final BankAccount bankAccount = bpBankAccountRepo.getById(bankAccountId);
+			final CurrencyId bankAccountCurrencyId = bankAccount.getCurrencyId();
+
+			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+			return currencyDAO.getCurrencyCodeById(bankAccountCurrencyId);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
-	/**
-	 * check if the shema is version 02
-	 * 
-	 * @param fileName
-	 * @return
-	 */
-	private boolean isVersion2Schema(@NonNull final String namespaceURI)
+	private static String extractAdLanguage(@NonNull final I_ESR_ImportFile header)
 	{
-		return Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(header);
+		return Env.getADLanguageOrBaseLanguage(ctx);
 	}
 
-	private String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
+	private static boolean isVersion2Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
+	}
+
+	private static String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
 	{
 		while (reader.hasNext())
 		{
@@ -172,32 +186,32 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	private ESRStatement importCamt54v02(final MultiVersionStreamReaderDelegate mxsr)
 	{
-		final ESRDataImporterCamt54v02 importerV02 = new ESRDataImporterCamt54v02(header, mxsr);
-		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = importerV02.loadXML();
+		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v02.loadXML(mxsr);
 		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
 		}
 
-		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
-		{
-			return importerV02.createESRStatement(bkToCstmrDbtCdtNtfctn);
-		}
+		return ESRDataImporterCamt54v02.builder()
+				.bankAccountCurrencyCode(bankAccountCurrencyCode)
+				.adLanguage(adLanguage)
+				.build()
+				.createESRStatement(bkToCstmrDbtCdtNtfctn);
 	}
 
 	private ESRStatement importCamt54v06(final MultiVersionStreamReaderDelegate mxsr)
 	{
-		final ESRDataImporterCamt54v06 importerV06 = new ESRDataImporterCamt54v06(header, mxsr);
-		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV06.loadXML();
+		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v06.loadXML(mxsr);
 		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
 		}
 
-		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
-		{
-			return importerV06.createESRStatement(bkToCstmrDbtCdtNtfctn);
-		}
+		return ESRDataImporterCamt54v06.builder()
+				.bankAccountCurrencyCode(bankAccountCurrencyCode)
+				.adLanguage(adLanguage)
+				.build()
+				.createESRStatement(bkToCstmrDbtCdtNtfctn);
 	}
 
 	private void closeXmlReaderAndInputStream(@Nullable final XMLStreamReader xsr)

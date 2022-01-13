@@ -82,15 +82,9 @@ const selectLocalView = (state, id, isModal) => {
     : get(state, ['views', id], viewState);
 };
 
-export const getView = createSelector(
-  [selectView],
-  (view) => view
-);
+export const getView = createSelector([selectView], (view) => view);
 
-const getLocalView = createSelector(
-  [selectLocalView],
-  (view) => view
-);
+const getLocalView = createSelector([selectLocalView], (view) => view);
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
 

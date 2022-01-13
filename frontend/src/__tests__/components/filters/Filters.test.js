@@ -1,9 +1,9 @@
 import React from 'react';
-import * as Immutable from 'immutable';
 import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
+import { act } from 'react-dom/test-utils';
 
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
@@ -18,11 +18,14 @@ import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive
 import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
 import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
 import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
+import filtersStoreFour from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
+import filtersStoreFacet from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
+import filtersStoreInline from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
+
 const mockStore = configureStore([]);
 
-const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+const createStore = function (state = {}) {
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -36,22 +39,16 @@ const createStore = function(state = {}) {
   return res;
 };
 
-const createInitialProps = function(
+const createInitialProps = function (
   basicFixtures = filtersFixtures.data1,
   additionalProps = {}
 ) {
-  const initialValuesNulled = additionalProps.initialValuesNulled
-    ? additionalProps.initialValuesNulled
-    : basicFixtures.initialValuesNulled;
-
   return {
     ...basicFixtures,
-    resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
     ...additionalProps,
     filterData,
     filtersActive,
-    initialValuesNulled: Immutable.Map(initialValuesNulled),
   };
 };
 
@@ -106,6 +103,76 @@ describe('Filters tests', () => {
     );
   });
 
+  it('renders active filters caption for filters without parameters', () => {
+    const dummyProps = createInitialProps(undefined);
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreFour,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = shallow(
+      <Provider store={store}>
+        <Filters {...dummyProps} />
+      </Provider>
+    );
+
+    expect(wrapper.html()).toContain('Abrechnung_offen_normal');
+  });
+
+  it('renders active filters caption for inline filters', () => {
+    const updateDocListListener = jest.fn();
+    const dummyProps = createInitialProps(undefined);
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreInline,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = mount(
+      <Provider store={store}>
+        <div className="document-lists-wrapper">
+          <Filters {...dummyProps} />
+        </div>
+      </Provider>
+    );
+
+    expect(wrapper.html()).toContain('Active');
+    expect(wrapper.html()).toContain('123');
+  });
+
+  it('renders active filters caption for facet filters', () => {
+    const dummyProps = createInitialProps(undefined);
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+      filters: filtersStoreFacet,
+    });
+
+    const store = mockStore(initialState);
+    const wrapper = shallow(
+      <Provider store={store}>
+        <Filters {...dummyProps} />
+      </Provider>
+    );
+
+    expect(wrapper.html()).toContain('Shipmentdate');
+  });
+
   it('opens dropdown and filter details', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({
@@ -134,6 +201,8 @@ describe('Filters tests', () => {
 
     wrapper.find('.filter-active').simulate('click');
     expect(wrapper.find('.filter-widget .filter-default').length).toBe(1);
+
+    expect(wrapper.find('.form-field-C_BPartner_ID .focused').length).toBe(1);
   });
 
   //@TODO: I expect this to be replaced by a combination of small unit and e2e tests, but
@@ -174,7 +243,7 @@ describe('Filters tests', () => {
       wrapper.find('.meta-icon-close-alt').simulate('click');
       wrapper.update();
 
-      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
@@ -198,6 +267,7 @@ describe('Filters tests', () => {
         },
         filters: filtersStoreTwo,
       });
+
       const store = mockStore(initialState);
       const wrapper = mount(
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
@@ -218,10 +288,12 @@ describe('Filters tests', () => {
         wrapper.find('.form-field-Processed input[type="checkbox"]').length
       ).toBe(1);
 
-      wrapper
-        .find('.form-field-Processed input[type="checkbox"]')
-        .simulate('change', { target: { checked: false } });
-      wrapper.update();
+      act(() => {
+        wrapper
+          .find('.form-field-Processed input[type="checkbox"]')
+          .simulate('change');
+        wrapper.update();
+      });
 
       expect(
         wrapper.find('.form-field-Processed input[type="checkbox"]').checked
@@ -231,6 +303,7 @@ describe('Filters tests', () => {
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
+
       wrapper.update();
 
       const filterResult = [
@@ -248,13 +321,20 @@ describe('Filters tests', () => {
               defaultValue: null,
               defaultValueTo: null,
             },
+            {
+              parameterName: 'Processed',
+              value: false,
+              valueTo: null,
+              defaultValue: null,
+              defaultValueTo: null,
+            },
           ],
         },
       ];
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
 
-    it('supports filters without parameters', () => {
+    it('supports selecting filters without parameters', () => {
       const updateDocListListener = jest.fn();
       const dummyProps = createInitialProps(undefined, {
         updateDocList: updateDocListListener,
@@ -294,26 +374,12 @@ describe('Filters tests', () => {
 
       const filterResult = [
         {
-          filterId: 'default',
-          parameters: [
-            {
-              parameterName: 'C_BPartner_ID',
-              value: {
-                key: '2156429',
-                caption: '1000003_TestVendor',
-                description: '1000003_TestVendor',
-              },
-              valueTo: null,
-            },
-          ],
-        },
-        {
           filterId: 'userquery-540024',
           caption: 'Abrechnung_offen_normal',
           frequent: false,
           inlineRenderMode: 'button',
           parametersLayoutType: 'panel',
-          debugProperties: {},
+          debugProperties: { sortNo: 20002 },
           isActive: false,
         },
       ];

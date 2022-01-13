@@ -23,11 +23,10 @@
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
@@ -35,7 +34,6 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -48,6 +46,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -63,19 +62,21 @@ public final class TransactionEventFactory
 
 	private final TransactionEventFactoryForInOutLine inOutLineEventCreator;
 	private final HUDescriptorsFromHUAssignmentService huDescriptorsViaHUAssignmentsService;
-	private final HUDescriptorFromInventoryLineService huDescriptorsViaInventoryLineService;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final ModelProductDescriptorExtractor modelProductDescriptorExtractor;
+	private final HUDescriptorFromInventoryLineService huDescriptorsViaInventoryLineService;
 
 	public TransactionEventFactory(
 			@NonNull final HUDescriptorsFromHUAssignmentService huDescriptorsViaHUAssignmentsService,
 			@NonNull final ReplenishInfoRepository replenishInfoRepository,
-			@NonNull final InventoryRepository inventoryRepository,
-			@NonNull final HUDescriptorService huDescriptorService)
+			@NonNull final ModelProductDescriptorExtractor modelProductDescriptorExtractor,
+			@NonNull final HUDescriptorFromInventoryLineService huDescriptorsViaInventoryLineService)
 	{
 		this.huDescriptorsViaHUAssignmentsService = huDescriptorsViaHUAssignmentsService;
-		this.huDescriptorsViaInventoryLineService = new HUDescriptorFromInventoryLineService(inventoryRepository, huDescriptorService);
 		this.replenishInfoRepository = replenishInfoRepository;
 		this.inOutLineEventCreator = new TransactionEventFactoryForInOutLine(huDescriptorsViaHUAssignmentsService, replenishInfoRepository);
+		this.modelProductDescriptorExtractor = modelProductDescriptorExtractor;
+		this.huDescriptorsViaInventoryLineService = huDescriptorsViaInventoryLineService;
 	}
 
 	public List<MaterialEvent> createEventsForTransaction(
@@ -98,7 +99,7 @@ public final class TransactionEventFactory
 		}
 		else if (transaction.getInventoryLineId() != null)
 		{
-			result.addAll(createEventForInventoryLine(transaction, deleted));
+			result.add(createEventForInventoryLine(transaction, deleted));
 		}
 		return result.build();
 	}
@@ -233,7 +234,8 @@ public final class TransactionEventFactory
 		return events.build();
 	}
 
-	private List<MaterialEvent> createEventForInventoryLine(
+	@NonNull
+	private MaterialEvent createEventForInventoryLine(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
@@ -241,48 +243,46 @@ public final class TransactionEventFactory
 
 		final I_M_InventoryLine inventoryLineRecord = inventoryDAO.getLineById(transaction.getInventoryLineId());
 
-		final List<HUDescriptor> huDescriptors = huDescriptorsViaInventoryLineService.createHuDescriptorsForInventoryLine(inventoryLineRecord, deleted);
+		final BigDecimal deltaQty = inventoryLineRecord.getQtyCount().subtract(inventoryLineRecord.getQtyBook());
 
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-				materialDescriptors = huDescriptorsViaHUAssignmentsService.newMaterialDescriptors()
-				.transaction(transaction)
-				.huDescriptors(huDescriptors)
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.productDescriptor(modelProductDescriptorExtractor.createProductDescriptor(inventoryLineRecord))
+				.warehouseId(transaction.getWarehouseId())
+				.date(transaction.getTransactionDate())
+				.quantity(deltaQty)
 				.build();
 
-		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
-		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
-		{
-			final AbstractTransactionEvent event;
-			if (deleted)
-			{
-				event = TransactionDeletedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.inventoryId(inventoryLineRecord.getM_Inventory_ID())
-						.inventoryLineId(transaction.getInventoryLineId().getRepoId())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.directMovementWarehouse(directMovementWarehouse)
-						.build();
-			}
-			else
-			{
-				final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor.getKey()).toMinMaxDescriptor();
+		final List<HUDescriptor> huDescriptors = huDescriptorsViaInventoryLineService.createHuDescriptorsForInventoryLine(inventoryLineRecord, deleted);
 
-				event = TransactionCreatedEvent.builder()
-						.eventDescriptor(transaction.getEventDescriptor())
-						.inventoryId(inventoryLineRecord.getM_Inventory_ID())
-						.inventoryLineId(transaction.getInventoryLineId().getRepoId())
-						.transactionId(transaction.getTransactionId())
-						.materialDescriptor(materialDescriptor.getKey())
-						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
-						.directMovementWarehouse(directMovementWarehouse)
-						.minMaxDescriptor(minMaxDescriptor)
-						.build();
-			}
-			events.add(event);
+		final AbstractTransactionEvent event;
+		if (deleted)
+		{
+			event = TransactionDeletedEvent.builder()
+					.eventDescriptor(transaction.getEventDescriptor())
+					.inventoryId(inventoryLineRecord.getM_Inventory_ID())
+					.inventoryLineId(transaction.getInventoryLineId().getRepoId())
+					.transactionId(transaction.getTransactionId())
+					.materialDescriptor(materialDescriptor)
+					.directMovementWarehouse(directMovementWarehouse)
+					.huOnHandQtyChangeDescriptors(huDescriptors)
+					.build();
 		}
-		return events.build();
+		else
+		{
+			final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
+
+			event = TransactionCreatedEvent.builder()
+					.eventDescriptor(transaction.getEventDescriptor())
+					.inventoryId(inventoryLineRecord.getM_Inventory_ID())
+					.inventoryLineId(transaction.getInventoryLineId().getRepoId())
+					.transactionId(transaction.getTransactionId())
+					.materialDescriptor(materialDescriptor)
+					.directMovementWarehouse(directMovementWarehouse)
+					.minMaxDescriptor(minMaxDescriptor)
+					.huOnHandQtyChangeDescriptors(huDescriptors)
+					.build();
+		}
+		return event;
 	}
 
 	private boolean isDirectMovementWarehouse(final WarehouseId warehouseId)

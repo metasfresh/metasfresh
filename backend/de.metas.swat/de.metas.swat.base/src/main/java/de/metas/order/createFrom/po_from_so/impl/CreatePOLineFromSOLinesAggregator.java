@@ -1,25 +1,14 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -27,8 +16,27 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -51,32 +59,43 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * Creates purchase order lines for sales order lines. One instance of this aggregator is called with sales order lines that all belong to the same purchase order.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLine, I_C_OrderLine>
 {
 	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final I_C_Order purchaseOrder;
 
 	private final String purchaseQtySource;
 
+	@NonNull
+	private final PurchaseTypeEnum purchaseType;
+
 	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
 	/**
-	 *
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
 	 */
-	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource)
+	/* package */
+	public CreatePOLineFromSOLinesAggregator(
+			final I_C_Order purchaseOrder,
+			final String purchaseQtySource,
+			@NonNull final PurchaseTypeEnum purchaseType)
+
 	{
 		this.purchaseOrder = purchaseOrder;
 
 		this.purchaseQtySource = purchaseQtySource;
+
+		this.purchaseType = purchaseType;
 	}
 
 	@Override
@@ -134,12 +153,11 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		purchaseOrderLine.setDescription(salesOrderLine.getDescription());
 
 		final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-				() -> salesOrderLine.getDatePromised(),
+				salesOrderLine::getDatePromised,
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		purchaseOrderLine.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());
-		purchaseOrderLine.setC_BPartner_Location_ID(purchaseOrder.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
@@ -160,11 +178,21 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Override
 	protected void closeGroup(final I_C_OrderLine purchaseOrderLine)
 	{
+		final Set<OrderId> salesOrdersToBeClosed = new HashSet<>();
 		InterfaceWrapperHelper.save(purchaseOrderLine);
+
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
-			salesOrderLine.setLink_OrderLine(purchaseOrderLine);
-			InterfaceWrapperHelper.save(salesOrderLine);
+			orderDAO.allocatePOLineToSOLine(
+					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()), 
+					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+			
+			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
+		}
+
+		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			salesOrdersToBeClosed.forEach(orderBL::closeOrder);
 		}
 	}
 
@@ -177,7 +205,9 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		final BigDecimal purchaseQty;
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource))
 		{
-			purchaseQty = salesOrderLine.getQtyOrdered();
+			purchaseQty = PurchaseTypeEnum.MEDIATED.equals(purchaseType)
+					? salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered())
+					: salesOrderLine.getQtyOrdered();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource))
 		{

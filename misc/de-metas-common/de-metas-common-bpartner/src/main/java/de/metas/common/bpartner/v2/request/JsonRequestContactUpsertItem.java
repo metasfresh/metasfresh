@@ -24,11 +24,14 @@ package de.metas.common.bpartner.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 
@@ -42,19 +45,26 @@ public class JsonRequestContactUpsertItem
 					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.\n"
 					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact.") //
 	@NonNull
-	final String contactIdentifier;
+	String contactIdentifier;
 
 	@ApiModelProperty(allowEmptyValue = false, //
 			position = 20, value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestContact contact;
 
+	@ApiModelProperty(allowEmptyValue = false, //
+			position = 30, value = "The alberta contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@Nullable
+	JsonAlbertaContact jsonAlbertaContact;
+
 	@JsonCreator
 	public JsonRequestContactUpsertItem(
-			@NonNull @JsonProperty("contactIdentifier") String contactIdentifier,
-			@NonNull @JsonProperty("contact") JsonRequestContact contact)
+			final @NonNull @JsonProperty("contactIdentifier") String contactIdentifier,
+			final @NonNull @JsonProperty("contact") JsonRequestContact contact,
+			final @Nullable @JsonProperty("jsonAlbertaContact") JsonAlbertaContact jsonAlbertaContact)
 	{
 		this.contactIdentifier = contactIdentifier;
 		this.contact = contact;
+		this.jsonAlbertaContact = jsonAlbertaContact;
 	}
 }

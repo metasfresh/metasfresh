@@ -1,0 +1,15 @@
+-- 2021-07-15T07:42:52.022Z
+-- URL zum Konzept
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540961
+;
+
+-- 2021-07-15T07:42:58.484Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=584870
+;
+
+-- 2021-07-15T07:42:58.708Z
+-- URL zum Konzept
+DELETE FROM AD_Process WHERE AD_Process_ID=584870
+;
+

@@ -1,72 +1,82 @@
 package de.metas.ui.web.base.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for WEBUI_KPI
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_WEBUI_KPI 
 {
 
-    /** TableName=WEBUI_KPI */
-    public static final String Table_Name = "WEBUI_KPI";
+	String Table_Name = "WEBUI_KPI";
 
-    /** AD_Table_ID=540801 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540801 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Client>(I_WEBUI_KPI.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	/**
+	 * Set Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Window_ID (int AD_Window_ID);
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Org>(I_WEBUI_KPI.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	/**
+	 * Get Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Window_ID();
+
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
+
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
+
+	ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_WEBUI_KPI.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
 	 * Set Chart Type.
@@ -76,7 +86,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setChartType (java.lang.String ChartType);
+	void setChartType (java.lang.String ChartType);
 
 	/**
 	 * Get Chart Type.
@@ -86,12 +96,10 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getChartType();
+	java.lang.String getChartType();
 
-    /** Column definition for ChartType */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ChartType = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ChartType", null);
-    /** Column name ChartType */
-    public static final String COLUMNNAME_ChartType = "ChartType";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_ChartType = new ModelColumn<>(I_WEBUI_KPI.class, "ChartType", null);
+	String COLUMNNAME_ChartType = "ChartType";
 
 	/**
 	 * Set Offset.
@@ -100,7 +108,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCompareOffset (java.lang.String CompareOffset);
+	void setCompareOffset (@Nullable java.lang.String CompareOffset);
 
 	/**
 	 * Get Offset.
@@ -109,88 +117,77 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCompareOffset();
+	@Nullable java.lang.String getCompareOffset();
 
-    /** Column definition for CompareOffset */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_CompareOffset = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "CompareOffset", null);
-    /** Column name CompareOffset */
-    public static final String COLUMNNAME_CompareOffset = "CompareOffset";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_CompareOffset = new ModelColumn<>(I_WEBUI_KPI.class, "CompareOffset", null);
+	String COLUMNNAME_CompareOffset = "CompareOffset";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_Created = new ModelColumn<>(I_WEBUI_KPI.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_User>(I_WEBUI_KPI.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_Description = new ModelColumn<>(I_WEBUI_KPI.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Elasticsearch Index.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setES_Index (java.lang.String ES_Index);
+	void setES_Index (@Nullable java.lang.String ES_Index);
 
 	/**
 	 * Get Elasticsearch Index.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getES_Index();
+	@Nullable java.lang.String getES_Index();
 
-    /** Column definition for ES_Index */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_Index = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_Index", null);
-    /** Column name ES_Index */
-    public static final String COLUMNNAME_ES_Index = "ES_Index";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_Index = new ModelColumn<>(I_WEBUI_KPI.class, "ES_Index", null);
+	String COLUMNNAME_ES_Index = "ES_Index";
 
 	/**
 	 * Set Elasticsearch query.
@@ -199,7 +196,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setES_Query (java.lang.String ES_Query);
+	void setES_Query (@Nullable java.lang.String ES_Query);
 
 	/**
 	 * Get Elasticsearch query.
@@ -208,12 +205,10 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getES_Query();
+	@Nullable java.lang.String getES_Query();
 
-    /** Column definition for ES_Query */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_Query = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_Query", null);
-    /** Column name ES_Query */
-    public static final String COLUMNNAME_ES_Query = "ES_Query";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_Query = new ModelColumn<>(I_WEBUI_KPI.class, "ES_Query", null);
+	String COLUMNNAME_ES_Query = "ES_Query";
 
 	/**
 	 * Set Time range.
@@ -223,7 +218,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setES_TimeRange (java.lang.String ES_TimeRange);
+	void setES_TimeRange (@Nullable java.lang.String ES_TimeRange);
 
 	/**
 	 * Get Time range.
@@ -233,12 +228,10 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getES_TimeRange();
+	@Nullable java.lang.String getES_TimeRange();
 
-    /** Column definition for ES_TimeRange */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_TimeRange = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_TimeRange", null);
-    /** Column name ES_TimeRange */
-    public static final String COLUMNNAME_ES_TimeRange = "ES_TimeRange";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_TimeRange = new ModelColumn<>(I_WEBUI_KPI.class, "ES_TimeRange", null);
+	String COLUMNNAME_ES_TimeRange = "ES_TimeRange";
 
 	/**
 	 * Set Time range end.
@@ -248,7 +241,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End);
+	void setES_TimeRange_End (@Nullable java.lang.String ES_TimeRange_End);
 
 	/**
 	 * Get Time range end.
@@ -258,60 +251,54 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getES_TimeRange_End();
+	@Nullable java.lang.String getES_TimeRange_End();
 
-    /** Column definition for ES_TimeRange_End */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_TimeRange_End = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_TimeRange_End", null);
-    /** Column name ES_TimeRange_End */
-    public static final String COLUMNNAME_ES_TimeRange_End = "ES_TimeRange_End";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_TimeRange_End = new ModelColumn<>(I_WEBUI_KPI.class, "ES_TimeRange_End", null);
+	String COLUMNNAME_ES_TimeRange_End = "ES_TimeRange_End";
 
 	/**
-	 * Set Elasticsearch Type.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setES_Type (java.lang.String ES_Type);
-
-	/**
-	 * Get Elasticsearch Type.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getES_Type();
-
-    /** Column definition for ES_Type */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_ES_Type = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "ES_Type", null);
-    /** Column name ES_Type */
-    public static final String COLUMNNAME_ES_Type = "ES_Type";
-
-	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsActive = new ModelColumn<>(I_WEBUI_KPI.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Apply Security Settings.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApplySecuritySettings (boolean IsApplySecuritySettings);
+
+	/**
+	 * Get Apply Security Settings.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApplySecuritySettings();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsApplySecuritySettings = new ModelColumn<>(I_WEBUI_KPI.class, "IsApplySecuritySettings", null);
+	String COLUMNNAME_IsApplySecuritySettings = "IsApplySecuritySettings";
 
 	/**
 	 * Set Compare.
@@ -320,7 +307,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsGenerateComparation (boolean IsGenerateComparation);
+	void setIsGenerateComparation (boolean IsGenerateComparation);
 
 	/**
 	 * Get Compare.
@@ -329,90 +316,206 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isGenerateComparation();
+	boolean isGenerateComparation();
 
-    /** Column definition for IsGenerateComparation */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsGenerateComparation = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "IsGenerateComparation", null);
-    /** Column name IsGenerateComparation */
-    public static final String COLUMNNAME_IsGenerateComparation = "IsGenerateComparation";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsGenerateComparation = new ModelColumn<>(I_WEBUI_KPI.class, "IsGenerateComparation", null);
+	String COLUMNNAME_IsGenerateComparation = "IsGenerateComparation";
+
+	/**
+	 * Set Allow to be staled time (sec).
+	 * For how long time this KPI is allowed to be staled so no computation is needed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKPI_AllowedStaledTimeInSec (int KPI_AllowedStaledTimeInSec);
+
+	/**
+	 * Get Allow to be staled time (sec).
+	 * For how long time this KPI is allowed to be staled so no computation is needed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKPI_AllowedStaledTimeInSec();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_KPI_AllowedStaledTimeInSec = new ModelColumn<>(I_WEBUI_KPI.class, "KPI_AllowedStaledTimeInSec", null);
+	String COLUMNNAME_KPI_AllowedStaledTimeInSec = "KPI_AllowedStaledTimeInSec";
+
+	/**
+	 * Set Datasource.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKPI_DataSource_Type (java.lang.String KPI_DataSource_Type);
+
+	/**
+	 * Get Datasource.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getKPI_DataSource_Type();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_KPI_DataSource_Type = new ModelColumn<>(I_WEBUI_KPI.class, "KPI_DataSource_Type", null);
+	String COLUMNNAME_KPI_DataSource_Type = "KPI_DataSource_Type";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_Name = new ModelColumn<>(I_WEBUI_KPI.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Polling interval (sec).
+	 * Set Source Table.
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPollIntervalSec (int PollIntervalSec);
+	void setSource_Table_ID (int Source_Table_ID);
 
 	/**
-	 * Get Polling interval (sec).
+	 * Get Source Table.
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPollIntervalSec();
+	int getSource_Table_ID();
 
-    /** Column definition for PollIntervalSec */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_PollIntervalSec = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "PollIntervalSec", null);
-    /** Column name PollIntervalSec */
-    public static final String COLUMNNAME_PollIntervalSec = "PollIntervalSec";
+	String COLUMNNAME_Source_Table_ID = "Source_Table_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Set Details SQL Where Clause.
+	 * Where clause to be used to filter details, i.e. records used as a source to calculate the aggregated value
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_Details_WhereClause (@Nullable java.lang.String SQL_Details_WhereClause);
+
+	/**
+	 * Get Details SQL Where Clause.
+	 * Where clause to be used to filter details, i.e. records used as a source to calculate the aggregated value
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_Details_WhereClause();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_Details_WhereClause = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_Details_WhereClause", null);
+	String COLUMNNAME_SQL_Details_WhereClause = "SQL_Details_WhereClause";
+
+	/**
+	 * Set SQL From Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_From (@Nullable java.lang.String SQL_From);
+
+	/**
+	 * Get SQL From Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_From();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_From = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_From", null);
+	String COLUMNNAME_SQL_From = "SQL_From";
+
+	/**
+	 * Set SQL Group and Order By.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_GroupAndOrderBy (@Nullable java.lang.String SQL_GroupAndOrderBy);
+
+	/**
+	 * Get SQL Group and Order By.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_GroupAndOrderBy();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_GroupAndOrderBy = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_GroupAndOrderBy", null);
+	String COLUMNNAME_SQL_GroupAndOrderBy = "SQL_GroupAndOrderBy";
+
+	/**
+	 * Set SQL Where Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_WhereClause (@Nullable java.lang.String SQL_WhereClause);
+
+	/**
+	 * Get SQL Where Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_WhereClause();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_WhereClause = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_WhereClause", null);
+	String COLUMNNAME_SQL_WhereClause = "SQL_WhereClause";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_Updated = new ModelColumn<>(I_WEBUI_KPI.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_User>(I_WEBUI_KPI.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set KPI.
@@ -421,7 +524,7 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID);
+	void setWEBUI_KPI_ID (int WEBUI_KPI_ID);
 
 	/**
 	 * Get KPI.
@@ -430,10 +533,8 @@ public interface I_WEBUI_KPI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getWEBUI_KPI_ID();
+	int getWEBUI_KPI_ID();
 
-    /** Column definition for WEBUI_KPI_ID */
-    public static final org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object> COLUMN_WEBUI_KPI_ID = new org.adempiere.model.ModelColumn<I_WEBUI_KPI, Object>(I_WEBUI_KPI.class, "WEBUI_KPI_ID", null);
-    /** Column name WEBUI_KPI_ID */
-    public static final String COLUMNNAME_WEBUI_KPI_ID = "WEBUI_KPI_ID";
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_WEBUI_KPI_ID = new ModelColumn<>(I_WEBUI_KPI.class, "WEBUI_KPI_ID", null);
+	String COLUMNNAME_WEBUI_KPI_ID = "WEBUI_KPI_ID";
 }

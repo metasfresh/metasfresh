@@ -10,32 +10,41 @@ package de.metas.ordercandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.sql.Timestamp;
-
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.logging.LogManager;
+import de.metas.ordercandidate.api.OLCandUpdateResult;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
+import org.slf4j.Logger;
 
-import de.metas.ordercandidate.api.OLCandUpdateResult;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.Check;
+import java.sql.Timestamp;
 
 public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCandUpdateResult>
 {
+	private static final Logger logger = LogManager.getLogger(OLCandUpdater.class);
+
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final OLCandUpdateResult result = new OLCandUpdateResult();
 	private ITrxItemProcessorContext processorCtx;
 
@@ -72,6 +81,19 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 		// DatePrommissed
 		final Timestamp datePromissed = params.getParameterAsTimestamp(I_C_OLCand.COLUMNNAME_DatePromised_Override);
 		olCand.setDatePromised_Override(datePromissed);
+
+		//AD_User_ID
+		final UserId userId = UserId.ofRepoIdOrNull(olCand.getAD_User_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationId);
+		if (bPartnerLocationId != null && userId != null)
+		{
+			final boolean userIsValidForBpartner = bpartnerDAO.getUserIdsForBpartnerLocation(bPartnerLocationId).anyMatch(userId::equals);
+			if (!userIsValidForBpartner)
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("For OLCand: {}, userId {} is not valid for locationId: {}. Setting to null", olCand.getC_OLCand_ID(), userId, bPartnerLocationId);
+				olCand.setAD_User_ID(-1);
+			}
+		}
 
 		InterfaceWrapperHelper.save(olCand);
 		result.incUpdated();

@@ -1,15 +1,8 @@
 package de.metas.vertical.pharma;
 
-import java.util.Collections;
-
-import javax.annotation.Nonnull;
-
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -19,8 +12,14 @@ import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
 
 /*
  * #%L
@@ -48,15 +47,11 @@ import lombok.NonNull;
 public class PharmaBPartnerProductPermissionValidator implements IOrderLineInputValidator
 {
 	private final static AdMessageKey MSG_NoPharmaShipmentPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions");
-	@VisibleForTesting
-	final static AdMessageKey MSG_NoPrescriptionPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission");
-	@VisibleForTesting
-	final static AdMessageKey MSG_NoNarcoticPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions");
+	@VisibleForTesting final static AdMessageKey MSG_NoPrescriptionPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission");
+	@VisibleForTesting final static AdMessageKey MSG_NoNarcoticPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions");
 
-	@VisibleForTesting
-	final static AdMessageKey MSG_NoNarcoticPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoNarcoticPermission");
-	@VisibleForTesting
-	final static AdMessageKey MSG_NoPrescriptionPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoPrescriptionPermission");
+	@VisibleForTesting final static AdMessageKey MSG_NoNarcoticPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoNarcoticPermission");
+	@VisibleForTesting final static AdMessageKey MSG_NoPrescriptionPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoPrescriptionPermission");
 
 	private final PharmaBPartnerRepository pharmaBPartnerRepo;
 	private final PharmaProductRepository pharmaProductRepo;
@@ -76,10 +71,18 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 	 */
 	@Override
 	public OrderLineInputValidatorResults validate(
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final SOTrx soTrx)
 	{
+		if (bpartnerId == null)
+		{
+			return OrderLineInputValidatorResults.builder()
+					.isValid(false)
+					.errorMessage(FillMandatoryException.buildMessage("C_BPartner_ID"))
+					.build();
+		}
+
 		if (soTrx.isSales())
 		{
 			return evaluateSalesPrescriptionPermission(bpartnerId, productId);
@@ -90,7 +93,8 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 		}
 	}
 
-	private @Nonnull OrderLineInputValidatorResults evaluatePurchasePrescriptionPermission(final BPartnerId bpartnerId, final ProductId productId)
+	private @Nonnull
+	OrderLineInputValidatorResults evaluatePurchasePrescriptionPermission(final BPartnerId bpartnerId, final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -132,7 +136,8 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 
 	}
 
-	private @Nonnull OrderLineInputValidatorResults evaluateSalesPrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
+	private @Nonnull
+	OrderLineInputValidatorResults evaluateSalesPrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 

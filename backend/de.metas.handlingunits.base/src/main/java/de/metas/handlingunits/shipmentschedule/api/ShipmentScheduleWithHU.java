@@ -45,7 +45,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -94,7 +94,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 /** Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}. */
 public class ShipmentScheduleWithHU
 {
-	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
@@ -102,7 +102,7 @@ public class ShipmentScheduleWithHU
 		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, qtyTypeToUse);
 	}
 
-	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
@@ -112,7 +112,7 @@ public class ShipmentScheduleWithHU
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
 	}
 
-	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
@@ -123,7 +123,7 @@ public class ShipmentScheduleWithHU
 				qtyTypeToUse);
 	}
 
-	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
+	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
@@ -136,7 +136,7 @@ public class ShipmentScheduleWithHU
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
 	 */
-	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
+	public static ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,

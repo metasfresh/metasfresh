@@ -1,10 +1,9 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
@@ -22,8 +21,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order_ShipmentSchedule
@@ -32,15 +29,6 @@ public class C_Order_ShipmentSchedule
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createMissingShipmentSchedules(@NonNull final I_C_Order orderRecord)
-	{
-		if (orderRecord.isSOTrx())
-		{
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(getContextAware(orderRecord));
-		}
-	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)

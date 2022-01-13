@@ -30,6 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
 @Value
@@ -37,22 +40,30 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+	@ApiModelProperty(position = 10, required = true, //
 			value = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created location.") //
 	@NonNull
 	String locationIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, position = 20, value = "The location to upsert")
+	@ApiModelProperty(position = 20, //
+			value = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
+	@Nullable
+	String externalVersion;
+
+	@ApiModelProperty(position = 30, required = true, //
+			value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 
 	@JsonCreator
 	public JsonRequestLocationUpsertItem(
 			@NonNull @JsonProperty("locationIdentifier") final String locationIdentifier,
+			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@NonNull @JsonProperty("location") final JsonRequestLocation location)
 	{
 		this.locationIdentifier = locationIdentifier;
+		this.externalVersion = externalVersion;
 		this.location = location;
 	}
 }

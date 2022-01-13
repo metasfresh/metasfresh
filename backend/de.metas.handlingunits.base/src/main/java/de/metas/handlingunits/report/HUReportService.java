@@ -63,6 +63,7 @@ public class HUReportService
 	private static final transient Logger logger = LogManager.getLogger(HUReportService.class);
 
 	public static final String SYSCONFIG_RECEIPT_LABEL_PROCESS_ID = "de.metas.handlingunits.MaterialReceiptLabel.AD_Process_ID";
+	public static final String SYSCONFIG_FINISHEDGOODS_LABEL_PROCESS_ID = "de.metas.handlingunits.FinishedGoodsLabel.AD_Process_ID";
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Enabled";
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED + ".C_BPartner_ID_";
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Copies";
@@ -88,6 +89,11 @@ public class HUReportService
 		return retrieveProcessIdBySysConfig(SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 	}
 
+	public AdProcessId retrievePrintFinishedGoodsLabelProcessIdOrNull()
+	{
+		return retrieveProcessIdBySysConfig(SYSCONFIG_FINISHEDGOODS_LABEL_PROCESS_ID);
+	}
+	
 	private AdProcessId retrievePickingLabelProcessIdOrNull()
 	{
 		return retrieveProcessIdBySysConfig(SYSCONFIG_PICKING_LABEL_PROCESS_ID);

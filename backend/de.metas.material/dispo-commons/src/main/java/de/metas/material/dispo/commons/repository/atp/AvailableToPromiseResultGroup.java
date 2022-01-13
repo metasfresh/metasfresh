@@ -1,13 +1,15 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.math.BigDecimal;
-
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -37,7 +39,7 @@ public final class AvailableToPromiseResultGroup
 {
 	BPartnerClassifier bpartner;
 	WarehouseClassifier warehouse;
-	int productId;
+	ProductId productId;
 	AttributesKey storageAttributesKey;
 
 	BigDecimal qty;
@@ -46,11 +48,10 @@ public final class AvailableToPromiseResultGroup
 	private AvailableToPromiseResultGroup(
 			@NonNull final BPartnerClassifier bpartner,
 			@NonNull final WarehouseClassifier warehouse,
-			final int productId,
+			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final BigDecimal qty)
 	{
-		Check.assumeGreaterOrEqualToZero(productId, "productId");
 
 		this.bpartner = bpartner;
 		this.warehouse = warehouse;

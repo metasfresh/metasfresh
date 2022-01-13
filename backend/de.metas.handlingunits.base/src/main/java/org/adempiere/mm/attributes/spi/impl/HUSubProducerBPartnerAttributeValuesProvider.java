@@ -38,6 +38,8 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -101,7 +103,6 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	public HUSubProducerBPartnerAttributeValuesProvider(final I_M_Attribute attribute)
 	{
-		super();
 		Check.assumeNotNull(attribute, "Parameter attribute is not null");
 		this.attribute = attribute;
 	}
@@ -130,7 +131,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		return staticNullValue();
 	}
 
-	static final KeyNamePair staticNullValue()
+	static KeyNamePair staticNullValue()
 	{
 		final ITranslatableString displayNameTrl = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 
@@ -206,10 +207,11 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 		//
 		// Get from cache / Load
-		return hu2subProducers.getOrLoad(cacheKey, () -> retrieveSubProducerKeyNamePairs(attribute, bpartnerId, currentSubProducerBPartnerId));
+		return hu2subProducers.getOrLoad(cacheKey, () -> retrieveSubProducerKeyNamePairs(bpartnerId, currentSubProducerBPartnerId));
 	}
 
-	private static final String normalizeValueKey(final Object valueKey)
+	@Nullable
+	private static String normalizeValueKey(final Object valueKey)
 	{
 		if (valueKey == null)
 		{
@@ -227,6 +229,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	}
 
 	@Override
+	@Nullable
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
 		final List<? extends NamePair> availableValues = getAvailableValues(evalCtx);
@@ -249,6 +252,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public AttributeValueId getAttributeValueIdOrNull(final Object valueKey)
 	{
@@ -265,13 +269,11 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 * <li>current HU's SubProducer BPartner if not present in the list above
 	 * </ul>
 	 *
-	 * @param attribute subproducer attribute
 	 * @param bpartnerId i.e. M_HU.C_BPartner_ID
 	 * @param currentSubProducerBPartnerId current subproducer BPartner ID
 	 * @return available values
 	 */
 	private static List<KeyNamePair> retrieveSubProducerKeyNamePairs(
-			final I_M_Attribute attribute,
 			final int bpartnerId,
 			final int currentSubProducerBPartnerId)
 	{
@@ -296,7 +298,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		return subProducerBPartners;
 	}
 
-	private static final void addSubProducer(final List<KeyNamePair> subProducerBPartners, final Properties ctx, final int bpartnerId)
+	private static void addSubProducer(final List<KeyNamePair> subProducerBPartners, final Properties ctx, final int bpartnerId)
 	{
 		if (bpartnerId <= 0)
 		{
@@ -336,8 +338,6 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	/**
 	 * Retrieves suggested SubProducer BPartners for given <code>bpartnerId</code>
 	 *
-	 * @param ctx
-	 * @param bpartnerId
 	 * @return list of bpartner's suggested SubProducers
 	 */
 	private static List<KeyNamePair> retrieveSubProducerKeyNamePairs(final Properties ctx, final int bpartnerId)

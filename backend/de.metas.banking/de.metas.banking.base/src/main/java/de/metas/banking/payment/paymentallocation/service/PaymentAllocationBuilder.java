@@ -726,7 +726,10 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			return false;
+			if(!payable.isAllowAllocateAgainstDifferentSignumPayment())
+			{
+				return false;
+			}
 		}
 
 		//
@@ -801,9 +804,14 @@ public class PaymentAllocationBuilder
 			// Invoice(-), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
+				// case: we get an incoming payment and have a sales credit memo. Roughly speaking, without the credit memo, the payment would be  bigger.
+				// but there can be a payment-discount (skonto) from the payment of the credited invoice, and in the payment we might be back that skonto.
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.max(paymentAmountToAllocate.negate());
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
+				
 				return InvoiceAndPaymentAmountsToAllocate.builder()
-						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
-						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.currencyRate(currencyRate)
 						.build();
 			}

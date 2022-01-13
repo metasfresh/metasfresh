@@ -1,28 +1,26 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -55,7 +53,7 @@ public class AvailableToPromiseQuery
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.date(TimeUtil.asZonedDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(materialDescriptor.getStorageAttributesKey()))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(materialDescriptor.getStorageAttributesKey()))
 				.bpartner(BPartnerClassifier.specificOrNone(materialDescriptor.getCustomerId()))
 				.build();
 	}

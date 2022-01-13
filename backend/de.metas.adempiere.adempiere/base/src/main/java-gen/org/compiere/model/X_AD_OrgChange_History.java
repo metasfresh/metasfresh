@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_OrgChange_History extends org.compiere.model.PO implements I_AD_OrgChange_History, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 258211231L;
+	private static final long serialVersionUID = -1755835842L;
 
     /** Standard Constructor */
     public X_AD_OrgChange_History (final Properties ctx, final int AD_OrgChange_History_ID, @Nullable final String trxName)
@@ -137,7 +137,7 @@ public class X_AD_OrgChange_History extends org.compiere.model.PO implements I_A
 	}
 
 	@Override
-	public void setDate_OrgChange (final @Nullable java.sql.Timestamp Date_OrgChange)
+	public void setDate_OrgChange (final java.sql.Timestamp Date_OrgChange)
 	{
 		set_Value (COLUMNNAME_Date_OrgChange, Date_OrgChange);
 	}

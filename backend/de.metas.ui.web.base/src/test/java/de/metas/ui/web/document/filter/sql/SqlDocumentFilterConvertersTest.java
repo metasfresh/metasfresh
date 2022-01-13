@@ -1,16 +1,15 @@
 package de.metas.ui.web.document.filter.sql;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -38,16 +37,17 @@ public class SqlDocumentFilterConvertersTest
 {
 	private final static SqlDocumentFilterConverter customConverter = new SqlDocumentFilterConverter()
 	{
+		@Override
 		public boolean canConvert(final String filterId)
 		{
 			return true;
-		};
+		}
 
 		/**
 		 * This method won't be called throughout our test
 		 */
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
+		public FilterSql getSql(final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -73,9 +73,6 @@ public class SqlDocumentFilterConvertersTest
 
 	private static class CustomDocumentFilterConverterDecorator implements SqlDocumentFilterConverterDecorator
 	{
-		/**
-		 * @return {@link SqlDocumentFilterConvertersTest#converter} so we have something very particular to check for in our test.
-		 */
 		@Override
 		public SqlDocumentFilterConverter decorate(final SqlDocumentFilterConverter converter)
 		{

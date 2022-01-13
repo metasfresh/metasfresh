@@ -48,7 +48,7 @@ public class LoadESRImportFileWorkpackageProcessor implements IWorkpackageProces
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
-		final List<I_ESR_Import> records = queueDAO.retrieveItems(workpackage, I_ESR_Import.class, localTrxName);
+		final List<I_ESR_Import> records = queueDAO.retrieveAllItems(workpackage, I_ESR_Import.class);
 
 		for (final I_ESR_Import esrImport : records)
 		{

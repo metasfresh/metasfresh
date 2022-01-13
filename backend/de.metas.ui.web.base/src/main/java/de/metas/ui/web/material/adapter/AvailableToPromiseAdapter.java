@@ -1,17 +1,6 @@
 package de.metas.ui.web.material.adapter;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -19,11 +8,19 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.AvailableToPromiseResultForWebuiBuilder;
+import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.AvailabilityInfoResultForWebuiBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_UOM;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -58,23 +55,40 @@ public class AvailableToPromiseAdapter
 		this.availableToPromiseRepository = stockRepository;
 	}
 
+	@VisibleForTesting
+	static AvailabilityInfoResultForWebui.Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
+	{
+		if (AttributesKey.ALL.equals(attributesKey))
+		{
+			return AvailabilityInfoResultForWebui.Group.Type.ALL_STORAGE_KEYS;
+		}
+		else if (AttributesKey.OTHER.equals(attributesKey))
+		{
+			return AvailabilityInfoResultForWebui.Group.Type.OTHER_STORAGE_KEYS;
+		}
+		else
+		{
+			return AvailabilityInfoResultForWebui.Group.Type.ATTRIBUTE_SET;
+		}
+	}
+
 	@NonNull
-	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
+	public AvailabilityInfoResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
 		final AvailableToPromiseResult commonsAvailableStock = availableToPromiseRepository.retrieveAvailableStock(query);
 
-		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
+		final AvailabilityInfoResultForWebuiBuilder clientResultBuilder = AvailabilityInfoResultForWebui.builder();
 
 		final List<AvailableToPromiseResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
 		for (final AvailableToPromiseResultGroup commonsResultGroup : commonsResultGroups)
 		{
-			final AvailableToPromiseResultForWebui.Group clientResultGroup = createClientResultGroup(commonsResultGroup);
+			final AvailabilityInfoResultForWebui.Group clientResultGroup = createClientResultGroup(commonsResultGroup);
 			clientResultBuilder.group(clientResultGroup);
 		}
 		return clientResultBuilder.build();
 	}
 
-	private AvailableToPromiseResultForWebui.Group createClientResultGroup(@NonNull final AvailableToPromiseResultGroup commonsResultGroup)
+	private AvailabilityInfoResultForWebui.Group createClientResultGroup(@NonNull final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		try
 		{
@@ -87,25 +101,6 @@ public class AvailableToPromiseAdapter
 		}
 	}
 
-	private AvailableToPromiseResultForWebui.Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
-	{
-		final Quantity quantity = extractQuantity(commonsResultGroup);
-
-		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
-		final AvailableToPromiseResultForWebui.Group.Type type = extractGroupType(attributesKey);
-
-		final ImmutableAttributeSet attributes = AvailableToPromiseResultForWebui.Group.Type.ATTRIBUTE_SET.equals(type)
-				? AttributesKeys.toImmutableAttributeSet(attributesKey)
-				: ImmutableAttributeSet.EMPTY;
-
-		return AvailableToPromiseResultForWebui.Group.builder()
-				.productId(ProductId.ofRepoId(commonsResultGroup.getProductId()))
-				.qty(quantity)
-				.type(type)
-				.attributes(attributes)
-				.build();
-	}
-
 	private Quantity extractQuantity(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
 		final BigDecimal qty = commonsResultGroup.getQty();
@@ -113,21 +108,23 @@ public class AvailableToPromiseAdapter
 		return Quantity.of(qty, uom);
 	}
 
-	@VisibleForTesting
-	static AvailableToPromiseResultForWebui.Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
+	private AvailabilityInfoResultForWebui.Group createClientResultGroup0(final AvailableToPromiseResultGroup commonsResultGroup)
 	{
-		if (AttributesKey.ALL.equals(attributesKey))
-		{
-			return AvailableToPromiseResultForWebui.Group.Type.ALL_STORAGE_KEYS;
-		}
-		else if (AttributesKey.OTHER.equals(attributesKey))
-		{
-			return AvailableToPromiseResultForWebui.Group.Type.OTHER_STORAGE_KEYS;
-		}
-		else
-		{
-			return AvailableToPromiseResultForWebui.Group.Type.ATTRIBUTE_SET;
-		}
+		final Quantity quantity = extractQuantity(commonsResultGroup);
+
+		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
+		final AvailabilityInfoResultForWebui.Group.Type type = extractGroupType(attributesKey);
+
+		final ImmutableAttributeSet attributes = AvailabilityInfoResultForWebui.Group.Type.ATTRIBUTE_SET.equals(type)
+				? AttributesKeys.toImmutableAttributeSet(attributesKey)
+				: ImmutableAttributeSet.EMPTY;
+
+		return AvailabilityInfoResultForWebui.Group.builder()
+				.productId(commonsResultGroup.getProductId())
+				.qty(quantity)
+				.type(type)
+				.attributes(attributes)
+				.build();
 	}
 
 	public Set<AttributesKeyPattern> getPredefinedStorageAttributeKeys()

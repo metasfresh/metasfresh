@@ -19,9 +19,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue.IntegerLookupValueBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue.StringLookupValueBuilder;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import io.swagger.annotations.ApiModel;
@@ -139,7 +138,7 @@ public final class JSONLookupValue
 		final ITranslatableString description = extractDescription(map);
 		final Boolean active = extractActive(map);
 
-		final IntegerLookupValueBuilder builder = IntegerLookupValue.builder()
+		final IntegerLookupValue.IntegerLookupValueBuilder builder = IntegerLookupValue.builder()
 				.id(keyInt)
 				.displayName(displayName)
 				.description(description)
@@ -164,7 +163,7 @@ public final class JSONLookupValue
 		final ITranslatableString description = extractDescription(map);
 		final Boolean active = extractActive(map);
 
-		final StringLookupValueBuilder builder = StringLookupValue.builder()
+		final StringLookupValue.StringLookupValueBuilder builder = StringLookupValue.builder()
 				.id(key)
 				.displayName(displayName)
 				.description(description)

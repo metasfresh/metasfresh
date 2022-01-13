@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -143,14 +144,14 @@ public class PricingConditionsRowLookups
 		return currencyIdLookup.findById(currencyId.getRepoId());
 	}
 
-	public LookupValuesList getFieldTypeahead(@NonNull final String fieldName, final String query)
+	public LookupValuesPage getFieldTypeahead(@NonNull final String fieldName, final String query)
 	{
 		return getLookupDataSource(fieldName).findEntities(Evaluatees.empty(), query);
 	}
 
 	public LookupValuesList getFieldDropdown(@NonNull final String fieldName)
 	{
-		return getLookupDataSource(fieldName).findEntities(Evaluatees.empty(), 20);
+		return getLookupDataSource(fieldName).findEntities(Evaluatees.empty(), 20).getValues();
 	}
 
 	private LookupDataSource getLookupDataSource(@NonNull final String fieldName)
@@ -188,7 +189,7 @@ public class PricingConditionsRowLookups
 		return toHexString(Services.get(IColorRepository.class).getColorById(temporaryPriceConditionsColorId));
 	}
 
-	private static final String toHexString(@Nullable final MFColor color)
+	private static String toHexString(@Nullable final MFColor color)
 	{
 		if (color == null)
 		{

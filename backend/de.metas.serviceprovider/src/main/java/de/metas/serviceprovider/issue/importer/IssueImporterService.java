@@ -27,8 +27,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
-import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -295,9 +295,9 @@ public class IssueImporterService
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.roughEstimation(importIssueInfo.getRoughEstimation())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
+				.budgetedEffort(importIssueInfo.getBudget())
 				.build();
 
-		mergedIssueEntity.setBudgetedEffortIfNotSet(importIssueInfo.getBudget());
 		mergedIssueEntity.setEstimatedEffortIfNotSet(importIssueInfo.getEstimation());
 
 		return mergedIssueEntity;

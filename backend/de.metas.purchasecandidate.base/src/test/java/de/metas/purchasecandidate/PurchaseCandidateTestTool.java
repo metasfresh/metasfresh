@@ -68,6 +68,7 @@ public final class PurchaseCandidateTestTool
 				.qtyToPurchase(qtyToPurchase)
 				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
+				.externalPurchaseOrderUrl("example.com")
 				.locked(false)
 				.build();
 	}

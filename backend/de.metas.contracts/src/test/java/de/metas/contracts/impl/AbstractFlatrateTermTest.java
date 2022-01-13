@@ -1,10 +1,15 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -16,7 +21,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
@@ -29,6 +33,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -144,6 +150,7 @@ public abstract class AbstractFlatrateTermTest
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	protected void initialize()
@@ -287,6 +294,7 @@ public abstract class AbstractFlatrateTermTest
 		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay().atZone(ZoneId.systemDefault())));
 		tax.setC_Country_ID(country.getC_Country_ID());
 		tax.setTo_Country_ID(country.getC_Country_ID());
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setSOPOType(X_C_Tax.SOPOTYPE_SalesTax);
 		saveRecord(tax);
 	}
@@ -349,6 +357,7 @@ public abstract class AbstractFlatrateTermTest
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)
 				.extensionType(extensionType)
+				.uomId(UomId.ofRepoId(productAndPricingSystem.getProduct().getC_UOM_ID()))
 				.build();
 	}
 
@@ -375,12 +384,20 @@ public abstract class AbstractFlatrateTermTest
 
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(),
+																											bpLocation.getC_BPartner_Location_ID(),
+																											bpLocation.getC_Location_ID());
 
-		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
-		contract.setBill_User_ID(user.getAD_User_ID());
-		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
-		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
-		contract.setDropShip_User_ID(user.getAD_User_ID());
+		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(contract)
+				.setFrom(bpartnerLocationId, bPartnerContactId);
+
+		ContractDocumentLocationAdapterFactory
+				.dropShipLocationAdapter(contract)
+				.setFrom(bpartnerLocationId, bPartnerContactId);
+
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);

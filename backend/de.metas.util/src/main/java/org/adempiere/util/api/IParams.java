@@ -22,23 +22,20 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import de.metas.util.lang.ReferenceListAwareEnums;
-import de.metas.util.lang.RepoIdAware;
-
 /**
- * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Generic readonly parameters.
  */
 public interface IParams
 {
@@ -52,6 +49,7 @@ public interface IParams
 	Object getParameterAsObject(String parameterName);
 
 	/** @return string value or <code>null</code> if parameter is missing */
+	@Nullable
 	String getParameterAsString(String parameterName);
 
 	/** @return int value or <code>defaultValue</code> if parameter is missing or cannot be converted to integer */
@@ -71,6 +69,8 @@ public interface IParams
 
 	/** @return local date value or <code>null</code> if parameter is missing */
 	ZonedDateTime getParameterAsZonedDateTime(String parameterName);
+
+	Instant getParameterAsInstant(String parameterName);
 
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
 	BigDecimal getParameterAsBigDecimal(String parameterName);

@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,8 +34,7 @@ import lombok.Value;
 public class GroupRegularLine
 {
 	/** Repository ID */
-	private final int repoId;
+	RepoIdAware repoId;
 	
-	@NonNull
-	private final BigDecimal lineNetAmt;
+	@NonNull BigDecimal lineNetAmt;
 }

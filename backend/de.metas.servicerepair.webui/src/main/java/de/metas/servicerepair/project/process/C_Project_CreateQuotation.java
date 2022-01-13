@@ -25,10 +25,8 @@ package de.metas.servicerepair.project.process;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.servicerepair.project.service.requests.CreateQuotationFromProjectRequest;
 import lombok.NonNull;
@@ -39,9 +37,6 @@ public class C_Project_CreateQuotation
 		extends ServiceOrRepairProjectBasedProcess
 		implements IProcessPrecondition
 {
-	@Param(parameterName = "ServiceRepair_Product_ID", mandatory = true)
-	private ProductId serviceProductId;
-
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -62,7 +57,6 @@ public class C_Project_CreateQuotation
 
 		final OrderId quotationId = projectService.createQuotationFromProject(CreateQuotationFromProjectRequest.builder()
 				.projectId(projectId)
-				.serviceProductId(serviceProductId)
 				.build());
 
 		setRecordToOpen(quotationId);

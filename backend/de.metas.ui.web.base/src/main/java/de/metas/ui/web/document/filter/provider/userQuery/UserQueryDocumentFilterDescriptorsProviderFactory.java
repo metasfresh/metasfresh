@@ -4,10 +4,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -53,10 +55,12 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 
 	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
-			final Collection<DocumentFieldDescriptor> fields)
+			@NonNull final CreateFiltersProviderContext context,
+			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
+		final String tableName = context.getTableName();
+		final AdTabId adTabId = context.getAdTabId();
+
 		if (tableName == null || adTabId == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;

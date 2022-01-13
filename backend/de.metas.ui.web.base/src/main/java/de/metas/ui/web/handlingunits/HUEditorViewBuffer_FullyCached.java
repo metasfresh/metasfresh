@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Stream;
 
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
 

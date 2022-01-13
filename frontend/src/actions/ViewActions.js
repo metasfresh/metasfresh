@@ -39,6 +39,7 @@ import { getView } from '../reducers/viewHandler';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { fetchQuickActions, deleteQuickActions } from './Actions';
+import { setRawModalTitle } from './WindowActions';
 
 /**
  * @method resetView
@@ -185,17 +186,6 @@ function filterViewSuccess(id, data, isModal) {
   return {
     type: FILTER_VIEW_SUCCESS,
     payload: { id, data, isModal },
-  };
-}
-
-/**
- * @method filterViewError
- * @summary
- */
-function filterViewError(id, error, isModal) {
-  return {
-    type: FILTER_VIEW_ERROR,
-    payload: { id, error, isModal },
   };
 }
 
@@ -385,10 +375,8 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const {
-            includedView,
-            supportIncludedViews,
-          } = response.data.result[0];
+          const { includedView, supportIncludedViews } =
+            response.data.result[0];
           const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
               includedView.windowType ||
@@ -510,6 +498,9 @@ export function fetchLayout(
 
     return getViewLayout(windowId, viewType, viewProfileId)
       .then((response) => {
+        const { caption, type } = response.data;
+
+        isModal && dispatch(setRawModalTitle(caption, type));
         dispatch(fetchLayoutSuccess(windowId, response.data, isModal));
 
         return Promise.resolve(response.data);
@@ -519,6 +510,17 @@ export function fetchLayout(
 
         return Promise.reject(error);
       });
+  };
+}
+
+/**
+ * @method filterViewError
+ * @summary
+ */
+function filterViewError(id, error, isModal) {
+  return {
+    type: FILTER_VIEW_ERROR,
+    payload: { id, error, isModal },
   };
 }
 

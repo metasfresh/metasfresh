@@ -1,13 +1,13 @@
 package org.adempiere.util.comparator;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -42,14 +42,14 @@ import lombok.ToString;
 @ToString
 public class FixedOrderByKeyComparator<V, K> implements Comparator<V>
 {
-	public static final <V, K> FixedOrderByKeyComparator<V, K> of(final K notMatchedMarker, final List<K> fixedOrderList, final Function<V, K> keyMapper)
+	public static <V, K> FixedOrderByKeyComparator<V, K> of(final K notMatchedMarker, final List<K> fixedOrderList, final Function<V, K> keyMapper)
 	{
 		final int notMatchedMarkerIndex = fixedOrderList.indexOf(notMatchedMarker);
 		final int notMatchedMarkerIndexEffective = notMatchedMarkerIndex >= 0 ? notMatchedMarkerIndex : Integer.MAX_VALUE;
 		return new FixedOrderByKeyComparator<>(fixedOrderList, notMatchedMarkerIndexEffective, keyMapper);
 	}
 
-	public static final <V, K> FixedOrderByKeyComparator<V, K> notMatchedAtTheEnd(final List<K> fixedOrderList, final Function<V, K> keyMapper)
+	public static <V, K> FixedOrderByKeyComparator<V, K> notMatchedAtTheEnd(final List<K> fixedOrderList, final Function<V, K> keyMapper)
 	{
 		final int notMatchedMarkerIndex = Integer.MAX_VALUE;
 		return new FixedOrderByKeyComparator<>(fixedOrderList, notMatchedMarkerIndex, keyMapper);

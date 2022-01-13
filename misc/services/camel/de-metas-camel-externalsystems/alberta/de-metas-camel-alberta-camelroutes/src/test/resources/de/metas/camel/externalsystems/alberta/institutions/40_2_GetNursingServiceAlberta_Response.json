@@ -1,0 +1,12 @@
+{
+  "_id": "nursingServiceId",
+  "address": "nursingServiceAddr",
+  "city": "nursingServiceCity",
+  "email": "info@testnursingservice.com",
+  "fax": "1",
+  "name": "nursingServiceName",
+  "phone": "2",
+  "postalCode": "3",
+  "timestamp": "2019-02-21T00:26:06.000Z",
+  "website": "www.nursingService.com"
+}

@@ -22,14 +22,13 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import javax.annotation.Nullable;
 
 @Getter
 @ToString
@@ -164,13 +163,18 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
-	@ApiModelProperty(position = 200, // shall be last
-			value = "Sync advise about this location's individual properties.\n"
-					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
-	private SyncAdvise syncAdvise;
+	@ApiModelProperty(position = 200)
+	@Nullable
+	private String email;
 
 	@ApiModelProperty(hidden = true)
-	private boolean syncAdviseSet;
+	private boolean emailSet;
+
+	@ApiModelProperty(position = 210)
+	private String phone;
+
+	@ApiModelProperty(hidden = true)
+	private boolean phoneSet;
 
 	public void setActive(final Boolean active)
 	{
@@ -280,10 +284,15 @@ public class JsonRequestLocation
 		this.billToDefaultSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setEmail(@Nullable final String email)
 	{
-		this.syncAdvise = syncAdvise;
-		this.syncAdviseSet = true;
+		this.email = email;
+		this.emailSet = true;
 	}
 
+	public void setPhone(final String phone)
+	{
+		this.phone = phone;
+		this.phoneSet = true;
+	}
 }

@@ -32,6 +32,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -63,7 +64,7 @@ public class DocumentPrintRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")
-	public ResponseEntity<byte[]> createDocumentPrint(
+	public ResponseEntity<Resource> createDocumentPrint(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("filename") final String filename,
@@ -82,7 +83,7 @@ public class DocumentPrintRestController
 				.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
 				.build());
 
-		final byte[] reportData = documentPrint.getReportData();
+		final Resource reportData = documentPrint.getReportData();
 		final String reportContentType = documentPrint.getReportContentType();
 
 		final HttpHeaders headers = new HttpHeaders();

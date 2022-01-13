@@ -23,7 +23,10 @@ package de.metas.allocation.api;
  */
 
 import com.google.common.collect.SetMultimap;
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -54,15 +57,18 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Check all the completed C_Payments with a "matching" doctype for the invoice and IsAutoAllocateAvailableAmt='Y' AND IsAllocated='N' for the partner given as param.
-	 * 
+	 * <p>
 	 * task 04193
 	 */
-	List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice);
+	List<I_C_Payment> retrieveAvailablePaymentsToAutoAllocate(
+			BPartnerId invoiceBPartnerId,
+			SOTrx invoiceSOTrx,
+			ClientAndOrgId invoiceClientAndOrgId);
 
 	/**
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has not yet been allocated.
 	 *
-	 * @param invoice the invoice for which we retrieve the open amount
+	 * @param invoice            the invoice for which we retrieve the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 */
 	BigDecimal retrieveOpenAmt(I_C_Invoice invoice, boolean creditMemoAdjusted);
@@ -98,4 +104,6 @@ public interface IAllocationDAO extends ISingletonService
 	List<I_C_Payment> retrieveInvoicePayments(I_C_Invoice invoice);
 
 	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
+
+	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
 }

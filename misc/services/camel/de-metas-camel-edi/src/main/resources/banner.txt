@@ -7,8 +7,9 @@
 |_| |_| |_|\___|\__\__,_|___/_| |_|  \___||___/_| |_|           \___|\__,_|_|
                                                                              
 ${AnsiStyle.NORMAL}
-METASFRESH-INFO: ${application.title} | ${application.formatted-version} | SpringBoot version ${spring-boot.formatted-version}
+APP-INFO: ${info.app.title} | SpringBoot version ${spring-boot.formatted-version}
 BUILD-INFO: build [${info.build.ciBuildNo:local}], tag [${info.build.ciBuildTag:none}], job [${info.build.ciJobName:none}]
             ${info.build.ciBuildUrl:}
 
 (banner-ascii created from http://patorjk.com/software/taag/#p=display&f=Doom&t=metasfresh%20-%20edi - Thanks to https://www.instagram.com/patorjk/ )
+

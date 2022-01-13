@@ -22,7 +22,7 @@
 
 package de.metas.order;
 
-import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,47 +36,20 @@ public class OrderLineGroup
 	boolean isGroupMainItem;
 	boolean isGroupingError;
 	String groupingErrorMessage;
+	@Nullable
+	Percent discount;
 
 	@Builder
 	private OrderLineGroup(@NonNull final String groupKey,
 			final boolean isGroupMainItem,
 			final boolean isGroupingError,
-			@Nullable final String groupingErrorMessage)
+			@Nullable final String groupingErrorMessage,
+			@Nullable final Percent discount)
 	{
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
 		this.isGroupingError = isGroupingError;
 		this.groupingErrorMessage = groupingErrorMessage;
+		this.discount = discount;
 	}
-
-	@NonNull
-	public static OrderLineGroup of(@NonNull final String groupKey, final boolean isGroupMainItem)
-	{
-		return of(groupKey, isGroupMainItem, false, null);
-	}
-
-	@NonNull
-	public static OrderLineGroup of(@NonNull final String groupKey,
-			final boolean isGroupMainItem,
-			final boolean isGroupingError,
-			@Nullable final String groupingErrorMessage)
-	{
-		return new OrderLineGroup(groupKey, isGroupMainItem, isGroupingError, groupingErrorMessage);
-	}
-
-	@Nullable
-	public static OrderLineGroup ofOrNull(@Nullable final String groupKey, final boolean isGroupMainItem)
-	{
-		return Check.isEmpty(groupKey) ? null : of(groupKey, isGroupMainItem);
-	}
-
-	@Nullable
-	public static OrderLineGroup ofOrNull(@Nullable final String groupKey,
-			final boolean isGroupMainItem,
-			final boolean isGroupingError,
-			@Nullable final String groupingErrorMessage)
-	{
-		return Check.isEmpty(groupKey) ? null : of(groupKey, isGroupMainItem, isGroupingError, groupingErrorMessage);
-	}
-
 }

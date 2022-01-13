@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -24,6 +25,7 @@ import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.SequenceUtil;
 import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
@@ -36,9 +38,11 @@ import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
@@ -63,6 +67,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -76,7 +81,6 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
-import de.metas.workflow.execution.DocWorkflowManager;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -2999,7 +3003,7 @@ public abstract class PO
 	 * @param success success
 	 * @return true if saved
 	 */
-	private final boolean saveFinish(final boolean newRecord, boolean success) throws Exception
+	private boolean saveFinish(final boolean newRecord, boolean success) throws Exception
 	{
 		// Translations
 		if (success)
@@ -3127,6 +3131,13 @@ public abstract class PO
 			{
 				log.warn("Cache invalidation on new/change failed for {}. Ignored.", this, ex);
 			}
+		}
+
+		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
+
+		if (get_ID() > 0)
+		{
+			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
 		}
 
 		// Return "success"
@@ -3299,11 +3310,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						final int docTypeId = get_ValueAsInt(docTypeIndex);
-						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null) 	// not overwritten by DocType and not manually entered
 					{
@@ -3580,10 +3594,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO) 	// not overwritten by DocType and not manually entered
 					{
@@ -3616,20 +3634,16 @@ public abstract class PO
 					value = null;
 				}
 
-				if (Check.isEmpty(value))
+				if (Check.isBlank(value))
 				{
-					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-					value = documentNoFactory.createValueBuilderFor(this)
-							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
-							.build();
+					value = SequenceUtil.createValueFor(this);
 					set_ValueNoCheck(index, value);
 				}
 			}
 			else if (p_info.isColumnMandatory(index))
 			{
 				final String value = (String)get_Value(index);
-				if (value == null || value.length() == 0)
+				if (Check.isBlank(value))
 				{
 					// gh #213 as of yesterday we make a distinction between NULL and "", so we need to set NULL here. Otherwise, the DB won't return anything for us.
 					set_ValueNoCheck(index, Null.NULL);
@@ -4017,6 +4031,8 @@ public abstract class PO
 			log.warn("Error while deleting " + this, e);
 		}
 
+		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), StateType.DELETED.getCode(), get_TrxName());
+
 		return success;
 	}	// delete
 
@@ -4364,8 +4380,8 @@ public abstract class PO
 	 */
 	// task 05372: make method public so we can insert accountings from not-M-classes
 	public final boolean insert_Accounting(
-			final String acctTable,
-			final String acctBaseTable,
+			@NonNull final String acctTable,
+			@NonNull final String acctBaseTable,
 			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
@@ -4375,6 +4391,8 @@ public abstract class PO
 			return false;
 		}
 
+		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
+
 		// Create SQL Statement - INSERT
 		final StringBuilder sb = new StringBuilder("INSERT INTO ")
 				.append(acctTable)
@@ -4382,10 +4400,10 @@ public abstract class PO
 				.append("_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy ");
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",").append(acctColumnName);
+			sb.append("\n, ").append(acctColumnName);
 		}
 		// .. SELECT
-		sb.append(") SELECT ")
+		sb.append("\n) SELECT ")
 				.append(get_ID())
 				.append(", p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),")
 				.append(getUpdatedBy())
@@ -4393,17 +4411,24 @@ public abstract class PO
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",p.").append(acctColumnName);
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			{
+				sb.append("\n, p.").append(acctColumnName);
+			}
+			else
+			{
+				sb.append("\n, NULL /* missing ").append(acctBaseTable).append(".").append(acctColumnName).append(" */");
+			}
 		}
 		// .. FROM
-		sb.append(" FROM ").append(acctBaseTable)
+		sb.append("\n FROM ").append(acctBaseTable)
 				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
 
 		if (whereClause != null && whereClause.length() > 0)
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
+		sb.append("\n AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
@@ -4992,7 +5017,7 @@ public abstract class PO
 		final Object oo = get_Value(index);
 		return StringUtils.toBoolean(oo);
 	}
-	
+
 	public final BigDecimal get_ValueAsBigDecimal(final String columnName)
 	{
 		final Object valueObj = get_Value(columnName);
@@ -5024,9 +5049,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
+	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)

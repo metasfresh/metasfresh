@@ -177,7 +177,7 @@ public class DuplicateTax extends JavaProcess {
 				duplicateTax.setC_TaxCategory_ID(origTax.getC_TaxCategory_ID());
 				duplicateTax.setValidFrom(origTax.getValidFrom());
 				duplicateTax.setIsTaxExempt(origTax.isTaxExempt());
-				duplicateTax.setRequiresTaxCertificate(origTax.isRequiresTaxCertificate());
+				duplicateTax.setRequiresTaxCertificate(origTax.getRequiresTaxCertificate());
 				duplicateTax.setIsSalesTax(origTax.isSalesTax());
 				duplicateTax.setIsSummary(origTax.isSummary());
 				duplicateTax.setParent_Tax_ID(origTax.getParent_Tax_ID());

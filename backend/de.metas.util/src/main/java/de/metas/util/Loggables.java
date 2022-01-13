@@ -52,7 +52,7 @@ public final class Loggables
 	/**
 	 * @return current thread's {@link ILoggable} instance or a loggable which is forwarding to given logger instance if there was no thread level {@link ILoggable}
 	 */
-	public static ILoggable getLoggableOrLogger(final Logger logger, final Level logLevel)
+	public static ILoggable getLoggableOrLogger(@NonNull final Logger logger, @NonNull final Level logLevel)
 	{
 		final ILoggable loggable = ThreadLocalLoggableHolder.instance.getLoggableOr(null);
 		return loggable != null ? loggable : logback(logger, logLevel);
@@ -63,7 +63,7 @@ public final class Loggables
 		return ConsoleLoggable.instance;
 	}
 
-	public static ILoggable logback(final Logger logger, final Level logLevel)
+	public static ILoggable logback(@NonNull final Logger logger, @NonNull final Level logLevel)
 	{
 		return new LogbackLoggable(logger, logLevel);
 	}
@@ -76,6 +76,7 @@ public final class Loggables
 	/**
 	 * @return The null loggable which can be used without NPE, but doesn't do anything
 	 */
+	@NonNull
 	public static ILoggable nop()
 	{
 		return NullLoggable.instance;

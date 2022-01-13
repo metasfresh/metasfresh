@@ -29,9 +29,4 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 
 public interface I_C_OrderLine extends de.metas.interfaces.I_C_OrderLine, IFlatrateConditionsAware
 {
-	public static final ModelColumn<I_C_OrderLine, I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(
-			I_C_OrderLine.class,
-			COLUMNNAME_C_Flatrate_Conditions_ID,
-			I_C_Flatrate_Conditions.class);
-
 }

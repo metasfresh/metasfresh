@@ -74,7 +74,8 @@ class TableFilter extends PureComponent {
     wrapperHeight: PropTypes.number,
     isBatchEntry: PropTypes.bool,
     handleBatchEntryToggle: PropTypes.func,
-    supportQuickInput: PropTypes.bool,
+    quickInputSupport: PropTypes.object,
+    newRecordInputMode: PropTypes.string,
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
     addNotification: PropTypes.func.isRequired,
@@ -94,11 +95,48 @@ class TableFilter extends PureComponent {
 
   componentDidMount() {
     this.getActions();
+    this.openCloseBatchEntryIfNeeded();
   }
 
   componentWillUnmount() {
     this.props.deleteTopActions();
   }
+
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.allowCreateNew !== prevProps.allowCreateNew ||
+      this.props.quickInputSupport !== prevProps.quickInputSupport ||
+      this.props.newRecordInputMode !== prevProps.newRecordInputMode
+    ) {
+      this.openCloseBatchEntryIfNeeded();
+    }
+  }
+
+  openCloseBatchEntryIfNeeded = () => {
+    const {
+      allowCreateNew,
+      quickInputSupport,
+      newRecordInputMode,
+      isBatchEntry,
+      handleBatchEntryToggle,
+    } = this.props;
+
+    //
+    // Automatically open batch entry (if not already opened) when we can add new entries
+    if (
+      quickInputSupport &&
+      newRecordInputMode === 'QUICK_INPUT_ONLY' &&
+      allowCreateNew &&
+      !isBatchEntry
+    ) {
+      handleBatchEntryToggle();
+    }
+    //
+    // Close batch entry if open but creating new entries is no longer allowed
+    else if (quickInputSupport && !allowCreateNew && isBatchEntry) {
+      handleBatchEntryToggle();
+    }
+  };
 
   /**
    * @method getActions
@@ -212,8 +250,9 @@ class TableFilter extends PureComponent {
       docId,
       tabId,
       isBatchEntry,
+      newRecordInputMode,
       handleBatchEntryToggle,
-      supportQuickInput,
+      quickInputSupport,
       allowCreateNew,
       modalVisible,
       wrapperHeight,
@@ -222,11 +261,23 @@ class TableFilter extends PureComponent {
     const { isTooltipShow, shortcutActions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
+    const showNewButton =
+      newRecordInputMode === 'ALL_METHODS' && // input mode allows it
+      allowCreateNew && // we are allowed to create a new record
+      !isBatchEntry; // batch entry is not already opened
+
+    const showBatchEntryButton =
+      (newRecordInputMode === 'ALL_METHODS' ||
+        newRecordInputMode === 'QUICK_INPUT_ONLY') && // input mode allows it
+      quickInputSupport && // batch entry is supported by backend
+      allowCreateNew && // we are allowed to create a new record
+      !fullScreen; // included tab is not in full screen mode
+
     return (
       <div className="table-filter-line">
         <div className="form-flex-align">
           <div className="row filter-panel-buttons">
-            {!isBatchEntry && allowCreateNew && (
+            {showNewButton && (
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={openTableModal}
@@ -235,7 +286,7 @@ class TableFilter extends PureComponent {
                 {counterpart.translate('window.addNew.caption')}
               </button>
             )}
-            {supportQuickInput && !fullScreen && allowCreateNew && (
+            {showBatchEntryButton && (
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm close-batch-entry"
                 onClick={handleBatchEntryToggle}
@@ -244,17 +295,15 @@ class TableFilter extends PureComponent {
                 tabIndex={tabIndex}
               >
                 {isBatchEntry
-                  ? counterpart.translate('window.batchEntryClose.caption')
-                  : counterpart.translate('window.batchEntry.caption')}
+                  ? quickInputSupport.closeButtonCaption
+                  : quickInputSupport.openButtonCaption}
                 {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
                   <Tooltips
                     name={keymap.TOGGLE_QUICK_INPUT}
                     action={
                       isBatchEntry
-                        ? counterpart.translate(
-                            'window.batchEntryClose.caption'
-                          )
-                        : counterpart.translate('window.batchEntry.caption')
+                        ? quickInputSupport.closeButtonCaption
+                        : quickInputSupport.openButtonCaption
                     }
                     type={''}
                   />
@@ -262,11 +311,14 @@ class TableFilter extends PureComponent {
               </button>
             )}
             {!isBatchEntry && this.actionButtons}
-            {!isBatchEntry && (
-              <TableFilterContextShortcuts shortcutActions={shortcutActions} />
-            )}
+            {!isBatchEntry &&
+              (shortcutActions.length ? (
+                <TableFilterContextShortcuts
+                  shortcutActions={shortcutActions}
+                />
+              ) : null)}
           </div>
-          {supportQuickInput &&
+          {quickInputSupport &&
             (isBatchEntry || fullScreen) &&
             allowCreateNew && (
               <TableQuickInput
@@ -316,7 +368,9 @@ const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchTopActions, deleteTopActions, openModal, addNotification }
-)(TableFilter);
+export default connect(mapStateToProps, {
+  fetchTopActions,
+  deleteTopActions,
+  openModal,
+  addNotification,
+})(TableFilter);

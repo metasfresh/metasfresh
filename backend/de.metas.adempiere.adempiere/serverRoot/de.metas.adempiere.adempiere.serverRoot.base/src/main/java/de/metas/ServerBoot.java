@@ -6,6 +6,7 @@ import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
@@ -36,6 +37,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -151,59 +154,8 @@ public class ServerBoot implements InitializingBean
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 		return new ArrayList<>(sysConfigBL
-				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
+				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, ClientAndOrgId.SYSTEM)
 				.values());
-	}
-
-	@Configuration
-	public static class StaticResourceConfiguration implements WebMvcConfigurer
-	{
-		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
-
-		@Nullable
-		@Value("${metasfresh.serverRoot.downloads:}")
-		private String downloadsPath;
-
-		@Override
-		public void addResourceHandlers(final @NonNull ResourceHandlerRegistry registry)
-		{
-			if (Check.isEmpty(downloadsPath, true))
-			{
-				downloadsPath = defaultDownloadsPath();
-			}
-
-			// Make sure the path ends with separator
-			// see https://jira.spring.io/browse/SPR-14063
-			if (downloadsPath != null && !downloadsPath.endsWith(File.separator))
-			{
-				downloadsPath += File.separator;
-			}
-
-			if (!Check.isEmpty(downloadsPath, true))
-			{
-				LOG.info("Serving static content from " + downloadsPath);
-				registry.addResourceHandler("/download/**").addResourceLocations("file:" + downloadsPath);
-
-				// the "binaries" download path is about to be removed soon!
-				registry.addResourceHandler("/binaries/**").addResourceLocations("file:" + downloadsPath);
-			}
-		}
-
-		@Nullable
-		private String defaultDownloadsPath()
-		{
-			try
-			{
-				final File cwd = new File(".").getCanonicalFile();
-				final File downloadsFile = new File(cwd, "download");
-				return downloadsFile.getCanonicalPath();
-			}
-			catch (final IOException e)
-			{
-				LOG.warn("Failed finding the default downloads path", e);
-				return null;
-			}
-		}
 	}
 
 	@Bean

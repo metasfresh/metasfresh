@@ -25,15 +25,13 @@ package de.metas.camel.externalsystems.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"de.metas.camel.externalsystems.core",
-		"de.metas.camel.alberta", "de.metas.camel.externalsystems.shopware6"})
+@SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems" })
 public class ESBCamelApplication
 {
-
 	/**
 	 * Main method to start this application.
 	 */
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		SpringApplication.run(ESBCamelApplication.class, args);
 	}

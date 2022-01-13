@@ -560,11 +560,11 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 	/**
 	 *
-	 * @param value
 	 * @return value as NamePair; never returns null
 	 * @throws InvalidAttributeValueException
 	 */
-	private final NamePair valueToAttributeValue(@NonNull final Object value)
+	@Nullable
+	private NamePair valueToAttributeValue(@NonNull final Object value)
 	{
 		final Object valueNormalized;
 		if (value instanceof NamePair)
@@ -609,7 +609,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 				+ "\n Normalized form of the value: " + valueNormalized);
 	}
 
-	private static final String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)
+	private static String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)
 	{
 		if (keyNamePairAsMap == null)
 		{

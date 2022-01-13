@@ -1,18 +1,33 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import org.eevolution.model.I_PP_Order_BOMLine;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
+import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
 
 /*
  * #%L
@@ -38,6 +53,12 @@ import de.metas.util.Services;
 
 public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 {
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
 	{
@@ -77,8 +98,6 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 
 		//
 		// Destroy the planned HU
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor()
 				.run(huContext -> {
 					handlingUnitsBL.markDestroyed(huContext, huToReceive);
@@ -86,8 +105,76 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 
 		//
 		// Delete the candidate
-		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 		huPPOrderQtyDAO.delete(candidate);
 	}
 
+	@Override
+	public DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull final PPOrderId ppOrderId)
+	{
+		Quantity finishedGood_QtyReceived = null;
+		final HashMap<PPOrderBOMLineId, DraftPPOrderBOMLineQuantities> linesById = new HashMap<>();
+
+		for (final I_PP_Order_Qty candidate : huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId))
+		{
+			if (candidate.isProcessed())
+			{
+				continue;
+			}
+
+			final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
+			final Quantity qty = Quantitys.create(candidate.getQty(), UomId.ofRepoId(candidate.getC_UOM_ID()));
+			final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(candidate.getPP_Order_BOMLine_ID());
+
+			if (orderBOMLineId == null)
+			{
+				finishedGood_QtyReceived = finishedGood_QtyReceived != null
+						? finishedGood_QtyReceived.add(uomConversionBL.convertQuantityTo(qty, productId, finishedGood_QtyReceived.getUomId()))
+						: qty;
+			}
+			else
+			{
+				final DraftPPOrderBOMLineQuantities lineToAdd = DraftPPOrderBOMLineQuantities.builder()
+						.productId(productId)
+						.qtyIssuedOrReceived(qty)
+						.build();
+
+				linesById.compute(
+						orderBOMLineId,
+						(k, existingLine) -> existingLine != null ? existingLine.add(lineToAdd, uomConversionBL) : lineToAdd);
+			}
+		}
+
+		return DraftPPOrderQuantities.builder()
+				.qtyReceived(finishedGood_QtyReceived)
+				.bomLineQtys(linesById)
+				.build();
+	}
+
+	private DraftPPOrderBOMLineQuantities addToNullable(
+			@Nullable final DraftPPOrderBOMLineQuantities line,
+			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
+	{
+		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
+	}
+
+	public boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
+	{
+		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
+	}
+
+	@Override
+	public void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request)
+	{
+		final PPOrderId pickingOrderId = request.getPickingOrderId();
+		final HuId huId = request.getHuID();
+		final Quantity qtyToUpdate = request.getQtyReceived();
+
+		huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId)
+				.filter(candidate -> !candidate.isProcessed() && isReceipt(candidate))
+				.ifPresent(candidate -> {
+					I_M_HU hu = candidate.getM_HU();
+					candidate.setQty(qtyToUpdate.toBigDecimal());
+					huPPOrderQtyDAO.save(candidate);
+				});
+	}
 }

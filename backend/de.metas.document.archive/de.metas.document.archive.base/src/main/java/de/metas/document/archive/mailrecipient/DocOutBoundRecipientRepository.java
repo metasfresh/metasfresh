@@ -3,7 +3,7 @@ package de.metas.document.archive.mailrecipient;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.archive.model.I_AD_User;
+import org.compiere.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.Language;
 import de.metas.util.Check;

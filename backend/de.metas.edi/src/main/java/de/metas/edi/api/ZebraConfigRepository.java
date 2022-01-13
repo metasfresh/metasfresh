@@ -71,14 +71,13 @@ public class ZebraConfigRepository
 		I_C_BP_PrintFormat printFormat =  queryBL
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addNotNull(I_C_BP_PrintFormat.COLUMN_AD_Zebra_Config_ID)
 				.create()
 				.firstOnly(I_C_BP_PrintFormat.class);
 
-		if (printFormat != null) {
-			if (printFormat.getAD_Zebra_Config_ID() > 0)
-			{
-				return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
-			}
+		if (printFormat != null) 
+		{
+			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
 		}
 		return defaultZebraConfigId;
 	}

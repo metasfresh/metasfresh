@@ -17,7 +17,7 @@ import lombok.NonNull;
  * NOTE to developer: all implementations shall be <b>stateless</b>.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29
+ * Task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29
  *
  */
 public interface IValidationRule
@@ -57,11 +57,11 @@ public interface IValidationRule
 	IStringExpression getPrefilterWhereClause();
 
 	/**
-	 * @return filter to be applied after query; or {@link INamePairPredicate#NULL}
+	 * @return filter to be applied after query; or {@link NamePairPredicates#ACCEPT_ALL}
 	 */
 	default INamePairPredicate getPostQueryFilter()
 	{
-		return INamePairPredicate.NULL;
+		return NamePairPredicates.ACCEPT_ALL;
 	}
 
 	/**

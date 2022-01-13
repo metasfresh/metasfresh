@@ -31,7 +31,6 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
  * Implementation of this interface is responsible for producing document outbound from given models.
  *
  * @author tsa
- *
  */
 public interface IDocOutboundProducer
 {
@@ -42,8 +41,6 @@ public interface IDocOutboundProducer
 	 * Called by API when this producer is registered to an service.
 	 *
 	 * NOTE: never call it directly
-	 *
-	 * @param producerService
 	 */
 	void init(IDocOutboundProducerService producerService);
 
@@ -51,15 +48,12 @@ public interface IDocOutboundProducer
 	 * Called by API when this producer is unregistered from service.
 	 *
 	 * NOTE: never call it directly
-	 *
-	 * @param producerService
 	 */
 	void destroy(IDocOutboundProducerService producerService);
 
 	/**
 	 * Checks if given model is handled by this producer
 	 *
-	 * @param model
 	 * @return true if the model is handled by this producer
 	 */
 	boolean accept(Object model);
@@ -68,8 +62,6 @@ public interface IDocOutboundProducer
 	 * Creates the document outbound for given model.
 	 *
 	 * NOTE: it is assumed that the API already asked this producer if the model is accepted (see {@link #accept(Object)}).
-	 *
-	 * @param model
 	 */
 	void createDocOutbound(Object model);
 
@@ -77,8 +69,6 @@ public interface IDocOutboundProducer
 	 * Process the document outbound for given model - the printing queue more specific
 	 *
 	 * NOTE: it is assumed that the API already asked this producer if the model is accepted (see {@link #accept(Object)}).
-	 *
-	 * @param model
 	 */
 	void voidDocOutbound(Object model);
 }

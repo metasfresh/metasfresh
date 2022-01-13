@@ -1,28 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -54,9 +33,27 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -98,11 +95,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	@Getter
 	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
 
-	/* package */ HUEditorRowAttributes(
+	@Builder
+	private HUEditorRowAttributes(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
-			@NonNull final ImmutableSet<ProductId> productIDs,
-			final boolean readonly)
+			@NonNull final ImmutableSet<ProductId> productIds,
+			final boolean readonly,
+			final boolean isMaterialReceipt)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
@@ -111,26 +110,33 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
-		final boolean readonlyEffective = readonly || extractIsReadonly(attributesStorage);
+		final boolean editableInHU = !readonly && !extractIsReadonly(attributesStorage);
 
 		final ImmutableSet.Builder<AttributeCode> readonlyAttributeNames = ImmutableSet.builder();
 		final ImmutableSet.Builder<AttributeCode> hiddenAttributeNames = ImmutableSet.builder();
 		final ImmutableSet.Builder<AttributeCode> mandatoryAttributeNames = ImmutableSet.builder();
 
-		final Collection<I_M_Attribute> attributes = attributesStorage.getAttributes();
-		for (final I_M_Attribute attribute : attributes)
+		for (final I_M_Attribute attribute : attributesStorage.getAttributes())
 		{
 			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
-			if (readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+			final boolean editableInUI = !attributesStorage.isReadonlyUI(calloutCtx, attribute);
+
+			final boolean editableInHuOverride = attribute.isAlwaysUpdateable()
+					&& !isExceptionFromAlwaysUpdatable(attribute);
+
+			final boolean editableEffective = editableInUI &&
+					(editableInHuOverride || editableInHU);
+
+			if (!editableEffective)
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
-			if (!attributesStorage.isDisplayedUI(productIDs, attribute))
+			if (!attributesStorage.isDisplayedUI(attribute, productIds))
 			{
 				hiddenAttributeNames.add(attributeCode);
 			}
-			if (attributesStorage.isMandatory(attribute))
+			if (attributesStorage.isMandatory(attribute, productIds, isMaterialReceipt))
 			{
 				mandatoryAttributeNames.add(attributeCode);
 			}
@@ -143,6 +149,32 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		// Bind attribute storage:
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
+	}
+
+	/*
+	Introduced in #gh11244
+	To be taken out when we have an implementation for updating the stocks and/or receipt lines when we change
+	this attribute in an active HU.
+	 */
+	private boolean isExceptionFromAlwaysUpdatable(@NonNull final I_M_Attribute attribute)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+
+		if (isWeightAttribute(attributeCode))
+		{
+			return true;
+		}
+
+		return AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode);
+	}
+
+	private boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
+	{
+		return Weightables.ATTR_WeightGross.equals(attributeCode)
+				|| Weightables.ATTR_WeightNet.equals(attributeCode)
+				|| Weightables.ATTR_WeightTare.equals(attributeCode)
+				|| Weightables.ATTR_WeightTareAdjust.equals(attributeCode);
+
 	}
 
 	private static boolean extractIsReadonly(final IAttributeStorage attributesStorage)
@@ -158,12 +190,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		}
 
 		final String huStatus = hu.getHUStatus();
-		if (!X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return true;
-		}
-
-		return false; // not readonly
+		return !X_M_HU.HUSTATUS_Planning.equals(huStatus);// not readonly
 	}
 
 	@Override
@@ -180,12 +207,6 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public ViewRowAttributesLayout getLayout()
 	{
 		return layoutSupplier.get();
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
 	}
 
 	@Override
@@ -375,6 +396,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return attributesStorage.getValue(attributeCode);
 	}
 
+	@Nullable
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.getValueAsString(attributeCode);
@@ -413,7 +435,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
 			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeCode.getCode(), widgetType)
-					.setValue(jsonValue));
+												  .setValue(jsonValue));
 		}
 
 		@Override

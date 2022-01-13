@@ -1,5 +1,9 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for InvoiceProcessingServiceCompany_BPartnerAssignment
  *  @author metasfresh (generated) 
@@ -8,8 +12,7 @@ package org.compiere.model;
 public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment 
 {
 
-    /** TableName=InvoiceProcessingServiceCompany_BPartnerAssignment */
-    public static final String Table_Name = "InvoiceProcessingServiceCompany_BPartnerAssignment";
+	String Table_Name = "InvoiceProcessingServiceCompany_BPartnerAssignment";
 
     /** AD_Table_ID=541494 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -23,10 +26,9 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +38,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +48,9 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Business Partner.
@@ -58,7 +59,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Business Partner.
@@ -67,10 +68,31 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Document Type.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_ID();
+
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Get Created.
@@ -80,12 +102,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Created = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -95,10 +115,9 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -107,7 +126,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -116,12 +135,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Description = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Fee Percentage of Invoice Grand Total.
@@ -130,7 +147,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFeePercentageOfGrandTotal (java.math.BigDecimal FeePercentageOfGrandTotal);
+	void setFeePercentageOfGrandTotal (BigDecimal FeePercentageOfGrandTotal);
 
 	/**
 	 * Get Fee Percentage of Invoice Grand Total.
@@ -139,12 +156,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFeePercentageOfGrandTotal();
+	BigDecimal getFeePercentageOfGrandTotal();
 
-    /** Column definition for FeePercentageOfGrandTotal */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_FeePercentageOfGrandTotal = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "FeePercentageOfGrandTotal", null);
-    /** Column name FeePercentageOfGrandTotal */
-    public static final String COLUMNNAME_FeePercentageOfGrandTotal = "FeePercentageOfGrandTotal";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_FeePercentageOfGrandTotal = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "FeePercentageOfGrandTotal", null);
+	String COLUMNNAME_FeePercentageOfGrandTotal = "FeePercentageOfGrandTotal";
 
 	/**
 	 * Set Assigned Customers.
@@ -153,7 +168,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceProcessingServiceCompany_BPartnerAssignment_ID (int InvoiceProcessingServiceCompany_BPartnerAssignment_ID);
+	void setInvoiceProcessingServiceCompany_BPartnerAssignment_ID (int InvoiceProcessingServiceCompany_BPartnerAssignment_ID);
 
 	/**
 	 * Get Assigned Customers.
@@ -162,12 +177,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getInvoiceProcessingServiceCompany_BPartnerAssignment_ID();
+	int getInvoiceProcessingServiceCompany_BPartnerAssignment_ID();
 
-    /** Column definition for InvoiceProcessingServiceCompany_BPartnerAssignment_ID */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_InvoiceProcessingServiceCompany_BPartnerAssignment_ID = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "InvoiceProcessingServiceCompany_BPartnerAssignment_ID", null);
-    /** Column name InvoiceProcessingServiceCompany_BPartnerAssignment_ID */
-    public static final String COLUMNNAME_InvoiceProcessingServiceCompany_BPartnerAssignment_ID = "InvoiceProcessingServiceCompany_BPartnerAssignment_ID";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_InvoiceProcessingServiceCompany_BPartnerAssignment_ID = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "InvoiceProcessingServiceCompany_BPartnerAssignment_ID", null);
+	String COLUMNNAME_InvoiceProcessingServiceCompany_BPartnerAssignment_ID = "InvoiceProcessingServiceCompany_BPartnerAssignment_ID";
 
 	/**
 	 * Set Invoice Processing Service Company.
@@ -176,7 +189,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID);
+	void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID);
 
 	/**
 	 * Get Invoice Processing Service Company.
@@ -185,16 +198,14 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getInvoiceProcessingServiceCompany_ID();
+	int getInvoiceProcessingServiceCompany_ID();
 
-	public org.compiere.model.I_InvoiceProcessingServiceCompany getInvoiceProcessingServiceCompany();
+	org.compiere.model.I_InvoiceProcessingServiceCompany getInvoiceProcessingServiceCompany();
 
-	public void setInvoiceProcessingServiceCompany(org.compiere.model.I_InvoiceProcessingServiceCompany InvoiceProcessingServiceCompany);
+	void setInvoiceProcessingServiceCompany(org.compiere.model.I_InvoiceProcessingServiceCompany InvoiceProcessingServiceCompany);
 
-    /** Column definition for InvoiceProcessingServiceCompany_ID */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, org.compiere.model.I_InvoiceProcessingServiceCompany> COLUMN_InvoiceProcessingServiceCompany_ID = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, org.compiere.model.I_InvoiceProcessingServiceCompany>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "InvoiceProcessingServiceCompany_ID", org.compiere.model.I_InvoiceProcessingServiceCompany.class);
-    /** Column name InvoiceProcessingServiceCompany_ID */
-    public static final String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, org.compiere.model.I_InvoiceProcessingServiceCompany> COLUMN_InvoiceProcessingServiceCompany_ID = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "InvoiceProcessingServiceCompany_ID", org.compiere.model.I_InvoiceProcessingServiceCompany.class);
+	String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
 
 	/**
 	 * Set Active.
@@ -204,7 +215,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -214,12 +225,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_IsActive = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Get Updated.
@@ -229,12 +238,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_Updated = new ModelColumn<>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -244,8 +251,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

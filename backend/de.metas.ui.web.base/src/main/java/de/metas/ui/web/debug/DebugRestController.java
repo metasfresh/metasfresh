@@ -45,6 +45,7 @@ import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
@@ -273,7 +274,7 @@ public class DebugRestController
 	@RequestMapping(value = "/eventBus/postEvent", method = RequestMethod.GET)
 	public void postEvent(
 			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
-			, @RequestParam(name = "message", defaultValue = "test message") final String message//
+			//, @RequestParam(name = "message", defaultValue = "test message") final String message//
 			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
 			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
 			//
@@ -291,7 +292,7 @@ public class DebugRestController
 
 		final UserNotificationRequestBuilder request = UserNotificationRequest.builder()
 				.topic(topic)
-				.recipientUserId(UserId.ofRepoIdOrNull(toUserId))
+				.recipientUserId(UserId.ofRepoId(toUserId))
 				.important(important);
 
 		final UserNotificationTargetType targetType = Check.isEmpty(targetTypeStr) ? null : UserNotificationTargetType.forJsonValue(targetTypeStr);
@@ -362,9 +363,13 @@ public class DebugRestController
 		),
 		dashboard(
 				"de.metas.ui.web.dashboard",
-				de.metas.ui.web.dashboard.KPIDataProvider.class.getName(),
-				de.metas.ui.web.dashboard.KPIDataLoader.class.getName()
-		);
+				KPIDataProvider.class.getPackage().getName()
+		),
+		elasticsearch(
+				"de.metas.fulltextsearch",
+				de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter.class.getPackage().getName()
+		),
+		;
 
 		private final Set<String> loggerNames;
 
@@ -392,16 +397,16 @@ public class DebugRestController
 		//
 		// Get Level to set
 		final Level level;
-		if (Check.isEmpty(levelStr, true))
+		if (Check.isBlank(levelStr))
 		{
-			level = null;
+			throw new AdempiereException("Please provide a `level`");
 		}
 		else
 		{
 			level = LogManager.asLogbackLevel(levelStr);
 			if (level == null)
 			{
-				throw new IllegalArgumentException("level is not valid");
+				throw new AdempiereException("level is not valid: " + levelStr);
 			}
 		}
 

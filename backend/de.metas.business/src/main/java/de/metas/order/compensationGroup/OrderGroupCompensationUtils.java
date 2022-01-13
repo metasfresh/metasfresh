@@ -1,12 +1,12 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -38,14 +38,6 @@ public class OrderGroupCompensationUtils
 		if (!groupOrderLine.isGroupCompensationLine())
 		{
 			throw new AdempiereException("Order line " + groupOrderLine.getLine() + " shall be a compensation line");
-		}
-	}
-
-	public static void assertNotCompensationLine(final I_C_OrderLine groupOrderLine)
-	{
-		if (groupOrderLine.isGroupCompensationLine())
-		{
-			throw new AdempiereException("Order line " + groupOrderLine.getLine() + " shall NOT be a compensation line");
 		}
 	}
 
@@ -91,18 +83,20 @@ public class OrderGroupCompensationUtils
 		}
 	}
 
-	public static boolean isGeneratedCompensationLine(final I_C_OrderLine orderLine)
+	public static boolean isGeneratedLine(final I_C_OrderLine orderLine)
 	{
-		return isGeneratedCompensationLine(orderLine.getC_CompensationGroup_SchemaLine_ID());
+		final GroupTemplateLineId groupSchemaLineId = extractGroupTemplateLineId(orderLine);
+		return isGeneratedLine(groupSchemaLineId);
 	}
 
-	public static boolean isGeneratedCompensationLine(final GroupTemplateLineId groupSchemaLineId)
+	@Nullable
+	public static GroupTemplateLineId extractGroupTemplateLineId(@NonNull final I_C_OrderLine orderLine)
 	{
-		return isGeneratedCompensationLine(GroupTemplateLineId.toRepoId(groupSchemaLineId));
+		return GroupTemplateLineId.ofRepoIdOrNull(orderLine.getC_CompensationGroup_SchemaLine_ID());
 	}
 
-	public static boolean isGeneratedCompensationLine(final int groupSchemaLineId)
+	public static boolean isGeneratedLine(@Nullable final GroupTemplateLineId groupSchemaLineId)
 	{
-		return groupSchemaLineId > 0;
+		return groupSchemaLineId != null;
 	}
 }

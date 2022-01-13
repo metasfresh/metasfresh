@@ -1,30 +1,8 @@
 package de.metas.ui.web.process;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
@@ -49,22 +27,43 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -312,23 +311,21 @@ public class ProcessRestController
 
 			return Execution.prepareNewExecution()
 					.outOfTransaction()
-					.execute(() -> {
-						return instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
-							final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
-									.ctx(Env.getCtx())
-									.adLanguage(userSession.getAD_Language())
-									.viewsRepo(viewsRepo)
-									.documentsCollection(documentsCollection)
-									.build());
-							return JSONProcessInstanceResult.of(result);
-						});
-					});
+					.execute(() -> instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
+						final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
+								.ctx(Env.getCtx())
+								.adLanguage(userSession.getAD_Language())
+								.viewsRepo(viewsRepo)
+								.documentsCollection(documentsCollection)
+								.build());
+						return JSONProcessInstanceResult.of(result);
+					}));
 		}
 	}
 
 	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
-	public ResponseEntity<byte[]> getReport(
+	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,
 			@PathVariable("pinstanceId") final String pinstanceIdStr,
 			@PathVariable("filename") final String filename)
@@ -346,7 +343,7 @@ public class ProcessRestController
 			final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
 			final String reportFilename = action.getFilename();
 			final String reportContentType = action.getContentType();
-			final byte[] reportData = action.getReportData();
+			final Resource reportData = action.getReportData();
 
 			final String reportFilenameEffective = CoalesceUtil.coalesce(filename, reportFilename, "");
 
@@ -360,7 +357,7 @@ public class ProcessRestController
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/typeahead")
-	public JSONLookupValuesList getParameterTypeahead(
+	public JSONLookupValuesPage getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
@@ -377,13 +374,8 @@ public class ProcessRestController
 			final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
-					.transform(this::toJSONLookupValuesList);
+					.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 		}
-	}
-
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/dropdown")
@@ -403,7 +395,7 @@ public class ProcessRestController
 			final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
-					.transform(this::toJSONLookupValuesList);
+					.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
 		}
 	}
 

@@ -1,6 +1,5 @@
 import React from 'react';
-import { List } from 'immutable';
-import { mount, shallow, render } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 
 import SelectionDropdown from '../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../test_setup/fixtures/selection_dropdown.json';
@@ -11,7 +10,7 @@ const createDummyProps = function(props, data) {
     onChange: jest.fn(),
     onSelect: jest.fn(),
     ...props,
-    options: List(data),
+    options: data,
   };
 };
 
@@ -61,7 +60,7 @@ describe('SelectionDropdown component', () => {
       },
       fixtures.data1.options
     );
-    const options = List(fixtures.data1.options);
+    const options = fixtures.data1.options;
     const map = {};
     window.addEventListener = jest.fn((event, cb) => {
       map[event] = cb;
@@ -78,7 +77,7 @@ describe('SelectionDropdown component', () => {
     map.keydown({ ...eventProps, key: 'ArrowDown' });
 
     expect(instance.ignoreMouse).toBe(true);
-    expect(onChangeSpy).toHaveBeenCalledWith(options.get(1));
+    expect(onChangeSpy).toHaveBeenCalledWith(options[1]);
 
     map.keyup({ ...eventProps, key: 'ArrowDown' });
     expect(instance.ignoreMouse).toBe(false);
@@ -94,7 +93,7 @@ describe('SelectionDropdown component', () => {
       },
       fixtures.data1.options
     );
-    const options = List(fixtures.data1.options);
+    const options = fixtures.data1.options;
     const map = {};
     window.addEventListener = jest.fn((event, cb) => {
       map[event] = cb;
@@ -119,7 +118,7 @@ describe('SelectionDropdown component', () => {
       key: 'n',
     });
 
-    const ref = wrapper.instance().optionToRef.get(options.get(2));
+    const ref = wrapper.instance().optionToRef.get(options[2]);
     expect(spyScroll).toHaveBeenCalledWith(ref, false);
 
     map.keydown({ ...eventProps, key: 'Escape' });
@@ -142,8 +141,8 @@ describe('SelectionDropdown component', () => {
       },
       fixtures.data1.options
     );
-    const options = List(fixtures.data1.options);
-    const newOption = options.get(1);
+    const options = fixtures.data1.options;
+    const newOption = options[1];
 
     const wrapper = mount(<SelectionDropdown {...props} />);
     const spyEnter = jest.spyOn(wrapper.instance(), 'handleMouseEnter');

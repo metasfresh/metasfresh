@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder.impl;
 
+import de.metas.material.planning.pporder.DraftPPOrderBOMLineQuantities;
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.impl.UOMTestHelper;
@@ -9,9 +11,11 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -19,10 +23,11 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test {@link PPOrderBOMBL#computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
+ * Test {@link PPOrderBOMBL#computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM, DraftPPOrderQuantities)}.
  *
  * @author tsa
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 {
 	private UOMTestHelper helper;
@@ -73,181 +78,220 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_Test
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
-		ppOrderBOMLine.setC_UOM(uomMm);
+		ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 		ppOrderBOMLine.setQtyRequiered(null);
-
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
+		InterfaceWrapperHelper.saveRecord(ppOrderBOMLine);
 	}
 
-	@Test
-	public void test_calculateQtyRequiredProjected_standardUseCase()
+	@Nested
+	class computeQtyRequiredProjected
 	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(BigDecimal.ZERO); // i.e. Qty Receipt
+		@Test
+		public void standardUseCase()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(BigDecimal.ZERO); // i.e. Qty Receipt
 
-		// Component
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+			// Component
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-		assertThat(computeQtyRequiredProjected(ppOrderBOMLine).toBigDecimal())
-				.as("Invalid QtyRequired projected")
-				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("28600");
+			assertThat(computeQtyRequiredProjected(ppOrderBOMLine).toBigDecimal())
+					.as("Invalid QtyRequired projected")
+					// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("28600");
+		}
+
+		@Test
+		public void overReceipt()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(new BigDecimal("200")); // we received double then we planned
+
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+
+			assertThat(ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine).computeQtyRequired(Quantity.of(100, uomEa)).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("28600");
+
+			assertThat(computeQtyRequiredProjected(ppOrderBOMLine).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 200(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("57200");
+		}
+
+		/**
+		 * Calculates how much qty is required for given BOM Line considering the actual quantity required of finished good.<br/>
+		 * In other words, how much will be required considering that the delivered finish goods could be more then planned initially.<br/>
+		 * By "actual quantity required of finished good" we mean the maximum between the "quantity required of finished good" and "quantity delivered of finished good".<br/>
+		 * <br/>
+		 * Example:<br/>
+		 * Consider a manufacturing order with 100 finished goods ordered. Quantity that was actually produced is 100 finished goods.<br/>
+		 * We have a component which needs 350mm for each finished good.<br/>
+		 * So the total standard quantity required of that component, to produce 100 finish good items is 100 x 350mm = 35000mm.<br/>
+		 * Same will be projected quantity required.<br/>
+		 * <br/>
+		 * Now, consider that quantity of finished goods produced is 110 (more then ordered).<br/>
+		 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
+		 * So the result will be 110(quantity produced) x 350mm.<br/>
+		 *
+		 * @return projected quantity required.
+		 */
+		private Quantity computeQtyRequiredProjected(final I_PP_Order_BOMLine orderBOMLine)
+		{
+			final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
+			final BigDecimal qtyRequired_FinishedGood = ppOrder.getQtyOrdered();
+			final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
+			final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
+
+			return ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, orderBOMLine)
+					.computeQtyRequired(Quantity.of(qtyRequiredActual_FinishedGood, uomEa));
+		}
 	}
 
-	@Test
-	public void test_computeQtyRequiredProjected_OverReceipt()
+	@Nested
+	class calculateQtyRequiredBasedOnFinishedGoodReceipt
 	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(new BigDecimal("200")); // we received double then we planned
+		/**
+		 * Task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
+		 */
+		@Test
+		public void noQtyReceivedYet()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(BigDecimal.ZERO); // nothing received
 
-		// Component
-		ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-		assertThat(ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine).computeQtyRequired(Quantity.of(100, uomEa)).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("28600");
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: ZERO because nothing was received yet
+					.isZero();
+		}
 
-		assertThat(computeQtyRequiredProjected(ppOrderBOMLine).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: 200(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("57200");
-	}
+		/**
+		 * Task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
+		 */
+		@Test
+		public void underReceipt()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(new BigDecimal("30")); // under-receipt: 30 < 100
 
-	/**
-	 * Calculates how much qty is required for given BOM Line considering the actual quantity required of finished good.<br/>
-	 * In other words, how much will be required considering that the delivered finish goods could be more then planned initially.<br/>
-	 * By "actual quantity required of finished good" we mean the maximum between the "quantity required of finished good" and "quantity delivered of finished good".<br/>
-	 * <br/>
-	 * Example:<br/>
-	 * Consider a manufacturing order with 100 finished goods ordered. Quantity that was actually produced is 100 finished goods.<br/>
-	 * We have a component which needs 350mm for each finished good.<br/>
-	 * So the total standard quantity required of that component, to produce 100 finish good items is 100 x 350mm = 35000mm.<br/>
-	 * Same will be projected quantity required.<br/>
-	 * <br/>
-	 * Now, consider that quantity of finished goods produced is 110 (more then ordered).<br/>
-	 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
-	 * So the result will be 110(quantity produced) x 350mm.<br/>
-	 *
-	 * @return projected quantity required.
-	 */
-	private Quantity computeQtyRequiredProjected(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
-		final BigDecimal qtyRequired_FinishedGood = ppOrder.getQtyOrdered();
-		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
-		final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-		return ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, orderBOMLine)
-				.computeQtyRequired(Quantity.of(qtyRequiredActual_FinishedGood, uomEa));
-	}
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 50(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("8580");
 
-	/**
-	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
-	 */
-	@Test
-	public void test_calculateQtyRequiredBasedOnFinishedGoodReceipt_NoQtyReceivedYet()
-	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(BigDecimal.ZERO); // nothing received
+		}
 
-		// Component
-		ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+		/**
+		 * Task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
+		 */
+		@Test
+		public void fullyReceived()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(new BigDecimal("100")); // fully received
 
-		assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: ZERO because nothing was received yet
-				.isZero();
-	}
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-	/**
-	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
-	 */
-	@Test
-	public void test_calculateQtyRequiredBasedOnFinishedGoodReceipt_UnderReceipt()
-	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(new BigDecimal("30")); // under-receipt: 30 < 100
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 100(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("28600");
 
-		// Component
-		ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+		}
 
-		assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: 50(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("8580");
+		/**
+		 * Task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
+		 */
+		@Test
+		public void overReceipt()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(new BigDecimal("130")); // over-receipt: 130 > 100
 
-	}
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyBatch(null);
+			ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-	/**
-	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
-	 */
-	@Test
-	public void test_calculateQtyRequiredBasedOnFinishedGoodReceipt_FullyReceived()
-	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(new BigDecimal("100")); // fully received
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 130(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
+					.isEqualByComparingTo("37180");
+		}
 
-		// Component
-		ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+		@Test
+		public void consideringDraftQtys()
+		{
+			// Finished good
+			ppOrder.setQtyOrdered(new BigDecimal("100"));
+			ppOrder.setQtyDelivered(new BigDecimal("0"));
+			InterfaceWrapperHelper.saveRecord(ppOrder);
 
-		assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: 100(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("28600");
+			// Component
+			ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
+			ppOrderBOMLine.setIsQtyPercentage(false);
+			ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
+			ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
+			InterfaceWrapperHelper.saveRecord(ppOrderBOMLine);
 
-	}
+			final DraftPPOrderQuantities draftQtys = DraftPPOrderQuantities.builder()
+					.qtyReceived(Quantity.of("30", uomEa))
+					.bomLineQty(
+							PPOrderBOMLineId.ofRepoId(ppOrderBOMLine.getPP_Order_BOMLine_ID()),
+							DraftPPOrderBOMLineQuantities.builder()
+									.productId(ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID()))
+									.qtyIssuedOrReceived(Quantity.of("2000", uomMm))
+									.build())
+					.build();
 
-	/**
-	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
-	 */
-	@Test
-	public void test_calculateQtyRequiredBasedOnFinishedGoodReceipt_OverReceipt()
-	{
-		// Finished good
-		ppOrder.setQtyOrdered(new BigDecimal("100"));
-		ppOrder.setQtyDelivered(new BigDecimal("130")); // over-receipt: 130 > 100
-
-		// Component
-		ppOrderBOMLine.setPP_Order(ppOrder); // just to make sure we have the latest
-		ppOrderBOMLine.setIsQtyPercentage(false);
-		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
-		ppOrderBOMLine.setQtyBatch(null);
-		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
-
-		assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal())
-				.as("QtyRequired projected")
-				// Expected: 130(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
-				.isEqualByComparingTo("37180");
+			assertThat(ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, draftQtys).toBigDecimal())
+					.as("QtyRequired projected")
+					// Expected: 30(finished goods received) x 260(mm/finished good) - 2000mm (already issued)
+					.isEqualByComparingTo("5800");
+		}
 	}
 }

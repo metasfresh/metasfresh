@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.i18n.BooleanWithReason;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
@@ -112,7 +113,7 @@ public class PrintingRestController
 
 	@PostMapping("/getNextPrintPackage/{sessionId}/{transactionId}")
 	public PrintPackage getNextPrintPackage(
-			@PathVariable("sessionId") int sessionId,
+			@PathVariable("sessionId") final int sessionId,
 			@PathVariable("transactionId") final String transactionId)
 	{
 		updateSessionAndRetrieveHostKey(sessionId);
@@ -194,8 +195,8 @@ public class PrintingRestController
 	 */
 	@PostMapping("/getPrintPackageData/{sessionId}/{transactionId}")
 	public ResponseEntity<?> getPrintPackageData(
-			@PathVariable("sessionId") int sessionId,
-			@PathVariable("transactionId") String transactionId)
+			@PathVariable("sessionId") final int sessionId,
+			@PathVariable("transactionId") final String transactionId)
 	{
 		updateSessionAndRetrieveHostKey(sessionId);
 
@@ -221,8 +222,8 @@ public class PrintingRestController
 	 */
 	@PostMapping("/sendPrintPackageResponse/{sessionId}/{transactionId}")
 	public void sendPrintPackageResponse(
-			@PathVariable("sessionId") int sessionId,
-			@PathVariable("transactionId") String transactionId,
+			@PathVariable("sessionId") final int sessionId,
+			@PathVariable("transactionId") final String transactionId,
 			@RequestBody final PrintJobInstructionsConfirm input)
 	{
 		updateSessionAndRetrieveHostKey(sessionId);
@@ -265,10 +266,10 @@ public class PrintingRestController
 		final OrgId adOrgId = Env.getOrgId(ctx);
 		final int adTableId = InterfaceWrapperHelper.getTableId(I_AD_PrinterHW.class);
 		final int recordId = -1; // NEW
-		final String errmsg = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
-		if (errmsg != null)
+		final BooleanWithReason canUpdate = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+		if (canUpdate.isFalse())
 		{
-			throw new AdempiereException(errmsg);
+			throw new AdempiereException(canUpdate.getReason());
 		}
 	}
 }

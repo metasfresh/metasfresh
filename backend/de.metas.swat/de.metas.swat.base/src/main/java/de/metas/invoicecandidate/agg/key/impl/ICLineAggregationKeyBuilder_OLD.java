@@ -1,44 +1,6 @@
 package de.metas.invoicecandidate.agg.key.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Currency;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationAttribute;
 import de.metas.aggregation.api.AggregationId;
@@ -57,10 +19,24 @@ import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductPrice;
+import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Evaluatee;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Currency;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Default LineAggregationKey builder for {@link I_C_Invoice_Candidate}s.
@@ -169,8 +145,8 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + ic.getC_Activity_ID());
 
 		// Add Tax
-		final I_C_Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
-		sb.append("/" + taxEffective.getC_Tax_ID());
+		final Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
+		sb.append("/" + taxEffective.getTaxId().getRepoId());
 
 		// Add IsPrinted
 		sb.append("/").append(ic.isPrinted());

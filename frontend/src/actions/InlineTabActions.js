@@ -9,6 +9,7 @@ import {
   SET_INLINE_TAB_ADD_NEW,
   SET_INLINE_TAB_SHOW_MORE,
   SET_INLINE_TAB_ITEM_PROP,
+  UPDATE_INLINE_TAB_DATA,
 } from '../constants/ActionTypes';
 
 /*
@@ -102,18 +103,18 @@ export function setInlineTabItemProp({ inlineTabId, targetProp, targetValue }) {
  * @param {string} windowId
  * @param {string} tabId
  * @param {string} docId
- * @param {string} query
+ * @param {string} orderBy
  */
 export function fetchInlineTabWrapperData({
   windowId,
   tabId,
   docId,
-  query,
+  orderBy,
   rowId,
   postDeletion,
 }) {
   return (dispatch) => {
-    dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
+    dispatch(fetchTab({ tabId, windowId, docId, orderBy })).then((tabData) => {
       /** - if we have the rowId it means we have a new record addition, so we put that at the end of the array - only if this doesn't happen as a result of deletion */
       const inlineTabWrapperSelector = `${windowId}_${tabId}_${docId}`;
       if (rowId && !postDeletion) {
@@ -193,9 +194,7 @@ export function getInlineTabLayoutAndData({ windowId, tabId, docId, rowId }) {
  */
 export function inlineTabAfterGetLayout({ data, disconnectedData }) {
   return (dispatch) => {
-    const inlineTabTargetId = `${disconnectedData.windowId}_${
-      disconnectedData.tabId
-    }_${disconnectedData.rowId}`;
+    const inlineTabTargetId = `${disconnectedData.windowId}_${disconnectedData.tabId}_${disconnectedData.rowId}`;
     dispatch(
       setInlineTabLayoutAndData({
         inlineTabId: inlineTabTargetId,
@@ -227,18 +226,35 @@ export function inlineTabAfterGetLayout({ data, disconnectedData }) {
 export function patchInlineTab({ ret, windowId, tabId, docId, rowId }) {
   return (dispatch) => {
     ret.then((response) => {
-      if (response[0]) {
+      const respDocuments =
+        response && response.documents ? response.documents : response;
+      if (respDocuments && respDocuments[0]) {
+        const { validStatus } = respDocuments[0];
+        const inlineTabId = `${windowId}_${tabId}_${rowId}`;
+
+        if (validStatus) {
+          dispatch(
+            dispatch({
+              type: UPDATE_INLINE_TAB_DATA,
+              payload: {
+                inlineTabId,
+                data: { validStatus },
+              },
+            })
+          );
+        }
+
         dispatch(
           updateInlineTabWrapperFields({
             inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
             rowId,
-            response: response[0],
+            response: respDocuments[0],
           })
         );
         dispatch(
           updateInlineTabItemFields({
             inlineTabId: `${windowId}_${tabId}_${rowId}`,
-            fieldsByName: response[0].fieldsByName,
+            fieldsByName: respDocuments[0].fieldsByName,
           })
         );
       }

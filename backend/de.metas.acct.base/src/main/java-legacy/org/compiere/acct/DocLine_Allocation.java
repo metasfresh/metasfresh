@@ -16,27 +16,6 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Cash;
-import org.compiere.model.I_C_CashLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAccount;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
@@ -52,6 +31,26 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Cash;
+import org.compiere.model.I_C_CashLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MAccount;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Allocation Line
@@ -113,7 +112,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		m_WriteOffAmt = line.getWriteOffAmt();
 		m_OverUnderAmt = line.getOverUnderAmt();
 		m_PaymentWriteOffAmt = line.getPaymentWriteOffAmt();
-	}	// DocLine_Allocation
+	}    // DocLine_Allocation
 
 	private final int m_C_Invoice_ID;
 	private final I_C_Invoice invoice;
@@ -158,9 +157,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				.append(",C_Invoice_ID=").append(invoice)
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
-	/** @return allocated amount */
+	/**
+	 * @return allocated amount
+	 */
 	public BigDecimal getAllocatedAmt()
 	{
 		return m_AllocatedAmt;
@@ -272,7 +273,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		this.counterDocLine = counterDocLine;
 	}
 
-	/** @return true if this is a sales/purchase compensation line which was not already compensated */
+	/**
+	 * @return true if this is a sales/purchase compensation line which was not already compensated
+	 */
 	public boolean isSalesPurchaseInvoiceToCompensate(final AcctSchemaId acctSchemaId)
 	{
 		// Check if it was already compensated
@@ -373,7 +376,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		final I_C_Invoice invoice = getC_Invoice();
 		return invoice == null ? -1 : invoice.getC_Currency_ID();
-	}	// getInvoiceC_Currency_ID
+	}    // getInvoiceC_Currency_ID
 
 	public OrgId getInvoiceOrgId()
 	{
@@ -445,16 +448,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			if (rs.next())
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
-				
+
 				final String docBaseType = rs.getString(2);
 				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
 				{
 					accountType = AccountType.PaymentSelect;
 				}
-				
+
 				// Prepayment
 				final boolean isPrepayment = StringUtils.toBoolean(rs.getString(4));
-				if (isPrepayment)		// Prepayment
+				if (isPrepayment)        // Prepayment
 				{
 					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
 					if (isReceipt)
@@ -489,16 +492,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					.setDetailMessage("No payment account found for " + paymentId);
 		}
 		return doc.getAccount(accountType, as);
-	}	// getPaymentAcct
+	}    // getPaymentAcct
 
 	/**
 	 * Get Cash (Transfer) Acct of CashBook
-	 *
-	 * @param as accounting schema
-	 * @param C_CashLine_ID
-	 * @return acct
 	 */
-	private final MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
+	private MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
@@ -513,7 +512,26 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
 		return doc.getAccount(AccountType.CashTransfer, as);
-	}	// getCashAcct
+	}    // getCashAcct
+
+	public Optional<MAccount> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
+	{
+		final I_C_Payment payment = getC_Payment();
+		if (payment == null)
+		{
+			return Optional.empty();
+		}
+
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
+		if (bankAccountId == null)
+		{
+			return Optional.empty();
+		}
+
+		return services.getBankAccountAcct(bankAccountId, acctSchemaId)
+				.getPaymentWriteOffAcct()
+				.map(services::getAccountById);
+	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
@@ -600,4 +618,4 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return paymentReceipt;
 	}
 
-}	// DocLine_Allocation
+}    // DocLine_Allocation

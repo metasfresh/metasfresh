@@ -27,6 +27,7 @@ import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUserChangedRequest;
 
 import java.util.List;
 
@@ -61,4 +62,6 @@ public interface IServerSync
 	void reportWeekSupply(PutWeeklySupplyRequest request);
 	
 	void reportRfQChanges(PutRfQChangeRequest request);
+
+	void reportUserChanged(PutUserChangedRequest request);
 }

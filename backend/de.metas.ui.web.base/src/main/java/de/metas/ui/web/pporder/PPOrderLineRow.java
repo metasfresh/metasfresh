@@ -1,5 +1,6 @@
 package de.metas.ui.web.pporder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -9,6 +10,8 @@ import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.handlingunits.pporder.api.PPOrderQtyStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantitys;
+import de.metas.ui.web.window.datatypes.ColorValue;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.uom.UOMConversionContext;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -109,10 +112,10 @@ public class PPOrderLineRow implements IViewRow
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
 
-	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
+	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
 	private final String code;
 
-	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
+	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
 	@Getter
 	private final PPOrderLineType type;
 
@@ -120,20 +123,23 @@ public class PPOrderLineRow implements IViewRow
 	@Getter
 	private final String packingInfo;
 
-	@ViewColumn(captionKey = "QtyPlan", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50))
+	@ViewColumn(captionKey = "QtyPlan", widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50))
 	@Getter
 	@Nullable
 	private final Quantity qtyPlan;
 
-	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60))
+	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60))
 	@Getter
 	private final Quantity qty;
 
-	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70))
+	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70))
 	private final JSONLookupValue uom;
 
-	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
+	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
 	private final JSONLookupValue huStatus;
+
+	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
+	private ColorValue lineStatusColor;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
 
@@ -268,7 +274,8 @@ public class PPOrderLineRow implements IViewRow
 		this.processed = processed;
 		this.issueOrReceiveCandidateStatus = null;
 
-		this.product = JSONLookupValueTool.createProductLookupValue(ppOrderBomLine.getM_Product());
+		final ProductId productId = ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID());
+		this.product = JSONLookupValueTool.createProductLookupValue(Services.get(IProductDAO.class).getById(productId));
 		this.uom = JSONLookupValueTool.createUOMLookupValue(qtyPlan.getUOM());
 
 		this.packingInfo = packingInfoOrNull;
@@ -299,6 +306,8 @@ public class PPOrderLineRow implements IViewRow
 		this.documentPath = computeDocumentPath();
 
 		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
+
+		this.lineStatusColor = computeLineStatusColor(this.qtyPlan, this.qty);
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -347,6 +356,22 @@ public class PPOrderLineRow implements IViewRow
 		this.documentPath = computeDocumentPath();
 
 		this.issueMethod = null;
+	}
+
+	@VisibleForTesting
+	static ColorValue computeLineStatusColor(@NonNull final Quantity qtyPlan, @NonNull final Quantity qtyIssued)
+	{
+		final boolean issued;
+		if(qtyPlan.signum() >= 0)
+		{
+			issued = qtyPlan.compareTo(qtyIssued) <= 0;
+		}
+		else
+		{
+			issued = qtyPlan.compareTo(qtyIssued) >= 0;
+		}
+
+		return issued ? ColorValue.GREEN : ColorValue.RED;
 	}
 
 	@Nullable

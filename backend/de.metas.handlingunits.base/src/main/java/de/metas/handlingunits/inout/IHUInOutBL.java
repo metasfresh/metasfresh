@@ -96,15 +96,20 @@ public interface IHUInOutBL extends ISingletonService
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
 
 	/**
-	 * @return True if the given inOut is a Customer Return, False otherwise
+	 * @return true if the given inOut is a Customer Return, false otherwise
 	 */
 	boolean isCustomerReturn(I_M_InOut inOut);
 
 	/**
-	 * @return True if the given inOut is a Vendor Return, False otherwise
+	 * @return true if the given inOut is a Vendor Return, false otherwise
 	 */
 	boolean isVendorReturn(I_M_InOut inOut);
 
+	/**
+	 * @return true if the given inOut is an empties return (e.g. of just pallets or boxes), false otherwise.
+	 */
+	boolean isEmptiesReturn(I_M_InOut inout);
+	
 	void moveHUsToQualityReturnWarehouse(List<I_M_HU> husToReturn);
 
 	void setAssignedHandlingUnits(I_M_InOut inout, List<I_M_HU> hus);
@@ -116,4 +121,8 @@ public interface IHUInOutBL extends ISingletonService
 	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
 
 	ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutLineIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
+
+	void validateMandatoryOnShipmentAttributes(I_M_InOut shipment);
 }

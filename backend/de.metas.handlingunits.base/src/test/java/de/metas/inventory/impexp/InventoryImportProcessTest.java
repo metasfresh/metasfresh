@@ -30,6 +30,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
@@ -48,7 +49,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -102,7 +103,8 @@ public class InventoryImportProcessTest
 
 		uomEach = BusinessTestHelper.createUomEach();
 		final I_M_AttributeSet attributeSet = attributesTestHelper.createM_AttributeSet();
-		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach);
+		final I_M_Product_Category productCategory  = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
+		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach, productCategory);
 		product.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());

@@ -25,10 +25,12 @@ package de.metas.serviceprovider.external.label;
 import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.issue.IssueTestHelper;
 import de.metas.serviceprovider.model.I_S_IssueLabel;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,8 +54,12 @@ public class IssueLabelRepositoryTest
 	@Test
 	public void persistLabels()
 	{
+		final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.saveRecord(mockUOMRecord);
+		final UomId effortUomId = UomId.ofRepoId(mockUOMRecord.getC_UOM_ID());
+
 		//given
-		IssueTestHelper.buildAndStoreIssueRecord(MOCK_ISSUE_ID, null, null, null, null);
+		IssueTestHelper.buildAndStoreIssueRecord(null, MOCK_ISSUE_ID, null, effortUomId, null, null);
 		buildAndStoreLabel(MOCK_BUD_6_LABEL);
 		buildAndStoreLabel(MOCK_VALUE);
 

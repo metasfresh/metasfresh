@@ -60,7 +60,7 @@ import lombok.Value;
 /**
  * Create movements based on the data collected within {@link IHUContext#getHUPackingMaterialsCollector()}.
  * <p>
- * Use {@link de.metas.handlingunits.IHandlingUnitsBL#createEmptiesMovementBuilder()} to get your instance.
+ * Use {@link IHUEmptiesService#newEmptiesMovementProducer()} to get your instance.
  * <p>
  * * The Empties movements will be either FROM the Empties Warehouse to the current warehouse (in case of creating a new HU) or from the current warehouse TO the Empties Warehouse (in case of
  * destroying an HU).
@@ -68,12 +68,12 @@ import lombok.Value;
  */
 public class EmptiesMovementProducer
 {
-	public static final EmptiesMovementProducer newInstance()
+	public static EmptiesMovementProducer newInstance()
 	{
 		return new EmptiesMovementProducer();
 	}
 
-	public static enum EmptiesMovementDirection
+	public enum EmptiesMovementDirection
 	{
 		FromEmptiesWarehouse, ToEmptiesWarehouse
 	};
@@ -121,8 +121,6 @@ public class EmptiesMovementProducer
 	/**
 	 * Sets the referenced M_InOut.
 	 * Usually it's set to "empties shipment/receipt" for which we are generating the empties movements.
-	 * 
-	 * @param referencedInOutId
 	 */
 	public EmptiesMovementProducer setReferencedInOutId(final int referencedInOutId)
 	{
@@ -184,7 +182,7 @@ public class EmptiesMovementProducer
 		return movements;
 	}
 
-	private final MovementHeaderCandidate createMovementHeaderCandidate(final HUPackingMaterialDocumentLineCandidate candidate)
+	private MovementHeaderCandidate createMovementHeaderCandidate(final HUPackingMaterialDocumentLineCandidate candidate)
 	{
 		final EmptiesMovementDirection movementDirection = extractEmptiesMovementDirection(candidate);
 

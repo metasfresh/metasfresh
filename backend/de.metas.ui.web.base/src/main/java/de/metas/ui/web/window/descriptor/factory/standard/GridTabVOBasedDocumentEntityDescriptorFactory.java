@@ -3,10 +3,10 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
-import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -21,7 +21,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
@@ -37,22 +37,25 @@ import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
@@ -60,7 +63,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
-import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -69,6 +71,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -107,9 +111,9 @@ import java.util.Set;
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-    private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 
-    @lombok.Builder
+	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
@@ -223,19 +227,21 @@ import java.util.Set;
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())
 				//
-				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
-				.setDescription(gridTabVO.getDescriptionTrls(), gridTabVO.getDescription())
+				.setCaption(gridTabVO.getNameTrls())
+				.setDescription(gridTabVO.getDescriptionTrls())
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAllowCreateNewLogic(allowCreateNewLogic)
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
-				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
+				.setQuickInputSupport(QuickInputSupportDescriptorLoader.extractFrom(gridTabVO))
+				.setIncludedTabNewRecordInputMode(IncludedTabNewRecordInputMode.ofNullableCodeOrAllAvailable(gridTabVO.getIncludedTabNewRecordInputMode()))
+				.setAutodetectDefaultDateFilter(gridTabVO.isAutodetectDefaultDateFilter())
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)
 				//
-				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
+				.setAD_Tab_ID(gridTabVO.getAdTabId().getRepoId()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
 				//
@@ -246,7 +252,7 @@ import java.util.Set;
 		// Fields descriptor
 		gridTabVO
 				.getFields()
-				.forEach(gridFieldVO -> createAndAddDocumentField(
+				.forEach(gridFieldVO -> createAndAddField_Standard(
 						entityDescriptorBuilder,
 						gridFieldVO,
 						isTreatFieldAsKey(gridFieldVO, gridTabVO)));
@@ -255,7 +261,7 @@ import java.util.Set;
 		// Labels field descriptors
 		labelsUIElements
 				// .stream().filter(uiElement -> X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels.equals(uiElement.getAD_UI_ElementType())) // assume they are already filtered
-				.forEach(labelUIElement -> createAndAddLabelsDocumentField(entityDescriptorBuilder, labelUIElement));
+				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
 	}
@@ -300,7 +306,7 @@ import java.util.Set;
 		return documentEntity().getFieldBuilder(fieldName);
 	}
 
-	private void createAndAddDocumentField(
+	private void createAndAddField_Standard(
 			final DocumentEntityDescriptor.Builder entityDescriptorBuilder,
 			final GridFieldVO gridFieldVO,
 			final boolean keyColumn)
@@ -513,33 +519,39 @@ import java.util.Set;
 			return databaseLookupDescriptorProvider;
 		}
 
-		if(esSystem.getEnabled().isFalse())
-        {
-            return databaseLookupDescriptorProvider;
-	    }
-        
-		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
-		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
-				.orElse(null);
-		if (modelIndexer == null)
+		if (esSystem.getEnabled().isFalse())
 		{
 			return databaseLookupDescriptorProvider;
 		}
 
-		final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
-
-		return FullTextSearchLookupDescriptorProvider.builder()
-				.elasticsearchClient(elasticsearchClient)
-				.modelTableName(modelIndexer.getModelTableName())
-				.esIndexName(modelIndexer.getIndexName())
-				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
-				.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
-				.build();
+		// TODO: implement
+		return databaseLookupDescriptorProvider;
+		// final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
+		// final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+		// 		.orElse(null);
+		// if (modelIndexer == null)
+		// {
+		// 	return databaseLookupDescriptorProvider;
+		// }
+		//
+		// final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
+		//
+		// return FullTextSearchLookupDescriptorProvider.builder()
+		// 		.elasticsearchClient(elasticsearchClient)
+		// 		.modelTableName(modelIndexer.getModelTableName())
+		// 		.esIndexName(modelIndexer.getIndexName())
+		// 		.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
+		// 		.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
+		// 		.build();
 	}
 
 	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
 	{
 		if (keyColumn)
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+		else if (gridFieldVO.isVirtualColumn())
 		{
 			return ConstantLogicExpression.TRUE;
 		}
@@ -694,20 +706,19 @@ import java.util.Set;
 		return null;
 	}
 
-	private void createAndAddLabelsDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
+	private void createAndAddField_Labels(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
 	{
-		final String labelsFieldName = getLabelsFieldName(labelsUIElement);
-		final String tablename = entityDescriptor.getTableName().orElseThrow(() -> new AdempiereException("No tablename defined for " + entityDescriptor));
-		final LabelsLookup lookupDescriptor = createLabelsLookup(labelsUIElement, tablename);
+		final String tableName = entityDescriptor.getTableName().orElseThrow(() -> new AdempiereException("No tableName defined for " + entityDescriptor));
+		final LabelsLookup lookupDescriptor = createLabelsLookup(labelsUIElement, tableName);
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptor.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
-				.setFieldName(labelsFieldName)
-				// .setTableName(entityBindings.getTableName())
-				// .setTableAlias(entityBindings.getTableAlias())
-				// .setColumnName(sqlColumnName)
-				// .setColumnSql(sqlColumnSql)
-				.setVirtualColumn(false)
+				.setFieldName(lookupDescriptor.getFieldName())
+				.setTableName(entityBindings.getTableName())
+				.setTableAlias(entityBindings.getTableAlias())
+				.setColumnName(lookupDescriptor.getFieldName())
+				.setColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
+				.setVirtualColumn(true)
 				.setMandatory(false)
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(DocumentFieldWidgetType.Labels.getValueClass())
@@ -717,35 +728,23 @@ import java.util.Set;
 		entityBindings.addField(fieldBinding);
 
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
-		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(labelsFieldName)
-				.setCaption(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName()))
+
+		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
+				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+		);
+
+		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
+				.setCaption(caption)
 				.setDescription(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Description, labelsUIElement.getDescription()))
-				//
-				.setKey(false)
-				//
-				.setWidgetType(DocumentFieldWidgetType.Labels)
+				.setKey(fieldBinding.isKeyColumn())
+				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
 				.setLookupDescriptorProvider(lookupDescriptor)
-				//
-				// .setDefaultValueExpression(defaultValueExpression)
-				//
-				// .addCharacteristicIfTrue(keyColumn, Characteristic.SideListField)
-				// .addCharacteristicIfTrue(keyColumn, Characteristic.GridViewField)
-				// .addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
-				//
-				// .setReadonlyLogic(readonlyLogic)
-				// .setAlwaysUpdateable(alwaysUpdateable)
-				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
-
-				//
+				.setReadonlyLogic(false)
+				.setDisplayLogic(extractLabelDisplayLogic(labelsUIElement))
+				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
-
-		final String labelDisplayLogic = getLabelDisplayLogic(labelsUIElement);
-		if (!Check.isBlank(labelDisplayLogic))
-		{
-			fieldBuilder.setDisplayLogic(labelDisplayLogic);
-		}
 
 		//
 		// Add Field builder to document entity
@@ -756,21 +755,38 @@ import java.util.Set;
 		collectSpecialField(fieldBuilder);
 	}
 
-	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
+	@Nullable
+	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
+	{
+		if (labelsUIElement.getAD_Name_ID() <= 0)
+		{
+			return null;
+		}
+		final I_AD_Element adElement = InterfaceWrapperHelper.load(labelsUIElement.getAD_Name_ID(), I_AD_Element.class);
+		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(adElement);
+		return trlMap.getColumnTrl(I_AD_Element.COLUMNNAME_Name, adElement.getName());
+	}
+
+	private static ILogicExpression extractLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
-		if(labelField == null)
+		if (labelField == null)
 		{
 			throw new AdempiereException(I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for " + labelsUIElement);
 		}
 
-		return labelField.getDisplayLogic();
+		return StringUtils.trimBlankToOptional(labelField.getDisplayLogic())
+				.map(LogicExpressionCompiler.instance::compile)
+				.orElse(ConstantLogicExpression.TRUE);
 	}
 
-	private static LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
+	private static LabelsLookup createLabelsLookup(
+			@NonNull final I_AD_UI_Element labelsUIElement,
+			@NonNull final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
-		final String labelsTableName = labelsTab.getAD_Table().getTableName();
+		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
+		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)
@@ -826,18 +842,21 @@ import java.util.Set;
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
 		return LabelsLookup.builder()
+				.fieldName(extractLabelsFieldName(labelsUIElement))
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
+				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
 	}
 
-	public static String getLabelsFieldName(final I_AD_UI_Element uiElement)
+	@NonNull
+	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
 	{
-		return "Labels_" + uiElement.getAD_UI_Element_ID();
+		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable
@@ -918,8 +937,7 @@ import java.util.Set;
 		}
 		else if (childLinkColumnNames.contains(parentLinkColumnName))
 		{
-			final String childLinkColumnName = parentLinkColumnName;
-			return ImmutablePair.of(childLinkColumnName, parentLinkColumnName);
+			return ImmutablePair.of(parentLinkColumnName, parentLinkColumnName);
 		}
 		else
 		{

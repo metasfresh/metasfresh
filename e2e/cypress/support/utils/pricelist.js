@@ -70,7 +70,11 @@ export class PriceList {
       cy.writeIntoStringField('Description', priceList.description);
       cy.setCheckBoxValue('IsSOPriceList', priceList.isSalesPriceList);
 
-      priceList.priceListVersions.forEach(version => {
+      if (priceList.defaultTaxCategory) {
+        cy.selectInListField('Default_TaxCategory_ID', priceList.defaultTaxCategory);
+      }
+
+      priceList.priceListVersions.forEach((version) => {
         let debugName = `${priceList.name} - ${version.validFrom}`;
         PriceList.applyPriceListVersion(version, debugName);
       });
@@ -78,7 +82,7 @@ export class PriceList {
   }
 
   static applyPriceListVersion(priceListVersion, debugName) {
-    describe(`Create new PriceListVersion ${debugName}`, function() {
+    describe(`Create new PriceListVersion ${debugName}`, function () {
       cy.selectTab('M_PriceList_Version');
       cy.pressAddNewButton();
       cy.writeIntoStringField('ValidFrom', priceListVersion.validFrom, true, null, true);

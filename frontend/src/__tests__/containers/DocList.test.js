@@ -1,17 +1,23 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, combineReducers } from 'redux';
-import { routerReducer as routing } from 'react-router-redux';
-import { createMemoryHistory } from 'react-router';
+import { Router } from 'react-router-dom';
+import { createMemoryHistory } from 'history';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
+import promiseMiddleware from 'redux-promise';
+import http from 'http';
+import StompServer from 'stomp-broker-js';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import CustomRouter from '../../containers/CustomRouter';
+import { ProvideAuth } from '../../hooks/useAuth';
+import { Routes } from '../../routes';
+import { serverTestPort } from '../../../test_setup/jestSetup';
 
 import pluginsHandler, {
   initialState as pluginsHandlerState,
@@ -51,10 +57,16 @@ import rowFixtures from '../../../test_setup/fixtures/grid/doclist_row_data.json
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 import quickActionsData from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
+import attributesData from '../../../test_setup/fixtures/attributes.json';
+
 
 jest.mock(`../../components/app/QuickActions`);
 
-jest.useFakeTimers();
+// so that we don't have collision with other tests running in parallel
+const serverPort = serverTestPort + 2;
+global.config.WS_URL = `ws://localhost:${serverPort}/ws`;
+
+// jest.useFakeTimers();
 
 const middleware = [thunk];
 
@@ -68,14 +80,12 @@ const rootReducer = combineReducers({
   windowHandler,
   pluginsHandler,
   tables,
-  routing,
   filters,
   actionsHandler,
 });
 
 const createInitialState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },
@@ -85,7 +95,6 @@ const createInitialState = function(state = {}) {
       pluginsHandler: { ...pluginsHandlerState },
       tables: tablesHandlerState,
       filters: { ...filtersHandlerState },
-      routing: { ...propsFixtures.state1.routing },
       actionsHandler: actionsHandlerState,
     },
     state
@@ -94,16 +103,34 @@ const createInitialState = function(state = {}) {
   return res;
 };
 
-describe('DocList', () => {
+describe.skip('DocList', () => {
+  const menuResponse = propsFixtures.menu1;
+
+  let mockServer;
+  let server;
+  let history;
+
+  beforeAll(() => {
+    server = http.createServer();
+
+    mockServer = new StompServer({
+      server: server,
+      path: '/ws',
+    });
+
+    server.listen(serverPort); // this is defined in the jestSetup file
+  });
+
+  // afterEach stop server
+  afterAll(async () => {
+    await server.close();
+  });
+
   describe('included views grid', () => {
     const props = propsFixtures.props1;
-    const history = createMemoryHistory(`/window/${props.windowId}`);
-    const auth = {
-      initNotificationClient: jest.fn(),
-      initSessionClient: jest.fn(),
-    };
+    const history = createMemoryHistory({ initialEntries: [`/window/${props.windowId}`]} );
 
-    it('renders without errors and loads quick actions', async (done) => {
+    it('renders without errors and loads quick actions', async () => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -112,6 +139,8 @@ describe('DocList', () => {
       );
       const windowId = props.windowId;
       const viewId = props.query.viewId;
+      const attributes = attributesData.data2;
+      const rowId = attributes.data.id;
       const data = rowFixtures.rowData1;
       const includedData = rowFixtures.includedViewData1;
       const includedWindowId = includedData.windowId;
@@ -124,41 +153,13 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      // included view
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .post(`/documentView/${windowId}`)
-        .reply(200, dataFixtures.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/layout?viewType=grid`)
-        .reply(200, layoutFixtures.layout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/layout?viewType=includedView`)
-        .reply(200, layoutFixtures.includedViewLayout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/userSession')
         .reply(200, userSessionData);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/login/isLoggedIn')
+        .reply(200, true);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -172,26 +173,41 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/documentView/${windowId}/layout?viewType=grid`)
+        .reply(200, layoutFixtures.layout1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/geolocation/config')
+        .reply(200, []);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
+        )
+        .reply(200, menuResponse);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/documentView/${windowId}/${viewId}?firstRow=0&pageLength=20`)
         .reply(200, rowFixtures.rowData1);
 
+      // included view
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${windowId}/${viewId}/quickActions?childViewId=${includedViewId}&childViewSelectedIds=${
-            includedData.result[0].id}&selectedIds=${data.result[0].id
-          }`
-        )
-        .reply(200, quickActionsData.parent_quickactions2);
+        .get(`/documentView/${includedWindowId}/layout?viewType=includedView`)
+        .reply(200, layoutFixtures.includedViewLayout1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?parentViewId=${viewId}&parentViewSelectedIds=${
-            data.result[0].id}&selectedIds=${includedData.result[0].id
-          }`
-        )
-        .reply(200, quickActionsData.included_quickactions);
+        .get('/geolocation/config')
+        .reply(200, []);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .post(`/documentView/${windowId}`)
+        .reply(200, dataFixtures.data1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -200,41 +216,88 @@ describe('DocList', () => {
         )
         .reply(200, rowFixtures.includedViewData1);
 
-      const wrapper = mount(
-        <Provider store={store}>
-          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-            <CustomRouter history={history} auth={auth} />
-          </ShortcutProvider>
-        </Provider>
-      );
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes/layout`
+        )
+        .reply(200, attributes.layout);
 
-      await waitFor(() =>
-        expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      );
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes`
+        )
+        .reply(200, attributes.data);
 
-      wrapper.update();
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .post(
+          `/documentView/${windowId}/${viewId}/quickActions`, 
+          { childViewId: includedViewId, childViewSelectedIds: includedData.result[0].id, selectedIds: data.result[0].id }
+        )
+        .reply(200, quickActionsData.parent_quickactions2);
 
-      await waitFor(() =>
-        expect(
-          store.getState().viewHandler.views[includedWindowId].layoutPending
-        ).toBeFalsy()
-      );
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .post(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions`, 
+          { parentViewId: viewId, parentViewSelectedIds: data.result[0].id, selectedIds: includedData.result[0].id }
+        )
+        .reply(200, quickActionsData.included_quickactions);
 
-      await waitForExpect(() => {
+      let wrapper;
+
+      await act(async () => {
+        wrapper = await mount(
+          <Provider store={store}>
+            <ProvideAuth>
+              <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+                <Router history={history}>
+                  <Routes />
+                </Router>
+              </ShortcutProvider>
+            </ProvideAuth>
+          </Provider>
+        );
+      });
+
+      await act(async() => {
+        wrapper.update();
+
+        await waitFor(async () => {
+          expect(store.getState().appHandler.me.loggedIn).toEqual(true);
+          expect(Object.keys(store.getState().viewHandler.views).length).toBe(2);
+        });
+      });      
+
+      await act(async() => {
+        wrapper.update();
+
+        await waitFor(async () => {
+          expect(
+            store.getState().viewHandler.views[includedWindowId].layoutPending
+          ).toBeFalsy();
+        });
+      });
+
+      waitForExpect(() => {
         const html = wrapper.html();
         expect(html).toContain('document-list-has-included');
         expect(html).toContain('document-list-is-included');
       }, 4000);
 
       const quickActionsId = getQuickActionsId({ windowId: includedWindowId, viewId: includedViewId });
-      await waitFor(() => {
-        expect(
-          store.getState().actionsHandler[quickActionsId]
-        ).toBeTruthy();
-        expect(store.getState().windowHandler.indicator).toEqual('saved');
-      });
 
-      done();
-    }, 10000);
+      await act(async() => {
+        waitFor(() => {
+          expect(
+            store.getState().actionsHandler[quickActionsId]
+          ).toBeTruthy();
+          expect(store.getState().windowHandler.indicator).toEqual('saved');
+        });
+      });   
+
+    }, 20000);
   });
 });

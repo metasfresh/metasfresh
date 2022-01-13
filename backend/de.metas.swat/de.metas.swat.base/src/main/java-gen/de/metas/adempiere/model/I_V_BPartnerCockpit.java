@@ -204,10 +204,6 @@ public interface I_V_BPartnerCockpit
 	  */
 	public int getBPContactGreeting();
 
-	public org.compiere.model.I_C_Greeting getBPContactGreet() throws RuntimeException;
-
-	public void setBPContactGreet(org.compiere.model.I_C_Greeting BPContactGreet);
-
     /** Column name C_BP_Group_ID */
     public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
@@ -301,10 +297,6 @@ public interface I_V_BPartnerCockpit
 	  * Anrede zum Druck auf Korrespondenz
 	  */
 	public int getC_Greeting_ID();
-
-	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException;
-
-	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting);
 
     /** Column name C_PaymentTerm_ID */
     public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";

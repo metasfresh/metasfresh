@@ -1,5 +1,32 @@
 package de.metas.async.api.impl;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IWorkPackageBlockBuilder;
+import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageParamsBuilder;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.logging.TableRecordMDC;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
@@ -25,42 +52,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
  * #L%
  */
 
-import java.util.LinkedHashSet;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.MDC.MDCCloseable;
-
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBlockBuilder;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.api.IWorkPackageParamsBuilder;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockCommand;
-import de.metas.logging.TableRecordMDC;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
 	private final WorkPackageBlockBuilder _blockBuilder;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
-	private I_C_Async_Batch asyncBatch = null;
+	private AsyncBatchId asyncBatchId = null;
 	private boolean asyncBatchSet = false;
 	private UserId userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
@@ -124,8 +121,7 @@ import javax.annotation.Nullable;
 				// TODO: optimize this and set everything in one shot and then save it.
 				if (asyncBatchSet)
 				{
-					workpackage.setC_Async_Batch(asyncBatch);
-					Services.get(IQueueDAO.class).save(asyncBatch);
+					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
 				}
 
 				if (userInChargeId != null)
@@ -168,7 +164,7 @@ import javax.annotation.Nullable;
 		}
 	}
 
-	private final I_C_Queue_Block getC_Queue_Block()
+	private I_C_Queue_Block getC_Queue_Block()
 	{
 		return _blockBuilder.getCreateBlock();
 	}
@@ -182,17 +178,17 @@ import javax.annotation.Nullable;
 		return this;
 	}
 
-	private final IWorkpackagePrioStrategy getPriority()
+	private IWorkpackagePrioStrategy getPriority()
 	{
 		return _priority;
 	}
 
-	private final IWorkPackageQueue getWorkpackageQueue()
+	private IWorkPackageQueue getWorkpackageQueue()
 	{
 		return _blockBuilder.getWorkPackageQueue();
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!built.get(), "not already built");
 	}
@@ -200,20 +196,26 @@ import javax.annotation.Nullable;
 	/**
 	 * Marks this builder as already executed. Fails if it was already marked before.
 	 */
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		final boolean wasAlreadyBuilt = built.getAndSet(true);
 		Check.assume(!wasAlreadyBuilt, "not already built");
 	}
 
 	@Override
-	public WorkPackageBuilder addElement(final Object model)
+	public WorkPackageBuilder addElement(@NonNull final Object model)
 	{
-		assertNotBuilt();
-
 		//
 		// Add the model to elements to enqueue
 		final TableRecordReference record = TableRecordReference.ofOrNull(model);
+		return addElement(record);
+	}
+
+	@NonNull
+	private WorkPackageBuilder addElement(@NonNull final TableRecordReference record)
+	{
+		assertNotBuilt();
+
 		elements.add(record);
 
 		//
@@ -270,7 +272,7 @@ import javax.annotation.Nullable;
 		return this;
 	}
 
-	private final ILockCommand getElementsLockerOrNull()
+	private ILockCommand getElementsLockerOrNull()
 	{
 		return _elementsLocker;
 	}
@@ -290,12 +292,18 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public WorkPackageBuilder setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public WorkPackageBuilder setC_Async_Batch(@Nullable final I_C_Async_Batch asyncBatch)
 	{
+		if (asyncBatch == null)
+		{
+			return this;
+		}
+
 		assertNotBuilt();
-		this.asyncBatch = asyncBatch;
-		this.asyncBatchSet = true;
-		return this;
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		return setC_Async_Batch_ID(asyncBatchId);
 	}
 
 	@Override
@@ -303,6 +311,22 @@ import javax.annotation.Nullable;
 	{
 		assertNotBuilt();
 		this.userInChargeId = userInChargeId;
+		return this;
+	}
+
+	@Override
+	public WorkPackageBuilder setC_Async_Batch_ID(@Nullable final AsyncBatchId asyncBatchId)
+	{
+		if (asyncBatchId == null)
+		{
+			return this;
+		}
+
+		assertNotBuilt();
+
+		this.asyncBatchId = asyncBatchId;
+		this.asyncBatchSet = true;
+
 		return this;
 	}
 }

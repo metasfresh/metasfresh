@@ -22,11 +22,8 @@ public final class ObjectUtils
 
 	/**
 	 * Calls {@link #toString(Object, boolean)} with <code>multiLine == true</code>.
-	 *
-	 * @param obj
-	 * @return
 	 */
-	public static final String toString(final Object obj)
+	public static String toString(final Object obj)
 	{
 		return toString(obj, true);
 	}
@@ -38,10 +35,9 @@ public final class ObjectUtils
 	 *
 	 * @param obj the object to be printed
 	 * @param multiLine if <code>true</code> then use {@link RecursiveIndentedMultilineToStringStyle} to display it in multiple lines.
-	 * @return
 	 *
 	 */
-	public static final String toString(final Object obj, final boolean multiLine)
+	public static String toString(final Object obj, final boolean multiLine)
 	{
 		if (obj == null)
 		{

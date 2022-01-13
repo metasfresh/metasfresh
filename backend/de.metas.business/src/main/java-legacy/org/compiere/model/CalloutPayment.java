@@ -16,24 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DB;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
-
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Services;
 
 /**
  * Payment Callouts. org.compiere.model.CalloutPayment.*
@@ -47,6 +44,7 @@ import de.metas.util.Services;
  */
 public class CalloutPayment extends CalloutEngine
 {
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	/**
 	 * Payment_Invoice. when Invoice selected - set C_Currency_ID -
@@ -156,77 +154,6 @@ public class CalloutPayment extends CalloutEngine
 		return docType(calloutField);
 	} // invoice
 
-	/**
-	 * Payment_Order. when Waiting Payment Order selected - set C_Currency_ID -
-	 * C_BPartner_ID - DiscountAmt = C_Invoice_Discount (ID, DateTrx) - PayAmt =
-	 * invoiceOpen (ID) - Discount - WriteOffAmt = 0
-	 */
-	public String order(final ICalloutField calloutField)
-	{
-		if (isCalloutActive())
-		{
-			return NO_ERROR;
-		}
-
-		final I_C_Payment payment = calloutField.getModel(I_C_Payment.class);
-		final int C_Order_ID = payment.getC_Order_ID();
-		if (C_Order_ID <= 0) // assuming it is resetting value
-		{
-			return NO_ERROR;
-		}
-
-		payment.setC_Invoice(null);
-		payment.setC_Charge_ID(0);
-		payment.setIsPrepayment(true);
-		//
-		payment.setDiscountAmt(BigDecimal.ZERO);
-		payment.setWriteOffAmt(BigDecimal.ZERO);
-		payment.setIsOverUnderPayment(false);
-		payment.setOverUnderAmt(BigDecimal.ZERO);
-		// Payment Date
-		Timestamp ts = payment.getDateTrx();
-		if (ts == null)
-			ts = new Timestamp(System.currentTimeMillis());
-		//
-		String sql = "SELECT COALESCE(Bill_BPartner_ID, C_BPartner_ID) as C_BPartner_ID "
-				+ ", C_Currency_ID "
-				+ ", GrandTotal "
-				+ "FROM C_Order WHERE C_Order_ID=?"; // #1
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_Order_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final int bpartnerId = rs.getInt(1);
-				payment.setC_BPartner_ID(bpartnerId);
-
-				final int C_Currency_ID = rs.getInt(2); // Set Order Currency
-				payment.setC_Currency_ID(C_Currency_ID);
-
-				//
-				BigDecimal GrandTotal = rs.getBigDecimal(3); // Set Pay
-				// Amount
-				if (GrandTotal == null)
-					GrandTotal = BigDecimal.ZERO;
-				payment.setPayAmt(GrandTotal);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-		return docType(calloutField);
-	} // order
-
 	// 2008/07/18 Globalqss [ 2021745 ]
 	// Deleted project method
 
@@ -279,13 +206,11 @@ public class CalloutPayment extends CalloutEngine
 		final I_C_Payment payment = calloutField.getModel(I_C_Payment.class);
 
 		final I_C_DocType docType = InterfaceWrapperHelper.load(payment.getC_DocType_ID(), I_C_DocType.class);
-		if (docType != null)
-		{
-			calloutField.putWindowContext("IsSOTrx", docType.isSOTrx());
-		}
 
 		if (docType != null)
 		{
+			calloutField.putWindowContext("IsSOTrx", docType.isSOTrx());
+
 			final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 					.createPreliminaryDocumentNoBuilder()
 					.setNewDocType(docType)
@@ -299,32 +224,7 @@ public class CalloutPayment extends CalloutEngine
 			}
 		}
 
-		// Invoice
-		if (payment.getC_Invoice_ID() > 0 && docType != null)
-		{
-			final I_C_Invoice inv = payment.getC_Invoice();
-			if (inv.isSOTrx() != docType.isSOTrx())
-			{
-				// task: 07564 the SOtrx flags don't match, but that's OK *if* the invoice i a credit memo (either for the vendor or customer side)
-				if (!Services.get(IInvoiceBL.class).isCreditMemo(inv))
-				{
-					throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
-				}
-			}
-		}
-		// globalqss - Allow prepayment to Purchase Orders
-		// Order Waiting Payment (can only be SO)
-		// if (C_Order_ID != 0 && dt != null && !dt.isSOTrx())
-		// return "PaymentDocTypeInvoiceInconsistent";
-		// Order
-		if (payment.getC_Order_ID() > 0 && docType != null)
-		{
-			final I_C_Order ord = payment.getC_Order();
-			if (ord.isSOTrx() != docType.isSOTrx())
-			{
-				throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
-			}
-		}
+		paymentBL.validateDocTypeIsInSync(payment);
 		return NO_ERROR;
 	} // docType
 
@@ -342,7 +242,7 @@ public class CalloutPayment extends CalloutEngine
 		}
 
 		final I_C_Payment payment = calloutField.getModel(I_C_Payment.class);
-		Services.get(IPaymentBL.class).updateAmounts(payment, calloutField.getColumnName(), true);
+		paymentBL.updateAmounts(payment, calloutField.getColumnName(), true);
 		return NO_ERROR;
 	} // amounts
 } // CalloutPayment

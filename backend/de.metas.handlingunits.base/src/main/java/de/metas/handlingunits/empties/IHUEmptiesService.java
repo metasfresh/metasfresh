@@ -49,7 +49,6 @@ public interface IHUEmptiesService extends ISingletonService
 	/**
 	 * Gets the warehouse locator to be used for empties.
 	 * 
-	 * @param warehouse
 	 * @return empties locator
 	 * @see #getEmptiesWarehouse(I_M_Warehouse)
 	 */
@@ -59,8 +58,7 @@ public interface IHUEmptiesService extends ISingletonService
 	 * Generate movements for the empties (Leergut) inOut. If the given <code>inout</code> is a receipt, the movement will be from inOut's warehouse to the empties-warehouse (Gebindelager). If the
 	 * inOut is a shipment, the movement will be in the opposite direction.
 	 *
-	 * @param emptiesInOut
-	 * @task 08070
+	 * task 08070
 	 */
 	void generateMovementFromEmptiesInout(I_M_InOut emptiesInOut);
 

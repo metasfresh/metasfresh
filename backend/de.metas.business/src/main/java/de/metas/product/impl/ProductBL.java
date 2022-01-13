@@ -10,9 +10,11 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -40,11 +42,14 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +63,7 @@ public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -72,9 +78,20 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ProductId getProductIdByValue(String productValue)
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
 	{
-		return productsRepo.retrieveProductIdByValue(productValue);
+		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
+	public ProductId getProductIdByValue(
+			@NonNull final OrgId orgId,
+			@NonNull final String productValue)
+	{
+		final ProductQuery query = ProductQuery.builder()
+				.orgId(orgId)
+				.value(productValue).build();
+		return productsRepo.retrieveProductIdBy(query);
 	}
 
 	@Override
@@ -123,6 +140,8 @@ public final class ProductBL implements IProductBL
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		Check.assumeNotNull(product, "Unable to load M_Product record for M_Product_ID={}", productId);
+
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
@@ -212,12 +231,6 @@ public final class ProductBL implements IProductBL
 	@Override
 	public AttributeSetId getAttributeSetId(final I_M_Product product)
 	{
-		int attributeSetId = product.getM_AttributeSet_ID();
-		if (attributeSetId > 0)
-		{
-			return AttributeSetId.ofRepoId(attributeSetId);
-		}
-
 		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoIdOrNull(product.getM_Product_Category_ID());
 		if (productCategoryId == null) // guard against NPE which might happen in unit tests
 		{
@@ -225,7 +238,7 @@ public final class ProductBL implements IProductBL
 		}
 
 		final I_M_Product_Category productCategoryRecord = productsRepo.getProductCategoryById(productCategoryId);
-		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
+		final int attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 
@@ -493,6 +506,49 @@ public final class ProductBL implements IProductBL
 		return product.isHaddexCheck();
 	}
 
+	@Nullable
+	@Override
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
 
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
 
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		if (attributeSetId.isNone())
+		{
+			return null;
+		}
+
+		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
+
+	@Override
+	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		if(!product.isRequiresSupplierApproval())
+		{
+			return ImmutableList.of();
+		}
+
+		return productsRepo.retrieveSupplierApprovalNorms(productId);
+	}
+
+	@Override
+	public boolean isDiscontinuedAt(
+			@NonNull final I_M_Product productRecord,
+			@NonNull final LocalDate targetDate)
+	{
+		if (!productRecord.isDiscontinued())
+		{
+			return false;
+		}
+
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
+
+		return productRecord.getDiscontinuedFrom() == null
+				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+	}
 }

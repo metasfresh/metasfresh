@@ -4,6 +4,7 @@
 
 ## For webui-frontend developers
 
+
 ### Init
 - Install dependencies
 > npm install
@@ -43,6 +44,7 @@ and then run it pointing to your dist folder:
 > http-server ./dist
 
 Now open your browser and go to `localhost:8080` to see the application running.
+
 
 ### Testing
 Application comes with a set of tests, both unit as well as functional.

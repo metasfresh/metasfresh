@@ -2,8 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import classnames from 'classnames';
+
+import history from '../../services/History';
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
@@ -129,13 +130,16 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handleInboxOpen
-   * @summary ToDo: Describe the method
-   * @param {object} state
+   * @method openInbox
+   * @summary Shows inbox
    */
-  handleInboxOpen = (state) => {
-    this.setState({ isInboxOpen: !!state });
-  };
+  openInbox = () => this.setState({ isInboxOpen: true });
+
+  /**
+   * @method closeInbox
+   * @summary Hides inbox
+   */
+  closeInbox = () => this.setState({ isInboxOpen: false });
 
   /**
    * @method handleInboxToggle
@@ -221,8 +225,9 @@ class Header extends PureComponent {
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
+
     dispatch(setBreadcrumb([]));
-    dispatch(push('/'));
+    history.push('/');
   };
 
   /**
@@ -395,11 +400,9 @@ class Header extends PureComponent {
    * @param {string} docId
    */
   handleClone = (windowId, docId) => {
-    const { dispatch } = this.props;
-
     duplicateRequest('window', windowId, docId).then((response) => {
       if (response && response.data && response.data.id) {
-        dispatch(push(`/window/${windowId}/${response.data.id}`));
+        this.redirect(`/window/${windowId}/${response.data.id}`);
       }
     });
   };
@@ -461,7 +464,7 @@ class Header extends PureComponent {
    * @summary Hanndler for the prompt submit action
    */
   handlePromptSubmitClick = () => {
-    const { dispatch, handleDeletedStatus, windowId, dataId } = this.props;
+    const { handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
       {
@@ -470,7 +473,7 @@ class Header extends PureComponent {
       () => {
         deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
-          dispatch(push(`/window/${windowId}`));
+          this.redirect(`/window/${windowId}`);
         });
       }
     );
@@ -551,12 +554,11 @@ class Header extends PureComponent {
 
   /**
    * @method redirect
-   * @summary ToDo: Describe the method
-   * @param {*} where
+   * @summary Redirect to a page
+   * @param {string} where
    */
   redirect = (where) => {
-    const { dispatch } = this.props;
-    dispatch(push(where));
+    history.push(where);
   };
 
   /**
@@ -637,7 +639,8 @@ class Header extends PureComponent {
                     'btn-square btn-header',
                     'tooltip-parent js-not-unselect',
                     {
-                      'btn-meta-default-dark btn-subheader-open btn-header-open': isSubheaderShow,
+                      'btn-meta-default-dark btn-subheader-open btn-header-open':
+                        isSubheaderShow,
                       'btn-meta-primary': !isSubheaderShow,
                     }
                   )}
@@ -723,9 +726,7 @@ class Header extends PureComponent {
                       'header-item-open': isInboxOpen,
                     }
                   )}
-                  onClick={() =>
-                    this.closeOverlays('', () => this.handleInboxOpen(true))
-                  }
+                  onClick={() => this.closeOverlays('', this.openInbox)}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
@@ -751,8 +752,8 @@ class Header extends PureComponent {
                 <Inbox
                   ref={this.inboxRef}
                   open={isInboxOpen}
-                  close={this.handleInboxOpen}
-                  onFocus={() => this.handleInboxOpen(true)}
+                  close={this.closeInbox}
+                  onFocus={this.openInbox}
                   disableOnClickOutside={true}
                   inbox={inbox}
                 />
@@ -777,7 +778,8 @@ class Header extends PureComponent {
                       'side-panel-toggle btn-square',
                       'js-not-unselect',
                       {
-                        'btn-meta-default-bright btn-header-open': isSideListShow,
+                        'btn-meta-default-bright btn-header-open':
+                          isSideListShow,
                         'btn-meta-primary': !isSideListShow,
                       }
                     )}
@@ -965,11 +967,6 @@ Header.propTypes = {
   hasComments: PropTypes.bool,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- */
 const mapStateToProps = (state) => {
   const { master } = state.windowHandler;
   const { docActionElement, documentSummaryElement } = master.layout;
@@ -980,7 +977,6 @@ const mapStateToProps = (state) => {
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
-    pathname: state.routing.locationBeforeTransitions.pathname,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
     docStatus: docActionElement,

@@ -1,6 +1,23 @@
 package de.metas.async.api;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -23,23 +40,6 @@ import java.util.Map;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockCommand;
-import de.metas.user.UserId;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public interface IWorkPackageBuilder
 {
@@ -64,8 +64,8 @@ public interface IWorkPackageBuilder
 	 * Note that this method also marks the package builder as "build", so no more elements can be added after this method was called.
 	 *
 	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 * <p>
+	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	void discard();
 
@@ -77,8 +77,8 @@ public interface IWorkPackageBuilder
 	IWorkPackageBlockBuilder end();
 
 	/**
-	 * Start creating the workpackage parameters.
-	 *
+	 * Creates or returns the existing workpackage parameters builder of this package builder.
+	 * <p>
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
 	IWorkPackageParamsBuilder parameters();
@@ -102,16 +102,28 @@ public interface IWorkPackageBuilder
 	}
 
 	/**
+	 * Set a work-package parameter to the value of the given UUID.
+	 * When a work-package with a correlation-id is processed, a {@link de.metas.async.event.WorkpackageProcessedEvent} is posted.
+	 * <p>
+	 * Works in conjuction with {@link de.metas.async.event.WorkpackagesProcessedWaiter}.
+	 */
+	default IWorkPackageBuilder setCorrelationId(@Nullable final UUID correlationId)
+	{
+		final String uuidStr = correlationId != null ? correlationId.toString() : null;
+		
+		parameter(Async_Constants.ASYNC_PARAM_CORRELATION_UUID, uuidStr);
+		return this;
+	}
+
+	/**
 	 * Sets the workpackage's queue priority. If no particular priority is set, the system will use {@link IWorkPackageQueue#PRIORITY_AUTO}.
 	 */
 	IWorkPackageBuilder setPriority(IWorkpackagePrioStrategy priority);
 
 	/**
 	 * Sets the async batch (optional).
-	 *
+	 * <p>
 	 * If the async batch it's not set, it will be inherited.
-	 *
-	 * @param asyncBatch
 	 */
 	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
 
@@ -132,7 +144,6 @@ public interface IWorkPackageBuilder
 	/**
 	 * Convenient method to add a collection of models.
 	 *
-	 * @param models
 	 * @see #addElement(Object)
 	 */
 	IWorkPackageBuilder addElements(Iterable<?> models);
@@ -140,17 +151,15 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 *
+	 * <p>
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
-	 *
-	 * @param trxName
 	 */
-	IWorkPackageBuilder bindToTrxName(String trxName);
+	IWorkPackageBuilder bindToTrxName(@Nullable String trxName);
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 *
+	 * <p>
 	 * If there is no thread inherited transaction, the workpackage will be marked as ready immediately, on build.
 	 */
 	default IWorkPackageBuilder bindToThreadInheritedTrx()
@@ -158,13 +167,20 @@ public interface IWorkPackageBuilder
 		return bindToTrxName(ITrx.TRXNAME_ThreadInherited);
 	}
 
-	/** Sets locker to be used to lock enqueued elements */
+	/**
+	 * Sets locker to be used to lock enqueued elements
+	 */
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return
-	 *         Lock aquired when enqueued elements were locked (on {@link #build()}).
-	 *         Could be null if no lock was aquired.
+	 * @return Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 * Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();
+
+	/**
+	 * Overloading set async batch, to enable setting async batch also by id (optional).
+	 * If the asyncBatchId is not set, it will be inherited.
+	 */
+	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
 }

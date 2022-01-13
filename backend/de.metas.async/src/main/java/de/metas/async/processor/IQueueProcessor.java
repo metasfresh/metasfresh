@@ -49,10 +49,10 @@ public interface IQueueProcessor extends Runnable
 	 */
 	IQueueProcessorStatistics getStatisticsSnapshot();
 
-	public IWorkPackageQueue getQueue();
+	IWorkPackageQueue getQueue();
 
 	@Override
-	public void run();
+	void run();
 
 	void shutdown();
 
@@ -60,9 +60,6 @@ public interface IQueueProcessor extends Runnable
 	 * Called by API when a workpackage was processed.
 	 * 
 	 * NOTE: don't call it directly
-	 * 
-	 * @param workPackage
-	 * @param workPackageProcessor
 	 */
 	void notifyWorkpackageProcessed(I_C_Queue_WorkPackage workPackage, IWorkpackageProcessor workPackageProcessor);
 

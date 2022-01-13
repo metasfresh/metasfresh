@@ -1,10 +1,10 @@
 package de.metas.material.cockpit.availableforsales;
 
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.assumeNotEmpty;
-
-import java.util.List;
-
+import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -13,11 +13,10 @@ import org.compiere.db.Database;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
-import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.List;
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
@@ -60,7 +59,7 @@ public class AvailableForSalesSqlHelper
 	}
 
 	private IQuery<I_MD_Available_For_Sales_QueryResult> createDBQueryForAvailableForSalesQuery(
-			int queryNo,
+			final int queryNo,
 			@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
 		final IQueryBuilder<I_MD_Available_For_Sales_QueryResult> queryBuilder = Services
@@ -71,7 +70,7 @@ public class AvailableForSalesSqlHelper
 		{
 			return queryBuilder
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MD_Available_For_Sales_QueryResult.COLUMN_M_Product_ID, availableForSalesQuery.getProductId())
+					.addEqualsFilter(I_MD_Available_For_Sales_QueryResult.COLUMNNAME_M_Product_ID, availableForSalesQuery.getProductId())
 					// PLEASE ADD ADDITIONAL FILTERS AS NEEDED FOR YOUR TESTS
 					.create();
 		}
@@ -83,12 +82,12 @@ public class AvailableForSalesSqlHelper
 
 		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), false/* dayOnly */);
 
-		final AttributesKey storageAttributesKey = availableForSalesQuery.getStorageAttributesKey();
+		final AttributesKeyPattern storageAttributesKey = availableForSalesQuery.getStorageAttributesKeyPattern();
 
 		final String sqlFrom = "de_metas_material.retrieve_available_for_sales("
 				+ "p_QueryNo => " + queryNo
-				+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId()
-				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getAsString() + "'"
+				+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId().getRepoId()
+				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getSqlLikeString() + "'"
 				+ ", p_PreparationDate => " + dateString
 				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
 				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()

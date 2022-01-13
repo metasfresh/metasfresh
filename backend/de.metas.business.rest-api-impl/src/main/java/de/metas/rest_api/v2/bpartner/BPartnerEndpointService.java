@@ -25,7 +25,6 @@ package de.metas.rest_api.v2.bpartner;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
-import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
@@ -37,7 +36,6 @@ import de.metas.common.rest_api.v2.JsonPagingDescriptor;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
@@ -88,35 +86,7 @@ public class BPartnerEndpointService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
-
-		return optBpartnerComposite.flatMap(jsonResponseComposite -> jsonResponseComposite
-				.getLocations()
-				.stream()
-				.filter(jsonBPartnerLocation -> isBPartnerLocationMatches(orgId, jsonBPartnerLocation, locationIdentifier))
-				.findAny());
-	}
-
-	private boolean isBPartnerLocationMatches(
-			@NonNull final OrgId orgId,
-			@NonNull final JsonResponseLocation jsonBPartnerLocation,
-			@NonNull final ExternalIdentifier locationIdentifier)
-	{
-		switch (locationIdentifier.getType())
-		{
-			case EXTERNAL_REFERENCE:
-				final Optional<MetasfreshId> metasfreshId =
-						jsonRetriever.resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
-
-				return metasfreshId.isPresent() &&
-						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
-			case GLN:
-				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
-			case METASFRESH_ID:
-				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
-			default:
-				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
-		}
+		return jsonRetriever.resolveExternalBPartnerLocationId(orgId, bpartnerIdentifier, locationIdentifier);
 	}
 
 	/**

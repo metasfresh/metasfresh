@@ -24,7 +24,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
@@ -92,7 +92,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 	{
 		return record -> {
 			final InvoiceProcessingServiceCompanyConfigId companyConfigId = InvoiceProcessingServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID());
-			final ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = getBPartnerDetailsForCompany(bpartnerDetailsByCompanyConfig, companyConfigId);
+			final ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = getBPartnerDetailsForCompany(bpartnerDetailsByCompanyConfig, companyConfigId);
 
 			return InvoiceProcessingServiceCompanyConfig.builder()
 					.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
@@ -104,13 +104,13 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 		};
 	}
 
-	static private ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> getBPartnerDetailsForCompany(
+	static private ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> getBPartnerDetailsForCompany(
 			@NonNull final ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetailsByCompanyConfig,
 			@NonNull final InvoiceProcessingServiceCompanyConfigId companyConfigId)
 	{
 		return bpartnerDetailsByCompanyConfig.get(companyConfigId)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId));
+				.collect(GuavaCollectors.toImmutableListMultimap(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId));
 	}
 
 	private ImmutableListMultimap<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetailsMappedByConfigId()
@@ -129,6 +129,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 		return recordBP -> {
 			final InvoiceProcessingServiceCompanyConfigBPartnerDetails partnerDetails = InvoiceProcessingServiceCompanyConfigBPartnerDetails.builder()
 					.bpartnerId(BPartnerId.ofRepoId(recordBP.getC_BPartner_ID()))
+					.docTypeId(DocTypeId.ofRepoIdOrNull(recordBP.getC_DocType_ID()))
 					.percent(Percent.of(recordBP.getFeePercentageOfGrandTotal()))
 					.build();
 

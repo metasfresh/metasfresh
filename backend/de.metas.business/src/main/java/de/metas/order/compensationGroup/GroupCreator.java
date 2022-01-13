@@ -1,14 +1,15 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.contracts.ConditionsId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
-import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -34,67 +35,71 @@ import lombok.NonNull;
 
 public final class GroupCreator
 {
+	// services
 	private final GroupRepository groupsRepo;
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	private Set<OrderLineId> lineIdsToGroup;
-	private GroupTemplate _groupTemplate;
+	private final GroupTemplate groupTemplate;
 
-	public GroupCreator(
+	@Builder
+	private GroupCreator(
 			@NonNull final GroupRepository groupsRepo,
-			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
+			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
+			//
+			@NonNull final GroupTemplate groupTemplate)
 	{
 		this.groupsRepo = groupsRepo;
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
+
+		this.groupTemplate = groupTemplate;
 	}
 
-	public GroupCreator linesToGroup(@NonNull final Collection<OrderLineId> lineIdsToGroup)
+	public static class GroupCreatorBuilder
 	{
-		Check.assumeNotEmpty(lineIdsToGroup, "lineIdsToGroup is not empty");
-		this.lineIdsToGroup = ImmutableSet.copyOf(lineIdsToGroup);
-		return this;
+		public Group createGroup(@NonNull final Collection<OrderLineId> lineIdsToGroup)
+		{
+			return build().createGroup(lineIdsToGroup, null, null);
+		}
+
+		public Group createGroup(
+				@NonNull final OrderId orderId,
+				@Nullable final ConditionsId conditionsId)
+		{
+			return build().createGroup(null, orderId, conditionsId);
+		}
+
+		public void recreateGroup(@NonNull final Group group) { build().recreateGroup(group); }
 	}
 
-	public GroupCreator groupTemplate(final GroupTemplate newGroupTemplate)
+	public Group createGroup(
+			@Nullable final Collection<OrderLineId> lineIdsToGroup,
+			@Nullable final OrderId orderId,
+			@Nullable final ConditionsId contractConditionsId)
 	{
-		this._groupTemplate = newGroupTemplate;
-		return this;
+		final Group group = groupsRepo.retrieveOrCreateGroup(
+				RetrieveOrCreateGroupRequest.builder()
+						.orderId(orderId)
+						.orderLineIds(lineIdsToGroup != null ? ImmutableSet.copyOf(lineIdsToGroup) : ImmutableSet.of())
+						.newGroupTemplate(groupTemplate)
+						.newContractConditionsId(contractConditionsId)
+						.build());
+
+		recreateGroup(group);
+
+		return group;
 	}
 
-	private GroupTemplate getGroupTemplate()
+	public void recreateGroup(@NonNull final Group group)
 	{
-		Check.assumeNotNull(_groupTemplate, "Parameter _groupTemplate is not null");
-		return _groupTemplate;
-	}
+		group.removeAllGeneratedLines();
 
-	public Group createGroup()
-	{
-		final Group group = groupsRepo.retrieveOrCreateGroup(createRetrieveOrCreateGroupRequest());
-		return recreateGroup(group);
-	}
-
-	public Group recreateGroup(@NonNull final Group group)
-	{
-		group.removeAllGeneratedCompensationLines();
-
-		getGroupTemplate()
-				.getLines()
+		groupTemplate.getCompensationLines()
 				.stream()
-				.filter(templateLine -> templateLine.getGroupMatcher().isMatching(group))
+				.filter(compensationLineTemplate -> compensationLineTemplate.isMatching(group))
 				.map(templateLine -> compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group))
 				.forEach(group::addNewCompensationLine);
 
 		group.updateAllCompensationLines();
 		groupsRepo.saveGroup(group);
-		
-		return group;
-	}
-
-	private RetrieveOrCreateGroupRequest createRetrieveOrCreateGroupRequest()
-	{
-		return RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(lineIdsToGroup)
-				.newGroupTemplate(getGroupTemplate())
-				.build();
 	}
 }

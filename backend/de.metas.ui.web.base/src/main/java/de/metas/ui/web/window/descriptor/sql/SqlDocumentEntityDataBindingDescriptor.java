@@ -1,27 +1,9 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.adempiere.ad.expression.api.ICachedStringExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.security.permissions.Access;
@@ -37,8 +19,22 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.expression.api.ICachedStringExpression;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -215,20 +211,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		}
 		else
 		{
-			final Map<String, Object> idPartsByFieldName = SqlDocumentQueryBuilder.extractComposedKey(documentId, getKeyFields());
-			final StringBuilder sql = new StringBuilder();
-			for (final Map.Entry<String, Object> keyFieldNameAndValue : idPartsByFieldName.entrySet())
-			{
-				String keyFieldName = keyFieldNameAndValue.getKey();
-				final Object idPart = keyFieldNameAndValue.getValue();
-
-				if (sql.length() > 0)
-				{
-					sql.append(" AND ");
-				}
-				sql.append(sqlTableName).append(".").append(keyFieldName).append("=").append(DB.TO_SQL(idPart));
-			}
-			return sql.toString();
+			return SqlDocumentQueryBuilder
+					.extractComposedKey(documentId, getKeyFields())
+					.getSqlWhereClauseById(sqlTableName);
 		}
 
 	}
@@ -322,7 +307,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			final Collection<SqlDocumentFieldDataBindingDescriptor> fields = getFieldsByFieldName().values();
 			if (fields.isEmpty())
 			{
-				Check.fail("No SQL fields found; this={}", this);
+				throw new AdempiereException("No SQL fields found; this=" + this);
 			}
 
 			final List<String> sqlSelectValuesList = new ArrayList<>(fields.size());
@@ -394,10 +379,9 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					// NOTE: because current AD_Tab.WhereClause contain fully qualified TableNames, we shall replace them with our table alias
 					// (e.g. "R_Request.SalesRep_ID=@#AD_User_ID@" shall become ""tableAlias.SalesRep_ID=@#AD_User_ID@"
 					.replace(getTableName() + ".", getTableAlias() + ".") //
-			;
+					;
 
-			final IStringExpression sqlWhereClauseExpr = Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
-			return sqlWhereClauseExpr;
+			return Services.get(IExpressionFactory.class).compileOrDefault(sqlWhereClausePrepared, IStringExpression.NULL, IStringExpression.class);
 		}
 
 		private DocumentQueryOrderByList getDefaultOrderBys()

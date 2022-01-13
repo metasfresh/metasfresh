@@ -1,9 +1,6 @@
 package de.metas.acct.api;
 
-import org.adempiere.service.ClientId;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
@@ -13,6 +10,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -70,6 +68,9 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAutoSetDebtoridAndCreditorid;
+	int debtorIdPrefix;
+	int creditorIdPrefix;
 
 	@NonNull
 	AcctSchemaGeneralLedger generalLedger;
@@ -82,6 +83,8 @@ public class AcctSchema
 
 	@NonNull
 	AcctSchemaElementsMap schemaElements;
+
+
 
 	public boolean isPostOnlyForSomeOrgs()
 	{

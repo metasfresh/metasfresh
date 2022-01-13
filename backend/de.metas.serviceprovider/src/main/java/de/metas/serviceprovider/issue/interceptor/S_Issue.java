@@ -25,6 +25,8 @@ package de.metas.serviceprovider.issue.interceptor;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
@@ -33,6 +35,7 @@ import de.metas.serviceprovider.issue.IssueService;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -89,17 +92,26 @@ public class S_Issue
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
 
 		final Instant latestActivity = Stream.of(record.getLatestActivity(), record.getLatestActivityOnSubIssues())
-										.filter(Objects::nonNull)
-										.map(Timestamp::toInstant)
-										.max(Instant::compareTo)
-										.orElse(null);
+				.filter(Objects::nonNull)
+				.map(Timestamp::toInstant)
+				.max(Instant::compareTo)
+				.orElse(null);
 
+		final UomId uomId = UomId.ofRepoId(record.getEffort_UOM_ID());
+		
+		final Quantity currentInvoicableEffort = Quantitys.create(record.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.create(record.getInvoiceableEffort(), uomId));
+		final Quantity oldInvoicableEffort = Quantitys.create(oldRecord.getInvoiceableChildEffort(), uomId)
+				.add(Quantitys.create(oldRecord.getInvoiceableEffort(), uomId));
+		
 		final HandleParentChangedRequest handleParentChangedRequest = HandleParentChangedRequest
 				.builder()
 				.currentParentId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
-				.currentEffort(Effort.ofNullable(record.getAggregatedEffort()))
+				.currentAggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
+				.oldAggregatedEffort(Effort.ofNullable(oldRecord.getAggregatedEffort()))
+				.currentInvoicableEffort(currentInvoicableEffort)
+				.oldInvoicableEffort(oldInvoicableEffort)
 				.oldParentId(IssueId.ofRepoIdOrNull(oldRecord.getS_Parent_Issue_ID()))
-				.oldEffort(Effort.ofNullable(oldRecord.getAggregatedEffort()))
 				.latestActivity(latestActivity)
 				.build();
 
@@ -112,7 +124,7 @@ public class S_Issue
 		externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
 	public void overwriteParentIssueId(@NonNull final I_S_Issue record)
 	{
 		if (isParentAlreadyInHierarchy(record)
@@ -154,7 +166,7 @@ public class S_Issue
 		}
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_S_Issue.COLUMNNAME_Processed)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_S_Issue.COLUMNNAME_Processed)
 	public void setProcessedTimestamp(@NonNull final I_S_Issue record)
 	{
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
@@ -207,7 +219,7 @@ public class S_Issue
 		return false;
 	}
 
-	private boolean isBudgetChildForParentEffort(@NonNull  final I_S_Issue record)
+	private boolean isBudgetChildForParentEffort(@NonNull final I_S_Issue record)
 	{
 		return !record.isEffortIssue()
 				&& record.getS_Parent_Issue() != null

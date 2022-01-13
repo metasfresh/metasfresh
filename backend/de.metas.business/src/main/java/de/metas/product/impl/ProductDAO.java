@@ -22,10 +22,13 @@
 
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
@@ -47,6 +50,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
@@ -54,6 +58,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_SupplierApproval_Norm;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -88,6 +93,7 @@ public class ProductDAO implements IProductDAO
 	final static int ONE_YEAR_DAYS = 365;
 	final static int TWO_YEAR_DAYS = 730;
 	final static int THREE_YEAR_DAYS = 1095;
+	final static int FIVE_YEAR_DAYS = 1825;
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -104,12 +110,25 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		// we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		return getByIdInTrx(productId, productClass);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getByIdInTrx(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		final T product = load(productId, productClass);
 		if (product == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
 		}
 		return product;
+	}
+
+	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return getByIdInTrx(productId, I_M_Product.class);
 	}
 
 	@Override
@@ -539,13 +558,20 @@ public class ProductDAO implements IProductDAO
 	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		if (product != null && Check.isNotBlank(product.getGuaranteeMonths()))
 		{
-			switch (product.getGuaranteeMonths()) {
-				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
-				default: return 0;
+			switch (product.getGuaranteeMonths())
+			{
+				case X_M_Product.GUARANTEEMONTHS_12:
+					return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24:
+					return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36:
+					return THREE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_60:
+					return FIVE_YEAR_DAYS;
+				default:
+					return 0;
 			}
 		}
 		return 0;
@@ -565,5 +591,66 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	}
+
+	@Override
+	public void clearIndividualMasterDataFromProduct(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+
+		product.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+
+		saveRecord(product);
+	}
+
+	@Override
+	public Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull final GroupCategoryId groupCategoryId,
+			@NonNull final OrgId targetOrgId)
+	{
+
+		final ProductId targetProductId = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, targetOrgId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, groupCategoryId)
+				.orderByDescending(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.firstId(ProductId::ofRepoIdOrNull);
+
+		if (targetProductId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(getById(targetProductId, de.metas.product.model.I_M_Product.class));
+	}
+
+	@Override
+	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_SupplierApproval_Norm.class)
+				.addEqualsFilter(I_M_Product_SupplierApproval_Norm.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.stream()
+				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.create()
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
 	}
 }

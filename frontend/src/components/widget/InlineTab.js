@@ -11,17 +11,20 @@ import React, { PureComponent, Fragment } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import SectionGroup from '../SectionGroup';
+import counterpart from 'counterpart';
+
+import { deleteRequest } from '../../api';
 import { updateDataValidStatus } from '../../actions/WindowActions';
 import {
   getInlineTabLayoutAndData,
   setInlineTabItemProp,
 } from '../../actions/InlineTabActions';
-import { fieldValueToString } from '../../utils/tableHelpers';
-import { deleteRequest } from '../../api';
-import Prompt from '../app/Prompt';
-import counterpart from 'counterpart';
 import { isGermanLanguage } from '../../utils/locale';
+import { fieldValueToString } from '../../utils/tableHelpers';
+
+import Prompt from '../app/Prompt';
+import SectionGroup from '../SectionGroup';
+
 class InlineTab extends PureComponent {
   /**
    * @method toggleOpen
@@ -124,6 +127,7 @@ class InlineTab extends PureComponent {
       fieldsOrder,
       promptOpen,
       isOpen,
+      allowDelete,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
 
@@ -180,17 +184,19 @@ class InlineTab extends PureComponent {
                     disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
                   />
                   {/* Delete button */}
-                  <div className="row">
-                    <div className="col-lg-12">
-                      <button
-                        className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
-                        onClick={() => this.handleDelete(rowId)}
-                      >
-                        {counterpart.translate('window.Delete.caption')}
-                      </button>
-                      <div className="clearfix" />
+                  {allowDelete && (
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <button
+                          className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
+                          onClick={() => this.handleDelete(rowId)}
+                        >
+                          {counterpart.translate('window.Delete.caption')}
+                        </button>
+                        <div className="clearfix" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* These prompt strings are hardcoded because they need to be provided by the BE */}
                   {promptOpen && (
                     <Prompt
@@ -232,6 +238,7 @@ InlineTab.propTypes = {
   setInlineTabItemProp: PropTypes.func.isRequired,
   isOpen: PropTypes.bool,
   isGerman: PropTypes.bool,
+  allowDelete: PropTypes.bool,
 };
 
 /**
@@ -263,11 +270,10 @@ const mapStateToProps = (state, props) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getInlineTabLayoutAndData,
-    updateDataValidStatus,
-    setInlineTabItemProp,
-  }
-)(InlineTab);
+export default connect(mapStateToProps, {
+  getInlineTabLayoutAndData,
+  updateDataValidStatus,
+  setInlineTabItemProp,
+})(InlineTab);
+
+export { InlineTab };

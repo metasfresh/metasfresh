@@ -1,6 +1,30 @@
 package de.metas.fresh.material.interceptor;
 
+import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
+import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
+import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
+import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -24,36 +48,21 @@ import java.util.ArrayList;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-
-import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
-import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
-import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
-import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 @Interceptor(I_Fresh_QtyOnHand.class)
+@Component
 public class Fresh_QtyOnHand
 {
-	public static final Fresh_QtyOnHand INSTANCE = new Fresh_QtyOnHand();
+	private final IFreshQtyOnHandDAO freshQtyOnHandDAO = Services.get(IFreshQtyOnHandDAO.class);
 
-	private Fresh_QtyOnHand()
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final PostMaterialEventService materialEventService;
+
+	public Fresh_QtyOnHand(
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final PostMaterialEventService materialEventService)
 	{
+		this.productDescriptorFactory = productDescriptorFactory;
+		this.materialEventService = materialEventService;
 	}
 
 	@ModelChange(timings = {
@@ -69,61 +78,34 @@ public class Fresh_QtyOnHand
 	{
 		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(qtyOnHand);
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final List<AbstractStockEstimateEvent> events = new ArrayList<>();
 
-		List<AbstractStockEstimateEvent> events = new ArrayList<>();
-
-		final List<I_Fresh_QtyOnHand_Line> lines = Services.get(IFreshQtyOnHandDAO.class).retrieveLines(qtyOnHand);
+		final List<I_Fresh_QtyOnHand_Line> lines = freshQtyOnHandDAO.retrieveLines(qtyOnHand);
 		for (final I_Fresh_QtyOnHand_Line line : lines)
 		{
+			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(line);
+
+			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+					.productDescriptor(productDescriptor)
+					.warehouseId(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
+					.quantity(line.getQtyCount())
+					.date(TimeUtil.asInstant(line.getDateDoc()))
+					.build();
+
 			final AbstractStockEstimateEvent event;
 
-			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(line);
 			if (createDeletedEvent)
 			{
-				event = createDeletedEvent(line, productDescriptor);
+				event = Fresh_QtyOnHand_Line.buildDeletedEvent(line, materialDescriptor);
 			}
 			else
 			{
-				event = createCreatedEvent( line, productDescriptor);
+				event = Fresh_QtyOnHand_Line.buildCreatedEvent(line, materialDescriptor);
 			}
 			events.add(event);
 		}
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
+		events.forEach(materialEventService::postEventAfterNextCommit);
 	}
 
-	private AbstractStockEstimateEvent createCreatedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final ProductDescriptor productDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		final AbstractStockEstimateEvent
-		event = StockEstimateCreatedEvent.builder()
-				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.plantId(line.getPP_Plant_ID())
-				.productDescriptor(productDescriptor)
-				.quantity(line.getQtyCount())
-				.build();
-		return event;
-	}
-
-	private AbstractStockEstimateEvent createDeletedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final ProductDescriptor productDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		final AbstractStockEstimateEvent event = StockEstimateDeletedEvent.builder()
-				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.plantId(line.getPP_Plant_ID())
-				.productDescriptor(productDescriptor)
-				.quantity(line.getQtyCount())
-				.build();
-		return event;
-	}
 }

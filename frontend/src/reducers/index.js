@@ -1,4 +1,4 @@
-import { routerReducer as routing } from 'react-router-redux';
+import { combineReducers } from 'redux';
 
 import appHandler from './appHandler';
 import listHandler from './listHandler';
@@ -10,17 +10,19 @@ import filters from './filters';
 import commentsPanel from './commentsPanel';
 import tables from './tables';
 import actionsHandler from './actionsHandler';
+import widgetHandler from './widgetHandler';
 
-export default {
-  appHandler,
-  listHandler,
-  menuHandler,
-  windowHandler,
-  viewHandler,
-  pluginsHandler,
-  filters,
-  commentsPanel,
-  tables,
-  routing,
-  actionsHandler,
-};
+export const createRootReducer = () =>
+  combineReducers({
+    appHandler,
+    listHandler,
+    menuHandler,
+    windowHandler,
+    viewHandler,
+    pluginsHandler,
+    filters,
+    commentsPanel,
+    tables,
+    actionsHandler,
+    widgetHandler,
+  });

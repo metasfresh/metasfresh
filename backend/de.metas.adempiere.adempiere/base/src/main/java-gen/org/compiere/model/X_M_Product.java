@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1004704805L;
+	private static final long serialVersionUID = -871978093L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -48,15 +48,57 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setClassification (final @Nullable java.lang.String Classification)
+	public org.compiere.model.I_C_CompensationGroup_Schema_Category getC_CompensationGroup_Schema_Category()
 	{
-		set_Value (COLUMNNAME_Classification, Classification);
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_Category_ID, org.compiere.model.I_C_CompensationGroup_Schema_Category.class);
 	}
 
 	@Override
-	public java.lang.String getClassification() 
+	public void setC_CompensationGroup_Schema_Category(final org.compiere.model.I_C_CompensationGroup_Schema_Category C_CompensationGroup_Schema_Category)
 	{
-		return get_ValueAsString(COLUMNNAME_Classification);
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_Category_ID, org.compiere.model.I_C_CompensationGroup_Schema_Category.class, C_CompensationGroup_Schema_Category);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema_Category_ID (final int C_CompensationGroup_Schema_Category_ID)
+	{
+		if (C_CompensationGroup_Schema_Category_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_Category_ID, C_CompensationGroup_Schema_Category_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_Schema_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_Category_ID);
+	}
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema(final de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class, C_CompensationGroup_Schema);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema_ID (final int C_CompensationGroup_Schema_ID)
+	{
+		if (C_CompensationGroup_Schema_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, C_CompensationGroup_Schema_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_Schema_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_ID);
 	}
 
 	@Override
@@ -99,6 +141,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setClassification (final @Nullable java.lang.String Classification)
+	{
+		set_Value (COLUMNNAME_Classification, Classification);
+	}
+
+	@Override
+	public java.lang.String getClassification() 
+	{
+		return get_ValueAsString(COLUMNNAME_Classification);
 	}
 
 	@Override
@@ -180,6 +234,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.sql.Timestamp getDiscontinuedBy() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DiscontinuedBy);
+	}
+
+	@Override
+	public void setDiscontinuedFrom (final @Nullable java.sql.Timestamp DiscontinuedFrom)
+	{
+		set_Value (COLUMNNAME_DiscontinuedFrom, DiscontinuedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getDiscontinuedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DiscontinuedFrom);
 	}
 
 	@Override
@@ -307,6 +373,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final String GUARANTEEMONTHS_24 = "24";
 	/** 36 = 36 */
 	public static final String GUARANTEEMONTHS_36 = "36";
+	/** 60 = 60 */
+	public static final String GUARANTEEMONTHS_60 = "60";
 	@Override
 	public void setGuaranteeMonths (final @Nullable java.lang.String GuaranteeMonths)
 	{
@@ -559,33 +627,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
-	{
-		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
-	}
-
-	@Override
-	public java.lang.String getManufacturerArticleNumber() 
-	{
-		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
-	}
-
-	@Override
-	public void setManufacturer_ID (final int Manufacturer_ID)
-	{
-		if (Manufacturer_ID < 1) 
-			set_Value (COLUMNNAME_Manufacturer_ID, null);
-		else 
-			set_Value (COLUMNNAME_Manufacturer_ID, Manufacturer_ID);
-	}
-
-	@Override
-	public int getManufacturer_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
@@ -774,6 +815,45 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
+	@Override
+	public void setManufacturer_ID (final int Manufacturer_ID)
+	{
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Manufacturer_ID);
+	}
+
+	@Override
+	public int getManufacturer_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
+	}
+
+	@Override
+	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
+	{
+		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
+	}
+
+	@Override
+	public java.lang.String getManufacturerArticleNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
+	}
+
+	@Override
+	public void setManufacturerProductDescription (final @Nullable java.lang.String ManufacturerProductDescription)
+	{
+		set_Value (COLUMNNAME_ManufacturerProductDescription, ManufacturerProductDescription);
+	}
+
+	@Override
+	public java.lang.String getManufacturerProductDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerProductDescription);
+	}
+
 	/** 
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -821,18 +901,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setPackageSize (final @Nullable java.lang.String PackageSize)
-	{
-		set_Value (COLUMNNAME_PackageSize, PackageSize);
-	}
-
-	@Override
-	public java.lang.String getPackageSize() 
-	{
-		return get_ValueAsString(COLUMNNAME_PackageSize);
-	}
-
-	@Override
 	public void setPackage_UOM_ID (final int Package_UOM_ID)
 	{
 		if (Package_UOM_ID < 1) 
@@ -845,6 +913,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getPackage_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Package_UOM_ID);
+	}
+
+	@Override
+	public void setPackageSize (final @Nullable java.lang.String PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	@Override
+	public java.lang.String getPackageSize() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackageSize);
 	}
 
 	@Override
@@ -876,6 +956,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final String PRODUCTTYPE_Online = "O";
 	/** FreightCost = F */
 	public static final String PRODUCTTYPE_FreightCost = "F";
+	/** Food - Nahrung = N */
+	public static final String PRODUCTTYPE_Nahrung = "N";
 	@Override
 	public void setProductType (final java.lang.String ProductType)
 	{
@@ -886,33 +968,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getProductType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductType);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Country getRawMaterialOrigin()
-	{
-		return get_ValueAsPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class);
-	}
-
-	@Override
-	public void setRawMaterialOrigin(final org.compiere.model.I_C_Country RawMaterialOrigin)
-	{
-		set_ValueFromPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class, RawMaterialOrigin);
-	}
-
-	@Override
-	public void setRawMaterialOrigin_ID (final int RawMaterialOrigin_ID)
-	{
-		if (RawMaterialOrigin_ID < 1) 
-			set_Value (COLUMNNAME_RawMaterialOrigin_ID, null);
-		else 
-			set_Value (COLUMNNAME_RawMaterialOrigin_ID, RawMaterialOrigin_ID);
-	}
-
-	@Override
-	public int getRawMaterialOrigin_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_RawMaterialOrigin_ID);
 	}
 
 	@Override
@@ -943,18 +998,54 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setSalesRep_ID (final int SalesRep_ID)
+	public void setPZN (final @Nullable java.lang.String PZN)
 	{
-		if (SalesRep_ID < 1) 
-			set_Value (COLUMNNAME_SalesRep_ID, null);
-		else 
-			set_Value (COLUMNNAME_SalesRep_ID, SalesRep_ID);
+		set_Value (COLUMNNAME_PZN, PZN);
 	}
 
 	@Override
-	public int getSalesRep_ID() 
+	public java.lang.String getPZN()
 	{
-		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+		return get_ValueAsString(COLUMNNAME_PZN);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Country getRawMaterialOrigin()
+	{
+		return get_ValueAsPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setRawMaterialOrigin(final org.compiere.model.I_C_Country RawMaterialOrigin)
+	{
+		set_ValueFromPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class, RawMaterialOrigin);
+	}
+
+	@Override
+	public void setRawMaterialOrigin_ID (final int RawMaterialOrigin_ID)
+	{
+		if (RawMaterialOrigin_ID < 1) 
+			set_Value (COLUMNNAME_RawMaterialOrigin_ID, null);
+		else 
+			set_Value (COLUMNNAME_RawMaterialOrigin_ID, RawMaterialOrigin_ID);
+	}
+
+	@Override
+	public int getRawMaterialOrigin_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_RawMaterialOrigin_ID);
+	}
+
+	@Override
+	public void setRequiresSupplierApproval (final boolean RequiresSupplierApproval)
+	{
+		set_Value (COLUMNNAME_RequiresSupplierApproval, RequiresSupplierApproval);
+	}
+
+	@Override
+	public boolean isRequiresSupplierApproval() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_RequiresSupplierApproval);
 	}
 
 	@Override
@@ -982,6 +1073,60 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getS_ExpenseType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_ExpenseType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setSafetyInfo (final @Nullable java.lang.String SafetyInfo)
+	{
+		set_Value (COLUMNNAME_SafetyInfo, SafetyInfo);
+	}
+
+	@Override
+	public java.lang.String getSafetyInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_SafetyInfo);
+	}
+
+	@Override
+	public void setSalesRep_ID (final int SalesRep_ID)
+	{
+		if (SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_SalesRep_ID, SalesRep_ID);
+	}
+
+	@Override
+	public int getSalesRep_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
 	}
 
 	@Override
@@ -1022,6 +1167,31 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setShopDescription (final @Nullable java.lang.String ShopDescription)
+	{
+		set_Value (COLUMNNAME_ShopDescription, ShopDescription);
+	}
+
+	@Override
+	public java.lang.String getShopDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ShopDescription);
+	}
+
+	@Override
+	public void setShopInventoryQty (final @Nullable BigDecimal ShopInventoryQty)
+	{
+		set_Value (COLUMNNAME_ShopInventoryQty, ShopInventoryQty);
+	}
+
+	@Override
+	public BigDecimal getShopInventoryQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShopInventoryQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setSKU (final @Nullable java.lang.String SKU)
 	{
 		set_Value (COLUMNNAME_SKU, SKU);
@@ -1034,30 +1204,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
+	public void setTrademark (final @Nullable java.lang.String Trademark)
 	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+		set_Value (COLUMNNAME_Trademark, Trademark);
 	}
 
 	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	public java.lang.String getTrademark() 
 	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+		return get_ValueAsString(COLUMNNAME_Trademark);
 	}
 
 	@Override

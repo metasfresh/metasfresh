@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import TetherComponent from 'react-tether';
-import { connect } from 'react-redux';
 
 import {
   autocompleteRequest,
@@ -15,12 +14,13 @@ import SelectionDropdown from '../SelectionDropdown';
  * @module Labels
  * @extends Component
  */
-class Labels extends Component {
+export default class Labels extends PureComponent {
   state = {
     cursor: this.props.selected.length,
     focused: false,
     suggestion: null,
     suggestions: [],
+    labelsUpdated: false,
   };
 
   lastTypeAhead = '';
@@ -28,13 +28,12 @@ class Labels extends Component {
   /**
    * @async
    * @method handleClick
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Called when click is performed on the labels. Focus is set and the data is fetched from the `/dropdown' API
+   *          The corresponding suggestion are updated in the local state.
    */
   handleClick = async () => {
     const {
-      windowType, // windowId
-      docId,
+      windowId, // windowId
       name,
       entity,
       subentity,
@@ -43,6 +42,7 @@ class Labels extends Component {
       rowId,
       viewId,
       readonly,
+      dataId,
     } = this.props;
 
     if (readonly) return false;
@@ -51,8 +51,8 @@ class Labels extends Component {
     this.setState({ focused: true });
 
     const response = await dropdownRequest({
-      docType: windowType,
-      docId,
+      docType: windowId,
+      docId: dataId,
       entity,
       subentity,
       subentityId,
@@ -72,8 +72,7 @@ class Labels extends Component {
 
   /**
    * @method handleFocus
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Sets the focus on the label
    */
   handleFocus = () => {
     this.input.focus();
@@ -81,32 +80,28 @@ class Labels extends Component {
 
   /**
    * @method handleBlur
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Clears the focus and sets the cursor to the selected array length
    */
   handleBlur = () => {
     this.clearInput();
 
     this.setState({
       focused: false,
-      cursor: this.props.selected.length,
     });
   };
 
   /**
    * @async
    * @method handleKeyUp
-   * @summary ToDo: Describe the method
+   * @summary Autocomplete logic using typeahead API provided results
    * @param {object} event
-   * @todo Write the documentation
    */
   handleKeyUp = async (event) => {
     const typeAhead = event.target.innerHTML;
 
     if (typeAhead !== this.lastTypeAhead) {
       const {
-        windowType, // windowId
-        docId,
+        windowId,
         name,
         entity,
         subentity,
@@ -114,11 +109,12 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
-        docType: windowType, // windowId
-        docId,
+        docType: windowId,
+        docId: dataId,
         entity,
         subentity,
         subentityId,
@@ -142,9 +138,8 @@ class Labels extends Component {
 
   /**
    * @method handleKeyDown
-   * @summary ToDo: Describe the method
+   * @summary Navigation logic for the labels (also performing deletion when backspace is pressed)
    * @param {object} event
-   * @todo Write the documentation
    */
   handleKeyDown = (event) => {
     const typeAhead = event.target.innerHTML;
@@ -171,7 +166,7 @@ class Labels extends Component {
           onChange(selectedNew);
 
           this.setState({
-            cursor: cursor - 1,
+            cursor: cursor === 1 ? selectedNew.length : cursor - 1,
           });
         }
 
@@ -214,9 +209,8 @@ class Labels extends Component {
 
   /**
    * @method handleTemporarySelection
-   * @summary ToDo: Describe the method
+   * @summary Updates the state with a temporary suggestion
    * @param {*} suggestion
-   * @todo Write the documentation
    */
   handleTemporarySelection = (suggestion) => {
     this.setState({ suggestion });
@@ -224,13 +218,11 @@ class Labels extends Component {
 
   /**
    * @method handleSuggestionAdd
-   * @summary ToDo: Describe the method
+   * @summary This is where the actual addition of the selected suggestion item happens
    * @param {*} suggestion
-   * @todo Write the documentation
    */
   handleSuggestionAdd = (suggestion) => {
     const { onChange, selected } = this.props;
-    const { cursor } = this.state;
 
     this.clearInput();
 
@@ -240,38 +232,40 @@ class Labels extends Component {
 
     onChange([...selected, suggestion]);
 
+    const newCursor = [...selected, suggestion].length;
+
     this.setState({
-      cursor: cursor + 1,
+      cursor: newCursor,
       suggestion: null,
+      labelsUpdated: true,
     });
   };
 
   /**
    * @method handleLabelRemove
-   * @summary ToDo: Describe the method
+   * @summary Logic to remove the label provided as parameter from the existing labels
    * @param {*} label
-   * @todo Write the documentation
    */
   handleLabelRemove = (label) => {
     this.props.onChange(this.props.selected.filter((item) => item !== label));
+    this.setState({ labelsUpdated: true });
   };
 
   /**
    * @method handleLabelClick
-   * @summary ToDo: Describe the method
+   * @summary Sets the cursor at the label position and clears the labelsUpdated flag
    * @param {*} label
-   * @todo Write the documentation
    */
   handleLabelClick = (label) => {
     this.setState({
       cursor: this.props.selected.indexOf(label) + 1,
+      labelsUpdated: false,
     });
   };
 
   /**
    * @method handleCancel
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Cleaars the input and disables the focus in the state
    */
   handleCancel = () => {
     this.clearInput();
@@ -281,8 +275,7 @@ class Labels extends Component {
 
   /**
    * @method unusedSuggestions
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Returns the suggestions that are not already selected
    */
   unusedSuggestions = () => {
     const selected = new Set(this.props.selected.map((item) => item.key));
@@ -292,9 +285,8 @@ class Labels extends Component {
 
   /**
    * @method firstVisibleSuggestion
-   * @summary ToDo: Describe the method
+   * @summary Returns the first visible suggestion from a list of suggestions
    * @param {*} suggestions
-   * @todo Write the documentation
    */
   firstVisibleSuggestion = (suggestions) => {
     return suggestions.filter(this.unusedSuggestions())[0];
@@ -302,26 +294,25 @@ class Labels extends Component {
 
   /**
    * @method clearInput
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Clears the input by setting the innerHTML to an empty string
    */
   clearInput = () => {
     this.input.innerHTML = '';
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
-    const { focused, suggestion, cursor } = this.state;
+    const { focused, suggestion, cursor, labelsUpdated } = this.state;
     const { className, selected, tabIndex, readonly } = this.props;
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
 
+    const newCursor = labelsUpdated
+      ? selected.length
+      : cursor % (selected.length + 1);
     const labels = selected
-      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .sort((a, b) => {
+        return a.caption.localeCompare(b.caption);
+      })
       .map((item) => (
         <Label
           key={item.key}
@@ -333,7 +324,7 @@ class Labels extends Component {
       ));
 
     labels.splice(
-      cursor % (selected.length + 1),
+      newCursor,
       0,
       <span
         key="input"
@@ -361,30 +352,36 @@ class Labels extends Component {
             pin: ['bottom'],
           },
         ]}
-      >
-        <span
-          ref={(ref) => {
-            this.wrapper = ref;
-          }}
-          className={`${className} labels`}
-          onClick={this.handleClick}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        >
-          <span className="labels-wrap">{labels}</span>
-        </span>
-        {focused && (
-          <SelectionDropdown
-            options={suggestions}
-            empty="There are no labels available"
-            selected={suggestion}
-            width={this.wrapper.offsetWidth}
-            onChange={this.handleTemporarySelection}
-            onSelect={this.handleSuggestionAdd}
-            onCancel={this.handleCancel}
-          />
+        renderTarget={(ref) => (
+          <span ref={ref}>
+            <span
+              ref={(ref) => {
+                this.wrapper = ref;
+              }}
+              className={`${className} labels`}
+              onClick={this.handleClick}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+            >
+              <span className="labels-wrap">{labels}</span>
+            </span>
+          </span>
         )}
-      </TetherComponent>
+        renderElement={(ref) =>
+          focused && (
+            <SelectionDropdown
+              ref={ref}
+              options={suggestions}
+              empty="There are no labels available"
+              selected={suggestion}
+              width={this.wrapper.offsetWidth}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSuggestionAdd}
+              onCancel={this.handleCancel}
+            />
+          )
+        }
+      />
     );
   }
 }
@@ -396,7 +393,7 @@ class Labels extends Component {
  * @prop {string} [className]
  * @prop {func} onChange
  * @prop {string|number} [tabIndex]
- * @prop {*} windowType
+ * @prop {*} windowId
  * @prop {*} docId
  * @prop {*} name
  * @prop {*} entity
@@ -411,7 +408,7 @@ Labels.propTypes = {
   className: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.any,
+  windowId: PropTypes.any,
   docId: PropTypes.any,
   entity: PropTypes.any,
   subentity: PropTypes.any,
@@ -420,15 +417,9 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {
   entity: 'window',
-  selected: [],
-  onChange: () => {},
 };
-
-export default connect(({ windowHandler }) => ({
-  docId: windowHandler.master.docId,
-  windowId: windowHandler.master.layout.windowId,
-}))(Labels);

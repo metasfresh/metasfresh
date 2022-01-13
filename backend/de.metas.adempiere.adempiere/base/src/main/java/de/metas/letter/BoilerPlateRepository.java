@@ -1,18 +1,15 @@
-/**
- *
- */
 package de.metas.letter;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
-import javax.annotation.Nullable;
-
-import org.springframework.stereotype.Repository;
 
 import de.metas.i18n.Language;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 /*
  * #%L
@@ -56,19 +53,23 @@ public class BoilerPlateRepository
 			@Nullable final Language language)
 	{
 		final I_AD_BoilerPlate recordToUse;
+		final Language languageEffective;
 		if (language != null)
 		{
 			recordToUse = translate(boilerPlateRecord, I_AD_BoilerPlate.class, language.getAD_Language());
+			languageEffective = language;
 		}
 		else
 		{
 			recordToUse = boilerPlateRecord;
+			languageEffective = Language.getBaseLanguage();
 		}
 
 		return BoilerPlate.builder()
 				.id(BoilerPlateId.ofRepoId(recordToUse.getAD_BoilerPlate_ID()))
-				.subject(recordToUse.getSubject())
-				.textSnippet(recordToUse.getTextSnippet())
+				.language(languageEffective)
+				.subject(StringExpressionCompiler.instance.compile(recordToUse.getSubject()))
+				.textSnippet(StringExpressionCompiler.instance.compile(recordToUse.getTextSnippet()))
 				.build();
 	}
 }

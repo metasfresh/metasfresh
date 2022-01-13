@@ -27,10 +27,11 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.util.lang.UIDStringUtil;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class JsonServiceFactory
 	private final GreetingRepository greetingRepository;
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
@@ -52,7 +54,7 @@ public class JsonServiceFactory
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
@@ -61,6 +63,7 @@ public class JsonServiceFactory
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
 	}
 
 	public JsonPersisterService createPersister()
@@ -75,7 +78,7 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				identifier);
+				albertaBPartnerCompositeService, identifier);
 	}
 
 	public JsonRetrieverService createRetriever()

@@ -1,18 +1,18 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.compiere.util.Evaluatee;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -40,11 +40,10 @@ import lombok.NonNull;
  * Wraps an {@link LookupDataSourceFetcher}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class LookupDataSourceAdapter implements LookupDataSource
 {
-	public static final LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
+	public static LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
 	{
 		return new LookupDataSourceAdapter(fetcher);
 	}
@@ -73,13 +72,13 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	}
 
 	@Override
-	public final LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public final LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
 		return findEntities(ctx, LookupDataSourceContext.FILTER_Any, FIRST_ROW, pageLength);
 	}
 
 	@Override
-	public final LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public final LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		final String filterEffective;
 		if (Check.isEmpty(filter, true))
@@ -97,8 +96,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 				.requiresFilterAndLimit() // make sure the filter, limit and offset will be kept on build
 				.build();
 
-		final LookupValuesList lookupValuesList = fetcher.retrieveEntities(evalCtx);
-		return lookupValuesList;
+		return fetcher.retrieveEntities(evalCtx);
 	}
 
 	@Override
@@ -120,7 +118,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 		//
 		// Build the validation context
 		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingById(idNormalized)
-				.putFilterById(idNormalized)
+				.putFilterById(IdsToFilter.ofSingleValue(idNormalized))
 				.putShowInactive(true)
 				.build();
 
@@ -135,11 +133,21 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	}
 
 	@Override
+	public @NonNull LookupValuesList findByIdsOrdered(final @NonNull Collection<?> ids)
+	{
+		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingByIds(ids)
+				.putShowInactive(true)
+				.build();
+
+		return fetcher.retrieveLookupValueByIdsInOrder(evalCtx);
+	}
+
+	@Override
 	public List<CCacheStats> getCacheStats()
 	{
 		return fetcher.getCacheStats();
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{

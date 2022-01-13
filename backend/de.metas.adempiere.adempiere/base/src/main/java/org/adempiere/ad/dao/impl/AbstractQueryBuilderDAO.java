@@ -61,7 +61,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		return create(queryBuildCtx);
 	}
 
-	private final <T> IQuery<T> create(final QueryBuildContext<T> queryBuildCtx)
+	private <T> IQuery<T> create(final QueryBuildContext<T> queryBuildCtx)
 	{
 		//
 		// Case: we were asked to explode composite filters which are joined by ORs into UNIONs
@@ -242,7 +242,6 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	/**
 	 * Extracts the {@link ISqlQueryFilter} part and the nonSQL part of given filter.
 	 *
-	 * @param filter
 	 * @return pair of SQL filter and nonSQL filter
 	 */
 	protected <T> IPair<ISqlQueryFilter, IQueryFilter<T>> extractSqlAndNonSqlFilters(final IQueryFilter<T> filter)
@@ -272,10 +271,8 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	/**
 	 * Actually creates the {@link IQuery} instance for given context.
 	 *
-	 * @param queryBuildCtx
 	 * @param sqlFilters SQL filters part
 	 * @param nonSqlFilters nonSQL filters part
-	 * @return
 	 */
 	protected abstract <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters);
 
@@ -395,7 +392,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			return queryOrderBy;
 		}
 
-		public void setQueryOrderBy(IQueryOrderBy queryOrderBy)
+		public void setQueryOrderBy(final IQueryOrderBy queryOrderBy)
 		{
 			this.queryOrderBy = queryOrderBy;
 		}
@@ -405,7 +402,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			return queryLimit;
 		}
 
-		public void setQueryLimit(@NonNull QueryLimit queryLimit)
+		public void setQueryLimit(@NonNull final QueryLimit queryLimit)
 		{
 			this.queryLimit = queryLimit;
 		}

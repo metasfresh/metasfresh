@@ -12,6 +12,7 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -114,8 +115,8 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		final boolean remotePurchaseExists = !Objects.equals(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
-				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
-				remotePurchaseOrderId);
+					  "If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
+					  remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
 
 		this.dimension = dimension;
@@ -192,6 +193,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
+	@Nullable
 	public ForecastLineId getForecastLineId()
 	{
 		return getPurchaseCandidate().getForecastLineId();
@@ -233,13 +235,33 @@ public class PurchaseOrderItem implements PurchaseItem
 		}
 	}
 
+	@Nullable
 	public BigDecimal getPrice()
 	{
 		return purchaseCandidate.getPriceEnteredEff();
 	}
 
+	@Nullable
 	public Percent getDiscount()
 	{
 		return purchaseCandidate.getDiscountEff();
+	}
+
+	@Nullable
+	public String getExternalPurchaseOrderUrl()
+	{
+		return purchaseCandidate.getExternalPurchaseOrderUrl();
+	}
+
+	@Nullable
+	public ExternalId getExternalHeaderId()
+	{
+		return purchaseCandidate.getExternalHeaderId();
+	}
+
+	@Nullable
+	public String getPOReference()
+	{
+		return purchaseCandidate.getPOReference();
 	}
 }

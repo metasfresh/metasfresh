@@ -1,18 +1,19 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
@@ -34,8 +35,8 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.common.util.IdConstants.toRepoId;
 
 /*
  * #%L
@@ -146,6 +147,8 @@ public class RepositoryCommons
 
 		addTransactionDetailToFilter(query, builder);
 
+		addStockChangeDetailToFilter(query, builder);
+
 		return builder;
 	}
 
@@ -204,7 +207,7 @@ public class RepositoryCommons
 			{
 				final IQueryFilter<I_MD_Candidate> filter = AttributesKeyQueryHelper
 						.createFor(I_MD_Candidate.COLUMN_StorageAttributesKey)
-						.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
+						.createFilter(AttributesKeyPatternsUtil.ofAttributeKey(attributesKey));
 
 				builder.filter(filter);
 			}
@@ -343,7 +346,7 @@ public class RepositoryCommons
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
-		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
@@ -433,4 +436,14 @@ public class RepositoryCommons
 				.create();
 	}
 
+	private void addStockChangeDetailToFilter(
+			@NonNull final CandidatesQuery query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		final StockChangeDetailQuery stockChangeDetail = query.getStockChangeDetailQuery();
+		if (stockChangeDetail != null)
+		{
+			stockChangeDetail.augmentQueryBuilder(builder);
+		}
+	}
 }

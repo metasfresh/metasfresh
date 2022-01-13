@@ -25,6 +25,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 
 /*
  * #%L
@@ -92,7 +93,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 				.export(out);
 
 		getResult().setReportData(
-				out.toByteArray(), // data
+				new ByteArrayResource(out.toByteArray()), // data
 				buildFilename(datevExport), // filename
 				"text/csv"); // content type
 

@@ -1,0 +1,15 @@
+{
+  "_id": "doctorTestId",
+  "customerId": null,
+  "address": "testAddress",
+  "city": "testCity",
+  "fax": "1",
+  "firstName": "firstName",
+  "gender": 2,
+  "lastName": "lastName",
+  "phone":  "2",
+  "postalCode": "3",
+  "timestamp": "2018-03-22T15:34:31.105Z",
+  "title": null,
+  "titleShort": null
+}

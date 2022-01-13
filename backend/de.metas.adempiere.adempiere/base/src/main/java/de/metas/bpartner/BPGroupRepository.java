@@ -53,8 +53,8 @@ public class BPGroupRepository
 		final I_C_BP_Group groupRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_Group.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_Group.COLUMN_Name, name)
-				.addInArrayFilter(I_C_BP_Group.COLUMN_AD_Org_ID, orgId, OrgId.ANY)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_Name, name)
+				.addInArrayFilter(I_C_BP_Group.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
 				.firstOnly(I_C_BP_Group.class);
 

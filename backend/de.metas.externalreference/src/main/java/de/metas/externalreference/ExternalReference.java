@@ -41,6 +41,7 @@ public class ExternalReference
 			.externalSystem(NullExternalSystem.NULL)
 			.externalReferenceType(NullExternalReferenceType.NULL)
 			.externalReference("NULL")
+			.externalReferenceUrl("NULL")
 			.recordId(-1)
 			.build();
 
@@ -61,6 +62,9 @@ public class ExternalReference
 
 	@Nullable
 	String version;
+
+	@Nullable
+	String externalReferenceUrl;
 
 	int recordId;
 }

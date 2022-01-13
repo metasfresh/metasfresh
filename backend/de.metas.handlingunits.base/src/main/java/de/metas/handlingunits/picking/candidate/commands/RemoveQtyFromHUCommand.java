@@ -1,20 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -32,15 +19,20 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -66,17 +58,15 @@ import lombok.NonNull;
 
 public class RemoveQtyFromHUCommand
 {
-	private static final Logger logger = LogManager.getLogger(RemoveQtyFromHUCommand.class);
-
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	private final BigDecimal qtyCU;
 	private final HuId huId;
-	private final I_M_Product product;
+	private final ProductId productId;
+	private final Quantity qtyToRemove;
 
 	@Builder
 	private RemoveQtyFromHUCommand(
@@ -86,10 +76,9 @@ public class RemoveQtyFromHUCommand
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.qtyCU = request.getQtyCU();
 		this.huId = request.getHuId();
-		this.product = Services.get(IProductDAO.class).getById(request.getProductId());
-		Check.assumeNotNull(product, "Parameter product is not null");
+		this.productId = request.getProductId();
+		this.qtyToRemove = request.getQtyToRemove();
 	}
 
 	public void perform()
@@ -103,33 +92,63 @@ public class RemoveQtyFromHUCommand
 			throw new AdempiereException("No picking candidates found");
 		}
 
-		BigDecimal qtyAllocatedSum = BigDecimal.ZERO;
+		Quantity qtyToRemoveRemaining = qtyToRemove;
+		final ArrayList<PickingCandidate> candidatesToDelete = new ArrayList<>();
 		for (final PickingCandidate candidate : candidates)
 		{
-			final IAllocationRequest request = createAllocationRequest(candidate);
+			// skip processed candidates
+			if (candidate.isProcessed())
+			{
+				continue;
+			}
+
+			final Quantity qtyPickedOnThisCandidate = candidate.getQtyPicked();
+			final Quantity qtyToRemoveOnThisCandidate = qtyToRemoveRemaining.min(qtyPickedOnThisCandidate);
 
 			// Load QtyCU to HU(destination)
 			final IAllocationResult loadResult = HULoader.of(source, destination)
 					.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
 					.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
-					.load(request);
-			qtyAllocatedSum = qtyAllocatedSum.add(loadResult.getQtyAllocated());
-			logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
+					.load(createAllocationRequest(candidate, qtyToRemoveOnThisCandidate));
 
-			if (qtyAllocatedSum.compareTo(qtyCU) >= 0)
+			final Quantity qtyRemovedOnThisCandidate = Quantity.of(loadResult.getQtyAllocated(), qtyToRemoveOnThisCandidate.getUOM());
+			final Quantity newQtyPickedOnThisCandidate = qtyPickedOnThisCandidate.subtract(qtyRemovedOnThisCandidate);
+
+			if (newQtyPickedOnThisCandidate.signum() == 0)
+			{
+				candidatesToDelete.add(candidate);
+			}
+			else
+			{
+				candidate.assertNotApproved();
+				candidate.pick(newQtyPickedOnThisCandidate);
+				pickingCandidateRepository.save(candidate);
+			}
+
+			qtyToRemoveRemaining = qtyToRemoveRemaining.subtract(qtyRemovedOnThisCandidate);
+			if (qtyToRemoveRemaining.signum() == 0)
 			{
 				break;
 			}
 		}
 
+		if (qtyToRemoveRemaining.signum() != 0)
+		{
+			throw new AdempiereException("Cannot unpick " + qtyToRemoveRemaining);
+		}
+
 		//
-		final I_M_HU hu = load(huId, I_M_HU.class);
+		pickingCandidateRepository.deletePickingCandidates(candidatesToDelete);
+
+		//
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		if (handlingUnitsBL.isDestroyed(hu))
 		{
 			final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(candidates);
-
-			pickingCandidateRepository.deletePickingCandidates(candidates);
 			pickingSlotIds.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
+
+			// Usually there will be no candidates, but just to be resilient.
+			pickingCandidateRepository.deletePickingCandidates(retrievePickingCandidates());
 		}
 	}
 
@@ -145,34 +164,27 @@ public class RemoveQtyFromHUCommand
 		{
 			throw new AdempiereException("No source HUs found for M_HU_ID=" + huId);
 		}
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(sourceHUs);
-		return destination;
+
+		return HUListAllocationSourceDestination.of(sourceHUs);
 	}
 
 	/**
 	 * Create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
-	 *
-	 * @param qtyCU
-	 * @param productId
-	 * @param candidate
-	 * @return
 	 */
-	private IAllocationRequest createAllocationRequest(@NonNull final PickingCandidate candidate)
+	private IAllocationRequest createAllocationRequest(
+			@NonNull final PickingCandidate candidate,
+			@NonNull final Quantity qtyToRemove)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-
-		final IAllocationRequest request = AllocationUtils.builder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
-				.setProduct(product)
-				.setQuantity(Quantity.of(qtyCU, uom))
+				.setProduct(productId)
+				.setQuantity(qtyToRemove)
 				.setDateAsToday()
 				.setFromReferencedTableRecord(pickingCandidateRepository.toTableRecordReference(candidate)) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)
 				.create();
-		return request;
 	}
 
 	private HUListAllocationSourceDestination createAllocationSourceAsHU()

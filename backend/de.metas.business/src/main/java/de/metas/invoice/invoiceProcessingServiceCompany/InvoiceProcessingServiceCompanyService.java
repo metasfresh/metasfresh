@@ -128,7 +128,7 @@ public class InvoiceProcessingServiceCompanyService
 			return Optional.empty();
 		}
 
-		final Percent feePercentageOfGrandTotal = config.getFeePercentageOfGrandTotalByBpartner(customerId).orElse(null);
+		final Percent feePercentageOfGrandTotal = config.getFeePercentageOfGrandTotalByBpartner(customerId, request.getDocTypeId()).orElse(null);
 		if (feePercentageOfGrandTotal == null)
 		{
 			return Optional.empty();

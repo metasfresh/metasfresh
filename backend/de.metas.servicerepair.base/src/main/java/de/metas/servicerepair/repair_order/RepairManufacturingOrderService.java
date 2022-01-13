@@ -40,6 +40,8 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollector;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -77,10 +79,17 @@ public class RepairManufacturingOrderService
 		this.productPlanningService = productPlanningService;
 	}
 
+	public boolean isCompletedRepairOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order record = ppOrderBL.getById(ppOrderId);
+
+		return isRepairManufacturingOrder(record)
+				&& DocStatus.ofNullableCodeOrUnknown(record.getDocStatus()).isCompleted();
+	}
+
 	public Optional<RepairManufacturingOrderInfo> extractFromRecord(@NonNull final I_PP_Order record)
 	{
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofNullableCode(record.getDocBaseType());
-		if (docBaseType == null || !docBaseType.isRepairOrder())
+		if (!isRepairManufacturingOrder(record))
 		{
 			return Optional.empty();
 		}
@@ -98,8 +107,16 @@ public class RepairManufacturingOrderService
 				.projectId(projectId)
 				.repairedProductId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
+				.summary(record.getRepairOrderSummary())
 				.costCollectors(getCostCollectors(repairOrderId))
+				.servicePerformedId(ProductId.ofRepoIdOrNull(record.getRepairServicePerformed_Product_ID()))
 				.build());
+	}
+
+	private boolean isRepairManufacturingOrder(final @NonNull I_PP_Order record)
+	{
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofNullableCode(record.getDocBaseType());
+		return docBaseType != null && docBaseType.isRepairOrder();
 	}
 
 	private ImmutableList<RepairManufacturingCostCollector> getCostCollectors(final PPOrderId repairOrderId)
@@ -119,7 +136,7 @@ public class RepairManufacturingOrderService
 		{
 			return null;
 		}
-		
+
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(ppCostCollector.getCostCollectorType());
 		if (costCollectorType.isComponentIssue())
 		{
@@ -224,5 +241,4 @@ public class RepairManufacturingOrderService
 
 		return repairOrderId;
 	}
-
 }

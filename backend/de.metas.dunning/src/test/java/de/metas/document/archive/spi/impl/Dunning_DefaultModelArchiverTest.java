@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
+
 /**
  * Integration test between {@link DefaultModelArchiver} and dunning project.
  */
@@ -105,7 +107,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		final ArchiveResult archiveResult = archiver.archive();
 
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		//Assertions.assertThat(archiveRecord.getName()).isEqualTo("ExpectedDocumentNo");
+		Assertions.assertThat(archiveRecord.getDocumentNo()).isEqualTo(dunningDoc.getDocumentNo());
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(dunningDoc.getC_DunningDoc_ID());
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(dunningDoc.getC_BPartner_ID());
@@ -113,6 +115,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
 		Assertions.assertThat(archiveRecord.getAD_Process_ID()).isEqualTo(printProcessId.getRepoId());
 		Assertions.assertThat(archiveRecord.getAD_PInstance_ID()).isEqualTo(11223344);
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 
 }

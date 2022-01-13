@@ -1,72 +1,56 @@
 package de.metas.fresh.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for Fresh_QtyOnHand_Line
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated)
  */
-@SuppressWarnings("javadoc")
-public interface I_Fresh_QtyOnHand_Line 
+@SuppressWarnings("unused")
+public interface I_Fresh_QtyOnHand_Line
 {
 
-    /** TableName=Fresh_QtyOnHand_Line */
-    public static final String Table_Name = "Fresh_QtyOnHand_Line";
+	String Table_Name = "Fresh_QtyOnHand_Line";
 
-    /** AD_Table_ID=540635 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540635 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_Client>(I_Fresh_QtyOnHand_Line.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_Org>(I_Fresh_QtyOnHand_Line.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set ASI Key.
@@ -75,7 +59,7 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setASIKey (java.lang.String ASIKey);
+	void setASIKey (@Nullable java.lang.String ASIKey);
 
 	/**
 	 * Get ASI Key.
@@ -84,200 +68,196 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getASIKey();
+	@Nullable java.lang.String getASIKey();
 
-    /** Column definition for ASIKey */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ASIKey = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "ASIKey", null);
-    /** Column name ASIKey */
-    public static final String COLUMNNAME_ASIKey = "ASIKey";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ASIKey = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "ASIKey", null);
+	String COLUMNNAME_ASIKey = "ASIKey";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Created = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_User>(I_Fresh_QtyOnHand_Line.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Belegdatum.
-	 * Datum des Belegs
+	 * Set Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDoc (java.sql.Timestamp DateDoc);
+	void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Belegdatum.
-	 * Datum des Belegs
+	 * Get Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDoc();
+	java.sql.Timestamp getDateDoc();
 
-    /** Column definition for DateDoc */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "DateDoc", null);
-    /** Column name DateDoc */
-    public static final String COLUMNNAME_DateDoc = "DateDoc";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_DateDoc = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Zählbestand Einkauf (fresh).
+	 * Set Stock Control Purchase.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
+	void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID);
 
 	/**
-	 * Get Zählbestand Einkauf (fresh).
+	 * Get Stock Control Purchase.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getFresh_QtyOnHand_ID();
+	int getFresh_QtyOnHand_ID();
 
-	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand();
+	de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand();
 
-	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand);
+	void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand);
 
-    /** Column definition for Fresh_QtyOnHand_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand> COLUMN_Fresh_QtyOnHand_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_ID", de.metas.fresh.model.I_Fresh_QtyOnHand.class);
-    /** Column name Fresh_QtyOnHand_ID */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
+	ModelColumn<I_Fresh_QtyOnHand_Line, de.metas.fresh.model.I_Fresh_QtyOnHand> COLUMN_Fresh_QtyOnHand_ID = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_ID", de.metas.fresh.model.I_Fresh_QtyOnHand.class);
+	String COLUMNNAME_Fresh_QtyOnHand_ID = "Fresh_QtyOnHand_ID";
 
 	/**
-	 * Set Einkauf-Zählbestand Datensatz.
+	 * Set Stock Control Purchase Record.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID);
+	void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID);
 
 	/**
-	 * Get Einkauf-Zählbestand Datensatz.
+	 * Get Stock Control Purchase Record.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getFresh_QtyOnHand_Line_ID();
+	int getFresh_QtyOnHand_Line_ID();
 
-    /** Column definition for Fresh_QtyOnHand_Line_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Fresh_QtyOnHand_Line_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_Line_ID", null);
-    /** Column name Fresh_QtyOnHand_Line_ID */
-    public static final String COLUMNNAME_Fresh_QtyOnHand_Line_ID = "Fresh_QtyOnHand_Line_ID";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Fresh_QtyOnHand_Line_ID = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "Fresh_QtyOnHand_Line_ID", null);
+	String COLUMNNAME_Fresh_QtyOnHand_Line_ID = "Fresh_QtyOnHand_Line_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_M_AttributeSetInstance>(I_Fresh_QtyOnHand_Line.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_M_Product>(I_Fresh_QtyOnHand_Line.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Produktionsstätte.
@@ -286,7 +266,7 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Plant_ID (int PP_Plant_ID);
+	void setPP_Plant_ID (int PP_Plant_ID);
 
 	/**
 	 * Get Produktionsstätte.
@@ -295,16 +275,14 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Plant_ID();
+	int getPP_Plant_ID();
 
-	public org.compiere.model.I_S_Resource getPP_Plant();
+	org.compiere.model.I_S_Resource getPP_Plant();
 
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant);
+	void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant);
 
-    /** Column definition for PP_Plant_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_S_Resource>(I_Fresh_QtyOnHand_Line.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name PP_Plant_ID */
-    public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+	ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
 
 	/**
 	 * Set Produktgruppe.
@@ -316,7 +294,7 @@ public interface I_Fresh_QtyOnHand_Line
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setProductGroup (java.lang.String ProductGroup);
+	void setProductGroup (@Nullable java.lang.String ProductGroup);
 
 	/**
 	 * Get Produktgruppe.
@@ -326,12 +304,10 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getProductGroup();
+	@Nullable java.lang.String getProductGroup();
 
-    /** Column definition for ProductGroup */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ProductGroup = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "ProductGroup", null);
-    /** Column name ProductGroup */
-    public static final String COLUMNNAME_ProductGroup = "ProductGroup";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ProductGroup = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "ProductGroup", null);
+	String COLUMNNAME_ProductGroup = "ProductGroup";
 
 	/**
 	 * Set Produktname.
@@ -343,7 +319,7 @@ public interface I_Fresh_QtyOnHand_Line
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setProductName (java.lang.String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -353,92 +329,79 @@ public interface I_Fresh_QtyOnHand_Line
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getProductName();
+	@Nullable java.lang.String getProductName();
 
-    /** Column definition for ProductName */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "ProductName", null);
-    /** Column name ProductName */
-    public static final String COLUMNNAME_ProductName = "ProductName";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_ProductName = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
 
 	/**
-	 * Set Zählmenge.
-	 * Gezählte Menge
+	 * Set Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyCount (java.math.BigDecimal QtyCount);
+	void setQtyCount (BigDecimal QtyCount);
 
 	/**
-	 * Get Zählmenge.
-	 * Gezählte Menge
+	 * Get Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyCount();
+	BigDecimal getQtyCount();
 
-    /** Column definition for QtyCount */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_QtyCount = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "QtyCount", null);
-    /** Column name QtyCount */
-    public static final String COLUMNNAME_QtyCount = "QtyCount";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_QtyCount = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "QtyCount", null);
+	String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_SeqNo = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, Object>(I_Fresh_QtyOnHand_Line.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_Fresh_QtyOnHand_Line, Object> COLUMN_Updated = new ModelColumn<>(I_Fresh_QtyOnHand_Line.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_Fresh_QtyOnHand_Line, org.compiere.model.I_AD_User>(I_Fresh_QtyOnHand_Line.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

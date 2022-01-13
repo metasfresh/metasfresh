@@ -12,6 +12,8 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -40,7 +42,8 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 	AfterOrderDelivered(X_C_Order.INVOICERULE_AfterOrderDelivered), //
 	CustomerScheduleAfterDelivery(X_C_Order.INVOICERULE_CustomerScheduleAfterDelivery), //
 	Immediate(X_C_Order.INVOICERULE_Immediate),
-	OrderCompletelyDelivered(X_C_Order.INVOICERULE_OrderCompletelyDelivered)//
+	OrderCompletelyDelivered(X_C_Order.INVOICERULE_OrderCompletelyDelivered),//
+	AfterPick(X_C_Order.INVOICERULE_AfterPick)//
 	;
 
 	@Getter
@@ -51,14 +54,15 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static InvoiceRule ofNullableCode(final String code)
+	@Nullable
+	public static InvoiceRule ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
 	public static InvoiceRule ofCode(@NonNull final String code)
 	{
-		InvoiceRule type = typesByCode.get(code);
+		final InvoiceRule type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + InvoiceRule.class + " found for code: " + code);
@@ -66,6 +70,7 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 		return type;
 	}
 
+	@Nullable
 	public static String toCodeOrNull(final InvoiceRule type)
 	{
 		return type != null ? type.getCode() : null;

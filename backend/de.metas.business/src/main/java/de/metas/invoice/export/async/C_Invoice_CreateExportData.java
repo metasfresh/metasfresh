@@ -31,7 +31,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 			.newModelScheduler(C_Invoice_CreateExportData.class, I_C_Invoice.class)
 			.setCreateOneWorkpackagePerModel(true);
 
-	public static final void scheduleOnTrxCommit(final I_C_Invoice invoiceRecord)
+	public static void scheduleOnTrxCommit(final I_C_Invoice invoiceRecord)
 	{
 		SCHEDULER.schedule(invoiceRecord);
 	}
@@ -44,10 +44,10 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 			@NonNull final I_C_Queue_WorkPackage workpackage,
 			@NonNull final String localTrxName)
 	{
-		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
+		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveAllItemsSkipMissing(workpackage, I_C_Invoice.class);
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
-			try (final MDCCloseable invoiceMDC = TableRecordMDC.putTableRecordReference(invoiceRecord))
+			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(invoiceRecord))
 			{
 				Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for invoiceRecord={}", invoiceRecord);
 

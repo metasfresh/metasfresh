@@ -47,7 +47,7 @@ export function mergePartialGroupToGroupsArray(groups, groupToAdd) {
 
 /** Sort groups by caption alphabetically, keep miscGroup last. */
 function compareGroupsByCaption(group1, group2) {
-  if (group1.miscGroup == group2.miscGroup) {
+  if (group1.miscGroup === group2.miscGroup) {
     return group1.caption.localeCompare(group2.caption);
   } else if (group1.miscGroup) {
     return +1; // keep misc group last
@@ -82,6 +82,7 @@ export function mergeReferencesToReferences(
     }),
     {}
   );
+  //console.log('referencesToAddByKey: %o', referencesToAddByKey);
 
   // Merge referencesToAdd to existing references
   const existingReferencesMerged = existingReferences.map(
@@ -93,6 +94,7 @@ export function mergeReferencesToReferences(
       return combineReferences(existingReference, referenceToAdd);
     }
   );
+  // console.log('existingReferencesMerged: %o', existingReferencesMerged);
 
   return [
     ...existingReferencesMerged,

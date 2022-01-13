@@ -8,7 +8,7 @@
     "parser": "@babel/eslint-parser",
     "parserOptions": {
         "requireConfigFile" : "false",
-        "babelOptions": { "configFile": "./.babelrc" }
+        "babelOptions": { "configFile": "./babel.config.js" }
     },
     "extends": [
         "eslint:recommended",

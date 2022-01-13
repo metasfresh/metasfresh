@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.metas.common.util.time.SystemTime;
+import lombok.NonNull;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
@@ -43,8 +44,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
  * Default implementation for {@link IQueueProcessorListener}.
  * 
  * NOTE: this implementation is thread-safe
- * 
- * @author tsa
  * 
  */
 public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEventDispatcher
@@ -74,9 +73,9 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 		{
 			return listener;
 		}
-	};
+	}
 
-	private final MultiValueMap<Integer, ListenerEntry> _listeners = new MultiValueMap<Integer, ListenerEntry>();
+	private final MultiValueMap<Integer, ListenerEntry> _listeners = new MultiValueMap<>();
 	private final transient ReentrantLock listenersLock = new ReentrantLock();
 
 	protected List<ListenerEntry> getAndRemoveListenerEntries(final int workpackageId)
@@ -85,8 +84,7 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 
 		try
 		{
-			final List<ListenerEntry> entries = _listeners.remove(workpackageId);
-			return entries;
+			return _listeners.remove(workpackageId);
 		}
 		finally
 		{
@@ -107,9 +105,9 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 		}
 	}
 
-	protected boolean removeListenerEntry(int workpackageId)
+	protected boolean removeListenerEntry(final int workpackageId)
 	{
-		List<ListenerEntry> entries = null;
+		List<ListenerEntry> entries;
 
 		listenersLock.lock();
 		try
@@ -124,7 +122,7 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 		return entries != null && !entries.isEmpty();
 	}
 
-	protected boolean removeListenerEntry(int workpackageId, IQueueProcessorListener callback)
+	protected boolean removeListenerEntry(final int workpackageId, final IQueueProcessorListener callback)
 	{
 		listenersLock.lock();
 		try
@@ -178,7 +176,7 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 			{
 				listener.onWorkpackageProcessed(workpackage, workpackageProcessor);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Error while executing " + listener + " for " + workpackage + " [SKIP]", e);
 				// NOTE: we are not throwing the error because there is not much to handle it, everything was consumed before
@@ -187,10 +185,9 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 	}
 
 	@Override
-	public void registerListener(final IQueueProcessorListener listener, final int workpackageId)
+	public void registerListener(@NonNull final IQueueProcessorListener listener, final int workpackageId)
 	{
-		Check.assumeNotNull(listener, "listener not null");
-		Check.assumeNotNull(workpackageId > 0, "workpackageId > 0");
+		Check.assume(workpackageId > 0, "workpackageId > 0");
 
 		// If it's null then don't register it
 		if (listener == NullQueueProcessorListener.instance)
@@ -215,7 +212,7 @@ public class DefaultQueueProcessorEventDispatcher implements IQueueProcessorEven
 	}
 
 	@Override
-	public boolean unregisterListeners(int workpackageId)
+	public boolean unregisterListeners(final int workpackageId)
 	{
 		return removeListenerEntry(workpackageId);
 	}

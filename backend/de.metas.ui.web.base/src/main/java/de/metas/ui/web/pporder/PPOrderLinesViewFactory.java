@@ -146,6 +146,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.setIncludedViewLayout(IncludedViewLayout.DEFAULT)
 				//
 				.addElementsFromViewRowClass(PPOrderLineRow.class, JSONViewDataType.grid)
+				.setAllowOpeningRowDetails(false)
 				//
 				.build();
 	}

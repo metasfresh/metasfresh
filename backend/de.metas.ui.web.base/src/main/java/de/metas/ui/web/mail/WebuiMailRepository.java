@@ -6,6 +6,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -133,7 +134,7 @@ public class WebuiMailRepository
 		eventPublisher.publishEvent(new WebuiEmailRemovedEvent(email));
 	}
 
-	public LookupValuesList getToTypeahead(final String emailId_NOTUSED, final String query)
+	public LookupValuesPage getToTypeahead(final String emailId_NOTUSED, final String query)
 	{
 		final Evaluatee ctx = Evaluatees.empty(); // TODO
 
@@ -178,9 +179,8 @@ public class WebuiMailRepository
 
 	@Value
 	@AllArgsConstructor
-	public static final class WebuiEmailRemovedEvent
+	public static class WebuiEmailRemovedEvent
 	{
-		@NonNull
-		private final WebuiEmail email;
+		@NonNull WebuiEmail email;
 	}
 }

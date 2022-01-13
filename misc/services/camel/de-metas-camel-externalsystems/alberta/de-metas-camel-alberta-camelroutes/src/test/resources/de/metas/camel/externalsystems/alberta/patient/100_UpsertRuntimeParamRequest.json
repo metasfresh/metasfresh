@@ -1,0 +1,10 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 1,
+      "request": "command",
+      "name": "UpdatedAfter",
+      "value": "2021-02-08T07:48:14.213Z"
+    }
+  ]
+}

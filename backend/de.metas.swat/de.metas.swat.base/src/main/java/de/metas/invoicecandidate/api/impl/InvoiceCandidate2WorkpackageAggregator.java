@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.async.api.IAsyncBatchBL;
 import org.compiere.util.Env;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -62,6 +63,7 @@ import lombok.NonNull;
 {
 	// services
 	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	//
 	// Parameters
@@ -131,9 +133,14 @@ import lombok.NonNull;
 	@Override
 	protected IWorkPackageBuilder createGroup(final Object itemHashKey, final I_C_Invoice_Candidate item)
 	{
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchId(item)
+				.map(asyncBatchBL::getAsyncBatchById)
+				.orElse(null);
+
 		final IWorkPackageBuilder workpackageBuilder = _queueBlockBuilder.newWorkpackage()
 				.setPriority(workpackagePriority)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null)) // we want the enqueuing user to be notified on problems
+				.setC_Async_Batch(asyncBatch)
 				.bindToTrxName(getTrxName());
 
 		//

@@ -104,9 +104,9 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
 	Quantity convertQuantityTo(
-			Quantity quantity,
-			UOMConversionContext conversionCtx,
-			UomId uomToId);
+			@NonNull Quantity quantity,
+			@Nullable UOMConversionContext conversionCtx,
+			@NonNull UomId uomToId);
 
 	@Override
 	default Quantity convertQuantityTo(
@@ -127,21 +127,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 			UOMConversionContext conversionCtx,
 			BigDecimal qty,
 			I_C_UOM uomFrom);
-
-	/**
-	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
-	 *
-	 * @param uomFrom        may not be <code>null</code>.
-	 * @param uomTo          may not be <code>null</code>.
-	 * @param pricePrecision precision to be used for resulting price
-	 * @return converted price using <code>pricePrecision</code>; never return NULL.
-	 */
-	BigDecimal convertPrice(
-			int productId,
-			BigDecimal price,
-			I_C_UOM uomFrom,
-			I_C_UOM uomTo,
-			int pricePrecision);
 
 	/**
 	 * Rounds given qty to UOM standard precision.

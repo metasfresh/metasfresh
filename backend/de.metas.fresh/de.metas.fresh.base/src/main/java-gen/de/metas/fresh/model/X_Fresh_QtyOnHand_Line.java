@@ -1,329 +1,234 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.fresh.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for Fresh_QtyOnHand_Line
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated)
  */
-@SuppressWarnings("javadoc")
-public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_Fresh_QtyOnHand_Line, org.compiere.model.I_Persistent 
+@SuppressWarnings("unused")
+public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_Fresh_QtyOnHand_Line, org.compiere.model.I_Persistent
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 991918086L;
+	private static final long serialVersionUID = 1216286992L;
 
-    /** Standard Constructor */
-    public X_Fresh_QtyOnHand_Line (Properties ctx, int Fresh_QtyOnHand_Line_ID, String trxName)
-    {
-      super (ctx, Fresh_QtyOnHand_Line_ID, trxName);
-      /** if (Fresh_QtyOnHand_Line_ID == 0)
-        {
-			setDateDoc (new Timestamp( System.currentTimeMillis() )); // @DateDoc@
-			setFresh_QtyOnHand_ID (0);
-			setFresh_QtyOnHand_Line_ID (0);
-			setM_Product_ID (0);
-			setPP_Plant_ID (0);
-			setQtyCount (BigDecimal.ZERO);
-			setSeqNo (0); // 0
-        } */
-    }
+	/** Standard Constructor */
+	public X_Fresh_QtyOnHand_Line (final Properties ctx, final int Fresh_QtyOnHand_Line_ID, @Nullable final String trxName)
+	{
+		super (ctx, Fresh_QtyOnHand_Line_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_Fresh_QtyOnHand_Line (Properties ctx, ResultSet rs, String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_Fresh_QtyOnHand_Line (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set ASI Key.
-		@param ASIKey ASI Key	  */
+	/** Load Meta Data */
 	@Override
-	public void setASIKey (java.lang.String ASIKey)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setASIKey (final @Nullable java.lang.String ASIKey)
 	{
 		set_Value (COLUMNNAME_ASIKey, ASIKey);
 	}
 
-	/** Get ASI Key.
-		@return ASI Key	  */
 	@Override
-	public java.lang.String getASIKey () 
+	public java.lang.String getASIKey()
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ASIKey);
+		return get_ValueAsString(COLUMNNAME_ASIKey);
 	}
 
-	/** Set Belegdatum.
-		@param DateDoc 
-		Datum des Belegs
-	  */
 	@Override
-	public void setDateDoc (java.sql.Timestamp DateDoc)
+	public void setDateDoc (final java.sql.Timestamp DateDoc)
 	{
 		set_Value (COLUMNNAME_DateDoc, DateDoc);
 	}
 
-	/** Get Belegdatum.
-		@return Datum des Belegs
-	  */
 	@Override
-	public java.sql.Timestamp getDateDoc () 
+	public java.sql.Timestamp getDateDoc()
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
+		return get_ValueAsTimestamp(COLUMNNAME_DateDoc);
 	}
 
 	@Override
-	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand() throws RuntimeException
+	public de.metas.fresh.model.I_Fresh_QtyOnHand getFresh_QtyOnHand()
 	{
 		return get_ValueAsPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class);
 	}
 
 	@Override
-	public void setFresh_QtyOnHand(de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand)
+	public void setFresh_QtyOnHand(final de.metas.fresh.model.I_Fresh_QtyOnHand Fresh_QtyOnHand)
 	{
 		set_ValueFromPO(COLUMNNAME_Fresh_QtyOnHand_ID, de.metas.fresh.model.I_Fresh_QtyOnHand.class, Fresh_QtyOnHand);
 	}
 
-	/** Set Zählbestand Einkauf (fresh).
-		@param Fresh_QtyOnHand_ID Zählbestand Einkauf (fresh)	  */
 	@Override
-	public void setFresh_QtyOnHand_ID (int Fresh_QtyOnHand_ID)
+	public void setFresh_QtyOnHand_ID (final int Fresh_QtyOnHand_ID)
 	{
-		if (Fresh_QtyOnHand_ID < 1) 
+		if (Fresh_QtyOnHand_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, Integer.valueOf(Fresh_QtyOnHand_ID));
+		else
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_ID, Fresh_QtyOnHand_ID);
 	}
 
-	/** Get Zählbestand Einkauf (fresh).
-		@return Zählbestand Einkauf (fresh)	  */
 	@Override
-	public int getFresh_QtyOnHand_ID () 
+	public int getFresh_QtyOnHand_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Fresh_QtyOnHand_ID);
 	}
 
-	/** Set Einkauf-Zählbestand Datensatz.
-		@param Fresh_QtyOnHand_Line_ID Einkauf-Zählbestand Datensatz	  */
 	@Override
-	public void setFresh_QtyOnHand_Line_ID (int Fresh_QtyOnHand_Line_ID)
+	public void setFresh_QtyOnHand_Line_ID (final int Fresh_QtyOnHand_Line_ID)
 	{
-		if (Fresh_QtyOnHand_Line_ID < 1) 
+		if (Fresh_QtyOnHand_Line_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, Integer.valueOf(Fresh_QtyOnHand_Line_ID));
+		else
+			set_ValueNoCheck (COLUMNNAME_Fresh_QtyOnHand_Line_ID, Fresh_QtyOnHand_Line_ID);
 	}
 
-	/** Get Einkauf-Zählbestand Datensatz.
-		@return Einkauf-Zählbestand Datensatz	  */
 	@Override
-	public int getFresh_QtyOnHand_Line_ID () 
+	public int getFresh_QtyOnHand_Line_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Fresh_QtyOnHand_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Fresh_QtyOnHand_Line_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Merkmale.
-		@param M_AttributeSetInstance_ID 
-		Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID < 0) 
+		if (M_AttributeSetInstance_ID < 0)
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
-	}
-
-	/** Get Merkmale.
-		@return Merkmals Ausprägungen zum Produkt
-	  */
-	@Override
-	public int getM_AttributeSetInstance_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		else
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public int getM_AttributeSetInstance_ID()
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
-	@Override
-	public void setM_Product_ID (int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
 			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+		else
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant() throws RuntimeException
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1)
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getPP_Plant()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class);
 	}
 
 	@Override
-	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant)
+	public void setPP_Plant(final org.compiere.model.I_S_Resource PP_Plant)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class, PP_Plant);
 	}
 
-	/** Set Produktionsstätte.
-		@param PP_Plant_ID Produktionsstätte	  */
 	@Override
-	public void setPP_Plant_ID (int PP_Plant_ID)
+	public void setPP_Plant_ID (final int PP_Plant_ID)
 	{
-		if (PP_Plant_ID < 1) 
+		if (PP_Plant_ID < 1)
 			set_Value (COLUMNNAME_PP_Plant_ID, null);
-		else 
-			set_Value (COLUMNNAME_PP_Plant_ID, Integer.valueOf(PP_Plant_ID));
+		else
+			set_Value (COLUMNNAME_PP_Plant_ID, PP_Plant_ID);
 	}
 
-	/** Get Produktionsstätte.
-		@return Produktionsstätte	  */
 	@Override
-	public int getPP_Plant_ID () 
+	public int getPP_Plant_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Plant_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Plant_ID);
 	}
 
-	/** Set Produktgruppe.
-		@param ProductGroup 
-		This SQL-column is supposed to be used by the code, so pls don't set Lazy loading to true!
-	  */
 	@Override
-	public void setProductGroup (java.lang.String ProductGroup)
+	public void setProductGroup (final @Nullable java.lang.String ProductGroup)
 	{
 		throw new IllegalArgumentException ("ProductGroup is virtual column");	}
 
-	/** Get Produktgruppe.
-		@return This SQL-column is supposed to be used by the code, so pls don't set Lazy loading to true!
-	  */
 	@Override
-	public java.lang.String getProductGroup () 
+	public java.lang.String getProductGroup()
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductGroup);
+		return get_ValueAsString(COLUMNNAME_ProductGroup);
 	}
 
-	/** Set Produktname.
-		@param ProductName 
-		This SQL-column is supposed to be used by the code, so pls don't set Lazy loading to true!
-	  */
 	@Override
-	public void setProductName (java.lang.String ProductName)
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		throw new IllegalArgumentException ("ProductName is virtual column");	}
 
-	/** Get Produktname.
-		@return This SQL-column is supposed to be used by the code, so pls don't set Lazy loading to true!
-	  */
 	@Override
-	public java.lang.String getProductName () 
+	public java.lang.String getProductName()
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
-	/** Set Zählmenge.
-		@param QtyCount 
-		Gezählte Menge
-	  */
 	@Override
-	public void setQtyCount (java.math.BigDecimal QtyCount)
+	public void setQtyCount (final BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
-	/** Get Zählmenge.
-		@return Gezählte Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyCount () 
+	public BigDecimal getQtyCount()
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

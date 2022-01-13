@@ -54,7 +54,7 @@ public class DocOutboundService implements IPDFArchiveProvider
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> docOutboundLogQueryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, recordId);
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log_Line> docOutboundLogLineQueryBuilder = docOutboundLogQueryBuilder

@@ -22,7 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -32,6 +37,10 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class REST_API_StepDef
 {
@@ -46,41 +55,101 @@ public class REST_API_StepDef
 	}
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
-	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName) throws IOException
+	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
-		userAuthToken = RESTUtil.getAuthToken(userLogin,roleName);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
+	}
+
+	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode,
+			@NonNull final String payload) throws IOException
+	{
+		testContext.setRequestPayload(payload);
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.authToken(userAuthToken)
+				.payload(payload)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload(
-			final String endpointPath,
-			final String verb,
-			final String payload) throws IOException
+			@NonNull final String endpointPath,
+			@NonNull final String verb,
+			@NonNull final String payload) throws IOException
 	{
 		testContext.setRequestPayload(payload);
 
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken, null);
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.authToken(userAuthToken)
+				.payload(payload)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
 		testContext.setApiResponse(apiResponse);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload from context and responds with {string} status code")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload_from_context(
-			final String endpointPath,
-			final String verb,
-			final String statusCode) throws IOException
+			@NonNull final String endpointPath,
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
 	{
 		final String payload = testContext.getRequestPayload();
 
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken, Integer.parseInt(statusCode));
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.authToken(userAuthToken)
+				.payload(payload)
+				.statusCode(Integer.parseInt(statusCode))
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
 		testContext.setApiResponse(apiResponse);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_without_payload(
-			final String endpointPath,
-			final String verb) throws IOException
+			@NonNull final String endpointPath,
+			@NonNull final String verb) throws IOException
 	{
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken, null);
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.authToken(userAuthToken)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context, expecting status={string}")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers(
+			@NonNull final String endpointPath,
+			@NonNull final String verb,
+			@NonNull final String status) throws IOException
+	{
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.authToken(userAuthToken)
+				.additionalHeaders(testContext.getHttpHeaders())
+				.statusCode(Integer.parseInt(status))
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
 		testContext.setApiResponse(apiResponse);
 	}
 
@@ -88,5 +157,67 @@ public class REST_API_StepDef
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{
 		JSONAssert.assertEquals(expectedResponse, apiResponse.getContent(), JSONCompareMode.LENIENT);
+	}
+
+	@When("invoke {string} {string} with response code {string}")
+	public void invoke_httpMethod_with_url(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String responseCode) throws IOException
+	{
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.authToken(userAuthToken)
+				.statusCode(Integer.parseInt(responseCode))
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@And("the actual response body is")
+	public void validate_response_body(@NonNull final String responseBody) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final String responseJson = testContext.getApiResponse().getContent();
+		final JsonTestResponse apiResponse = mapper.readValue(responseJson, JsonTestResponse.class);
+
+		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
+
+		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+	}
+
+	@And("the actual response body is empty")
+	public void validate_empty_response_body()
+	{
+		final String responseJson = testContext.getApiResponse().getContent();
+
+		assertThat(responseJson).isBlank();
+	}
+
+
+	@And("the actual non JSON response body is")
+	public void validate_non_JSON_response_body(@NonNull final String responseBody)
+	{
+		final String content = testContext.getApiResponse().getContent();
+
+		assertThat(content).isEqualTo(responseBody);
+	}
+
+	@When("add HTTP header")
+	public void add_http_header(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String key = DataTableUtil.extractStringForColumnName(tableRow, "Key");
+		final String value = DataTableUtil.extractStringForColumnName(tableRow, "Value");
+
+		final Map<String, String> additionalHeaders = new HashMap<>();
+
+		additionalHeaders.put(key, value);
+
+		testContext.setHttpHeaders(additionalHeaders);
 	}
 }

@@ -1,49 +1,39 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Line_Alloc
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C_Invoice_Line_Alloc, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1902505094L;
+	private static final long serialVersionUID = -1468716236L;
 
     /** Standard Constructor */
-    public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
+    public X_C_Invoice_Line_Alloc (final Properties ctx, final int C_Invoice_Line_Alloc_ID, @Nullable final String trxName)
     {
       super (ctx, C_Invoice_Line_Alloc_ID, trxName);
-      /** if (C_Invoice_Line_Alloc_ID == 0)
-        {
-			setC_Invoice_Candidate_ID (0);
-			setC_Invoice_Line_Alloc_ID (0);
-			setC_InvoiceLine_ID (0);
-			setQtyInvoiced (BigDecimal.ZERO); // 0
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Invoice_Line_Alloc (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Invoice_Line_Alloc (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg()
@@ -52,34 +42,24 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setC_Invoice_Candidate_Agg(de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg C_Invoice_Candidate_Agg)
+	public void setC_Invoice_Candidate_Agg(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg C_Invoice_Candidate_Agg)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_Agg_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg.class, C_Invoice_Candidate_Agg);
 	}
 
-	/** Set Aggregator.
-		@param C_Invoice_Candidate_Agg_ID 
-		Definiert Richtlinien zur Aggregation von Datensätzen mit ggf. unterschiedlichen Produkten zu einem einzigen Datensatz
-	  */
 	@Override
-	public void setC_Invoice_Candidate_Agg_ID (int C_Invoice_Candidate_Agg_ID)
+	public void setC_Invoice_Candidate_Agg_ID (final int C_Invoice_Candidate_Agg_ID)
 	{
 		if (C_Invoice_Candidate_Agg_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Agg_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Agg_ID, Integer.valueOf(C_Invoice_Candidate_Agg_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Agg_ID, C_Invoice_Candidate_Agg_ID);
 	}
 
-	/** Get Aggregator.
-		@return Definiert Richtlinien zur Aggregation von Datensätzen mit ggf. unterschiedlichen Produkten zu einem einzigen Datensatz
-	  */
 	@Override
-	public int getC_Invoice_Candidate_Agg_ID () 
+	public int getC_Invoice_Candidate_Agg_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Agg_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Agg_ID);
 	}
 
 	@Override
@@ -89,53 +69,62 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate)
+	public void setC_Invoice_Candidate(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Candidate);
 	}
 
-	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
 	@Override
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
+	public void setC_Invoice_Candidate_ID (final int C_Invoice_Candidate_ID)
 	{
 		if (C_Invoice_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, C_Invoice_Candidate_ID);
 	}
 
-	/** Get Rechnungskandidat.
-		@return Rechnungskandidat	  */
 	@Override
-	public int getC_Invoice_Candidate_ID () 
+	public int getC_Invoice_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
 	}
 
-	/** Set Rechnungskandidat - Rechungszeile.
-		@param C_Invoice_Line_Alloc_ID Rechnungskandidat - Rechungszeile	  */
 	@Override
-	public void setC_Invoice_Line_Alloc_ID (int C_Invoice_Line_Alloc_ID)
+	public void setC_Invoice_Line_Alloc_ID (final int C_Invoice_Line_Alloc_ID)
 	{
 		if (C_Invoice_Line_Alloc_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Line_Alloc_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Line_Alloc_ID, Integer.valueOf(C_Invoice_Line_Alloc_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Line_Alloc_ID, C_Invoice_Line_Alloc_ID);
 	}
 
-	/** Get Rechnungskandidat - Rechungszeile.
-		@return Rechnungskandidat - Rechungszeile	  */
 	@Override
-	public int getC_Invoice_Line_Alloc_ID () 
+	public int getC_Invoice_Line_Alloc_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Line_Alloc_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Line_Alloc_ID);
+	}
+
+	/** 
+	 * C_Invoice_Line_Alloc_Type AD_Reference_ID=541501
+	 * Reference name: C_Invoice_Line_Alloc_Type
+	 */
+	public static final int C_INVOICE_LINE_ALLOC_TYPE_AD_Reference_ID=541501;
+	/** CreatedFromIC = CreatedFromIC */
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreatedFromIC = "CreatedFromIC";
+	/** CreditMemoReinvoicable = CreditMemoReinvoiceable */
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoiceable = "CreditMemoReinvoiceable";
+	/** CreditMemoNotReinvoicable = CreditMemoNotReinvoiceable */
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoiceable = "CreditMemoNotReinvoiceable";
+	@Override
+	public void setC_Invoice_Line_Alloc_Type (final @Nullable java.lang.String C_Invoice_Line_Alloc_Type)
+	{
+		set_Value (COLUMNNAME_C_Invoice_Line_Alloc_Type, C_Invoice_Line_Alloc_Type);
+	}
+
+	@Override
+	public java.lang.String getC_Invoice_Line_Alloc_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_Invoice_Line_Alloc_Type);
 	}
 
 	@Override
@@ -145,59 +134,39 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine)
+	public void setC_InvoiceLine(final org.compiere.model.I_C_InvoiceLine C_InvoiceLine)
 	{
 		set_ValueFromPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class, C_InvoiceLine);
 	}
 
-	/** Set Rechnungsposition.
-		@param C_InvoiceLine_ID 
-		Rechnungszeile
-	  */
 	@Override
-	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
+	public void setC_InvoiceLine_ID (final int C_InvoiceLine_ID)
 	{
 		if (C_InvoiceLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, C_InvoiceLine_ID);
 	}
 
-	/** Get Rechnungsposition.
-		@return Rechnungszeile
-	  */
 	@Override
-	public int getC_InvoiceLine_ID () 
+	public int getC_InvoiceLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_ID);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -229,123 +198,78 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
-
 		throw new IllegalArgumentException ("DocStatus is virtual column");	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Notiz.
-		@param Note 
-		Optional weitere Information
-	  */
 	@Override
-	public void setNote (java.lang.String Note)
+	public void setNote (final @Nullable java.lang.String Note)
 	{
 		set_ValueNoCheck (COLUMNNAME_Note, Note);
 	}
 
-	/** Get Notiz.
-		@return Optional weitere Information
-	  */
 	@Override
-	public java.lang.String getNote () 
+	public java.lang.String getNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Note);
+		return get_ValueAsString(COLUMNNAME_Note);
 	}
 
-	/** Set Preis Abw..
-		@param PriceEntered_Override Preis Abw.	  */
 	@Override
-	public void setPriceEntered_Override (java.math.BigDecimal PriceEntered_Override)
+	public void setPriceEntered_Override (final @Nullable BigDecimal PriceEntered_Override)
 	{
 		set_Value (COLUMNNAME_PriceEntered_Override, PriceEntered_Override);
 	}
 
-	/** Get Preis Abw..
-		@return Preis Abw.	  */
 	@Override
-	public java.math.BigDecimal getPriceEntered_Override () 
+	public BigDecimal getPriceEntered_Override() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEntered_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Berechn. Menge.
-		@param QtyInvoiced 
-		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
-	  */
 	@Override
-	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
+	public void setQtyInvoiced (final BigDecimal QtyInvoiced)
 	{
 		set_Value (COLUMNNAME_QtyInvoiced, QtyInvoiced);
 	}
 
-	/** Get Berechn. Menge.
-		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
-	  */
 	@Override
-	public java.math.BigDecimal getQtyInvoiced () 
+	public BigDecimal getQtyInvoiced() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoiced);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Abgerechnet.
-		@param QtyInvoicedInUOM Abgerechnet	  */
 	@Override
-	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM)
+	public void setQtyInvoicedInUOM (final @Nullable BigDecimal QtyInvoicedInUOM)
 	{
 		set_Value (COLUMNNAME_QtyInvoicedInUOM, QtyInvoicedInUOM);
 	}
 
-	/** Get Abgerechnet.
-		@return Abgerechnet	  */
 	@Override
-	public java.math.BigDecimal getQtyInvoicedInUOM () 
+	public BigDecimal getQtyInvoicedInUOM() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInvoicedInUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Zu berechn. Menge abw..
-		@param QtyToInvoice_Override 
-		Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
-	  */
 	@Override
-	public void setQtyToInvoice_Override (java.math.BigDecimal QtyToInvoice_Override)
+	public void setQtyToInvoice_Override (final @Nullable BigDecimal QtyToInvoice_Override)
 	{
 		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
 	}
 
-	/** Get Zu berechn. Menge abw..
-		@return Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
-	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoice_Override () 
+	public BigDecimal getQtyToInvoice_Override() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

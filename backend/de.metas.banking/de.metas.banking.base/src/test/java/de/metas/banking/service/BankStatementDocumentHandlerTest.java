@@ -5,6 +5,7 @@ import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
@@ -17,11 +18,14 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -32,12 +36,14 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.Trace;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -50,12 +56,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,6 +72,7 @@ public class BankStatementDocumentHandlerTest
 {
 	private BankStatementDocumentHandler handler;
 
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private BankRepository bankRepo;
 
@@ -199,6 +206,46 @@ public class BankStatementDocumentHandlerTest
 		return bankStatementLine;
 	}
 
+	@Builder(builderMethodName = "bankStatementLineRef", builderClassName = "BankStatementLineRefBuilder")
+	private BankStatementLineReference createBankStatementLineRef(
+			final BankStatementId bankStatementId,
+			final BankStatementLineId bankStatementLineId,
+			final BPartnerId bpartnerId,
+			final PaymentId paymentId,
+			final Money trxAmt,
+			final Money bankFeeAmt,
+			final boolean processed)
+	{
+		return bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
+				.bankStatementId(bankStatementId)
+				.bankStatementLineId(bankStatementLineId)
+				.orgId(OrgId.ANY)
+				.bpartnerId(bpartnerId)
+				.paymentId(paymentId)
+				.lineNo(10)
+				.trxAmt(trxAmt)
+				.processed(processed)
+				.build());
+	}
+
+	@Builder(builderMethodName = "payment", builderClassName = "PaymentBuilder")
+	private PaymentId createPayment(
+			final boolean receipt,
+			final BPartnerId bpartnerId,
+			final Money payAmt)
+	{
+		final I_C_Payment paymentRecord = newInstance(I_C_Payment.class);
+		paymentRecord.setIsReceipt(receipt);
+		paymentRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		paymentRecord.setPayAmt(payAmt.toBigDecimal());
+		paymentRecord.setC_Currency_ID(payAmt.getCurrencyId().getRepoId());
+		paymentRecord.setDocStatus(DocStatus.Completed.getCode());
+		saveRecord(paymentRecord);
+
+		final PaymentId paymentId = PaymentId.ofRepoId(paymentRecord.getC_Payment_ID());
+		return paymentId;
+	}
+
 	@Test
 	public void completeIt_twoIdenticalStatementLines()
 	{
@@ -215,6 +262,46 @@ public class BankStatementDocumentHandlerTest
 				.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
 				.bpartnerId(customerId)
 				.stmtAmt(Money.of(100, euroCurrencyId))
+				.build();
+
+		handler.completeIt(InterfaceWrapperHelper.create(bankStatement, DocumentTableFields.class));
+	}
+
+	@Test
+	public void completeIt_oneLineWithSameAmountAsAnotherLineRef()
+	{
+		final BPartnerId vendorId = createCustomer();
+
+		final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+
+		//
+		// Line 1
+		{
+			final I_C_BankStatementLine bsl1 = bankStatementLine()
+					.bankStatementId(bankStatementId)
+					.stmtAmt(Money.of(-100, euroCurrencyId))
+					.build();
+
+			bankStatementLineRef()
+					.bankStatementId(bankStatementId)
+					.bankStatementLineId(BankStatementLineId.ofRepoId(bsl1.getC_BankStatementLine_ID()))
+					.bpartnerId(vendorId)
+					.paymentId(payment()
+							.receipt(false)
+							.bpartnerId(vendorId)
+							.payAmt(Money.of("100", euroCurrencyId))
+							.build())
+					.trxAmt(Money.of(-100, euroCurrencyId))
+					.build();
+		}
+
+		//
+		// Line 2
+		bankStatementLine()
+				.bankStatementId(bankStatementId)
+				.bpartnerId(vendorId)
+				.stmtAmt(Money.of(-100, euroCurrencyId))
 				.build();
 
 		handler.completeIt(InterfaceWrapperHelper.create(bankStatement, DocumentTableFields.class));

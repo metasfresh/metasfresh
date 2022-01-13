@@ -29,6 +29,7 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -443,12 +444,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-					.records(records)
-					.adWindowId(adWindowId)
-					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
+									.records(records)
+									.adWindowId(adWindowId)
+									.target(OpenTarget.GridView)
+									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+									.automaticallySetReferencingDocumentPaths(true)
+									.build());
 		}
 	}
 
@@ -464,12 +465,12 @@ public class ProcessExecutionResult
 					.map(recordId -> TableRecordReference.of(tableName, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 			setRecordToOpen(RecordsToOpen.builder()
-					.records(records)
-					.adWindowId(adWindowId)
-					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
+									.records(records)
+									.adWindowId(adWindowId)
+									.target(OpenTarget.GridView)
+									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+									.automaticallySetReferencingDocumentPaths(true)
+									.build());
 		}
 	}
 
@@ -482,12 +483,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-					.records(records)
-					.adWindowId(null)
-					.target(OpenTarget.GridView)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
+									.records(records)
+									.adWindowId(null)
+									.target(OpenTarget.GridView)
+									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+									.automaticallySetReferencingDocumentPaths(true)
+									.build());
 		}
 	}
 
@@ -510,12 +511,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-					.record(record)
-					.adWindowId(adWindowId)
-					.target(target)
-					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
+									.record(record)
+									.adWindowId(adWindowId)
+									.target(target)
+									.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
+									.automaticallySetReferencingDocumentPaths(true)
+									.build());
 		}
 	}
 
@@ -528,12 +529,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-					.record(record)
-					.adWindowId(adWindowId)
-					.target(target)
-					.targetTab(targetTab)
-					.automaticallySetReferencingDocumentPaths(true)
-					.build());
+									.record(record)
+									.adWindowId(adWindowId)
+									.target(target)
+									.targetTab(targetTab)
+									.automaticallySetReferencingDocumentPaths(true)
+									.build());
 		}
 	}
 
@@ -558,13 +559,13 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
-	public void setReportData(final byte[] data, @Nullable final String filename, final String contentType)
+	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
 	{
 		setReportData(ReportResultData.builder()
-				.reportData(data)
-				.reportFilename(filename)
-				.reportContentType(contentType)
-				.build());
+							  .reportData(data)
+							  .reportFilename(filename)
+							  .reportContentType(contentType)
+							  .build());
 	}
 
 	public void setReportData(@NonNull final File file)
@@ -584,11 +585,9 @@ public class ProcessExecutionResult
 	}
 
 	@Nullable
-	public byte[] getReportDataAsByteArray()
+	public Resource getReportDataResource()
 	{
-		return reportData != null
-				? reportData.getReportData()
-				: null;
+		return reportData != null ? reportData.getReportData() : null;
 	}
 
 	@Nullable

@@ -14,7 +14,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import lombok.experimental.Wither;
 @Value
 public class CostDetail
 {
-	@Wither
+	@With
 	CostDetailId id;
 
 	ClientId clientId;

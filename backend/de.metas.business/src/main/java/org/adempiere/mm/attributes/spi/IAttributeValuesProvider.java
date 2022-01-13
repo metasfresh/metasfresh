@@ -81,8 +81,6 @@ public interface IAttributeValuesProvider
 	 *
 	 * NOTE: if we are dealing with a high-volume attribute values list and if attribute is not found in loaded list, it will be loaded directly from database.
 	 *
-	 * @param evalCtx
-	 * @param valueKey
 	 * @return attribute value or null
 	 */
 	NamePair getAttributeValueOrNull(final Evaluatee evalCtx, Object valueKey);

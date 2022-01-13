@@ -98,7 +98,7 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 
 	public Duration toDuration(@NonNull final BigDecimal durationBD)
 	{
-		return DurationUtils.toDuration(durationBD, getTemporalUnit());
+		return DurationUtils.toWorkDurationRoundUp(durationBD, getTemporalUnit());
 	}
 
 }

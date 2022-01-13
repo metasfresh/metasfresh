@@ -35,6 +35,7 @@ export default class DocumentReferenceItem extends Component {
 DocumentReferenceItem.propTypes = {
   caption: PropTypes.string.isRequired,
   targetWindowId: PropTypes.string.isRequired,
+  targetCategory: PropTypes.string, // added only for troubleshooting
   referenceId: PropTypes.string.isRequired,
   filter: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,

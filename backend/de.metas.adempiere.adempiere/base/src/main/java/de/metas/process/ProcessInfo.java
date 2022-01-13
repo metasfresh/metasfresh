@@ -22,6 +22,7 @@ import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -108,7 +109,7 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
-		translateExcelHeaders = builder.isTranslateExcelHeaders();
+		spreadsheetExportOptions = builder.getSpreadsheetExportOptions();
 		adWorkflowId = builder.getWorkflowId();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
@@ -192,8 +193,10 @@ public final class ProcessInfo implements Serializable
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
 
+	@NonNull
 	@Getter
-	private final boolean translateExcelHeaders;
+	private final SpreadsheetExportOptions spreadsheetExportOptions;
+
 	private final WorkflowId adWorkflowId;
 
 	@Getter
@@ -216,7 +219,8 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Parameters
 	 */
-	@Nullable private ImmutableList<ProcessInfoParameter> parameters; // lazy loaded
+	@Nullable
+	private ImmutableList<ProcessInfoParameter> parameters; // lazy loaded
 	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
@@ -310,7 +314,7 @@ public final class ProcessInfo implements Serializable
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
 		{
-			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo",this);
+			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -329,7 +333,7 @@ public final class ProcessInfo implements Serializable
 		}
 		catch (final Exception e)
 		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo",this);
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
 	}
 
@@ -423,7 +427,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param trxName    transaction to be used when loading the record
+	 * @param trxName transaction to be used when loading the record
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
@@ -614,7 +618,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
-	 *
+	 * <p>
 	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
@@ -662,18 +666,19 @@ public final class ProcessInfo implements Serializable
 		// also restrict to the client(s) and org(s) the user shall see with its current role.
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
-		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, Access.WRITE));
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
+		compositeFilter.addFilter(whereFilter);
 
-		compositeFilter.addFilter(whereFilter)
-				.addFilter(clientFilter)
-				.addFilter(orgFilter);
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
+		compositeFilter.addFilter(clientFilter);
+
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
+		role.getOrgWhere(null, Access.WRITE)
+				.map(TypedSqlQueryFilter::<T>of)
+				.ifPresent(compositeFilter::addFilter);
 
 		return compositeFilter;
 	}
@@ -861,7 +866,7 @@ public final class ProcessInfo implements Serializable
 								adOrgId,
 								adUserId,
 								Env.getLocalDate(processCtx))
-						.orNull();
+						.orElse(null);
 				adRoleId = role == null ? null : role.getRoleId();
 			}
 			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));
@@ -1196,10 +1201,29 @@ public final class ProcessInfo implements Serializable
 			}
 		}
 
-		private boolean isTranslateExcelHeaders()
+		private SpreadsheetExportOptions getSpreadsheetExportOptions()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
-			return process != null ? process.isTranslateExcelHeaders() : false;
+			if (process == null)
+			{
+				return SpreadsheetExportOptions.builder()
+						.format(SpreadsheetFormat.Excel)
+						.translateHeaders(false)
+						.build();
+			}
+			else
+			{
+				final SpreadsheetFormat spreadsheetFormat = process.getSpreadsheetFormat() == null
+						? SpreadsheetFormat.Excel
+						: SpreadsheetFormat.ofNullableCode(process.getSpreadsheetFormat());
+
+				return SpreadsheetExportOptions.builder()
+						.format(spreadsheetFormat)
+						.translateHeaders(process.isTranslateExcelHeaders())
+						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
+						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.build();
+			}
 		}
 
 		private Optional<String> getReportTemplate()
@@ -1211,7 +1235,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final String reportTemplate = adProcess.getJasperReport();
-			if (Check.isEmpty(reportTemplate, true))
+			if (reportTemplate == null || Check.isEmpty(reportTemplate, true))
 			{
 				return Optional.empty();
 			}
@@ -1617,10 +1641,10 @@ public final class ProcessInfo implements Serializable
 		 * Advises the builder to also try loading the parameters from database.
 		 *
 		 * @param loadParametersFromDB <ul>
-		 *                                        <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
-		 *                                        <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
-		 *                                        be loaded from database but only those added here will be used.
-		 *                                        </ul>
+		 *                             <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
+		 *                             <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
+		 *                             be loaded from database but only those added here will be used.
+		 *                             </ul>
 		 */
 		public ProcessInfoBuilder setLoadParametersFromDB(boolean loadParametersFromDB)
 		{
@@ -1915,4 +1939,5 @@ public final class ProcessInfo implements Serializable
 			return Language.getLanguage(languageString);
 		}
 	} // ProcessInfoBuilder
+
 }   // ProcessInfo

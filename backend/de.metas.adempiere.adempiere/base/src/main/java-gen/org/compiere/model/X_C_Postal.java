@@ -1,362 +1,255 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Postal
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Postal extends org.compiere.model.PO implements I_C_Postal, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 446613580L;
+	private static final long serialVersionUID = 985183472L;
 
     /** Standard Constructor */
-    public X_C_Postal (Properties ctx, int C_Postal_ID, String trxName)
+    public X_C_Postal (final Properties ctx, final int C_Postal_ID, @Nullable final String trxName)
     {
       super (ctx, C_Postal_ID, trxName);
-      /** if (C_Postal_ID == 0)
-        {
-			setC_Country_ID (0);
-			setC_Postal_ID (0);
-			setIsManual (false); // N
-			setNonStdAddress (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Postal (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Postal (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_C_City getC_City() throws RuntimeException
+	public void setAD_Org_InCharge_ID (final int AD_Org_InCharge_ID)
+	{
+		if (AD_Org_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_Org_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Org_InCharge_ID, AD_Org_InCharge_ID);
+	}
+
+	@Override
+	public int getAD_Org_InCharge_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Org_InCharge_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_City getC_City()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_City_ID, org.compiere.model.I_C_City.class);
 	}
 
 	@Override
-	public void setC_City(org.compiere.model.I_C_City C_City)
+	public void setC_City(final org.compiere.model.I_C_City C_City)
 	{
 		set_ValueFromPO(COLUMNNAME_C_City_ID, org.compiere.model.I_C_City.class, C_City);
 	}
 
-	/** Set Ort.
-		@param C_City_ID 
-		Ort
-	  */
 	@Override
-	public void setC_City_ID (int C_City_ID)
+	public void setC_City_ID (final int C_City_ID)
 	{
 		if (C_City_ID < 1) 
 			set_Value (COLUMNNAME_C_City_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_City_ID, Integer.valueOf(C_City_ID));
+			set_Value (COLUMNNAME_C_City_ID, C_City_ID);
 	}
 
-	/** Get Ort.
-		@return Ort
-	  */
 	@Override
-	public int getC_City_ID () 
+	public int getC_City_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_City_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_City_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	public org.compiere.model.I_C_Country getC_Country()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
 	}
 
 	@Override
-	public void setC_Country(org.compiere.model.I_C_Country C_Country)
+	public void setC_Country(final org.compiere.model.I_C_Country C_Country)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
 	}
 
-	/** Set Land.
-		@param C_Country_ID 
-		Land
-	  */
 	@Override
-	public void setC_Country_ID (int C_Country_ID)
+	public void setC_Country_ID (final int C_Country_ID)
 	{
 		if (C_Country_ID < 1) 
 			set_Value (COLUMNNAME_C_Country_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
+			set_Value (COLUMNNAME_C_Country_ID, C_Country_ID);
 	}
 
-	/** Get Land.
-		@return Land
-	  */
 	@Override
-	public int getC_Country_ID () 
+	public int getC_Country_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
 	}
 
-	/** Set Ort.
-		@param City 
-		Name des Ortes
-	  */
 	@Override
-	public void setCity (java.lang.String City)
-	{
-		set_Value (COLUMNNAME_City, City);
-	}
-
-	/** Get Ort.
-		@return Name des Ortes
-	  */
-	@Override
-	public java.lang.String getCity () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_City);
-	}
-
-	/** Set Postal codes.
-		@param C_Postal_ID Postal codes	  */
-	@Override
-	public void setC_Postal_ID (int C_Postal_ID)
+	public void setC_Postal_ID (final int C_Postal_ID)
 	{
 		if (C_Postal_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Postal_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Postal_ID, Integer.valueOf(C_Postal_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Postal_ID, C_Postal_ID);
 	}
 
-	/** Get Postal codes.
-		@return Postal codes	  */
 	@Override
-	public int getC_Postal_ID () 
+	public int getC_Postal_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Postal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Postal_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Region getC_Region() throws RuntimeException
+	public org.compiere.model.I_C_Region getC_Region()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
 	}
 
 	@Override
-	public void setC_Region(org.compiere.model.I_C_Region C_Region)
+	public void setC_Region(final org.compiere.model.I_C_Region C_Region)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
 	}
 
-	/** Set Region.
-		@param C_Region_ID 
-		Identifiziert eine geographische Region
-	  */
 	@Override
-	public void setC_Region_ID (int C_Region_ID)
+	public void setC_Region_ID (final int C_Region_ID)
 	{
 		if (C_Region_ID < 1) 
 			set_Value (COLUMNNAME_C_Region_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Region_ID, Integer.valueOf(C_Region_ID));
+			set_Value (COLUMNNAME_C_Region_ID, C_Region_ID);
 	}
 
-	/** Get Region.
-		@return Identifiziert eine geographische Region
-	  */
 	@Override
-	public int getC_Region_ID () 
+	public int getC_Region_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Region_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Region_ID);
 	}
 
-	/** Set Bezirk.
-		@param District Bezirk	  */
 	@Override
-	public void setDistrict (java.lang.String District)
+	public void setCity (final @Nullable java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	@Override
+	public java.lang.String getCity() 
+	{
+		return get_ValueAsString(COLUMNNAME_City);
+	}
+
+	@Override
+	public void setDistrict (final @Nullable java.lang.String District)
 	{
 		set_Value (COLUMNNAME_District, District);
 	}
 
-	/** Get Bezirk.
-		@return Bezirk	  */
 	@Override
-	public java.lang.String getDistrict () 
+	public java.lang.String getDistrict() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_District);
+		return get_ValueAsString(COLUMNNAME_District);
 	}
 
-	/** Set Manuell.
-		@param IsManual 
-		Dies ist ein manueller Vorgang
-	  */
 	@Override
-	public void setIsManual (boolean IsManual)
+	public void setIsManual (final boolean IsManual)
 	{
-		set_Value (COLUMNNAME_IsManual, Boolean.valueOf(IsManual));
+		set_Value (COLUMNNAME_IsManual, IsManual);
 	}
 
-	/** Get Manuell.
-		@return Dies ist ein manueller Vorgang
-	  */
 	@Override
-	public boolean isManual () 
+	public boolean isManual() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManual);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsManual);
 	}
 
-	/** Set DPD Validated.
-		@param IsValidDPD 
-		Record was validated on DPD database
-	  */
 	@Override
-	public void setIsValidDPD (boolean IsValidDPD)
+	public void setIsValidDPD (final boolean IsValidDPD)
 	{
-		set_Value (COLUMNNAME_IsValidDPD, Boolean.valueOf(IsValidDPD));
+		set_Value (COLUMNNAME_IsValidDPD, IsValidDPD);
 	}
 
-	/** Get DPD Validated.
-		@return Record was validated on DPD database
-	  */
 	@Override
-	public boolean isValidDPD () 
+	public boolean isValidDPD() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsValidDPD);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsValidDPD);
 	}
 
-	/** Set Bereinigung notwendig.
-		@param NonStdAddress Bereinigung notwendig	  */
 	@Override
-	public void setNonStdAddress (boolean NonStdAddress)
+	public void setNonStdAddress (final boolean NonStdAddress)
 	{
-		set_Value (COLUMNNAME_NonStdAddress, Boolean.valueOf(NonStdAddress));
+		set_Value (COLUMNNAME_NonStdAddress, NonStdAddress);
 	}
 
-	/** Get Bereinigung notwendig.
-		@return Bereinigung notwendig	  */
 	@Override
-	public boolean isNonStdAddress () 
+	public boolean isNonStdAddress() 
 	{
-		Object oo = get_Value(COLUMNNAME_NonStdAddress);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_NonStdAddress);
 	}
 
-	/** Set PLZ.
-		@param Postal 
-		Postleitzahl
-	  */
 	@Override
-	public void setPostal (java.lang.String Postal)
+	public void setPostal (final @Nullable java.lang.String Postal)
 	{
 		set_Value (COLUMNNAME_Postal, Postal);
 	}
 
-	/** Get PLZ.
-		@return Postleitzahl
-	  */
 	@Override
-	public java.lang.String getPostal () 
+	public java.lang.String getPostal() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Postal);
+		return get_ValueAsString(COLUMNNAME_Postal);
 	}
 
-	/** Set -.
-		@param Postal_Add 
-		Additional ZIP or Postal code
-	  */
 	@Override
-	public void setPostal_Add (java.lang.String Postal_Add)
+	public void setPostal_Add (final @Nullable java.lang.String Postal_Add)
 	{
 		set_Value (COLUMNNAME_Postal_Add, Postal_Add);
 	}
 
-	/** Get -.
-		@return Additional ZIP or Postal code
-	  */
 	@Override
-	public java.lang.String getPostal_Add () 
+	public java.lang.String getPostal_Add() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Postal_Add);
+		return get_ValueAsString(COLUMNNAME_Postal_Add);
 	}
 
-	/** Set Region.
-		@param RegionName 
-		Name der Region
-	  */
 	@Override
-	public void setRegionName (java.lang.String RegionName)
+	public void setRegionName (final @Nullable java.lang.String RegionName)
 	{
 		set_Value (COLUMNNAME_RegionName, RegionName);
 	}
 
-	/** Get Region.
-		@return Name der Region
-	  */
 	@Override
-	public java.lang.String getRegionName () 
+	public java.lang.String getRegionName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
+		return get_ValueAsString(COLUMNNAME_RegionName);
 	}
 
-	/** Set Gemeinde.
-		@param Township Gemeinde	  */
 	@Override
-	public void setTownship (java.lang.String Township)
+	public void setTownship (final @Nullable java.lang.String Township)
 	{
 		set_Value (COLUMNNAME_Township, Township);
 	}
 
-	/** Get Gemeinde.
-		@return Gemeinde	  */
 	@Override
-	public java.lang.String getTownship () 
+	public java.lang.String getTownship() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Township);
+		return get_ValueAsString(COLUMNNAME_Township);
 	}
 }

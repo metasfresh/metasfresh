@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,7 +24,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -92,10 +93,10 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		this.shipmentScheduleId = shipmentScheduleId;
 	}
 
-	public LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
+	public LookupValuesPage getShipmentScheduleValues(final LookupDataSourceContext context)
 	{
-		final LookupValuesList result = shipmentScheduleDataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
-		return result;
+		return shipmentScheduleDataSource
+				.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
 	}
 
 	private static LookupDataSource createShipmentScheduleDataSource(final HuId huId)

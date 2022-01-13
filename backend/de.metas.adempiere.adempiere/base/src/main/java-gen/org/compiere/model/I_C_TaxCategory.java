@@ -52,7 +52,7 @@ public interface I_C_TaxCategory
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Steuerkategorie.
+	 * Set Tax Category.
 	 * Tax Category
 	 *
 	 * <br>Type: ID
@@ -62,7 +62,7 @@ public interface I_C_TaxCategory
 	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	/**
-	 * Get Steuerkategorie.
+	 * Get Tax Category.
 	 * Tax Category
 	 *
 	 * <br>Type: ID
@@ -209,6 +209,29 @@ public interface I_C_TaxCategory
 
 	ModelColumn<I_C_TaxCategory, Object> COLUMN_Name = new ModelColumn<>(I_C_TaxCategory.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductType (@Nullable java.lang.String ProductType);
+
+	/**
+	 * Get Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductType();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_ProductType = new ModelColumn<>(I_C_TaxCategory.class, "ProductType", null);
+	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
 	 * Get Updated.

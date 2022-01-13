@@ -1,5 +1,7 @@
 package org.compiere.process;
 
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -9,9 +11,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 /**
  * Create product prices:
@@ -58,7 +57,7 @@ public class M_PriceList_Create extends JavaProcess
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, getTargetPriceListVersion_ID())
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getTargetPriceListVersion_ID())
 				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
 				.create()
 				.iterateAndStream()

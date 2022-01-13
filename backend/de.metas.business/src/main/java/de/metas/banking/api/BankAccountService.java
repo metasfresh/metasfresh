@@ -64,7 +64,7 @@ public class BankAccountService
 	public boolean isCashBank(@NonNull final BankAccountId bankAccountId)
 	{
 		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
-		return bankRepo.isCashBank(bankId);
+		return bankId != null && bankRepo.isCashBank(bankId);
 	}
 
 	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
@@ -83,9 +83,14 @@ public class BankAccountService
 	{
 		final BankAccount bankAccount = getById(bankAccountId);
 
-		final Bank bank = bankRepo.getById(bankAccount.getBankId());
 		final CurrencyCode currencyCode = currencyRepo.getCurrencyCodeById(bankAccount.getCurrencyId());
-
-		return bank.getBankName() + "_" + currencyCode.toThreeLetterCode();
+		
+		final BankId bankId = bankAccount.getBankId();
+		if (bankId != null)
+		{
+			final Bank bank = bankRepo.getById(bankId);
+			return bank.getBankName() + "_" + currencyCode.toThreeLetterCode();
+		}
+		return currencyCode.toThreeLetterCode();
 	}
 }

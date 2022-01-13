@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<ErpelMessage xmlns="http://erpel.at/schemas/1p0/messaging/message"
+              xmlns:document="http://erpel.at/schemas/1p0/documents"
+              xmlns:edifact="http://erpel.at/schemas/1p0/documents/extensions/edifact"
+              xmlns:erpel="http://erpel.at/schemas/1p0/documents/ext"
+              xmlns:header="http://erpel.at/schemas/1p0/messaging/header"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://erpel.at/schemas/1p0/messaging/message file:///C:/Users/ml/GitHub/Schemas/ERPEL1p0/Message.xsd">
+    <header:ErpelBusinessDocumentHeader>
+        <header:InterchangeHeader>
+            <header:SyntaxIdentifier>
+                <header:id>UNOC</header:id>
+                <header:versionNum>3</header:versionNum>
+            </header:SyntaxIdentifier>
+            <header:Sender><!-- ignore -->
+                <header:id>1</header:id>
+                <header:codeQualifier>14</header:codeQualifier>
+                <header:internalId>12</header:internalId>
+            </header:Sender>
+            <header:Recipient><!-- ignore -->
+                <header:id>2</header:id>
+                <header:codeQualifier>14</header:codeQualifier>
+            </header:Recipient>
+            <header:DateTime><!-- JsonRemittanceAdvice.sendDate -->
+                <header:date>2020-11-28</header:date>
+                <header:time>12:11:00</header:time>
+            </header:DateTime>
+            <header:ControlRef>1935432107000</header:ControlRef><!-- ignore -->
+            <header:ApplicationRef>REMADV</header:ApplicationRef><!-- ignore -->
+            <header:AgreementId>EANCOM</header:AgreementId><!-- ignore -->
+            <header:TestIndicator>1</header:TestIndicator><!-- ignore -->
+        </header:InterchangeHeader>
+    </header:ErpelBusinessDocumentHeader>
+    <document:Document document:DocumentCurrency="EUR" document:DocumentType="RemittanceAdvice" document:GeneratingSystem=""><!-- JsonRemittanceAdvice.remittanceAmountCurrencyISO --><!-- also serviceFeeCurrencyIso -->
+        <document:BusinessProcessID>481</document:BusinessProcessID>
+        <document:DocumentNumber>remadv_externalDocNumber</document:DocumentNumber><!-- JsonRemittanceAdvice.documentNo -->
+        <document:DocumentDate>2020-11-28T00:00:00</document:DocumentDate><!-- JsonRemittanceAdvice.documentDate -->
+        <!-- ? -->
+        <document:Supplier>
+            <document:FurtherIdentification document:IdentificationType="GLN">metasGLN</document:FurtherIdentification><!-- JsonRemittanceAdvice.recipientId -->
+            <document:Address>
+                <document:Name/>
+                <document:Town/>
+                <document:ZIP/>
+                <document:Country document:CountryCode="CH">CH</document:Country>
+            </document:Address>
+        </document:Supplier>
+        <!-- ? -->
+        <document:Customer>
+            <document:FurtherIdentification document:IdentificationType="GLN">kundeGLN</document:FurtherIdentification><!-- senderId -->
+            <document:DocumentReference>
+                <document:DocumentID>576872</document:DocumentID><!-- ignore -->
+                <document:DocumentType>RemittanceAdvice</document:DocumentType>
+            </document:DocumentReference>
+            <document:DocumentReference>
+                <document:DocumentID>1332672</document:DocumentID><!-- ignore -->
+                <document:DocumentType>Order</document:DocumentType>
+            </document:DocumentReference>
+        </document:Customer>
+        <document:Details>
+            <document:ItemList>
+                <document:ListLineItem>
+                    <document:PositionNumber>1</document:PositionNumber>
+                    <document:ShortDescription/>
+                    <document:ArticleNumber/>
+                    <document:Quantity document:Unit="PCE">0</document:Quantity><!-- ignore -->
+                    <document:Delivery><!-- ignore -->
+                        <document:DeliveryRecipient>
+                            <document:FurtherIdentification document:IdentificationType="GLN">ignoredGLN</document:FurtherIdentification><!-- ignore -->
+                        </document:DeliveryRecipient>
+                    </document:Delivery>
+                    <erpel:ListLineItemExtension>
+                        <edifact:ListLineItemExtension>
+                            <edifact:REMADVListLineItemExtension>
+                                <edifact:BusinessProcessID>380</edifact:BusinessProcessID>
+                                <edifact:DocumentName>RG</edifact:DocumentName><!-- JsonRemittanceAdviceLine.invoiceDocBaseType -->
+                                <edifact:DocumentNameDescription>Invoice</edifact:DocumentNameDescription>
+                                <edifact:DocumentNumber>145808</edifact:DocumentNumber><!-- JsonRemittanceAdviceLine.InvoiceIdentifier -->
+                                <edifact:DocumentDate>2020-10-30T00:00:00</edifact:DocumentDate><!-- JsonRemittanceAdviceLine.DateInvoiced -->
+                                <edifact:Customer>
+                                    <edifact:BusinessEntityTypeQualifier>BY</edifact:BusinessEntityTypeQualifier><!-- ignore -->
+                                    <edifact:FurtherIdentification edifact:IdentificationType="GLN">kundeGLN</edifact:FurtherIdentification><!-- JsonRemittanceAdviceLine.bpartnerIdentifier -->
+                                </edifact:Customer>
+                                <edifact:RelatedDates><!-- ignore -->
+                                    <edifact:BookingDate edifact:DateFormatCode="610" edifact:DateFunctionCodeQualifier="179">202011</edifact:BookingDate>
+                                    <edifact:InvoiceSettlementDate edifact:DateFormatCode="616" edifact:DateFunctionCodeQualifier="265">202050</edifact:InvoiceSettlementDate>
+                                    <edifact:PaymentDueDate edifact:DateFormatCode="204" edifact:DateFunctionCodeQualifier="140">20201213000000</edifact:PaymentDueDate>
+                                </edifact:RelatedDates>
+                                <edifact:MonetaryAmounts>
+                                    <edifact:InvoiceGrossAmount>
+                                        <edifact:AmountTypeCode>39</edifact:AmountTypeCode>
+                                        <edifact:Amount>21.4</edifact:Amount><!-- JsonRemittanceAdviceLine.invoiceGrossAmount -->
+                                    </edifact:InvoiceGrossAmount>
+                                    <edifact:CommissionAmount>
+                                        <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                        <edifact:Amount>-5</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount -->
+                                    </edifact:CommissionAmount>
+                                    <edifact:PaymentDiscountAmount>
+                                        <edifact:AmountTypeCode>109</edifact:AmountTypeCode>
+                                        <edifact:Amount>0</edifact:Amount> <!-- JsonRemittanceAdviceLine.paymentDiscountAmount -->
+                                    </edifact:PaymentDiscountAmount>
+                                    <edifact:RemittedAmount>
+                                        <edifact:AmountTypeCode>12</edifact:AmountTypeCode>
+                                        <edifact:Amount>16.4</edifact:Amount> <!-- JsonRemittanceAdviceLine.remittedAmount -->
+                                    </edifact:RemittedAmount>
+                                    <edifact:Adjustment><!-- ignore -->
+                                        <edifact:ReasonCode>19</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount><!-- ignore -->
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-1.74</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount><!-- ignore -->
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-1.62</edifact:TaxedAmount><!-- ignore -->
+                                                    <edifact:TaxRate>7</edifact:TaxRate><!-- JsonRemittanceAdviceLine.serviceFeeVatRate -->
+                                                    <edifact:Amount>-0.12</edifact:Amount><!-- ignore -->
+                                                    <edifact:CommissionBaseAmount><!-- ignore -->
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>161.15</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>90</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-3</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount computation term -->
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-1.62</edifact:TaxedAmount><!-- ignore -->
+                                                    <edifact:TaxRate>7</edifact:TaxRate>
+                                                    <edifact:Amount>-0.12</edifact:Amount><!-- ignore -->
+                                                    <edifact:CommissionBaseAmount><!-- ignore -->
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>161.15</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                </edifact:MonetaryAmounts>
+                            </edifact:REMADVListLineItemExtension>
+                        </edifact:ListLineItemExtension>
+                    </erpel:ListLineItemExtension>
+                </document:ListLineItem>
+            </document:ItemList>
+        </document:Details>
+        <document:PaymentConditions>
+            <document:DueDate>2020-12-08T00:00:00</document:DueDate><!-- ignore -->
+            <erpel:PaymentConditionsExtension><!-- ignore -->
+                <edifact:PaymentConditionsExtension>
+                    <edifact:PaymentCondition>1</edifact:PaymentCondition>
+                    <edifact:PaymentMeans>42</edifact:PaymentMeans>
+                </edifact:PaymentConditionsExtension>
+            </erpel:PaymentConditionsExtension>
+        </document:PaymentConditions>
+        <erpel:DocumentExtension>
+            <edifact:DocumentExtension>
+                <edifact:REMADVExtension>
+                    <edifact:AmountRemitted>16.4</edifact:AmountRemitted><!-- JsonRemittanceAdvice.remittedAmountSum -->
+                    <edifact:ComissionAmount>5</edifact:ComissionAmount><!-- JsonRemittanceAdvice.serviceFeeAmount -->
+                    <edifact:PaymentDiscountAmount>0</edifact:PaymentDiscountAmount><!-- JsonRemittanceAdvice.paymentDiscountAmountSum -->
+                </edifact:REMADVExtension>
+            </edifact:DocumentExtension>
+        </erpel:DocumentExtension>
+    </document:Document>
+</ErpelMessage>

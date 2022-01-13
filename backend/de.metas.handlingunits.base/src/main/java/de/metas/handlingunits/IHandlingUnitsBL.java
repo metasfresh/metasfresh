@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -78,13 +79,15 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> getVHUs(HuId huId);
 
-	Set<HuId> getVHUIds(HuId huId);
+	ImmutableSet<HuId> getVHUIds(HuId huId);
 
-	Set<HuId> getVHUIds(Set<HuId> huIds);
+	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * @return default storage factory
@@ -249,6 +252,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
 
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -270,7 +278,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default
-		Predicate<I_M_HU> filter = hu -> true;
+		@NonNull Predicate<I_M_HU> filter = hu -> true;
 	}
 
 	/**
@@ -400,13 +408,25 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
+
+	I_M_HU_PI getPI(@NonNull HUPIItemProductId huPIItemProductId);
 
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
+
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
+
+	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
@@ -530,7 +550,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	@Nullable
-	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(@NonNull final I_M_HU hu)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null

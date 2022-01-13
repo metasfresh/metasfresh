@@ -31,8 +31,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
@@ -79,14 +79,17 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	@Param(parameterName = PARAM_BankAccountNo)
 	private String bankAccountNumberParam;
 
+	
 	// services
-	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance.getBean(PaymentStringProcessService.class);
+	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance
+			.getBean(PaymentStringProcessService.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	// trl
-	private static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
-
+	private static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey
+			.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
+	
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -103,7 +106,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 			bpBankAccount = bankAccountParam;
 		}
 
-		final IPaymentString paymentString = dataProvider.getPaymentString();
+		final PaymentString paymentString = dataProvider.getPaymentString();
 		final I_C_Payment_Request paymentRequestTemplate = paymentStringProcessService.createPaymentRequestTemplate(bpBankAccount, amountParam, paymentString);
 
 		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
@@ -136,7 +139,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 			throw new AdempiereException(adMessage);
 		}
 
-		final IPaymentString paymentString = dataProvider.getPaymentString();
+		final PaymentString paymentString = dataProvider.getPaymentString();
 
 		final I_C_Invoice actualInvoice = getActualInvoice();
 		final I_C_BP_BankAccount bpBankAccountExisting = paymentStringProcessService.getAndVerifyBPartnerAccountOrNull(dataProvider, actualInvoice.getC_BPartner_ID());
@@ -172,7 +175,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	{
 		return paymentStringProcessService.parsePaymentString(getCtx(), fullPaymentStringParam);
 	}
-
+	
 	private I_C_Invoice getActualInvoice()
 	{
 		return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));

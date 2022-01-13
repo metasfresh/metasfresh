@@ -29,27 +29,31 @@ import java.util.Properties;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
+import de.metas.banking.payment.PaymentParserType;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author al
  */
 public class PaymentStringBL implements IPaymentStringBL
 {
+	private final static IPaymentStringParserFactory paymentStringParserFactory =  Services.get(IPaymentStringParserFactory.class);
+	
 	@Override
 	public IPaymentStringParser getParserForSysConfig(final String sysConfig)
 	{
 		final String parserType = Services.get(ISysConfigBL.class).getValue(sysConfig, Env.getAD_Client_ID(Env.getCtx()));
 		Check.assumeNotEmpty(parserType, "paymentParserType not empty");
 
-		final IPaymentStringParser paymentStringParser = Services.get(IPaymentStringParserFactory.class).getParser(parserType);
+		final IPaymentStringParser paymentStringParser =paymentStringParserFactory.getParser(parserType);
 		return paymentStringParser;
 	}
 
@@ -59,10 +63,44 @@ public class PaymentStringBL implements IPaymentStringBL
 		Check.assumeNotNull(paymentStringParser, "paymentStringParser not null");
 		Check.assumeNotEmpty(paymentStringText, "paymentStringText not empty");
 
-		final IPaymentString paymentString;
+		final PaymentString paymentString;
 		try
 		{
-			paymentString = paymentStringParser.parse(ctx, paymentStringText);
+			paymentString = paymentStringParser.parse(paymentStringText);
+		}
+		catch (final IndexOutOfBoundsException ex)
+		{
+			throw new PaymentStringParseException(ERR_InvalidPaymentStringLength, ex);
+		}
+
+		final List<String> collectedErrors = paymentString.getCollectedErrors();
+		if (!collectedErrors.isEmpty())
+		{
+			final StringBuilder exceptions = new StringBuilder();
+			for (final String exception : collectedErrors)
+			{
+				exceptions.append(exception)
+						.append("\n");
+			}
+
+			throw new PaymentStringParseException(exceptions.toString());
+		}
+
+		final IPaymentStringDataProvider dataProvider = paymentString.getDataProvider();
+		return dataProvider;
+	}
+	
+	@Override
+	public IPaymentStringDataProvider getQRDataProvider(@NonNull final String qrCode) throws PaymentStringParseException
+	{
+		Check.assumeNotEmpty(qrCode, "paymentStringText not empty");
+
+		final IPaymentStringParser paymentStringParser = paymentStringParserFactory.getParser(PaymentParserType.QRCode.getType());
+		
+		final PaymentString paymentString;
+		try
+		{
+			paymentString = paymentStringParser.parse(qrCode);
 		}
 		catch (final IndexOutOfBoundsException ex)
 		{

@@ -1,161 +1,117 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.ui.web.base.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for WEBUI_Board_CardField
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_WEBUI_Board_CardField extends org.compiere.model.PO implements I_WEBUI_Board_CardField, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1970032538L;
+	private static final long serialVersionUID = -51246966L;
 
     /** Standard Constructor */
-    public X_WEBUI_Board_CardField (Properties ctx, int WEBUI_Board_CardField_ID, String trxName)
+    public X_WEBUI_Board_CardField (final Properties ctx, final int WEBUI_Board_CardField_ID, @Nullable final String trxName)
     {
       super (ctx, WEBUI_Board_CardField_ID, trxName);
-      /** if (WEBUI_Board_CardField_ID == 0)
-        {
-			setAD_Column_ID (0);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(z.SeqNo), 0) + 10 FROM WEBUI_Board_CardField z WHERE z.WEBUI_Board_ID=@WEBUI_Board_ID@
-			setWEBUI_Board_CardField_ID (0);
-			setWEBUI_Board_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_WEBUI_Board_CardField (Properties ctx, ResultSet rs, String trxName)
+    public X_WEBUI_Board_CardField (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Column()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
+	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
-	/** Set Spalte.
-		@param AD_Column_ID 
-		Spalte in der Tabelle
-	  */
 	@Override
-	public void setAD_Column_ID (int AD_Column_ID)
+	public void setAD_Column_ID (final int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
 			set_Value (COLUMNNAME_AD_Column_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
+			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
 	}
 
-	/** Get Spalte.
-		@return Spalte in der Tabelle
-	  */
 	@Override
-	public int getAD_Column_ID () 
+	public int getAD_Column_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Board card field.
-		@param WEBUI_Board_CardField_ID Board card field	  */
 	@Override
-	public void setWEBUI_Board_CardField_ID (int WEBUI_Board_CardField_ID)
+	public void setWEBUI_Board_CardField_ID (final int WEBUI_Board_CardField_ID)
 	{
 		if (WEBUI_Board_CardField_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_CardField_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_CardField_ID, Integer.valueOf(WEBUI_Board_CardField_ID));
+			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_CardField_ID, WEBUI_Board_CardField_ID);
 	}
 
-	/** Get Board card field.
-		@return Board card field	  */
 	@Override
-	public int getWEBUI_Board_CardField_ID () 
+	public int getWEBUI_Board_CardField_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Board_CardField_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_Board_CardField_ID);
 	}
 
 	@Override
-	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board() throws RuntimeException
+	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board()
 	{
 		return get_ValueAsPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class);
 	}
 
 	@Override
-	public void setWEBUI_Board(de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board)
+	public void setWEBUI_Board(final de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board)
 	{
 		set_ValueFromPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class, WEBUI_Board);
 	}
 
-	/** Set Board.
-		@param WEBUI_Board_ID Board	  */
 	@Override
-	public void setWEBUI_Board_ID (int WEBUI_Board_ID)
+	public void setWEBUI_Board_ID (final int WEBUI_Board_ID)
 	{
 		if (WEBUI_Board_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_ID, Integer.valueOf(WEBUI_Board_ID));
+			set_ValueNoCheck (COLUMNNAME_WEBUI_Board_ID, WEBUI_Board_ID);
 	}
 
-	/** Get Board.
-		@return Board	  */
 	@Override
-	public int getWEBUI_Board_ID () 
+	public int getWEBUI_Board_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Board_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_Board_ID);
 	}
 }

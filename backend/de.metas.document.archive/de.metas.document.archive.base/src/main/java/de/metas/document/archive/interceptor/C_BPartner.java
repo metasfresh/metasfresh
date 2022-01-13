@@ -34,7 +34,7 @@ class C_BPartner
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 
 		final org.compiere.model.I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
-		final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(defaultContact, de.metas.document.archive.model.I_AD_User.class);
+		final I_AD_User user = InterfaceWrapperHelper.create(defaultContact,I_AD_User.class);
 		final boolean isInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
 
 		//

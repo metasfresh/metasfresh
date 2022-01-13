@@ -1,34 +1,27 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.OrgMappingId;
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.location.LocationId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+
+import static de.metas.util.Check.isBlank;
 
 /*
  * #%L
@@ -53,7 +46,6 @@ import lombok.Setter;
  */
 
 @Data
-@EqualsAndHashCode(exclude = "original")
 @JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerLocation
 {
@@ -73,61 +65,92 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 
+	@Nullable
 	private BPartnerLocationId id;
 
-	/** Needs to be unique over all business partners (not only the one this location belongs to). */
+	/**
+	 * Needs to be unique over all business partners (not only the one this location belongs to).
+	 */
+	@Nullable
 	private ExternalId externalId;
 
+	@Nullable
 	private GLN gln;
 
+	@Nullable
 	private String name;
 
+	@Nullable
 	private String bpartnerName;
 
 	private boolean active;
 
+	/**
+	 * Use case: When you are creating a new bpartner location and you already have the C_Location_ID
+	 * then you can set it to `existingLocationId` and then skip ALL the other address fields (from address1 to countryCode).
+	 */
+	@Nullable
+	private LocationId existingLocationId;
+	@Nullable
 	private String address1;
-
+	@Nullable
 	private String address2;
-
+	@Nullable
 	private String address3;
-
+	@Nullable
 	private String address4;
-
+	@Nullable
 	private String poBox;
-
+	@Nullable
 	private String postal;
-
+	@Nullable
 	private String city;
-
-	private String district;
-
+	@Nullable
 	private String region;
-
+	@Nullable
+	private String district;
+	@Nullable
 	private String countryCode;
+	@Nullable
+	private String phone;
+	@Nullable
+	private String email;
 
+	@Nullable
 	private BPartnerLocationType locationType;
 
+	@Nullable
 	private final RecordChangeLog changeLog;
 
+	@Nullable
 	private OrgMappingId orgMappingId;
+
+	@Nullable
+	private String mobile;
+
+	@Nullable
+	private String fax;
+
+	@Nullable
+	final String setupPlaceNo;
+
+	final boolean remitTo;
+	final boolean handOverLocation;
+	final boolean replicationLookupDefault;
+	final boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
-	@Setter(AccessLevel.NONE)
-	private final Set<String> handles = new HashSet<>();
+	@Getter(AccessLevel.NONE)
+	private final HashSet<String> handles = new HashSet<>();
 
 	/**
-	 * Used to track changes that were made since the instance's instantiation.
-	 * Goal: allow {@link de.metas.bpartner.composite.repository.BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
+	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
-	@JsonIgnore
-	@Getter(AccessLevel.NONE)
-	private BPartnerLocation original;
-
-	/** They are all nullable because we can create a completely empty instance which we then fill. */
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private BPartnerLocation(
@@ -137,6 +160,7 @@ public class BPartnerLocation
 			@Nullable final Boolean active,
 			@Nullable final String name,
 			@Nullable final String bpartnerName,
+			@Nullable final LocationId existingLocationId,
 			@Nullable final String address1,
 			@Nullable final String address2,
 			@Nullable final String address3,
@@ -147,20 +171,29 @@ public class BPartnerLocation
 			@Nullable final String region,
 			@Nullable final String city,
 			@Nullable final String countryCode,
-			@Nullable final BPartnerLocation original,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final String mobile,
+			@Nullable final String fax,
+			@Nullable final String setupPlaceNo,
+			@Nullable final Boolean remitTo,
+			@Nullable final Boolean handOverLocation,
+			@Nullable final Boolean replicationLookupDefault,
+			@Nullable final Boolean visitorsAddress)
 	{
 		this.id = id;
 		this.gln = gln;
 		this.externalId = externalId;
 
-		this.active = coalesce(active, true);
+		this.active = active != null ? active : true;
 
 		this.name = name;
 
 		this.bpartnerName = bpartnerName;
+		this.existingLocationId = existingLocationId;
 		this.address1 = address1;
 		this.address2 = address2;
 		this.address3 = address3;
@@ -176,9 +209,25 @@ public class BPartnerLocation
 
 		this.changeLog = changeLog;
 
-		this.original = original;
-
 		this.orgMappingId = orgMappingId;
+
+		this.phone = phone;
+
+		this.mobile = mobile;
+
+		this.fax = fax;
+
+		this.email = email;
+
+		this.setupPlaceNo = setupPlaceNo;
+
+		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
+
+		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
+
+		this.remitTo = remitTo != null ? remitTo : false;
+
+		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 	}
 
 	public BPartnerLocation deepCopy()
@@ -189,251 +238,83 @@ public class BPartnerLocation
 		{
 			builder.locationType(locationType.deepCopy());
 		}
-		if (original != null)
-		{
-			builder.original(original.deepCopy());
-		}
+
 		return builder.build();
 	}
 
-	/** Only active instances are actually validated. Empty list means "valid" */
+	/**
+	 * Only active instances are actually validated. Empty list means "valid"
+	 */
 	public ImmutableList<ITranslatableString> validate()
 	{
-		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 		if (!isActive())
 		{
-			return result.build();
+			return ImmutableList.of();
 		}
 
-		if (isEmpty(countryCode, true))
+		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+
+		if (!isAddressSpecifiedByExistingLocationIdOnly())
 		{
-			result.add(TranslatableStrings.constant("Missing location.countryCode"));
+			if (isBlank(countryCode))
+			{
+				result.add(TranslatableStrings.constant("Missing location.countryCode"));
+			}
+
+			if (!isBlank(district) && isBlank(postal))
+			{
+				result.add(TranslatableStrings.constant("Missing location.postal (required if location.district is set)"));
+			}
 		}
-		if (!isEmpty(district, true) && isEmpty(postal, true))
-		{
-			result.add(TranslatableStrings.constant("Missing location.postal (required if location.district is set)"));
-		}
+
 		return result.build();
 	}
 
-	public void setId(@Nullable final BPartnerLocationId id)
-	{
-		if (!Objects.equals(this.id, id))
-		{
-			createOriginalIfNotExists();
-		}
-		this.id = id;
-	}
-
-	public void setExternalId(@Nullable final ExternalId externalId)
-	{
-		if (!Objects.equals(this.externalId, externalId))
-		{
-			createOriginalIfNotExists();
-		}
-		this.externalId = externalId;
-	}
-
-	public void setGln(@Nullable final GLN gln)
-	{
-		if (!Objects.equals(this.gln, gln))
-		{
-			createOriginalIfNotExists();
-		}
-		this.gln = gln;
-	}
-
-	public void setName(@Nullable final String name)
-	{
-		if (!Objects.equals(this.name, name))
-		{
-			createOriginalIfNotExists();
-		}
-		this.name = name;
-	}
-
-	public void setBpartnerName(@Nullable final String bpartnerName)
-	{
-		if (!Objects.equals(this.bpartnerName, bpartnerName))
-		{
-			createOriginalIfNotExists();
-		}
-		this.bpartnerName = bpartnerName;
-	}
-
-	public void setActive(@Nullable final boolean active)
-	{
-		if (!Objects.equals(this.active, active))
-		{
-			createOriginalIfNotExists();
-		}
-		this.active = active;
-	}
-
 	@JsonIgnore
-	public boolean isActiveChanged()
+	public boolean isAddressSpecifiedByExistingLocationIdOnly()
 	{
-		return !Objects.equals(this.active, getOriginalOrSelf().isActive());
-	}
-
-	public void setAddress1(@Nullable final String address1)
-	{
-		if (!Objects.equals(this.address1, address1))
-		{
-			createOriginalIfNotExists();
-		}
-		this.address1 = address1;
-	}
-
-	@JsonIgnore
-	public boolean isAddress1Changed()
-	{
-		return !Objects.equals(this.address1, getOriginalOrSelf().getAddress1());
-	}
-
-	public void setAddress2(@Nullable final String address2)
-	{
-		if (!Objects.equals(this.address2, address2))
-		{
-			createOriginalIfNotExists();
-		}
-		this.address2 = address2;
-	}
-
-	@JsonIgnore
-	public boolean isAddress2Changed()
-	{
-		return !Objects.equals(this.address2, getOriginalOrSelf().getAddress2());
-	}
-
-	public void setAddress3(@Nullable final String address3)
-	{
-		if (!Objects.equals(this.address3, address3))
-		{
-			createOriginalIfNotExists();
-		}
-		this.address3 = address3;
-	}
-
-	@JsonIgnore
-	public boolean isAddress3Changed()
-	{
-		return !Objects.equals(this.address3, getOriginalOrSelf().getAddress3());
-	}
-
-	public void setAddress4(@Nullable final String address4)
-	{
-		if (!Objects.equals(this.address4, address4))
-		{
-			createOriginalIfNotExists();
-		}
-		this.address4 = address4;
-	}
-
-	@JsonIgnore
-	public boolean isAddress4Changed()
-	{
-		return !Objects.equals(this.address4, getOriginalOrSelf().getAddress4());
-	}
-
-	public void setPoBox(@Nullable final String poBox)
-	{
-		if (!Objects.equals(this.poBox, poBox))
-		{
-			createOriginalIfNotExists();
-		}
-		this.poBox = poBox;
-	}
-
-	@JsonIgnore
-	public boolean isPoBoxChanged()
-	{
-		return !Objects.equals(this.poBox, getOriginalOrSelf().getPoBox());
-	}
-
-	public void setPostal(@Nullable final String postal)
-	{
-		if (!Objects.equals(this.city, city))
-		{
-			createOriginalIfNotExists();
-		}
-		this.postal = postal;
-	}
-
-	@JsonIgnore
-	public boolean isPostalChanged()
-	{
-		return !Objects.equals(this.postal, getOriginalOrSelf().getPostal());
-	}
-
-	public void setCity(@Nullable final String city)
-	{
-		if (!Objects.equals(this.city, city))
-		{
-			createOriginalIfNotExists();
-		}
-		this.city = city;
-	}
-
-	public void setDistrict(@Nullable final String district)
-	{
-		if (!Objects.equals(this.district, district))
-		{
-			createOriginalIfNotExists();
-		}
-		this.district = district;
-	}
-
-	public void setRegion(@Nullable final String region)
-	{
-		if (!Objects.equals(this.region, region))
-		{
-			createOriginalIfNotExists();
-		}
-		this.region = region;
-	}
-
-	public void setCountryCode(@Nullable final String countryCode)
-	{
-		if (!Objects.equals(this.countryCode, countryCode))
-		{
-			createOriginalIfNotExists();
-		}
-		this.countryCode = countryCode;
-	}
-
-	@JsonIgnore
-	public boolean isCountryCodeChanged()
-	{
-		return !Objects.equals(this.countryCode, getOriginalOrSelf().getCountryCode());
-	}
-
-	public void setLocationType(@Nullable final BPartnerLocationType locationType)
-	{
-		if (!Objects.equals(this.locationType, locationType))
-		{
-			createOriginalIfNotExists();
-		}
-		this.locationType = locationType;
-	}
-
-	@JsonIgnore
-	public BPartnerLocation getOriginalOrSelf()
-	{
-		return coalesce(original, this);
-	}
-
-	private void createOriginalIfNotExists()
-	{
-		if (original != null)
-		{
-			return;
-		}
-		original = deepCopy();
+		return toAddress().isOnlyExistingLocationIdSet();
 	}
 
 	public void addHandle(@NonNull final String handle)
 	{
 		handles.add(handle);
+	}
+
+	public boolean containsHandle(@NonNull final String handle)
+	{
+		return handles.contains(handle);
+	}
+
+	public BPartnerLocationAddressPart toAddress()
+	{
+		return BPartnerLocationAddressPart.builder()
+				.existingLocationId(getExistingLocationId())
+				.address1(getAddress1())
+				.address2(getAddress2())
+				.address3(getAddress3())
+				.address4(getAddress4())
+				.poBox(getPoBox())
+				.postal(getPostal())
+				.city(getCity())
+				.region(getRegion())
+				.district(getDistrict())
+				.countryCode(getCountryCode())
+				.build();
+	}
+
+	public void setFromAddress(@NonNull final BPartnerLocationAddressPart address)
+	{
+		setExistingLocationId(address.getExistingLocationId());
+		setAddress1(address.getAddress1());
+		setAddress2(address.getAddress2());
+		setAddress3(address.getAddress3());
+		setAddress4(address.getAddress4());
+		setCity(address.getCity());
+		setCountryCode(address.getCountryCode());
+		setPoBox(address.getPoBox());
+		setPostal(address.getPostal());
+		setRegion(address.getRegion());
+		setDistrict(address.getDistrict());
 	}
 }

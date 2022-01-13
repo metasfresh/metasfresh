@@ -22,35 +22,19 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-
-import ch.qos.logback.classic.Level;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -64,12 +48,30 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 {
@@ -123,7 +125,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		ilCandGenerator.setTableName(handlerClass.getSourceTable());
 		ilCandGenerator.setIs_AD_User_InCharge_UI_Setting(handlerClass.isUserInChargeUserEditable());
-		return;
 	}
 
 	@Override
@@ -167,7 +168,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
 	 */
-	private final void scheduleCreateMissingCandidatesFor(
+	private void scheduleCreateMissingCandidatesFor(
 			@NonNull final Object model,
 			@NonNull final IInvoiceCandidateHandler handler)
 	{
@@ -181,10 +182,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty list.<br>
 	 * That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
-	 * @param ctx
-	 * @param handlerRecords
 	 * @param model may be <code>{@link #NO_MODEL}</code>. If it not {@link #NO_MODEL}, then the method only created missing candidates for the given model.
-	 * @param trxName
 	 * @return if model is <code>{@link #NO_MODEL}</code>, then we return the empty list. If not, then we return the created invoice candidates.
 	 */
 	private List<I_C_Invoice_Candidate> createInvoiceCandidates(
@@ -210,7 +208,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				final IInvoiceCandidateHandler creatorImpl = mkInstance(handlerRecord);
 
 				// HARDCODED BufferSize/Limit to be used when we are creating missing candidates
-				final int bufferSize = 500;
+				final QueryLimit bufferSize = QueryLimit.ofInt(500);
 
 				List<I_C_Invoice_Candidate> newCandidates = createCandidates(model, bufferSize, creatorImpl);
 				final int candidatesCount = newCandidates.size();
@@ -259,19 +257,17 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Create candidates. If model is {@link #NO_MODEL} then all missing candidates will be created.
 	 *
 	 * @param modelOrNoModel if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
-	 * @param bufferSize used only when creating missing candidates. See limit parameter of {@link IInvoiceCandidateHandler#createMissingCandidates(Properties, int, String)}.
-	 * @param invoiceCandiateHandler
-	 *
+	 * @param bufferSize     used only when creating missing candidates.
 	 * @return created candidates
 	 */
 	private List<I_C_Invoice_Candidate> createCandidates(
 			final Object modelOrNoModel,
-			final int bufferSize,
+			final QueryLimit bufferSize,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 		//
 		// Retrieve actual models for whom we will generate invoice candidates
-		final Iterator<? extends Object> models;
+		final Iterator<?> models;
 		if (Util.same(modelOrNoModel, InvoiceCandidateHandlerBL.NO_MODEL))
 		{
 			models = invoiceCandiateHandler.retrieveAllModelsWithMissingCandidates(bufferSize);
@@ -319,52 +315,52 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-			if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
-			{
+			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
+		{
 			return ImmutableList.of();
-			}
+		}
 
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
 		//
 		// Create the initial request and then ask the handler to expand it to proper models to be used.
-			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
-			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
+		final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+		final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> invoiceCandidatesAll = ImmutableList.builder();
 
-			//
-			// Iterate each request and generate the invoice candidates
-			for (final InvoiceCandidateGenerateRequest request : requests)
+		//
+		// Iterate each request and generate the invoice candidates
+		for (final InvoiceCandidateGenerateRequest request : requests)
+		{
+			// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+			final ILock lock = lockManager.lock()
+					.setOwner(lockOwner)
+					.setRecordByModel(model)
+					.setAutoCleanup(true)
+					.setFailIfAlreadyLocked(true)
+					.acquire();
+
+			try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
 			{
-				// Lock the "model" to make sure nobody else would generate invoice candidates for it.
-				final ILock lock = lockManager.lock()
-						.setOwner(lockOwner)
-						.setRecordByModel(model)
-						.setAutoCleanup(true)
-						.setFailIfAlreadyLocked(true)
-						.acquire();
+				final IInvoiceCandidateHandler handler = request.getHandler();
+				final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
 
-				try (final ILockAutoCloseable unlocker = lock.asAutoCloseable())
-				{
-					final IInvoiceCandidateHandler handler = request.getHandler();
-					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
+				// Update generated invoice candidates
+				updateDefaultsAndSave(result);
 
-					// Update generated invoice candidates
-					updateDefaultsAndSave(result);
-
-					// Collect candidates (we will invalidate them all together)
-					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
-				}
-				catch (final Exception ex)
-				{
-					Loggables.withWarnLoggerToo(logger)
-							.addLog("Caught {} while trying to create candidate for request={} with requestInitial={}",
-									ex.getClass(), request, requestInitial, ex);
-
-					throw AdempiereException.wrapIfNeeded(ex);
-				}
+				// Collect candidates (we will invalidate them all together)
+				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 			}
+			catch (final Exception ex)
+			{
+				Loggables.withWarnLoggerToo(logger)
+						.addLog("Caught {} while trying to create candidate for request={} with requestInitial={}",
+								ex.getClass(), request, requestInitial, ex);
+
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+		}
 
 		return invoiceCandidatesAll.build();
 	}
@@ -418,8 +414,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		if (fromModel != null)
 		{
 			Services.get(IWFExecutionFactory.class).notifyActivityPerformed( // 03745
-					fromModel,
-					ic);
+																			 fromModel,
+																			 ic);
 		}
 	}
 
@@ -478,15 +474,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Create an instance of {@link IInvoiceCandidateHandler} implementation that can handle given invoice candidate.
 	 *
-	 * @param ic
 	 * @return handler instance
 	 */
 	private IInvoiceCandidateHandler createInvoiceCandidateHandler(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 		final I_C_ILCandHandler handler = invoiceCandidateHandlerDAO.retrieveFor(ic);
-		final IInvoiceCandidateHandler handlerInstance = mkInstance(handler);
-		return handlerInstance;
+		return mkInstance(handler);
 	}
 
 	@Override
@@ -562,5 +556,26 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(icRecord);
 		handler.setInvoiceScheduleAndDateToInvoice(icRecord);
+	}
+
+	@Override
+	public void setPickedData(final I_C_Invoice_Candidate ic)
+	{
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setShipmentSchedule(ic);
+
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(ic.getM_ShipmentSchedule_ID());
+
+		if (shipmentScheduleId == null)
+		{
+			return;
+		}
+
+		final StockQtyAndUOMQty qtysPicked = invoiceCandidateRecordService.ofRecord(ic).computeQtysPicked();
+
+		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
+		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
 	}
 }

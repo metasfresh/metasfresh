@@ -1,24 +1,59 @@
-import Moment from 'moment';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
+import { updateLastBackPage } from '../actions/AppActions';
+import history from '../services/History';
 
-import { DATE_FORMAT } from '../constants/Constants';
+/**
+ * @method updateUri
+ * @summary Replaces the history url with updated query URL that contain viewId/page/sorting
+ */
+export function updateUri(pathname, query, updatedQuery) {
+  const isDifferentPage =
+    query.page && Number(query.page) !== Number(updatedQuery.page);
+  const isDifferentView = query.viewId && query.viewId !== updatedQuery.viewId;
 
-// TODO: Move to api ?
-export const getQueryString = (query) =>
-  queryString.stringify(
-    Object.keys(query).reduce((parameters, key) => {
-      const value = query[key];
+  const queryObject = {
+    ...query,
+    ...updatedQuery,
+  };
+  const queryUrl = queryString.stringify(queryObject);
+  const url = `${pathname}?${queryUrl}`;
 
-      if (Array.isArray(value) && value.length > 0) {
-        parameters[key] = value.join(',');
-      } else if (value) {
-        parameters[key] = value;
-      }
+  isDifferentPage || isDifferentView ? history.push(url) : history.replace(url);
+}
 
-      return parameters;
-    }, {})
-  );
+/**
+ * @method historyDoubleBackOnPopstate
+ * @summary Does move back twice in history - on popstate (back btn) - this acts as a `patch` for the cases introduced by the above `updateUri` function
+ *          when there are no viewIs and we end up with one one added to the URL.
+ *          i.e when we go to http://localhost:3000/window/143 we are taken to an URL like http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
+ *          If we do not use this function when the user hits the back button he will remain on http://localhost:3000/window/143?page=1&sort&viewId=143-CQ
+ *          as if nothing happen. Instead if we use this funcion on popstate we will be taken back to the appropriate page before we landed on
+ *          http://localhost:3000/window/143
+ * @param {object} store - redux store
+ */
+export function historyDoubleBackOnPopstate(store) {
+  const appState = store.getState().appHandler;
+  const { lastBackPage } = appState;
+
+  if (
+    lastBackPage &&
+    lastBackPage.includes('viewId') &&
+    lastBackPage === document.location.href
+  ) {
+    window.history.back(-2);
+  }
+
+  store.dispatch(updateLastBackPage(document.location.href));
+}
+
+/**
+ * @method getQueryString
+ * @summary Stringifies URL with 'query-string', formatting query and escaping unwanted characters
+ */
+export const getQueryString = (query) => {
+  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+};
 
 // TODO: Move to api ?
 export function createPatchRequestPayload(property, value) {
@@ -110,30 +145,6 @@ export function getItemsByProperty(arr, prop, value) {
     });
 
   return ret;
-}
-
-const cleanupParameter = ({ parameterName, value, valueTo }) => ({
-  parameterName,
-  value,
-  valueTo,
-});
-
-export function cleanupFilter({ filterId, parameters }) {
-  if (parameters && parameters.length) {
-    parameters.map((param, index) => {
-      if (param.widgetType === 'Date' && param.value) {
-        param.value = Moment(param.value).format(DATE_FORMAT);
-      }
-
-      param = cleanupParameter(param);
-      parameters[index] = param;
-    });
-  }
-
-  return {
-    filterId,
-    parameters,
-  };
 }
 
 // TODO: Move to locale helpers
@@ -245,7 +256,7 @@ export function deepUnfreeze(obj) {
     } else if (Array.isArray(obj)) {
       return obj.map((item) => unfreezeProp(item));
     } else if (typeof obj === 'function') {
-      const target = function() {
+      const target = function () {
         obj.call(this, ...arguments);
       };
       target.prototype = Object.create(obj.prototype);
@@ -253,4 +264,27 @@ export function deepUnfreeze(obj) {
     }
   }
   return obj;
+}
+
+/**
+ * @method leftTrim
+ * @summary - removes spaces from the left side of a string
+ * @param {string} str
+ */
+export function leftTrim(str) {
+  return str.replace(/^\s+/, '');
+}
+
+/**
+ * @method formatSortingQuery
+ * @summary format's the ordering parameters prefixing them with asc/desc sign
+ */
+export function formatSortingQuery(orderBy) {
+  if (orderBy && orderBy.map) {
+    return orderBy.map((sortParam) => {
+      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
+    });
+  }
+
+  return orderBy;
 }

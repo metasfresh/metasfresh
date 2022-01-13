@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-21T19:25:24 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/sscc/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -11,6 +10,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Barcode" forecolor="#000000" fontName="Arial" fontSize="11"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
 	</parameter>
@@ -71,7 +71,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField>
 				<reportElement x="149" y="206" width="297" height="19" uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e"/>
 				<textElement textAlignment="Center">
-					<font size="14" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
@@ -81,7 +81,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement x="149" y="228" width="297" height="19" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
 				<textElement textAlignment="Center">
-					<font size="14" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
 			</textField>
@@ -118,14 +118,14 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement x="154" y="263" width="139" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9"/>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_customervalue}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
 				<reportElement x="334" y="263" width="98" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a"/>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
 			</textField>
@@ -141,7 +141,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
@@ -157,7 +157,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<printWhenExpression><![CDATA[new Boolean( $F{cu_per_tu}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{cu_per_tu}]]></textFieldExpression>
 			</textField>
@@ -166,7 +166,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<printWhenExpression><![CDATA[new Boolean( $F{tu_per_lu}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tu_per_lu}]]></textFieldExpression>
 			</textField>
@@ -180,7 +180,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="265" y="330" width="84" height="20" uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1"/>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{net_weight}]]></textFieldExpression>
 			</textField>
@@ -201,7 +201,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="355" y="330" width="87" height="20" uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb"/>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gross_weight}]]></textFieldExpression>
 			</textField>
@@ -242,28 +242,28 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="311" y="349" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="311" y="367" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="386" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="424" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
 			</textField>
@@ -277,26 +277,13 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="154" y="459" width="291" height="42" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement>
-					<font size="15" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement positionType="Float" x="149" y="500" width="297" height="1" uuid="48645280-44a0-411c-bd6b-f3fbac0c87b0"/>
 			</line>
-			<image scaleImage="RetainShape">
-				<reportElement positionType="Float" x="154" y="513" width="291" height="90" uuid="d04727b7-1619-46f2-8623-f9f5d1c8ac73"/>
-				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
-$F{sscc} +
-"&Format=CODE_128&Width=470&Height=140" )]]></imageExpression>
-			</image>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" x="162" y="600" width="271" height="14" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
-				<textElement textAlignment="Center">
-					<font size="9" fontName="Arial" isBold="true" />
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement positionType="Float" x="154" y="409" width="140" height="16" uuid="e625dbf8-cfcf-42c5-9a98-70715e25ad8f"/>
 				<textElement verticalAlignment="Bottom" markup="none">
@@ -307,10 +294,21 @@ $F{sscc} +
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="405" width="148" height="20" uuid="9a08e298-10e1-496f-86a7-563a5edf0741"/>
 				<textElement textAlignment="Right">
-					<font size="15" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LotNumberDate}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement style="Barcode" x="191" y="509" width="220" height="90" uuid="0ae1838d-4ffe-4779-bf46-6b97a1b81772">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<jr:EAN128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="1.5" textPosition="bottom">
+					<jr:codeExpression><![CDATA[("00"+$F{sscc})+"\u001D"]]></jr:codeExpression>
+				</jr:EAN128>
+			</componentElement>
 		</band>
 	</detail>
 	<columnFooter>

@@ -1,9 +1,18 @@
-/**
- *
- */
 package de.metas.async.api;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -27,15 +36,6 @@ import java.util.List;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
-import de.metas.util.ISingletonService;
-
 /**
  * @author cg
  *
@@ -56,27 +56,16 @@ public interface IAsyncBatchDAO extends ISingletonService
 
 	/**
 	 * retrieve workpackages for async batch
-	 *
-	 * @param asyncBatch
-	 * @return
 	 */
-	List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch);
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, @Nullable String trxName);
 
 	/**
 	 * retrieve workpackages for async batch
-	 *
-	 * @param asyncBatch
-	 * @param processed
-	 * @return
 	 */
-	List<I_C_Queue_WorkPackage> retrieveWorkPackages(final I_C_Async_Batch asyncBatch, final Boolean processed);
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, @Nullable String trxName, Boolean processed);
 
 	/**
 	 * retrieve notified workpackages fro an async batch
-	 *
-	 * @param asyncBatch
-	 * @param notified
-	 * @return
 	 */
 	List<I_C_Queue_WorkPackage_Notified> retrieveWorkPackagesNotified(I_C_Async_Batch asyncBatch, boolean notified);
 
@@ -84,4 +73,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 * fetch the notifyable record for a given workpackage
 	 */
 	I_C_Queue_WorkPackage_Notified fetchWorkPackagesNotified(I_C_Queue_WorkPackage workPackage);
+
+	void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId);
+
 }

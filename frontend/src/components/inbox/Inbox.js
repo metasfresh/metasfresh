@@ -2,9 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { get } from 'lodash';
 
 import {
@@ -20,10 +19,6 @@ import InboxItem from './InboxItem';
  * @extends Component
  */
 class Inbox extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   /**
    * @method handleClick
    * @summary ToDo: Describe the method
@@ -31,12 +26,12 @@ class Inbox extends Component {
    * @todo Write the documentation
    */
   handleClick = (item) => {
-    const { dispatch, close, location } = this.props;
+    const { history, close, location } = this.props;
     if (item.target) {
       switch (item.target.targetType) {
         case 'window':
-          dispatch(
-            push(`/window/${item.target.windowId}/${item.target.documentId}`)
+          history.push(
+            `/window/${item.target.windowId}/${item.target.documentId}`
           );
           break;
         case 'view': {
@@ -55,12 +50,8 @@ class Inbox extends Component {
             samePageParam = '#notification';
           }
 
-          dispatch(
-            push(
-              `/window/${item.target.windowId}/?viewId=${
-                item.target.viewId
-              }${samePageParam}`
-            )
+          history.push(
+            `/window/${item.target.windowId}/?viewId=${item.target.viewId}${samePageParam}`
           );
 
           break;
@@ -93,8 +84,8 @@ class Inbox extends Component {
    * @todo Write the documentation
    */
   handleShowAll = () => {
-    const { close, dispatch } = this.props;
-    dispatch(push('/inbox'));
+    const { close, history } = this.props;
+    history.push('/inbox');
     close && close();
   };
 
@@ -153,7 +144,7 @@ class Inbox extends Component {
     return (
       <div
         className="js-inbox-wrapper js-not-unselect"
-        onKeyDown={(e) => this.handleKeyDown(e)}
+        onKeyDown={this.handleKeyDown}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -226,7 +217,6 @@ const addClickOutsideHandler = (Child) => {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {bool} [open]
  * @prop {bool} modalVisible
  * @prop {object} [location]
@@ -236,21 +226,21 @@ const addClickOutsideHandler = (Child) => {
  * @todo Check title, buttons. Which proptype? Required or optional?
  */
 Inbox.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   open: PropTypes.bool,
   modalVisible: PropTypes.bool.isRequired,
   location: PropTypes.object,
   close: PropTypes.func,
   inbox: PropTypes.object,
   all: PropTypes.bool,
+  history: PropTypes.object,
 };
 
 Inbox.defaultProps = {};
 
 const routerInbox = withRouter(
-  connect((state, props) => ({
+  connect((state, { location }) => ({
     modalVisible: state.windowHandler.modal.visible,
-    location: props.router.location,
+    location,
   }))(Inbox)
 );
 

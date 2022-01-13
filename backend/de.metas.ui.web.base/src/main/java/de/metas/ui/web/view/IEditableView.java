@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -53,14 +54,14 @@ public interface IEditableView extends IView
 
 	void patchViewRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 
-	LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query);
+	LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query);
 
 	LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName);
 
 	@Builder
 	@Getter
 	@ToString(exclude = "documentsCollection")
-	public class RowEditingContext
+	class RowEditingContext
 	{
 		@NonNull
 		private final DocumentId rowId;

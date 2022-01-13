@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
@@ -48,6 +48,9 @@ public class JsonPurchaseCandidate
 
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
+	
+	@JsonProperty("externalPurchaseOrderUrl")
+	String externalPurchaseOrderUrl;
 
 	@JsonProperty("metasfreshId")
 	JsonMetasfreshId metasfreshId;
@@ -66,6 +69,7 @@ public class JsonPurchaseCandidate
 	private JsonPurchaseCandidate(
 			@JsonProperty("externalHeaderId") @NonNull final JsonExternalId externalHeaderId,
 			@JsonProperty("externalLineId") @NonNull final JsonExternalId externalLineId,
+			@JsonProperty("externalPurchaseOrderUrl") @Nullable final String externalPurchaseOrderUrl,
 			@JsonProperty("metasfreshId") @NonNull final JsonMetasfreshId metasfreshId,
 			@JsonProperty("processed") final boolean processed,
 			@JsonProperty("purchaseOrders") @Nullable @Singular final List<JsonPurchaseOrder> purchaseOrders,
@@ -73,6 +77,7 @@ public class JsonPurchaseCandidate
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
+		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.metasfreshId = metasfreshId;
 		this.processed = processed;
 		this.purchaseOrders = CoalesceUtil.coalesce(purchaseOrders, Collections.emptyList());

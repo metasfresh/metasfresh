@@ -194,6 +194,8 @@ it('Create PriceList and Product Price', function() {
 
 it('Create LagerKonferenz PLV', function() {
   cy.fixture('price/pricelist.json').then(pricelistJson => {
+    pricelistJson.defaultTaxCategory = 'Reduced VAT';
+
     Object.assign(new PriceList(), pricelistJson)
       .setName(priceListName)
       .setCountry(countryName)
@@ -216,6 +218,7 @@ it('Create LagerKonferenz products', function() {
   createProduct(productionProductName, serviceProductType, productCategoryName, productPrice);
   createProduct(witholdingProductName, serviceProductType, productCategoryName, productPrice);
 });
+
 it('Create products for additional contribution tab', function() {
   createProduct(contributionProduct1, itemProductType, productCategoryName, productPrice);
   createProduct(contributionProduct2, itemProductType, productCategoryName, productPrice);

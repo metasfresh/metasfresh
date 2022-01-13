@@ -68,10 +68,13 @@ class RawChart extends Component {
       data,
       noData,
       handleChartOptions,
+      zoomToDetailsAvailable,
     } = this.props;
     const { forceChartReRender } = this.state;
     const dataset0 =
       data && data.datasets && data.datasets[0] && data.datasets[0].values;
+    const dataset0_unit =
+      data && data.datasets && data.datasets[0] && data.datasets[0].unit;
 
     switch (chartType) {
       case 'BarChart':
@@ -148,13 +151,15 @@ class RawChart extends Component {
             )}
 
             <Indicator
-              value={
-                noData
-                  ? ''
-                  : dataset0[0][fields[0].fieldName] +
-                    (fields[0].unit ? ' ' + fields[0].unit : '')
-              }
-              {...{ caption, editmode }}
+              id={id}
+              zoomToDetailsAvailable={zoomToDetailsAvailable}
+              amount={noData ? '0' : dataset0[0][fields[0].fieldName]}
+              unit={dataset0_unit ? dataset0_unit : fields[0].unit}
+              {...{
+                caption,
+                editmode,
+                data,
+              }}
             />
           </div>
         );
@@ -164,22 +169,29 @@ class RawChart extends Component {
   }
 
   renderNoData(showLoader) {
-    const { chartType } = this.props;
+    const { chartType, data, zoomToDetailsAvailable, caption } = this.props;
 
     switch (chartType) {
       case 'Indicator':
-        return <Indicator value={'No data'} loader={showLoader} />;
+        return (
+          <Indicator
+            value={'No data'}
+            data={data}
+            loader={showLoader}
+            {...{ caption, zoomToDetailsAvailable }}
+          />
+        );
       default:
         return <div>{showLoader ? <Loader /> : 'No data'}</div>;
     }
   }
 
   render() {
-    const { data } = this.props;
+    const { data, chartType } = this.props;
 
     if (!data) {
       return this.renderNoData(true); // loading
-    } else if (data.error) {
+    } else if (data.error && chartType !== 'Indicator') {
       return this.renderError(data.error.message);
     } else if (data.datasets && data.datasets.length > 0) {
       return this.renderChart();
@@ -203,6 +215,7 @@ RawChart.propTypes = {
   handleChartOptions: PropTypes.func,
   editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
+  zoomToDetailsAvailable: PropTypes.bool,
 };
 
 export default connect()(RawChart);

@@ -16,11 +16,17 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoVendorForProductException;
@@ -43,17 +49,10 @@ import org.compiere.model.X_M_Requisition;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.order.IOrderBL;
-import de.metas.organization.OrgId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Create PO from Requisition
@@ -362,7 +361,7 @@ public class RequisitionPOCreate extends JavaProcess
 			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setDatePromised(DateRequired);
 			m_order.setIsSOTrx(false);
-			orderBL.setDocTypeTargetId(m_order);
+			orderBL.setDefaultDocTypeTargetId(m_order);
 			m_order.setBPartner(m_bpartner);
 			m_order.setM_PriceList_ID(M_PriceList_ID);
 			

@@ -1,17 +1,9 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.util.List;
-import java.util.function.Supplier;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -29,6 +21,11 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -83,6 +80,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				//
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.removeElementByFieldName(ProductsProposalRow.FIELD_Qty)
+				.setAllowOpeningRowDetails(false)
 				//
 				.build();
 	}

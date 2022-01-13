@@ -86,12 +86,12 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private final I_M_Attribute attributeRecord;
 
-	private final CCache<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>> productAndBPartner2materialTracking = CCache.<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>> builder()
+	private final CCache<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>> productAndBPartner2materialTracking = CCache.<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>>builder()
 			.tableName(CACHE_MAIN_TABLE_NAME)
 			.initialCapacity(10)
 			.build();
 
-	private final CCache<MaterialTrackingId, KeyNamePair> materialTrackingId2KeyNamePair = CCache.<MaterialTrackingId, KeyNamePair> builder()
+	private final CCache<MaterialTrackingId, KeyNamePair> materialTrackingId2KeyNamePair = CCache.<MaterialTrackingId, KeyNamePair>builder()
 			.tableName(CACHE_MAIN_TABLE_NAME)
 			.initialCapacity(10)
 			.build();
@@ -123,7 +123,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	/**
 	 * @return {@link X_M_Attribute#ATTRIBUTEVALUETYPE_StringMax40} because in our {@code M_AttributeInstance} record, the MatrialTrackingID is store in the {@code Value} column (as opposed to {@code ValueNumber})
-	 *         also note that {@link de.metas.handlingunits.attribute.impl.AbstractAttributeValue} insists we don't return "List".
+	 * also note that {@link de.metas.handlingunits.attribute.impl.AbstractAttributeValue} insists we don't return "List".
 	 */
 	@Override
 	public String getAttributeValueType()
@@ -143,23 +143,35 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
-		final I_M_HU hu = huAttributesBL.getM_HU(attributeSet);
-		final int bpartnerId = hu.getC_BPartner_ID();
+		final Evaluatees.MapEvaluateeBuilder result = Evaluatees.mapBuilder();
 
-		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
-		final ProductId productId = huStorage.getSingleProductIdOrNull();
-
-		int currentMaterialTrackingId = -1;
-		if (attributeSet.hasAttribute(attributeRecord))
+		final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet);
+		if (hu != null)
 		{
-			currentMaterialTrackingId = attributeSet.getValueAsInt(attributeRecord);
+			final int bpartnerId = hu.getC_BPartner_ID();
+			result.put(CTXNAME_C_BPartner_ID, idOrMinusOne(bpartnerId));
+
+			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+			final ProductId productId = huStorage.getSingleProductIdOrNull();
+			result.put(CTXNAME_M_Product_ID, idOrMinusOne(ProductId.toRepoId(productId)));
+		}
+		else
+		{
+			result.put(CTXNAME_C_BPartner_ID, -1);
+			result.put(CTXNAME_M_Product_ID, -1);
 		}
 
-		return Evaluatees.mapBuilder()
-				.put(CTXNAME_C_BPartner_ID, idOrMinusOne(bpartnerId))
-				.put(CTXNAME_M_Product_ID, idOrMinusOne(ProductId.toRepoId(productId)))
-				.put(CTXNAME_M_Material_Tracking, idOrMinusOne(currentMaterialTrackingId))
-				.build();
+		if (attributeSet.hasAttribute(attributeRecord))
+		{
+			final int currentMaterialTrackingId = attributeSet.getValueAsInt(attributeRecord);
+			result.put(CTXNAME_M_Material_Tracking, idOrMinusOne(currentMaterialTrackingId));
+		}
+		else
+		{
+			result.put(CTXNAME_M_Material_Tracking, -1);
+		}
+
+		return result.build();
 	}
 
 	private int idOrMinusOne(final int id)
@@ -234,7 +246,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	@Override
 	public NamePair getAttributeValueOrNull(
-			@Nullable final Evaluatee evalCtx,
+			@Nullable final Evaluatee evalCtx_IGNORED,
 			@Nullable final Object valueKey)
 	{
 		final MaterialTrackingId materialTrackingId = normalizeValueKey(valueKey);
@@ -303,7 +315,8 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		return valueNamePair;
 	}
 
-	private static final MaterialTrackingId normalizeValueKey(@Nullable final Object valueKey)
+	@Nullable
+	private static MaterialTrackingId normalizeValueKey(@Nullable final Object valueKey)
 	{
 		if (valueKey == null)
 		{

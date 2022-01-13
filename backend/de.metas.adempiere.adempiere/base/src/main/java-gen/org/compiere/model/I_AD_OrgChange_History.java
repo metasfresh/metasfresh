@@ -29,7 +29,7 @@ public interface I_AD_OrgChange_History
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Org Change History.
+	 * Set Organization Change History.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -38,7 +38,7 @@ public interface I_AD_OrgChange_History
 	void setAD_OrgChange_History_ID (int AD_OrgChange_History_ID);
 
 	/**
-	 * Get Org Change History.
+	 * Get Organization Change History.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -50,7 +50,7 @@ public interface I_AD_OrgChange_History
 	String COLUMNNAME_AD_OrgChange_History_ID = "AD_OrgChange_History_ID";
 
 	/**
-	 * Set Org From.
+	 * Set Organization From.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -59,7 +59,7 @@ public interface I_AD_OrgChange_History
 	void setAD_Org_From_ID (int AD_Org_From_ID);
 
 	/**
-	 * Get Org From.
+	 * Get Organization From.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -204,22 +204,22 @@ public interface I_AD_OrgChange_History
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Org Change Date.
+	 * Set Organization Change Date.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDate_OrgChange (@Nullable java.sql.Timestamp Date_OrgChange);
+	void setDate_OrgChange (java.sql.Timestamp Date_OrgChange);
 
 	/**
-	 * Get Org Change Date.
+	 * Get Organization Change Date.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDate_OrgChange();
+	java.sql.Timestamp getDate_OrgChange();
 
 	ModelColumn<I_AD_OrgChange_History, Object> COLUMN_Date_OrgChange = new ModelColumn<>(I_AD_OrgChange_History.class, "Date_OrgChange", null);
 	String COLUMNNAME_Date_OrgChange = "Date_OrgChange";

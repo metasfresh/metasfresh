@@ -1,9 +1,8 @@
 package de.metas.material.dispo.commons.repository.query;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;

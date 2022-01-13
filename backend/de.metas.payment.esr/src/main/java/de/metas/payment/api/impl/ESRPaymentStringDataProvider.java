@@ -24,13 +24,13 @@ package de.metas.payment.api.impl;
 
 import java.util.List;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
-import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -44,7 +44,7 @@ import de.metas.util.Services;
  */
 public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvider
 {
-	public ESRPaymentStringDataProvider(final IPaymentString paymentString)
+	public ESRPaymentStringDataProvider(final PaymentString paymentString)
 	{
 		super(paymentString);
 	}
@@ -52,7 +52,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	@Override
 	public List<org.compiere.model.I_C_BP_BankAccount> getC_BP_BankAccounts()
 	{
-		final IPaymentString paymentString = getPaymentString();
+		final PaymentString paymentString = getPaymentString();
 
 		final String postAccountNo = paymentString.getPostAccountNo();
 		final String innerAccountNo = paymentString.getInnerAccountNo();
@@ -69,7 +69,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	@Override
 	public I_C_BP_BankAccount createNewC_BP_BankAccount(final IContextAware contextProvider, final int bpartnerId)
 	{
-		final IPaymentString paymentString = getPaymentString();
+		final PaymentString paymentString = getPaymentString();
 
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
 

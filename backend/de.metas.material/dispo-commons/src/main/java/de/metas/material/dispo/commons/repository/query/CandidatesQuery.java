@@ -9,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -86,6 +87,9 @@ public final class CandidatesQuery
 				candidate.getMaterialDescriptor(),
 				DateAndSeqNo.ofCandidate(candidate));
 
+		final StockChangeDetailQuery stockChangeDetailQuery = StockChangeDetailQuery
+				.ofStockChangeDetailOrNull(StockChangeDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.matchExactStorageAttributesKey(true)
@@ -93,6 +97,7 @@ public final class CandidatesQuery
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.purchaseDetailsQuery(purchaseDetailsQuery)
+				.stockChangeDetailQuery(stockChangeDetailQuery)
 				.transactionDetails(candidate.getTransactionDetails())
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
@@ -180,6 +185,11 @@ public final class CandidatesQuery
 	 */
 	List<TransactionDetail> transactionDetails;
 
+	/**
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#STOCK_CHANGE}.
+	 */
+	StockChangeDetailQuery stockChangeDetailQuery;
+
 	@Builder
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
@@ -197,7 +207,8 @@ public final class CandidatesQuery
 			final DistributionDetailsQuery distributionDetailsQuery,
 			final PurchaseDetailsQuery purchaseDetailsQuery,
 			final DemandDetailsQuery demandDetailsQuery,
-			@Singular final List<TransactionDetail> transactionDetails)
+			@Singular final List<TransactionDetail> transactionDetails,
+			final StockChangeDetailQuery stockChangeDetailQuery)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
 		this.parentDemandDetailsQuery = parentDemandDetailsQuery;
@@ -218,5 +229,7 @@ public final class CandidatesQuery
 
 		this.demandDetailsQuery = demandDetailsQuery;
 		this.transactionDetails = transactionDetails;
+
+		this.stockChangeDetailQuery = stockChangeDetailQuery;
 	}
 }

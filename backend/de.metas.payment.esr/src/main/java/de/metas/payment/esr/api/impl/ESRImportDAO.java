@@ -1,40 +1,37 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.refid.api.IReferenceNoDAO;
+import de.metas.document.refid.model.I_C_ReferenceNo;
+import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.ESRImportId;
+import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.security.permissions.Access;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -48,31 +45,29 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.document.refid.api.IReferenceNoDAO;
-import de.metas.document.refid.model.I_C_ReferenceNo;
-import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
-import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.ESRImportId;
-import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.security.permissions.Access;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ESRImportDAO implements IESRImportDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * Used to order lines by <code>LineNo, ESR_ImportLine_ID</code>.
@@ -94,11 +89,23 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
+	public void saveOutOfTrx(@NonNull final I_ESR_ImportFile esrImportFile)
+	{
+		InterfaceWrapperHelper.save(esrImportFile, ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public void save(@NonNull final I_ESR_ImportLine esrImportLine)
 	{
 		saveRecord(esrImportLine);
 	}
-	
+
+	@Override
+	public void save(@NonNull final I_ESR_ImportFile esrImportFile)
+	{
+		saveRecord(esrImportFile);
+	}
+
 	@Override
 	public List<I_ESR_Import> getByIds(@NonNull final Set<ESRImportId> esrImportIds)
 	{
@@ -304,6 +311,16 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
+	public Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(final @NonNull OrgId orgId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_ESR_ImportFile.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportFile.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.iterate(I_ESR_ImportFile.class);
+	}
+
+	@Override
 	public I_ESR_Import retrieveESRImportForPayment(I_C_Payment payment)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, payment)
@@ -337,19 +354,57 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public I_ESR_ImportLine fetchLineForESRLineText(@NonNull final I_ESR_Import esrImport, @NonNull final String esrImportLineText)
+	public int countLines(@NonNull final I_ESR_ImportFile esrImportFile, @Nullable final Boolean processed)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
-		final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);
-		final ESRImportId esrImportId = ESRImportId.ofRepoId(esrImport.getESR_Import_ID());
+		final IQueryBuilder<I_ESR_ImportLine> queryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportFile_ID, esrImportFile.getESR_ImportFile_ID());
+
+		if (processed != null)
+		{
+			queryBuilder.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_Processed, processed);
+		}
+
+		return queryBuilder.create().count();
+	}
+
+	@Override
+	public I_ESR_ImportLine fetchLineForESRLineText(@NonNull final I_ESR_ImportFile esrImportFile, @NonNull final String esrImportLineText)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImportFile);
+		final String trxName = InterfaceWrapperHelper.getTrxName(esrImportFile);
 		final String strippedText = esrImportLineText.trim();
 
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportId)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportFile_ID, esrImportFile.getESR_ImportFile_ID())
 				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true)
 				.create()
 				.firstOnly(I_ESR_ImportLine.class);
+	}
+
+	@Override
+	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText,
+			final int excludeESRImportLineID)
+	{
+		if (esrImportLineText == null)
+		{
+			return Collections.emptyList();
+		}
+
+		final String strippedText = esrImportLineText.trim();
+
+		final IQueryBuilder<I_ESR_ImportLine> esrimportLineIQueryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true);
+
+		if (excludeESRImportLineID > 0)
+		{
+			esrimportLineIQueryBuilder.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, excludeESRImportLineID);
+		}
+		return esrimportLineIQueryBuilder
+				.create()
+				.list(I_ESR_ImportLine.class);
 	}
 
 	@Override
@@ -367,4 +422,112 @@ public class ESRImportDAO implements IESRImportDAO
 				.collect(ImmutableSet.toImmutableSet());
 		return notReconciledESRImportIds;
 	}
+
+	@Override
+	public Optional<PaymentId> findExistentPaymentId(@NonNull final I_ESR_ImportLine esrLine)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
+		final Money trxAmt = extractESRPaymentAmt(esrLine);
+
+		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
+																					  .docStatus(DocStatus.Completed)
+																					  .dateTrx(esrLine.getPaymentDate())
+																					  .bpartnerId(bpartnerId)
+																					  .payAmt(trxAmt)
+																					  .build())
+				.stream().iterator();
+
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
+
+		while (paymentIdIterator.hasNext())
+		{
+			final PaymentId paymentId = paymentIdIterator.next();
+			for (final I_ESR_ImportLine line : lines)
+			{
+				if (line.getC_Payment_ID() == paymentId.getRepoId())
+				{
+					return Optional.of(paymentId);
+				}
+			}
+
+			if (paymentId.getRepoId() == esrLine.getC_Payment_ID())
+			{
+				// The esr line was already marked as duplicate and this payment was alerady set to it
+				if (X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(esrLine.getESR_Payment_Action()))
+				{
+					return Optional.of(paymentId);
+				}
+
+				// otherwise, it just means that the payment was already set so we don't have to check for duplicates
+				continue;
+			}
+			final de.metas.invoice.InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
+			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+			final I_C_Payment payment = paymentDAO.getById(paymentId);
+			if (paymentBL.isMatchInvoice(payment, invoice))
+			{
+				return Optional.of(paymentId);
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	private Money extractESRPaymentAmt(@NonNull final I_ESR_ImportLine esrLine)
+	{
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(esrLine.getESR_Import().getC_BP_BankAccount_ID());
+		final BankAccount bankAccount = bpBankAccountDAO.getById(bankAccountId);
+		return Money.of(esrLine.getAmount(), bankAccount.getCurrencyId());
+	}
+
+	@Override
+	public I_ESR_ImportFile createESRImportFile(@NonNull final I_ESR_Import header)
+	{
+		final I_ESR_ImportFile esrImportFile = newInstance(I_ESR_ImportFile.class);
+		esrImportFile.setESR_Import_ID(header.getESR_Import_ID());
+		esrImportFile.setAD_Org_ID(header.getAD_Org_ID());
+		esrImportFile.setC_BP_BankAccount_ID(header.getC_BP_BankAccount_ID());
+		esrImportFile.setESR_Control_Amount(BigDecimal.ZERO);
+		saveRecord(esrImportFile);
+
+		return esrImportFile;
+	}
+
+	@Override
+	public ImmutableList<I_ESR_ImportFile> retrieveActiveESRImportFiles(@NonNull final I_ESR_Import esrImport)
+	{
+		return queryBL.createQueryBuilder(I_ESR_ImportFile.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportFile.COLUMNNAME_ESR_Import_ID, esrImport.getESR_Import_ID())
+				.create()
+				.listImmutable(I_ESR_ImportFile.class);
+	}
+
+	@Override
+	public ImmutableList<I_ESR_ImportLine> retrieveActiveESRImportLinesFromFile(@NonNull final I_ESR_ImportFile esrImportFile)
+	{
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportFile_ID, esrImportFile.getESR_ImportFile_ID())
+				.create()
+				.listImmutable(I_ESR_ImportLine.class);
+	}
+
+	@Override
+	public I_ESR_ImportFile getImportFileById(final int esrImportFileId)
+	{
+		return load(esrImportFileId, I_ESR_ImportFile.class);
+	}
+
+	@Override
+	public void validateEsrImport(final I_ESR_Import esrImport)
+	{
+		final ImmutableList<I_ESR_ImportFile> esrImportFiles = retrieveActiveESRImportFiles(esrImport);
+
+		boolean isValid = esrImportFiles.stream()
+				.allMatch(I_ESR_ImportFile::isValid);
+		esrImport.setIsValid(isValid);
+		save(esrImport);
+	}
+
 }

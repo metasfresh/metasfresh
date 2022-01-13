@@ -19,11 +19,12 @@ package org.compiere.print;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
-import de.metas.impexp.excel.ExcelFormats;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
@@ -33,7 +34,6 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveInfo;
-import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
@@ -54,15 +54,13 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
 import javax.print.StreamPrintServiceFactory;
 import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.Copies;
-import javax.print.attribute.standard.JobName;
 import javax.print.event.PrintServiceAttributeEvent;
 import javax.print.event.PrintServiceAttributeListener;
 import javax.xml.transform.stream.StreamResult;
@@ -81,7 +79,6 @@ import java.net.URI;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -887,9 +884,15 @@ public class ReportEngine implements PrintServiceAttributeListener
 		{
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				final byte[] data = createPdfDataInvokeReportProcess();
-				final ByteArrayInputStream stream = new ByteArrayInputStream(data == null ? new byte[] {} : data);
-				FileUtil.copy(stream, file);
+				final Resource data = createPdfDataInvokeReportProcess();
+				if (data == null)
+				{
+					FileUtil.copy(new ByteArrayInputStream(new byte[] {}), file);
+				}
+				else
+				{
+					FileUtil.copy(data.getInputStream(), file);
+				}
 			}
 			else
 			{
@@ -907,32 +910,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return file2.exists();
 	}    // createPDF
 
-	public byte[] createPDFData()
-	{
-		try
-		{
-
-			// 03744: begin
-			if (getPrintFormat() != null && getPrintFormat().getJasperProcess_ID() > 0)
-			{
-				return createPdfDataInvokeReportProcess();
-			}
-			else
-			{
-				// 03744: end
-				if (m_layout == null)
-					layout();
-				return Document.getPDFAsArray(m_layout.getPageable(false));
-			} // 03744
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		// return null;
-	}    // createPDFData
-
-	private byte[] createPdfDataInvokeReportProcess()
+	private Resource createPdfDataInvokeReportProcess()
 	{
 		final Properties ctx = Env.getCtx(); // ReportEngine.getCtx() fails, because the ctx would be taken from an "old-school" layout
 
@@ -946,7 +924,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
-		return processExecutor.getResult().getReportDataAsByteArray();
+		
+		final ReportResultData reportData = processExecutor.getResult().getReportData();
+		return reportData != null ? reportData.getReportData() : null;
 	}
 
 	/**************************************************************************

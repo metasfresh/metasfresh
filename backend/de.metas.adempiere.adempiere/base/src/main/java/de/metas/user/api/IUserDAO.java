@@ -23,12 +23,17 @@ package de.metas.user.api;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Preference;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -90,4 +95,9 @@ public interface IUserDAO extends ISingletonService
 	UserId retrieveUserIdByLogin(String login);
 
 	void save(I_AD_User user);
+
+	Optional<I_AD_User> getCounterpartUser(
+			@NonNull UserId sourceUserId,
+			@NonNull OrgId targetOrgId);
+
 }

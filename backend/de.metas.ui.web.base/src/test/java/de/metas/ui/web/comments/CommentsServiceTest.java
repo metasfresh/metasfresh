@@ -22,18 +22,35 @@
 
 package de.metas.ui.web.comments;
 
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.comments.CommentEntry;
+import de.metas.comments.CommentEntryId;
+import de.metas.comments.CommentEntryParentId;
+import de.metas.comments.CommentsRepository;
 import de.metas.common.util.time.SystemTime;
+import de.metas.ui.web.comments.json.JSONComment;
+import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRow;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+import de.metas.ui.web.window.descriptor.DocumentDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -51,34 +68,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.comments.CommentEntry;
-import de.metas.comments.CommentEntryId;
-import de.metas.comments.CommentEntryParentId;
-import de.metas.comments.CommentsRepository;
-import de.metas.ui.web.comments.json.JSONComment;
-import de.metas.ui.web.comments.json.JSONCommentCreateRequest;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewRow;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
-import de.metas.ui.web.window.descriptor.DocumentDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
-import de.metas.user.UserId;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 class CommentsServiceTest
 {
@@ -108,7 +106,7 @@ class CommentsServiceTest
 			{
 				@Nullable
 				@Override
-				public DocumentFilterDescriptorsProvider createFiltersProvider(final AdTabId adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
+				public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context, final @NonNull Collection<DocumentFieldDescriptor> fields)
 				{
 					return null;
 				}

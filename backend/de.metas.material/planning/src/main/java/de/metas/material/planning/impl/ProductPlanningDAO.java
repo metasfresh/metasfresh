@@ -1,53 +1,8 @@
 package de.metas.material.planning.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -59,6 +14,27 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductPlanningDAO implements IProductPlanningDAO
 {
@@ -208,7 +184,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		return AttributesKeyQueryHelper
 				.createFor(I_PP_Product_Planning.COLUMN_StorageAttributesKey)
-				.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
+				.createFilter(AttributesKeyPatternsUtil.ofAttributeKey(attributesKey));
 	}
 
 	@Override
@@ -218,36 +194,37 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public void setProductBOMIdIfAbsent(
+	public void setProductBOMVersionsIdIfAbsent(
 			@NonNull final ProductId productId,
-			@NonNull final ProductBOMId bomId)
+			@NonNull final ProductBOMVersionsId bomVersionsId)
 	{
 		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, null)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, null)
 				.create()
 				.list();
 
 		for (final I_PP_Product_Planning productPlanningRecord : productPlanningRecords)
 		{
-			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersionsId.getRepoId());
 			save(productPlanningRecord);
 		}
 	}
 
 	@Override
-	public Set<ProductBOMId> retrieveAllPickingBOMIds()
+	@NonNull
+	public Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds()
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsPickingOrder, true)
-				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID)
+				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.create()
-				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, Integer.class)
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, Integer.class)
 				.stream()
-				.map(ProductBOMId::ofRepoId)
+				.map(ProductBOMVersionsId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import Password from '../../../components/widget/Password';
 import fixtures from '../../../../test_setup/fixtures/widget/password.json';
@@ -10,12 +10,11 @@ const createDummyProps = function(props) {
     onSetWidgetType: jest.fn(),
     getClassNames: jest.fn(),
     ...props,
-    widgetProperties: merge.recursive(
-    true,
+    widgetProperties: merge(
     {
       onChange: jest.fn(),
     },
-    props.widgetProprties)
+    props.widgetProperties)
   };
 };
 
@@ -24,6 +23,7 @@ describe('Password component', () => {
     const props = createDummyProps({
       ...fixtures.props1,
     });
+
     const wrapper = shallow(<Password {...props} />);
     const html = wrapper.html();
 

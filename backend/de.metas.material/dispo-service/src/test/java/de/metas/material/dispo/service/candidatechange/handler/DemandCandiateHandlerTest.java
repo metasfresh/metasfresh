@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -89,8 +90,10 @@ public class DemandCandiateHandlerTest
 		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
@@ -158,25 +161,25 @@ public class DemandCandiateHandlerTest
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-		assertThat(demandRecord).extracting("qty.toString", "StorageAttributesKey")
-				.containsExactly("23", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(demandRecord).extracting("qty", "StorageAttributesKey")
+				.containsExactly(BigDecimal.valueOf(23), STORAGE_ATTRIBUTES_KEY.getAsString());
 
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 		assertThat(demandStockRecord).extracting(
 				"MD_Candidate_Parent_ID",
-				"Qty.toString",
+				"Qty",
 				"StorageAttributesKey",
 				"SeqNo")
-				.containsExactly(demandRecord.getMD_Candidate_ID(), "-23", STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
+				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-		assertThat(supplyRecord).extracting("qty.toString", "StorageAttributesKey")
-				.containsExactly("13", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(supplyRecord).extracting("qty", "StorageAttributesKey")
+				.containsExactly(BigDecimal.valueOf(13), STORAGE_ATTRIBUTES_KEY.getAsString());
 
 		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
 		// the stock record's qty is -10 because we were at -23, and 13 were added
-		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty.toString", "StorageAttributesKey")
-				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), "-10", STORAGE_ATTRIBUTES_KEY.getAsString());
+		assertThat(supplyStockRecord).extracting("MD_Candidate_ID", "Qty", "StorageAttributesKey")
+				.containsExactly(supplyRecord.getMD_Candidate_Parent_ID(), BigDecimal.valueOf(-10), STORAGE_ATTRIBUTES_KEY.getAsString());
 	}
 
 	private void setupRepositoryReturnsQuantityForMaterial(

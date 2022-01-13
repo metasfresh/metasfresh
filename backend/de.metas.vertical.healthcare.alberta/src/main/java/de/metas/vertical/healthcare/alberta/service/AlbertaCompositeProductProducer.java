@@ -69,6 +69,9 @@ public class AlbertaCompositeProductProducer
 	Function<ProductId, Optional<String>> getAlbertaArticleIdSupplier;
 
 	@NonNull
+	Function<ProductId, Optional<String>> getProductGroupIdentifierSupplier;
+
+	@NonNull
 	public ImmutableMap<ProductId, AlbertaCompositeProductInfo> getAlbertaInfoByProductId()
 	{
 		return getProductIdSet()
@@ -86,6 +89,10 @@ public class AlbertaCompositeProductProducer
 		compositeProductBuilder
 				.productId(productId)
 				.albertaArticleId(getAlbertaArticleIdSupplier.apply(productId).orElse(null));
+
+		compositeProductBuilder
+				.productId(productId)
+				.productGroupId(getProductGroupIdentifierSupplier.apply(productId).orElse(null));
 
 		final Optional<List<I_M_Product_AlbertaPackagingUnit>> packagingUnitRecords = Optional.ofNullable(product2PackagingUnits.get(productId));
 		packagingUnitRecords.map(records -> records.stream()

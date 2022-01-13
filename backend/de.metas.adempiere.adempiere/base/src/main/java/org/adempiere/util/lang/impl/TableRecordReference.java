@@ -196,8 +196,8 @@ public final class TableRecordReference implements ITableRecordReference
 	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
 	{
 		return adTableId > 0 && recordId >= 0
-			? new TableRecordReference(adTableId, recordId)
-			: null;
+				? new TableRecordReference(adTableId, recordId)
+				: null;
 	}
 
 	@JsonCreator
@@ -369,9 +369,23 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 	}
 
+	/**
+	 * @return true if both o1 and o2 are null, or if both have the same table and recordId. Makes sure to ignore the internal {@link SoftReference}'s timestamp
+	 */
 	public static boolean equals(@Nullable final TableRecordReference o1, @Nullable final TableRecordReference o2)
 	{
-		return Objects.equals(o1, o2);
+		if (o1 == null && o2 == null)
+		{
+			return true;
+		}
+		else if (o1 == null || o2 == null)
+		{
+			return false;
+		}
+		else
+		{
+			return Objects.equals(o1.tableName, o2.tableName) && o1.recordId == o2.recordId;
+		}
 	}
 
 	@Override
@@ -488,7 +502,6 @@ public final class TableRecordReference implements ITableRecordReference
 		if (!Services.get(ITrxManager.class).isSameTrxName(modelTrxName, context.getTrxName()))
 		{
 			modelRef = new SoftReference<>(null);
-			return;
 		}
 
 		// TODO: why the ctx is not validated, like org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal.getValue(Class<RT>) does?
@@ -508,7 +521,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	public static <T> List<T> getModels(
-			@NonNull final Collection<ITableRecordReference> references,
+			@NonNull final Collection<? extends ITableRecordReference> references,
 			@NonNull final Class<T> modelClass)
 	{
 		return references

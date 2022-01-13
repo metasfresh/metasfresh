@@ -1,14 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.api.IParams;
-import org.compiere.util.Env;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
@@ -23,6 +14,13 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.util.api.IParams;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Generates Shipment document from given loading units (LUs).
@@ -55,7 +53,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 	//
 	// State
-	private InOutGenerateResult inoutGenerateResult = null;
+	private final InOutGenerateResult inoutGenerateResult = null;
 
 	/**
 	 * Create and enqueue a workpackage for given handling units. Created workpackage will be marked as ready for processing.
@@ -63,7 +61,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	 * @param hus handling units to enqueue
 	 * @return created workpackage.
 	 */
-	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final Collection<I_M_HU> hus)
+	public static I_C_Queue_WorkPackage enqueueWorkpackage(final Collection<I_M_HU> hus)
 	{
 		return prepareWorkpackage()
 				.hus(hus)
@@ -73,7 +71,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	}
 
 	@Builder(builderMethodName = "prepareWorkpackage", buildMethodName = "enqueue")
-	private static final I_C_Queue_WorkPackage enqueueWorkpackage(
+	private static I_C_Queue_WorkPackage enqueueWorkpackage(
 			@NonNull @Singular("hu") final List<I_M_HU> hus,
 			final int addToShipperTransportationId,
 			final boolean completeShipments,
@@ -92,7 +90,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.bindToThreadInheritedTrx()
 				.setUserInChargeId(Env.getLoggedUserIdIfExists(ctx).orElse(null)) // invoker
 				.parameters()
-				.setParameter(PARAMETERNAME_AddToShipperTransportationId, addToShipperTransportationId > 0 ? addToShipperTransportationId : 0)
+				.setParameter(PARAMETERNAME_AddToShipperTransportationId, Math.max(addToShipperTransportationId, 0))
 				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())
 				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
 				.end()
@@ -137,7 +135,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()
@@ -150,6 +148,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	 *
 	 * @return shipment generation result; never return null
 	 */
+	@NonNull
 	public InOutGenerateResult getInOutGenerateResult()
 	{
 		Check.assumeNotNull(inoutGenerateResult, "workpackage shall be processed first");

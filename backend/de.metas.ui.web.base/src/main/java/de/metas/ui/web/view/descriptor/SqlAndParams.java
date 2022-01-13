@@ -5,15 +5,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.dao.sql.SqlParamsInliner;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -41,6 +47,8 @@ import java.util.Optional;
 @Value
 public class SqlAndParams
 {
+	public static SqlAndParams EMPTY = builder().build();
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -62,7 +70,7 @@ public class SqlAndParams
 		return of(sql, sqlParams != null ? sqlParams.toLiveList() : null);
 	}
 
-	public static SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
+	public static SqlAndParams of(final CharSequence sql, @Nullable final Object... sqlParamsArray)
 	{
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
@@ -73,18 +81,44 @@ public class SqlAndParams
 				.orElseThrow(() -> new AdempiereException("No non null SQLs found in " + sqlAndParamsCollection));
 	}
 
-	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsCollection)
+	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsArray)
 	{
-		if (sqlAndParamsCollection == null || sqlAndParamsCollection.length == 0)
+		if (sqlAndParamsArray == null || sqlAndParamsArray.length == 0)
 		{
 			return Optional.empty();
 		}
 
-		return andNullables(Arrays.asList(sqlAndParamsCollection));
+		return andNullables(Arrays.asList(sqlAndParamsArray));
 	}
 
 	public static Optional<SqlAndParams> andNullables(final Collection<SqlAndParams> sqlAndParamsCollection)
 	{
+		return joinNullables("AND", sqlAndParamsCollection);
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final SqlAndParams... sqlAndParamsArray)
+	{
+		if (sqlAndParamsArray == null || sqlAndParamsArray.length == 0)
+		{
+			return Optional.empty();
+		}
+
+		return orNullables(Arrays.asList(sqlAndParamsArray));
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final Collection<SqlAndParams> sqlAndParamsCollection)
+	{
+		return joinNullables("OR", sqlAndParamsCollection);
+	}
+
+	private static Optional<SqlAndParams> joinNullables(@NonNull final String operator, @Nullable final Collection<SqlAndParams> sqlAndParamsCollection)
+	{
+		final String operatorNorm = StringUtils.trimBlankToNull(operator);
+		if (operatorNorm == null)
+		{
+			throw new AdempiereException("Invalid blank operator: `" + operator + "`");
+		}
+
 		if (sqlAndParamsCollection == null || sqlAndParamsCollection.isEmpty())
 		{
 			return Optional.empty();
@@ -114,7 +148,7 @@ public class SqlAndParams
 
 				if (!builder.isEmpty())
 				{
-					builder.append(" AND ");
+					builder.append(" ").append(operatorNorm).append(" ");
 				}
 				builder.append("(").append(sqlAndParams).append(")");
 			}
@@ -136,6 +170,12 @@ public class SqlAndParams
 		}
 	}
 
+	@Nullable
+	public static SqlAndParams emptyToNull(@Nullable final SqlAndParams sqlAndParams)
+	{
+		return sqlAndParams != null && !sqlAndParams.isEmpty() ? sqlAndParams : null;
+	}
+
 	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder().failOnError(true).build();
 
 	String sql;
@@ -144,13 +184,15 @@ public class SqlAndParams
 	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
 		this.sql = sql.toString();
-		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Arrays.asList(sqlParamsArray) : ImmutableList.of();
+		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Collections.unmodifiableList(Arrays.asList(sqlParamsArray)) : ImmutableList.of();
 	}
 
 	public Builder toBuilder()
 	{
 		return builder().append(this);
 	}
+
+	public static boolean equals(@Nullable final SqlAndParams o1, @Nullable final SqlAndParams o2) {return Objects.equals(o1, o2);}
 
 	@Nullable
 	public Object[] getSqlParamsArray()
@@ -173,6 +215,13 @@ public class SqlAndParams
 		return sqlParamsInliner.inline(sql, sqlParams);
 	}
 
+	public <T> IQueryFilter<T> toQueryFilterOrAllowAll()
+	{
+		return !isEmpty()
+				? TypedSqlQueryFilter.of(sql, sqlParams)
+				: ConstantQueryFilter.of(true);
+	}
+
 	//
 	//
 	// ---------------
@@ -191,6 +240,7 @@ public class SqlAndParams
 		/**
 		 * @deprecated I think you wanted to call {@link #build()}
 		 */
+		@Override
 		@Deprecated
 		public String toString()
 		{
@@ -207,10 +257,21 @@ public class SqlAndParams
 			return new SqlAndParams(sql, sqlParamsArray);
 		}
 
+		public Builder clear()
+		{
+			sql = null;
+			sqlParams = null;
+			return this;
+		}
+
 		public boolean isEmpty()
 		{
-			return (sql == null || sql.length() == 0)
-					&& !hasParameters();
+			return length() <= 0 && !hasParameters();
+		}
+
+		public int length()
+		{
+			return sql != null ? sql.length() : 0;
 		}
 
 		public boolean hasParameters()
@@ -233,6 +294,15 @@ public class SqlAndParams
 			{
 				return this;
 			}
+		}
+
+		public Builder appendIfNotEmpty(@NonNull final CharSequence sql, @Nullable final Object... sqlParams)
+		{
+			if (!isEmpty())
+			{
+				append(sql, sqlParams);
+			}
+			return this;
 		}
 
 		public Builder append(@NonNull final CharSequence sql, @Nullable final Object... sqlParams)
@@ -266,6 +336,11 @@ public class SqlAndParams
 		}
 
 		public Builder append(@NonNull final SqlAndParams other)
+		{
+			return append(other.sql, other.sqlParams);
+		}
+
+		public Builder append(@NonNull final SqlAndParams.Builder other)
 		{
 			return append(other.sql, other.sqlParams);
 		}

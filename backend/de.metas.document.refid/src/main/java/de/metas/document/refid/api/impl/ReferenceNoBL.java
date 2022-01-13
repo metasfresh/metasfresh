@@ -48,6 +48,8 @@ import de.metas.document.refid.spi.IReferenceNoGenerator;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public class ReferenceNoBL implements IReferenceNoBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
@@ -115,6 +117,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 	}
 
 	@Override
+	@Nullable
 	public IReferenceNoGeneratorInstance getReferenceNoGeneratorInstance(final Properties ctx, final I_C_ReferenceNo_Type type)
 	{
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
@@ -122,7 +125,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		//
 		// Build-up AD_Table_IDs list
 		final List<Integer> assignedTableIds = new ArrayList<>();
-		for (I_C_ReferenceNo_Type_Table assignment : dao.retrieveTableAssignments(type))
+		for (final I_C_ReferenceNo_Type_Table assignment : dao.retrieveTableAssignments(type))
 		{
 			if (!assignment.isActive())
 			{

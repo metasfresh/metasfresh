@@ -33,11 +33,20 @@ public enum PathSegmentsEnum
 	V3("v3"),
 	SEARCH("search"),
 	ORDER("order"),
+	PRODUCT("product"),
+	UNIT("unit"),
 	DELIVERIES("deliveries"),
 	ORDER_ADDRESS("order-address"),
 	OATH("oauth"),
 	TOKEN("token"),
-	COUNTRY("country");
+	COUNTRY("country"),
+	LINE_ITEMS("line-items"),
+	CURRENCY("currency"),
+	SALUTATION("salutation"),
+	CUSTOMER("customer"),
+	GROUP("group"),
+	TRANSACTIONS("transactions"),
+	PAYMENT_METHOD("payment-method");
 
 	private final String value;
 }

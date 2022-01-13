@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v2.product;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -29,6 +31,8 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -50,6 +54,7 @@ public class ProductsServicesFacade
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IBPartnerProductDAO partnerProductsRepo = Services.get(IBPartnerProductDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
@@ -75,5 +80,13 @@ public class ProductsServicesFacade
 	public Stream<I_M_Product_Category> streamAllProductCategories()
 	{
 		return productsRepo.streamAllProductCategories();
+	}
+
+	public List<I_C_BPartner> getPartnerRecords(@NonNull final ImmutableSet<BPartnerId> manufacturerIds)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, manufacturerIds)
+				.create()
+				.list();
 	}
 }

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.dashboard.KPI;
-import de.metas.ui.web.dashboard.KPIField;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIField;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -61,6 +61,9 @@ public class JsonKPILayout
 	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
+	@JsonProperty("zoomToDetailsAvailable")
+	private final boolean zoomToDetailsAvailable;
+
 	public JsonKPILayout(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
 		// id = kpi.getId();
@@ -69,6 +72,7 @@ public class JsonKPILayout
 		chartType = kpi.getChartType().toJson();
 		groupByField = extractGroupByField(kpi, jsonOpts);
 		fields = extractFields(kpi, jsonOpts);
+		zoomToDetailsAvailable = kpi.isZoomToDetailsAvailable();
 	}
 
 	@Nullable

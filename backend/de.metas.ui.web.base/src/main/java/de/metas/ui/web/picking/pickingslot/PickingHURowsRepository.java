@@ -16,7 +16,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.logging.LogManager;
@@ -107,8 +107,6 @@ public class PickingHURowsRepository
 
 	/**
 	 * Creates an instance using the given {@code huEditorRepo}. Intended for testing.
-	 *
-	 * @param huEditorRepo
 	 */
 	@VisibleForTesting
 	PickingHURowsRepository(
@@ -126,9 +124,6 @@ public class PickingHURowsRepository
 
 	/**
 	 * Retrieve the union of all HUs that match any one of the given shipment schedule IDs and that are flagged to be fine picking source HUs.
-	 *
-	 * @param shipmentScheduleIds
-	 * @return
 	 */
 	public List<HUEditorRow> retrieveSourceHUs(@NonNull final PickingSlotRepoQuery query)
 	{
@@ -156,7 +151,7 @@ public class PickingHURowsRepository
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final WarehouseId effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : null;
-		builder.warehouseId(effectiveWarehouseId);
+		builder.warehouseIds(ImmutableSet.of(effectiveWarehouseId));
 		return builder.build();
 	}
 

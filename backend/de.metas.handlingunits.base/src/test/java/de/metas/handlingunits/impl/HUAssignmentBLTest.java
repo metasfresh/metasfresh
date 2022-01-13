@@ -1,39 +1,26 @@
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.distribution.ddorder.interceptor.DD_Order;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -42,20 +29,18 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.validator.DD_Order;
-import de.metas.inoutcandidate.picking_bom.PickingBOMService;
-import de.metas.util.Services;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
-	private Properties ctx;
 	private String trxName;
 	private IContextAware contextProvider;
 
@@ -73,8 +58,19 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure Main handling units interceptor is registered
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order());
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
+				ddOrderLowLevelDAO,
+				new DDOrderMoveScheduleRepository(),
+				huReservationService);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
+				ddOrderMoveScheduleService,
+				ddOrderService,
+				new PickingBOMService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
 
 		//
 		// BL under test
@@ -83,7 +79,7 @@ public class HUAssignmentBLTest
 
 		//
 		// Setup ctx and trxName
-		ctx = Env.getCtx();
+		final Properties ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
 		contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
@@ -165,15 +161,19 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure HU is assigned to our record
-		huAssignmentBL.assignHUs(record, Arrays.asList(hu), trxName);
+		final List<I_M_HU> husAsList = Collections.singletonList(hu);
+		huAssignmentBL.assignHUs(record, husAsList, trxName);
 		assertHUAssigned();
 
 		final MockedHUAssignmentListener listener = new MockedHUAssignmentListener();
 		huAssignmentBL.registerHUAssignmentListener(listener);
 
 		listener.expectHUUnassign(hu, record);
-
-		huAssignmentBL.unassignHUs(record, Arrays.asList(hu), trxName);
+		final Set<HuId> huIds = husAsList.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(Collectors.toSet());
+		huAssignmentBL.unassignHUs(record, huIds, trxName);
 
 		listener.assertExpectationsMatched();
 

@@ -24,22 +24,19 @@ package de.metas.servicerepair.project.service.commands.createQuotationFromProje
 
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineDetailCreateRequest;
-import de.metas.pricing.IPricingResult;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -52,20 +49,12 @@ class QuotationLineAggregator
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
 	@NonNull private final QuotationLineKey key;
-
-	@Getter
 	@NonNull private Quantity qty;
-
-	@Getter
-	@Nullable private Money manualPrice;
-
-	@Getter
+	@Nullable private Boolean zeroPrice;
+	@Nullable private String description;
 	private final ArrayList<OrderLineDetailCreateRequest> details = new ArrayList<>();
-
 	private final HashSet<ServiceRepairProjectCostCollectorId> costCollectorIds = new HashSet<>();
 
-	@Setter
-	@Getter
 	private OrderLineBuilder orderLineBuilderUsed;
 
 	@Builder
@@ -75,89 +64,55 @@ class QuotationLineAggregator
 	{
 		this.priceCalculator = priceCalculator;
 		this.key = key;
-
 		this.qty = Quantitys.createZero(key.getUomId());
-		this.manualPrice = null;
 	}
 
-	public ProductId getProductId()
+	public static QuotationLineKey extractKey(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
-		return key.getProductId();
-	}
-
-	public AttributeSetInstanceId getAsiId()
-	{
-		return key.getAsiId();
-	}
-
-	public void collectMatchingItem(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		final ServiceRepairProjectCostCollectorType type = key.getType();
-		if (type == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
-		{
-			qty = qty.add(costCollector.getQtyReservedOrConsumed());
-			manualPrice = null;
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
-		{
-			qty = qty.add(costCollector.getQtyReservedOrConsumed());
-			manualPrice = Money.zero(priceCalculator.getCurrencyId());
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-		{
-			qty = qty.add(costCollector.getQtyReservedOrConsumed());
-			manualPrice = Money.zero(priceCalculator.getCurrencyId());
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
-		{
-			// NOTE: the quantity shall be the amount of repaired products to return
-			// qty = qty.toOne();
-
-			final OrderLineDetailCreateRequest detail = computeOrderLineDetailCreateRequest(costCollector);
-			details.add(detail);
-
-			manualPrice = costCollector.getWarrantyCase().isYes()
-					? Money.zero(priceCalculator.getCurrencyId())
-					: null; // NOTE: use the price from price list
-		}
-		else
-		{
-			throw new AdempiereException("Unknown type: " + type);
-		}
-
-		costCollectorIds.add(costCollector.getId());
-	}
-
-	public void collectNotMatchingItem(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		final ServiceRepairProjectCostCollectorType type = key.getType();
-		if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
-		{
-			if (costCollector.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-			{
-				// NOTE: usually we increment with ONE.
-				// We are adding as BigDecimal to avoid cases when the product to return and the service product have different UOMs.
-				qty = qty.add(costCollector.getQtyReservedOrConsumed().toBigDecimal());
-			}
-		}
-	}
-
-	private OrderLineDetailCreateRequest computeOrderLineDetailCreateRequest(final ServiceRepairProjectCostCollector costCollector)
-	{
-		final IPricingResult pricingResult = priceCalculator.calculatePrice(costCollector);
-
-		final Quantity qty = costCollector.getQtyReservedOrConsumed();
-		final Money price = pricingResult.getPriceStdAsMoney();
-		final Money amount = price
-				.multiply(qty.toBigDecimal())
-				.round(pricingResult.getPrecision());
-
-		return OrderLineDetailCreateRequest.builder()
+		return QuotationLineKey.builder()
+				.groupKey(QuotationLinesGroupAggregator.extractKey(costCollector))
+				.type(costCollector.getType())
 				.productId(costCollector.getProductId())
-				.qty(qty)
-				.price(price)
-				.amount(amount)
+				.uomId(costCollector.getUomId())
+				.asiId(costCollector.getAsiId())
 				.build();
+	}
+
+	public QuotationLineAggregator add(@NonNull final ServiceRepairProjectCostCollector costCollector)
+	{
+		Check.assumeEquals(extractKey(costCollector), key, "key does not match for {}. Expected: {}", costCollector, key);
+
+		qty = qty.add(costCollector.getQtyReservedOrConsumed());
+		costCollectorIds.add(costCollector.getId());
+
+		return this;
+	}
+
+	public void createOrderLines(@NonNull final OrderFactory orderFactory)
+	{
+		if (this.orderLineBuilderUsed != null)
+		{
+			throw new AdempiereException("Order line was already created for " + this); // shall not happen
+		}
+
+		this.orderLineBuilderUsed = orderFactory.newOrderLine()
+				.productId(key.getProductId())
+				.asiId(key.getAsiId())
+				.qty(qty)
+				.manualPrice(isZeroPrice() ? Money.zero(priceCalculator.getCurrencyId()) : null)
+				.description(description)
+				.hideWhenPrinting(isHideWhenPrinting())
+				.details(details);
+	}
+
+	private boolean isZeroPrice()
+	{
+		return zeroPrice != null ? zeroPrice : key.isZeroPrice();
+	}
+
+	private boolean isHideWhenPrinting()
+	{
+		return key.getType() == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer;
 	}
 
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()
@@ -171,5 +126,11 @@ class QuotationLineAggregator
 			final OrderAndLineId quotationLineId = orderLineBuilderUsed.getCreatedOrderAndLineId();
 			return costCollectorIds.stream().map(costCollectorId -> GuavaCollectors.entry(costCollectorId, quotationLineId));
 		}
+	}
+
+	public QuotationLineAggregator description(@Nullable final String description)
+	{
+		this.description = description;
+		return this;
 	}
 }

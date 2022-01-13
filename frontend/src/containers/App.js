@@ -1,9 +1,7 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
-import { Provider } from 'react-redux';
-import { browserHistory } from 'react-router';
-import { push, syncHistoryWithStore } from 'react-router-redux';
+import React from 'react';
+import { useDispatch, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
 import {
@@ -12,45 +10,45 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  logoutSuccess,
   setProcessSaved,
   initHotkeys,
   initKeymap,
   setLanguages,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
-import { noConnection } from '../actions/WindowActions';
-// import { addPlugins } from '../actions/PluginActions';
-import PluginsRegistry from '../services/PluginsRegistry';
+import { connectionError } from '../actions/AppActions';
+// import PluginsRegistry from '../services/PluginsRegistry';
+import { useAuth } from '../hooks/useAuth';
+import useConstructor from '../hooks/useConstructor';
+import history from '../services/History';
+import Routes from '../routes';
+import { NO_CONNECTION_ERROR } from '../constants/Constants';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
-import CustomRouter from './CustomRouter';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
-import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
-export const store = configureStore(browserHistory);
-const history = syncHistoryWithStore(browserHistory, store);
-const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
-if (window.Cypress) {
-  window.store = store;
-}
+// const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
+/**
+ * @file Functional component.
+ * @module App
+ * Main application component providing navigation, shortcuts, translations, and notifications
+ * plus setting some global values and handling global errors.
+ */
+const App = () => {
+  // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
+  const auth = useAuth();
+  const dispatch = useDispatch();
+  const store = useStore();
 
-    this.state = {
-      pluginsLoading: !!APP_PLUGINS.length,
-    };
-
-    this.auth = new Auth();
-    this.pluginsRegistry = new PluginsRegistry(this);
-    window.META_HOST_APP = this;
+  useConstructor(() => {
+    // this.pluginsRegistry = new PluginsRegistry(this);
+    // const pluginsRegistry = new PluginsRegistry(this);
+    // window.META_HOST_APP = this;
 
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -58,10 +56,10 @@ export default class App extends Component {
     initCurrentActiveLocale();
 
     axios.interceptors.response.use(
-      function(response) {
+      function (response) {
         return response;
       },
-      function(error) {
+      function (error) {
         const errorPrototype = Object.getPrototypeOf(error);
 
         // This is a canceled request error
@@ -75,20 +73,67 @@ export default class App extends Component {
         }
 
         if (!error || !error.response || !error.response.status) {
-          store.dispatch(noConnection(true));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         }
 
         /*
          * Authorization error
          */
         if (error.response.status == 401) {
-          store.dispatch(setProcessSaved());
-          logoutSuccess(this.auth);
-          store.dispatch(push('/login?redirect=true'));
+          if (
+            !location.pathname.includes('login') &&
+            !auth.authRequestPending()
+          ) {
+            dispatch(setProcessSaved());
+
+            auth.setRedirectRoute(location.pathname);
+
+            // we got not authenticated error, but locally still have the authenticated flag truthy
+            // (ie user logged out in another window, or session timed out)
+            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
+              auth.logout().finally(() => {
+                history.push('/login');
+              });
+            } else {
+              history.push('/login');
+            }
+          }
+        } else if (
+          error.response.status === 500 &&
+          error.response.data.path.includes('/authenticate')
+        ) {
+          /*
+           * User already logged in on the backend side or wrong
+           * login token
+           */
+
+          // if user types in incorrect token, there's no way for us to tell if he's
+          // already authenticated or not. So it's safest to reset the login process
+          if (error.response.data.message.includes('Invalid token')) {
+            return auth
+              .logout()
+              .then(() => {
+                history.push('/login');
+              })
+              .catch((err) => {
+                console.error('App.checkAuthentication error: ', err);
+              });
+          }
+
+          //if not logged in
+          if (!auth.isLoggedIn && !store.getState().appHandler.loggedIn) {
+            return auth.checkAuthentication().then((authenticated) => {
+              if (authenticated) {
+                history.push(location.pathname);
+              }
+            });
+          }
+        } else if (error.response.status == 502) {
+          return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
-          store.dispatch(noConnection(true));
+          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
-          if (localStorage.isLogged) {
+          if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
               switch (code) {
                 case 500:
@@ -111,7 +156,7 @@ export default class App extends Component {
               return;
             }
 
-            store.dispatch(
+            dispatch(
               addNotification(
                 'Error: ' + message.split(' ', 4).join(' ') + '...',
                 data.message,
@@ -131,7 +176,7 @@ export default class App extends Component {
         if (error.response.request.responseURL.includes('showError=true')) {
           const { data } = error.response;
 
-          store.dispatch(
+          dispatch(
             addNotification(
               'Error: ' + data.message.split(' ', 4).join(' ') + '...',
               data.message,
@@ -143,14 +188,14 @@ export default class App extends Component {
         } else {
           return Promise.reject(error);
         }
-      }.bind(this)
+      }
     );
 
     getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
       const valuesFlatten = values.map((item) => Object.keys(item)[0]);
       if (!store.getState().appHandler.me.language) {
-        store.dispatch(setLanguages(values));
+        dispatch(setLanguages(values));
       }
       const lang =
         valuesFlatten.indexOf(navigator.language) > -1
@@ -162,8 +207,8 @@ export default class App extends Component {
 
     counterpart.setMissingEntryGenerator(() => '');
 
-    store.dispatch(initKeymap(keymap));
-    store.dispatch(initHotkeys(hotkeys));
+    dispatch(initKeymap(keymap));
+    dispatch(initHotkeys(hotkeys));
 
     /**
      * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
@@ -210,27 +255,25 @@ export default class App extends Component {
     //     });
     //   });
     // }
-  }
 
-  getRegistry() {
-    return this.pluginsRegistry;
-  }
+    // const getRegistry = () => {
+    //   return pluginsRegistry;
+    // }
+  }, []);
 
-  render() {
-    if (APP_PLUGINS.length && this.state.pluginsLoading) {
-      return null;
-    }
+  // if (APP_PLUGINS.length && pluginsLoading) {
+  //   return null;
+  // }
 
-    return (
-      <Provider store={store}>
-        <ShortcutProvider>
-          <Translation>
-            <NotificationHandler>
-              <CustomRouter history={history} auth={this.auth} />
-            </NotificationHandler>
-          </Translation>
-        </ShortcutProvider>
-      </Provider>
-    );
-  }
-}
+  return (
+    <ShortcutProvider>
+      <Translation>
+        <NotificationHandler>
+          <Routes />
+        </NotificationHandler>
+      </Translation>
+    </ShortcutProvider>
+  );
+};
+
+export default App;

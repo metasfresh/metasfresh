@@ -1,8 +1,11 @@
 package de.metas.greeting;
 
-import de.metas.i18n.Language;
+import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -26,13 +29,20 @@ import lombok.Value;
  * #L%
  */
 
-@Value // i'm fine with making it mutable, if/when that's needed
+@Value
 @Builder
 public class Greeting
 {
-	private GreetingId id;
+	@NonNull GreetingId id;
+	@NonNull String name;
+	@NonNull ITranslatableString greeting;
 
-	private String greeting;
+	@Nullable GreetingStandardType standardType;
 
-	private Language language;
+	boolean active;
+
+	public String getGreeting(@NonNull final String adLanguage)
+	{
+		return getGreeting().translate(adLanguage);
+	}
 }

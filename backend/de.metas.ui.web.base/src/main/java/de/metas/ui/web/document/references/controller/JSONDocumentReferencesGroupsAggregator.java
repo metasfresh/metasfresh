@@ -3,7 +3,7 @@ package de.metas.ui.web.document.references.controller;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.ui.web.document.references.DocumentReference;
+import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.document.references.json.JSONDocumentReference;
 import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
@@ -18,6 +18,7 @@ import lombok.NonNull;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ import java.util.HashMap;
  */
 
 /**
- * Aggregates {@link DocumentReference}s to {@link JSONDocumentReferencesGroupList}s.
+ * Aggregates {@link WebuiDocumentReference}s to {@link JSONDocumentReferencesGroupList}s.
  */
 final class JSONDocumentReferencesGroupsAggregator
 {
@@ -75,13 +76,13 @@ final class JSONDocumentReferencesGroupsAggregator
 		this.jsonOpts = jsonOpts;
 	}
 
-	public JSONDocumentReferencesGroupsAggregator addAll(@NonNull final Collection<DocumentReference> documentReferences)
+	public JSONDocumentReferencesGroupsAggregator addAll(@NonNull final Collection<WebuiDocumentReference> documentReferences)
 	{
 		documentReferences.forEach(this::add);
 		return this;
 	}
 
-	public JSONDocumentReferencesGroupsAggregator add(@NonNull final DocumentReference documentReference)
+	public JSONDocumentReferencesGroupsAggregator add(@NonNull final WebuiDocumentReference documentReference)
 	{
 		final JSONDocumentReference jsonDocumentReference = JSONDocumentReference.of(documentReference, jsonOpts);
 		if (jsonDocumentReference == null)
@@ -122,11 +123,16 @@ final class JSONDocumentReferencesGroupsAggregator
 		return groups;
 	}
 
-	public void addAndFlush(
-			@NonNull final DocumentReference documentReference,
+	public void addAndPublish(
+			@NonNull final List<WebuiDocumentReference> documentReferences,
 			@NonNull final JSONDocumentReferencesEventPublisher publisher)
 	{
-		add(documentReference);
+		addAll(documentReferences);
+		publish(publisher);
+	}
+
+	private void publish(final @NonNull JSONDocumentReferencesEventPublisher publisher)
+	{
 		final ImmutableList<JSONDocumentReferencesGroup> groups = flushGroups();
 		publisher.publishPartialResults(groups);
 	}

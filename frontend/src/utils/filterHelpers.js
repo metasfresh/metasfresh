@@ -1,9 +1,31 @@
-import _ from 'lodash';
+import Moment from 'moment';
 
-import { DATE_FIELD_TYPES } from '../constants/Constants';
+import { DATE_FIELD_TYPES, DATE_FORMAT } from '../constants/Constants';
 import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
+
+function formatFilterParameter(filterParameter, filterData) {
+  const { parameterName, value, valueTo } = filterParameter;
+  const dataFilterParameter = filterData.parameters.find(
+    (param) => param.parameterName === parameterName
+  );
+  const { widgetType } = dataFilterParameter;
+
+  if (DATE_FIELD_TYPES.includes(widgetType)) {
+    const dateFormat = getFormatForDateField(widgetType);
+    const date = getFormattedDate(value, dateFormat);
+    const dateTo = getFormattedDate(valueTo, dateFormat);
+
+    filterParameter = {
+      parameterName,
+      value: date,
+      valueTo: dateTo,
+    };
+  }
+
+  return filterParameter;
+}
 
 /**
  * @method formatFilters
@@ -16,40 +38,20 @@ import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 export function formatFilters({ filtersData, filtersActive = [] }) {
   // for inline filters (if they were modified) in the response data we're getting a filter with
   // empty parameters
-  const filters = filtersActive
-    .filter((filter) => filter.parameters && filter.parameters.length)
-    .map((filter) => {
-      if (filter.parameters && filter.parameters.length) {
-        const filterData = getParentFilterFromFilterData({
-          filterId: filter.filterId,
-          filterData: filtersData,
-        });
-
-        filter.parameters = filter.parameters.map((filterParameter) => {
-          const { parameterName, value, valueTo } = filterParameter;
-          const dataFilterParameter = filterData.parameters.find(
-            (param) => param.parameterName === parameterName
-          );
-          const { widgetType } = dataFilterParameter;
-
-          if (DATE_FIELD_TYPES.includes(widgetType)) {
-            const dateFormat = getFormatForDateField(widgetType);
-            const date = getFormattedDate(value, dateFormat);
-            const dateTo = getFormattedDate(valueTo, dateFormat);
-
-            filterParameter = {
-              parameterName,
-              value: date,
-              valueTo: dateTo,
-            };
-          }
-
-          return filterParameter;
-        });
-      }
-
-      return filter;
+  const filters = filtersActive.map((filter) => {
+    const filterData = getParentFilterFromFilterData({
+      filterId: filter.filterId,
+      filterData: filtersData,
     });
+
+    if (filter.parameters && filter.parameters.length) {
+      filter.parameters = filter.parameters.map((parameter) =>
+        formatFilterParameter(parameter, filterData)
+      );
+    }
+
+    return filter;
+  });
 
   return filters;
 }
@@ -88,13 +90,15 @@ export function getParentFilterFromFilterData({ filterId, filterData }) {
 export function populateFiltersCaptions(filters) {
   const filtersCaptions = {};
   if (!filters) return {};
+
   const { filterData, filtersActive } = filters;
   if (!filtersActive) return {};
 
   if (filtersActive.length) {
     const removeDefault = {};
 
-    filtersActive.forEach((filter, filterId) => {
+    filtersActive.forEach((filter, filterIdx) => {
+      const { filterId } = filter;
       let captionsArray = ['', ''];
 
       if (filter.parameters && filter.parameters.length) {
@@ -103,9 +107,9 @@ export function populateFiltersCaptions(filters) {
 
           if (!defaultValue && filterData) {
             // we don't want to show captions, nor show filter button as active for default values
-            removeDefault[filterId] = true;
+            removeDefault[filterIdx] = true;
             const parentFilter = getParentFilterFromFilterData({
-              filterId: filter.filterId, // we pass the actual key not the index
+              filterId, // we pass the actual key not the index
               filterData,
             });
 
@@ -130,7 +134,9 @@ export function populateFiltersCaptions(filters) {
                 break;
               case 'Labels':
                 captionName = value.values.reduce((caption, item) => {
-                  return `${caption}, ${item.caption}`;
+                  return caption
+                    ? `${caption}, ${item.caption}`
+                    : `${item.caption}`;
                 }, '');
                 break;
               case 'YesNo':
@@ -162,15 +168,26 @@ export function populateFiltersCaptions(filters) {
           }
         });
       } else {
-        const originalFilter = filterData.filter(
-          (item) => item.filterId === filterId
-        );
+        let originalFilter;
+
+        filterData.forEach((filter) => {
+          if (filter.filterId === filterId) {
+            originalFilter = filter;
+          } else if (filter.includedFilters) {
+            filter.includedFilters.forEach((included) => {
+              if (included.filterId === filterId) {
+                originalFilter = included;
+              }
+            });
+          }
+        });
+
         captionsArray = [originalFilter.caption, originalFilter.caption];
       }
 
       if (captionsArray.join('').length) {
-        filtersCaptions[filter.filterId] = captionsArray;
         filtersCaptions[filterId] = captionsArray;
+        filtersCaptions[filterIdx] = captionsArray;
       }
     });
   }
@@ -306,21 +323,62 @@ export function isFilterValid(filters) {
 }
 
 /**
- * @method parseFiltersToPatch
- * @summary Patches the params, resulted array has the item values set to either null or previous values
- *          this because filters with only defaultValue should not be sent to the server
+ * @method normalizeFilterValue
+ * @summary Sets the value for local filter to null if it's an empty string. This way we can easily identify
+ *          if this was edited by the user before sending backend request.
  * @param {array} params
  */
-export function parseFiltersToPatch(params) {
+export function normalizeFilterValue(params) {
   return params.reduce((acc, param) => {
-    // filters with only defaltValue shouldn't be sent to server
-    if (!param.defaultValue || !_.isEqual(param.defaultValue, param.value)) {
-      acc.push({
-        ...param,
-        value: param.value === '' ? null : param.value,
-      });
-    }
+    acc.push({
+      ...param,
+      value: param.value === '' ? null : param.value,
+      valueTo: param.valueTo === '' ? null : param.valueTo,
+    });
 
     return acc;
   }, []);
+}
+
+const prepareParameterForBackend = (param) => {
+  const { parameterName, defaultValue, defaultValueTo, widgetType } = param;
+  let { value, valueTo } = param;
+
+  if (widgetType === 'Date' && value) {
+    value = Moment(value).format(DATE_FORMAT);
+  }
+  if (widgetType === 'Date' && valueTo) {
+    valueTo = Moment(valueTo).format(DATE_FORMAT);
+  }
+
+  // filters should always send value to the server - even if it's a defaultValue, not edited
+  // by user
+  value = value === null && defaultValue ? defaultValue : value;
+  valueTo = valueTo === null && defaultValueTo ? defaultValueTo : valueTo;
+
+  return {
+    parameterName,
+    value:
+      value &&
+      value.values &&
+      Array.isArray(value.values) &&
+      value.values.length === 0
+        ? [] // case when facets gets cleared
+        : value,
+    valueTo,
+  };
+};
+
+export function prepareFilterForBackend({ filterId, parameters }) {
+  if (parameters && parameters.length) {
+    parameters.map((param, index) => {
+      param = prepareParameterForBackend(param);
+      parameters[index] = param;
+    });
+  }
+
+  return {
+    filterId,
+    parameters,
+  };
 }

@@ -2,7 +2,9 @@ package de.metas.document.sequence.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.document.sequence.IDocumentNoBL;
@@ -37,9 +39,8 @@ public class DocumentNoBL implements IDocumentNoBL
 	private final Map<String, IDocumentNoListener> listeners = new HashMap<>();
 
 	@Override
-	public void registerDocumentNoListener(final IDocumentNoListener listener)
+	public void registerDocumentNoListener(@NonNull final IDocumentNoListener listener)
 	{
-		Check.assumeNotNull(listener, "Param 'listener' is not null");
 		listeners.put(listener.getTableName(), listener);
 	}
 
@@ -58,13 +59,21 @@ public class DocumentNoBL implements IDocumentNoBL
 			return;
 		}
 
-		final IDocumentNoAware documentNoAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IDocumentNoAware.class);
-		if (documentNoAware == null)
+		final Optional<IDocumentNoAware> documentNoAware = asDocumentNoAware(model);
+		if (!documentNoAware.isPresent())
 		{
 			return;
 		}
 
-		documentNoListener.onDocumentNoChange(documentNoAware, newDocumentNo);
+		documentNoListener.onDocumentNoChange(documentNoAware.get(), newDocumentNo);
+	}
+
+	@Override
+	public Optional<IDocumentNoAware> asDocumentNoAware(final Object model)
+	{
+		final IDocumentNoAware documentNoAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IDocumentNoAware.class);
+
+		return Optional.of(documentNoAware);
 	}
 
 }

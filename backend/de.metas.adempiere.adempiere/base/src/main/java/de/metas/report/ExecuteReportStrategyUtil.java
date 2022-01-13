@@ -1,28 +1,27 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
+import com.lowagie.text.Document;
 import com.lowagie.text.pdf.BadPdfFormatException;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
 import de.metas.printing.IMassPrintingService;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.pdf.PdfCopy;
-import com.lowagie.text.pdf.PdfReader;
-
-import de.metas.process.ProcessExecutor;
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.ReportConstants;
-import de.metas.report.server.OutputType;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ import de.metas.report.server.OutputType;
 @UtilityClass
 public class ExecuteReportStrategyUtil
 {
-	public byte[] executeJasperProcess(
+	public Resource executeJasperProcess(
 			final int jasperProcessId,
 			@NonNull final ProcessInfo processInfo,
 			@NonNull final OutputType outputType)
@@ -70,15 +69,15 @@ public class ExecuteReportStrategyUtil
 				.onErrorThrowException(true)
 				.executeSync();
 
-		return processExecutor.getResult().getReportDataAsByteArray();
+		return processExecutor.getResult().getReportDataResource();
 	}
 
 	/**
 	 * @deprecated Please use {@link #concatenatePDFs(ImmutableList)}.
 	 */
 	@Deprecated
-	public byte[] concatenatePDF(
-			@NonNull final byte[] documentPdfData,
+	public Resource concatenatePDF(
+			@NonNull final Resource documentPdfData,
 			@NonNull final List<PdfDataProvider> pdfDataToConcatenate)
 	{
 		if (pdfDataToConcatenate.isEmpty())
@@ -97,16 +96,15 @@ public class ExecuteReportStrategyUtil
 	}
 
 	/**
-	 * The more sane version of {@link #concatenatePDF(byte[], List)}.
+	 * The more sane version of {@link #concatenatePDF(Resource, List)}.
 	 */
 	@NonNull
-	public byte[] concatenatePDFs(@NonNull final ImmutableList<PdfDataProvider> pdfDataToConcatenate)
+	public Resource concatenatePDFs(@NonNull final ImmutableList<PdfDataProvider> pdfDataToConcatenate)
 	{
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		concatenatePDFsToOutputStream(out, pdfDataToConcatenate);
 
-		return out.toByteArray();
-
+		return new ByteArrayResource(out.toByteArray());
 	}
 
 	private void concatenatePDFsToOutputStream(
@@ -134,9 +132,9 @@ public class ExecuteReportStrategyUtil
 
 	private static void appendPdfPages(@NonNull final PdfCopy copyDestination, @NonNull final PdfDataProvider pdfData) throws IOException, BadPdfFormatException
 	{
-		final byte[] data = pdfData.getPdfData();
+		final Resource data = pdfData.getPdfData();
 
-		final PdfReader pdfReader = new PdfReader(data);
+		final PdfReader pdfReader = new PdfReader(data.getInputStream());
 
 		for (int page = 0; page < pdfReader.getNumberOfPages(); )
 		{
@@ -149,14 +147,14 @@ public class ExecuteReportStrategyUtil
 	@Value
 	public static class PdfDataProvider
 	{
-		public static PdfDataProvider forData(@NonNull final byte[] pdfData)
+		public static PdfDataProvider forData(@NonNull final Resource pdfData)
 		{
 			return new PdfDataProvider(pdfData);
 		}
 
-		byte[] pdfData;
+		Resource pdfData;
 
-		private PdfDataProvider(@NonNull final byte[] pdfData)
+		private PdfDataProvider(@NonNull final Resource pdfData)
 		{
 			this.pdfData = pdfData;
 		}

@@ -1,12 +1,13 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
-import lombok.NonNull;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,13 +36,16 @@ public class OrderGroupCompensationChangesHandler
 {
 	private final OrderGroupRepository groupsRepo;
 	private final GroupTemplateRepository groupTemplateRepo;
+	private final FlatrateConditionsExcludedProductsRepository flatrateConditionsExcludedProductsRepo;
 
 	public OrderGroupCompensationChangesHandler(
 			@NonNull final OrderGroupRepository groupsRepo,
-			@NonNull final GroupTemplateRepository groupTemplateRepo)
+			@NonNull final GroupTemplateRepository groupTemplateRepo,
+			@NonNull final FlatrateConditionsExcludedProductsRepository flatrateConditionsExcludedProductsRepo)
 	{
 		this.groupsRepo = groupsRepo;
 		this.groupTemplateRepo = groupTemplateRepo;
+		this.flatrateConditionsExcludedProductsRepo = flatrateConditionsExcludedProductsRepo;
 	}
 
 	public void onOrderLineChanged(final I_C_OrderLine orderLine)
@@ -105,12 +109,7 @@ public class OrderGroupCompensationChangesHandler
 		}
 
 		// Don't touch processed lines (e.g. completed orders)
-		if (orderLine.isProcessed())
-		{
-			return false;
-		}
-
-		return true;
+		return !orderLine.isProcessed();
 	}
 
 	public void onOrderLineDeleted(final I_C_OrderLine orderLine)
@@ -158,6 +157,22 @@ public class OrderGroupCompensationChangesHandler
 		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
 		groupsRepo.saveGroup(group, orderLinesStorage);
 
+	}
+
+	@Nullable
+	public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId)
+	{
+		return groupsRepo.getGroupTemplateId(groupId);
+	}
+
+	public boolean isProductExcludedFromFlatrateConditions(@Nullable final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
+	{
+		if (groupTemplateId == null)
+		{
+			return false;
+		}
+
+		return flatrateConditionsExcludedProductsRepo.isProductExcludedFromFlatrateConditions(groupTemplateId, productId);
 	}
 
 	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(final GroupId groupId)

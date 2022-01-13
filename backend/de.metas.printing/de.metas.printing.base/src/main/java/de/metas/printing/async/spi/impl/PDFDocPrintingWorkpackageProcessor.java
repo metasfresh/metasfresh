@@ -39,6 +39,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -79,7 +80,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
 
-		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveItems(workpackage, I_C_Print_Job_Instructions.class, ITrx.TRXNAME_ThreadInherited);
+		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveAllItems(workpackage, I_C_Print_Job_Instructions.class);
 		for (final I_C_Print_Job_Instructions printjobInstructions : list)
 		{
 			InterfaceWrapperHelper.refresh(printjobInstructions, ITrx.TRXNAME_ThreadInherited);
@@ -220,7 +221,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
 				.flavor(DocumentReportFlavor.PRINT)
-				.data(data)
+				.data(new ByteArrayResource(data))
 				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.archiveName(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat())
 				.recordRef(printPackageRef)

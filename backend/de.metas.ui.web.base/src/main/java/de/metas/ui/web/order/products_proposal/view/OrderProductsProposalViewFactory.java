@@ -1,13 +1,6 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.util.List;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -35,6 +28,11 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
+
+import java.util.List;
 
 /*
  * #%L
@@ -107,6 +105,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Description))
 				//
+				.setAllowOpeningRowDetails(false)
 				.build();
 	}
 

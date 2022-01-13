@@ -64,7 +64,7 @@ public class MaterialDispoRecordRepository
 								.setParameter("candidatesQuery", query)
 								.setParameter("candidate", candidate)
 						);
-				return MaterialDispoDataItem.of(candidate.withNegatedQuantity(), stockCandidate);
+				return MaterialDispoDataItem.of(candidate, stockCandidate);
 			case SUPPLY:
 			case INVENTORY_UP:
 				stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getParentId()));

@@ -113,14 +113,8 @@ class BarChartComponent extends Component {
   }
 
   render() {
-    const {
-      chartClass,
-      isMaximized,
-      data,
-      fields,
-      groupBy,
-      chartTitle,
-    } = this.props;
+    const { chartClass, isMaximized, data, fields, groupBy, chartTitle } =
+      this.props;
 
     return (
       <div className={'chart-wrapper ' + chartClass + '-wrapper'}>

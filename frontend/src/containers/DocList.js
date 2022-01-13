@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { updateUri } from '../actions/AppActions';
+import { updateUri } from '../utils';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
@@ -50,8 +50,9 @@ class DocList extends PureComponent {
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (updatedQuery) => {
-    const { updateUri, query, pathname } = this.props;
+    const { query, pathname } = this.props;
     const { viewId } = updatedQuery;
+
     viewId && updateUri(pathname, query, updatedQuery);
   };
 
@@ -159,25 +160,20 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
+ * @prop {string} pathname
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
-  query: PropTypes.object.isRequired,
-  pathname: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  updateUri: PropTypes.func.isRequired,
+  pathname: PropTypes.string.isRequired,
+  query: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
 const mapStateToProps = (state) => {
   return {
     modal: state.windowHandler.modal,
@@ -187,14 +183,7 @@ const mapStateToProps = (state) => {
       ? state.viewHandler.includedView
       : null,
     processStatus: state.appHandler.processStatus,
-    pathname: state.routing.locationBeforeTransitions.pathname,
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getWindowBreadcrumb,
-    updateUri,
-  }
-)(DocList);
+export default connect(mapStateToProps, { getWindowBreadcrumb })(DocList);

@@ -25,13 +25,23 @@ package de.metas.rest_api.v2.bpartner;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.OtherExternalSystem;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -52,11 +62,14 @@ public class BPartnerRecordsUtil
 
 	public static final int C_BP_GROUP_ID = 15;
 	public static final String BP_GROUP_RECORD_NAME = "bpGroupRecord.name";
+	public static final String BP_EXTERNAL_VERSION = "bpRecord.externalVersion";
 
 	public static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	public static final int AD_ORG_ID = 10;
+	public static final String AD_ORG_VALUE = "orgRecord.value";
 	public static final String AD_USER_EXTERNAL_ID = "contactRecord.externalId";
+	public static final String AD_USER_EXTERNAL_ID_NEW = "contactRecord.externalId_new";
 	public static final String AD_USER_VALUE = "contactRecord.value";
 	public static final String EXTERNAL_SYSTEM_NAME = "ALBERTA";
 
@@ -74,6 +87,17 @@ public class BPartnerRecordsUtil
 
 		final UserId adUserId = UserId.ofRepoId(AD_USER_ID + idOffSet);
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + idOffSet;
+
+		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+		org.setAD_Org_ID(AD_ORG_ID);
+		org.setValue(AD_ORG_VALUE);
+		saveRecord(org);
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+		orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+											 .orgId(OrgId.ofRepoId(AD_ORG_ID))
+											 .build());
 
 		setupTimeSource();
 		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(adUserId))
@@ -166,6 +190,22 @@ public class BPartnerRecordsUtil
 				bpBankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
 				setCreatedByAndWhen(bpBankAccountRecord, adUserId); // have to do it manually because we are setting the record ID too
 				saveRecord(bpBankAccountRecord);
+			}
+
+			{
+				final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+				final ExternalSystems externalSystems = new ExternalSystems();
+
+				final ExternalReferenceRepository externalReferenceRepository =
+						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+
+				externalReferenceRepository.save(ExternalReference.builder()
+				.externalReference(AD_USER_EXTERNAL_ID)
+				.externalReferenceType(ExternalUserReferenceType.USER_ID)
+				.externalSystem(OtherExternalSystem.OTHER)
+				.orgId(OrgId.ofRepoId(10))
+				.recordId(AD_USER_ID)
+				.build());
 			}
 		}
 		finally

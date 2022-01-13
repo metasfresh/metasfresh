@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Shipment_Constraint
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_M_Shipment_Constraint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -598711815L;
+	private static final long serialVersionUID = 2045758258L;
 
     /** Standard Constructor */
-    public X_M_Shipment_Constraint (Properties ctx, int M_Shipment_Constraint_ID, String trxName)
+    public X_M_Shipment_Constraint (final Properties ctx, final int M_Shipment_Constraint_ID, @Nullable final String trxName)
     {
       super (ctx, M_Shipment_Constraint_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Shipment_Constraint (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Shipment_Constraint (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,18 +29,18 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
 		if (Bill_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
 	@Override
@@ -55,13 +56,13 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		throw new IllegalArgumentException ("C_Invoice_ID is virtual column");	}
 
@@ -72,9 +73,9 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setIsDeliveryStop (boolean IsDeliveryStop)
+	public void setIsDeliveryStop (final boolean IsDeliveryStop)
 	{
-		set_Value (COLUMNNAME_IsDeliveryStop, Boolean.valueOf(IsDeliveryStop));
+		set_Value (COLUMNNAME_IsDeliveryStop, IsDeliveryStop);
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setIsPaid (boolean IsPaid)
+	public void setIsPaid (final boolean IsPaid)
 	{
 		throw new IllegalArgumentException ("IsPaid is virtual column");	}
 
@@ -95,12 +96,12 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setM_Shipment_Constraint_ID (int M_Shipment_Constraint_ID)
+	public void setM_Shipment_Constraint_ID (final int M_Shipment_Constraint_ID)
 	{
 		if (M_Shipment_Constraint_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Shipment_Constraint_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Shipment_Constraint_ID, Integer.valueOf(M_Shipment_Constraint_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Shipment_Constraint_ID, M_Shipment_Constraint_ID);
 	}
 
 	@Override
@@ -110,12 +111,12 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setSourceDoc_Record_ID (int SourceDoc_Record_ID)
+	public void setSourceDoc_Record_ID (final int SourceDoc_Record_ID)
 	{
 		if (SourceDoc_Record_ID < 1) 
 			set_Value (COLUMNNAME_SourceDoc_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_SourceDoc_Record_ID, Integer.valueOf(SourceDoc_Record_ID));
+			set_Value (COLUMNNAME_SourceDoc_Record_ID, SourceDoc_Record_ID);
 	}
 
 	@Override
@@ -125,12 +126,12 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setSourceDoc_Table_ID (int SourceDoc_Table_ID)
+	public void setSourceDoc_Table_ID (final int SourceDoc_Table_ID)
 	{
 		if (SourceDoc_Table_ID < 1) 
 			set_Value (COLUMNNAME_SourceDoc_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_SourceDoc_Table_ID, Integer.valueOf(SourceDoc_Table_ID));
+			set_Value (COLUMNNAME_SourceDoc_Table_ID, SourceDoc_Table_ID);
 	}
 
 	@Override

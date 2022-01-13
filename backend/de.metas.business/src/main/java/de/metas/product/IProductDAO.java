@@ -1,5 +1,8 @@
 package de.metas.product;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -52,6 +55,10 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product getById(ProductId productId);
 
+	<T extends I_M_Product> T getByIdInTrx(@NonNull ProductId productId, @NonNull Class<T> productClass);
+
+	I_M_Product getByIdInTrx(@NonNull ProductId productId);
+
 	I_M_Product getById(final int productId);
 
 	List<I_M_Product> getByIds(final Set<ProductId> productIds);
@@ -62,7 +69,6 @@ public interface IProductDAO extends ISingletonService
 	@NonNull
 	ProductCategoryId getDefaultProductCategoryId();
 
-
 	/**
 	 * @return All the active products with the given product planning schema selector
 	 */
@@ -70,7 +76,7 @@ public interface IProductDAO extends ISingletonService
 
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 *         or if there is no pendant in the given <code>org</code>.
+	 * or if there is no pendant in the given <code>org</code>.
 	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
@@ -99,6 +105,16 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+	
+	void clearIndividualMasterDataFromProduct(ProductId productId);
+
+	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
+
+	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull GroupCategoryId groupCategoryId,
+			@NonNull OrgId targetOrgId);
+
+	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
 
 	@Value
 	class ProductQuery
@@ -178,4 +194,6 @@ public interface IProductDAO extends ISingletonService
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
 	int getGuaranteeMonthsInDays(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

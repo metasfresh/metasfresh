@@ -1,26 +1,14 @@
 package de.metas.ui.web.window.model;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.lang.RepoIdAware;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -31,7 +19,17 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,7 +53,9 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */class DocumentField implements IDocumentField
+/* package */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+class DocumentField implements IDocumentField
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -64,12 +64,16 @@ import lombok.NonNull;
 	private final Optional<LookupDataSource> _lookupDataSource;
 	private boolean lookupValuesStaled = true;
 
+	@Nullable
 	private transient ICalloutField _calloutField; // lazy
 
 	//
 	// State
+	@Nullable
 	private Object _initialValue;
+	@Nullable
 	private Object _valueOnCheckout;
+	@Nullable
 	private Object _value;
 
 	private static final LogicExpressionResult MANDATORY_InitialValue = LogicExpressionResult.namedConstant("mandatory-initial", false);
@@ -168,6 +172,7 @@ import lombok.NonNull;
 	}
 
 	@Override
+	@Nullable
 	public Object getInitialValue()
 	{
 		return _initialValue;
@@ -189,7 +194,6 @@ import lombok.NonNull;
 
 		//
 		// Update the current value too
-		// final Object valueOld = _value;
 		_value = initialValueConv;
 
 		// Update valid status
@@ -213,12 +217,14 @@ import lombok.NonNull;
 	}
 
 	@Override
+	@Nullable
 	public Object getValue()
 	{
 		return _value;
 	}
 
 	@Override
+	@Nullable
 	public Object getValueAsJsonObject(@NonNull final JSONOptions jsonOpts)
 	{
 		Object value = getValue();
@@ -236,8 +242,7 @@ import lombok.NonNull;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAdLanguage()))
 			{
-				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
-				value = lookupValueNew;
+				value = lookupDataSource.findById(lookupValue.getId());
 			}
 		}
 
@@ -255,16 +260,14 @@ import lombok.NonNull;
 	public boolean getValueAsBoolean()
 	{
 		final Boolean valueBoolean = convertToValueClass(_value, DocumentFieldWidgetType.YesNo, Boolean.class);
-		return valueBoolean != null && valueBoolean.booleanValue();
+		return valueBoolean != null && valueBoolean;
 	}
 
 	@Override
+	@Nullable
 	public <T> T getValueAs(@NonNull final Class<T> returnType)
 	{
-		Preconditions.checkNotNull(returnType, "returnType shall not be null");
-		final DocumentFieldWidgetType widgetType = null; // N/A
-		final T value = convertToValueClass(_value, widgetType, returnType);
-		return value;
+		return convertToValueClass(_value, null, returnType);
 	}
 
 	@Override
@@ -277,6 +280,7 @@ import lombok.NonNull;
 	}
 
 	@Override
+	@Nullable
 	public Object getOldValue()
 	{
 		return _valueOnCheckout;
@@ -292,9 +296,9 @@ import lombok.NonNull;
 	/**
 	 * Converts given value to field's type and after that applies various corrections like precision in case of numbers with precision.
 	 *
-	 * @param value
 	 * @return value converted and corrected
 	 */
+	@Nullable
 	private Object convertToValueClassAndCorrect(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
@@ -309,13 +313,11 @@ import lombok.NonNull;
 			final Integer precision = getWidgetType().getStandardNumberPrecision();
 			if (precision != null)
 			{
-				final BigDecimal valueBDCorrected = NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
-				return valueBDCorrected;
+				return NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
 			}
 			else
 			{
-				final BigDecimal valueBDCorrected = NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
-				return valueBDCorrected;
+				return NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
 			}
 		}
 		else if (valueConv instanceof String)
@@ -329,10 +331,11 @@ import lombok.NonNull;
 		return valueConv;
 	}
 
-	private final <T> T convertToValueClass(
+	@Nullable
+	private <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,
-			final Class<T> targetType)
+			@NonNull final Class<T> targetType)
 	{
 		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSourceOrNull());
 	}
@@ -412,19 +415,19 @@ import lombok.NonNull;
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesList values = lookupDataSource.findEntities(ctx);
+		final LookupValuesList values = lookupDataSource.findEntities(ctx).getValues();
 		lookupValuesStaled = false;
-		return values == null ? LookupValuesList.EMPTY : values;
+		return values;
 	}
 
 	@Override
-	public LookupValuesList getLookupValuesForQuery(final String query)
+	public LookupValuesPage getLookupValuesForQuery(final String query)
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesList values = lookupDataSource.findEntities(ctx, query);
+		final LookupValuesPage page = lookupDataSource.findEntities(ctx, query);
 		lookupValuesStaled = false;
-		return values;
+		return page;
 	}
 
 	@Override
@@ -469,7 +472,7 @@ import lombok.NonNull;
 	private DocumentValidStatus computeValidStatus()
 	{
 		// Consider virtual fields as valid because there is nothing we can do about them
-		if (isVirtualField())
+		if (isReadonlyVirtualField())
 		{
 			return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 		}
@@ -502,7 +505,7 @@ import lombok.NonNull;
 	@Override
 	public boolean hasChangesToSave()
 	{
-		if (isVirtualField())
+		if (isReadonlyVirtualField())
 		{
 			return false;
 		}

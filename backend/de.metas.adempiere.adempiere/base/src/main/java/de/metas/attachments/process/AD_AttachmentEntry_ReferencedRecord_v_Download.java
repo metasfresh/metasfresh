@@ -1,12 +1,12 @@
 package de.metas.attachments.process;
 
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry_ReferencedRecord_v;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.JavaProcess;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry_ReferencedRecord_v;
+import org.springframework.core.io.ByteArrayResource;
 
 /*
  * #%L
@@ -43,7 +43,7 @@ public class AD_AttachmentEntry_ReferencedRecord_v_Download extends JavaProcess
 		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
 		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
 
-		getResult().setReportData(data, entry.getFilename(), entry.getMimeType());
+		getResult().setReportData(new ByteArrayResource(data), entry.getFilename(), entry.getMimeType());
 
 		return MSG_OK;
 	}

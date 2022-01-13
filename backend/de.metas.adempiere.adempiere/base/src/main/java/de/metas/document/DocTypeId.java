@@ -7,6 +7,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -41,7 +42,7 @@ public class DocTypeId implements RepoIdAware
 	}
 
 	@Nullable
-	public static DocTypeId ofRepoIdOrNull(int repoId)
+	public static DocTypeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
@@ -72,4 +73,8 @@ public class DocTypeId implements RepoIdAware
 		return docTypeId != null ? docTypeId.getRepoId() : -1;
 	}
 
+	public static boolean equals(@Nullable final DocTypeId id1, @Nullable final DocTypeId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

@@ -1,45 +1,23 @@
 package org.adempiere.ad.persistence;
 
-import java.util.Objects;
-import java.util.Optional;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.ObjectUtils;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Convenient model's dynamic attribute accessor. This instance provides type-safe access to a model's dynamic attributes.
  * The it's recommended to use it rather that directly calling {@link InterfaceWrapperHelper#setDynAttribute(Object, String, Object)} etc.
  * Neither the model not the attribute value is referenced by instance of this class.
  *
- * @author tsa
- *
  * @param <ModelType>
  * @param <AttributeType>
+ * @author tsa
  */
 public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 {
@@ -105,10 +83,16 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 		return Optional.ofNullable(attributeValue);
 	}
 
-
-	public void setValue(final ModelType model, final AttributeType attributeValue)
+	public void setValue(final ModelType model, @Nullable final AttributeType attributeValue)
 	{
 		InterfaceWrapperHelper.setDynAttribute(model, attributeName, attributeValue);
+	}
+
+	public IAutoCloseable temporarySetValue(final ModelType model, final AttributeType value)
+	{
+		final AttributeType valueOld = getValue(model);
+		setValue(model, value);
+		return () -> setValue(model, valueOld);
 	}
 
 	public boolean isSet(final ModelType model)
@@ -123,7 +107,9 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 		return attributeValue == null;
 	}
 
-	/** @return true if given <code>model</code>'s attribute equals with <code>expectedValue</code> */
+	/**
+	 * @return true if given <code>model</code>'s attribute equals with <code>expectedValue</code>
+	 */
 	public boolean is(final ModelType model, final AttributeType expectedValue)
 	{
 		final Object attributeValue = InterfaceWrapperHelper.getDynAttribute(model, attributeName);
@@ -132,7 +118,6 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 
 	public void reset(final ModelType model)
 	{
-		final AttributeType attributeValue = null;
-		setValue(model, attributeValue);
+		setValue(model, null);
 	}
 }

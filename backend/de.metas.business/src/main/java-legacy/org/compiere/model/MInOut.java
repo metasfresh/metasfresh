@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -316,9 +319,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(order.getCtx(), 0, order.get_TrxName());
 		setClientOrg(order);
-		setC_BPartner_ID(order.getC_BPartner_ID());
-		setC_BPartner_Location_ID(order.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(order.getAD_User_ID());
+
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(order);
 		//
 
 		// 04579 fixing this problem so i can create a shipment for a PO order
@@ -385,6 +387,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(order.getC_Charge_ID());
 		setChargeAmt(order.getChargeAmt());
 		//
+		setC_Incoterms_ID(order.getC_Incoterms_ID());
 		setC_Project_ID(order.getC_Project_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDescription(order.getDescription());
@@ -399,16 +402,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		if (order.isSOTrx())
 		{
 			setIsDropShip(false);
-			setDropShip_BPartner_ID(0);
-			setDropShip_Location_ID(0);
-			setDropShip_User_ID(0);
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(DocumentLocation.EMPTY);
 		}
 		else
 		{
 			setIsDropShip(order.isDropShip());
-			setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			setDropShip_Location_ID(order.getDropShip_Location_ID());
-			setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 		// metas end: cg: 01717
 		// metas
@@ -421,7 +424,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		final IPOService poService = Services.get(IPOService.class);
 
-		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -441,9 +444,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(invoice.getCtx(), 0, invoice.get_TrxName());
 		setClientOrg(invoice);
-		setC_BPartner_ID(invoice.getC_BPartner_ID());
-		setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(invoice.getAD_User_ID());
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(invoice);
 		//
 		setM_Warehouse_ID(M_Warehouse_ID);
 		setIsSOTrx(invoice.isSOTrx());
@@ -485,6 +486,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(invoice.getC_Charge_ID());
 		setChargeAmt(invoice.getChargeAmt());
 		//
+		setC_Incoterms_ID(invoice.getC_Incoterms_ID());
 		setC_Project_ID(invoice.getC_Project_ID());
 		setDateOrdered(invoice.getDateOrdered());
 		setDescription(invoice.getDescription());
@@ -507,9 +509,9 @@ public class MInOut extends X_M_InOut implements IDocument
 
 			// Drop Shipment
 			setIsDropShip(order.isDropShip());
-			setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			setDropShip_Location_ID(order.getDropShip_Location_ID());
-			setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(this)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 	} // MInOut
 
@@ -524,10 +526,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		this(original.getCtx(), 0, original.get_TrxName());
 		setClientOrg(original);
-
-		setC_BPartner_ID(original.getC_BPartner_ID());
-		setC_BPartner_Location_ID(original.getC_BPartner_Location_ID()); // shipment address
-		setAD_User_ID(original.getAD_User_ID());
+		InOutDocumentLocationAdapterFactory.locationAdapter(this).setFrom(original);
 		//
 		setM_Warehouse_ID(original.getM_Warehouse_ID());
 		setIsSOTrx(original.isSOTrx());
@@ -570,12 +569,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(original.getAD_OrgTrx_ID());
 		setUser1_ID(original.getUser1_ID());
 		setUser2_ID(original.getUser2_ID());
+		setC_Incoterms_ID(original.getC_Incoterms_ID());
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());
-		setDropShip_BPartner_ID(original.getDropShip_BPartner_ID());
-		setDropShip_Location_ID(original.getDropShip_Location_ID());
-		setDropShip_User_ID(original.getDropShip_User_ID());
+		InOutDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(this)
+				.setFrom(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(original).toDocumentLocation());
 
 		// metas
 		copyAdditionalCols(original);
@@ -888,7 +888,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final I_C_BPartner bp)
+	private void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -1074,7 +1074,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_Incoterm)))
+		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_C_Incoterms_ID)))
 		{
 			poService.setValue(this, I_M_InOut.COLUMNNAME_IncotermLocation, "");
 		}
@@ -2178,14 +2178,14 @@ public class MInOut extends X_M_InOut implements IDocument
 		if (isDropShip())
 		{
 			counter.setIsDropShip(true);
-			counter.setDropShip_BPartner_ID(getDropShip_BPartner_ID());
-			counter.setDropShip_Location_ID(getDropShip_Location_ID());
-			counter.setDropShip_User_ID(getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(counter)
+					.setFrom(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(this).toDocumentLocation());
 		}
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_DescriptionBottom);
 		// metas end

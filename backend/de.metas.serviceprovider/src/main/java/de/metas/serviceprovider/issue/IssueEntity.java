@@ -23,10 +23,14 @@
 package de.metas.serviceprovider.issue;
 
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.timebooking.Effort;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
@@ -90,6 +94,9 @@ public class IssueEntity
 	@NonNull
 	private Effort aggregatedEffort;
 
+	@Nullable
+	private Quantity invoicableChildEffort;
+
 	@NonNull
 	private String name;
 
@@ -128,21 +135,13 @@ public class IssueEntity
 	private LocalDate deliveredDate;
 
 	@Nullable
-	private  Instant processedTimestamp;
+	private Instant processedTimestamp;
 
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
-		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
+		if (this.estimatedEffort == null || this.estimatedEffort.signum() == 0)
 		{
 			this.estimatedEffort = estimatedEffort;
-		}
-	}
-
-	public void setBudgetedEffortIfNotSet(@Nullable final BigDecimal budgetedEffort)
-	{
-		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
-		{
-			this.budgetedEffort = budgetedEffort;
 		}
 	}
 
@@ -154,6 +153,14 @@ public class IssueEntity
 	public void addIssueEffort(@Nullable final Effort effort)
 	{
 		this.issueEffort = issueEffort.addNullSafe(effort);
+	}
+
+	public void addInvoiceableChildEffort(@Nullable final Quantity augent)
+	{
+		this.invoicableChildEffort = Quantitys.addNullSafe(
+				UOMConversionContext.of((ProductId)null),
+				invoicableChildEffort,
+				augent);
 	}
 
 	@Nullable

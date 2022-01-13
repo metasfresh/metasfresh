@@ -3,16 +3,15 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { leftTrim } from '../../utils';
 import { debounce } from 'lodash';
 
+import history from '../../services/History';
+import { pathRequest, queryPathsRequest, breadcrumbRequest } from '../../api';
 import {
-  breadcrumbRequest,
   flattenLastElem,
   getRootBreadcrumb,
   getWindowBreadcrumb,
-  pathRequest,
-  queryPathsRequest,
   setBreadcrumb,
 } from '../../actions/MenuActions';
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
@@ -43,7 +42,7 @@ class MenuOverlay extends Component {
    */
   debounceEventHandler = (...args) => {
     const debounced = debounce(...args);
-    return function(e) {
+    return function (e) {
       e.persist();
       return debounced(e);
     };
@@ -92,10 +91,13 @@ class MenuOverlay extends Component {
   handleQuery = (e) => {
     e.preventDefault();
 
-    if (e.target.value) {
+    const targetValue = leftTrim(e.target.value);
+
+    if (targetValue) {
       this.setState({
         query: e.target.value,
       });
+
       queryPathsRequest(e.target.value, 9)
         .then((response) => {
           this.setState({
@@ -141,7 +143,7 @@ class MenuOverlay extends Component {
   };
 
   /**
-   * @method mapStateToProps
+   * @method handleRedirect
    * @summary ToDo: Describe the method.
    * @param {*} elementId
    * @param {*} isNew
@@ -155,14 +157,8 @@ class MenuOverlay extends Component {
     dispatch(closeModal());
     dispatch(clearMasterData());
 
-    this.props.dispatch(
-      push(
-        '/' +
-          (entity ? entity : 'window') +
-          '/' +
-          elementId +
-          (isNew ? '/new' : '')
-      )
+    history.push(
+      `/${entity ? entity : 'window'}/${elementId}${isNew ? '/new' : ''}`
     );
   };
 
@@ -246,7 +242,7 @@ class MenuOverlay extends Component {
               dispatch(closeModal());
               dispatch(clearMasterData());
               dispatch(setBreadcrumb([]));
-              dispatch(push('/'));
+              history.push('/');
             }}
             tabIndex={0}
           >
@@ -266,7 +262,7 @@ class MenuOverlay extends Component {
                 dispatch(closeModal());
                 dispatch(clearMasterData());
 
-                dispatch(push('/sitemap'));
+                history.push('/sitemap');
               }}
               tabIndex={0}
             >
@@ -396,16 +392,13 @@ class MenuOverlay extends Component {
       .getElementsByClassName('menu-overlay-query')[0]
       .getElementsByClassName('js-menu-item')[0];
     const browseItem = document.getElementsByClassName('js-browse-item')[0];
-    const isBrowseItemActive = document.activeElement.classList.contains(
-      'js-browse-item'
-    );
-    const overlay = document.activeElement.classList.contains(
-      'js-menu-overlay'
-    );
+    const isBrowseItemActive =
+      document.activeElement.classList.contains('js-browse-item');
+    const overlay =
+      document.activeElement.classList.contains('js-menu-overlay');
     const headerLink = document.getElementsByClassName('js-menu-header')[0];
-    const isHeaderLinkActive = document.activeElement.classList.contains(
-      'js-menu-header'
-    );
+    const isHeaderLinkActive =
+      document.activeElement.classList.contains('js-menu-header');
     const headerItem = document.getElementsByClassName('js-menu-header')[0];
     const prevParentSibling =
       document.activeElement.parentElement.previousSibling;

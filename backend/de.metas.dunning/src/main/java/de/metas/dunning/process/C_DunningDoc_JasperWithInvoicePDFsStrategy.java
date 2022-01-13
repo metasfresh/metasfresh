@@ -18,6 +18,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 	{
 		final DunningDocId dunningDocId = DunningDocId.ofRepoId(processInfo.getRecord_ID());
 
-		final byte[] dunningDocData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo, outputType);
+		final Resource dunningDocData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo, outputType);
 
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)
@@ -75,7 +76,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 
 		final List<PdfDataProvider> additionalDataItemsToAttach = retrieveAdditionalDataItems(dunnedInvoices);
-		final byte[] data = ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
+		final Resource data = ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
 
 		return ExecuteReportResult.of(outputType, data);
 	}
@@ -86,7 +87,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 		for (final I_C_Invoice invoice : dunnedInvoices)
 		{
 			final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
-			final byte[] data = archiveBL.getLastArchiveBinaryData(invoiceRef).orElse(null);
+			final Resource data = archiveBL.getLastArchiveBinaryData(invoiceRef).orElse(null);
 			if(data == null)
 			{
 				continue;

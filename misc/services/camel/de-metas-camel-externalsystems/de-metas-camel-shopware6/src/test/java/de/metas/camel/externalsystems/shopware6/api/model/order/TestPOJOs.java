@@ -22,17 +22,24 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class TestPOJOs
 {
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = new ObjectMapper()
+			.registerModule(new JavaTimeModule())
+			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 
 	@Test
 	public void givenJsonOrders_whenSerializeDeserialize_thenSuccess() throws IOException
@@ -41,9 +48,21 @@ public class TestPOJOs
 	}
 
 	@Test
-	public void givenJsonDeliveries_whenSerializeDeserialize_thenSuccess() throws IOException
+	public void givenJsonOrderLine_whenSerializeDeserialize_thenSuccess() throws IOException
 	{
-		testSerializeDeserializeObject(getMockJsonDeliveries());
+		testSerializeDeserializeObject(getMockJsonOrderLine());
+	}
+
+	@Test
+	public void givenJsonOrderTransactions_whenSerializeDeserialize_thenSuccess() throws IOException
+	{
+		testSerializeDeserializeObject(getMockOrderTransactions());
+	}
+
+	@Test
+	public void givenJsonPaymentMethod_whenSerializeDeserialize_thenSuccess() throws IOException
+	{
+		testSerializeDeserializeObject(getJsonPaymentMethod());
 	}
 
 	private void testSerializeDeserializeObject(final Object value) throws IOException
@@ -59,14 +78,18 @@ public class TestPOJOs
 		return JsonOrders.builder()
 				.data(ImmutableList.of(
 						JsonOrder.builder()
-								.billingAddressId("billingAddressId")
-								.billingAddressVersionId("billingAddressVersionId")
 								.id("orderId")
-								.versionId("orderVersionId")
+								.billingAddressId("billingAddressId")
+								.orderNumber("orderNumber")
+								.currencyId("currencyId")
+								.orderDate(ZonedDateTime.now(ZoneId.of("UTC")))
+								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+								.stateMachine(JsonStateMachine.builder()
+													  .technicalName("open")
+													  .build()
+								)
 								.orderCustomer(JsonOrderCustomer.builder()
-													   .id("orderCustomerId")
 													   .orderId("orderId")
-													   .versionId("orderCustomerVersionId")
 													   .customerId("customerId")
 													   .firstName("firstName")
 													   .lastName("lastName")
@@ -79,24 +102,50 @@ public class TestPOJOs
 				.build();
 	}
 
-	private JsonOrderDeliveries getMockJsonDeliveries()
+	private JsonOrderLine getMockJsonOrderLine()
 	{
-		return JsonOrderDeliveries.builder()
-				.data(ImmutableList.of(
-						JsonOrderDelivery.builder()
-								.shippingOrderAddress(JsonOrderAddress.builder()
-															  .additionalAddressLine1("additionalAddressLine1")
-															  .additionalAddressLine2("additionalAddressLine2")
-															  .street("street")
-															  .city("city")
-															  .countryId("countryId")
-															  .zipcode("zipcode")
-															  .phoneNumber("phoneNumber")
-															  .id("addressId")
-															  .versionId("addressVersionId")
-															  .build())
-								.build()
-				))
+		return JsonOrderLine.builder()
+				.updatedAt(ZonedDateTime.now(ZoneId.of("UTC")))
+				.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+				.description("description")
+				.id("id")
+				.parentId("parentId")
+				.payload(JsonOrderLinePayload.builder()
+								 .isBundle(true)
+								 .build())
+				.position(1)
+				.productId("productId")
+				.quantity(BigDecimal.ONE)
+				.unitPrice(BigDecimal.TEN)
+				.build();
+	}
+
+	private JsonOrderTransactions getMockOrderTransactions()
+	{
+		return JsonOrderTransactions.builder()
+				.transactionList(
+						ImmutableList.of(JsonOrderTransaction.builder()
+												 .id("id")
+												 .paymentMethodId("paymentMethodId")
+												 .amount(JsonAmount.builder()
+																 .totalPrice(BigDecimal.valueOf(100))
+																 .build()
+												 )
+												 .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+												 .stateMachine(JsonStateMachine.builder()
+																	   .technicalName("paid")
+																	   .build()
+												 ).build()
+						)
+				)
+				.build();
+	}
+
+	private JsonPaymentMethod getJsonPaymentMethod()
+	{
+		return JsonPaymentMethod.builder()
+				.id("id")
+				.shortName("shortName")
 				.build();
 	}
 }

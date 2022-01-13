@@ -1,21 +1,19 @@
 package de.metas.product;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -50,15 +48,19 @@ public class ProductId implements RepoIdAware
 		return new ProductId(repoId);
 	}
 
+	@Nullable
 	public static ProductId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new ProductId(repoId) : null;
 	}
 
+	@Nullable
 	public static ProductId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ProductId(repoId) : null;
 	}
+
+	public static Optional<ProductId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static Set<ProductId> ofRepoIds(final Collection<Integer> repoIds)
 	{
@@ -81,7 +83,7 @@ public class ProductId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static boolean equals(final ProductId o1, final ProductId o2)
+	public static boolean equals(@Nullable final ProductId o1, @Nullable final ProductId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

@@ -29,13 +29,13 @@ let soRecordId;
 let huValue1;
 let huValue2;
 
-const includedQAUrl = new RegExp(/rest\/api\/documentView\/pickingSlot\/.*\/quickActions\?parentViewId=540350/);
-const includedQAUrl2 = new RegExp(/rest\/api\/documentView\/husToPick\/.*\/quickActions\?parentViewId=540350/);
-const parentQAUrl = new RegExp(/rest\/api\/documentView\/.*\/quickActions\?childViewId=pickingSlot/);
+const includedQAUrl = new RegExp(/rest\/api\/documentView\/pickingSlot\/.*\/quickActions/);
+const includedQAUrl2 = new RegExp(/rest\/api\/documentView\/husToPick\/.*\/quickActions/);
+const parentQAUrl = new RegExp(/rest\/api\/documentView\/.*\/quickActions/);
 
-describe('Create test data', function() {
-  it('Read fixture and prepare the names', function() {
-    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+describe('Create test data', function () {
+  it('Read fixture and prepare the names', function () {
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then((f) => {
       productName = f['productName'];
       productQty = f['productQty'];
       locatorId = f['locatorId'];
@@ -49,35 +49,32 @@ describe('Create test data', function() {
     });
   });
 
-  it('Create first single-HU inventory doc', function() {
-    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue1 = huVal));
+  it('Create first single-HU inventory doc', function () {
+    Builder.createHUWithStock(productName, productQty, locatorId).then((huVal) => (huValue1 = huVal));
   });
 
-  it('Create second single-HU inventory doc', function() {
-    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue2 = huVal));
+  it('Create second single-HU inventory doc', function () {
+    Builder.createHUWithStock(productName, productQty, locatorId).then((huVal) => (huValue2 = huVal));
   });
 
-  it('Create Sales Order', function() {
-    new SalesOrder()
-      .setBPartner(businessPartnerName)
-      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity))
-      .apply();
+  it('Create Sales Order', function () {
+    new SalesOrder().setBPartner(businessPartnerName).addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity)).apply();
     cy.completeDocument();
 
-    cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
-    cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
+    cy.getCurrentWindowRecordId().then((id) => (soRecordId = id));
+    cy.getStringFieldValue('DocumentNo').then((docNO) => (soDocNumber = docNO));
   });
 });
 
-describe('Pick the SO', function() {
-  it('Visit "Picking Terminal (Prototype)"', function() {
+describe('Pick the SO', function () {
+  it('Visit "Picking Terminal (Prototype)"', function () {
     // unfortunately the picking assignment is not created instantly and there's no way to check when it is created except by refreshing the page,
     // so i have to wait for it to be created :(
     cy.waitUntilProcessIsFinished();
     cy.visitWindow('540345');
   });
 
-  it('Select row and run action Pick', function() {
+  it('Select row and run action Pick', function () {
     cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
 
     cy.intercept(includedQAUrl).as('huQA');
@@ -87,7 +84,7 @@ describe('Pick the SO', function() {
     cy.wait('@huQA', { timeout: 10000 });
   });
 
-  it('Pick first HU', function() {
+  it('Pick first HU', function () {
     cy.intercept(includedQAUrl).as('huQA1');
 
     cy.selectLeftTable().within(() => {
@@ -113,7 +110,7 @@ describe('Pick the SO', function() {
       });
   });
 
-  it('Pick second HU', function() {
+  it('Pick second HU', function () {
     cy.intercept(includedQAUrl).as('huQA3');
 
     cy.selectLeftTable().within(() => {
@@ -136,7 +133,7 @@ describe('Pick the SO', function() {
     cy.wait('@huQA3', { timeout: 10000 });
   });
 
-  it('Confirm Picks', function() {
+  it('Confirm Picks', function () {
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
@@ -168,8 +165,8 @@ describe('Pick the SO', function() {
   });
 });
 
-describe('Generate the Shipment', function() {
-  it('Open the Referenced Shipment Disposition', function() {
+describe('Generate the Shipment', function () {
+  it('Open the Referenced Shipment Disposition', function () {
     salesOrders.visit(soRecordId);
     cy.openReferencedDocuments('M_ShipmentSchedule');
     cy.get('.spinner', { timeout: 10000 }).should('not.exist');
@@ -177,7 +174,7 @@ describe('Generate the Shipment', function() {
     cy.selectNthRow(0).dblclick();
   });
 
-  it('Shipment Disposition checks', function() {
+  it('Shipment Disposition checks', function () {
     cy.expectCheckboxValue('IsToRecompute', false);
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
     cy.getStringFieldValue('M_Product_ID').should('contain', productName);
@@ -187,7 +184,7 @@ describe('Generate the Shipment', function() {
     cy.getStringFieldValue('QtyPickList ').should('equal', soProductQuantity.toString(10));
   });
 
-  it('Run action "Generate shipments"', function() {
+  it('Run action "Generate shipments"', function () {
     cy.readAllNotifications();
     cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
     cy.selectInListField('QuantityType', shipmentQuantityTypeOption, true, null, true);
@@ -199,11 +196,16 @@ describe('Generate the Shipment', function() {
     cy.expectCheckboxValue('Processed', true);
   });
 
-  it('Open notifications and go to the shipment', function() {
+  it('Open notifications and go to the shipment', function () {
+    salesOrders.visit(soRecordId);
+    cy.openReferencedDocuments('M_ShipmentSchedule');
+    cy.get('.spinner', { timeout: 10000 }).should('not.exist');
+    cy.expectNumberOfRows(1);
+    cy.selectNthRow(0).dblclick();
     cy.openInboxNotificationWithText(businessPartnerName);
   });
 
-  it('Shipment checks', function() {
+  it('Shipment checks', function () {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
     cy.selectTab('M_HU_Assignment');
@@ -212,7 +214,7 @@ describe('Generate the Shipment', function() {
     cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue2 });
   });
 
-  it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
+  it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function () {
     cy.visitWindow(540189);
     clearNotFrequentFilters();
     toggleNotFrequentFilters();

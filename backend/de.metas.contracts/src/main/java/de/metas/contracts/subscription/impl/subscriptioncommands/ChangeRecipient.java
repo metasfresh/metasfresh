@@ -1,22 +1,27 @@
 package de.metas.contracts.subscription.impl.subscriptioncommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.impl.SubscriptionService.ChangeRecipientsRequest;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 
 import java.sql.Timestamp;
 import java.util.List;
 
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.model.IQuery;
-
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.impl.SubscriptionService.ChangeRecipientsRequest;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -98,10 +103,23 @@ public class ChangeRecipient
 			@NonNull final I_C_SubscriptionProgress subscriptionProgress,
 			@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = subscriptionProgress.getM_ShipmentSchedule();
-		shipmentSchedule.setC_BPartner_ID(changeRecipientsRequest.getDropShip_BPartner_ID());
-		shipmentSchedule.setC_BPartner_Location_ID(changeRecipientsRequest.getDropShip_Location_ID());
-		shipmentSchedule.setAD_User_ID(changeRecipientsRequest.getDropShip_User_ID());
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(subscriptionProgress.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
+
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.mainLocationAdapter(shipmentSchedule)
+				.setFrom(extractDropShipLocation(changeRecipientsRequest));
+
 		save(shipmentSchedule);
+	}
+
+	@NonNull
+	private static DocumentLocation extractDropShipLocation(final @NonNull ChangeRecipientsRequest changeRecipientsRequest)
+	{
+		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoId(changeRecipientsRequest.getDropShip_BPartner_ID());
+		return DocumentLocation.builder()
+				.bpartnerId(dropShipBPartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(dropShipBPartnerId, changeRecipientsRequest.getDropShip_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(dropShipBPartnerId, changeRecipientsRequest.getDropShip_User_ID()))
+				.build();
 	}
 }

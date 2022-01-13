@@ -1,12 +1,21 @@
 package de.metas.handlingunits.allocation.strategy;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +43,10 @@ import de.metas.quantity.QuantityTU;
 import de.metas.uom.UOMPrecision;
 import lombok.Builder;
 import lombok.NonNull;
+import org.w3c.dom.Node;
+
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
 
 /*
  * #%L
@@ -45,12 +58,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,6 +73,8 @@ import lombok.NonNull;
 public class UniformAllocationStrategyTest
 {
 	private HUTestHelper helper;
+
+	private LUTUProducerDestinationTestSupport lutuProducerDestinationTestSupport;
 
 	@Builder
 	@SuppressWarnings("unused")
@@ -81,7 +96,8 @@ public class UniformAllocationStrategyTest
 	@BeforeEach
 	public void init()
 	{
-		helper = HUTestHelper.newInstanceOutOfTrx();
+		lutuProducerDestinationTestSupport = new LUTUProducerDestinationTestSupport();
+		helper = lutuProducerDestinationTestSupport.helper;
 	}
 
 	@Builder(builderMethodName = "lutuConfig", builderClassName = "$LUTUConfigBuilder")
@@ -193,7 +209,6 @@ public class UniformAllocationStrategyTest
 		@Test
 		public void subtract10()
 		{
-
 			subtractQty(lu, "10", AllocationStrategyType.UNIFORM, lutuConfig);
 			// dumpHU("after -10", lu);
 			HUExpectation.newExpectation()
@@ -219,6 +234,7 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			// given 1 LU: [40 x TU x 10kg aggregated] 
 			lutuConfig = lutuConfig()
 					.uomPrecision(UOMPrecision.ofInt(3))
 					.qtyTUsPerLU(QuantityTU.ofInt(40))
@@ -238,7 +254,7 @@ public class UniformAllocationStrategyTest
 											.uom(lutuConfig.productUOM))))
 					.assertExpected("initial LU with 40 TUs", lu);
 
-			//
+			// subtract 1kg to get 1 LU: [39 x TU x 10kg aggregated] + [1 x TU 9Kg not aggregated]
 			subtractQty(lu, "1", AllocationStrategyType.FIFO, lutuConfig);
 			// dumpHU("after -1", lu);
 			HUExpectation.newExpectation()
@@ -312,6 +328,49 @@ public class UniformAllocationStrategyTest
 		}
 	}
 
+	@Nested
+	@DisplayName("1 LU: [104 x TU 2PCE not aggregated]")
+	public class regularHU
+	{
+		private I_M_HU lu;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
+
+			final Quantity two = Quantity.of("2", helper.uomEach);
+			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
+			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
+					BigDecimal.ONE,
+					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+					true);
+			lu = lus.get(0);
+			for (int i = 0; i < 51; i++)
+			{
+				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
+				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+			}
+			//helper.commitAndDumpHU(lu);
+
+			final Node luXml = HUXmlConverter.toXml(lu);
+			Assert.assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("52")));
+			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
+			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("104")));
+		}
+
+		@Test
+		public void subtract104()
+		{
+			subtractQty(lu, "104", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
+			
+			final Node luXml = HUXmlConverter.toXml(lu);
+			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
+			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
+		}
+	}
+
 	@SuppressWarnings("unused")
 	private void dumpHU(final String title, final I_M_HU hu)
 	{
@@ -328,13 +387,26 @@ public class UniformAllocationStrategyTest
 			@NonNull final AllocationStrategyType allocationStrategyType,
 			@NonNull final LUTUConfig lutuConfig)
 	{
+		addQty(hu, qty, allocationStrategyType, lutuConfig.productId, lutuConfig.productUOM);
+	}
+
+	private void addQty(
+			@NonNull final I_M_HU hu,
+			@NonNull final String qty,
+			@NonNull final AllocationStrategyType allocationStrategyType,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM productUOM)
+	{
 		final GenericAllocationSourceDestination source = helper.createDummySourceDestination(
-				lutuConfig.productId,
+				productId,
 				Quantity.QTY_INFINITE,
-				lutuConfig.productUOM,
+				productUOM,
 				true // fullyLoaded
 		);
 
+		final IMutableHUContext huContext = helper.createMutableHUContextForProcessingOutOfTrx();
+		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
+		
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(
 				hu,
 				allocationStrategyType);
@@ -343,8 +415,8 @@ public class UniformAllocationStrategyTest
 				.load(AllocationUtils.builder()
 						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
-						.setProduct(lutuConfig.productId)
-						.setQuantity(Quantity.of(qty, lutuConfig.productUOM))
+						.setProduct(productId)
+						.setQuantity(Quantity.of(qty, productUOM))
 						.setFromReferencedModel(source.getReferenceModel())
 						.setForceQtyAllocation(true)
 						.create());
@@ -356,25 +428,40 @@ public class UniformAllocationStrategyTest
 			@NonNull final AllocationStrategyType allocationStrategyType,
 			@NonNull final LUTUConfig lutuConfig)
 	{
+		subtractQty(hu, qty, allocationStrategyType, lutuConfig.productId, lutuConfig.productUOM);
+	}
+
+	private void subtractQty(
+			@NonNull final I_M_HU hu,
+			@NonNull final String qty,
+			@NonNull final AllocationStrategyType allocationStrategyType,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM productUOM)
+	{
 		final GenericAllocationSourceDestination destination = helper.createDummySourceDestination(
-				lutuConfig.productId,
+				productId,
 				Quantity.QTY_INFINITE,
-				lutuConfig.productUOM,
+				productUOM,
 				true // fullyLoaded
 		);
 
+		final IMutableHUContext huContext = helper.createMutableHUContextForProcessingOutOfTrx();
+		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
+
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(
 				hu,
-				allocationStrategyType);
+				allocationStrategyType)
+				.setDestroyEmptyHUs(true); // make it easeier to evalute the endresult - without empty TUs dangling around
 
 		HULoader.of(source, destination)
 				.load(AllocationUtils.builder()
-						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
+						.setHUContext(huContext)
 						.setDateAsToday()
-						.setProduct(lutuConfig.productId)
-						.setQuantity(Quantity.of(qty, lutuConfig.productUOM))
+						.setProduct(productId)
+						.setQuantity(Quantity.of(qty, productUOM))
 						.setFromReferencedModel(destination.getReferenceModel())
 						.setForceQtyAllocation(true)
 						.create());
+		
 	}
 }

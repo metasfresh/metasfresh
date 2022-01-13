@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -91,7 +92,7 @@ import lombok.ToString;
 		viewRef = new WeakReference<>(view);
 		this.viewActionDescriptor = viewActionDescriptor;
 
-		this.selectedDocumentIds = selectedDocumentIds == null ? DocumentIdsSelection.EMPTY : selectedDocumentIds;
+		this.selectedDocumentIds = selectedDocumentIds;
 
 		final DocumentEntityDescriptor parametersDescriptor = viewActionDescriptor.createParametersEntityDescriptor(processId);
 		if (parametersDescriptor != null)
@@ -148,7 +149,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
+	public LookupValuesPage getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
 		return parametersDocument.getFieldLookupValuesForQuery(parameterName, query);
 	}

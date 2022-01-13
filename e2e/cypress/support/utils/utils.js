@@ -15,8 +15,6 @@
  * 
  */
 const getLanguageSpecific = (data, key) => {
-  getLanguageSpecificWorkaround();
-
   // noinspection JSUnresolvedVariable
   const checkArray = Array.isArray(Cypress.reduxStore.getState().appHandler.me.language);
   const lang = checkArray ? 'en_EN' : Cypress.reduxStore.getState().appHandler.me.language.key;
@@ -51,13 +49,15 @@ const wrapRequest = req => {
 const findByName = (dataArray, name) => {
   let dataObject = null;
 
-  for (let i = 0; i < dataArray.length; i += 1) {
-    const obj = dataArray[i];
+  if (dataArray) {
+    for (let i = 0; i < dataArray.length; i += 1) {
+      const obj = dataArray[i];
 
-    if (obj.caption.includes(name)) {
-      dataObject = obj;
+      if (obj.caption.includes(name)) {
+        dataObject = obj;
 
-      break;
+        break;
+      }
     }
   }
 

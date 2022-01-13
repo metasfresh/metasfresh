@@ -45,7 +45,6 @@ import de.metas.util.ISingletonService;
  * Async Queue related DAO
  *
  * @author tsa
- *
  */
 public interface IQueueDAO extends ISingletonService
 {
@@ -74,7 +73,6 @@ public interface IQueueDAO extends ISingletonService
 	/**
 	 * Retrieves all {@link I_C_Queue_Element}s for given workPackage
 	 *
-	 * @param workPackage
 	 * @param skipAlreadyScheduledItems if true, those items that were already enqueued in the past, in another workpackage which hasn't yet been proceed, are skipped
 	 * @return list of queue elements
 	 */
@@ -82,54 +80,44 @@ public interface IQueueDAO extends ISingletonService
 
 	/**
 	 * Retrieves the POs that are referenced by the given workPackage's {@link I_C_Queue_Element}s.
+	 * <p>
+	 * NOTE: this method is returning all those items which <b>were not already scheduled in a previous not-yet-processed work-package.</b>
 	 *
-	 * NOTE: this method is returning all those items which were not already scheduled in a previous not processed work-package.
-	 *
-	 * @param workPackage
-	 * @param clazz
-	 * @param trxName
-	 * @return
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 * @throws de.metas.async.exceptions.PackageItemNotAvailableException if one of the work package's elements references a record which no longer exists.
+	 * @deprecated Please Consider using {@link #retrieveAllItems(I_C_Queue_WorkPackage, Class)} instead.
+	 * Filtering out items which were already enqueued in an older, not-yet-processed workpackage costs a lot of performance.
+	 * Since today we have just one thread per processor, this can't happen. Therefore AFAIS we don't need this anymore.
 	 */
+	@Deprecated
 	<T> List<T> retrieveItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
 	/**
-	 * Similar to {@link #retrieveItems(I_C_Queue_WorkPackage, Class, String)}, but does not make a fuzz about elements whose referenced records do no longer exist.
+	 * Similar to {@link #retrieveAllItems(I_C_Queue_WorkPackage, Class)}, but
+	 * <li>does not make a fuzz about elements whose referenced records do no longer exist.</li>
 	 *
-	 * @param workPackage
-	 * @param clazz
-	 * @param trxName
-	 * @return
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 */
-	<T> List<T> retrieveItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
+	<T> List<T> retrieveAllItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
 
 	/**
-	 * return all active POs, even the ones that are caught in other packages
+	 * Return all active POs, even the ones that are caught in other packages
 	 *
-	 * @param workPackage
-	 * @param clazz
-	 * @return
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 */
 	<T> List<T> retrieveAllItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
 
 	/**
 	 * Creates a query builder which is used to retrieve all records of given <code>clazz</code>.
 	 *
-	 * @param workPackage
-	 * @param clazz model class
+	 * @param clazz                     model class
 	 * @param skipAlreadyScheduledItems true if we shall skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued
-	 * @param trxName
 	 * @return query builder
 	 */
 	<T> IQueryBuilder<T> createElementsQueryBuilder(I_C_Queue_WorkPackage workPackage, Class<T> clazz, boolean skipAlreadyScheduledItems, String trxName);
 
 	/**
 	 * Same as {@link #createElementsQueryBuilder(I_C_Queue_WorkPackage, Class, boolean, String)} called with skipAlreadyScheduledItems=true.
-	 *
-	 * @param workPackage
-	 * @param clazz model class
-	 * @param trxName
-	 * @return query builder
 	 */
 	<T> IQueryBuilder<T> createElementsQueryBuilder(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
@@ -137,16 +125,11 @@ public interface IQueueDAO extends ISingletonService
 
 	/**
 	 * Return the ordering used when the next work package is retrieved from the queue. Can be used where it is required to have the same ordering as the queue.
-	 *
-	 * @return
 	 */
 	IQueryOrderBy getQueueOrderBy();
 
 	/**
 	 * Checks if the workpackage processor is enabled
-	 *
-	 * @param packageProcessorClass
-	 * @return
 	 */
 	boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass);
 

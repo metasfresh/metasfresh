@@ -22,17 +22,17 @@ package de.metas.handlingunits.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Factory for HU related quantities.<br>
@@ -64,4 +64,7 @@ public interface IHUStorageFactory
 	{
 		return streamHUProductStorages(ImmutableList.of(hu));
 	}
+
+	boolean isSingleProductWithQtyEqualsTo(I_M_HU hu, ProductId productId, Quantity qty);
+
 }

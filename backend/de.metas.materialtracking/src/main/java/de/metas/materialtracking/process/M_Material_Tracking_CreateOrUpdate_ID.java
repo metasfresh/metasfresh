@@ -22,16 +22,6 @@ package de.metas.materialtracking.process;
  * #L%
  */
 
-import java.util.List;
-
-import de.metas.order.IOrderBL;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -45,6 +35,7 @@ import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
@@ -54,6 +45,14 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+
+import java.util.List;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>
@@ -171,8 +170,11 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 		// receipt schedules
 		{
 			final I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(orderLine);
-			materialTrackingAttributeBL.createOrUpdateMaterialTrackingASI(receiptSchedule, materialTracking);
-			InterfaceWrapperHelper.save(receiptSchedule); // note that we have a M_ReceiptSchedule model interceptor in the HU module, which takes care of the hu-attributes
+			if(receiptSchedule != null)
+			{
+				materialTrackingAttributeBL.createOrUpdateMaterialTrackingASI(receiptSchedule, materialTracking);
+				InterfaceWrapperHelper.save(receiptSchedule); // note that we have a M_ReceiptSchedule model interceptor in the HU module, which takes care of the hu-attributes
+			}
 		}
 
 		//

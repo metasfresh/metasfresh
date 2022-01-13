@@ -22,15 +22,20 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IWarehouseBL extends ISingletonService
 {
@@ -58,5 +63,25 @@ public interface IWarehouseBL extends ISingletonService
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
 
+	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
+
+	String getLocatorNameById(final LocatorId locatorId);
+
+	String getWarehouseName(WarehouseId warehouseId);
+
+	LocatorId getLocatorIdByRepoId(int locatorRepoId);
+
+	I_M_Locator getLocatorByRepoId(int locatorRepoId);
+
+	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
+
+	Optional<ResourceId> getPlantId(WarehouseId warehouseId);
+
+	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
+
+	@NonNull
+	WarehouseId getIdByLocatorRepoId(int locatorId);
 }

@@ -8,6 +8,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
@@ -66,7 +67,7 @@ public final class DataTypes
 	 * <li>{@link BigDecimal}s are compared excluding the scale (so "1.00" equals with "1.0")
 	 * </ul>
 	 */
-	public static <T> boolean equals(final T value1, final T value2)
+	public static <T> boolean equals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (value1 == value2)
 		{
@@ -106,7 +107,7 @@ public final class DataTypes
 			@NonNull final Class<T> targetType,
 			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
-		if (value == null)
+		if (value == null || JSONNullValue.isNull(value))
 		{
 			return null;
 		}
@@ -290,6 +291,11 @@ public final class DataTypes
 		{
 			final String valueStr = (String)value;
 			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+
+			if(valueStr.equalsIgnoreCase("null"))
 			{
 				return null;
 			}

@@ -92,7 +92,7 @@ public class RestService
 	private HttpHeaders buildHttpHeaders(final String apiKey)
 	{
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add(VERSION.getValue(), EVERHOUR_API_VERSION);
 		headers.add(API_KEY.getValue(), apiKey);
 

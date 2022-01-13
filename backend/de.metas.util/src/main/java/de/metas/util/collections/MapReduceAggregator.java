@@ -83,24 +83,17 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	/**
 	 * Create a new EMPTY group instance.
 	 *
-	 * @param itemHashKey
-	 * @param item
 	 * @return created group
 	 */
 	protected abstract GroupType createGroup(Object itemHashKey, ItemType item);
 
 	/**
 	 * Close given group. This method is called by API when it removes given group from its buffer.
-	 *
-	 * @param group
 	 */
 	protected abstract void closeGroup(GroupType group);
 
 	/**
 	 * Adds given <code>item</code> to <code>group</code>.
-	 *
-	 * @param group
-	 * @param item
 	 */
 	protected abstract void addItemToGroup(GroupType group, ItemType item);
 
@@ -111,7 +104,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	}
 
 	/** Make this aggregator not configurable. Mainly this method is called when processing is started. */
-	private final void setNotConfigurable()
+	private void setNotConfigurable()
 	{
 		this._configurable = false;
 	}
@@ -121,8 +114,6 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 * <p>
 	 * <b>IMPORTANT TO KNOW:</b> only the key builder's {@link IAggregationKeyBuilder#buildKey(Object) buildKey(Object)} method is invoked.<br>
 	 * Not its {@link IAggregationKeyBuilder#isSame(Object, Object) isSame(Object, Object} method
-	 *
-	 * @param itemAggregationKeyBuilder
 	 */
 	public final void setItemAggregationKeyBuilder(@NonNull final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder)
 	{
@@ -135,7 +126,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		this._itemAggregationKeyBuilder = itemAggregationKeyBuilder;
 	}
 
-	private final Function<ItemType, Object> getItemAggregationKeyBuilder()
+	private Function<ItemType, Object> getItemAggregationKeyBuilder()
 	{
 		return this._itemAggregationKeyBuilder;
 	}
@@ -162,8 +153,6 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 * Sets how many groups you want to keep in memory. If the value is zero then all groups will be kept in memory.
 	 *
 	 * Default value is {@value #DEFAULT_BufferSize}.
-	 *
-	 * @param bufferSize
 	 */
 	public void setGroupsBufferSize(final int bufferSize)
 	{
@@ -203,8 +192,6 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 
 	/**
 	 * Adds item to be aggregated.
-	 *
-	 * @param item
 	 */
 	public final void add(@NonNull final ItemType item)
 	{
@@ -253,7 +240,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @return hash/aggregation key for given <code>item</code>
 	 */
-	private final Object createItemHashKey(final ItemType item)
+	private Object createItemHashKey(@NonNull final ItemType item)
 	{
 		final Function<ItemType, Object> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
 		final Object itemHashKey = itemAggregationKeyBuilder.apply(item);
@@ -265,11 +252,9 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * If the groups buffer capacity is reached the last used group will be removed from buffer (this is done indirectly by {@link LRUMap}).
 	 *
-	 * @param itemHashKey
 	 * @param item item to be used for creating the new group
-	 * @return
 	 */
-	private final GroupType createAndAddGroupToBuffer(final Object itemHashKey, final ItemType item)
+	private GroupType createAndAddGroupToBuffer(@NonNull final Object itemHashKey, @NonNull final ItemType item)
 	{
 		// We put a null value to map (before actually creating the group),
 		// to make sure the previous groups are closed before the new group is actually created
@@ -283,7 +268,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		return group;
 	}
 
-	private final void closeGroupAndCollect(final GroupType group)
+	private void closeGroupAndCollect(final GroupType group)
 	{
 		closeGroup(group);
 		if (closedGroupsCollector != null)
@@ -314,7 +299,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param exceptGroup optional group to except from closing
 	 */
-	private final void closeAllGroupsExcept(@Nullable final GroupType exceptGroup)
+	private void closeAllGroupsExcept(@Nullable final GroupType exceptGroup)
 	{
 		final Iterator<GroupType> groups = _itemHashKey2group.values().iterator();
 		while (groups.hasNext())

@@ -5,11 +5,8 @@ import { RewriteURL } from '../utils/constants';
  * Basic command for clicking a button element having a certain text
  * @param text string to search for in the button
  */
-Cypress.Commands.add('clickButtonWithText', text => {
-  cy.get('button')
-    .contains(text)
-    .should('exist')
-    .click();
+Cypress.Commands.add('clickButtonWithText', (text) => {
+  cy.get('button').contains(text).should('exist').click();
 });
 
 /*
@@ -39,10 +36,7 @@ Cypress.Commands.add('selectTab', (tabName, force) => {
 });
 
 Cypress.Commands.add('selectSingleTabRow', () => {
-  cy.get('.table-flex-wrapper')
-    .find('tbody tr')
-    .should('exist')
-    .click({ force: true });
+  cy.get('.table-flex-wrapper').find('tbody tr').should('exist').click({ force: true });
 });
 
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
@@ -53,15 +47,14 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
 
   if (retriesLeft >= 1) {
     // const referencesAliasName = `references-${date}`;
-    // cy.server();
     // -- removed this as calls to SSE (eventSource) are not recorded, they were introduced in me03/issues -> #4383
-    // cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
+    // cy.intercept('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
 
     cy.get('body').type('{alt}6'); // open referenced docs
     // cy.wait(`@${referencesAliasName}`, timeout);  -- this has been also removed due to the reason mentioned above
     cy.get('.order-list-panel .order-list-loader', timeout).should('not.exist');
 
-    return cy.get('body').then(body => {
+    return cy.get('body').then((body) => {
       if (body.find(`[data-cy="reference-${referenceId}"]`).length > 0) {
         return cy.get(`[data-cy="reference-${referenceId}"]`).click();
       } else {
@@ -92,7 +85,7 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false, force = false) =
     .find(`tbody tr:nth-child(${rowNumber + 1})`)
     .should('exist')
     .click()
-    .then(el => {
+    .then((el) => {
       if (!force) {
         cy.waitForSaveIndicator();
       }
@@ -115,8 +108,8 @@ Cypress.Commands.add('expectNumberOfRows', (numberOfRows, modal = false) => {
  *
  * @param numberOfRows - the number of rows
  */
-Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', numberOfRows => {
-  return cy.get('table tbody tr').should(el => {
+Cypress.Commands.add('expectNumberOfRowsToBeGreaterThan', (numberOfRows) => {
+  return cy.get('table tbody tr').should((el) => {
     expect(el).to.have.length.greaterThan(numberOfRows);
   });
 });
@@ -155,33 +148,30 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
   return (
     cy
       .get(path, timeout)
-      .should(table => {
+      .should((table) => {
         // step: make sure the values exist and the page is loaded
         const htmlTable = $(table).html();
-        columnAndValue.forEach(c => {
+        columnAndValue.forEach((c) => {
           expect(table).to.contain(c.value);
           expect(htmlTable.includes(`data-cy="cell-${c.column}"`), `Column ${c.column} exists`).is.true;
         });
       })
       // step: find all the columns' indexes
       .then(() => {
-        columnAndValue.forEach(item => {
+        columnAndValue.forEach((item) => {
           item.columnIndex = $(`[data-cy='cell-${item.column}']`).index();
         });
       })
       .then(() => {
         // step: iterate through all the table rows and return only the ones matching everything in the array
-        return cy.get(`${path} tr`).then($tableRows => {
+        return cy.get(`${path} tr`).then(($tableRows) => {
           let matchingRows = [];
 
           $tableRows.each((_, tr) => {
             let trMatchesAllColumns = true;
 
-            columnAndValue.forEach(item => {
-              const realValue = $(tr)
-                .children()
-                .eq(item.columnIndex)
-                .text();
+            columnAndValue.forEach((item) => {
+              const realValue = $(tr).children().eq(item.columnIndex).text();
               if (!realValue.includes(item.value)) {
                 trMatchesAllColumns = false;
                 return false;
@@ -212,34 +202,21 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
  */
 Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = false, force = false) => {
   cy.log(`Select HU using BarcodeFilter by ${JSON.stringify(columnAndValue)}`);
-
-  const barcodeFilterIdentifier = 'barcode';
-  let barcodeFilterPath = `.filter-option-${barcodeFilterIdentifier}`; // todo @petrica: this should use a data-cy attribute. each filter is sent by backed with a unique identifier. after that is done, it can be inlined.
-  let filtersPath = '.filters-not-frequent';
+  cy.log(`Running selectItemUsingBarcodeFilter in modal: ${modal}`);
 
   const timeout = { timeout: 10000 };
-
-  if (modal) {
-    filtersPath = '.modal-content-wrapper ' + filtersPath;
-  }
 
   if (!force) {
     cy.waitForSaveIndicator();
   }
 
-  cy.get(filtersPath, timeout)
-    .click()
-    .within(() => {
-      cy.get(barcodeFilterPath).click();
-    });
+  cy.get(':nth-child(3) > .filter-wrapper > .btn', timeout).click();
 
   const filterAlias = 'filter_' + humanReadableNow();
-  cy.server();
-  cy.route('GET', new RegExp(RewriteURL.Filter)).as(filterAlias);
+  cy.intercept('GET', new RegExp(RewriteURL.Filter)).as(filterAlias);
 
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
-  cy.server();
-  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+  cy.intercept('POST', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.get('label:contains("Barcode")') // todo @petrica: this label should use a data-cy attribute
     .siblings()
@@ -267,14 +244,8 @@ Cypress.Commands.add('selectAllRowsOnCurrentPage', () => {
  * This function only works on a list window, and not on a single view window
  */
 Cypress.Commands.add('countAllRows', () => {
-  cy.get('.pagination-row .pagination-part .hidden-sm-down').then(totalString => {
-    const totalRows = parseInt(
-      totalString
-        .text()
-        .split(' ')
-        .pop(),
-      10
-    );
+  cy.get('.pagination-row .pagination-part .hidden-sm-down').then((totalString) => {
+    const totalRows = parseInt(totalString.text().split(' ').pop(), 10);
     cy.log(`Total number of rows on all pages is: ${totalRows}`);
     return cy.wrap(totalRows);
   });

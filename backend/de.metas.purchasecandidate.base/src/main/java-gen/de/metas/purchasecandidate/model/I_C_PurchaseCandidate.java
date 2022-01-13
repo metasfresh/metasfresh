@@ -1,17 +1,14 @@
 package de.metas.purchasecandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-/**
- * Generated Interface for C_PurchaseCandidate
- *
- * @author metasfresh (generated)
+/** Generated Interface for C_PurchaseCandidate
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_PurchaseCandidate
+public interface I_C_PurchaseCandidate 
 {
 
 	String Table_Name = "C_PurchaseCandidate";
@@ -422,6 +419,29 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
+	 * Set URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalPurchaseOrderURL (@Nullable java.lang.String ExternalPurchaseOrderURL);
+
+	/**
+	 * Get URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalPurchaseOrderURL();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalPurchaseOrderURL", null);
+	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -698,6 +718,29 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_POReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
 	 * Set Price diff..
 	 *
 	 * <br>Type: CostPrice
@@ -722,10 +765,15 @@ public interface I_C_PurchaseCandidate
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceDifference", null);
 	String COLUMNNAME_PriceDifference = "PriceDifference";
 
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEffective = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEffective", null);
-	String COLUMNNAME_PriceEffective = "PriceEffective";
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
-	String COLUMNNAME_PriceEntered = "PriceEntered";
+	/**
+	 * Set Price effective.
+	 * Effective Date of Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEffective (@Nullable BigDecimal PriceEffective);
 
 	/**
 	 * Get Price effective.
@@ -737,15 +785,17 @@ public interface I_C_PurchaseCandidate
 	 */
 	BigDecimal getPriceEffective();
 
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEffective = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEffective", null);
+	String COLUMNNAME_PriceEffective = "PriceEffective";
+
 	/**
-	 * Set Price effective.
-	 * Effective Date of Price
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceEffective(@Nullable BigDecimal PriceEffective);
+	void setPriceEntered (@Nullable BigDecimal PriceEntered);
 
 	/**
 	 * Get Price imp..
@@ -756,14 +806,8 @@ public interface I_C_PurchaseCandidate
 	 */
 	BigDecimal getPriceEntered();
 
-	/**
-	 * Set Price imp..
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPriceEntered (@Nullable BigDecimal PriceEntered);
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
 	 * Set Price.

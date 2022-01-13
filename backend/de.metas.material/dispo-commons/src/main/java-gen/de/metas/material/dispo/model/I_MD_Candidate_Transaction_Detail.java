@@ -6,15 +6,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for MD_Candidate_Transaction_Detail
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
-public interface I_MD_Candidate_Transaction_Detail 
+@SuppressWarnings("unused")
+public interface I_MD_Candidate_Transaction_Detail
 {
 
 	String Table_Name = "MD_Candidate_Transaction_Detail";
 
-//	/** AD_Table_ID=540850 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540850 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -125,7 +126,65 @@ public interface I_MD_Candidate_Transaction_Detail
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Dispositionskandidat.
+	 * Set Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_InOutLine_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	@Deprecated
+	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
+
+	ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_MD_Candidate_Transaction_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+
+	/**
+	 * Set Bestands-Transaktion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Transaction_ID (int M_Transaction_ID);
+
+	/**
+	 * Get Bestands-Transaktion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Transaction_ID();
+
+	@Nullable org.compiere.model.I_M_Transaction getM_Transaction();
+
+	void setM_Transaction(@Nullable org.compiere.model.I_M_Transaction M_Transaction);
+
+	ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction> COLUMN_M_Transaction_ID = new ModelColumn<>(I_MD_Candidate_Transaction_Detail.class, "M_Transaction_ID", org.compiere.model.I_M_Transaction.class);
+	String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
+
+	/**
+	 * Set Dispo Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -134,7 +193,7 @@ public interface I_MD_Candidate_Transaction_Detail
 	void setMD_Candidate_ID (int MD_Candidate_ID);
 
 	/**
-	 * Get Dispositionskandidat.
+	 * Get Dispo Candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -151,6 +210,7 @@ public interface I_MD_Candidate_Transaction_Detail
 
 	/**
 	 * Set Rebooked from.
+	 * Material dispo record to which this material transaction originally related. If not attributes or date had been unchanged, then this material transaction would have been added to that record.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -160,6 +220,7 @@ public interface I_MD_Candidate_Transaction_Detail
 
 	/**
 	 * Get Rebooked from.
+	 * Material dispo record to which this material transaction originally related. If not attributes or date had been unchanged, then this material transaction would have been added to that record.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -217,39 +278,6 @@ public interface I_MD_Candidate_Transaction_Detail
 	String COLUMNNAME_MD_Stock_ID = "MD_Stock_ID";
 
 	/**
-	 * Set Receipt Line.
-	 * Line on Receipt document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setM_InOutLine_ID (int M_InOutLine_ID);
-
-	/**
-	 * Get Receipt Line.
-	 * Line on Receipt document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getM_InOutLine_ID();
-
-	@Deprecated
-	@Nullable org.compiere.model.I_M_InOutLine getM_InOutLine();
-
-	@Deprecated
-	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
-
-	ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_MD_Candidate_Transaction_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
-
-	/**
 	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
@@ -269,31 +297,6 @@ public interface I_MD_Candidate_Transaction_Detail
 
 	ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_MovementQty = new ModelColumn<>(I_MD_Candidate_Transaction_Detail.class, "MovementQty", null);
 	String COLUMNNAME_MovementQty = "MovementQty";
-
-	/**
-	 * Set Bestands-Transaktion.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Transaction_ID (int M_Transaction_ID);
-
-	/**
-	 * Get Bestands-Transaktion.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Transaction_ID();
-
-	@Nullable org.compiere.model.I_M_Transaction getM_Transaction();
-
-	void setM_Transaction(@Nullable org.compiere.model.I_M_Transaction M_Transaction);
-
-	ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction> COLUMN_M_Transaction_ID = new ModelColumn<>(I_MD_Candidate_Transaction_Detail.class, "M_Transaction_ID", org.compiere.model.I_M_Transaction.class);
-	String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
 
 	/**
 	 * Set Transaktionsdatum.

@@ -1,3 +1,4 @@
+@from:cucumber
 Feature: external references for metasfresh resources
   As a REST-API invoker
   I want want to query and update the external references for metasfresh resources like BPartners
@@ -6,6 +7,7 @@ Feature: external references for metasfresh resources
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource
     When the metasfresh REST-API endpoint path '/api/externalRef/001' receives a 'PUT' request with the payload
   """

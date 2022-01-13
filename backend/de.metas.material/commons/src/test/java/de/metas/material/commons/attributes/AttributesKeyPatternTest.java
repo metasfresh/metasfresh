@@ -1,15 +1,13 @@
 package de.metas.material.commons.attributes;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.material.event.commons.AttributesKey;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.event.commons.AttributesKey;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -38,6 +36,27 @@ public class AttributesKeyPatternTest
 	private static AttributesKeyPattern pattern(final AttributesKeyPartPattern... parts)
 	{
 		return AttributesKeyPattern.ofParts(ImmutableList.copyOf(parts));
+	}
+
+	@Nested
+	public class parse
+	{
+		@Test
+		public void fromAttributesKey()
+		{
+			final String attrib1 = "123456=9999-12-12";
+			final String attrib2 = "123654=1";
+			final String attrib3 = "987654=2";
+			final String attrib4 = "1010101=01/99";
+			final  AttributesKey key = AttributesKey.ofString(attrib1 + "§&§" + attrib2 + "§&§" + attrib3 + "§&§" + attrib4);
+			final AttributesKeyPattern attributesKeyPattern = AttributesKeyPatternsUtil.ofAttributeKey(key);
+			assertThat(attributesKeyPattern.getPartPatterns().size()).isEqualTo(4);
+			final String sqlLikeString = attributesKeyPattern.getSqlLikeString();
+			assertThat(sqlLikeString).contains(attrib1);
+			assertThat(sqlLikeString).contains(attrib2);
+			assertThat(sqlLikeString).contains(attrib3);
+			assertThat(sqlLikeString).contains(attrib4);
+		}
 	}
 
 	@Nested
@@ -110,4 +129,6 @@ public class AttributesKeyPatternTest
 			assertThat(pattern.matches(AttributesKey.ofString("222"))).isFalse();
 		}
 	}
+
+
 }

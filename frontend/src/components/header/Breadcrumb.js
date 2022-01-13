@@ -2,7 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+
+import history from '../../services/History';
 import { clearAllFilters } from '../../actions/FiltersActions';
 import keymap from '../../shortcuts/keymap';
 import Tooltips from '../tooltips/Tooltips';
@@ -26,10 +27,13 @@ class Breadcrumb extends Component {
   /**
    * @method linkToPage
    * @summary ToDo: Describe the method.
+   * @todo TODO: use history
+   *
    * @param {*} page
    */
   linkToPage = (page) => {
-    window.location = '/window/' + page;
+    // history.push(`/window/${page}`);
+    window.location = `/window/${page}`;
   };
 
   /**
@@ -39,8 +43,7 @@ class Breadcrumb extends Component {
    * @param {*} page
    */
   linkToEntityPage = (entity, page) => {
-    const { dispatch } = this.props;
-    dispatch(push(`/${entity}/${page}`));
+    history.push(`/${entity}/${page}`);
   };
 
   /**

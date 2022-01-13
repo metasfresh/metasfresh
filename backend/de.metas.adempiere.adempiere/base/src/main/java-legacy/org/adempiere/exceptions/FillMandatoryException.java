@@ -1,104 +1,104 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved.            *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- *****************************************************************************/
 package org.adempiere.exceptions;
 
-import java.util.Collection;
-
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 /**
  * Throwed when there are some fields that are mandatory but unfilled.
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
 public class FillMandatoryException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 9074980284529933724L;
+	public static final AdMessageKey MSG_FillMandatory = AdMessageKey.of("FillMandatory");
 
 	/**
-	 * 
 	 * @param translated if true we consider that fields are already translated
-	 * @param fields
 	 */
 	public FillMandatoryException(final boolean translated, final String... fields)
 	{
-		super("@FillMandatory@ " + buildMessage(translated, fields));
+		super(buildMessage(translated, fields));
 	}
 
 	/**
-	 * 
 	 * @param translated if true we consider that fields are already translated
-	 * @param fields
 	 */
 	public FillMandatoryException(final boolean translated, final Collection<String> fields)
 	{
-		super("@FillMandatory@ " + buildMessage(translated, fields));
+		super(buildMessage(translated, fields));
 	}
 
 	/**
 	 * NOTE: fields are considered not translated and they will be translated
-	 * 
-	 * @param fields
 	 */
 	public FillMandatoryException(final String... fields)
 	{
-		this(false, fields);
+		super(buildMessage(fields));
 	}
 
-	private static final String buildMessage(final boolean translated, final String... fields)
+	public static ITranslatableString buildMessage(
+			@Nullable final String... fields)
+	{
+		return buildMessage(false, fields);
+	}
+
+	private static ITranslatableString buildMessage(
+			final boolean fieldsAreAlreadyTranslated,
+			@Nullable final String... fields)
 	{
 		if (fields == null || fields.length == 0)
 		{
-			return "";
+			return TranslatableStrings.adMessage(MSG_FillMandatory);
 		}
 
-		final StringBuilder sb = new StringBuilder();
-		for (final String f : fields)
+		final TranslatableStringBuilder builder = TranslatableStrings.builder()
+				.appendADMessage(MSG_FillMandatory);
+
+		boolean firstField = true;
+		for (final String field : fields)
 		{
-			if (Check.isEmpty(f, true))
+			if (Check.isBlank(field))
 			{
 				continue;
 			}
 
-			if (sb.length() > 0)
+			if (firstField)
 			{
-				sb.append(", ");
-			}
-
-			if (translated)
-			{
-				sb.append(f);
+				builder.append(": ");
 			}
 			else
 			{
-				sb.append("@").append(f).append("@");
+				builder.append(", ");
 			}
+
+			if (fieldsAreAlreadyTranslated)
+			{
+				builder.append(field);
+			}
+			else
+			{
+				builder.appendADElement(field);
+			}
+
+			firstField = false;
 		}
-		return sb.toString();
+
+		return builder.build();
 	}
 
-	private static final String buildMessage(final boolean translated, final Collection<String> fields)
+	private static ITranslatableString buildMessage(
+			final boolean fieldsAreAlreadyTranslated,
+			@Nullable final Collection<String> fields)
 	{
-		if (fields == null || fields.isEmpty())
-		{
-			return "";
-		}
-
-		final String[] fieldsArr = fields.toArray(new String[fields.size()]);
-		return buildMessage(translated, fieldsArr);
+		final String[] fieldsArr = fields != null && !fields.isEmpty()
+				? fields.toArray(new String[0])
+				: new String[] {};
+		return buildMessage(fieldsAreAlreadyTranslated, fieldsArr);
 	}
 }

@@ -2,7 +2,6 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { List } from 'immutable';
 
 import { addNotification } from '../../actions/AppActions';
 import { patchRequest } from '../../api';
@@ -25,7 +24,7 @@ class NewLetter extends Component {
     this.state = {
       init: false,
       cached: {},
-      templates: List(),
+      templates: [],
       template: {},
       listFocused: true,
       listToggled: false,
@@ -70,7 +69,7 @@ class NewLetter extends Component {
     const res = await getTemplates();
 
     this.setState({
-      templates: List(res.data.values),
+      templates: res.data.values,
     });
   };
 
@@ -240,7 +239,7 @@ class NewLetter extends Component {
               >
                 <i className="meta-icon-print" />
               </a>
-              {templates.size > 0 && (
+              {templates.length > 0 && (
                 <div className="letter-templates">
                   <RawList
                     rank="primary"

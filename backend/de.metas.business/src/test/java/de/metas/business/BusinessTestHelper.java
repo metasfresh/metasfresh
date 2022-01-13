@@ -8,10 +8,11 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
-import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -22,6 +23,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -33,18 +35,23 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 /*
  * #%L
@@ -111,7 +118,7 @@ public class BusinessTestHelper
 		return createUOM("PCE", null, UOM_Precision_0);
 	}
 
-	public I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
+	public I_C_UOM createUOM(final String name, @Nullable final String uomType, final int stdPrecision)
 	{
 		final I_C_UOM uom = createUOM(name, stdPrecision, 0);
 		uom.setUOMType(uomType);
@@ -166,7 +173,7 @@ public class BusinessTestHelper
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	public I_M_Product createProduct(final String name, final I_C_UOM uom)
+	public I_M_Product createProduct(final String name, @Nullable final I_C_UOM uom)
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uom, weightKg);
@@ -209,6 +216,48 @@ public class BusinessTestHelper
 		}
 		saveRecord(product);
 
+		return product;
+	}
+
+	public ProductCategoryId createProductCategory(@NonNull final String name, @Nullable final AttributeSetId attributeSetId)
+	{
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		category.setName(name);
+		category.setM_AttributeSet_ID(AttributeSetId.toRepoId(attributeSetId));
+		save(category);
+
+		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+	}
+
+	public I_M_Product_Category createM_Product_Cagetory(@NonNull final String name, @NonNull final I_M_AttributeSet attributeSet)
+	{
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		category.setName(name);
+		category.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+		save(category);
+
+		return category;
+	}
+
+	public ProductId createProduct(@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final ProductCategoryId categoryId)
+	{
+		final I_M_Product product = createProduct(name, uom);
+
+		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(categoryId));
+		save(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	public I_M_Product createProduct(@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@NonNull final I_M_Product_Category category)
+	{
+		final I_M_Product product = createProduct(name, uom);
+
+		product.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		save(product);
 		return product;
 	}
 
@@ -259,7 +308,7 @@ public class BusinessTestHelper
 		bpGroupRecord.setC_BP_Group_ID(BPGroupId.STANDARD.getRepoId());
 		bpGroupRecord.setName("Standard");
 		bpGroupRecord.setIsDefault(true);
-		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 
 		saveRecord(bpGroupRecord);
 		return bpGroupRecord;
@@ -273,7 +322,7 @@ public class BusinessTestHelper
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
 		bpGroupRecord.setName(name);
 		bpGroupRecord.setIsDefault(isDefault);
-		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 
 		saveRecord(bpGroupRecord);
 		return bpGroupRecord;
@@ -309,7 +358,7 @@ public class BusinessTestHelper
 			final String name,
 			final boolean isIssueWarehouse)
 	{
-		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
+		final I_M_Warehouse warehouse = newInstanceOutOfTrx(I_M_Warehouse.class);
 		POJOWrapper.setInstanceName(warehouse, name);
 		warehouse.setValue(name);
 		warehouse.setName(name);
@@ -344,8 +393,8 @@ public class BusinessTestHelper
 		saveRecord(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
-		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
-		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
+		noTaxFound.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND);
+		noTaxFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		saveRecord(noTaxFound);
 	}
 
@@ -368,5 +417,14 @@ public class BusinessTestHelper
 	public static OrgId createOrgWithTimeZone()
 	{
 		return AdempiereTestHelper.createOrgWithTimeZone();
+	}
+
+	public I_PP_Product_BOMVersions createBOMVersions(final ProductId productId)
+	{
+		final I_PP_Product_BOMVersions bomVersions = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class);
+		bomVersions.setM_Product_ID(productId.getRepoId());
+		bomVersions.setName("BOM Versions");
+		InterfaceWrapperHelper.save(bomVersions);
+		return bomVersions;
 	}
 }

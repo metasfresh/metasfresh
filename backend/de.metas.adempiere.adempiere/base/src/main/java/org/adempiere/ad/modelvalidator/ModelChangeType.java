@@ -52,7 +52,7 @@ public enum ModelChangeType implements TimingType
 		return changeType;
 	}
 
-	public static final ModelChangeType valueOf(final int changeType)
+	public static ModelChangeType valueOf(final int changeType)
 	{
 		final ModelChangeType[] values = values();
 		for (final ModelChangeType value : values)

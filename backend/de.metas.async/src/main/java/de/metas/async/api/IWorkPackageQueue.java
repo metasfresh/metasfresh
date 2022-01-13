@@ -61,7 +61,7 @@ public interface IWorkPackageQueue
 	int TIMEOUT_OneTimeOnly = -1;
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
@@ -89,7 +89,6 @@ public interface IWorkPackageQueue
 	/**
 	 * Unlocks given package
 	 *
-	 * @param workPackage
 	 * @throws UnlockFailedException if unlocking fails
 	 */
 	void unlock(I_C_Queue_WorkPackage workPackage) throws UnlockFailedException;
@@ -99,30 +98,25 @@ public interface IWorkPackageQueue
 	 *
 	 * Any unlock exceptions will be logged but not propagated.
 	 *
-	 * @param workPackage
 	 * @return true if unlocked
 	 */
 	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
 
 	/**
 	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.
-	 *
-	 * @return
 	 */
 	int size();
 
 	/**
 	 *
 	 * @return the number of packages enqueued to this instance
-	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	int getLocalPackageCount();
 
 	/**
 	 * The context this instance is currently operating with. Changes made to the returned value shall not reflect in this queue.<br>
 	 * However, changes make in the queue shall reflect in the returned instance.
-	 *
-	 * @return
 	 */
 	Properties getCtx();
 
@@ -138,7 +132,6 @@ public interface IWorkPackageQueue
 	/**
 	 * Convenient method to quickly create and enqueue a new block to the queue.
 	 *
-	 * @param ctx
 	 * @return I_C_Queue_Block (created block)
 	 * @see #newBlock()
 	 */
@@ -223,7 +216,7 @@ public interface IWorkPackageQueue
 	 * For queues that were created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}, this method returns the <code>InternalName</code> value of the queue's
 	 * {@link I_C_Queue_PackageProcessor}. If the queue doesn't have an internal name, it returns the <code>ClassName</code> value.
 	 *
-	 * @throws {@link UnsupportedOperationException} if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
+	 * @throws UnsupportedOperationException if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
 	 */
 	String getEnquingPackageProcessorInternalName();
 }

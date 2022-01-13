@@ -1,18 +1,21 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.util.Check;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -37,14 +40,13 @@ import de.metas.util.Check;
  */
 
 /**
- * Wraps a given {@link LookupDataSourceFetcher} and cached its retriving methods.
+ * Wraps a given {@link LookupDataSourceFetcher} and cached its retrieving methods.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSourceFetcher
 {
-	public static final CachedLookupDataSourceFetcherAdapter of(final LookupDataSourceFetcher delegate)
+	public static CachedLookupDataSourceFetcherAdapter of(final LookupDataSourceFetcher delegate)
 	{
 		if (delegate instanceof CachedLookupDataSourceFetcherAdapter)
 		{
@@ -58,7 +60,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	private final LookupDataSourceFetcher delegate;
 	private final String cachePrefix;
 
-	private final transient CCache<LookupDataSourceContext, LookupValuesList> cache_retrieveEntities;
+	private final transient CCache<LookupDataSourceContext, LookupValuesPage> cache_retrieveEntities;
 	private final transient CCache<LookupDataSourceContext, LookupValue> cache_retrieveLookupValueById;
 
 	private CachedLookupDataSourceFetcherAdapter(final LookupDataSourceFetcher delegate)
@@ -112,7 +114,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
-		return ImmutableList.<CCacheStats> builder()
+		return ImmutableList.<CCacheStats>builder()
 				.add(cache_retrieveEntities.stats())
 				.add(cache_retrieveLookupValueById.stats())
 				.addAll(delegate.getCacheStats())
@@ -132,9 +134,27 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveLookupValueById.getOrLoad(evalCtx, () -> delegate.retrieveLookupValueById(evalCtx));
+	}
+
+	@Override
+	public LookupValuesList retrieveLookupValueByIdsInOrder(final @NonNull LookupDataSourceContext evalCtx)
+	{
+		cache_retrieveLookupValueById.getAllOrLoad(
+				evalCtx.streamSingleIdContexts().collect(ImmutableSet.toImmutableSet()),
+				singleIdCtxs -> {
+					final LookupDataSourceContext multipleIdsCtx = LookupDataSourceContext.mergeToMultipleIds(singleIdCtxs);
+					return delegate.retrieveLookupValueByIdsInOrder(LookupDataSourceContext.mergeToMultipleIds(singleIdCtxs))
+							.getValues()
+							.stream()
+							.collect(ImmutableMap.toImmutableMap(
+									lookupValue -> multipleIdsCtx.withIdToFilter(IdsToFilter.ofSingleValue(lookupValue.getId())),
+									lookupValue -> lookupValue));
+				}
+		);
+		return LookupDataSourceFetcher.super.retrieveLookupValueByIdsInOrder(evalCtx);
 	}
 
 	@Override
@@ -144,7 +164,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveEntities.getOrLoad(evalCtx, delegate::retrieveEntities);
 	}

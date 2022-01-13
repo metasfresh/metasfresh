@@ -1,551 +1,433 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for Test
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_Test extends PO implements I_Test, I_Persistent 
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_Test extends org.compiere.model.PO implements I_Test, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1318713126L;
 
     /** Standard Constructor */
-    public X_Test (Properties ctx, int Test_ID, String trxName)
+    public X_Test (final Properties ctx, final int Test_ID, @Nullable final String trxName)
     {
       super (ctx, Test_ID, trxName);
-      /** if (Test_ID == 0)
-        {
-			setName (null);
-			setTest_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_Test (Properties ctx, ResultSet rs, String trxName)
+    public X_Test (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
-    /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
-    {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
-
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_Test[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public I_C_ValidCombination getAccount_A() throws RuntimeException
-    {
-		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
-			.getPO(getAccount_Acct(), get_TrxName());	}
-
-	/** Set Account_Acct.
-		@param Account_Acct Account_Acct	  */
-	public void setAccount_Acct (int Account_Acct)
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		set_Value (COLUMNNAME_Account_Acct, Integer.valueOf(Account_Acct));
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** Get Account_Acct.
-		@return Account_Acct	  */
-	public int getAccount_Acct () 
+	@Override
+	public org.compiere.model.I_C_ValidCombination getAccount_A()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Account_Acct);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsPO(COLUMNNAME_Account_Acct, org.compiere.model.I_C_ValidCombination.class);
 	}
 
-	/** Set BinaryData.
-		@param BinaryData 
-		Binary Data
-	  */
-	public void setBinaryData (int BinaryData)
+	@Override
+	public void setAccount_A(final org.compiere.model.I_C_ValidCombination Account_A)
 	{
-		set_Value (COLUMNNAME_BinaryData, Integer.valueOf(BinaryData));
+		set_ValueFromPO(COLUMNNAME_Account_Acct, org.compiere.model.I_C_ValidCombination.class, Account_A);
 	}
 
-	/** Get BinaryData.
-		@return Binary Data
-	  */
-	public int getBinaryData () 
+	@Override
+	public void setAccount_Acct (final int Account_Acct)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_BinaryData);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_Value (COLUMNNAME_Account_Acct, Account_Acct);
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public int getAccount_Acct() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Account_Acct);
+	}
 
-	/** Set Business Partner .
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Image getBinaryD()
+	{
+		return get_ValueAsPO(COLUMNNAME_BinaryData, org.compiere.model.I_AD_Image.class);
+	}
+
+	@Override
+	public void setBinaryD(final org.compiere.model.I_AD_Image BinaryD)
+	{
+		set_ValueFromPO(COLUMNNAME_BinaryData, org.compiere.model.I_AD_Image.class, BinaryD);
+	}
+
+	@Override
+	public void setBinaryData (final int BinaryData)
+	{
+		set_Value (COLUMNNAME_BinaryData, BinaryData);
+	}
+
+	@Override
+	public int getBinaryData() 
+	{
+		return get_ValueAsInt(COLUMNNAME_BinaryData);
+	}
+
+	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Business Partner .
-		@return Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID () 
+	@Override
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
 
-	/** Set Currency.
-		@param C_Currency_ID 
-		The Currency for this record
-	  */
-	public void setC_Currency_ID (int C_Currency_ID)
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Memo (final @Nullable java.lang.String C_BPartner_Memo)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Memo, C_BPartner_Memo);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Memo() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Memo);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
-	/** Get Currency.
-		@return The Currency for this record
-	  */
-	public int getC_Currency_ID () 
+	@Override
+	public int getC_Currency_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
-	/** Set Character Data.
-		@param CharacterData 
-		Long Character Field
-	  */
-	public void setCharacterData (String CharacterData)
+	@Override
+	public org.compiere.model.I_C_Location getC_Location()
 	{
-		set_Value (COLUMNNAME_CharacterData, CharacterData);
+		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
 	}
 
-	/** Get Character Data.
-		@return Long Character Field
-	  */
-	public String getCharacterData () 
+	@Override
+	public void setC_Location(final org.compiere.model.I_C_Location C_Location)
 	{
-		return (String)get_Value(COLUMNNAME_CharacterData);
+		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
 	}
 
-	public I_C_Location getC_Location() throws RuntimeException
-    {
-		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
-			.getPO(getC_Location_ID(), get_TrxName());	}
-
-	/** Set Address.
-		@param C_Location_ID 
-		Location or Address
-	  */
-	public void setC_Location_ID (int C_Location_ID)
+	@Override
+	public void setC_Location_ID (final int C_Location_ID)
 	{
 		if (C_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
+			set_Value (COLUMNNAME_C_Location_ID, C_Location_ID);
 	}
 
-	/** Get Address.
-		@return Location or Address
-	  */
-	public int getC_Location_ID () 
+	@Override
+	public int getC_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Location_ID);
 	}
 
-	public I_C_Payment getC_Payment() throws RuntimeException
-    {
-		return (I_C_Payment)MTable.get(getCtx(), I_C_Payment.Table_Name)
-			.getPO(getC_Payment_ID(), get_TrxName());	}
-
-	/** Set Payment.
-		@param C_Payment_ID 
-		Payment identifier
-	  */
-	public void setC_Payment_ID (int C_Payment_ID)
+	@Override
+	public void setC_Payment_ID (final int C_Payment_ID)
 	{
 		if (C_Payment_ID < 1) 
 			set_Value (COLUMNNAME_C_Payment_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+			set_Value (COLUMNNAME_C_Payment_ID, C_Payment_ID);
 	}
 
-	/** Get Payment.
-		@return Payment identifier
-	  */
-	public int getC_Payment_ID () 
+	@Override
+	public int getC_Payment_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
 	}
 
-	public I_C_UOM getC_UOM() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_ID(), get_TrxName());	}
-
-	/** Set UOM.
-		@param C_UOM_ID 
-		Unit of Measure
-	  */
-	public void setC_UOM_ID (int C_UOM_ID)
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get UOM.
-		@return Unit of Measure
-	  */
-	public int getC_UOM_ID () 
+	@Override
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	@Override
+	public void setCharacterData (final @Nullable java.lang.String CharacterData)
+	{
+		set_Value (COLUMNNAME_CharacterData, CharacterData);
+	}
+
+	@Override
+	public java.lang.String getCharacterData() 
+	{
+		return get_ValueAsString(COLUMNNAME_CharacterData);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	@Override
+	public java.lang.String getDescription() 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Comment/Help.
-		@param Help 
-		Comment or Hint
-	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
-		@return Comment or Hint
-	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp() 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	public I_M_Locator getM_Locator() throws RuntimeException
-    {
-		return (I_M_Locator)MTable.get(getCtx(), I_M_Locator.Table_Name)
-			.getPO(getM_Locator_ID(), get_TrxName());	}
-
-	/** Set Locator.
-		@param M_Locator_ID 
-		Warehouse Locator
-	  */
-	public void setM_Locator_ID (int M_Locator_ID)
+	@Override
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Locator.
-		@return Warehouse Locator
-	  */
-	public int getM_Locator_ID () 
+	@Override
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
+	@Override
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName() 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	/** Set Processed.
-		@param Processed 
-		The document has been processed
-	  */
-	public void setProcessed (boolean Processed)
+	@Override
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Processed.
-		@return The document has been processed
-	  */
-	public boolean isProcessed () 
+	@Override
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
-	public void setProcessing (boolean Processing)
+	@Override
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
-	public boolean isProcessing () 
+	@Override
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Amount.
-		@param T_Amount Amount	  */
-	public void setT_Amount (BigDecimal T_Amount)
+	@Override
+	public void setT_Amount (final @Nullable BigDecimal T_Amount)
 	{
 		set_Value (COLUMNNAME_T_Amount, T_Amount);
 	}
 
-	/** Get Amount.
-		@return Amount	  */
-	public BigDecimal getT_Amount () 
+	@Override
+	public BigDecimal getT_Amount() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_T_Amount);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_T_Amount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Date.
-		@param T_Date Date	  */
-	public void setT_Date (Timestamp T_Date)
+	@Override
+	public void setT_Date (final @Nullable java.sql.Timestamp T_Date)
 	{
 		set_Value (COLUMNNAME_T_Date, T_Date);
 	}
 
-	/** Get Date.
-		@return Date	  */
-	public Timestamp getT_Date () 
+	@Override
+	public java.sql.Timestamp getT_Date() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_T_Date);
+		return get_ValueAsTimestamp(COLUMNNAME_T_Date);
 	}
 
-	/** Set DateTime.
-		@param T_DateTime DateTime	  */
-	public void setT_DateTime (Timestamp T_DateTime)
+	@Override
+	public void setT_DateTime (final @Nullable java.sql.Timestamp T_DateTime)
 	{
 		set_Value (COLUMNNAME_T_DateTime, T_DateTime);
 	}
 
-	/** Get DateTime.
-		@return DateTime	  */
-	public Timestamp getT_DateTime () 
+	@Override
+	public java.sql.Timestamp getT_DateTime() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_T_DateTime);
+		return get_ValueAsTimestamp(COLUMNNAME_T_DateTime);
 	}
 
-	/** Set Test ID.
-		@param Test_ID Test ID	  */
-	public void setTest_ID (int Test_ID)
+	@Override
+	public void setT_Integer (final int T_Integer)
 	{
-		if (Test_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Test_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Test_ID, Integer.valueOf(Test_ID));
+		set_Value (COLUMNNAME_T_Integer, T_Integer);
 	}
 
-	/** Get Test ID.
-		@return Test ID	  */
-	public int getTest_ID () 
+	@Override
+	public int getT_Integer() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Test_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_T_Integer);
 	}
 
-	/** Set Integer.
-		@param T_Integer Integer	  */
-	public void setT_Integer (int T_Integer)
-	{
-		set_Value (COLUMNNAME_T_Integer, Integer.valueOf(T_Integer));
-	}
-
-	/** Get Integer.
-		@return Integer	  */
-	public int getT_Integer () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_T_Integer);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Number.
-		@param T_Number Number	  */
-	public void setT_Number (BigDecimal T_Number)
+	@Override
+	public void setT_Number (final @Nullable BigDecimal T_Number)
 	{
 		set_Value (COLUMNNAME_T_Number, T_Number);
 	}
 
-	/** Get Number.
-		@return Number	  */
-	public BigDecimal getT_Number () 
+	@Override
+	public BigDecimal getT_Number() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_T_Number);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_T_Number);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Qty.
-		@param T_Qty Qty	  */
-	public void setT_Qty (BigDecimal T_Qty)
+	@Override
+	public void setT_Qty (final @Nullable BigDecimal T_Qty)
 	{
 		set_Value (COLUMNNAME_T_Qty, T_Qty);
 	}
 
-	/** Get Qty.
-		@return Qty	  */
-	public BigDecimal getT_Qty () 
+	@Override
+	public BigDecimal getT_Qty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_T_Qty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_T_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setT_Time (final @Nullable java.sql.Timestamp T_Time)
+	{
+		set_Value (COLUMNNAME_T_Time, T_Time);
+	}
+
+	@Override
+	public java.sql.Timestamp getT_Time() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_T_Time);
+	}
+
+	@Override
+	public void setTest_ID (final int Test_ID)
+	{
+		if (Test_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Test_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Test_ID, Test_ID);
+	}
+
+	@Override
+	public int getTest_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Test_ID);
 	}
 }

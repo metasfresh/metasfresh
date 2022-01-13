@@ -1,16 +1,23 @@
 package de.metas.invoicecandidate.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
@@ -21,6 +28,16 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,24 +60,6 @@ import org.compiere.model.I_M_InOutLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_ProductGroup;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.process.PInstanceId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import lombok.Value;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -141,6 +140,18 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
 
 	/**
+	 * Invalidates the invoice candidates identified by given invoice candidate ids.
+	 *
+	 * @param invoiceCandidateIds ids to invalidate
+	 */
+	void invalidateCandsFor(@NonNull ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
+
+	default void invalidateCandFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		invalidateCandsFor(ImmutableSet.of(invoiceCandidateId));
+	};
+
+	/**
 	 * Invalidates the invoice candidates identified by given query.
 	 */
 	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
@@ -155,7 +166,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
 	 */
 	void invalidateCands(List<I_C_Invoice_Candidate> ics);
-
+	
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -183,6 +194,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Load the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
 	 */
 	List<I_C_Invoice_Candidate> retrieveReferencing(TableRecordReference tableRecordReference);
+
+	@NonNull
+	ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull TableRecordReference reference);
 
 	/**
 	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
@@ -293,6 +307,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(OrderId orderId);
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.
 	 * <p>
@@ -376,7 +391,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	@Value
-	public static class InvoiceableInvoiceCandIdResult
+	class InvoiceableInvoiceCandIdResult
 	{
 		InvoiceCandidateId firstInvoiceableInvoiceCandId;
 

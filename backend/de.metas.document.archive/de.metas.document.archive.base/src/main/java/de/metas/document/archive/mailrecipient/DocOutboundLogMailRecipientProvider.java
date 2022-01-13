@@ -2,8 +2,6 @@ package de.metas.document.archive.mailrecipient;
 
 import java.util.Optional;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-
 /*
  * #%L
  * de.metas.document.archive.base
@@ -28,21 +26,23 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 
 public interface DocOutboundLogMailRecipientProvider
 {
-	/** *One* registered provider may return {@code true}. */
-	public boolean isDefault();
+	/**
+	 * One* registered provider may return {@code true}.
+	 */
+	boolean isDefault();
 
 	/**
 	 * Specifies for which set of C_DocOutboundLogs an implementation is in charge of.
-	 *
+	 * <p>
 	 * Will return null if {@link #isDefault()}, otherwise will never return null;
 	 * Feel free to add other discriminatory methods like isSOTrx(), getDocBaseType() etc, if and when needed.
 	 *
 	 * @return tableName of {@code C_DocOutboundLog.AD_Table_ID}'s this implementation cares about.
 	 */
-	public String getTableName();
+	String getTableName();
 
 	/**
-	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the docOutboundLogRecord's {@code AD_Table_ID}'s name is {@link #getTableName()}.
+	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the recored.recordRef's has the same table as {@link #getTableName()}.
 	 */
-	public Optional<DocOutBoundRecipient> provideMailRecipient(I_C_Doc_Outbound_Log docOutboundLogRecord);
+	Optional<DocOutBoundRecipient> provideMailRecipient(DocOutboundLogMailRecipientRequest request);
 }

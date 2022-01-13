@@ -64,7 +64,7 @@ export class Builder {
       }
       product
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .addProductPrice(productPrice)
         .apply();
     });
@@ -83,7 +83,7 @@ export class Builder {
       }
       product
         .setName(productName)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .addProductPrice(productPrice)
         .addCUTUAllocation(packingInstructionsName)
         .apply();

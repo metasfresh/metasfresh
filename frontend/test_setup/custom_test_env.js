@@ -1,4 +1,4 @@
-const Environment = require('jest-environment-jsdom-sixteen');
+const Environment = require('jest-environment-jsdom');
 
 /**
  * A custom environment to set the TextEncoder that is required by TensorFlow.js.

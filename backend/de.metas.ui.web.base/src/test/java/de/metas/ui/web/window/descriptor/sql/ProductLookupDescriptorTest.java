@@ -1,11 +1,14 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.Group;
+import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.Group.Type;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
+import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -17,16 +20,11 @@ import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.util.Services;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

@@ -1,23 +1,20 @@
 package org.compiere.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -45,7 +42,6 @@ import lombok.experimental.UtilityClass;
  * This class contains the static methods and constants around {@link CtxName}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class CtxNames
@@ -58,10 +54,10 @@ public class CtxNames
 
 	public static final String SEPARATOR = "/";
 	private static final Splitter SEPARATOR_SPLITTER = Splitter.on(SEPARATOR)
-	// .omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
-	;
+			// .omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
+			;
 
-	private static final ImmutableSet<String> MODIFIERS = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> MODIFIERS = ImmutableSet.<String>builder()
 			.add(MODIFIER_Old)
 			.add(MODIFIER_QuotedIfNotDefault)
 			.build();
@@ -72,7 +68,6 @@ public class CtxNames
 	 * Returns an immutable set of {@link CtxName}s that contains the results of {@link CtxNames#parse(String)}, applied to the strings of the given {@code stringsWithoutMarkers}.
 	 *
 	 * @param stringsWithoutMarkers may not be {@code null}.
-	 * @return
 	 */
 	public Set<CtxName> parseAll(@NonNull final Collection<String> stringsWithoutMarkers)
 	{
@@ -85,17 +80,25 @@ public class CtxNames
 	 * Returns an immutable set of strings which contains the {@link CtxName#getName()}s of the give {@code ctxNames}.
 	 *
 	 * @param ctxNames may be {@code null}.
-	 * @return
 	 */
+	@Nullable
 	public Set<String> toNames(@Nullable final Collection<CtxName> ctxNames)
 	{
 		if (ctxNames == null)
 		{
 			return null;
 		}
-		return ctxNames.stream()
-				.map(CtxName::getName)
-				.collect(ImmutableSet.toImmutableSet());
+		else
+		{
+			return ctxNames.stream()
+					.map(CtxName::getName)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+	public boolean containsName(@NonNull final Collection<CtxName> ctxNames, @NonNull final String name)
+	{
+		return ctxNames.stream().anyMatch(ctxName -> name.equals(ctxName.getName()));
 	}
 
 	public static CtxName ofNameAndDefaultValue(
@@ -124,10 +127,7 @@ public class CtxNames
 	}
 
 	/**
-	 *
-	 * @param contextWithoutMarkers
-	 * @param modifiers found modifiers are added to this list
-	 * @return
+	 * @param modifiers             found modifiers are added to this list
 	 */
 	private static String extractNameAndModifiers(
 			@NonNull final String contextWithoutMarkers,
@@ -154,9 +154,9 @@ public class CtxNames
 		return name;
 	}
 
-	private static void assertValidName(final String name)
+	private static void assertValidName(@Nullable final String name)
 	{
-		if (name.isEmpty())
+		if (name == null || name.isEmpty())
 		{
 			throw new AdempiereException("Empty name is not a valid name");
 		}
@@ -168,6 +168,7 @@ public class CtxNames
 
 	}
 
+	@Nullable
 	private static String extractDefaultValue(final List<String> modifiers)
 	{
 		final String defaultValue;
@@ -182,8 +183,11 @@ public class CtxNames
 		return defaultValue;
 	}
 
-	/** Parse a given name, surrounded by {@value #NAME_Marker} */
-	public static CtxName parseWithMarkers(final String contextWithMarkers)
+	/**
+	 * Parse a given name, surrounded by {@value #NAME_Marker}
+	 */
+	@Nullable
+	public static CtxName parseWithMarkers(@Nullable final String contextWithMarkers)
 	{
 		if (contextWithMarkers == null)
 		{
@@ -204,13 +208,11 @@ public class CtxNames
 	}
 
 	/**
-	 *
-	 * @param name
 	 * @param expression expression with context variables (e.g. sql where clause)
 	 * @return true if expression contains given name
 	 */
 	@VisibleForTesting
-	static boolean containsName(final String name, final String expression)
+	static boolean containsName(@Nullable final String name, @Nullable final String expression)
 	{
 		// FIXME: replace it with StringExpression
 		if (name == null || name.isEmpty())
@@ -240,8 +242,6 @@ public class CtxNames
 	}
 
 	/**
-	 *
-	 * @param modifier
 	 * @return true if given string is a registered modifier
 	 */
 	private static boolean isModifier(final String modifier)

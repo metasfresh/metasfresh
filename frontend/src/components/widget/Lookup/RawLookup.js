@@ -5,12 +5,14 @@ import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { debounce } from 'throttle-debounce';
+import counterpart from 'counterpart';
+import { LOOKUP_SHOW_MORE_PIXEL_NO } from '../../../constants/Constants';
 
 import {
-  autocompleteRequest,
   autocompleteModalRequest,
+  autocompleteRequest,
 } from '../../../actions/GenericActions';
-import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
+import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 
@@ -128,7 +130,7 @@ export class RawLookup extends Component {
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.props.onDropdownListToggle(false);
+      this.dropdownListToggle(false);
     }
   };
 
@@ -149,9 +151,10 @@ export class RawLookup extends Component {
       setNextProperty,
       filterWidget,
       subentity,
+      updateItems,
     } = this.props;
     let selected = select;
-    let mainProp = mainProperty[0];
+    let mainProp = mainProperty;
 
     this.setState({
       selected: null,
@@ -177,9 +180,14 @@ export class RawLookup extends Component {
       } else {
         setNextProperty(mainProp.parameterName);
       }
+      updateItems &&
+        updateItems({
+          widgetField: mainProp.parameterName,
+          value: selected,
+        });
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty[0].field, selected, () =>
+        onChange(mainProperty.field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
@@ -226,7 +234,7 @@ export class RawLookup extends Component {
         windowId: newRecordWindowId,
         modalType: 'window',
         dataId: 'NEW',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
       })
     );
   };
@@ -237,7 +245,7 @@ export class RawLookup extends Component {
         isFocused: false,
       },
       () => {
-        this.props.onDropdownListToggle(false, mouse);
+        this.dropdownListToggle(false, mouse);
       }
     );
   }
@@ -263,7 +271,7 @@ export class RawLookup extends Component {
         windowId: advSearchWindowId,
         modalType: 'window',
         dataId: 'SEARCH',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
         parentWindowId: windowType,
         parentDocumentId: dataId,
         parentFieldId: item.field,
@@ -283,12 +291,18 @@ export class RawLookup extends Component {
         },
         () => {
           if (!mandatory && mouse) {
-            this.props.onDropdownListToggle(true);
+            this.dropdownListToggle(true);
           }
         }
       );
     }
   }
+
+  dropdownListToggle = (val, mouse) => {
+    const { item } = this.props;
+
+    this.props.onDropdownListToggle(val, item.field, mouse);
+  };
 
   typeaheadRequest = () => {
     const {
@@ -303,33 +317,27 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      isModal,
-      newRecordCaption,
-      mandatory,
-      advSearchCaption,
-      advSearchWindowId,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
-    const placeholder = mainProperty[0].clearValueText
-      ? mainProperty[0].clearValueText
-      : this.props.placeholder;
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
       rowId,
       tabId,
     };
+
+    this.typeaheadQuery = typeaheadParams.query;
 
     if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
         dataId,
-        mainProperty[0].field,
+        mainProperty.field,
         inputValue
       );
     } else if (viewId && !filterWidget) {
@@ -350,48 +358,68 @@ export class RawLookup extends Component {
     }
 
     typeaheadRequest.then((response) => {
-      let values = response.data.values || [];
-      let list = null;
-      const newState = {
-        loading: false,
-      };
-
-      if (values.length === 0 && !isModal) {
-        const optionNew = { key: 'NEW', caption: newRecordCaption };
-        list = [optionNew];
-
-        newState.forceEmpty = true;
-        newState.selected = optionNew;
-      } else {
-        list = values;
-
-        newState.forceEmpty = false;
-        newState.selected = advSearchWindowId ? values[1] : values[0];
+      if (
+        this.typeaheadQuery &&
+        this.typeaheadQuery === typeaheadParams.query
+      ) {
+        this.populateTypeaheadData(response.data);
       }
-
-      // we inject the advanced search entry if we have a advSearchWindowId
-      advSearchWindowId &&
-        list.unshift({ key: 'SEARCH', caption: advSearchCaption });
-
-      if (!mandatory && placeholder) {
-        list.push({
-          caption: placeholder,
-          key: null,
-        });
-      }
-      newState.list = [...list];
-
-      this.setState({ ...newState });
     });
   };
 
-  handleChange = (handleChangeOnFocus, allowEmpty) => {
+  populateTypeaheadData = (responseData) => {
     const {
-      handleInputEmptyStatus,
-      enableAutofocus,
-      isOpen,
-      onDropdownListToggle,
+      mainProperty,
+      newRecordCaption,
+      advSearchCaption,
+      advSearchWindowId,
+      isModal,
+      mandatory,
     } = this.props;
+
+    const placeholder = mainProperty.clearValueText
+      ? mainProperty.clearValueText
+      : this.props.placeholder;
+
+    let values = responseData.values || [];
+    const isAlwaysDisplayNewBPartner =
+      !!responseData.isAlwaysDisplayNewBPartner;
+    const hasMoreResults = !!responseData.hasMoreResults;
+    let list;
+    const newState = { loading: false };
+
+    const optionNew = { key: 'NEW', caption: newRecordCaption };
+    if (values.length === 0 && !isModal) {
+      list = [optionNew];
+
+      newState.forceEmpty = true;
+      newState.selected = optionNew;
+    } else {
+      list = values;
+      isAlwaysDisplayNewBPartner && list.unshift(optionNew);
+
+      newState.forceEmpty = false;
+      newState.selected = advSearchWindowId ? values[1] : values[0];
+    }
+
+    // we inject the advanced search entry if we have a advSearchWindowId
+    advSearchWindowId &&
+      list.unshift({ key: 'SEARCH', caption: advSearchCaption });
+
+    if (!mandatory && placeholder) {
+      list.push({
+        caption: placeholder,
+        key: null,
+      });
+    }
+    newState.list = [...list];
+    newState.hasMoreResults = hasMoreResults;
+
+    this.setState({ ...newState });
+  };
+
+  handleChange = (handleChangeOnFocus, allowEmpty) => {
+    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 
@@ -405,7 +433,7 @@ export class RawLookup extends Component {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
       if (!isOpen) {
-        onDropdownListToggle(true);
+        this.dropdownListToggle(true);
       }
 
       this.setState(
@@ -439,7 +467,7 @@ export class RawLookup extends Component {
     if (!filterWidget && !!defaultValue && this.inputSearch) {
       const init = [defaultValue];
       const inputValue = defaultValue.caption;
-      const clearValueText = this.props.mainProperty[0].clearValueText;
+      const clearValueText = this.props.mainProperty.clearValueText;
       const placeholder = clearValueText
         ? clearValueText
         : this.props.placeholder;
@@ -482,6 +510,14 @@ export class RawLookup extends Component {
     this.setState({ selected });
   };
 
+  /**
+   * @method focus
+   * @summary this is a method called from a top level component to focus the widget field
+   */
+  focus = () => {
+    this.inputSearch && this.inputSearch.focus();
+  };
+
   render() {
     const { align, readonly, disabled, tabIndex, isOpen, idValue } = this.props;
     const {
@@ -491,19 +527,23 @@ export class RawLookup extends Component {
       selected,
       forceEmpty,
       isFocused,
-      parentElement,
       query,
+      hasMoreResults,
     } = this.state;
     const tetherProps = {};
     let showDropdown = false;
 
-    if (parentElement) {
-      tetherProps.target = parentElement;
-    }
-
     if (query.length >= this.minQueryLength) {
       showDropdown = true;
     }
+
+    const adaptiveWidth = this.props.forcedWidth
+      ? this.props.forcedWidth
+      : this.wrapper && this.wrapper.offsetWidth;
+    const adaptiveHeight =
+      showDropdown && isOpen && !isInputEmpty && this.props.forceHeight
+        ? this.props.forceHeight - this.wrapper.offsetHeight
+        : undefined;
 
     return (
       <TetherComponent
@@ -519,62 +559,89 @@ export class RawLookup extends Component {
             pin: ['bottom'],
           },
         ]}
-      >
-        <div id={idValue || ''} className="raw-lookup-wrapper">
-          <div
-            className={classnames(
-              'lookup-widget-wrapper lookup-widget-wrapper-bcg',
-              {
-                'raw-lookup-disabled': disabled,
-                'input-disabled': readonly,
-                focused: isFocused,
-              }
-            )}
-            ref={(ref) => (this.wrapper = ref)}
-          >
-            <div className={'input-dropdown input-block'}>
-              <div
-                className={'input-editable' + (align ? ' text-' + align : '')}
-              >
-                <input
-                  ref={(c) => (this.inputSearch = c)}
-                  type="text"
-                  className="input-field js-input-field font-weight-semibold"
-                  autoComplete="new-password"
-                  readOnly={readonly}
-                  disabled={readonly && !disabled}
-                  tabIndex={tabIndex}
-                  placeholder={this.props.item.emptyText}
-                  onChange={this.handleChange}
-                  onClick={this.handleFocus}
-                />
+        renderTarget={(ref) => (
+          <div id={idValue || ''} ref={ref} className="raw-lookup-wrapper">
+            <div
+              className={classnames(
+                'lookup-widget-wrapper lookup-widget-wrapper-bcg',
+                {
+                  'raw-lookup-disabled': disabled,
+                  'input-disabled': readonly,
+                  focused: isFocused,
+                }
+              )}
+              ref={(ref) => (this.wrapper = ref)}
+            >
+              <div className={'input-dropdown input-block'}>
+                <div
+                  className={'input-editable' + (align ? ' text-' + align : '')}
+                >
+                  <input
+                    ref={(c) => (this.inputSearch = c)}
+                    type="text"
+                    className="input-field js-input-field font-weight-semibold"
+                    autoComplete="new-password"
+                    readOnly={readonly}
+                    disabled={readonly && !disabled}
+                    tabIndex={tabIndex}
+                    placeholder={this.props.item.emptyText}
+                    onChange={this.handleChange}
+                    onClick={this.handleFocus}
+                  />
+                </div>
               </div>
             </div>
+            {showDropdown && isOpen && !isInputEmpty && (
+              <div>
+                <SelectionDropdown
+                  loading={loading}
+                  options={list}
+                  empty={`${counterpart.translate(
+                    'widget.lookup.hasNoResults'
+                  )}`}
+                  forceEmpty={forceEmpty}
+                  selected={selected}
+                  width={
+                    this.props.forcedWidth
+                      ? this.props.forcedWidth
+                      : this.wrapper && this.wrapper.offsetWidth
+                  }
+                  height={
+                    this.props.forceHeight
+                      ? this.props.forceHeight - this.wrapper.offsetHeight
+                      : undefined
+                  }
+                  onChange={this.handleTemporarySelection}
+                  onSelect={this.handleSelect}
+                  onCancel={this.handleBlur}
+                />
+                {hasMoreResults && (
+                  <div
+                    className="input-dropdown-hasmore"
+                    style={{
+                      width: adaptiveWidth,
+                      left:
+                        parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
+                        !(
+                          parseInt(adaptiveWidth) > 900 &&
+                          this.inputSearch.value
+                        ) &&
+                        (this.inputSearch || !this.inputSearch.value)
+                          ? '-2px'
+                          : '0px',
+                      top: parseInt(adaptiveHeight) + 28 + 'px',
+                    }}
+                  >
+                    {` ${counterpart.translate(
+                      'widget.lookup.hasMoreResults'
+                    )}`}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          {showDropdown && isOpen && !isInputEmpty && (
-            <SelectionDropdown
-              loading={loading}
-              options={list}
-              empty="No results found"
-              forceEmpty={forceEmpty}
-              selected={selected}
-              width={
-                this.props.forcedWidth
-                  ? this.props.forcedWidth
-                  : this.wrapper && this.wrapper.offsetWidth
-              }
-              height={
-                this.props.forceHeight
-                  ? this.props.forceHeight - this.wrapper.offsetHeight
-                  : undefined
-              }
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleBlur}
-            />
-          )}
-        </div>
-      </TetherComponent>
+        )}
+      />
     );
   }
 }
@@ -629,6 +696,9 @@ RawLookup.propTypes = {
   idValue: PropTypes.string,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
+  updateItems: PropTypes.func,
 };
 
-export default connect(mapStateToProps)(RawLookup);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  RawLookup
+);

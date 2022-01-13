@@ -29,9 +29,11 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
@@ -157,13 +160,14 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return prepareNewContext().putFilterById(id);
+		return prepareNewContext()
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final Object id = evalCtx.getIdToFilter();
+		final Object id = evalCtx.getSingleIdToFilterAsObject();
 		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(evalCtx.getTableName());
 		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
 		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, tooltipType);
@@ -183,7 +187,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final LookupValueFilterPredicate filter = evalCtx.getFilterPredicate();
 		final int limit = evalCtx.getLimit(Integer.MAX_VALUE);
@@ -196,9 +200,10 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 						TranslatableStrings.constant(namePair.getName()),
 						TranslatableStrings.constant(namePair.getDescription())))
 				.filter(filter)
-				.skip(offset)
-				.limit(limit)
-				.collect(LookupValuesList.collect());
+				.collect(LookupValuesList.collect())
+				.pageByOffsetAndLimit(offset, limit);
+
+
 	}
 
 	@Override

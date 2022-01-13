@@ -31,6 +31,8 @@ public class MetasfreshRestAPIConstants
 	 * Rest endpoints matching this constant are required to provide a secret authorization token.
 	 */
 	public static final String URL_PATTERN_API = "/api/*";
+
+	public static final String URL_PATTERN_API_V2 = "/api/v2/*";
 	
 	/**
 	 * @deprecated please invoke endpoints with either {@link #ENDPOINT_API_V1} or {@link #ENDPOINT_API_V2}.
@@ -42,5 +44,7 @@ public class MetasfreshRestAPIConstants
 	/**
 	 * going to be renamed to {@code v2} soon, after some initial breaking changes were made
 	 */
-	public static final String ENDPOINT_API_V2 = "/api/v2-pre";
+	public static final String ENDPOINT_API_V2 = "/api/v2";
+
+	public static final String WEBSOCKET_ENDPOINT_V2 = "/v2";
 }

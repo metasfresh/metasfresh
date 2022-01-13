@@ -48,6 +48,7 @@ public class ProductDAOTest
 	private I_M_Product productWithMinGuaranteeDaysOnCategory;
 	private I_M_Product productWithMinGuarantee12Months;
 	private I_M_Product productWithMinGuarantee24Months;
+	private I_M_Product productWithMinGuarantee60Months;
 
 	@BeforeEach
 	public void init() {
@@ -83,6 +84,9 @@ public class ProductDAOTest
 
 		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee36Months.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.THREE_YEAR_DAYS);
+
+		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee60Months.getM_Product_ID()));
+		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.FIVE_YEAR_DAYS);
 	}
 
 	private void setUpProducts() {
@@ -125,5 +129,11 @@ public class ProductDAOTest
 		productWithMinGuaranteeDaysOnCategory.setName("Product3");
 		productWithMinGuaranteeDaysOnCategory.setM_Product_Category_ID(prodCat.getM_Product_Category_ID());
 		save(productWithMinGuaranteeDaysOnCategory);
+
+		productWithMinGuarantee60Months = newInstance(I_M_Product.class);
+		productWithMinGuarantee60Months.setIsActive(true);
+		productWithMinGuarantee60Months.setName("Product21");
+		productWithMinGuarantee60Months.setGuaranteeMonths(X_M_Product.GUARANTEEMONTHS_60);
+		save(productWithMinGuarantee60Months);
 	}
 }

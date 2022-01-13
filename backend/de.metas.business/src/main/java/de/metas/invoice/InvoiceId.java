@@ -5,6 +5,8 @@ import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
+import java.util.Optional;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
@@ -46,6 +48,13 @@ public class InvoiceId implements RepoIdAware
 	{
 		return repoId > 0 ? new InvoiceId(repoId) : null;
 	}
+
+	@NonNull
+	public static Optional<InvoiceId> ofRepoIdOptional(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 
 	int repoId;
 

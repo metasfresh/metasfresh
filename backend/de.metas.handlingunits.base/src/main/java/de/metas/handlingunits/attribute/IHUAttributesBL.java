@@ -2,10 +2,10 @@ package de.metas.handlingunits.attribute;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
@@ -50,7 +50,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
-	 *
+	 * <p>
 	 * Note: for complex scenarios (distributing a weight onto an HU-tree), see {@link de.metas.handlingunits.attribute.propagation.IHUAttributePropagator} and {@link de.metas.handlingunits.attribute.strategy.IAttributeStrategy}.
 	 *
 	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
@@ -69,4 +69,11 @@ public interface IHUAttributesBL extends ISingletonService
 	boolean isAutomaticallySetLotNumber();
 
 	boolean isAutomaticallySetBestBeforeDate();
+
+	void validateMandatoryShipmentAttributes(HuId huId, ProductId productId);
+
+	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
+
+	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
+			@NonNull ProductId productId);
 }

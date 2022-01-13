@@ -12,8 +12,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "value" : "dataEntryTab_description",
         "anyLanguage" : false
       },
-      "supportQuickInput" : false,
       "queryOnActivate" : true,
+      "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
       "singleRowDetailLayout" : false,
       "subTabLayouts" : [
         {
@@ -95,8 +95,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -129,8 +129,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -196,8 +196,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -230,8 +230,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -289,8 +289,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -323,8 +323,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -406,8 +406,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -440,8 +440,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -499,8 +499,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -533,8 +533,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -592,8 +592,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -626,8 +626,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -656,8 +656,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             ],
             "empty" : false
           },
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
           "singleRowDetailLayout" : true,
           "subTabLayouts" : [ ],
           "empty" : false
@@ -741,8 +741,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -775,8 +775,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -842,8 +842,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -876,8 +876,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -935,8 +935,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -969,8 +969,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1052,8 +1052,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1086,8 +1086,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1145,8 +1145,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1179,8 +1179,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1238,8 +1238,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1272,8 +1272,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "listNullItemCaption" : {
                                       "trlMap" : {
-                                        "de_CH": "leer",
-                                        "de_DE": "leer"
+                                        "de_CH" : "leer",
+                                        "de_DE" : "leer"
                                       },
                                       "defaultValue" : "none"
                                     },
@@ -1302,8 +1302,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             ],
             "empty" : false
           },
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_AVAILABLE_METHODS",
           "singleRowDetailLayout" : true,
           "subTabLayouts" : [ ],
           "empty" : false
@@ -1540,8 +1540,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_METHODS",
           "singleRowDetailView" : true
         },
         {
@@ -1760,13 +1760,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "closableMode" : "INITIALLY_CLOSED"
             }
           ],
-          "supportQuickInput" : false,
           "queryOnActivate" : true,
+          "newRecordInputMode" : "ALL_METHODS",
           "singleRowDetailView" : true
         }
       ],
-      "supportQuickInput" : false,
-      "queryOnActivate" : true
+      "queryOnActivate" : true,
+      "newRecordInputMode" : "ALL_METHODS"
     }
   ]
 ]
@@ -1793,10 +1793,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "readonlyLogic" : "1=0",
       "displayLogic" : "1=1",
       "allowQuickInput" : false,
+      "autodetectDefaultDateFilter" : true,
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
-        "DataEntry_SubTab-11": {
+        "DataEntry_SubTab-11" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
           "id" : "Window-5-DataEntry_SubTab-11",
@@ -1815,6 +1816,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "autodetectDefaultDateFilter" : true,
           "fields" : {
             "1111" : {
               "fieldName" : "1111",
@@ -1867,9 +1869,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1111_Info": {
+            "1111_Info" : {
               "fieldName" : "1111_Info",
               "caption" : {
                 "value" : "1111_Info",
@@ -1920,7 +1923,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1112" : {
               "fieldName" : "1112",
@@ -1973,9 +1977,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1112_Info": {
+            "1112_Info" : {
               "fieldName" : "1112_Info",
               "caption" : {
                 "value" : "1112_Info",
@@ -2026,7 +2031,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1113" : {
               "fieldName" : "1113",
@@ -2079,9 +2085,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1113_Info": {
+            "1113_Info" : {
               "fieldName" : "1113_Info",
               "caption" : {
                 "value" : "1113_Info",
@@ -2132,7 +2139,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1121" : {
               "fieldName" : "1121",
@@ -2185,9 +2193,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1121_Info": {
+            "1121_Info" : {
               "fieldName" : "1121_Info",
               "caption" : {
                 "value" : "1121_Info",
@@ -2238,7 +2247,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1122" : {
               "fieldName" : "1122",
@@ -2291,9 +2301,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1122_Info": {
+            "1122_Info" : {
               "fieldName" : "1122_Info",
               "caption" : {
                 "value" : "1122_Info",
@@ -2344,7 +2355,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1123" : {
               "fieldName" : "1123",
@@ -2395,11 +2407,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -2435,9 +2447,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1123_Info": {
+            "1123_Info" : {
               "fieldName" : "1123_Info",
               "caption" : {
                 "value" : "1123_Info",
@@ -2488,9 +2501,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "DataEntry_SubTab_ID": {
+            "DataEntry_SubTab_ID" : {
               "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
                 "value" : "DataEntry_SubTab_ID",
@@ -2540,7 +2554,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "documentLinkColumnName" : {
               "fieldName" : "documentLinkColumnName",
@@ -2593,7 +2608,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             }
           },
           "idFields" : [
@@ -2647,7 +2663,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             }
           ],
           "parentLinkField" : {
@@ -2701,7 +2718,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "dependencies" : {
               "type2name2dependencies" : { }
             },
-            "deviceDescriptorsProvider" : { }
+            "deviceDescriptorsProvider" : { },
+            "readonlyVirtualField" : false
           },
           "includedEntitiesByDetailId" : { },
           "dataBinding" : {
@@ -2710,7 +2728,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "dependencies" : {
             "type2name2dependencies" : { }
           },
-          "_fieldNamesByCharacteristic": { },
+          "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
           "defaultTableCalloutsEnabled" : false,
           "filterDescriptors" : { },
@@ -2727,7 +2745,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "cloneEnabled" : false,
           "printable" : false
         },
-        "DataEntry_SubTab-12": {
+        "DataEntry_SubTab-12" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
           "id" : "Window-5-DataEntry_SubTab-12",
@@ -2746,6 +2764,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "autodetectDefaultDateFilter" : true,
           "fields" : {
             "1211" : {
               "fieldName" : "1211",
@@ -2798,9 +2817,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1211_Info": {
+            "1211_Info" : {
               "fieldName" : "1211_Info",
               "caption" : {
                 "value" : "1211_Info",
@@ -2851,7 +2871,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1212" : {
               "fieldName" : "1212",
@@ -2904,9 +2925,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1212_Info": {
+            "1212_Info" : {
               "fieldName" : "1212_Info",
               "caption" : {
                 "value" : "1212_Info",
@@ -2957,7 +2979,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1213" : {
               "fieldName" : "1213",
@@ -3010,9 +3033,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1213_Info": {
+            "1213_Info" : {
               "fieldName" : "1213_Info",
               "caption" : {
                 "value" : "1213_Info",
@@ -3063,7 +3087,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1221" : {
               "fieldName" : "1221",
@@ -3116,9 +3141,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1221_Info": {
+            "1221_Info" : {
               "fieldName" : "1221_Info",
               "caption" : {
                 "value" : "1221_Info",
@@ -3169,7 +3195,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1222" : {
               "fieldName" : "1222",
@@ -3222,9 +3249,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1222_Info": {
+            "1222_Info" : {
               "fieldName" : "1222_Info",
               "caption" : {
                 "value" : "1222_Info",
@@ -3275,7 +3303,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "1223" : {
               "fieldName" : "1223",
@@ -3326,11 +3355,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -3366,9 +3395,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "1223_Info": {
+            "1223_Info" : {
               "fieldName" : "1223_Info",
               "caption" : {
                 "value" : "1223_Info",
@@ -3419,9 +3449,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
-            "DataEntry_SubTab_ID": {
+            "DataEntry_SubTab_ID" : {
               "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
                 "value" : "DataEntry_SubTab_ID",
@@ -3471,7 +3502,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             },
             "documentLinkColumnName" : {
               "fieldName" : "documentLinkColumnName",
@@ -3524,7 +3556,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             }
           },
           "idFields" : [
@@ -3578,7 +3611,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dependencies" : {
                 "type2name2dependencies" : { }
               },
-              "deviceDescriptorsProvider" : { }
+              "deviceDescriptorsProvider" : { },
+              "readonlyVirtualField" : false
             }
           ],
           "parentLinkField" : {
@@ -3632,7 +3666,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "dependencies" : {
               "type2name2dependencies" : { }
             },
-            "deviceDescriptorsProvider" : { }
+            "deviceDescriptorsProvider" : { },
+            "readonlyVirtualField" : false
           },
           "includedEntitiesByDetailId" : { },
           "dataBinding" : {
@@ -3641,7 +3676,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "dependencies" : {
             "type2name2dependencies" : { }
           },
-          "_fieldNamesByCharacteristic": { },
+          "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
           "defaultTableCalloutsEnabled" : false,
           "filterDescriptors" : { },
@@ -3665,7 +3700,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "dependencies" : {
         "type2name2dependencies" : { }
       },
-      "_fieldNamesByCharacteristic": { },
+      "_fieldNamesByCharacteristic" : { },
       "calloutsEnabled" : false,
       "defaultTableCalloutsEnabled" : false,
       "filterDescriptors" : { },

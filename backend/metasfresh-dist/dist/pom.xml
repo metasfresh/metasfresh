@@ -392,6 +392,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.payment.revolut</groupId>
+            <artifactId>de.metas.payment.revolut</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <artifactId>de.metas.printing.base</artifactId>
             <groupId>de.metas.printing</groupId>
             <version>${metasfresh.version}</version>
@@ -451,6 +459,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+                
+        <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
             <version>${metasfresh.version}</version>
@@ -505,7 +521,7 @@
         </dependency>
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
-            <artifactId>de.metas.elasticsearch.server</artifactId>
+            <artifactId>de.metas.elasticsearch</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

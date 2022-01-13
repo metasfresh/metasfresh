@@ -1,38 +1,15 @@
 package de.metas.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import com.google.common.collect.ImmutableList;
-import org.adempiere.util.lang.IPair;
-
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.util.StringUtils.TruncateAt;
+import org.adempiere.util.lang.IPair;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class StringUtilsTest
 {
@@ -58,13 +35,14 @@ public class StringUtilsTest
 		testTrunc("1234567890", 13, "1234567890");
 	}
 
-	@Test(expected = StringIndexOutOfBoundsException.class)
+	@Test
 	public void testTrunc_invalidLength()
 	{
-		testTrunc("1234567890", -10, "1234567890");
+		assertThatThrownBy(() -> testTrunc("1234567890", -10, "1234567890"))
+				.isInstanceOf(StringIndexOutOfBoundsException.class);
 	}
 
-	private final void testTrunc(final String string, final int length, final String resultExpected)
+	private void testTrunc(@Nullable final String string, final int length, @Nullable final String resultExpected)
 	{
 		assertThat(StringUtils.trunc(string, length))
 				.as("Invalid trunc() result for string=%s, length=%s", string, length)
@@ -93,7 +71,7 @@ public class StringUtilsTest
 		testTruncLeft("1234567890", 13, "1234567890");
 	}
 
-	private final void testTruncLeft(final String string, final int length, final String resultExpected)
+	private void testTruncLeft(@Nullable final String string, final int length, @Nullable final String resultExpected)
 	{
 		assertThat(StringUtils.trunc(string, length, TruncateAt.STRING_START))
 				.as("Invalid truncLeft() result for string=%s, length=%s", string, length)
@@ -130,23 +108,25 @@ public class StringUtilsTest
 	@Test
 	public void test_quote()
 	{
-		assertThat(StringUtils.formatMessage("{0} text with ' quote", "test"), is("test text with ' quote"));
-		assertThat(StringUtils.formatMessage("text with ' quote {0}", "test"), is("text with ' quote test"));
-		assertThat(StringUtils.formatMessage("{0} text with '' doublequote", "test"), is("test text with '' doublequote"));
-		assertThat(StringUtils.formatMessage("text with '' doublequote {0}", "test"), is("text with '' doublequote test"));
+		assertThat(StringUtils.formatMessage("{0} text with ' quote", "test")).isEqualTo("test text with ' quote");
+		assertThat(StringUtils.formatMessage("text with ' quote {0}", "test")).isEqualTo("text with ' quote test");
+		assertThat(StringUtils.formatMessage("{0} text with '' doublequote", "test")).isEqualTo("test text with '' doublequote");
+		assertThat(StringUtils.formatMessage("text with '' doublequote {0}", "test")).isEqualTo("text with '' doublequote test");
 	}
 
 	@Test
 	public void test_overlayAtEnd()
 	{
-		assertThat(StringUtils.overlayAtEnd("0000000000", "123456"), is("0000123456"));
-		assertThat(StringUtils.overlayAtEnd("000a000000", "123456"), is("000a123456"));
-		assertThat(StringUtils.overlayAtEnd("000", "123456"), is("123456"));
+		assertThat(StringUtils.overlayAtEnd("0000000000", "123456")).isEqualTo("0000123456");
+		assertThat(StringUtils.overlayAtEnd("000a000000", "123456")).isEqualTo("000a123456");
+		assertThat(StringUtils.overlayAtEnd("000", "123456")).isEqualTo("123456");
 	}
 
-	private void test_isNumber(final String string, final boolean expected)
+	private void test_isNumber(@Nullable final String string, final boolean expected)
 	{
-		Assert.assertEquals("Invalid StringUtils.isNumber() return for string: " + string, expected, StringUtils.isNumber(string));
+		assertThat(StringUtils.isNumber(string))
+				.withFailMessage("Invalid StringUtils.isNumber() return for string: " + string)
+				.isEqualTo(expected);
 	}
 
 	@Test
@@ -154,6 +134,7 @@ public class StringUtilsTest
 	{
 		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
 
+		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Carretera Nueva Jarilla");
 		assertThat(result.getRight()).isNullOrEmpty();
 	}
@@ -163,6 +144,7 @@ public class StringUtilsTest
 	{
 		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
 
+		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
 		assertThat(result.getRight()).isEqualTo("14");
 	}
@@ -172,6 +154,7 @@ public class StringUtilsTest
 	{
 		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
 
+		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
 		assertThat(result.getRight()).isEqualTo("14-26c");
 	}
@@ -190,7 +173,7 @@ public class StringUtilsTest
 			assertThat(StringUtils.trimBlankToNull(s)).isSameAs(s);
 		}
 	}
-	
+
 	@Test
 	public void test_cleanWhitespace()
 	{
@@ -219,5 +202,21 @@ public class StringUtilsTest
 						+ "2195605,\t 2195606abc2195607");
 
 		assertThat(result).containsExactly(2195601, 2195602, 2195603, 2195604, 2199111, 2175651, 2195605, 2195606, 2195607);
+	}
+
+	@Nested
+	class trimBlankToOptional
+	{
+		@Test
+		void nullValue() { assertThat(StringUtils.trimBlankToOptional(null)).isEmpty(); }
+
+		@Test
+		void empty() { assertThat(StringUtils.trimBlankToOptional("")).isEmpty(); }
+
+		@Test
+		void blank() { assertThat(StringUtils.trimBlankToOptional("   \t   ")).isEmpty(); }
+
+		@Test
+		void nonBlank() { assertThat(StringUtils.trimBlankToOptional("   \taaa\r\n   ")).contains("aaa"); }
 	}
 }

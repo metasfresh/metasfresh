@@ -1,5 +1,6 @@
 package de.metas.document.engine.impl;
 
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
@@ -43,7 +44,7 @@ public class DocactionAPMHelper
 				.type(Type.DOC_ACTION.getCode())
 				.subType(docAction)
 				.label("tableName", tableName)
-				.label("recordId", Integer.toString(document.get_ID()))
+				.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(document.get_ID()))
 				.build();
 	}
 }

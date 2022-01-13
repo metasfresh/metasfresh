@@ -1,9 +1,10 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 /*
  * #%L
@@ -35,5 +36,6 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 @FunctionalInterface
 public interface DocumentFieldValueLoader
 {
+	@Nullable
 	Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage, LookupDescriptor lookupDescriptor) throws SQLException;
 }

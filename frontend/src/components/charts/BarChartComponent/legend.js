@@ -28,10 +28,7 @@ const drawContainer = (svg, fields, width) => {
     .selectAll('g')
     .data(fields);
 
-  const legend = existingLegend
-    .enter()
-    .append('g')
-    .merge(existingLegend);
+  const legend = existingLegend.enter().append('g').merge(existingLegend);
 
   return legend.attr(
     'transform',
@@ -64,7 +61,7 @@ const drawTexts = (legend, width) => {
     .attr('y', 10)
     .attr('dy', '0.32em')
     .text((d) => d.caption + (d.unit ? ' [' + d.unit + ']' : ''))
-    .each(function() {
+    .each(function () {
       addEllipsis(this, width / legend.size() - (size.offset + size.width));
     });
 };

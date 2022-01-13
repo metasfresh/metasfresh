@@ -17,8 +17,6 @@ public interface IOrderCheckupBL extends ISingletonService
 	 * Generate all {@link I_C_Order_MFGWarehouse_Report}s if given order is eligible.
 	 * 
 	 * All previous generated reports will be automatically voided.
-	 * 
-	 * @param order
 	 */
 	void generateReportsIfEligible(I_C_Order order);
 
@@ -27,9 +25,6 @@ public interface IOrderCheckupBL extends ISingletonService
 	 * <p>
 	 * Note that this method can return <code>false</code>, but the order might still be eligible for reporting (see {@link #isEligibleForReporting(I_C_Order)}) if the reporting process is started
 	 * manually.
-	 * 
-	 * @param order
-	 * @return
 	 */
 	boolean isGenerateReportsOnOrderComplete(I_C_Order order);
 
@@ -38,9 +33,6 @@ public interface IOrderCheckupBL extends ISingletonService
 
 	/**
 	 * Return the number of copies (2 will result in two printouts in sum) that shall be set to the given <code>C_Printing_Queue</code>.
-	 * 
-	 * @param queueItem
-	 * @return
 	 */
 	int getNumberOfCopies(I_C_Printing_Queue queueItem);
 }

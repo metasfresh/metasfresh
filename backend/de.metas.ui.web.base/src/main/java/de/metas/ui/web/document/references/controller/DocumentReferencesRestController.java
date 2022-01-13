@@ -1,28 +1,14 @@
 package de.metas.ui.web.document.references.controller;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import de.metas.document.references.related_documents.ZoomInfoPermissions;
-import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.related_documents.RelatedDocumentsEvaluationContext;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.document.references.DocumentReference;
-import de.metas.ui.web.document.references.DocumentReferenceCandidate;
-import de.metas.ui.web.document.references.service.DocumentReferencesService;
+import de.metas.ui.web.document.references.WebuiDocumentReference;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
+import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
@@ -35,6 +21,21 @@ import io.swagger.annotations.Api;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -46,12 +47,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,7 +69,7 @@ public class DocumentReferencesRestController
 	private static final Logger logger = LogManager.getLogger(DocumentReferencesRestController.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final UserSession userSession;
-	private final DocumentReferencesService documentReferencesService;
+	private final WebuiDocumentReferencesService webuiDocumentReferencesService;
 	private final MenuTreeRepository menuTreeRepository;
 
 	private static final String SYSCONFIG_SSE_EXECUTOR_MAX_POOL_SIZE = "webui.documentReferencesRestController.sseExecutor.maxPoolSize";
@@ -76,11 +77,11 @@ public class DocumentReferencesRestController
 
 	public DocumentReferencesRestController(
 			@NonNull final UserSession userSession,
-			@NonNull final DocumentReferencesService documentReferencesService,
+			@NonNull final WebuiDocumentReferencesService webuiDocumentReferencesService,
 			@NonNull final MenuTreeRepository menuTreeRepository)
 	{
 		this.userSession = userSession;
-		this.documentReferencesService = documentReferencesService;
+		this.webuiDocumentReferencesService = webuiDocumentReferencesService;
 		this.menuTreeRepository = menuTreeRepository;
 
 		this.sseExecutor = createSseExecutor();
@@ -102,7 +103,7 @@ public class DocumentReferencesRestController
 				maxPoolSize,
 				60L, // keepAliveTime
 				TimeUnit.SECONDS, // keepAliveTime unit
-				new LinkedBlockingQueue<Runnable>(), // workQueue
+				new LinkedBlockingQueue<>(), // workQueue
 				threadFactory);
 
 	}
@@ -145,8 +146,8 @@ public class DocumentReferencesRestController
 		{
 			userSession.assertLoggedIn();
 
-			final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions());
-			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(documentPath, permissions);
+			final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions());
+			final List<WebuiDocumentReferenceCandidate> documentReferenceCandidates = webuiDocumentReferencesService.getDocumentReferenceCandidates(documentPath, permissions);
 			if (documentReferenceCandidates.isEmpty())
 			{
 				publisher.publishCompleted();
@@ -159,6 +160,7 @@ public class DocumentReferencesRestController
 					jsonOpts.getAdLanguage());
 
 			final AsyncRunContext context = AsyncRunContext.builder()
+					.permissions(RelatedDocumentsPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions()))
 					.jsonOpts(jsonOpts)
 					.menuTree(menuTree)
 					.publisher(publisher)
@@ -175,12 +177,12 @@ public class DocumentReferencesRestController
 	}
 
 	private void evaluateAndPublishAll(
-			@NonNull final List<DocumentReferenceCandidate> documentReferenceCandidates,
+			@NonNull final List<WebuiDocumentReferenceCandidate> documentReferenceCandidates,
 			@NonNull final AsyncRunContext context)
 	{
 		final CompletableFuture<?>[] futures = documentReferenceCandidates.stream()
 				.map(documentReferenceCandidate -> evaluateAndPublish(documentReferenceCandidate, context))
-				.toArray(size -> new CompletableFuture[size]);
+				.toArray(CompletableFuture[]::new);
 
 		if (futures.length == 0)
 		{
@@ -199,7 +201,7 @@ public class DocumentReferencesRestController
 	}
 
 	private CompletableFuture<Void> evaluateAndPublish(
-			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final WebuiDocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
 		return CompletableFuture.runAsync(
@@ -208,11 +210,18 @@ public class DocumentReferencesRestController
 	}
 
 	private void evaluateAndPublishNow(
-			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final WebuiDocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
-		final DocumentReference documentReference = documentReferenceCandidate.evaluate().orElse(null);
-		if (documentReference != null)
+
+		final ImmutableList<WebuiDocumentReference> documentReferences = documentReferenceCandidate
+				.evaluateAndStream(
+						RelatedDocumentsEvaluationContext.builder()
+								.permissions(context.getPermissions())
+								.doNotTrackSeenWindows(true)
+								.build())
+				.collect(ImmutableList.toImmutableList());
+		if (!documentReferences.isEmpty())
 		{
 			final JSONDocumentReferencesGroupsAggregator aggregator = JSONDocumentReferencesGroupsAggregator.builder()
 					.menuTree(context.getMenuTree())
@@ -220,7 +229,7 @@ public class DocumentReferencesRestController
 					.jsonOpts(context.getJsonOpts())
 					.build();
 
-			aggregator.addAndFlush(documentReference, context.getPublisher());
+			aggregator.addAndPublish(documentReferences, context.getPublisher());
 		}
 	}
 
@@ -228,6 +237,9 @@ public class DocumentReferencesRestController
 	@Builder
 	private static class AsyncRunContext
 	{
+		@NonNull
+		RelatedDocumentsPermissions permissions;
+
 		@NonNull
 		JSONOptions jsonOpts;
 

@@ -24,30 +24,29 @@ package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.WebuiError;
-import de.metas.util.Services;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.data.KPIDataContext;
+import de.metas.ui.web.kpi.data.KPIDataProvider;
+import de.metas.ui.web.kpi.data.KPIDataRequest;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIZoomIntoDetailsInfo;
+import de.metas.ui.web.kpi.descriptor.KPIId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Trace;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class UserDashboardDataProvider
 {
 	private final Logger logger = LogManager.getLogger(UserDashboardDataProvider.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	private static final AdMessageKey MSG_FailedLoadingKPI = AdMessageKey.of("webui.dashboard.KPILoadError");
 
 	private final UserDashboardRepository userDashboardRepository;
 	private final KPIDataProvider kpiDataProvider;
@@ -68,9 +67,7 @@ public class UserDashboardDataProvider
 
 	public UserDashboardDataResponse getAllItems(@NonNull final UserDashboardDataRequest request)
 	{
-		final Instant from = request.getFrom();
-		final Instant to = request.getTo();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
+		final KPIDataContext context = request.getContext();
 		final List<DashboardWidgetType> widgetTypes = request.getWidgetType() != null
 				? ImmutableList.of(request.getWidgetType())
 				: Arrays.asList(DashboardWidgetType.values());
@@ -81,7 +78,7 @@ public class UserDashboardDataProvider
 		{
 			for (final UserDashboardItem dashboardItem : dashboard.getItems(widgetType))
 			{
-				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, from, to, maxStaleAccepted);
+				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context);
 				itemDataById.put(dashboardItem.getId(), itemData);
 			}
 		}
@@ -92,48 +89,58 @@ public class UserDashboardDataProvider
 	public UserDashboardItemDataResponse getItemData(@NonNull final UserDashboardItemDataRequest request)
 	{
 		final UserDashboard dashboard = getDashboard();
-		final Instant from = request.getFrom();
-		final Instant to = request.getTo();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
 		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
-		return getItemData(dashboardItem, from, to, maxStaleAccepted);
+		final KPIDataContext context = request.getContext();
+		return getItemData(dashboardItem, context);
 	}
 
 	private UserDashboardItemDataResponse getItemData(
 			@NonNull final UserDashboardItem item,
-			@Nullable final Instant from,
-			@Nullable final Instant to,
-			@NonNull final Duration maxStaleAccepted)
+			@NonNull final KPIDataContext context)
 	{
-		final KPIId kpiId = item.getKPIId();
-		final KPITimeRangeDefaults timeRangeDefaults = item.getTimeRangeDefaults();
-
-		final KPIDataRequest request = KPIDataRequest.builder()
-				.kpiId(kpiId)
-				.timeRangeDefaults(timeRangeDefaults)
-				.from(from)
-				.to(to)
-				.maxStaleAccepted(maxStaleAccepted)
-				.build();
-
+		KPIDataRequest request = null;
 		try
 		{
+			request = toKPIDataRequest(item, context);
 			final KPIDataResult kpiData = kpiDataProvider.getKPIData(request);
-			return UserDashboardItemDataResponse.ok(item.getId(), kpiData);
+			return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), kpiData);
 		}
 		catch (@NonNull final Exception ex)
 		{
-			logger.warn("Failed computing KPI data for {}.", request, ex);
+			logger.warn("Failed computing KPI data for request={}, item={}, context={}.", request, item, context, ex);
+
 			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
 					? AdempiereException.extractMessageTrl(ex)
-					: msgBL.getTranslatableMsgText(MSG_FailedLoadingKPI);
+					: TranslatableStrings.adMessage(KPIDataProvider.MSG_FailedLoadingKPI);
 
- 			return UserDashboardItemDataResponse.error(item.getId(), WebuiError.of(ex, errorMessage));
+			return UserDashboardItemDataResponse.error(dashboardId, item.getId(), WebuiError.of(ex, errorMessage));
 		}
+	}
+
+	private static KPIDataRequest toKPIDataRequest(
+			final @NonNull UserDashboardItem item,
+			final @NonNull KPIDataContext context)
+	{
+		final KPIId kpiId = item.getKPIId();
+		final KPITimeRangeDefaults timeRangeDefaults = item.getTimeRangeDefaults();
+		return KPIDataRequest.builder()
+				.kpiId(kpiId)
+				.timeRangeDefaults(timeRangeDefaults)
+				.context(context)
+				.build();
 	}
 
 	private UserDashboard getDashboard()
 	{
 		return userDashboardRepository.getUserDashboardById(dashboardId);
+	}
+
+	public Optional<KPIZoomIntoDetailsInfo> getZoomIntoDetailsInfo(@NonNull final UserDashboardItemDataRequest request)
+	{
+		final UserDashboard dashboard = getDashboard();
+		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
+		final KPIDataContext context = request.getContext();
+
+		return kpiDataProvider.getZoomIntoDetailsInfo(toKPIDataRequest(dashboardItem, context));
 	}
 }

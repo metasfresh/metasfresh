@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { connect } from 'react-redux';
-import { List } from 'immutable';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -182,7 +180,10 @@ export class DraggableWrapper extends Component {
       this.setState((prev) =>
         update(prev, {
           [entity]: {
-            $splice: [[dragIndex, 1], [hoverIndex, 0, draggedItem]],
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, draggedItem],
+            ],
           },
         })
       );
@@ -201,7 +202,10 @@ export class DraggableWrapper extends Component {
                   $set: [newItem],
                 }
               : {
-                  $splice: [[dragIndex, 1], [hoverIndex, 0, newItem]],
+                  $splice: [
+                    [dragIndex, 1],
+                    [hoverIndex, 0, newItem],
+                  ],
                 },
         })
       );
@@ -268,6 +272,11 @@ export class DraggableWrapper extends Component {
               index={id}
               caption={indicator.caption}
               fields={indicator.kpi.fields}
+              zoomToDetailsAvailable={
+                indicator.kpi.zoomToDetailsAvailable
+                  ? indicator.kpi.zoomToDetailsAvailable
+                  : false
+              }
               chartType={'Indicator'}
               kpi={false}
               data={indicator.data}
@@ -386,7 +395,7 @@ export class DraggableWrapper extends Component {
                       this.handleOptionSelect('interval', option)
                     }
                     tabIndex={0}
-                    list={List([{ caption: 'week', value: 'week' }])}
+                    list={[{ caption: 'week', value: 'week' }]}
                     selected={interval}
                     isFocused={listFocused === 'interval'}
                     isToggled={listToggled === 'interval'}
@@ -404,13 +413,13 @@ export class DraggableWrapper extends Component {
                     onSelect={(option) =>
                       this.handleOptionSelect('when', option)
                     }
-                    list={List([
+                    list={[
                       { caption: 'now', value: 'now' },
                       {
                         caption: 'last week',
                         value: 'lastWeek',
                       },
-                    ])}
+                    ]}
                     tabIndex={0}
                     selected={when}
                     isFocused={listFocused === 'when'}
@@ -505,8 +514,7 @@ export class DraggableWrapper extends Component {
 }
 
 DraggableWrapper.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   editmode: PropTypes.bool,
 };
 
-export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+export default DragDropContext(HTML5Backend)(DraggableWrapper);

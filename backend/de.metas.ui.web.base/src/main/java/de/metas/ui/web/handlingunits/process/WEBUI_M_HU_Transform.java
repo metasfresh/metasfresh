@@ -10,7 +10,6 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -26,6 +25,7 @@ import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -33,6 +33,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -135,11 +136,9 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_TU)
 	private boolean p_HUPlanningReceiptOwnerPM_TU;
 
-
 	protected static final String PARAM_MOVE_TO_WAREHOUSE_ID = "MoveToWarehouseId";
 	@Param(parameterName = PARAM_MOVE_TO_WAREHOUSE_ID)
-	private I_M_Warehouse moveToWarehouse;
-
+	private WarehouseId moveToWarehouseId;
 
 	protected static final String PARAM_SHOW_WAREHOUSE_ID = "ShowWarehouseID";
 	@Param(parameterName = PARAM_SHOW_WAREHOUSE_ID)
@@ -161,7 +160,7 @@ public class WEBUI_M_HU_Transform
 				.build();
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, numericKey = false)
 	private LookupValuesList getActions()
 	{
 		return newParametersFiller().getActions(getProcessInfo().getAdProcessId());
@@ -173,7 +172,7 @@ public class WEBUI_M_HU_Transform
 	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupSource = LookupSource.lookup, lookupTableName = I_M_HU.Table_Name)
-	private LookupValuesList getTULookupValues(final LookupDataSourceContext context)
+	private LookupValuesPage getTULookupValues(final LookupDataSourceContext context)
 	{
 		return newParametersFiller().getTUsLookupValues(context);
 	}
@@ -184,7 +183,7 @@ public class WEBUI_M_HU_Transform
 	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupSource = LookupSource.lookup, lookupTableName = I_M_HU.Table_Name)
-	private LookupValuesList getLULookupValues(final LookupDataSourceContext context)
+	private LookupValuesPage getLULookupValues(final LookupDataSourceContext context)
 	{
 		return newParametersFiller().getLUsLookupValues(context);
 	}
@@ -282,7 +281,7 @@ public class WEBUI_M_HU_Transform
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final void updateViewFromResult(final WebuiHUTransformCommandResult result)
+	private void updateViewFromResult(final WebuiHUTransformCommandResult result)
 	{
 		final HUEditorView view = getView();
 
@@ -314,7 +313,7 @@ public class WEBUI_M_HU_Transform
 	/**
 	 * @return true if view was changed and needs invalidation
 	 */
-	private final boolean removeSelectedRowsIfHUDestoyed()
+	private boolean removeSelectedRowsIfHUDestoyed()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isEmpty())
@@ -328,7 +327,7 @@ public class WEBUI_M_HU_Transform
 
 		final HUEditorView view = getView();
 		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
-				.map(row -> row.getHuId())
+				.map(HUEditorRow::getHuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -353,8 +352,7 @@ public class WEBUI_M_HU_Transform
 		}
 
 		final HUEditorView view = getView();
-		final boolean changes = view.removeHUIds(destroyedHUIds);
-		return changes;
+		return view.removeHUIds(destroyedHUIds);
 	}
 
 	@Override
@@ -414,14 +412,14 @@ public class WEBUI_M_HU_Transform
 
 	private void moveToWarehouse(final WebuiHUTransformCommandResult result)
 	{
-		if (moveToWarehouse != null && showWarehouse)
+		if (moveToWarehouseId != null && showWarehouse)
 		{
 			final ImmutableList<I_M_HU> createdHUs = result.getHuIdsCreated()
 					.stream()
 					.map(handlingUnitsDAO::getById)
 					.collect(ImmutableList.toImmutableList());
 
-			huMovementBL.moveHUsToWarehouse(createdHUs, moveToWarehouse);
+			huMovementBL.moveHUsToWarehouse(createdHUs, moveToWarehouseId);
 		}
 	}
 
@@ -431,7 +429,7 @@ public class WEBUI_M_HU_Transform
 
 		if (!this.showWarehouse)
 		{
-			this.moveToWarehouse = null;
+			this.moveToWarehouseId = null;
 		}
 	}
 }

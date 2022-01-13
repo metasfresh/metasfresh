@@ -117,10 +117,8 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 	}
 
 	@Override
-	public void createDocOutbound(final Object model)
+	public void createDocOutbound(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		for (final IDocOutboundProducer producer : getProducersList())
 		{
 			if (!producer.accept(model))

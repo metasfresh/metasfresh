@@ -37,10 +37,11 @@ import de.metas.util.ISingletonService;
  */
 public interface IFactAcctLogBL extends ISingletonService
 {
+	boolean hasLogsToProcess();
+
 	/**
 	 * Process all pending {@link I_Fact_Acct_Log}s.
 	 * 
-	 * @param ctx
 	 * @param limit maximum amount of logs to process or {@link IQuery#NO_LIMIT}.
 	 */
 	void processAll(Properties ctx, int limit);

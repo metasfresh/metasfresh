@@ -1,17 +1,15 @@
 package de.metas.ui.web.window.datatypes;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -39,15 +37,26 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ColorValue
 {
-	@JsonCreator
-	public static ColorValue ofHexString(final String hexString)
-	{
-		return new ColorValue(hexString);
-	}
+	public static final ColorValue RED = new ColorValue("#FF0000");
+	public static final ColorValue GREEN = new ColorValue("#00FF00");
 
 	public static ColorValue ofRGB(final int red, final int green, final int blue)
 	{
-		return new ColorValue(red, green, blue);
+		return ofHexString(toHexString(red, green, blue));
+	}
+
+	@JsonCreator
+	public static ColorValue ofHexString(final String hexString)
+	{
+		return interner.intern(new ColorValue(hexString));
+	}
+
+	private static Interner<ColorValue> interner = Interners.newStrongInterner();
+
+	static
+	{
+		interner.intern(RED);
+		interner.intern(GREEN);
 	}
 
 	String hexString;
@@ -55,14 +64,6 @@ public class ColorValue
 	private ColorValue(final String hexString)
 	{
 		this.hexString = normalizeHexString(hexString);
-	}
-
-	private ColorValue(final int red, final int green, final int blue)
-	{
-		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
-		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
-		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
-		this.hexString = toHexString(red, green, blue);
 	}
 
 	private static String normalizeHexString(@NonNull final String hexString)
@@ -83,6 +84,9 @@ public class ColorValue
 
 	public static String toHexString(final int red, final int green, final int blue)
 	{
+		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
+		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
+		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
 		return String.format("#%02x%02x%02x", red, green, blue);
 	}
 

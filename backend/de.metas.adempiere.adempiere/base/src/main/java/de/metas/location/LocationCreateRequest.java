@@ -35,12 +35,14 @@ public class LocationCreateRequest
 	String address3;
 	String address4;
 
+	PostalId postalId;
 	String postal;
 	String postalAdd;
 
 	String city;
 
 	int regionId;
+	String regionName;
 
 	@NonNull
 	CountryId countryId;

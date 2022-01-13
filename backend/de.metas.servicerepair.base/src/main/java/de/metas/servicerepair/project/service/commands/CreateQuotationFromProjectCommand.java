@@ -30,17 +30,18 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.project.ProjectId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.ProjectQuotationPricingInfo;
 import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.QuotationAggregator;
@@ -55,27 +56,29 @@ import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class CreateQuotationFromProjectCommand
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final OrderGroupRepository orderGroupRepository;
 	private final ServiceRepairProjectService projectService;
 
 	private final ProjectId projectId;
-	private final ProductId serviceProductId;
 
 	@Builder
 	private CreateQuotationFromProjectCommand(
+			@NonNull final OrderGroupRepository orderGroupRepository,
 			@NonNull final ServiceRepairProjectService projectService,
-			@NonNull final ProjectId projectId,
-			@NonNull final ProductId serviceProductId)
+			//
+			@NonNull final ProjectId projectId)
 	{
+		this.orderGroupRepository = orderGroupRepository;
 		this.projectService = projectService;
 		this.projectId = projectId;
-		this.serviceProductId = serviceProductId;
 	}
 
 	public OrderId execute()
@@ -103,12 +106,14 @@ public class CreateQuotationFromProjectCommand
 
 	private QuotationAggregator newQuotationAggregator(@NonNull final ServiceRepairProjectInfo project)
 	{
+		final List<ServiceRepairProjectTask> tasks = projectService.getTasksByProjectId(project.getProjectId());
+
 		return QuotationAggregator.builder()
-				.orgDAO(orgDAO)
+				.pricingBL(pricingBL)
+				.orderGroupRepository(orderGroupRepository)
 				.project(project)
+				.tasks(tasks)
 				.pricingInfo(getPricingInfo(project))
-				.serviceProductId(serviceProductId)
-				.serviceProductUomId(productBL.getStockUOMId(serviceProductId))
 				.quotationDocTypeId(getQuotationDocTypeId(project))
 				.build();
 	}
@@ -117,7 +122,7 @@ public class CreateQuotationFromProjectCommand
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
+				.docSubType(X_C_DocType.DOCSUBTYPE_CostEstimate)
 				.adClientId(project.getClientAndOrgId().getClientId().getRepoId())
 				.adOrgId(project.getClientAndOrgId().getOrgId().getRepoId())
 				.build());

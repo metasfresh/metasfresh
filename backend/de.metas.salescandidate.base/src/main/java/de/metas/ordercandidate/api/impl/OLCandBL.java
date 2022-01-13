@@ -1,17 +1,20 @@
 package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -79,18 +82,21 @@ public class OLCandBL implements IOLCandBL
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
+	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
-	public OLCandBL(@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+	public OLCandBL(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 	}
 
 	@Override
-	public void process(@NonNull final OLCandProcessorDescriptor processor)
+	public void process(@NonNull final OLCandProcessorDescriptor processor, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
 		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
@@ -103,11 +109,13 @@ public class OLCandBL implements IOLCandBL
 				.olCandListeners(olCandRegistry.getListeners())
 				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
 				.candidatesSource(candidatesSource)
+				.asyncBatchId(asyncBatchId)
 				.build()
 				.process();
 	}
 
 	@Override
+	@Nullable
 	public PricingSystemId getPricingSystemId(
 			@NonNull final I_C_OLCand olCand,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
@@ -219,8 +227,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentRule();
 
 		return coalesce(orderCandidatePaymentRule,
-				bpartnerOrderParamsPaymentRule,
-				orderDefaultsPaymentRule);
+						bpartnerOrderParamsPaymentRule,
+						orderDefaultsPaymentRule);
 	}
 
 	@Override
@@ -238,8 +246,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentTermId();
 
 		return coalesce(orderCandidatePaymenTermId,
-				bpartnerOrderParamsPaymentTermId,
-				orderDefaultsPaymentTermId);
+						bpartnerOrderParamsPaymentTermId,
+						orderDefaultsPaymentTermId);
 	}
 
 	@Override
@@ -257,8 +265,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
-				bpartnerOrderParamsShipperId,
-				orderDefaultsShipperId);
+						bpartnerOrderParamsShipperId,
+						orderDefaultsShipperId);
 	}
 
 	@Override
@@ -272,7 +280,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getDocTypeTargetId();
 
 		return coalesce(orderDocTypeId,
-				orderDefaultsDocTypeId);
+						orderDefaultsDocTypeId);
 	}
 
 	@Override
@@ -344,18 +352,17 @@ public class OLCandBL implements IOLCandBL
 
 		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
+		final CountryId countryId = bpartnerBL.getCountryId(shipToPartnerInfo);
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
-				shipToPartnerInfo.getBpartnerLocationId(),
+				countryId,
 				SOTrx.SALES);
 		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + shipToPartnerInfo.getBpartnerLocationId());
+			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId());
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
-
-		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(shipToPartnerInfo.getBpartnerLocationId());
 		pricingCtx.setCountryId(countryId);
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
@@ -388,8 +395,8 @@ public class OLCandBL implements IOLCandBL
 		if (currencyId == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Currency@"
-					+ "\n Pricing context: " + pricingCtx
-					+ "\n Pricing result: " + pricingResult);
+												 + "\n Pricing context: " + pricingCtx
+												 + "\n Pricing result: " + pricingResult);
 		}
 
 		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());
@@ -416,8 +423,7 @@ public class OLCandBL implements IOLCandBL
 				.shipBPartnerId(shipToPartnerInfo.getBpartnerId())
 				.billBPartnerId(billBPartnerId)
 				.build();
-		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(query);
-		return params;
+		return bPartnerOrderParamsRepository.getBy(query);
 	}
 
 	@Override
@@ -455,7 +461,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public void markAsProcessed(final OLCand olCand)
 	{
-		olCand.setProcessed(true);
+		olCand.setProcessed();
 		saveCandidate(olCand);
 	}
 
@@ -478,14 +484,22 @@ public class OLCandBL implements IOLCandBL
 
 	private I_AD_Note createOLCandErrorNote(final UserId userInChargeId, final OLCand olCand, final Exception ex)
 	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
+		try
+		{
+			final I_AD_User user = userDAO.getById(userInChargeId);
 
-		final MNote note = new MNote(Env.getCtx(), IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
-		note.setRecord(olCand.toTableRecordReference());
-		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
-		note.setTextMsg(ex.getLocalizedMessage());
-		save(note);
+			final MNote note = new MNote(Env.getCtx(), IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
+			note.setRecord(olCand.toTableRecordReference());
+			note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
+			note.setTextMsg(ex.getLocalizedMessage());
+			save(note);
 
-		return note;
+			return note;
+		}
+		catch (RuntimeException ex2)
+		{
+			ex2.addSuppressed(ex);
+			throw ex2;
+		}
 	}
 }

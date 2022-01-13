@@ -8,7 +8,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -140,7 +140,7 @@ public class CreateViewRequest
 	DocumentId parentRowId;
 
 	ImmutableSet<DocumentPath> referencingDocumentPaths;
-	DocumentReferenceId documentReferenceId;
+	WebuiDocumentReferenceId documentReferenceId;
 
 	/**
 	 * Sticky filters can't be changed by the user.<br>
@@ -272,7 +272,7 @@ public class CreateViewRequest
 
 		private Set<DocumentPath> referencingDocumentPaths;
 		@Nullable
-		private DocumentReferenceId documentReferenceId;
+		private WebuiDocumentReferenceId documentReferenceId;
 
 		/**
 		 * @deprecated see {@link CreateViewRequest#filterOnlyIds}
@@ -366,14 +366,14 @@ public class CreateViewRequest
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
-		public Builder setDocumentReferenceId(@Nullable final DocumentReferenceId documentReferenceId)
+		public Builder setDocumentReferenceId(@Nullable final WebuiDocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
 		}
 
 		@Nullable
-		private DocumentReferenceId getDocumentReferenceId()
+		private WebuiDocumentReferenceId getDocumentReferenceId()
 		{
 			return documentReferenceId;
 		}

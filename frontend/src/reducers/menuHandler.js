@@ -7,6 +7,12 @@ export const initialState = {
 export default function menuHandler(state = initialState, action) {
   switch (action.type) {
     case types.SET_BREADCRUMB: {
+      const { breadcrumb } = action;
+
+      if (state.breadcrumb.length === 0 && !breadcrumb.length) {
+        return state;
+      }
+
       return { ...state, breadcrumb: action.breadcrumb };
     }
 

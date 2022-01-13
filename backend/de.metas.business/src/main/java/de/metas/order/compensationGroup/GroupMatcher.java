@@ -25,5 +25,5 @@ package de.metas.order.compensationGroup;
 @FunctionalInterface
 public interface GroupMatcher
 {
-	public boolean isMatching(Group group);
+	boolean isMatching(Group group);
 }

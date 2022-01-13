@@ -1,18 +1,18 @@
 package de.metas.material.event.stockestimate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -41,23 +41,38 @@ import lombok.ToString;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 {
+	public static StockEstimateCreatedEvent cast(@NonNull final AbstractStockEstimateEvent event)
+	{
+		return (StockEstimateCreatedEvent)event;
+	}
+
 	public static final String TYPE = "StockEstimateDeletedEvent";
 
 	@JsonCreator
 	@Builder
 	public StockEstimateDeletedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("date") final Instant date,
+			@NonNull @JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@NonNull @JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@NonNull @JsonProperty("date") final Instant date,
 			@JsonProperty("plantId") final int plantId,
-			@JsonProperty("quantity") final BigDecimal quantity)
+			@JsonProperty("freshQtyOnHandId") final int freshQtyOnHandId,
+			@JsonProperty("freshQtyOnHandLineId") final int freshQtyOnHandLineId,
+			@NonNull @JsonProperty("eventDate") final Instant eventDate
+	)
 	{
-		super(eventDescriptor, productDescriptor, date, plantId, quantity);
+		super(eventDescriptor,
+			  materialDescriptor,
+			  date,
+			  plantId,
+			  freshQtyOnHandId,
+			  freshQtyOnHandLineId,
+			  null /*qtyStockEstimateSeqNo*/,
+			  eventDate);
 	}
 
 	@Override
 	public BigDecimal getQuantityDelta()
 	{
-		return getQuantity().negate();
+		return getMaterialDescriptor().getQuantity().negate();
 	}
 }

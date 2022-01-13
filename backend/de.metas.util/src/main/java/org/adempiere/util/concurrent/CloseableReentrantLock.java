@@ -29,19 +29,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * A {@link ReentrantLock} which also implements {@link AutoCloseable} to be easily used in try-with-resource blocks.
  * 
  * @author tsa
- * @see http://stackoverflow.com/a/11000458
+ * Also see https://stackoverflow.com/a/11000458
  */
 public final class CloseableReentrantLock extends ReentrantLock implements AutoCloseable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5256938961821141771L;
 
 	/**
 	 * Calls {@link #lock()}.
-	 * 
-	 * @return
 	 */
 	public CloseableReentrantLock open()
 	{

@@ -1,20 +1,20 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import lombok.NonNull;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -44,19 +44,19 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private final LookupSource lookupSourceType;
 	private final boolean numericKey;
-	private final Function<LookupDataSourceContext, LookupValuesList> lookupValues;
+	private final Function<LookupDataSourceContext, LookupValuesPage> lookupValues;
 
-	private final Set<String> dependsOnFieldNames;
-	private final Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
+	private final ImmutableSet<String> dependsOnFieldNames;
 	private final Optional<String> lookupTableName;
 
 	private ListLookupDescriptor(@NonNull final Builder builder)
@@ -68,19 +68,6 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		lookupValues = builder.lookupValues;
 
 		dependsOnFieldNames = builder.dependsOnFieldNames == null ? ImmutableSet.of() : ImmutableSet.copyOf(builder.dependsOnFieldNames);
-
-		if (builder.filteredLookupValues != null)
-		{
-			filteredLookupValues = builder.filteredLookupValues;
-		}
-		else
-		{
-			filteredLookupValues = evalCtx -> {
-				final LookupValuesList list = lookupValues.apply(evalCtx);
-				final LookupValue lookupValue = list.getById(evalCtx.getIdToFilter());
-				return lookupValue;
-			};
-		}
 
 		lookupTableName = builder.lookupTableName;
 	}
@@ -118,13 +105,14 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		return filteredLookupValues.apply(evalCtx);
+		final LookupValuesPage page = lookupValues.apply(evalCtx);
+		return page.getValues().getById(evalCtx.getSingleIdToFilterAsObject());
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		return lookupValues.apply(evalCtx);
 	}
@@ -141,13 +129,13 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	//
 	//
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static class Builder
 	{
 		private LookupSource lookupSourceType = LookupSource.list;
 		private boolean numericKey;
-		private Function<LookupDataSourceContext, LookupValuesList> lookupValues;
+		private Function<LookupDataSourceContext, LookupValuesPage> lookupValues;
 
-		private Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
 		private Set<String> dependsOnFieldNames;
 
 		private Optional<String> lookupTableName = Optional.empty();
@@ -167,40 +155,22 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 			return this;
 		}
 
-		public Builder setLookupValues(final boolean numericKey, final Function<LookupDataSourceContext, LookupValuesList> lookupValues)
+		public Builder setLookupValues(final boolean numericKey, final Function<LookupDataSourceContext, LookupValuesPage> lookupValues)
 		{
 			this.numericKey = numericKey;
 			this.lookupValues = lookupValues;
 			return this;
 		}
 
-		public Builder setIntegerLookupValues(final Function<LookupDataSourceContext, LookupValuesList> lookupValues)
+		public Builder setIntegerLookupValues(final Function<LookupDataSourceContext, LookupValuesPage> lookupValues)
 		{
 			setLookupValues(true, lookupValues);
-			return this;
-		}
-
-		public Builder setStringLookupValues(final Function<LookupDataSourceContext, LookupValuesList> lookupValues)
-		{
-			setLookupValues(false, lookupValues);
-			return this;
-		}
-
-		public Builder setDependsOnFieldNames(final Set<String> dependsOnFieldNames)
-		{
-			this.dependsOnFieldNames = dependsOnFieldNames;
 			return this;
 		}
 
 		public Builder setDependsOnFieldNames(final String[] dependsOnFieldNames)
 		{
 			this.dependsOnFieldNames = ImmutableSet.copyOf(dependsOnFieldNames);
-			return this;
-		}
-
-		public Builder setFilteredLookupValues(final Function<LookupDataSourceContext, LookupValue> filteredLookupValues)
-		{
-			this.filteredLookupValues = filteredLookupValues;
 			return this;
 		}
 

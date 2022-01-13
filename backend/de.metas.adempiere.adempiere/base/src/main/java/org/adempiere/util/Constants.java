@@ -56,15 +56,4 @@ public final class Constants
 	public static final int C_GREETING_ID_FIRMA = 500069;
 
 	public static final String REPLENISHTYPE_EnsureFutureQty = "7";
-
-	/*
-	 * metas 00135: changed from "AEI" to "AEC" to fit the convention of the view C_Invoice_v where the DocBaseType
-	 * of negative outgoing Invoices (e.g Credit Memo) end with 'C'.
-	 * 
-	 * metas-ts: Changed back to 'AEI', because this is an *incoming* invoice, therefore the view C_Invoice_v must return a
-	 * positive amount
-	 */
-	public static final String DOCBASETYPE_AEInvoice = "AEI";
-
-	public static final String DOCBASETYPE_AVIinvoice = "AVI";
 }

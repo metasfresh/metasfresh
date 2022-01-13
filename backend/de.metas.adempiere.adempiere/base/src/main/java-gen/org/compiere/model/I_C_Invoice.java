@@ -1,14 +1,13 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Invoice 
 {
 
@@ -240,6 +239,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_Invoice.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
 	 * Set Sales partner.
 	 *
 	 * <br>Type: Search
@@ -288,7 +312,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -298,7 +322,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -468,6 +492,31 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
 	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Invoice.
@@ -1034,7 +1083,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_GenerateTo = "GenerateTo";
 
 	/**
-	 * Set Summe Gesamt.
+	 * Set Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1044,7 +1093,7 @@ public interface I_C_Invoice
 	void setGrandTotal (BigDecimal GrandTotal);
 
 	/**
-	 * Get Summe Gesamt.
+	 * Get Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1375,7 +1424,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Preis inklusive Steuern.
+	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -1385,7 +1434,7 @@ public interface I_C_Invoice
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Preis inklusive Steuern.
+	 * Get Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -1398,8 +1447,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Set Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1408,8 +1457,8 @@ public interface I_C_Invoice
 	void setIsTransferred (boolean IsTransferred);
 
 	/**
-	 * Get Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Get Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1442,7 +1491,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1452,7 +1501,7 @@ public interface I_C_Invoice
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1599,11 +1648,6 @@ public interface I_C_Invoice
 	 */
 	int getPostingError_Issue_ID();
 
-	@Nullable org.compiere.model.I_AD_Issue getPostingError_Issue();
-
-	void setPostingError_Issue(@Nullable org.compiere.model.I_AD_Issue PostingError_Issue);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_AD_Issue> COLUMN_PostingError_Issue_ID = new ModelColumn<>(I_C_Invoice.class, "PostingError_Issue_ID", org.compiere.model.I_AD_Issue.class);
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**

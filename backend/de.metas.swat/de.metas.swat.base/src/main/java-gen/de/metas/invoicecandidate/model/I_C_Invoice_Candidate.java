@@ -96,8 +96,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Set Responsible.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -106,8 +105,7 @@ public interface I_C_Invoice_Candidate
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Get Responsible.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -137,29 +135,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ApprovalForInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "ApprovalForInvoicing", null);
 	String COLUMNNAME_ApprovalForInvoicing = "ApprovalForInvoicing";
-
-	/**
-	 * Set Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
-
-	/**
-	 * Get Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getBase_Commission_Points_Per_Price_UOM();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_Invoice_Candidate.class, "Base_Commission_Points_Per_Price_UOM", null);
-	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Bill Business Partner.
@@ -249,6 +224,58 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Bill_Location_Override_ID = "Bill_Location_Override_ID";
 
 	/**
+	 * Set Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Override_Value_ID (int Bill_Location_Override_Value_ID);
+
+	/**
+	 * Get Rechungsadresse abw..
+	 * Standort des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Override_Value();
+
+	void setBill_Location_Override_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Override_Value);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Override_Value_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Bill_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Override_Value_ID = "Bill_Location_Override_Value_ID";
+
+	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
+
+	/**
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Table
@@ -309,6 +336,27 @@ public interface I_C_Invoice_Candidate
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Sales partner.
@@ -424,7 +472,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Rechnungs-Belegart.
+	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -434,7 +482,7 @@ public interface I_C_Invoice_Candidate
 	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
 
 	/**
-	 * Get Rechnungs-Belegart.
+	 * Get DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -469,6 +517,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, de.metas.invoicecandidate.model.I_C_ILCandHandler> COLUMN_C_ILCandHandler_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_ILCandHandler_ID", de.metas.invoicecandidate.model.I_C_ILCandHandler.class);
 	String COLUMNNAME_C_ILCandHandler_ID = "C_ILCandHandler_ID";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Aggregator.
@@ -647,7 +720,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Order_BPartner = "C_Order_BPartner";
 
 	/**
-	 * Set Group.
+	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -656,7 +729,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
 
 	/**
-	 * Get Group.
+	 * Get Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1176,8 +1249,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DescriptionHeader = "DescriptionHeader";
 
 	/**
-	 * Set Rabatt %.
-	 * Abschlag in Prozent
+	 * Set Discount %.
+	 * Discount in percent
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -1186,8 +1259,8 @@ public interface I_C_Invoice_Candidate
 	void setDiscount (BigDecimal Discount);
 
 	/**
-	 * Get Rabatt %.
-	 * Abschlag in Prozent
+	 * Get Discount %.
+	 * Discount in percent
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -1569,6 +1642,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoiceScheduleAmtStatus = "InvoiceScheduleAmtStatus";
 
 	/**
+	 * Set Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingErrorMsg (@Nullable java.lang.String InvoicingErrorMsg);
+
+	/**
+	 * Get Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicingErrorMsg();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingErrorMsg = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingErrorMsg", null);
+	String COLUMNNAME_InvoicingErrorMsg = "InvoicingErrorMsg";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1590,6 +1686,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Beleg soll per EDI übermittelt werden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEdiEnabled (boolean IsEdiEnabled);
+
+	/**
+	 * Get Beleg soll per EDI übermittelt werden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEdiEnabled();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
+	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
 
 	/**
 	 * Set EDI INVOIC Receipient.
@@ -1657,7 +1774,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsFreightCost = "IsFreightCost";
 
 	/**
-	 * Set Group Compensation Line.
+	 * Set Group Discount Line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1666,7 +1783,7 @@ public interface I_C_Invoice_Candidate
 	void setIsGroupCompensationLine (boolean IsGroupCompensationLine);
 
 	/**
-	 * Get Group Compensation Line.
+	 * Get Group Discount Line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1718,6 +1835,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInOutApprovedForInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInOutApprovedForInvoicing", null);
 	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
+
+	/**
+	 * Set Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoicingError (boolean IsInvoicingError);
+
+	/**
+	 * Get Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoicingError();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInvoicingError = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInvoicingError", null);
+	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
 	 * Set Manuell.
@@ -1854,7 +1992,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Preis inklusive Steuern.
+	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -1864,7 +2002,7 @@ public interface I_C_Invoice_Candidate
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Preis inklusive Steuern.
+	 * Get Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -2086,6 +2224,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
+	 * Set Material-Vorgang-ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
+
+	/**
+	 * Get Material-Vorgang-ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Material_Tracking_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_Material_Tracking_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_Material_Tracking_ID", null);
+	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
+
+	/**
 	 * Set Version Preisliste.
 	 * Bezeichnet eine einzelne Version der Preisliste
 	 *
@@ -2176,6 +2335,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
 	 * Set Invoiced Amount.
 	 *
 	 * <br>Type: Amount
@@ -2241,6 +2421,29 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Note = new ModelColumn<>(I_C_Invoice_Candidate.class, "Note", null);
 	String COLUMNNAME_Note = "Note";
+
+	/**
+	 * Set Packing Material.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setpackingmaterialname (@Nullable java.lang.String packingmaterialname);
+
+	/**
+	 * Get Packing Material.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getpackingmaterialname();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_packingmaterialname = new ModelColumn<>(I_C_Invoice_Candidate.class, "packingmaterialname", null);
+	String COLUMNNAME_packingmaterialname = "packingmaterialname";
 
 	/**
 	 * Set Order Reference.
@@ -2352,8 +2555,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_PriceActual_Override = "PriceActual_Override";
 
 	/**
-	 * Set Preis.
-	 * Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2362,8 +2564,7 @@ public interface I_C_Invoice_Candidate
 	void setPriceEntered (@Nullable BigDecimal PriceEntered);
 
 	/**
-	 * Get Preis.
-	 * Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
+	 * Get Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2375,7 +2576,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Set Preis Abw..
+	 * Set Price override.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2384,7 +2585,7 @@ public interface I_C_Invoice_Candidate
 	void setPriceEntered_Override (@Nullable BigDecimal PriceEntered_Override);
 
 	/**
-	 * Get Preis Abw..
+	 * Get Price override.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2527,8 +2728,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Produktart.
-	 * Art von Produkt
+	 * Set Product Type.
+	 * Type of product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2539,8 +2740,8 @@ public interface I_C_Invoice_Candidate
 	void setProductType (@Nullable java.lang.String ProductType);
 
 	/**
-	 * Get Produktart.
-	 * Art von Produkt
+	 * Get Product Type.
+	 * Type of product
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2617,6 +2818,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEntered = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEntered", null);
 	String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
+
+	/**
+	 * Get Quantity TU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredTU();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEnteredTU", null);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
 
 	/**
 	 * Set Quantity Invoiced.
@@ -2705,6 +2927,48 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyOrderedOverUnder = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyOrderedOverUnder", null);
 	String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
+
+	/**
+	 * Set Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPicked (@Nullable BigDecimal QtyPicked);
+
+	/**
+	 * Get Quantity (stock unit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPicked();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyPicked = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyPicked", null);
+	String COLUMNNAME_QtyPicked = "QtyPicked";
+
+	/**
+	 * Set QtyPickedInUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPickedInUOM (@Nullable BigDecimal QtyPickedInUOM);
+
+	/**
+	 * Get QtyPickedInUOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPickedInUOM();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyPickedInUOM = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyPickedInUOM", null);
+	String COLUMNNAME_QtyPickedInUOM = "QtyPickedInUOM";
 
 	/**
 	 * Set To invoice eff.( stock unit).
@@ -2969,6 +3233,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
 
 	/**
+	 * Set Qualitätsabzug % (WED).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityDiscountPercent_ReceiptSchedule (@Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule);
+
+	/**
+	 * Get Qualitätsabzug % (WED).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQualityDiscountPercent_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityDiscountPercent_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityDiscountPercent_ReceiptSchedule", null);
+	String COLUMNNAME_QualityDiscountPercent_ReceiptSchedule = "QualityDiscountPercent_ReceiptSchedule";
+
+	/**
 	 * Set Rechnungspositionsart.
 	 *
 	 * <br>Type: List
@@ -2988,6 +3277,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityInvoiceLineGroupType = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityInvoiceLineGroupType", null);
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
+
+	/**
+	 * Set Qualitäts-Notiz (WED).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
+
+	/**
+	 * Get Qualitäts-Notiz (WED).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getQualityNote_ReceiptSchedule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityNote_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityNote_ReceiptSchedule", null);
+	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
 
 	/**
 	 * Set ReasonDiscount.
@@ -3150,27 +3464,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_TotalOfOrderExcludingDiscount = new ModelColumn<>(I_C_Invoice_Candidate.class, "TotalOfOrderExcludingDiscount", null);
 	String COLUMNNAME_TotalOfOrderExcludingDiscount = "TotalOfOrderExcludingDiscount";
-
-	/**
-	 * Set Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
-
-	/**
-	 * Get Traded Commission Percent.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getTraded_Commission_Percent();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_Invoice_Candidate.class, "Traded_Commission_Percent", null);
-	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
 
 	/**
 	 * Get Updated.

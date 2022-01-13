@@ -22,11 +22,7 @@
 
 package de.metas.ui.web.pickingslotsClearing;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -36,7 +32,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportation;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice;
@@ -50,12 +46,17 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @ViewFactory(windowId = PackingHUsViewFactory.WINDOW_ID_STRING)
 public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
@@ -83,13 +84,25 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	}
 
 	@Override
+	public IView filterView(
+			final @NonNull IView packingHUsView,
+			final @NonNull JSONFilterViewRequest filterViewRequest,
+			final @NonNull Supplier<IViewsRepository> viewsRepo)
+	{
+		final ViewId newPackingHUsViewId = PackingHUsViewKey.incrementPackingHUsViewIdVersion(packingHUsView.getViewId());
+		return createPackingHUsView(
+				PackingHUsViewKey.ofPackingHUsViewId(newPackingHUsViewId),
+				filterViewRequest);
+	}
+
+	@Override
 	public WindowId getWindowId()
 	{
 		return WINDOW_ID;
 	}
 
 	@Override
-	public void setViewsRepository(IViewsRepository viewsRepository)
+	public void setViewsRepository(final IViewsRepository viewsRepository)
 	{
 		this.viewsRepo = viewsRepository;
 	}
@@ -97,7 +110,8 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	@Override
 	public void put(final IView view)
 	{
-		throw new UnsupportedOperationException();
+		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(view.getViewId());
+		pickingSlotsClearingView.setPackingHUsView(HUEditorView.cast(view));
 	}
 
 	@Nullable
@@ -117,8 +131,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	private PickingSlotsClearingView getPickingSlotsClearingView(final ViewId packingHUsViewId)
 	{
 		final ViewId pickingSlotsClearingViewId = PackingHUsViewKey.extractPickingSlotClearingViewId(packingHUsViewId);
-		final PickingSlotsClearingView pickingSlotsClearingView = viewsRepo.getView(pickingSlotsClearingViewId, PickingSlotsClearingView.class);
-		return pickingSlotsClearingView;
+		return viewsRepo.getView(pickingSlotsClearingViewId, PickingSlotsClearingView.class);
 	}
 
 	@Override
@@ -145,10 +158,19 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	{
 		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(packingHUsViewId);
 
-		return pickingSlotsClearingView.computePackingHUsViewIfAbsent(packingHUsViewId, this::createPackingHUsView);
+		return pickingSlotsClearingView.computePackingHUsViewIfAbsent(
+				packingHUsViewId,
+				this::createPackingHUsView);
 	}
 
-	private HUEditorView createPackingHUsView(final PackingHUsViewKey key)
+	private HUEditorView createPackingHUsView(@NonNull final PackingHUsViewKey key)
+	{
+		return createPackingHUsView(key, null);
+	}
+
+	private HUEditorView createPackingHUsView(
+			@NonNull final PackingHUsViewKey key,
+			@Nullable final JSONFilterViewRequest additionalFilters)
 	{
 		final IHUQueryBuilder huQuery = createHUQuery(key);
 
@@ -156,6 +178,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		final ViewId pickingSlotsClearingViewId = key.getPickingSlotsClearingViewId();
 		final CreateViewRequest request = CreateViewRequest.builder(packingHUsViewId, JSONViewDataType.includedView)
 				.setParentViewId(pickingSlotsClearingViewId)
+				.setFiltersFromJSON(additionalFilters != null ? additionalFilters.getFilters() : ImmutableList.of())
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huQuery))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportation.class))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice.class))
@@ -165,7 +188,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		return huEditorViewFactory.createView(request);
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(Class<? extends JavaProcess> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(final Class<? extends JavaProcess> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
@@ -181,7 +204,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 				.setIncludeAfterPickingLocator(true)
 				.setExcludeHUsOnPickingSlot(true)
 				.onlyNotLocked() // not already locked (NOTE: those which were enqueued to Transportation Order are locked)
-		;
+				;
 
 		if (key.getBpartnerId() > 0)
 		{

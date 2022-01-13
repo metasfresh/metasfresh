@@ -144,7 +144,8 @@ public class HUPricing extends AttributePricing
 	/**
 	 * @return the default product price, <b>if</b> it matches the <code>M_HU_PI_Item_Product_ID</code> of the given <code>pricingCtx</code>.
 	 */
-	private final I_M_ProductPrice findDefaultPriceOrNull(final IPricingContext pricingCtx)
+	@Nullable
+	private I_M_ProductPrice findDefaultPriceOrNull(final IPricingContext pricingCtx)
 	{
 		//
 		// Get the price list version, if any

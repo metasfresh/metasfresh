@@ -1,16 +1,29 @@
 package de.metas.contracts.inoutcandidate;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.location.ContractLocationHelper;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -29,37 +42,25 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
-import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
-import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
 
-	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+	private final static transient Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -91,13 +92,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
-		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = SpringContextHolder.instance
+		final ShipmentScheduleReferencedLine subscriptionFromProgressInfos = SpringContextHolder.instance
 				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
-		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
-		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getPreparationDate()));
-		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getDeliveryDate()));
+		newSched.setM_Warehouse_ID(subscriptionFromProgressInfos.getWarehouseId().getRepoId());
+		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromProgressInfos.getPreparationDate()));
+		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromProgressInfos.getDeliveryDate()));
 	}
 
 	@Override
@@ -126,7 +127,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(InterfaceWrapperHelper.load(subscriptionLine.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		return ImmutableShipmentScheduleSegment.builder()
@@ -153,8 +154,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -162,17 +163,17 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_Status, X_C_SubscriptionProgress.STATUS_Planned)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_Qty, Operator.GREATER, ZERO)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addInSubQueryFilter(
-						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
-						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
+						I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID,
 						itemProductQuery)
 				.addOnlyContextClient(ctx)
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
@@ -180,13 +181,21 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
+	@NonNull
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = getSubscriptionProgress(sched);
+		if (subscriptionLine == null)
+		{
+			logger.warn("M_ShipmentSchedule_ID={} references C_SubscriptionProgress_ID={}, which is missing. Please clean up! -> returning Zero-IDeliverRequest",
+						sched.getM_ShipmentSchedule_ID(), sched.getRecord_ID());
+			return () -> ZERO;
+		}
 		return subscriptionLine::getQty;
 	}
 
-	private I_C_SubscriptionProgress getSubscriptionProgress(final I_M_ShipmentSchedule sched)
+	@Nullable
+	private I_C_SubscriptionProgress getSubscriptionProgress(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(sched);
 		final TableRecordReference ref = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
@@ -200,7 +209,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.ofReferenced(shipmentSchedule) // Record_Id and AD_Table_ID are mandatory
 				.getModel(I_C_SubscriptionProgress.class);
 
-		updateShipmentScheduleFromSubscriptionLine(shipmentSchedule,subscriptionProgressRecord);
+		updateShipmentScheduleFromSubscriptionLine(shipmentSchedule, subscriptionProgressRecord);
 	}
 
 	private void updateShipmentScheduleFromSubscriptionLine(
@@ -228,16 +237,17 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setPriorityRule(X_M_ShipmentSchedule.PRIORITYRULE_High);
 
-		shipmentSchedule.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
-		shipmentSchedule.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
-		shipmentSchedule.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.mainLocationAdapter(shipmentSchedule)
+				.setFrom(ContractLocationHelper.extractDropShipLocation(subscriptionLine));
 
-		shipmentSchedule.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		shipmentSchedule.setBill_Location_ID(term.getBill_Location_ID());
-		shipmentSchedule.setBill_User_ID(term.getBill_User_ID());
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.billLocationAdapter(shipmentSchedule)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
-		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
-		documentLocationBL.setBPartnerAddress(documentLocation);
+		// commented out because there is no BPartnerAddress field nor BillToAddress field
+		// final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
+		// documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 
 		shipmentSchedule.setDeliveryRule(term.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(term.getDeliveryViaRule());
@@ -253,7 +263,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_Org_ID(subscriptionLine.getAD_Org_ID());
 
 		Check.assume(shipmentSchedule.getAD_Client_ID() == subscriptionLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + shipmentSchedule.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
+					 "The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + shipmentSchedule.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
 
 		// only display item products
 		// note: at least for C_Subscription_Progress records, we won't even create records for non-items

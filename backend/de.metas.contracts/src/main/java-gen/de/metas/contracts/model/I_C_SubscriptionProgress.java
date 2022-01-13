@@ -1,152 +1,127 @@
 package de.metas.contracts.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_SubscriptionProgress
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_SubscriptionProgress 
 {
 
-    /** TableName=C_SubscriptionProgress */
-    public static final String Table_Name = "C_SubscriptionProgress";
+	String Table_Name = "C_SubscriptionProgress";
 
-    /** AD_Table_ID=540029 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540029 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_Client>(I_C_SubscriptionProgress.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Flatrate Term.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Flatrate Term.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getC_Flatrate_Term_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
+	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_Org>(I_C_SubscriptionProgress.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_SubscriptionProgress.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set Pauschale - Vertragsperiode.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
-
-	/**
-	 * Get Pauschale - Vertragsperiode.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Flatrate_Term_ID();
-
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
-
-	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
-
-    /** Column definition for C_Flatrate_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.model.I_C_Flatrate_Term>(I_C_SubscriptionProgress.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
-    /** Column name C_Flatrate_Term_ID */
-    public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
-
-	/**
-	 * Set Vertrags-Status.
+	 * Set Contract Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setContractStatus (java.lang.String ContractStatus);
+	void setContractStatus (@Nullable java.lang.String ContractStatus);
 
 	/**
-	 * Get Vertrags-Status.
+	 * Get Contract Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getContractStatus();
+	@Nullable java.lang.String getContractStatus();
 
-    /** Column definition for ContractStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "ContractStatus", null);
-    /** Column name ContractStatus */
-    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_SubscriptionProgress.class, "ContractStatus", null);
+	String COLUMNNAME_ContractStatus = "ContractStatus";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Created = new ModelColumn<>(I_C_SubscriptionProgress.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User>(I_C_SubscriptionProgress.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Abo-Verlauf.
@@ -155,7 +130,7 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+	void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
 
 	/**
 	 * Get Abo-Verlauf.
@@ -164,99 +139,70 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_SubscriptionProgress_ID();
+	int getC_SubscriptionProgress_ID();
 
-    /** Column definition for C_SubscriptionProgress_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
-    /** Column name C_SubscriptionProgress_ID */
-    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new ModelColumn<>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
+	String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
 
 	/**
-	 * Set Lieferempfänger.
-	 * Business Partner to ship to
+	 * Set Ship Business Partner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+	void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
 
 	/**
-	 * Get Lieferempfänger.
-	 * Business Partner to ship to
+	 * Get Ship Business Partner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDropShip_BPartner_ID();
+	int getDropShip_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner();
-
-	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner);
-
-    /** Column definition for DropShip_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_C_BPartner>(I_C_SubscriptionProgress.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name DropShip_BPartner_ID */
-    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
 	/**
-	 * Set Lieferadresse.
-	 * Business Partner Location for shipping to
+	 * Set Ship Location.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_Location_ID (int DropShip_Location_ID);
+	void setDropShip_Location_ID (int DropShip_Location_ID);
 
 	/**
-	 * Get Lieferadresse.
-	 * Business Partner Location for shipping to
+	 * Get Ship Location.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDropShip_Location_ID();
+	int getDropShip_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location();
-
-	public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
-
-    /** Column definition for DropShip_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_C_BPartner_Location>(I_C_SubscriptionProgress.class, "DropShip_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name DropShip_Location_ID */
-    public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
-	 * Set Lieferkontakt.
-	 * Business Partner Contact for drop shipment
+	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_User_ID (int DropShip_User_ID);
+	void setDropShip_User_ID (int DropShip_User_ID);
 
 	/**
-	 * Get Lieferkontakt.
-	 * Business Partner Contact for drop shipment
+	 * Get Ship Contact.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDropShip_User_ID();
+	int getDropShip_User_ID();
 
-	public org.compiere.model.I_AD_User getDropShip_User();
-
-	public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
-
-    /** Column definition for DropShip_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User> COLUMN_DropShip_User_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User>(I_C_SubscriptionProgress.class, "DropShip_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name DropShip_User_ID */
-    public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
 	 * Set Datum.
@@ -265,7 +211,7 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEventDate (java.sql.Timestamp EventDate);
+	void setEventDate (@Nullable java.sql.Timestamp EventDate);
 
 	/**
 	 * Get Datum.
@@ -274,164 +220,146 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getEventDate();
+	@Nullable java.sql.Timestamp getEventDate();
 
-    /** Column definition for EventDate */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_EventDate = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "EventDate", null);
-    /** Column name EventDate */
-    public static final String COLUMNNAME_EventDate = "EventDate";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_EventDate = new ModelColumn<>(I_C_SubscriptionProgress.class, "EventDate", null);
+	String COLUMNNAME_EventDate = "EventDate";
 
 	/**
-	 * Set Ereignisart.
+	 * Set Event Type.
+	 * Type of Event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEventType (java.lang.String EventType);
+	void setEventType (java.lang.String EventType);
 
 	/**
-	 * Get Ereignisart.
+	 * Get Event Type.
+	 * Type of Event
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEventType();
+	java.lang.String getEventType();
 
-    /** Column definition for EventType */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_EventType = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "EventType", null);
-    /** Column name EventType */
-    public static final String COLUMNNAME_EventType = "EventType";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_EventType = new ModelColumn<>(I_C_SubscriptionProgress.class, "EventType", null);
+	String COLUMNNAME_EventType = "EventType";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_IsActive = new ModelColumn<>(I_C_SubscriptionProgress.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferdisposition.
+	 * Set Shipment Candidate.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Lieferdisposition.
+	 * Get Shipment Candidate.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ShipmentSchedule_ID();
+	int getM_ShipmentSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
-
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
-
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_C_SubscriptionProgress.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_C_SubscriptionProgress.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Processed = new ModelColumn<>(I_C_SubscriptionProgress.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (@Nullable BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Qty = new ModelColumn<>(I_C_SubscriptionProgress.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_SubscriptionProgress.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Status.
@@ -441,7 +369,7 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStatus (java.lang.String Status);
+	void setStatus (java.lang.String Status);
 
 	/**
 	 * Get Status.
@@ -451,40 +379,33 @@ public interface I_C_SubscriptionProgress
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStatus();
+	java.lang.String getStatus();
 
-    /** Column definition for Status */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "Status", null);
-    /** Column name Status */
-    public static final String COLUMNNAME_Status = "Status";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Status = new ModelColumn<>(I_C_SubscriptionProgress.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_Updated = new ModelColumn<>(I_C_SubscriptionProgress.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, org.compiere.model.I_AD_User>(I_C_SubscriptionProgress.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

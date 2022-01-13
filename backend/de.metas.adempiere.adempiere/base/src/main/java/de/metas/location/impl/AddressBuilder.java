@@ -3,13 +3,16 @@ package de.metas.location.impl;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.location.CountryCustomInfo;
+import de.metas.location.Addressvars;
+import de.metas.location.CountryDisplaySequenceHelper;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -17,12 +20,12 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -63,17 +66,22 @@ public class AddressBuilder
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 	private final GreetingRepository greetingRepository = SpringContextHolder.instance.getBean(GreetingRepository.class);
+	private final ILocationBL locationBL = Services.get(ILocationBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	public static final AdMessageKey MSG_POBox = AdMessageKey.of("MSG_POBox");
 
 	/**
 	 * org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
 	 */
+	@NonNull
 	private final OrgId orgId;
 	private final String adLanguage;
 
 	@Builder
 	private AddressBuilder(
-			final OrgId orgId,
-			final String adLanguage)
+			@Nullable final OrgId orgId,
+			@Nullable final String adLanguage)
 	{
 		this.orgId = orgId != null ? orgId : OrgId.ANY;
 		this.adLanguage = adLanguage;
@@ -89,7 +97,7 @@ public class AddressBuilder
 		return adLanguage;
 	}
 
-	private static enum Uservars
+	private enum Uservars
 	{
 		Title("TI"),
 
@@ -101,7 +109,7 @@ public class AddressBuilder
 
 		private final String name;
 
-		Uservars(String name)
+		Uservars(final String name)
 		{
 			this.name = name;
 		}
@@ -115,23 +123,18 @@ public class AddressBuilder
 	/**
 	 * Build address string
 	 *
-	 * @param location
 	 * @param isLocalAddress true if this is a local address (i.e. location's country is same as our tenant)
-	 * @param bPartnerBlock
-	 * @param userBlock
-	 * @return
 	 */
 	public String buildAddressString(
 			final I_C_Location location,
 			final boolean isLocalAddress,
-			final String bPartnerBlock,
-			final String userBlock)
+			@Nullable final String bPartnerBlock,
+			@Nullable final String userBlock)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 		final I_C_Country country = countriesRepo.getById(countryId);
-		final String displaySequence = getDisplaySequence(country, isLocalAddress);
 
-		String inStr = displaySequence;
+		String inStr = getDisplaySequence(country, isLocalAddress);
 		final StringBuilder outStr = new StringBuilder();
 
 		final List<String> bracketsTxt = extractBracketsString(inStr);
@@ -142,17 +145,17 @@ public class AddressBuilder
 			Check.assume(s.startsWith("(") || s.startsWith("\\("), "Expected brackets or escaped brackets!");
 			Check.assume(s.endsWith(")") || s.endsWith("\\)"), "Expected brackets or escaped brackets!");
 
-			String in = new String(s);
+			String in = s;
 			final StringBuilder out = new StringBuilder();
 			if (s.startsWith("("))
 			{
 				in = in.substring(1, s.length() - 1); // take out brackets
-				replaceAddrToken(location, isLocalAddress, in, out, bPartnerBlock, userBlock, true);
+				replaceAddrToken(location, in, out, bPartnerBlock, userBlock, true);
 			}
 			else if (s.startsWith("\\("))
 			{
 				in = in.substring(1, in.length() - 2).concat(")"); // take out escaped chars
-				replaceAddrToken(location, isLocalAddress, in, out, bPartnerBlock, userBlock, false);
+				replaceAddrToken(location, in, out, bPartnerBlock, userBlock, false);
 			}
 
 			// take the plus space
@@ -175,35 +178,25 @@ public class AddressBuilder
 
 		// old behavior
 		// variables in brackets already parsed
-		replaceAddrToken(location, isLocalAddress, inStr, outStr, bPartnerBlock, userBlock, false);
+		replaceAddrToken(location, inStr, outStr, bPartnerBlock, userBlock, false);
 
-		final String retValue = StringUtils.replace(outStr.toString().trim(), "\\n", "\n");
-		return retValue;
+		return StringUtils.replace(outStr.toString().trim(), "\\n", "\n");
 	}
 
 	/**
 	 * replace variables
-	 *
-	 * @param location
-	 * @param isLocalAddress {@code true} the given {@code inStr} is the *local* address sequence
-	 * @param inStr
-	 * @param outStr
-	 * @param bPartnerBlock
-	 * @param userBlock
-	 * @param withBrackets
 	 */
 	private void replaceAddrToken(
-			final I_C_Location location,
-			boolean isLocalAddress,
+			@NonNull final I_C_Location location,
 			String inStr,
 			StringBuilder outStr,
-			String bPartnerBlock,
-			String userBlock,
+			final String bPartnerBlock,
+			final String userBlock,
 			final boolean withBrackets)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 
-		final boolean explicitBreaks = inStr.indexOf("@CR@") >= 0;
+		final boolean explicitBreaks = inStr.contains("@CR@");
 
 		String token;
 		int i = inStr.indexOf('@');
@@ -234,7 +227,7 @@ public class AddressBuilder
 				}
 			}
 
-			inStr = inStr.substring(i + 1, inStr.length()); // from first @
+			inStr = inStr.substring(i + 1); // from first @
 
 			int j = inStr.indexOf('@'); // next @
 			if (j < 0)
@@ -246,8 +239,10 @@ public class AddressBuilder
 			{
 				token = inStr.substring(0, j);
 			}
+
+			final String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
 			// Tokens
-			if (token.equals("C"))
+			if (token.equals(Addressvars.City.getName()))
 			{
 				if (location.getCity() != null)
 				{
@@ -258,7 +253,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("R"))
+			else if (token.equals(Addressvars.Region.getName()))
 			{
 				if (location.getC_Region() != null)
 				{
@@ -270,14 +265,14 @@ public class AddressBuilder
 					outStr.append(location.getRegionName()); // local region name
 				}
 			}
-			else if (token.equals("P"))
+			else if (token.equals(Addressvars.Postal.getName()))
 			{
 				if (location.getPostal() != null)
 				{
 					outStr.append(location.getPostal());
 				}
 			}
-			else if (token.equals("A"))
+			else if (token.equals(Addressvars.Postal_Add.getName()))
 			{
 				final String add = location.getPostal_Add();
 				if (add != null && add.length() > 0)
@@ -285,16 +280,15 @@ public class AddressBuilder
 					outStr.append("-").append(add);
 				}
 			}
-			else if (token.equals("CO"))
+			else if (token.equals(Addressvars.Country.getName()))
 			{
-				String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
 				final String countryName = countriesRepo.getCountryNameById(countryId).translate(language);
 				if (!Check.isEmpty(countryName, true))
 				{
 					outStr.append(countryName);
 				}
 			}
-			else if (token.equals("A1"))
+			else if (token.equals(Addressvars.Address1.getName()))
 			{
 				final String address1 = location.getAddress1();
 				if (address1 != null && address1.length() > 0)
@@ -306,7 +300,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A2"))
+			else if (token.equals(Addressvars.Address2.getName()))
 			{
 				final String address2 = location.getAddress2();
 				if (address2 != null && address2.length() > 0)
@@ -318,7 +312,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A3"))
+			else if (token.equals(Addressvars.Address3.getName()))
 			{
 				final String address3 = location.getAddress3();
 				if (address3 != null && address3.length() > 0)
@@ -330,7 +324,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A4"))
+			else if (token.equals(Addressvars.Address4.getName()))
 			{
 				final String address4 = location.getAddress4();
 				if (address4 != null && address4.length() > 0)
@@ -342,7 +336,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("BP"))
+			else if (token.equals(Addressvars.BPartner.getName()) || token.equals(Addressvars.BPartnerName.getName()))
 			{
 				if (!Check.isEmpty(bPartnerBlock, true))
 				{
@@ -357,7 +351,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("CON"))
+			else if (token.equals(Addressvars.Contact.getName()))
 			{
 				if (!Check.isEmpty(userBlock, true))
 				{
@@ -378,10 +372,15 @@ public class AddressBuilder
 			}
 			else if ("PB".equals(token)) // postal box
 			{
-				// if we have box number, added it as it is
-				if (location != null && !Check.isEmpty(location.getPOBox(), true))
+				if (location.isPOBoxNum())
 				{
-					outStr.append(location.getPOBox());
+					outStr.append(msgBL.getTranslatableMsgText(MSG_POBox).translate(language));
+					// if we have box number, added it as it is
+					if (!Check.isBlank(location.getPOBox()))
+					{
+						outStr.append(' ').append(location.getPOBox());
+					}
+
 					// add an automatic new line
 					if (!explicitBreaks)
 					{
@@ -389,16 +388,19 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (Uservars.FirstName.getName().equals(token) || Uservars.LastName.getName().equals(token) || Uservars.Title.getName().equals(token) || Uservars.Greeting.getName().equals(token))
+			else if (Uservars.FirstName.getName().equals(token)
+					|| Uservars.LastName.getName().equals(token)
+					|| Uservars.Title.getName().equals(token)
+					|| Uservars.Greeting.getName().equals(token))
 			{
-				; // nothing to do
+				// nothing to do
 			}
 			else
 			{
 				log.warn("Token {} is not recognized in display sequence of country {}", token, countryId);
 			}
 
-			inStr = inStr.substring(j + 1, inStr.length()); // from second @
+			inStr = inStr.substring(j + 1); // from second @
 			i = inStr.indexOf('@');
 		}
 
@@ -420,99 +422,183 @@ public class AddressBuilder
 	}
 
 	public String buildBPartnerFullAddressString(
-			@Nullable final org.compiere.model.I_C_BPartner bPartner,
-			@Nullable final org.compiere.model.I_C_BPartner_Location location,
-			final I_AD_User user,
-			final String trxName)
+			@Nullable final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final org.compiere.model.I_C_BPartner_Location bpLocation,
+			@Nullable final LocationId locationId,
+			@Nullable final I_AD_User bpContact)
 	{
-		if (bPartner == null || location == null)
+		if (bpartner == null || bpLocation == null)
 		{
-			log.debug("One of bPartner=" + bPartner + ", location=" + location + " is null. Returning");
+			log.debug("One of bpartner={}, location={} is null. Returning empty string.", bpartner, bpLocation);
 			return "";
 		}
 
-		final Integer bPartnerLocationId = location.getC_BPartner_Location_ID();
-
-		if (bPartnerLocationId == null || bPartnerLocationId <= 0)
+		final LocationId effectiveLocationId = locationId != null ? locationId : LocationId.ofRepoIdOrNull(bpLocation.getC_Location_ID());
+		if (effectiveLocationId == null)
 		{
 			return "";
 		}
+		final I_C_Location location = locationBL.getRecordById(effectiveLocationId);
+		if (location == null)
+		{
+			log.warn("No location found for {}. Returning empty address string.", effectiveLocationId);
+			return "";
+		}
 
-		final String bPartnerBlock = buildBPartnerBlock(bPartner, user, location);
+		final String displaySequence = extractDisplaySequence(bpLocation, location);
 
-		final Properties ctx = Env.getCtx();
-
-		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
-		final boolean isLocal = location.getC_Location() == null ? false : location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
+		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 
 		// User Anschriftenblock
-		final String userBlock = buildUserBlock(bPartner, isLocal, user, bPartnerBlock, trxName);
+		final String userBlock = buildUserBlock(bpartner, displaySequence, bpContact);
 
 		// Addressblock
-		final String fullAddressBlock = Services.get(ILocationBL.class)
-				.mkAddress(
-						location.getC_Location(),
-						create(bPartner, I_C_BPartner.class),
-						bPartnerBlock,
-						userBlock);
-
-		return fullAddressBlock;
+		return locationBL.mkAddress(
+				location,
+				create(bpartner, I_C_BPartner.class),
+				bPartnerBlock,
+				userBlock);
 	}
 
-	/**
-	 * build BPartner block
-	 *
-	 * @param bPartner
-	 * @param user
-	 * @return
-	 */
-	private String buildBPartnerBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user, @NonNull final I_C_BPartner_Location bplocation)
+	@NonNull
+	private String extractDisplaySequence(
+			@NonNull final I_C_BPartner_Location bpLocation,
+			@NonNull final I_C_Location location)
 	{
-		// Name, Name2
-		String bpName = "";
-		String bpName2 = "";
-
-		if (bPartner.isCompany()
-				|| user == null
-				|| user.getAD_User_ID() == 0
-				|| Check.isEmpty(user.getLastname(), true))
+		final boolean isLocal = isLocalCountry(bpLocation);
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final I_C_Country countryRecord = countriesRepo.getById(countryId);
+		final String displaySequence = getDisplaySequence(countryRecord, isLocal);
+		try
 		{
-			// task https://github.com/metasfresh/metasfresh/issues/5804
-			// prefer BPartner name from location if is set
-			if (!Check.isEmpty(bplocation.getBPartnerName(), true))
-			{
-				bpName = bplocation.getBPartnerName();
-				bpName2 = null;
-			}
-			else
-			{
-				bpName = bPartner.getName();
-				bpName2 = bPartner.getName2();
-			}
+			CountryDisplaySequenceHelper.assertValidDisplaySequence(displaySequence);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.setParameter("C_Country ", countryRecord)
+					.setParameter("IsLocalCountry", isLocal)
+					.setParameter("C_BPartner_Location", bpLocation);
+		}
+		return displaySequence;
+	}
+
+	private boolean isLocalCountry(final org.compiere.model.I_C_BPartner_Location location)
+	{
+		final Properties ctx = Env.getCtx();
+		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
+		final boolean isLocal = location.getC_Location() != null && location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
+		return isLocal;
+	}
+
+	private String buildBPartnerBlock(
+			@NonNull final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final I_AD_User user,
+			@NonNull final I_C_BPartner_Location bplocation,
+			@NonNull final String displaySequence)
+	{
+		final BPartnerInfo bpInfos = extractBPartnerInfos(bpartner, user, bplocation, displaySequence);
+		final StringBuilder sbBPartner = new StringBuilder();
+
+		final String bpGreeting = bpInfos.getBpGreeting();
+		final String bpName = bpInfos.getBpName();
+		final String bpName2 = bpInfos.getBpName2();
+
+		if (Check.isNotBlank(bpGreeting))
+		{
+			sbBPartner.append(bpGreeting);
 		}
 
-		final StringBuilder sbBPartner = new StringBuilder();
-		//
-		// Geschaeftspartner Anschriftenblock
-		if (!Check.isEmpty(bpName))
+		if (Check.isNotBlank(bpName))
 		{
+			if (sbBPartner.length() > 0)
+			{
+				sbBPartner.append('\n');
+			}
 			sbBPartner.append(bpName);
 		}
-		if (!Check.isEmpty(bpName2))
+
+		if (Check.isNotBlank(bpName2))
 		{
 			sbBPartner.append('\n');
 			sbBPartner.append(bpName2);
 		}
 
 		return sbBPartner.toString();
+	}
 
+	private BPartnerInfo extractBPartnerInfos(
+			@NonNull final org.compiere.model.I_C_BPartner bPartner,
+			@Nullable final I_AD_User bpContact,
+			@NonNull final I_C_BPartner_Location bplocation,
+			@NonNull final String displaySequence)
+	{
+		// Name, Name2, bp greeting
+		String bpName = "";
+		String bpName2 = "";
+		String bpGreeting = "";
+
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGReeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
+
+		//Use Partner name and greeting when rendering address only if there is greeting set
+		if ( (existsBPName || existsBPGReeting) && !bPartner.isCompany() && bpartnerHasGreeting)
+		{
+			if (existsBPName)
+			{
+				bpName = bPartner.getName();
+			}
+
+			if (existsBPGReeting)
+			{
+				final GreetingId greetingIdOfBPartner = GreetingId.ofRepoIdOrNull(bPartner.getC_Greeting_ID());
+				final Greeting greetingOfBPartner = greetingIdOfBPartner != null
+						? greetingRepository.getById(greetingIdOfBPartner)
+						: null;
+				if (greetingOfBPartner != null)
+				{
+					bpGreeting = greetingOfBPartner.getName();
+				}
+			}
+		}
+		else
+		{
+			if (bPartner.isCompany()
+					|| bpContact == null
+					|| bpContact.getAD_User_ID() == 0
+					|| Check.isBlank(bpContact.getLastname()))
+			{
+				// task https://github.com/metasfresh/metasfresh/issues/5804
+				// prefer BPartner name from location if is set
+				final String bpartnerNameFromBPLocation = bplocation.getBPartnerName();
+				if (Check.isNotBlank(bpartnerNameFromBPLocation))
+				{
+					bpName = bpartnerNameFromBPLocation;
+					bpName2 = null;
+				}
+				else
+				{
+					bpName = bPartner.getName();
+					bpName2 = StringUtils.trimBlankToNull(bPartner.getName2());
+				}
+			}
+		}
+
+		return BPartnerInfo.builder()
+				.bpName(bpName)
+				.bpName2(bpName2)
+				.bpGreeting(bpGreeting)
+				.build();
 	}
 
 	private void replaceUserToken(String inStr, final I_AD_User user, final boolean withBrackets, StringBuilder outStr, final boolean isPartnerCompany)
 	{
 		String userGreeting = "";
-		final I_C_Greeting greetingOfUser = user.getC_Greeting();
-		if (greetingOfUser != null && greetingOfUser.getC_Greeting_ID() > 0)
+		final GreetingId greetingIdOfUser = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
+		final Greeting greetingOfUser = greetingIdOfUser != null
+				? greetingRepository.getById(greetingIdOfUser)
+				: null;
+		if (greetingOfUser != null)
 		{
 			userGreeting = greetingOfUser.getName();
 		}
@@ -533,7 +619,7 @@ public class AddressBuilder
 		if (!withBrackets)
 		{
 			// remove the text before other variables
-			final String preText = inStr.substring(i + 1, inStr.length()); // from first @
+			final String preText = inStr.substring(i + 1); // from first @
 
 			final int j = preText.indexOf('@'); // next @
 			if (j < 0)
@@ -547,7 +633,7 @@ public class AddressBuilder
 
 			if (!Uservars.FirstName.toString().equals(token) || !Uservars.LastName.toString().equals(token) || !Uservars.Title.toString().equals(token) || !Uservars.Greeting.toString().equals(token))
 			{
-				inStr = inStr.substring(i + 1 + j + 1, inStr.length());
+				inStr = inStr.substring(i + 1 + j + 1);
 				i = inStr.indexOf('@');
 			}
 		}
@@ -572,7 +658,7 @@ public class AddressBuilder
 				}
 			}
 
-			inStr = inStr.substring(i + 1, inStr.length()); // from first @
+			inStr = inStr.substring(i + 1); // from first @
 
 			int j = inStr.indexOf('@'); // next @
 			if (j < 0)
@@ -584,6 +670,7 @@ public class AddressBuilder
 			{
 				token = inStr.substring(0, j);
 			}
+
 			// Tokens
 			if (token.equals("TI"))
 			{
@@ -618,7 +705,7 @@ public class AddressBuilder
 			{
 				outStr.append('\n');
 			}
-			inStr = inStr.substring(j + 1, inStr.length()); // from second @
+			inStr = inStr.substring(j + 1); // from second @
 			i = inStr.indexOf('@');
 		}
 
@@ -641,19 +728,25 @@ public class AddressBuilder
 
 	/**
 	 * build User block
-	 *
-	 * @param ctx
-	 * @param isLocal       true if local country
-	 * @param user
-	 * @param bPartnerBlock
-	 * @param trxName
-	 * @return
 	 */
-	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
+	private String buildUserBlock(
+			@NonNull final org.compiere.model.I_C_BPartner bPartner,
+			final String displaySequence,
+			final I_AD_User user)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+
+		final boolean existsBPName = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGreeting = CountryDisplaySequenceHelper.isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		final boolean bpartnerHasGreeting = bPartner.getC_Greeting_ID() > 0;
+
+		if ((existsBPName || existsBPGreeting) && !bPartner.isCompany() && bpartnerHasGreeting)
+		{
+			return "";
+		}
+
 		final boolean isPartnerCompany = bPartner.isCompany();
-		final Language language = Language.asLanguage(bPartner.getAD_Language());
+		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
+				.orElseGet(Language::getBaseLanguage);
 
 		String userGreeting = "";
 		if (user != null)
@@ -662,8 +755,8 @@ public class AddressBuilder
 			final GreetingId greetingId = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
 			if (greetingId != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(greetingId, language);
-				userGreeting = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(greetingId);
+				userGreeting = greeting.getGreeting(language.getAD_Language());
 			}
 
 			final String userName = user.getLastname();
@@ -673,13 +766,7 @@ public class AddressBuilder
 			//
 			// construct string
 
-			final CountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
-			String ds = userInfo == null ? "" : userInfo.getCaptureSequence();
-			if (ds == null || ds.length() == 0)
-			{
-				final I_C_Country country = countriesRepo.getDefault(ctx);
-				ds = getDisplaySequence(country, isLocal);
-			}
+			String ds = displaySequence;
 
 			final List<String> bracketsTxt = extractBracketsString(ds);
 
@@ -689,7 +776,7 @@ public class AddressBuilder
 				Check.assume(s.startsWith("(") || s.startsWith("\\("), "Expected brackets or escaped brackets!");
 				Check.assume(s.endsWith(")") || s.endsWith("\\)"), "Expected brackets or escaped brackets!");
 
-				String in = new String(s);
+				String in = s;
 				final StringBuilder out = new StringBuilder();
 				if (s.startsWith("("))
 				{
@@ -749,11 +836,8 @@ public class AddressBuilder
 	/**
 	 * Checks if the new token is Empty, if not it will be added. This method also makes sure, that between each newly
 	 * added String there's exactly one " ". If sb is empty no " " will be added.
-	 *
-	 * @param newToken
-	 * @param sb
 	 */
-	private void addToken(final String newToken, final StringBuilder sb)
+	private static void addToken(final String newToken, final StringBuilder sb)
 	{
 		if (!Check.isEmpty(newToken))
 		{
@@ -767,7 +851,7 @@ public class AddressBuilder
 		}
 	}
 
-	private List<String> extractBracketsString(String block)
+	private static List<String> extractBracketsString(final String block)
 	{
 		final String regex = "\\\\?(\\()(.+?)(\\))";
 		final Pattern p = Pattern.compile(regex);
@@ -782,7 +866,7 @@ public class AddressBuilder
 		return bracketsTxt;
 	}
 
-	private String getDisplaySequence(final I_C_Country country, final boolean isLocalAddress)
+	private String getDisplaySequence(@NonNull final I_C_Country country, final boolean isLocalAddress)
 	{
 		final CountryId countryId = CountryId.ofRepoId(country.getC_Country_ID());
 		final CountrySequences countrySequence = countriesRepo

@@ -34,7 +34,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 
 public final class DocumentDescriptor implements ETagAware
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -48,7 +48,6 @@ public final class DocumentDescriptor implements ETagAware
 
 	private DocumentDescriptor(final Builder builder)
 	{
-		super();
 		layout = Preconditions.checkNotNull(builder.layout, "layout not null");
 		entityDescriptor = Preconditions.checkNotNull(builder.entityDescriptor, "entityDescriptor not null");
 	}

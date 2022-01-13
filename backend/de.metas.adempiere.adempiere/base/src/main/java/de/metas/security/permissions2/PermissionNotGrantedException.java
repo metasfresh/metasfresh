@@ -22,6 +22,7 @@
 
 package de.metas.security.permissions2;
 
+import de.metas.i18n.ITranslatableString;
 import org.adempiere.exceptions.AdempiereException;
 
 import lombok.NonNull;
@@ -30,7 +31,7 @@ public class PermissionNotGrantedException extends AdempiereException
 {
 	private static final long serialVersionUID = 8485777988689504117L;
 
-	public PermissionNotGrantedException(@NonNull final String message)
+	public PermissionNotGrantedException(@NonNull final ITranslatableString message)
 	{
 		super(message);
 	}

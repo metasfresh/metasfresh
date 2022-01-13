@@ -1,37 +1,24 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.interceptor.C_Flatrate_Term;
+import de.metas.contracts.interceptor.M_ShipmentSchedule;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.ContractOrderService;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.tax.api.Tax;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,21 +30,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.interceptor.C_Flatrate_Term;
-import de.metas.contracts.interceptor.M_ShipmentSchedule;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.order.ContractOrderService;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
@@ -71,16 +51,21 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void before()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+
+
 
 		contractsRepository = new ContractChangePriceQtyService();
 		final ContractOrderService contractOrderService = new ContractOrderService();
 
-		IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService));
+		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
+
+		final IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);
-		taxNotFoundRecord.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
+		taxNotFoundRecord.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND);
 		saveRecord(taxNotFoundRecord);
 	}
 
@@ -135,7 +120,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		save(shipmentSchedule);
 
 		InterfaceWrapperHelper.refresh(firstSubscription);
-		firstSubscription.setM_ShipmentSchedule(shipmentSchedule);
+		firstSubscription.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
 		save(firstSubscription);
 	}
 
@@ -146,7 +131,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		candidates.forEach(invoiceCand -> assertInvoiceCandidate(invoiceCand, flatrateTerm));
 	}
 
-	private void assertInvoiceCandidate(I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
+	private void assertInvoiceCandidate(final I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
 	{
 		assertThat(invoiceCand.getQtyEntered()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
 		assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());

@@ -83,12 +83,12 @@ import lombok.NonNull;
 	}
 
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!built.get(), "not already built");
 	}
 
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		final boolean wasAlreadyBuilt = built.getAndSet(true);
 		Check.assume(!wasAlreadyBuilt, "not already built");
@@ -106,7 +106,7 @@ import lombok.NonNull;
 		_workpackage = workpackage;
 	}
 
-	private final I_C_Queue_WorkPackage getC_Queue_WorkPackage()
+	private I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		Check.assumeNotNull(_workpackage, "workpackage not null");
 		return _workpackage;
@@ -124,7 +124,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IWorkPackageParamsBuilder setParameters(final Map<String, ? extends Object> parameters)
+	public IWorkPackageParamsBuilder setParameters(final Map<String, ?> parameters)
 	{
 		assertNotBuilt();
 
@@ -133,7 +133,7 @@ import lombok.NonNull;
 			return this;
 		}
 
-		for (final Map.Entry<String, ? extends Object> param : parameters.entrySet())
+		for (final Map.Entry<String, ?> param : parameters.entrySet())
 		{
 			final String parameterName = param.getKey();
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");

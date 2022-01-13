@@ -1,22 +1,8 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_DiscountSchemaBreak;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
@@ -37,13 +23,27 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static java.math.BigDecimal.ZERO;
+
 
 /*
  * #%L
@@ -301,7 +301,7 @@ public class PricingConditionsRow implements IViewRow
 
 		this.editable = editable;
 
-		this.values = ViewRowFieldNameAndJsonValuesHolder.<PricingConditionsRow> builder(PricingConditionsRow.class)
+		this.values = ViewRowFieldNameAndJsonValuesHolder.builder(PricingConditionsRow.class)
 				.widgetTypesByFieldName(ViewColumnHelper.getWidgetTypesByFieldName(getClass()))
 				.viewEditorRenderModeByFieldName(buildViewEditorRenderModeByFieldName(
 						editable,
@@ -314,7 +314,7 @@ public class PricingConditionsRow implements IViewRow
 		this.id = buildDocumentId(this.pricingConditionsBreak, this.bpartner, this.customer, this.editable);
 	}
 
-	private static final DocumentId buildDocumentId(final PricingConditionsBreak pricingConditionsBreak, final LookupValue bpartner, final boolean customer, final boolean editableRow)
+	private static DocumentId buildDocumentId(final PricingConditionsBreak pricingConditionsBreak, final LookupValue bpartner, final boolean customer, final boolean editableRow)
 	{
 		final StringBuilder idStr = new StringBuilder();
 		idStr.append(bpartner.getIdAsString());
@@ -335,7 +335,7 @@ public class PricingConditionsRow implements IViewRow
 		return DocumentId.ofString(idStr.toString());
 	}
 
-	private static final ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(
+	private static ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(
 			final boolean editable,
 			final PriceSpecificationType priceType,
 			final boolean temporaryPricingConditionsBreak)
@@ -391,10 +391,9 @@ public class PricingConditionsRow implements IViewRow
 
 		final int precision = 2; // TODO: hardcoded
 
-		final BigDecimal priceAfterDiscount = pricingConditionsBreak
+		return pricingConditionsBreak
 				.getDiscount()
 				.subtractFromBase(priceBeforeDiscount, precision);
-		return priceAfterDiscount;
 	}
 
 	@Override
@@ -458,7 +457,7 @@ public class PricingConditionsRow implements IViewRow
 		return toBuilder().editable(true).build();
 	}
 
-	public LookupValuesList getFieldTypeahead(final String fieldName, final String query)
+	public LookupValuesPage getFieldTypeahead(final String fieldName, final String query)
 	{
 		return lookups.getFieldTypeahead(fieldName, query);
 	}

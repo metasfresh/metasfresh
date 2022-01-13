@@ -1,18 +1,12 @@
 package de.metas.payment.sepa.process;
 
-import java.util.Optional;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
-import de.metas.payment.sepa.interfaces.I_C_PaySelection;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -20,6 +14,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_PaySelection;
+import org.springframework.core.io.ByteArrayResource;
+
+import java.util.Optional;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
@@ -91,14 +91,14 @@ public class C_PaySelection_SEPA_XmlExport
 		// After the export header and lines have been created, marshal the document.
 		final SEPACreditTransferXML xml = sepaDocumentBL.exportCreditTransferXML(sepaExport);
 
-		paySelection.setLastExport(SystemTime.asTimestamp());
-		paySelection.setLastExportBy_ID(getAD_User_ID());
+		paySelection.setLastSepaExport(SystemTime.asTimestamp());
+		paySelection.setLastSepaExportBy_ID(getAD_User_ID());
 		InterfaceWrapperHelper.saveRecord(paySelection);
 
 		getResult().setReportData(ReportResultData.builder()
 				.reportFilename(xml.getFilename())
 				.reportContentType(xml.getContentType())
-				.reportData(xml.getContent())
+				.reportData(new ByteArrayResource(xml.getContent()))
 				.build());
 
 		return MSG_OK;

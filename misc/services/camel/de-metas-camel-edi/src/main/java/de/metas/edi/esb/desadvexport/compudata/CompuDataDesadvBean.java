@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.commons.SystemTime;
@@ -318,26 +319,22 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
 		p100.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
-		p100.setGrainItemNummer(pack.getGTINTUPackingMaterial());
+		p100.setGrainItemNummer(CoalesceUtil.coalesce(pack.getGTINTUPackingMaterial(), ""));
 
 		return p100;
 	}
 
-	/**
-	 * @return P102 line
-	 */
 	private P102 createP102Line(final EDIExpDesadvType xmlDesadv,
 			final EDIExpDesadvLineType xmlDesadvLine,
 			final DecimalFormat decimalFormat)
 	{
 		final P102 p102 = new P102();
-
 		// final EDIExpCOrderLineType orderLine = nullDeliveryLine.getCOrderLineID();
 		p102.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 		p102.setArticleClass(voidString);
 		// p102.setBestBeforeDate(EDIDesadvBean.voidDate); // leave empty
 		p102.setChargenNo(voidString);
-		p102.setcUperTU(formatNumber(ZERO, decimalFormat));
+		p102.setcUperTU(formatNumber(xmlDesadvLine.getQtyItemCapacity(), decimalFormat));
 		p102.setCurrency(xmlDesadv.getCCurrencyID().getISOCode());
 
 		p102.setDeliverQTY(formatNumber(ZERO, decimalFormat));

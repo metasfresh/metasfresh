@@ -1,13 +1,13 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.product.ProductId;
+import de.metas.uom.X12DE355;
+import de.metas.uom.impl.UOMTestHelper;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -15,12 +15,16 @@ import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
-import de.metas.product.ProductId;
-import de.metas.uom.X12DE355;
-import de.metas.uom.impl.UOMTestHelper;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -46,25 +50,28 @@ import de.metas.uom.impl.UOMTestHelper;
 
 public class ProductBOMDescriptionBuilderTest
 {
-	private UOMTestHelper uomConversionHelper;
 	private I_C_UOM millimeter;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		uomConversionHelper = new UOMTestHelper(Env.getCtx());
+		final UOMTestHelper uomConversionHelper = new UOMTestHelper(Env.getCtx());
 
 		millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, X12DE355.ofCode("mm"));
+
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
 	}
 
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/4766
 	 */
-	@Test
-	public void withQty_One()
+	@ParameterizedTest
+	@EnumSource(value = BOMType.class, names = { "CurrentActive", "MakeToOrder" })
+	public void withQty_One(@NonNull final BOMType bomType)
 	{
 		final ProductId bomProductId = new BOMBuilder("BOMProductName")
+				.bomType(bomType)
 				.addLine("ComponentName", 1, millimeter)
 				.getBomProductId();
 
@@ -74,10 +81,12 @@ public class ProductBOMDescriptionBuilderTest
 		assertThat(productDescription).isEqualTo("ComponentName");
 	}
 
-	@Test
-	public void withQty_Five()
+	@ParameterizedTest
+	@EnumSource(value = BOMType.class, names = { "CurrentActive", "MakeToOrder" })
+	public void withQty_Five(@NonNull final BOMType bomType)
 	{
 		final ProductId bomProductId = new BOMBuilder("BOMProductName")
+				.bomType(bomType)
 				.addLine("ComponentName", 5, millimeter)
 				.getBomProductId();
 
@@ -87,10 +96,12 @@ public class ProductBOMDescriptionBuilderTest
 		assertThat(productDescription).isEqualTo("ComponentName 5 mm");
 	}
 
-	@Test
-	public void withQty_Zero()
+	@ParameterizedTest
+	@EnumSource(value = BOMType.class, names = { "CurrentActive", "MakeToOrder" })
+	public void withQty_Zero(@NonNull final BOMType bomType)
 	{
 		final ProductId bomProductId = new BOMBuilder("BOMProductName")
+				.bomType(bomType)
 				.addLine("ComponentName", 0, millimeter)
 				.getBomProductId();
 
@@ -100,10 +111,12 @@ public class ProductBOMDescriptionBuilderTest
 		assertThat(productDescription).isEqualTo("ComponentName 0 mm");
 	}
 
-	@Test
-	public void withQty_One_Five_One()
+	@ParameterizedTest
+	@EnumSource(value = BOMType.class, names = { "CurrentActive", "MakeToOrder" })
+	public void withQty_One_Five_One(@NonNull final BOMType bomType)
 	{
 		final ProductId bomProductId = new BOMBuilder("BOMProductName")
+				.bomType(bomType)
 				.addLine("ComponentName1", 1, millimeter)
 				.addLine("ComponentName2", 5, millimeter)
 				.addLine("ComponentName3", 1, millimeter)
@@ -128,12 +141,23 @@ public class ProductBOMDescriptionBuilderTest
 			final I_M_Product bomProduct = createProduct(bomProductName);
 			bomProductId = ProductId.ofRepoId(bomProduct.getM_Product_ID());
 
+			final I_PP_Product_BOMVersions versions = createBOMVersions(bomProduct);
+
 			bom = newInstance(I_PP_Product_BOM.class);
 			bom.setM_Product_ID(bomProductId.getRepoId());
 			bom.setValue(bomProduct.getValue());
 			bom.setBOMType(BOMType.CurrentActive.getCode());
 			bom.setBOMUse(BOMUse.Manufacturing.getCode());
+			bom.setPP_Product_BOMVersions_ID(versions.getPP_Product_BOMVersions_ID());
+			bom.setValidFrom(SystemTime.asTimestamp());
 			saveRecord(bom);
+		}
+
+		public BOMBuilder bomType(@NonNull final BOMType bomType)
+		{
+			bom.setBOMType(bomType.getCode());
+			saveRecord(bom);
+			return this;
 		}
 
 		public ProductId getBomProductId()
@@ -165,5 +189,13 @@ public class ProductBOMDescriptionBuilderTest
 			return product;
 		}
 
+		private I_PP_Product_BOMVersions createBOMVersions(final I_M_Product product)
+		{
+			final I_PP_Product_BOMVersions versions = newInstance(I_PP_Product_BOMVersions.class);
+			versions.setM_Product_ID(product.getM_Product_ID());
+			versions.setName(product.getName());
+			saveRecord(versions);
+			return versions;
+		}
 	}
 }

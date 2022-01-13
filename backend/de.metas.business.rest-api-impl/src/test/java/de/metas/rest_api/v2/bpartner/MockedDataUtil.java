@@ -122,6 +122,7 @@ public class MockedDataUtil
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
+				.externalVersion(prefix + "_version")
 				// .locationIdentifier("gln-" + prefix + "_gln")
 				.location(location)
 				.build();
@@ -135,6 +136,7 @@ public class MockedDataUtil
 		jsonRequestContact.setEmail(prefix + "_email@email.net");
 		jsonRequestContact.setName(prefix + "_name");
 		jsonRequestContact.setPhone(prefix + "_phone");
+		jsonRequestContact.setInvoiceEmailEnabled(true);
 
 		return JsonRequestContactUpsertItem.builder()
 				.contactIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)

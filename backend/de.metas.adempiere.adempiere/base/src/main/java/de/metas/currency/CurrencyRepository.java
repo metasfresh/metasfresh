@@ -32,12 +32,14 @@ import lombok.NonNull;
 public class CurrencyRepository
 {
 	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	
+
+	@NonNull
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getById(currencyId);
 	}
 
+	@NonNull
 	public Currency getById(final int currencyId)
 	{
 		return getById(CurrencyId.ofRepoId(currencyId));

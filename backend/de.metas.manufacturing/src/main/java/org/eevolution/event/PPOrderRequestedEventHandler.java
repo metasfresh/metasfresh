@@ -1,22 +1,12 @@
 package org.eevolution.event;
 
-import java.time.Instant;
-import java.util.Collection;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.model.I_PP_Order;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
@@ -25,6 +15,16 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.model.I_PP_Order;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Collection;
 
 /*
  * #%L
@@ -56,15 +56,9 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
-	public Collection<Class<? extends PPOrderRequestedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderRequestedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderRequestedEvent.class);
-	}
-
-	@Override
-	public void validateEvent(@NonNull final PPOrderRequestedEvent event)
-	{
-		event.validate();
 	}
 
 	@Override
@@ -81,29 +75,31 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)
 	{
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
+		final PPOrderData ppOrderData = ppOrder.getPpOrderData();
 		final Instant dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
-		final ProductId productId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
+		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
 		final I_C_UOM uom = productBL.getStockUOM(productId);
-		final Quantity qtyRequired = Quantity.of(ppOrder.getQtyRequired(), uom);
+		final Quantity qtyRequired = Quantity.of(ppOrderData.getQtyRequired(), uom);
 
 		return ppOrderService.createOrder(PPOrderCreateRequest.builder()
-				.clientAndOrgId(ppOrder.getClientAndOrgId())
-				.productPlanningId(ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId()))
-				.materialDispoGroupId(ppOrder.getMaterialDispoGroupId())
-				.plantId(ppOrder.getPlantId())
-				.warehouseId(ppOrder.getWarehouseId())
-				//
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getProductDescriptor().getAttributeSetInstanceId()))
-				.qtyRequired(qtyRequired)
-				//
-				.dateOrdered(dateOrdered)
-				.datePromised(ppOrder.getDatePromised())
-				.dateStartSchedule(ppOrder.getDateStartSchedule())
-				//
-				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrder.getOrderLineId()))
-				//
-				.build());
+												  .clientAndOrgId(ppOrderData.getClientAndOrgId())
+												  .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
+												  .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
+												  .plantId(ppOrderData.getPlantId())
+												  .warehouseId(ppOrderData.getWarehouseId())
+												  //
+												  .productId(productId)
+												  .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId()))
+												  .qtyRequired(qtyRequired)
+												  //
+												  .dateOrdered(dateOrdered)
+												  .datePromised(ppOrderData.getDatePromised())
+												  .dateStartSchedule(ppOrderData.getDateStartSchedule())
+												  //
+				                                  .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
+												  .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+												  //
+												  .build());
 	}
 }

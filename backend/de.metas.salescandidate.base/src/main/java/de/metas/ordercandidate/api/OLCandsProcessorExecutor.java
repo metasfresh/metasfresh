@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
+import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -26,6 +27,7 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -73,8 +75,8 @@ public class OLCandsProcessorExecutor
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
+	private final AsyncBatchId asyncBatchId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
-	private final IOLCandBL olcandBL = Services.get(IOLCandBL.class);
 
 	private final OLCandSource candidatesSource;
 
@@ -83,12 +85,14 @@ public class OLCandsProcessorExecutor
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			@NonNull final OLCandSource candidatesSource)
+			@NonNull final OLCandSource candidatesSource,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
+		this.asyncBatchId = asyncBatchId;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
@@ -100,6 +104,7 @@ public class OLCandsProcessorExecutor
 		this.candidatesSource = candidatesSource;
 	}
 
+	@Nullable
 	public void process()
 	{
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
@@ -346,7 +351,12 @@ public class OLCandsProcessorExecutor
 			return false;
 		}
 
+		if (asyncBatchId != null && !cand.isAssignToBatch(asyncBatchId))
+		{
+			logger.debug("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId, cand);
+			return false;
+		}
+
 		return true;
 	}
-
 }

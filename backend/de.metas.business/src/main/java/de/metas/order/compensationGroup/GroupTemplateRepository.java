@@ -3,18 +3,25 @@ package de.metas.order.compensationGroup;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.contracts.ConditionsId;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.util.Check;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.springframework.stereotype.Component;
+import org.compiere.model.I_C_UOM;
+import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -42,52 +49,89 @@ import java.util.Optional;
  * #L%
  */
 
-@Component
+@Repository
 public class GroupTemplateRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	private final CCache<GroupTemplateId, GroupTemplate> //
-	groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate> builder()
+			groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate>builder()
 			.tableName(I_C_CompensationGroup_Schema.Table_Name)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_Schema_TemplateLine.Table_Name)
+			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
 			.initialCapacity(10)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
-			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
 			.build();
 
-	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
+	private final Map<GroupTemplateCompensationLineType, GroupMatcherFactory> groupMatcherFactoriesByType;
 
 	public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories)
 	{
-		final List<GroupMatcherFactory> groupMatcherFactoriesToUse = groupMatcherFactories.orElse(ImmutableList.of());
 		this.groupMatcherFactoriesByType = Maps.uniqueIndex(
-				groupMatcherFactoriesToUse,
+				groupMatcherFactories.orElse(ImmutableList.of()),
 				GroupMatcherFactory::getAppliesToLineType);
 	}
 
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
 	{
-		return groupTemplatesById.getOrLoad(groupTemplateId, () -> retrieveById(groupTemplateId));
+		return groupTemplatesById.getOrLoad(groupTemplateId, this::retrieveById);
 	}
 
 	private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId)
 	{
-		final I_C_CompensationGroup_Schema schemaPO = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
+		final I_C_CompensationGroup_Schema schemaRecord = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
 
-		final List<I_C_CompensationGroup_SchemaLine> schemaLinePOs = retrieveSchemaLines(groupTemplateId);
-		final List<GroupTemplateLine> lines = schemaLinePOs.stream()
-				.map(schemaLinePO -> toGroupTemplateLine(schemaLinePO, schemaLinePOs))
-				.collect(ImmutableList.toImmutableList());
-		Check.assumeNotEmpty(lines, "lines is not empty");
+		final ImmutableList<GroupTemplateRegularLine> mainLines = retrieveRegularLines(groupTemplateId);
+		final ImmutableList<GroupTemplateCompensationLine> compensationLines = retrieveCompensationLines(groupTemplateId);
+
 		return GroupTemplate.builder()
-				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
-				.name(schemaPO.getName())
-				.activityId(ActivityId.ofRepoIdOrNull(schemaPO.getC_Activity_ID()))
-				.lines(lines)
+				.id(GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID()))
+				.name(schemaRecord.getName())
+				.activityId(ActivityId.ofRepoIdOrNull(schemaRecord.getC_Activity_ID()))
+				.regularLinesToAdd(mainLines)
+				.compensationLines(compensationLines)
 				.build();
 	}
 
-	private List<I_C_CompensationGroup_SchemaLine> retrieveSchemaLines(final GroupTemplateId groupTemplateId)
+	private ImmutableList<GroupTemplateRegularLine> retrieveRegularLines(final GroupTemplateId groupTemplateId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_Schema_TemplateLine.class)
+				.addEqualsFilter(I_C_CompensationGroup_Schema_TemplateLine.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_CompensationGroup_Schema_TemplateLine.COLUMN_SeqNo)
+				.orderBy(I_C_CompensationGroup_Schema_TemplateLine.COLUMN_C_CompensationGroup_Schema_TemplateLine_ID)
+				.create()
+				.stream(I_C_CompensationGroup_Schema_TemplateLine.class)
+				.map(this::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private GroupTemplateRegularLine fromRecord(@NonNull final I_C_CompensationGroup_Schema_TemplateLine record)
+	{
+		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(uomId);
+		return GroupTemplateRegularLine.builder()
+				.id(GroupTemplateRegularLineId.ofRepoId(record.getC_CompensationGroup_Schema_TemplateLine_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.qty(Quantity.of(record.getQty(), uom))
+				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
+				.build();
+	}
+
+	private ImmutableList<GroupTemplateCompensationLine> retrieveCompensationLines(final @NonNull GroupTemplateId groupTemplateId)
+	{
+		final List<I_C_CompensationGroup_SchemaLine> compensationLineRecords = retrieveCompensationLineRecords(groupTemplateId);
+		return compensationLineRecords.stream()
+				.map(compensationLineRecord -> fromRecord(compensationLineRecord, compensationLineRecords))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<I_C_CompensationGroup_SchemaLine> retrieveCompensationLineRecords(final GroupTemplateId groupTemplateId)
+	{
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_SchemaLine.class)
 				.addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_Schema_ID, groupTemplateId)
 				.addOnlyActiveRecordsFilter()
@@ -97,32 +141,46 @@ public class GroupTemplateRepository
 				.list(I_C_CompensationGroup_SchemaLine.class);
 	}
 
-	private GroupTemplateLine toGroupTemplateLine(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
+	private GroupTemplateCompensationLine fromRecord(
+			@NonNull final I_C_CompensationGroup_SchemaLine compensationLineRecord,
+			@NonNull final List<I_C_CompensationGroup_SchemaLine> allCompensationLineRecords)
 	{
-		final BigDecimal percentage = schemaLinePO.getCompleteOrderDiscount();
-		return GroupTemplateLine.builder()
-				.id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
-				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
-				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
-				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
+		return GroupTemplateCompensationLine.builder()
+				.id(GroupTemplateLineId.ofRepoIdOrNull(compensationLineRecord.getC_CompensationGroup_SchemaLine_ID()))
+				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))
+				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
+				.percentage(extractPercentage(compensationLineRecord))
 				.build();
 	}
 
-	private GroupMatcher createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
+	@Nullable
+	private static Percent extractPercentage(final I_C_CompensationGroup_SchemaLine schemaLinePO)
 	{
-		final String type = schemaLinePO.getType();
+		final BigDecimal percentageBD = schemaLinePO.getCompleteOrderDiscount();
+		return percentageBD != null && percentageBD.signum() != 0
+				? Percent.of(percentageBD)
+				: null;
+	}
+
+	private GroupMatcher createGroupMatcher(
+			final I_C_CompensationGroup_SchemaLine compensationLineRecord,
+			final List<I_C_CompensationGroup_SchemaLine> allCompensationLineRecords)
+	{
+		final GroupTemplateCompensationLineType type = GroupTemplateCompensationLineType.ofNullableCode(compensationLineRecord.getType());
 		if (type == null)
 		{
 			return GroupMatchers.ALWAYS;
 		}
-
-		final GroupMatcherFactory groupMatcherFactory = groupMatcherFactoriesByType.get(type);
-		if (groupMatcherFactory == null)
+		else
 		{
-			throw new AdempiereException("No " + GroupMatcherFactory.class + " found for type=" + type)
-					.setParameter("schemaLine", schemaLinePO);
-		}
+			final GroupMatcherFactory groupMatcherFactory = groupMatcherFactoriesByType.get(type);
+			if (groupMatcherFactory == null)
+			{
+				throw new AdempiereException("No " + GroupMatcherFactory.class + " found for type=" + type)
+						.setParameter("schemaLine", compensationLineRecord);
+			}
 
-		return groupMatcherFactory.createPredicate(schemaLinePO, allSchemaLinePOs);
+			return groupMatcherFactory.createPredicate(compensationLineRecord, allCompensationLineRecords);
+		}
 	}
 }

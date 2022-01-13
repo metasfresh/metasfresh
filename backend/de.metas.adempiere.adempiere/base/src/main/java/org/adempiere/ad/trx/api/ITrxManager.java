@@ -50,7 +50,6 @@ import javax.annotation.Nullable;
 public interface ITrxManager extends ISingletonService
 {
 	/**
-	 *
 	 * @return list of current active transactions
 	 */
 	List<ITrx> getActiveTransactionsList();
@@ -60,15 +59,12 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * NOTE: don't call it directly, it will be called by the framework.
 	 *
-	 * @param trx
 	 * @return true if removed
 	 */
 	boolean remove(ITrx trx);
 
 	/**
 	 * Creates a builder for a transaction runnable configuration.
-	 *
-	 * @return
 	 */
 	ITrxRunConfigBuilder newTrxRunConfigBuilder();
 
@@ -84,9 +80,6 @@ public interface ITrxManager extends ISingletonService
 
 		/**
 		 * The default is {@link TrxPropagation#REQUIRES_NEW}.
-		 *
-		 * @param trxPropagation
-		 * @return
 		 */
 		ITrxRunConfigBuilder setTrxPropagation(TrxPropagation trxPropagation);
 
@@ -94,9 +87,6 @@ public interface ITrxManager extends ISingletonService
 		 * What to do if a runnable succeeds. Ignored if autoCommit is <code>true</code>.
 		 * <p>
 		 * The default is {@link OnRunnableSuccess#COMMIT}
-		 *
-		 * @param onRunnableSuccess
-		 * @return
 		 */
 		ITrxRunConfigBuilder setOnRunnableSuccess(OnRunnableSuccess onRunnableSuccess);
 
@@ -104,9 +94,6 @@ public interface ITrxManager extends ISingletonService
 		 * Specify what to do if a runnable fails. Ignored if autoCommit is <code>true</code>.
 		 * <p>
 		 * the default is {@link OnRunnableFail#ASK_RUNNABLE}.
-		 *
-		 * @param onRunnableFail
-		 * @return
 		 */
 		ITrxRunConfigBuilder setOnRunnableFail(OnRunnableFail onRunnableFail);
 
@@ -115,11 +102,6 @@ public interface ITrxManager extends ISingletonService
 
 	/**
 	 * Creates transaction runnable configuration.
-	 *
-	 * @param trxPropagation
-	 * @param onRunnableSuccess
-	 * @param onRunnableFail
-	 * @return
 	 *
 	 * @deprecated please use {@link #newTrxRunConfigBuilder()} instead.
 	 */
@@ -147,7 +129,6 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * Gets existing transaction.
 	 *
-	 * @param trxName
 	 * @return {@link ITrx} if transaction exists; null if transaction does not exist or trxName is null
 	 */
 	ITrx getTrxOrNull(String trxName);
@@ -157,7 +138,6 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * If trxName is null transaction then {@link ITrx#TRX_None} will be returned.
 	 *
-	 * @param trxName
 	 * @return existing transaction.
 	 * @throws TrxException is transaction was not found
 	 */
@@ -273,7 +253,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param manageTrx if <code>true</code>, or <code>trxName</code> is {@link #isNull(String)}, the transaction will be managed by this method. Also, in case transaction is managed, a trxName will
 	 *            be created using given "trxName" as name prefix. If trxName is null a new transaction name will be created with prefix "TrxRun". If trxName is null, the transaction will be
 	 *            automatically managed, even if the manageTrx parameter is false.
-	 * @param callable
+     *
 	 * @return callable's return value
 	 */
 	@Deprecated

@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 
@@ -52,4 +53,6 @@ public interface IGLJournalDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_GL_Journal> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+
+
 }

@@ -24,10 +24,13 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidateAllocCreateRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -40,6 +43,7 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -49,7 +53,6 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_Tax;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -57,6 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
@@ -223,7 +227,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
-	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtysInvoiced, String note);
+	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 
@@ -278,16 +282,23 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for its regeneration
 	 */
-	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
+	void setError(I_C_Invoice_Candidate ic, String errorMsg, @Nullable I_AD_Note note, boolean askForDeleteRegeneration);
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
+
+	void setInvoicingErrorAndSave(
+			I_C_Invoice_Candidate ic,
+			String errorMsg,
+			I_AD_Note note);
+
+	void clearInvoicingErrorAndSave(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
 	 *
 	 * @return tax override if set, C_Tax otherwise; never return null
 	 */
-	I_C_Tax getTaxEffective(I_C_Invoice_Candidate candidate);
+	Tax getTaxEffective(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.
@@ -393,8 +404,19 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
-	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
+	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
+
+	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
+
+	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
+
+	Quantity getQtyInvoicedStockUOM(I_C_Invoice_Candidate ic);
+
+	/**
+	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
+	 */
+	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
 }

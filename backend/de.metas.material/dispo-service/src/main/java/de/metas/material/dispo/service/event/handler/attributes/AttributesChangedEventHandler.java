@@ -1,14 +1,6 @@
 package de.metas.material.dispo.service.event.handler.attributes;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -21,6 +13,12 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 	}
 
 	@Override
-	public Collection<Class<? extends AttributesChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends AttributesChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(AttributesChangedEvent.class);
 	}

@@ -1,28 +1,9 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
-
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -41,6 +22,21 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 /*
  * #%L
@@ -73,14 +69,20 @@ public final class DocumentFieldDescriptor
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldDescriptor.class);
 
-	/** Internal field name (aka ColumnName) */
+	/**
+	 * Internal field name (aka ColumnName)
+	 */
 	private final String fieldName;
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
-	/** Detail ID or null if this is a field in main sections */
+	/**
+	 * Detail ID or null if this is a field in main sections
+	 */
 	private final DetailId detailId;
 
-	/** Is this the key field ? */
+	/**
+	 * Is this the key field ?
+	 */
 	private final boolean key;
 	private final boolean calculated;
 
@@ -126,7 +128,7 @@ public final class DocumentFieldDescriptor
 			// Characteristic.SpecialField_DocumentNo // NOP, don't exclude it (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 )
 			Characteristic.SpecialField_DocStatus //
 			, Characteristic.SpecialField_DocAction //
-	// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
+			// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
 	);
 
 	private final Set<Characteristic> characteristics;
@@ -147,7 +149,7 @@ public final class DocumentFieldDescriptor
 	@Getter
 	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
 
-	private DocumentFieldDescriptor(final Builder builder)
+	private DocumentFieldDescriptor(@NonNull final Builder builder)
 	{
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
@@ -237,6 +239,11 @@ public final class DocumentFieldDescriptor
 	public boolean isVirtualField()
 	{
 		return virtualField;
+	}
+
+	public boolean isReadonlyVirtualField()
+	{
+		return isVirtualField() && getReadonlyLogic().isConstantTrue();
 	}
 
 	public Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
@@ -345,8 +352,7 @@ public final class DocumentFieldDescriptor
 
 	public <T extends DocumentFieldDataBindingDescriptor> T getDataBindingNotNull(final Class<T> bindingClass)
 	{
-		@SuppressWarnings("unchecked")
-		final T dataBindingCasted = (T)dataBinding.orElseThrow(() -> new IllegalStateException("No databinding defined for " + this));
+		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)dataBinding.orElseThrow(() -> new IllegalStateException("No databinding defined for " + this));
 		return dataBindingCasted;
 	}
 
@@ -363,12 +369,13 @@ public final class DocumentFieldDescriptor
 	/**
 	 * Converts given value to target class.
 	 *
-	 * @param value value to be converted
-	 * @param targetType target type
-	 * @param widgetType optional widget type
+	 * @param value            value to be converted
+	 * @param targetType       target type
+	 * @param widgetType       optional widget type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
+	@Nullable
 	public <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,
@@ -440,7 +447,9 @@ public final class DocumentFieldDescriptor
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
-		/** See {@link #setTooltipIconName(String)}. */
+		/**
+		 * See {@link #setTooltipIconName(String)}.
+		 */
 		@Getter
 		private String tooltipIconName = null;
 
@@ -745,14 +754,14 @@ public final class DocumentFieldDescriptor
 			throw new AdempiereException("valueClass is unknown for " + this);
 		}
 
-		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
+		public Builder setDefaultValueExpression(@NonNull final Optional<IExpression<?>> defaultValueExpression)
 		{
 			assertNotBuilt();
 			this.defaultValueExpression = Preconditions.checkNotNull(defaultValueExpression);
 			return this;
 		}
 
-		public Builder setDefaultValueExpression(final IExpression<?> defaultValueExpression)
+		public Builder setDefaultValueExpression(@Nullable final IExpression<?> defaultValueExpression)
 		{
 			assertNotBuilt();
 			this.defaultValueExpression = Optional.of(defaultValueExpression);
@@ -833,11 +842,6 @@ public final class DocumentFieldDescriptor
 		private ILogicExpression buildReadonlyLogicEffective()
 		{
 			if (isParentLinkEffective())
-			{
-				return ConstantLogicExpression.TRUE;
-			}
-
-			if (isVirtualField())
 			{
 				return ConstantLogicExpression.TRUE;
 			}
@@ -1005,12 +1009,6 @@ public final class DocumentFieldDescriptor
 			if (!publicField && mandatory && !mandatoryDB)
 			{
 				return ConstantLogicExpression.FALSE;
-			}
-
-			// Case: DocumentNo special field shall always be mandatory
-			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
-			{
-				return ConstantLogicExpression.TRUE;
 			}
 
 			if (mandatory)

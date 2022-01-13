@@ -64,7 +64,7 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * @see IServerSync#getAllBPartners() for a more high-level description
 	 */
 	@Override
-	public List<SyncBPartner> getAllBPartners();
+	List<SyncBPartner> getAllBPartners();
 
 	/**
 	 * Send those products to the caller that
@@ -75,7 +75,7 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * </ul>
 	 */
 	@Override
-	public List<SyncProduct> getAllProducts();
+	List<SyncProduct> getAllProducts();
 
 	/**
 	 * Create {@link I_PMM_QtyReport_Event}s from the given <code>request</code>'s {@link SyncProductSupply} instances.<br>
@@ -86,18 +86,18 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * @see IServerSync#reportProductSupplies(PutProductSuppliesRequest)
 	 */
 	@Override
-	public void reportProductSupplies(PutProductSuppliesRequest request);
+	void reportProductSupplies(PutProductSuppliesRequest request);
 
 	/**
 	 * @see IServerSync#reportWeekSupply(PutWeeklySupplyRequest)
 	 */
 	@Override
-	public void reportWeekSupply(PutWeeklySupplyRequest request);
+	void reportWeekSupply(PutWeeklySupplyRequest request);
 
 	/**
 	 * @see IServerSync#reportRfQChanges(PutRfQChangeRequest)
 	 */
 	@Override
-	public void reportRfQChanges(PutRfQChangeRequest request);
+	void reportRfQChanges(PutRfQChangeRequest request);
 
 }

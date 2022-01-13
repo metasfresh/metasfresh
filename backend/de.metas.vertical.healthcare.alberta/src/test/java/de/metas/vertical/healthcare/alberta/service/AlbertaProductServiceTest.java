@@ -27,10 +27,13 @@ import de.metas.externalreference.AlbertaExternalSystem;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
@@ -43,6 +46,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,6 +81,8 @@ public class AlbertaProductServiceTest
 	{
 		//given
 		final ProductId targetProductId = ProductId.ofRepoId(911);
+		final ProductCategoryId targetProductCategoryId = ProductCategoryId.ofRepoId(999);
+
 		final PriceListId pharmacyPriceListId = PriceListId.ofRepoId(123);
 
 		final I_M_Product_AlbertaTherapy albertaTherapy = createAlbertaTherapy(targetProductId);
@@ -85,7 +91,10 @@ public class AlbertaProductServiceTest
 		final I_M_Product_AlbertaPackagingUnit albertaPackagingUnit = createAlbertaPackagingUnit(targetProductId);
 		final I_M_PriceList_Version priceListVersion = createPriceListVersion(pharmacyPriceListId);
 		final I_M_ProductPrice productPrice = createProductPrice(targetProductId, PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
-		final I_S_ExternalReference externalReference = createExternalReference(targetProductId);
+		final I_S_ExternalReference productExternalReference = createExternalReference(targetProductId.getRepoId(), ProductExternalReferenceType.PRODUCT);
+		final I_M_Product product = createProduct(targetProductId, targetProductCategoryId);
+		final I_S_ExternalReference productCategoryExternalReference = createExternalReference(targetProductCategoryId.getRepoId(),
+																							   ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
 
 		final GetAlbertaProductsInfoRequest getAlbertaProductsInfoRequest = GetAlbertaProductsInfoRequest.builder()
 				.productIdSet(ImmutableSet.of(targetProductId))
@@ -128,7 +137,20 @@ public class AlbertaProductServiceTest
 		assertThat(compositeProductInfo.getFixedPrice()).isEqualTo(productPrice.getPriceList());
 
 		//external ref
-		assertThat(compositeProductInfo.getAlbertaArticleId()).isEqualTo(externalReference.getExternalReference());
+		assertThat(compositeProductInfo.getAlbertaArticleId()).isEqualTo(productExternalReference.getExternalReference());
+		assertThat(compositeProductInfo.getProductGroupId()).isEqualTo(productCategoryExternalReference.getExternalReference());
+
+	}
+
+	private I_M_Product createProduct(@NonNull final ProductId productId, @NonNull final ProductCategoryId productCategoryId)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setM_Product_ID(productId.getRepoId());
+		product.setM_Product_Category_ID(productCategoryId.getRepoId());
+
+		saveRecord(product);
+
+		return product;
 	}
 
 	private I_M_Product_AlbertaTherapy createAlbertaTherapy(@NonNull final ProductId productId)
@@ -209,12 +231,13 @@ public class AlbertaProductServiceTest
 		return productPrice;
 	}
 
-	private I_S_ExternalReference createExternalReference(@NonNull final ProductId productId)
+	private I_S_ExternalReference createExternalReference(final int recordId,
+			@NonNull final IExternalReferenceType externalReferenceType)
 	{
 		final I_S_ExternalReference externalReference = newInstance(I_S_ExternalReference.class);
 
-		externalReference.setRecord_ID(productId.getRepoId());
-		externalReference.setType(ProductExternalReferenceType.PRODUCT.getCode());
+		externalReference.setRecord_ID(recordId);
+		externalReference.setType(externalReferenceType.getCode());
 		externalReference.setExternalReference("albertaRecord");
 		externalReference.setExternalSystem(AlbertaExternalSystem.ALBERTA.getCode());
 

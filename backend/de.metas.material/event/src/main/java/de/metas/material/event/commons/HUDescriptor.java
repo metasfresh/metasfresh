@@ -45,22 +45,18 @@ public class HUDescriptor
 
 	/** all quantities are in the product's stocking-UOM */
 	BigDecimal quantity;
-	BigDecimal quantityDelta;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private HUDescriptor(
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("huId") final int huId,
-			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
-			@JsonProperty("quantityDelta") @NonNull final BigDecimal quantityDelta)
+			@JsonProperty("quantity") @NonNull final BigDecimal quantity)
 	{
 		this.huId = checkIdGreaterThanZero("huId", huId);
 		this.productDescriptor = productDescriptor;
 
 		Check.errorIf(quantity.signum() < 0, "quantity may not be less than zero");
 		this.quantity = quantity;
-
-		this.quantityDelta = quantityDelta;
 	}
 }

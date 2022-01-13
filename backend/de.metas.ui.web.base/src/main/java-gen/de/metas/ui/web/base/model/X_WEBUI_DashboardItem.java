@@ -1,202 +1,139 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.ui.web.base.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for WEBUI_DashboardItem
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WEBUI_DashboardItem, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 723863047L;
+	private static final long serialVersionUID = 1552880742L;
 
     /** Standard Constructor */
-    public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
+    public X_WEBUI_DashboardItem (final Properties ctx, final int WEBUI_DashboardItem_ID, @Nullable final String trxName)
     {
       super (ctx, WEBUI_DashboardItem_ID, trxName);
-      /** if (WEBUI_DashboardItem_ID == 0)
-        {
-			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALEACE(MAX(SeqNo), 0) + 10 FROM WEBUI_DashboardItem WHERE WEBUI_Dashboard_ID=@WEBUI_Dashboard_ID@
-			setWEBUI_Dashboard_ID (0);
-			setWEBUI_DashboardItem_ID (0);
-			setWEBUI_DashboardWidgetType (null); // K
-        } */
     }
 
     /** Load Constructor */
-    public X_WEBUI_DashboardItem (Properties ctx, ResultSet rs, String trxName)
+    public X_WEBUI_DashboardItem (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Time range.
-		@param ES_TimeRange 
-		Time range using format 'PnDTnHnMn.nS'
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setES_TimeRange (java.lang.String ES_TimeRange)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setES_TimeRange (final @Nullable java.lang.String ES_TimeRange)
 	{
 		set_Value (COLUMNNAME_ES_TimeRange, ES_TimeRange);
 	}
 
-	/** Get Time range.
-		@return Time range using format 'PnDTnHnMn.nS'
-	  */
 	@Override
-	public java.lang.String getES_TimeRange () 
+	public java.lang.String getES_TimeRange() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange);
+		return get_ValueAsString(COLUMNNAME_ES_TimeRange);
 	}
 
-	/** Set Time range end.
-		@param ES_TimeRange_End 
-		Time range's ending offset (relative to now)
-	  */
 	@Override
-	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End)
+	public void setES_TimeRange_End (final @Nullable java.lang.String ES_TimeRange_End)
 	{
 		set_Value (COLUMNNAME_ES_TimeRange_End, ES_TimeRange_End);
 	}
 
-	/** Get Time range end.
-		@return Time range's ending offset (relative to now)
-	  */
 	@Override
-	public java.lang.String getES_TimeRange_End () 
+	public java.lang.String getES_TimeRange_End() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange_End);
+		return get_ValueAsString(COLUMNNAME_ES_TimeRange_End);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set URL.
-		@param URL 
-		Full URL address - e.g. http://www.adempiere.org
-	  */
 	@Override
-	public void setURL (java.lang.String URL)
+	public void setURL (final @Nullable java.lang.String URL)
 	{
 		set_Value (COLUMNNAME_URL, URL);
 	}
 
-	/** Get URL.
-		@return Full URL address - e.g. http://www.adempiere.org
-	  */
 	@Override
-	public java.lang.String getURL () 
+	public java.lang.String getURL() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_URL);
+		return get_ValueAsString(COLUMNNAME_URL);
 	}
 
 	@Override
-	public de.metas.ui.web.base.model.I_WEBUI_Dashboard getWEBUI_Dashboard() throws RuntimeException
+	public de.metas.ui.web.base.model.I_WEBUI_Dashboard getWEBUI_Dashboard()
 	{
 		return get_ValueAsPO(COLUMNNAME_WEBUI_Dashboard_ID, de.metas.ui.web.base.model.I_WEBUI_Dashboard.class);
 	}
 
 	@Override
-	public void setWEBUI_Dashboard(de.metas.ui.web.base.model.I_WEBUI_Dashboard WEBUI_Dashboard)
+	public void setWEBUI_Dashboard(final de.metas.ui.web.base.model.I_WEBUI_Dashboard WEBUI_Dashboard)
 	{
 		set_ValueFromPO(COLUMNNAME_WEBUI_Dashboard_ID, de.metas.ui.web.base.model.I_WEBUI_Dashboard.class, WEBUI_Dashboard);
 	}
 
-	/** Set Dashboard.
-		@param WEBUI_Dashboard_ID Dashboard	  */
 	@Override
-	public void setWEBUI_Dashboard_ID (int WEBUI_Dashboard_ID)
+	public void setWEBUI_Dashboard_ID (final int WEBUI_Dashboard_ID)
 	{
 		if (WEBUI_Dashboard_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_WEBUI_Dashboard_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_WEBUI_Dashboard_ID, Integer.valueOf(WEBUI_Dashboard_ID));
+			set_ValueNoCheck (COLUMNNAME_WEBUI_Dashboard_ID, WEBUI_Dashboard_ID);
 	}
 
-	/** Get Dashboard.
-		@return Dashboard	  */
 	@Override
-	public int getWEBUI_Dashboard_ID () 
+	public int getWEBUI_Dashboard_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Dashboard_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_Dashboard_ID);
 	}
 
-	/** Set Dashboard item.
-		@param WEBUI_DashboardItem_ID Dashboard item	  */
 	@Override
-	public void setWEBUI_DashboardItem_ID (int WEBUI_DashboardItem_ID)
+	public void setWEBUI_DashboardItem_ID (final int WEBUI_DashboardItem_ID)
 	{
 		if (WEBUI_DashboardItem_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_WEBUI_DashboardItem_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_WEBUI_DashboardItem_ID, Integer.valueOf(WEBUI_DashboardItem_ID));
+			set_ValueNoCheck (COLUMNNAME_WEBUI_DashboardItem_ID, WEBUI_DashboardItem_ID);
 	}
 
-	/** Get Dashboard item.
-		@return Dashboard item	  */
 	@Override
-	public int getWEBUI_DashboardItem_ID () 
+	public int getWEBUI_DashboardItem_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_DashboardItem_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_DashboardItem_ID);
 	}
 
 	/** 
@@ -208,54 +145,42 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	public static final String WEBUI_DASHBOARDWIDGETTYPE_Target = "T";
 	/** KPI = K */
 	public static final String WEBUI_DASHBOARDWIDGETTYPE_KPI = "K";
-	/** Set Widget type.
-		@param WEBUI_DashboardWidgetType Widget type	  */
 	@Override
-	public void setWEBUI_DashboardWidgetType (java.lang.String WEBUI_DashboardWidgetType)
+	public void setWEBUI_DashboardWidgetType (final java.lang.String WEBUI_DashboardWidgetType)
 	{
-
 		set_Value (COLUMNNAME_WEBUI_DashboardWidgetType, WEBUI_DashboardWidgetType);
 	}
 
-	/** Get Widget type.
-		@return Widget type	  */
 	@Override
-	public java.lang.String getWEBUI_DashboardWidgetType () 
+	public java.lang.String getWEBUI_DashboardWidgetType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_DashboardWidgetType);
+		return get_ValueAsString(COLUMNNAME_WEBUI_DashboardWidgetType);
 	}
 
 	@Override
-	public de.metas.ui.web.base.model.I_WEBUI_KPI getWEBUI_KPI() throws RuntimeException
+	public de.metas.ui.web.base.model.I_WEBUI_KPI getWEBUI_KPI()
 	{
 		return get_ValueAsPO(COLUMNNAME_WEBUI_KPI_ID, de.metas.ui.web.base.model.I_WEBUI_KPI.class);
 	}
 
 	@Override
-	public void setWEBUI_KPI(de.metas.ui.web.base.model.I_WEBUI_KPI WEBUI_KPI)
+	public void setWEBUI_KPI(final de.metas.ui.web.base.model.I_WEBUI_KPI WEBUI_KPI)
 	{
 		set_ValueFromPO(COLUMNNAME_WEBUI_KPI_ID, de.metas.ui.web.base.model.I_WEBUI_KPI.class, WEBUI_KPI);
 	}
 
-	/** Set KPI.
-		@param WEBUI_KPI_ID KPI	  */
 	@Override
-	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID)
+	public void setWEBUI_KPI_ID (final int WEBUI_KPI_ID)
 	{
 		if (WEBUI_KPI_ID < 1) 
 			set_Value (COLUMNNAME_WEBUI_KPI_ID, null);
 		else 
-			set_Value (COLUMNNAME_WEBUI_KPI_ID, Integer.valueOf(WEBUI_KPI_ID));
+			set_Value (COLUMNNAME_WEBUI_KPI_ID, WEBUI_KPI_ID);
 	}
 
-	/** Get KPI.
-		@return KPI	  */
 	@Override
-	public int getWEBUI_KPI_ID () 
+	public int getWEBUI_KPI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_KPI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_KPI_ID);
 	}
 }

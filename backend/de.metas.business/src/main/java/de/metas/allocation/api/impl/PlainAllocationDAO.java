@@ -22,22 +22,20 @@ package de.metas.allocation.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.util.TimeUtil;
-
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Set;
 
 public class PlainAllocationDAO extends AllocationDAO
 {
@@ -48,10 +46,9 @@ public class PlainAllocationDAO extends AllocationDAO
 	{
 		return retrieveAllocatedAmt(invoice, paymentIDsToIgnore, o -> {
 			final I_C_AllocationLine line = (I_C_AllocationLine)o;
-			final BigDecimal lineAmt = line.getAmount()
+			return line.getAmount()
 					.add(line.getDiscountAmt())
 					.add(line.getWriteOffAmt());
-			return lineAmt;
 		});
 	}
 
@@ -94,21 +91,18 @@ public class PlainAllocationDAO extends AllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice)
+	public BigDecimal retrieveAllocatedAmt(final org.compiere.model.@NonNull I_C_Invoice invoice)
 	{
 		return retrieveAllocatedAmt(invoice, o -> {
 			final I_C_AllocationLine line = (I_C_AllocationLine)o;
-			final BigDecimal lineAmt = line.getAmount()
+			return line.getAmount()
 					.add(line.getDiscountAmt())
 					.add(line.getWriteOffAmt());
-			return lineAmt;
 		});
 	}
 
 	private BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice, final TypedAccessor<BigDecimal> amountAccessor)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
@@ -143,8 +137,7 @@ public class PlainAllocationDAO extends AllocationDAO
 
 		return retrieveWriteoffAmt(invoice,  o -> {
 			final I_C_AllocationLine line = (I_C_AllocationLine)o;
-			final BigDecimal lineWriteOff = line.getWriteOffAmt();
-			return lineWriteOff;
+			return line.getWriteOffAmt();
 		});
 
 	}

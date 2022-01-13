@@ -1,12 +1,11 @@
 package de.metas.ui.web.material.adapter;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.Group;
+import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.Group.Type;
 import org.junit.jupiter.api.Test;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
-import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

@@ -35,6 +35,7 @@ import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -46,6 +47,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
@@ -186,6 +188,7 @@ public class ExternalReferenceRestControllerService
 					.externalReferenceType(type)
 					.recordId(metasfreshId.getValue())
 					.version(reference.getVersion())
+					.externalReferenceUrl(reference.getExternalReferenceUrl())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -263,6 +266,32 @@ public class ExternalReferenceRestControllerService
 				.findFirst();
 	}
 
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalBusinessKey(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalBusinessKey externalBusinessKey,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, Env::getOrgId);
+
+		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem());
+
+		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
+				.systemName(externalSystemName)
+				.item(JsonExternalReferenceLookupItem.builder()
+							  .type(externalReferenceType.getCode())
+							  .id(externalBusinessKey.asExternalValueAndSystem().getValue())
+							  .build())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
+		return lookupResponse.getItems()
+				.stream()
+				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.filter(Objects::nonNull)
+				.findFirst();
+	}
+
 	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @Nullable final String orgCode)
 	{
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
@@ -279,6 +308,17 @@ public class ExternalReferenceRestControllerService
 				.orElse(externalReferenceCandidate);
 
 		externalReferenceRepository.save(externalReferenceToUpsert);
+	}
+
+	@NonNull
+	public Optional<MetasfreshId> resolveExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final Optional<JsonMetasfreshId> jsonMetasfreshId = getJsonMetasfreshIdFromExternalReference(orgId, externalIdentifier, externalReferenceType);
+
+		return jsonMetasfreshId.map(metasfreshId -> MetasfreshId.of(metasfreshId.getValue()));
 	}
 
 	@NonNull
@@ -299,6 +339,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(request.getExternalReferenceItem().getLookupItem().getId())
 				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
 				.version(request.getExternalReferenceItem().getVersion())
+				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
 				.build();
 	}
 
@@ -317,6 +358,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(candidate.getExternalReference())
 				.recordId(candidate.getRecordId())
 				.version(candidate.getVersion())
+				.externalReferenceUrl(candidate.getExternalReferenceUrl())
 				.build();
 	}
 }

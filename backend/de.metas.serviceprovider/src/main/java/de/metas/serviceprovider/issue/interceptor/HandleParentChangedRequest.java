@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.issue.interceptor;
 
+import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.Effort;
 import lombok.Builder;
@@ -44,9 +45,15 @@ public class HandleParentChangedRequest
 	IssueId currentParentId;
 
 	@Nullable
-	Effort oldEffort;
+	Effort oldAggregatedEffort;
 
 	@Nullable
-	Effort currentEffort;
+	Effort currentAggregatedEffort;
 
+	@Nullable
+	Quantity oldInvoicableEffort;
+
+	@Nullable
+	Quantity currentInvoicableEffort;
+	
 }

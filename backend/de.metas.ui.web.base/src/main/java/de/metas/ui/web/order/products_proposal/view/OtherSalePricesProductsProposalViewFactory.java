@@ -1,20 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStats.LastInvoiceInfo;
@@ -44,6 +31,16 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -105,6 +102,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastSalesInvoiceDate))
+				.setAllowOpeningRowDetails(false)
 				.build();
 	}
 

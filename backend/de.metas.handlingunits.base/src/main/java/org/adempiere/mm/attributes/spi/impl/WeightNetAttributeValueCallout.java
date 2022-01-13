@@ -10,31 +10,29 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.util.Check;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
-import de.metas.handlingunits.attribute.weightable.IWeightable;
-import de.metas.util.Check;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 public class WeightNetAttributeValueCallout extends AbstractWeightAttributeValueCallout
 {
@@ -56,6 +54,7 @@ public class WeightNetAttributeValueCallout extends AbstractWeightAttributeValue
 			final Object valueNew)
 	{
 		recalculateWeightGross(attributeSet);
+		huReceiptScheduleBL.adjustPlanningHUStorageFromNetWeight(attributeSet);
 	}
 
 	/**

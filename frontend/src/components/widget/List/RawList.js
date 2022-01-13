@@ -3,7 +3,8 @@ import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { isEqual } from 'lodash';
+import { isEqual, findIndex, pullAt } from 'lodash';
+import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
 
@@ -13,7 +14,7 @@ import MultiSelect from '../MultiSelect';
  * to the top of the list. In case it's not in the list (changed partner for instance),
  * use defaultValue
  */
-const setSelectedValue = function(dropdownList, selected, defaultValue) {
+const setSelectedValue = function (dropdownList, selected, defaultValue) {
   const changedValues = {};
   let idx = 0;
   let selectedOption = selected;
@@ -23,13 +24,15 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
       selectedOption = { caption: selected, key: null };
     }
 
-    idx = dropdownList.findIndex(
+    idx = findIndex(
+      dropdownList,
       (item) => item.caption === selectedOption.caption
     );
 
     if (idx === -1) {
       if (defaultValue) {
-        idx = dropdownList.findIndex(
+        idx = findIndex(
+          dropdownList,
           (item) => item.caption === defaultValue.caption
         );
       }
@@ -37,14 +40,17 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
   }
 
   if (idx !== 0) {
-    const item = dropdownList.get(idx);
-    dropdownList = dropdownList.delete(idx);
-    dropdownList = dropdownList.insert(0, item);
+    idx = idx === -1 ? 0 : idx;
+    const item = dropdownList[idx];
+
+    pullAt(dropdownList, [idx]);
+    dropdownList.unshift(item);
+
     changedValues.dropdownList = dropdownList;
     idx = 0;
   }
 
-  changedValues.selected = dropdownList.get(idx);
+  changedValues.selected = dropdownList[idx];
   changedValues.dropdownList = dropdownList;
 
   return changedValues;
@@ -61,7 +67,7 @@ export class RawList extends PureComponent {
 
     this.state = {
       selected: props.selected || null,
-      dropdownList: props.list,
+      dropdownList: [...props.list],
     };
 
     this.focusDropdown = this.focusDropdown.bind(this);
@@ -77,23 +83,17 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      list,
-      mandatory,
-      defaultValue,
-      selected,
-      emptyText,
-      listHash,
-    } = this.props;
+    const { list, mandatory, defaultValue, selected, emptyText, listHash } =
+      this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
     // If data in the list changed, we either opened or closed the selection dropdown.
     // If we're closing it (bluring), then we don't care about the whole thing.
     if (listHash && !prevProps.listHash) {
-      dropdownList = list;
+      dropdownList = [...list];
       if (!mandatory && emptyText) {
-        dropdownList = dropdownList.push({
+        dropdownList.push({
           caption: this.props.properties.clearValueText,
           key: null,
         });
@@ -101,7 +101,7 @@ export class RawList extends PureComponent {
 
       changedValues.dropdownList = dropdownList;
 
-      if (dropdownList.size > 0) {
+      if (dropdownList.length > 0) {
         let selectedOption = null;
 
         if (selected || defaultValue) {
@@ -115,7 +115,7 @@ export class RawList extends PureComponent {
         changedValues.selected = null;
       }
 
-      if (!changedValues.selected && dropdownList.size > 0) {
+      if (!changedValues.selected && dropdownList.length > 0) {
         let newSelected = null;
 
         if (!isEqual(prevProps.selected, selected)) {
@@ -262,17 +262,11 @@ export class RawList extends PureComponent {
    * @param {object} event
    */
   handleKeyDown = (e) => {
-    const {
-      onSelect,
-      list,
-      loading,
-      readonly,
-      isToggled,
-      onOpenDropdown,
-    } = this.props;
+    const { onSelect, list, loading, readonly, isToggled, onOpenDropdown } =
+      this.props;
 
     if (e.key === 'Tab') {
-      if (list.size === 0 && !readonly && !loading) {
+      if (list.length === 0 && !readonly && !loading) {
         onSelect(null);
       }
     } else if (e.key === 'ArrowDown') {
@@ -321,7 +315,6 @@ export class RawList extends PureComponent {
     this.props.onFocus();
   }
 
-  // TODO: Use functions for refs
   render() {
     const {
       rank,
@@ -342,10 +335,28 @@ export class RawList extends PureComponent {
       isFocused,
       clearable,
       isMultiselect,
+      compositeWidgetData, // for composite lookups - all the widgets data
+      field,
+      listHash,
+      wrapperElement,
     } = this.props;
 
     let value = '';
     let placeholder = '';
+    const widgetData =
+      compositeWidgetData &&
+      compositeWidgetData.filter((itemWidgetData) => {
+        return itemWidgetData.field == field;
+      })[0];
+    const widgetDataValidStatus =
+      widgetData && widgetData.validStatus
+        ? widgetData.validStatus.valid
+        : false;
+    const emptyCompositeLookup =
+      compositeWidgetData &&
+      compositeWidgetData.every(
+        (widgetDataItem) => widgetDataItem.value === ''
+      );
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -363,6 +374,15 @@ export class RawList extends PureComponent {
       ? this.props.properties.emptyText
       : placeholder;
 
+    let width = this.dropdown ? this.dropdown.offsetWidth : 0;
+
+    if (wrapperElement) {
+      const wrapperWidth = wrapperElement.offsetWidth;
+      const offset = this.dropdown.offsetLeft;
+
+      width = wrapperWidth - offset;
+    }
+
     const classicDropdown = (
       <TetherComponent
         attachment="top left"
@@ -376,88 +396,108 @@ export class RawList extends PureComponent {
             pin: ['bottom'],
           },
         ]}
-      >
-        <div
-          ref={(ref) => (this.dropdown = ref)}
-          className={classnames('input-dropdown-container', {
-            'input-disabled': readonly,
-            'input-dropdown-container-static': rowId,
-            'input-table': rowId && !isModal,
-            'input-empty': !value,
-            'lookup-dropdown': lookupList,
-            'select-dropdown': !lookupList,
-            focused: isFocused,
-            opened: isToggled,
-            'input-mandatory': !lookupList && mandatory && !selected,
-          })}
-          tabIndex={tabIndex}
-          onFocus={readonly ? null : this.focusDropdown}
-          onClick={readonly ? null : this.handleClick}
-          onKeyDown={this.handleKeyDown}
-          onKeyUp={this.handleKeyUp}
-        >
-          <div
-            className={classnames('input-dropdown input-block', {
-              'input-secondary': rank,
-              pulse: updated,
-              'input-mandatory': mandatory && !selected,
-              'input-error':
-                validStatus &&
-                (!validStatus.valid && !validStatus.initialValue) &&
-                !isToggled,
-            })}
-            ref={(c) => (this.inputContainer = c)}
-          >
-            <div
-              className={classnames('input-editable input-dropdown-focused', {
-                [`text-${align}`]: align,
-              })}
-            >
-              <input
-                type="text"
-                className={classnames(
-                  'input-field js-input-field',
-                  'font-weight-semibold',
-                  {
-                    'input-disabled': disabled,
-                  }
-                )}
-                readOnly
-                tabIndex={-1}
-                placeholder={placeholder}
-                value={value}
-                disabled={readonly || disabled}
-              />
+        renderTarget={(ref) => {
+          return (
+            <div ref={ref}>
+              <div
+                ref={(ref) => (this.dropdown = ref)}
+                className={classnames('input-dropdown-container', {
+                  'input-disabled': readonly,
+                  'input-dropdown-container-static': rowId,
+                  'input-table': rowId && !isModal,
+                  'input-empty': !value,
+                  'lookup-dropdown': lookupList,
+                  'select-dropdown': !lookupList,
+                  focused: isFocused,
+                  opened: isToggled,
+                  'input-mandatory':
+                    (!lookupList && mandatory && !selected) ||
+                    (!widgetDataValidStatus &&
+                      mandatory &&
+                      lookupList &&
+                      !emptyCompositeLookup),
+                })}
+                tabIndex={tabIndex}
+                onFocus={readonly ? null : this.focusDropdown}
+                onClick={readonly ? null : this.handleClick}
+                onKeyDown={this.handleKeyDown}
+                onKeyUp={this.handleKeyUp}
+              >
+                <div
+                  className={classnames('input-dropdown input-block', {
+                    'input-secondary': rank,
+                    pulse: updated,
+                    'input-mandatory': mandatory && !selected,
+                    'input-error':
+                      validStatus &&
+                      !validStatus.valid &&
+                      !validStatus.initialValue &&
+                      !isToggled,
+                  })}
+                  ref={(c) => (this.inputContainer = c)}
+                >
+                  <div
+                    className={classnames(
+                      'input-editable input-dropdown-focused',
+                      {
+                        [`text-${align}`]: align,
+                      }
+                    )}
+                  >
+                    <input
+                      type="text"
+                      className={classnames(
+                        'input-field js-input-field',
+                        'font-weight-semibold',
+                        {
+                          'input-disabled': disabled,
+                        }
+                      )}
+                      readOnly
+                      tabIndex={-1}
+                      placeholder={placeholder}
+                      value={value}
+                      disabled={readonly || disabled}
+                    />
+                  </div>
+                  {clearable && selected && !readonly && (
+                    <div className="input-icon" onClick={this.handleClear}>
+                      <i className="meta-icon-close-alt" />
+                    </div>
+                  )}
+                  {!selected && (
+                    <div className="input-icon input-readonly">
+                      <i className="meta-icon-down-1" />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            {clearable && selected && !readonly && (
-              <div className="input-icon" onClick={this.handleClear}>
-                <i className="meta-icon-close-alt" />
-              </div>
-            )}
-            {!selected && (
-              <div className="input-icon input-readonly">
-                <i className="meta-icon-down-1" />
-              </div>
-            )}
-          </div>
-        </div>
-        {isFocused && isToggled && (
-          <SelectionDropdown
-            loading={loading}
-            options={this.state.dropdownList}
-            empty="There is no choice available"
-            selected={this.state.selected}
-            width={this.dropdown.offsetWidth}
-            onChange={this.handleTemporarySelection}
-            onSelect={this.handleSelect}
-            onCancel={this.handleCancel}
-          />
-        )}
-      </TetherComponent>
+          );
+        }}
+        renderElement={(ref) =>
+          isFocused &&
+          isToggled && (
+            <SelectionDropdown
+              ref={ref}
+              listHash={listHash}
+              loading={loading}
+              options={this.state.dropdownList}
+              empty={`${counterpart.translate('widget.list.hasNoResults')}`}
+              selected={this.state.selected}
+              width={width}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSelect}
+              onCancel={this.handleCancel}
+            />
+          )
+        }
+      />
     );
 
     const multiSelectDropdown = (
       <MultiSelect
+        listHash={listHash}
         options={this.state.dropdownList}
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
@@ -515,8 +555,7 @@ RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,
-  // Immutable List
-  list: PropTypes.object,
+  list: PropTypes.array,
   listHash: PropTypes.string,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
@@ -546,6 +585,9 @@ RawList.propTypes = {
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
   isMultiselect: PropTypes.bool,
+  compositeWidgetData: PropTypes.array,
+  field: PropTypes.string,
+  wrapperElement: PropTypes.any,
 };
 
 RawList.defaultProps = {

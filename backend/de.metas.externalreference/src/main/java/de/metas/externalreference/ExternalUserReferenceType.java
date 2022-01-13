@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Getter

@@ -1,15 +1,14 @@
 package de.metas.invoicecandidate.api;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.model.I_C_Tax;
-
 import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.util.lang.Percent;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Invoice Line predecessor which is returned by {@link IAggregationBL#aggregate()}.
@@ -76,9 +75,9 @@ public interface IInvoiceLineRW
 
 	void setC_Activity_ID(int activityID);
 
-	I_C_Tax getC_Tax();
+	Tax getC_Tax();
 
-	void setC_Tax(I_C_Tax tax);
+	void setC_Tax(Tax tax);
 
 	/**
 	 * @return true if this invoice line shall be printed

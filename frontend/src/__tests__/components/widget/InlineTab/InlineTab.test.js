@@ -2,29 +2,33 @@ import React from 'react';
 import nock from 'nock';
 import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+
 import viewHandler from '../../../../reducers/viewHandler';
-import InlineTab from '../../../../components/widget/InlineTab';
+import
+  InlineTab,
+  { InlineTab as DisconnectedInlineTab }
+from '../../../../components/widget/InlineTab';
 import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../../test_setup/fixtures/keymap.json';
 import { ShortcutProvider } from '../../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../../reducers/windowHandler';
 import tablesHandler from '../../../../reducers/tables';
-import { Provider } from 'react-redux';
+
 import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
 import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
 import fieldsByName from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_fieldsByName.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import inlineTabItemRow from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_item_row.json';
-import thunk from 'redux-thunk';
-const middlewares = [thunk];
 
+const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -50,7 +54,18 @@ describe('InlineTab component', () => {
 
   describe('rendering tests:', () => {
     it('renders without errors', () => {
-      shallow(<InlineTab {...props} />);
+      const properties = {
+        ...props,
+        id: 'abc123',
+        rowId: 'def123',
+        tabId: 'ghi123',
+        fieldsOrder: [],
+        getInlineTabLayoutAndData: jest.fn(),
+        updateDataValidStatus: jest.fn(),
+        setInlineTabItemProp: jest.fn(),
+      }
+
+      shallow(<DisconnectedInlineTab {...properties} />);
     });
 
     it('renders the InlineTab item correctly', () => {
@@ -109,6 +124,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>
@@ -147,6 +163,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>
@@ -184,6 +201,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>

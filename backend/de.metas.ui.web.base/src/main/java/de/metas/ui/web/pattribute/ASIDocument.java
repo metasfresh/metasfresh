@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -97,7 +98,7 @@ public class ASIDocument
 				.toString();
 	}
 
-	private final void assertNotCompleted()
+	private void assertNotCompleted()
 	{
 		if (completed)
 		{
@@ -187,7 +188,7 @@ public class ASIDocument
 		return JSONDocument.ofDocument(data, options);
 	}
 
-	public LookupValuesList getFieldLookupValuesForQuery(final String attributeName, final String query)
+	public LookupValuesPage getFieldLookupValuesForQuery(final String attributeName, final String query)
 	{
 		return data.getFieldLookupValuesForQuery(attributeName, query);
 	}
@@ -212,7 +213,7 @@ public class ASIDocument
 		return lookupValue;
 	}
 
-	private static final I_M_AttributeSetInstance createM_AttributeSetInstance(final ASIDocument asiDoc)
+	private static I_M_AttributeSetInstance createM_AttributeSetInstance(final ASIDocument asiDoc)
 	{
 		//
 		// Create M_AttributeSetInstance
@@ -226,7 +227,6 @@ public class ASIDocument
 		//
 		// Create M_AttributeInstances
 		asiDoc.getFieldViews()
-				.stream()
 				.forEach(asiField -> asiField
 						.getDescriptor()
 						.getDataBindingNotNull(ASIAttributeFieldBinding.class)

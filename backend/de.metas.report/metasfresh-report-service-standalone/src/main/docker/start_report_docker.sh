@@ -33,7 +33,7 @@ java_disable_jar_checking=${JAVA_DISABLE_JAR_CHECKING:-true}
 java_max_heap=${JAVA_MAX_HEAP:-128M}
 java_property_file=${JAVA_PROPERTY_FILE:-/opt/metasfresh/metasfresh-report/metasfresh.properties}
 java_heap_dump_path=${JAVA_HEAP_DUMP_PATH:-/opt/metasfresh/heapdump}
-debug_port=${DEBUG_PORT:-8788}
+debug_port=${DEBUG_PORT:-8791}
 debug_suspend=${DEBUG_SUSPEND:-n}
 java_additional_jvm_params=${JAVA_JVM_PARAMS:-""}
 

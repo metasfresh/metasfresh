@@ -97,7 +97,6 @@ public class Quantitys
 		return Quantity.of(1, uomRecord);
 	}
 
-
 	public Quantity createZero(@NonNull final ProductId productId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -138,11 +137,29 @@ public class Quantitys
 				stockUomId);
 	}
 
+	@Nullable
+	public Quantity addNullSafe(
+			@Nullable final UOMConversionContext conversionCtx,
+			@Nullable final Quantity firstAugent,
+			@Nullable final Quantity secondAugent)
+	{
+		if (firstAugent == null)
+		{
+			return secondAugent;
+		}
+		else if (secondAugent == null)
+		{
+			return firstAugent;
+		}
+		return add(conversionCtx, firstAugent, secondAugent);
+	}
+
 	/**
+	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
 	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
 	 */
 	public Quantity add(
-			@NonNull final UOMConversionContext conversionCtx,
+			@Nullable final UOMConversionContext conversionCtx,
 			@NonNull final Quantity firstAugent,
 			@NonNull final Quantity secondAugent)
 	{

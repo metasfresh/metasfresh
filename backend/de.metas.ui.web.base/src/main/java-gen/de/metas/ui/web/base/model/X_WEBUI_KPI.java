@@ -1,51 +1,65 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.ui.web.base.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for WEBUI_KPI
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 355217345L;
+	private static final long serialVersionUID = -95761224L;
 
     /** Standard Constructor */
-    public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
+    public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
     {
       super (ctx, WEBUI_KPI_ID, trxName);
-      /** if (WEBUI_KPI_ID == 0)
-        {
-			setChartType (null);
-			setES_Index (null);
-			setES_Type (null);
-			setIsGenerateComparation (false); // N
-			setName (null);
-			setPollIntervalSec (0); // 10
-			setWEBUI_KPI_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_WEBUI_KPI (Properties ctx, ResultSet rs, String trxName)
+    public X_WEBUI_KPI (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Window getAD_Window()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
+
+	@Override
+	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
+	}
+
+	@Override
+	public void setAD_Window_ID (final int AD_Window_ID)
+	{
+		if (AD_Window_ID < 1) 
+			set_Value (COLUMNNAME_AD_Window_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Window_ID, AD_Window_ID);
+	}
+
+	@Override
+	public int getAD_Window_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
+	}
 
 	/** 
 	 * ChartType AD_Reference_ID=540701
@@ -60,224 +74,234 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public static final String CHARTTYPE_AreaChart = "AC";
 	/** Metric = M */
 	public static final String CHARTTYPE_Metric = "M";
-	/** Set Chart Type.
-		@param ChartType 
-		Type fo chart to render
-	  */
 	@Override
-	public void setChartType (java.lang.String ChartType)
+	public void setChartType (final java.lang.String ChartType)
 	{
-
 		set_Value (COLUMNNAME_ChartType, ChartType);
 	}
 
-	/** Get Chart Type.
-		@return Type fo chart to render
-	  */
 	@Override
-	public java.lang.String getChartType () 
+	public java.lang.String getChartType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ChartType);
+		return get_ValueAsString(COLUMNNAME_ChartType);
 	}
 
-	/** Set Offset.
-		@param CompareOffset Offset	  */
 	@Override
-	public void setCompareOffset (java.lang.String CompareOffset)
+	public void setCompareOffset (final @Nullable java.lang.String CompareOffset)
 	{
 		set_Value (COLUMNNAME_CompareOffset, CompareOffset);
 	}
 
-	/** Get Offset.
-		@return Offset	  */
 	@Override
-	public java.lang.String getCompareOffset () 
+	public java.lang.String getCompareOffset() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CompareOffset);
+		return get_ValueAsString(COLUMNNAME_CompareOffset);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Elasticsearch Index.
-		@param ES_Index Elasticsearch Index	  */
 	@Override
-	public void setES_Index (java.lang.String ES_Index)
+	public void setES_Index (final @Nullable java.lang.String ES_Index)
 	{
 		set_Value (COLUMNNAME_ES_Index, ES_Index);
 	}
 
-	/** Get Elasticsearch Index.
-		@return Elasticsearch Index	  */
 	@Override
-	public java.lang.String getES_Index () 
+	public java.lang.String getES_Index() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_Index);
+		return get_ValueAsString(COLUMNNAME_ES_Index);
 	}
 
-	/** Set Elasticsearch query.
-		@param ES_Query Elasticsearch query	  */
 	@Override
-	public void setES_Query (java.lang.String ES_Query)
+	public void setES_Query (final @Nullable java.lang.String ES_Query)
 	{
 		set_Value (COLUMNNAME_ES_Query, ES_Query);
 	}
 
-	/** Get Elasticsearch query.
-		@return Elasticsearch query	  */
 	@Override
-	public java.lang.String getES_Query () 
+	public java.lang.String getES_Query() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_Query);
+		return get_ValueAsString(COLUMNNAME_ES_Query);
 	}
 
-	/** Set Time range.
-		@param ES_TimeRange 
-		Time range using format 'PnDTnHnMn.nS'
-	  */
 	@Override
-	public void setES_TimeRange (java.lang.String ES_TimeRange)
+	public void setES_TimeRange (final @Nullable java.lang.String ES_TimeRange)
 	{
 		set_Value (COLUMNNAME_ES_TimeRange, ES_TimeRange);
 	}
 
-	/** Get Time range.
-		@return Time range using format 'PnDTnHnMn.nS'
-	  */
 	@Override
-	public java.lang.String getES_TimeRange () 
+	public java.lang.String getES_TimeRange() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange);
+		return get_ValueAsString(COLUMNNAME_ES_TimeRange);
 	}
 
-	/** Set Time range end.
-		@param ES_TimeRange_End 
-		Time range's ending offset (relative to now)
-	  */
 	@Override
-	public void setES_TimeRange_End (java.lang.String ES_TimeRange_End)
+	public void setES_TimeRange_End (final @Nullable java.lang.String ES_TimeRange_End)
 	{
 		set_Value (COLUMNNAME_ES_TimeRange_End, ES_TimeRange_End);
 	}
 
-	/** Get Time range end.
-		@return Time range's ending offset (relative to now)
-	  */
 	@Override
-	public java.lang.String getES_TimeRange_End () 
+	public java.lang.String getES_TimeRange_End() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_TimeRange_End);
+		return get_ValueAsString(COLUMNNAME_ES_TimeRange_End);
 	}
 
-	/** Set Elasticsearch Type.
-		@param ES_Type Elasticsearch Type	  */
 	@Override
-	public void setES_Type (java.lang.String ES_Type)
+	public void setIsApplySecuritySettings (final boolean IsApplySecuritySettings)
 	{
-		set_Value (COLUMNNAME_ES_Type, ES_Type);
+		set_Value (COLUMNNAME_IsApplySecuritySettings, IsApplySecuritySettings);
 	}
 
-	/** Get Elasticsearch Type.
-		@return Elasticsearch Type	  */
 	@Override
-	public java.lang.String getES_Type () 
+	public boolean isApplySecuritySettings() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ES_Type);
+		return get_ValueAsBoolean(COLUMNNAME_IsApplySecuritySettings);
 	}
 
-	/** Set Compare.
-		@param IsGenerateComparation Compare	  */
 	@Override
-	public void setIsGenerateComparation (boolean IsGenerateComparation)
+	public void setIsGenerateComparation (final boolean IsGenerateComparation)
 	{
-		set_Value (COLUMNNAME_IsGenerateComparation, Boolean.valueOf(IsGenerateComparation));
+		set_Value (COLUMNNAME_IsGenerateComparation, IsGenerateComparation);
 	}
 
-	/** Get Compare.
-		@return Compare	  */
 	@Override
-	public boolean isGenerateComparation () 
+	public boolean isGenerateComparation() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsGenerateComparation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsGenerateComparation);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setKPI_AllowedStaledTimeInSec (final int KPI_AllowedStaledTimeInSec)
+	{
+		set_Value (COLUMNNAME_KPI_AllowedStaledTimeInSec, KPI_AllowedStaledTimeInSec);
+	}
+
+	@Override
+	public int getKPI_AllowedStaledTimeInSec() 
+	{
+		return get_ValueAsInt(COLUMNNAME_KPI_AllowedStaledTimeInSec);
+	}
+
+	/** 
+	 * KPI_DataSource_Type AD_Reference_ID=541339
+	 * Reference name: KPI_DataSource_Type
+	 */
+	public static final int KPI_DATASOURCE_TYPE_AD_Reference_ID=541339;
+	/** Elasticsearch = E */
+	public static final String KPI_DATASOURCE_TYPE_Elasticsearch = "E";
+	/** SQL = S */
+	public static final String KPI_DATASOURCE_TYPE_SQL = "S";
+	@Override
+	public void setKPI_DataSource_Type (final java.lang.String KPI_DataSource_Type)
+	{
+		set_Value (COLUMNNAME_KPI_DataSource_Type, KPI_DataSource_Type);
+	}
+
+	@Override
+	public java.lang.String getKPI_DataSource_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_KPI_DataSource_Type);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Polling interval (sec).
-		@param PollIntervalSec Polling interval (sec)	  */
 	@Override
-	public void setPollIntervalSec (int PollIntervalSec)
+	public void setSource_Table_ID (final int Source_Table_ID)
 	{
-		set_Value (COLUMNNAME_PollIntervalSec, Integer.valueOf(PollIntervalSec));
+		if (Source_Table_ID < 1) 
+			set_Value (COLUMNNAME_Source_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_Source_Table_ID, Source_Table_ID);
 	}
 
-	/** Get Polling interval (sec).
-		@return Polling interval (sec)	  */
 	@Override
-	public int getPollIntervalSec () 
+	public int getSource_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PollIntervalSec);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Source_Table_ID);
 	}
 
-	/** Set KPI.
-		@param WEBUI_KPI_ID KPI	  */
 	@Override
-	public void setWEBUI_KPI_ID (int WEBUI_KPI_ID)
+	public void setSQL_Details_WhereClause (final @Nullable java.lang.String SQL_Details_WhereClause)
+	{
+		set_Value (COLUMNNAME_SQL_Details_WhereClause, SQL_Details_WhereClause);
+	}
+
+	@Override
+	public java.lang.String getSQL_Details_WhereClause() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_Details_WhereClause);
+	}
+
+	@Override
+	public void setSQL_From (final @Nullable java.lang.String SQL_From)
+	{
+		set_Value (COLUMNNAME_SQL_From, SQL_From);
+	}
+
+	@Override
+	public java.lang.String getSQL_From() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_From);
+	}
+
+	@Override
+	public void setSQL_GroupAndOrderBy (final @Nullable java.lang.String SQL_GroupAndOrderBy)
+	{
+		set_Value (COLUMNNAME_SQL_GroupAndOrderBy, SQL_GroupAndOrderBy);
+	}
+
+	@Override
+	public java.lang.String getSQL_GroupAndOrderBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_GroupAndOrderBy);
+	}
+
+	@Override
+	public void setSQL_WhereClause (final @Nullable java.lang.String SQL_WhereClause)
+	{
+		set_Value (COLUMNNAME_SQL_WhereClause, SQL_WhereClause);
+	}
+
+	@Override
+	public java.lang.String getSQL_WhereClause() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_WhereClause);
+	}
+
+	@Override
+	public void setWEBUI_KPI_ID (final int WEBUI_KPI_ID)
 	{
 		if (WEBUI_KPI_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_WEBUI_KPI_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_WEBUI_KPI_ID, Integer.valueOf(WEBUI_KPI_ID));
+			set_ValueNoCheck (COLUMNNAME_WEBUI_KPI_ID, WEBUI_KPI_ID);
 	}
 
-	/** Get KPI.
-		@return KPI	  */
 	@Override
-	public int getWEBUI_KPI_ID () 
+	public int getWEBUI_KPI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_KPI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WEBUI_KPI_ID);
 	}
 }

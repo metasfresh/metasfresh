@@ -70,7 +70,7 @@ public class AcctSchemaTestHelper
 
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
 		acctSchemaRecord.setName("Test AcctSchema");
-		acctSchemaRecord.setC_Currency_ID(currencyId.getRepoId());
+		acctSchemaRecord.setC_Currency_ID(currencyIdEffective.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(costTypeId != null ? costTypeId.getRepoId() : 1);
 		acctSchemaRecord.setCostingLevel(CoalesceUtil.coalesce(costingLevel, CostingLevel.Client).getCode());
 		acctSchemaRecord.setCostingMethod(CoalesceUtil.coalesce(costingMethod, CostingMethod.StandardCosting).getCode());
@@ -123,9 +123,9 @@ public class AcctSchemaTestHelper
 		}
 
 		@Override
-		public AcctSchemaId getAcctSchemaIdByClientAndOrg(
-				final ClientId clientId,
-				final OrgId orgId)
+		public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(
+				@NonNull final ClientId clientId,
+				@NonNull final OrgId orgId)
 		{
 			logger.debug("Always returning acctSchemaId={} for clientId={} and orgId={}", acctSchemaId, clientId, orgId);
 			return acctSchemaId;

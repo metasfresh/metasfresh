@@ -33,6 +33,8 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 @Value
 public class JsonResponseContact
@@ -41,6 +43,7 @@ public class JsonResponseContact
 	public static final String EMAIL = "email";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String NAME = "name";
 	public static final String GREETING = "greeting";
 	public static final String CODE = "code";
@@ -52,6 +55,7 @@ public class JsonResponseContact
 	public static final String FAX = "fax";
 	public static final String DESCRIPTION = "description";
 	public static final String NEWSLETTER = "newsletter";
+	public static final String INVOICE_EMAIL_ENABLED = "invoiceEmailEnabled";
 	public static final String DEFAULT_CONTACT = "defaultContact";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String BILL_TO_DEFAULT = "billToDefault";
@@ -60,6 +64,10 @@ public class JsonResponseContact
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
+	public static final String ROLES = "roles";
+	public static final String METASFRESH_LOCATION_ID = "metasfreshLocationId";
+	public static final String EMAIL2 = "email2";
+	public static final String EMAIL3 = "email3";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -87,6 +95,9 @@ public class JsonResponseContact
 	String firstName;
 
 	@JsonInclude(Include.NON_EMPTY)
+	LocalDate birthday;
+
+	@JsonInclude(Include.NON_EMPTY)
 	String email;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -103,6 +114,9 @@ public class JsonResponseContact
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean newsletter;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	Boolean invoiceEmailEnabled;
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipToDefault;
@@ -128,9 +142,22 @@ public class JsonResponseContact
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean subjectMatter;
 
+	@ApiModelProperty(allowEmptyValue = false)
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseContactRole> roles;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
+
+	@ApiModelProperty(dataType = "java.lang.Integer")
+	JsonMetasfreshId metasfreshLocationId;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email2;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email3;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -143,8 +170,11 @@ public class JsonResponseContact
 			@JsonProperty(GREETING) final String greeting,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
+			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
+			@JsonProperty(EMAIL2) final String email2,
+			@JsonProperty(EMAIL3) final String email3,
 
 			@JsonProperty(MOBILE_PHONE) final String mobilePhone,
 			@JsonProperty(FAX) final String fax,
@@ -160,6 +190,9 @@ public class JsonResponseContact
 			@JsonProperty(PURCHASE) final boolean purchase,
 			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
+			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
+			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
+			@JsonProperty(METASFRESH_LOCATION_ID) @Nullable final JsonMetasfreshId metasfreshLocationId,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -186,9 +219,15 @@ public class JsonResponseContact
 		this.greeting = greeting;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.birthday = birthday;
 		this.email = email;
 		this.phone = phone;
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
+		this.roles = roles;
+		this.email2 = email2;
+		this.email3 = email3;
 
 		this.changeInfo = changeInfo;
+		this.metasfreshLocationId = metasfreshLocationId;
 	}
 }

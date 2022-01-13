@@ -1,25 +1,11 @@
 package de.metas.ui.web.document.filter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import com.google.common.collect.Maps;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.BarcodeScannerType;
@@ -34,6 +20,14 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /*
  * #%L
@@ -297,6 +291,11 @@ public final class DocumentFilterDescriptor
 			return this;
 		}
 
+		public Builder setDisplayName(final AdMessageKey displayName)
+		{
+			return setDisplayName(TranslatableStrings.adMessage(displayName));
+		}
+
 		@Nullable
 		public ITranslatableString getDisplayNameTrls()
 		{
@@ -356,25 +355,6 @@ public final class DocumentFilterDescriptor
 		{
 			parameters.add(parameter);
 			return this;
-		}
-
-		private Builder addParameters(final Collection<DocumentFilterParamDescriptor.Builder> parameters)
-		{
-			this.parameters.addAll(parameters);
-			return this;
-		}
-
-		public Collector<DocumentFilterParamDescriptor.Builder, ?, Builder> collectParameters()
-		{
-			final Supplier<List<DocumentFilterParamDescriptor.Builder>> supplier = ArrayList::new;
-			final BiConsumer<List<DocumentFilterParamDescriptor.Builder>, DocumentFilterParamDescriptor.Builder> accumulator = List::add;
-			final BinaryOperator<List<DocumentFilterParamDescriptor.Builder>> combiner = (list1, list2) -> {
-				list1.addAll(list2);
-				return list1;
-			};
-			final Function<List<DocumentFilterParamDescriptor.Builder>, Builder> finisher = this::addParameters;
-
-			return Collector.of(supplier, accumulator, combiner, finisher);
 		}
 
 		public Builder addInternalParameter(final String parameterName, final Object constantValue)

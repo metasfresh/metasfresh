@@ -36,7 +36,7 @@ public interface IUserBL extends ISingletonService
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
-	String buildContactName(final String firstName, final String lastName);
+	String buildContactName(@Nullable final String firstName, @Nullable final String lastName);
 
 	/**
 	 * Is the email valid
@@ -55,8 +55,12 @@ public interface IUserBL extends ISingletonService
 
 	void assertCanSendEMail(@NonNull final UserId adUserId);
 
+	Language getUserLanguage(@NonNull UserId userId);
+
 	/** @return the user's language or fallbacks; never returns {@code null}. */
 	Language getUserLanguage(I_AD_User userRecord);
 
 	UserEMailConfig getEmailConfigById(UserId userId);
+
+	void deleteUserDependency(I_AD_User userRecord);
 }

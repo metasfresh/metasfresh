@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -164,6 +165,7 @@ public final class Document
 
 	public interface DocumentValuesSupplier
 	{
+		@SuppressWarnings("StringOperationCanBeSimplified")
 		Object NO_VALUE = new String("NO_VALUE");
 
 		DocumentId getDocumentId();
@@ -171,7 +173,6 @@ public final class Document
 		String getVersion();
 
 		/**
-		 * @param fieldDescriptor
 		 * @return initial value or {@link #NO_VALUE} if it cannot provide a value
 		 */
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
@@ -964,7 +965,7 @@ public final class Document
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		final Collection<IDocumentField> documentFields = fieldsByName.values();
-		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
+		return ImmutableList.copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -1233,8 +1234,10 @@ public final class Document
 		}
 		else
 		{
-			final String expectedDocStatus = null; // N/A
-			documentBL.processEx(this, docAction, expectedDocStatus);
+			if (documentBL.getDocumentOrNull(this) != null)
+			{
+				documentBL.processEx(this, docAction, null);
+			}
 		}
 
 		//
@@ -1317,7 +1320,7 @@ public final class Document
 		{
 			for (final DependencyType triggeringDependencyType : DocumentFieldDependencyMap.DEPENDENCYTYPES_DocumentLevel)
 			{
-				updateOnDependencyChanged(documentFieldName, (IDocumentField)null, triggeringFieldName, triggeringDependencyType);
+				updateOnDependencyChanged(documentFieldName, null, triggeringFieldName, triggeringDependencyType);
 			}
 		}
 
@@ -1383,7 +1386,7 @@ public final class Document
 			changesCollector.collectReadonlyIfChanged(documentField, readonlyOld, reason);
 		}
 	}
-
+	@Nullable
 	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
 		// Check document's readonly logic
@@ -1545,7 +1548,7 @@ public final class Document
 		return getField(fieldName).getLookupValues();
 	}
 
-	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
+	public LookupValuesPage getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
@@ -1620,19 +1623,19 @@ public final class Document
 	/* package */ boolean isProcessed()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processed);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
+		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
 	}
 
 	/* package */ boolean isProcessing()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processing);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
+		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
 	}
 
 	/* package */ boolean isActive()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsActive);
-		return isActiveField != null ? isActiveField.getValueAsBoolean() : true; // active if field not found (shall not happen)
+		return isActiveField == null || isActiveField.getValueAsBoolean(); // active if field not found (shall not happen)
 	}
 
 	/* package */ void setParentReadonly(@NonNull final DocumentReadonly parentReadonly)
@@ -1760,7 +1763,7 @@ public final class Document
 		for (final IDocumentField documentField : getFields())
 		{
 			// skip virtual fields, those does not matter
-			if (documentField.isVirtualField())
+			if (documentField.isReadonlyVirtualField())
 			{
 				continue;
 			}

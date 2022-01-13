@@ -1,23 +1,25 @@
 package de.metas.contracts.compensationGroup;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.Group.GroupBuilder;
+import de.metas.order.compensationGroup.GroupMatcher;
+import de.metas.order.compensationGroup.GroupMatcherFactory;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLineType;
+import de.metas.order.compensationGroup.OrderGroupRepositoryAdvisor;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.contracts.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.order.compensationGroup.Group;
-import de.metas.order.compensationGroup.Group.GroupBuilder;
-import de.metas.util.Check;
-import de.metas.order.compensationGroup.GroupMatcher;
-import de.metas.order.compensationGroup.GroupMatcherFactory;
-import de.metas.order.compensationGroup.OrderGroupRepositoryAdvisor;
-import lombok.ToString;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -47,34 +49,41 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 	@Override
 	public void customizeFromOrder(final GroupBuilder groupBuilder, final I_C_Order order, final List<org.compiere.model.I_C_OrderLine> groupOrderLines)
 	{
-		groupBuilder.flatrateConditionsId(extractFlatrateTermConditionsId(groupOrderLines));
+		groupBuilder.contractConditionsId(extractContractConditionsId(groupOrderLines));
 	}
 
-	private static int extractFlatrateTermConditionsId(final List<org.compiere.model.I_C_OrderLine> groupOrderLines)
+	@Nullable
+	private static ConditionsId extractContractConditionsId(final List<org.compiere.model.I_C_OrderLine> groupOrderLines)
 	{
-		final ImmutableSet<Integer> flatrateConditionsIds = groupOrderLines.stream()
-				.map(groupOrderLine -> InterfaceWrapperHelper.create(groupOrderLine, I_C_OrderLine.class))
-				.map(I_C_OrderLine::getC_Flatrate_Conditions_ID)
-				.filter(flatrateTermConditionsId -> flatrateTermConditionsId > 0)
+		final ImmutableSet<ConditionsId> contractConditionsIds = groupOrderLines.stream()
+				.map(ContractsCompensationGroupAdvisor::extractContractConditionsId)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-		if (flatrateConditionsIds.isEmpty())
+		if (contractConditionsIds.isEmpty())
 		{
-			return -1;
+			return null;
 		}
-		else if (flatrateConditionsIds.size() == 1)
+		else if (contractConditionsIds.size() == 1)
 		{
-			return flatrateConditionsIds.iterator().next();
+			return contractConditionsIds.iterator().next();
 		}
 		else
 		{
-			throw new AdempiereException("More than one flatrate conditions found: " + flatrateConditionsIds);
+			throw new AdempiereException("More than one contract conditions found: " + contractConditionsIds);
 		}
 	}
 
-	@Override
-	public String getAppliesToLineType()
+	@Nullable
+	private static ConditionsId extractContractConditionsId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		return I_C_CompensationGroup_SchemaLine.TYPE_Flatrate;
+		final I_C_OrderLine contractsOrderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
+		return ConditionsId.ofRepoIdOrNull(contractsOrderLine.getC_Flatrate_Conditions_ID());
+	}
+
+	@Override
+	public GroupTemplateCompensationLineType getAppliesToLineType()
+	{
+		return GroupTemplateCompensationLineType.CONTRACT;
 	}
 
 	@Override
@@ -82,26 +91,37 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 			final de.metas.order.model.I_C_CompensationGroup_SchemaLine schemaLine,
 			final List<de.metas.order.model.I_C_CompensationGroup_SchemaLine> allSchemaLines)
 	{
-		final I_C_CompensationGroup_SchemaLine contractsSchemaLine = InterfaceWrapperHelper.create(schemaLine, I_C_CompensationGroup_SchemaLine.class);
-		final int flatrateConditionsId = contractsSchemaLine.getC_Flatrate_Conditions_ID();
-		return new FlatrateConditionsGroupMatcher(flatrateConditionsId);
+		final ConditionsId contractConditionsId = ConditionsId.ofRepoIdOrNull(schemaLine.getC_Flatrate_Conditions_ID());
+		if (contractConditionsId == null)
+		{
+			throw new AdempiereException("Schema line does not have contract conditions set: " + schemaLine);
+		}
+		return new ContractConditionsGroupMatcher(contractConditionsId);
 	}
 
 	@ToString
-	private static final class FlatrateConditionsGroupMatcher implements GroupMatcher
+	@AllArgsConstructor
+	private static final class ContractConditionsGroupMatcher implements GroupMatcher
 	{
-		private final int flatrateConditionsId;
-
-		public FlatrateConditionsGroupMatcher(int flatrateConditionsId)
-		{
-			Check.assume(flatrateConditionsId > 0, "flatrateConditionsId > 0");
-			this.flatrateConditionsId = flatrateConditionsId;
-		}
+		private final ConditionsId contractConditionsId;
 
 		@Override
-		public boolean isMatching(final Group group)
+		public boolean isMatching(@NonNull final Group group)
 		{
-			return flatrateConditionsId == group.getFlatrateConditionsId();
+			return Objects.equals(contractConditionsId, group.getContractConditionsId());
+
+			// if i just this instead:
+			// 
+			// return ConditionsId.equals(contractConditionsId, group.getContractConditionsId());
+			//
+			// then i get this build error in intellij
+			// /home/tobi/work-metas_2/metasfresh/backend/de.metas.contracts/src/main/java/de/metas/contracts/compensationGroup/ContractsCompensationGroupAdvisor.java:111:32
+			// java: no suitable method found for equals(de.metas.contracts.ConditionsId,de.metas.contracts.ConditionsId)
+			// method java.lang.Object.equals(java.lang.Object) is not applicable
+			// 	(actual and formal argument lists differ in length)
+			// method de.metas.contracts.ConditionsId.equals(java.lang.Object) is not applicable
+			// 	(actual and formal argument lists differ in length)
+			
 		}
 	}
 }

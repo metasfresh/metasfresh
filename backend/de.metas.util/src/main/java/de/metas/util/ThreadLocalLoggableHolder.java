@@ -4,6 +4,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -69,13 +71,15 @@ final class ThreadLocalLoggableHolder
 	/**
 	 * @return current thread's {@link ILoggable} instance or the {@link NullLoggable}. Never returns <code>null</code>
 	 */
+	@NonNull
 	/* package */ ILoggable getLoggable()
 	{
 		return getLoggableOr(Loggables.nop());
 	}
 
 	/** @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable} */
-	/* package */ ILoggable getLoggableOr(final ILoggable defaultLoggable)
+	@Nullable
+	/* package */ ILoggable getLoggableOr(@Nullable final ILoggable defaultLoggable)
 	{
 		final ILoggable loggable = loggableRef.get();
 		return loggable != null ? loggable : defaultLoggable;

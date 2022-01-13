@@ -1,62 +1,54 @@
 package de.metas.serviceprovider.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_ExternalProjectReference
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_S_ExternalProjectReference 
 {
 
-    /** TableName=S_ExternalProjectReference */
-    public static final String Table_Name = "S_ExternalProjectReference";
+	String Table_Name = "S_ExternalProjectReference";
 
-    /** AD_Table_ID=541466 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541466 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Project.
@@ -66,7 +58,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Project_ID (int C_Project_ID);
+	void setC_Project_ID (int C_Project_ID);
 
 	/**
 	 * Get Project.
@@ -76,38 +68,34 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Project_ID();
+	int getC_Project_ID();
 
-    /** Column name C_Project_ID */
-    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_Created = new ModelColumn<>(I_S_ExternalProjectReference.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set External project owner.
@@ -116,7 +104,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalProjectOwner (java.lang.String ExternalProjectOwner);
+	void setExternalProjectOwner (java.lang.String ExternalProjectOwner);
 
 	/**
 	 * Get External project owner.
@@ -125,12 +113,10 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalProjectOwner();
+	java.lang.String getExternalProjectOwner();
 
-    /** Column definition for ExternalProjectOwner */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalProjectOwner = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "ExternalProjectOwner", null);
-    /** Column name ExternalProjectOwner */
-    public static final String COLUMNNAME_ExternalProjectOwner = "ExternalProjectOwner";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalProjectOwner = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalProjectOwner", null);
+	String COLUMNNAME_ExternalProjectOwner = "ExternalProjectOwner";
 
 	/**
 	 * Set External reference.
@@ -139,7 +125,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalReference (java.lang.String ExternalReference);
+	void setExternalReference (java.lang.String ExternalReference);
 
 	/**
 	 * Get External reference.
@@ -148,12 +134,10 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalReference();
+	java.lang.String getExternalReference();
 
-    /** Column definition for ExternalReference */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalReference = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "ExternalReference", null);
-    /** Column name ExternalReference */
-    public static final String COLUMNNAME_ExternalReference = "ExternalReference";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalReference = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalReference", null);
+	String COLUMNNAME_ExternalReference = "ExternalReference";
 
 	/**
 	 * Set ExternalReferenceURL.
@@ -162,7 +146,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalReferenceURL (java.lang.String ExternalReferenceURL);
+	void setExternalReferenceURL (@Nullable java.lang.String ExternalReferenceURL);
 
 	/**
 	 * Get ExternalReferenceURL.
@@ -171,12 +155,10 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalReferenceURL();
+	@Nullable java.lang.String getExternalReferenceURL();
 
-    /** Column definition for ExternalReferenceURL */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalReferenceURL = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "ExternalReferenceURL", null);
-    /** Column name ExternalReferenceURL */
-    public static final String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalReferenceURL = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalReferenceURL", null);
+	String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
 
 	/**
 	 * Set External system.
@@ -186,7 +168,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalSystem (java.lang.String ExternalSystem);
+	void setExternalSystem (java.lang.String ExternalSystem);
 
 	/**
 	 * Get External system.
@@ -196,37 +178,33 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalSystem();
+	java.lang.String getExternalSystem();
 
-    /** Column definition for ExternalSystem */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalSystem = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "ExternalSystem", null);
-    /** Column name ExternalSystem */
-    public static final String COLUMNNAME_ExternalSystem = "ExternalSystem";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_S_ExternalProjectReference.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_IsActive = new ModelColumn<>(I_S_ExternalProjectReference.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Project type.
@@ -236,7 +214,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProjectType (java.lang.String ProjectType);
+	void setProjectType (java.lang.String ProjectType);
 
 	/**
 	 * Get Project type.
@@ -246,12 +224,35 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProjectType();
+	java.lang.String getProjectType();
 
-    /** Column definition for ProjectType */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ProjectType = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "ProjectType", null);
-    /** Column name ProjectType */
-    public static final String COLUMNNAME_ProjectType = "ProjectType";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_ProjectType = new ModelColumn<>(I_S_ExternalProjectReference.class, "ProjectType", null);
+	String COLUMNNAME_ProjectType = "ProjectType";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_SeqNo = new ModelColumn<>(I_S_ExternalProjectReference.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set External project reference ID.
@@ -260,7 +261,7 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
+	void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
 
 	/**
 	 * Get External project reference ID.
@@ -269,65 +270,33 @@ public interface I_S_ExternalProjectReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getS_ExternalProjectReference_ID();
+	int getS_ExternalProjectReference_ID();
 
-    /** Column definition for S_ExternalProjectReference_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_S_ExternalProjectReference_ID = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_ID", null);
-    /** Column name S_ExternalProjectReference_ID */
-    public static final String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_S_ExternalProjectReference_ID = new ModelColumn<>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_ID", null);
+	String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSeqNo (int SeqNo);
-
-	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getSeqNo();
-
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_Updated = new ModelColumn<>(I_S_ExternalProjectReference.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

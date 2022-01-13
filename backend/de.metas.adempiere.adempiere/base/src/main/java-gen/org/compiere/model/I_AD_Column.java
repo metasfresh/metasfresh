@@ -102,7 +102,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -112,7 +112,7 @@ public interface I_AD_Column
 	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -711,6 +711,29 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsEncrypted = new ModelColumn<>(I_AD_Column.class, "IsEncrypted", null);
 	String COLUMNNAME_IsEncrypted = "IsEncrypted";
+
+	/**
+	 * Set Exclude from Zoom Targets.
+	 * Exclude from zoom targets / related documents
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromZoomTargets (boolean IsExcludeFromZoomTargets);
+
+	/**
+	 * Get Exclude from Zoom Targets.
+	 * Exclude from zoom targets / related documents
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromZoomTargets();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsExcludeFromZoomTargets = new ModelColumn<>(I_AD_Column.class, "IsExcludeFromZoomTargets", null);
+	String COLUMNNAME_IsExcludeFromZoomTargets = "IsExcludeFromZoomTargets";
 
 	/**
 	 * Set Facet Filter.

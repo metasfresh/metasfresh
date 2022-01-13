@@ -30,8 +30,8 @@ import de.metas.i18n.ITranslatableString;
 @Builder
 public class OrderLineInputValidatorResults
 {
-	private final boolean isValid;
+	boolean isValid;
 
-	private final ITranslatableString errorMessage;
+	ITranslatableString errorMessage;
 
 }

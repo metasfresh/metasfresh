@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -16,7 +15,7 @@ import java.util.Optional;
 
 public interface IProductBOMDAO extends ISingletonService
 {
-	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull I_M_Product product, @NonNull BOMType bomType);
+	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull ProductId productId, @NonNull BOMType bomType);
 
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
@@ -37,8 +36,6 @@ public interface IProductBOMDAO extends ISingletonService
 
 	int retrieveLastLineNo(int ppProductBOMId);
 
-	Optional<I_PP_Product_BOM> getDefaultBOM(I_M_Product product);
-
 	Optional<I_PP_Product_BOM> getDefaultBOMByProductId(ProductId productId);
 
 	Optional<ProductBOMId> getDefaultBOMIdByProductId(ProductId productId);
@@ -56,7 +53,11 @@ public interface IProductBOMDAO extends ISingletonService
 
 	void save(I_PP_Product_BOMLine bomLine);
 
-	ProductBOMId createBOM(BOMCreateRequest request);
+	I_PP_Product_BOM createBOM(ProductBOMVersionsId versionsId, BOMCreateRequest request);
 
 	ProductId getBOMProductId(ProductBOMId bomId);
+
+	Optional<ProductBOMId> getLatestBOMByVersion(@NonNull final ProductBOMVersionsId bomVersionsId);
+
+	boolean isComponent(ProductId productId);
 }

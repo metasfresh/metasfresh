@@ -1,0 +1,32 @@
+SPC
+0200
+1
+CH1589144626811245431
+K
+Customer AG
+Street 21
+1234 Somecity
+
+
+CH
+
+
+
+
+
+
+
+100.80
+CHF
+K
+PayableBy AG
+Street 22
+3456 AnotherCity
+
+
+CH
+QRR
+
+
+EPD
+

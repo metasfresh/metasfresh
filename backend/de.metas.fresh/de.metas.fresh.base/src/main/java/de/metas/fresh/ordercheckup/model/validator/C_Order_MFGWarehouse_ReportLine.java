@@ -28,29 +28,23 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.util.Check;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order_MFGWarehouse_ReportLine.class)
+@Component
 public class C_Order_MFGWarehouse_ReportLine
 {
-	public static final transient C_Order_MFGWarehouse_ReportLine instance = new C_Order_MFGWarehouse_ReportLine();
-
-	private C_Order_MFGWarehouse_ReportLine()
-	{
-		super();
-	}
-
 	/**
 	 * We used to have the IsParentLine='Y' for the AD_Column of C_Order_MFGWarehouse_ReportLine.C_OrderLine_ID. <br>
 	 * That led to C_Order_MFGWarehouse_ReportLines being deep-copied ("copy-with-details") together with C_OrderLines, which was absolutely not what we wanted.<br>
 	 * This interceptor prevents this.
-	 * 
-	 * @param line
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validate(final I_C_Order_MFGWarehouse_ReportLine line)
 	{
 		final int lineOrderId = line.getC_OrderLine().getC_Order_ID();
 		final int headerOrderId = line.getC_Order_MFGWarehouse_Report().getC_Order_ID();
+
 		Check.errorIf(
 				lineOrderId != headerOrderId,
 				"line.getC_OrderLine().getC_Order_ID() = {}, but line.getC_Order_MFGWarehouse_Report().getC_Order_ID() = {}. "
@@ -58,5 +52,4 @@ public class C_Order_MFGWarehouse_ReportLine
 				lineOrderId, headerOrderId);
 
 	}
-
 }

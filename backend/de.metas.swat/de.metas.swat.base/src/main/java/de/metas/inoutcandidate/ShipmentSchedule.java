@@ -22,9 +22,11 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -35,6 +37,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -95,4 +99,32 @@ public class ShipmentSchedule
 
 	@Nullable
 	private ShipperId shipperId;
+
+	private boolean isProcessed;
+
+	public boolean hasAttributes(
+			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
+			@NonNull final IAttributeDAO attributeDAO)
+	{
+		final ImmutableSet<AttributeSetInstanceId> nonNullTargetAsiIds = targetAsiIds
+				.stream()
+				.filter(asiId -> !AttributeSetInstanceId.NONE.equals(asiId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (nonNullTargetAsiIds.isEmpty())
+		{
+			return true; // targetAsiIds was effectively empty, so we return true
+		}
+
+		if (getAttributeSetInstanceId() == null)
+		{
+			return false;
+		}
+
+		final ImmutableAttributeSet shipmentScheduleAsi = attributeDAO.getImmutableAttributeSetById(getAttributeSetInstanceId());
+
+		return nonNullTargetAsiIds.stream()
+				.map(attributeDAO::getImmutableAttributeSetById)
+				.anyMatch(shipmentScheduleAsi::containsAttributeValues);
+	}
 }

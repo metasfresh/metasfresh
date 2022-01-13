@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.alberta;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.pricing.PriceListId;
@@ -48,6 +49,8 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	String tenant;
 	@Nullable
 	PriceListId pharmacyPriceListId;
+	@Nullable
+	BPartnerId rootBPartnerIdForUsers;
 
 	@Builder
 	public ExternalSystemAlbertaConfig(final @NonNull ExternalSystemAlbertaConfigId id,
@@ -55,8 +58,9 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 			final @NonNull String value,
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
-			final @NonNull String tenant, 
-			final @Nullable PriceListId pharmacyPriceListId)
+			final @NonNull String tenant,
+			final @Nullable PriceListId pharmacyPriceListId,
+			final @Nullable BPartnerId rootBPartnerIdForUsers)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -65,6 +69,7 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 		this.baseUrl = baseUrl;
 		this.tenant = tenant;
 		this.pharmacyPriceListId = pharmacyPriceListId;
+		this.rootBPartnerIdForUsers = rootBPartnerIdForUsers;
 	}
 
 	public static ExternalSystemAlbertaConfig cast(@NonNull final IExternalSystemChildConfig childCondig)

@@ -1,17 +1,18 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Archive
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1859229196L;
+	private static final long serialVersionUID = 457753025L;
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -49,7 +50,7 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
-	public void setAD_Language (final java.lang.String AD_Language)
+	public void setAD_Language (final @Nullable java.lang.String AD_Language)
 	{
 		set_Value (COLUMNNAME_AD_Language, AD_Language);
 	}
@@ -142,6 +143,21 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+
+	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -172,7 +188,7 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -193,7 +209,7 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	/** Print = P */
 	public static final String DOCUMENTFLAVOR_Print = "P";
 	@Override
-	public void setDocumentFlavor (final java.lang.String DocumentFlavor)
+	public void setDocumentFlavor (final @Nullable java.lang.String DocumentFlavor)
 	{
 		set_Value (COLUMNNAME_DocumentFlavor, DocumentFlavor);
 	}
@@ -205,7 +221,19 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	@Override
+	public java.lang.String getDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}

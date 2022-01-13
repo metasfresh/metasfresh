@@ -1,38 +1,36 @@
 package de.metas.payment.esr;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.refid.model.I_C_ReferenceNo;
+import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.interfaces.I_C_DocType;
+import de.metas.money.CurrencyId;
+import de.metas.payment.api.C_Payment_ProcessInterceptor;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.api.impl.ESRImportBL;
+import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
+import de.metas.payment.esr.model.X_ESR_Import;
+import de.metas.payment.esr.model.validator.ESR_Main_Validator;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -58,36 +56,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.engine.impl.PlainDocumentBL;
-import de.metas.document.refid.model.I_C_ReferenceNo;
-import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
-import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.interfaces.I_C_DocType;
-import de.metas.money.CurrencyId;
-import de.metas.payment.api.C_Payment_ProcessInterceptor;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.api.impl.ESRImportBL;
-import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
-import de.metas.payment.esr.model.X_ESR_Import;
-import de.metas.payment.esr.model.validator.ESR_Main_Validator;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ESRTestBase
@@ -116,7 +94,7 @@ public class ESRTestBase
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		
+
 		dao = Services.get(IESRImportDAO.class);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
@@ -206,12 +184,32 @@ public class ESRTestBase
 		return esrImport;
 	}
 
+	protected I_ESR_ImportFile createImportFile(final I_ESR_Import esrImport)
+	{
+		final I_ESR_ImportFile file = newInstance(I_ESR_ImportFile.class);
+		file.setDataType(X_ESR_Import.DATATYPE_V11);
+		file.setESR_Import_ID(esrImport.getESR_Import_ID());
+		file.setC_BP_BankAccount_ID(esrImport.getC_BP_BankAccount_ID());
+		file.setAD_Org_ID(esrImport.getAD_Org_ID());
+
+		save(file);
+
+		return file;
+	}
+
 	protected I_C_BP_BankAccount createBankAccount(final boolean isEsrAccount,
 			final int orgId,
 			final int userId,
 			final String esrRenderedAcctNo,
 			@NonNull final CurrencyId currencyId)
 	{
+		// org bp
+		final de.metas.interfaces.I_C_BPartner orgBP = newInstance(de.metas.interfaces.I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(orgId);
+		orgBP.setAD_OrgBP_ID(orgId);
+		save(orgBP);
+
 		final I_C_Bank bank = newInstance(I_C_Bank.class);
 		bank.setName("Test Bank");
 		save(bank);
@@ -224,6 +222,7 @@ public class ESRTestBase
 		account.setAD_User_ID(userId);
 		account.setESR_RenderedAccountNo(esrRenderedAcctNo);
 		account.setC_Currency_ID(currencyId.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 
 		save(account);
 
@@ -369,10 +368,14 @@ public class ESRTestBase
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
+		esrImportLine.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 		esrImportLine.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
 		esrImportLine.setESRPostParticipantNumber(ESR_RenderedAccountNo.replaceAll("-", ""));
@@ -397,10 +400,33 @@ public class ESRTestBase
 		return esrImportLine;
 	}
 
+	protected I_ESR_ImportLine createESR_ImportLineFromOtherLine(@NonNull final I_ESR_ImportLine line)
+	{
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
+		esrImportLine.setESR_Import(esrImport);
+		esrImportLine.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
+		esrImportLine.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
+		esrImportLine.setESRPostParticipantNumber(line.getESRPostParticipantNumber());
+		esrImportLine.setESRFullReferenceNumber(line.getESRFullReferenceNumber());
+		esrImportLine.setAmount(line.getAmount());
+		esrImportLine.setC_Invoice_ID(line.getC_Invoice_ID());
+		esrImportLine.setPaymentDate(line.getPaymentDate());
+		save(esrImportLine);
+
+		return esrImportLine;
+	}
+
 	protected I_ESR_PostFinanceUserNumber createPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrNoForPostFinanceUser)
 	{
 		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);
-		postFinanceUserNumber.setC_BP_BankAccount(account);
+		postFinanceUserNumber.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		postFinanceUserNumber.setESR_RenderedAccountNo(esrNoForPostFinanceUser);
 		save(postFinanceUserNumber);
 

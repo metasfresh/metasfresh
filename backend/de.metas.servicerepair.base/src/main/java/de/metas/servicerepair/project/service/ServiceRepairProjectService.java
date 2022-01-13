@@ -35,10 +35,10 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
@@ -63,11 +63,12 @@ import de.metas.servicerepair.project.repository.requests.CreateRepairProjectTas
 import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjectTaskRequest;
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
+import de.metas.servicerepair.project.service.commands.ImportProjectCostsFromRepairOrderCommand;
+import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.QuotationLineIdsByCostCollectorIdIndex;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
 import de.metas.servicerepair.project.service.requests.CreateQuotationFromProjectRequest;
-import de.metas.servicerepair.repair_order.RepairManufacturingCostCollector;
-import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,11 +76,9 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
@@ -88,8 +87,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -106,6 +103,7 @@ public class ServiceRepairProjectService
 	private final ServiceRepairProjectTaskRepository projectTaskRepository;
 	private final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository;
 	private final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository;
+	private final OrderGroupRepository orderGroupRepository;
 
 	public ServiceRepairProjectService(
 			@NonNull final HUReservationService huReservationService,
@@ -114,7 +112,8 @@ public class ServiceRepairProjectService
 			@NonNull final RepairManufacturingOrderService repairManufacturingOrderService,
 			@NonNull final ServiceRepairProjectTaskRepository projectTaskRepository,
 			@NonNull final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository,
-			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository)
+			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository,
+			@NonNull final OrderGroupRepository orderGroupRepository)
 	{
 		this.huReservationService = huReservationService;
 		this.projectService = projectService;
@@ -123,6 +122,7 @@ public class ServiceRepairProjectService
 		this.projectTaskRepository = projectTaskRepository;
 		this.projectCostCollectorRepository = projectCostCollectorRepository;
 		this.projectConsumptionSummaryRepository = projectConsumptionSummaryRepository;
+		this.orderGroupRepository = orderGroupRepository;
 	}
 
 	public ServiceRepairProjectInfo getById(@NonNull final ProjectId projectId)
@@ -229,17 +229,22 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.getById(taskId);
 	}
 
-	public List<ServiceRepairProjectTask> getTaskByIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
+	public List<ServiceRepairProjectTask> getTasksByIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
 	{
 		return projectTaskRepository.getByIds(taskIds);
+	}
+
+	public List<ServiceRepairProjectTask> getTasksByProjectId(@NonNull final ProjectId projectId)
+	{
+		return projectTaskRepository.getByProjectId(projectId);
 	}
 
 	public OrderId createQuotationFromProject(@NonNull final CreateQuotationFromProjectRequest request)
 	{
 		return CreateQuotationFromProjectCommand.builder()
+				.orderGroupRepository(orderGroupRepository)
 				.projectService(this)
 				.projectId(request.getProjectId())
-				.serviceProductId(request.getServiceProductId())
 				.build()
 				.execute();
 	}
@@ -249,7 +254,7 @@ public class ServiceRepairProjectService
 		return projectCostCollectorRepository.getByProjectIdButNotIncludedInCustomerQuotation(projectId);
 	}
 
-	public void setCustomerQuotationToCostCollectors(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
+	public void setCustomerQuotationToCostCollectors(@NonNull final QuotationLineIdsByCostCollectorIdIndex map)
 	{
 		projectCostCollectorRepository.setCustomerQuotation(map);
 	}
@@ -294,7 +299,7 @@ public class ServiceRepairProjectService
 		}
 	}
 
-	private void createCostCollector(@NonNull final CreateProjectCostCollectorRequest request)
+	public void createCostCollector(@NonNull final CreateProjectCostCollectorRequest request)
 	{
 		final ServiceRepairProjectCostCollector costCollector = projectCostCollectorRepository.createNew(request);
 		addQtyToProjectTask(extractAddQtyToProjectTaskRequest(costCollector));
@@ -403,58 +408,16 @@ public class ServiceRepairProjectService
 
 	public void importCostsFromRepairOrderAndMarkTaskCompleted(@NonNull final RepairManufacturingOrderInfo repairOrder)
 	{
-		ServiceRepairProjectTask task = projectTaskRepository
-				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
-				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
-
-		final Set<PPOrderAndCostCollectorId> alreadyImportedRepairCostCollectorIds = projectCostCollectorRepository.retainExistingPPCostCollectorIds(
-				repairOrder.getProjectId(),
-				repairOrder.getCostCollectorIds());
-
-		for (final RepairManufacturingCostCollector mfgCostCollector : repairOrder.getCostCollectors())
-		{
-			// skip already imported cost collectors
-			if (alreadyImportedRepairCostCollectorIds.contains(mfgCostCollector.getId()))
-			{
-				continue;
-			}
-
-			createCostCollector(toCreateProjectCostCollectorRequest(task, mfgCostCollector));
-		}
-
-		if (!projectCostCollectorRepository.matchesByTaskAndProduct(task.getId(), repairOrder.getRepairedProductId()))
-		{
-			final ProductId repairedProductId = repairOrder.getRepairedProductId();
-			final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
-			final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(repairedProductId, repairedVhuId);
-
-			createCostCollector(CreateProjectCostCollectorRequest.builder()
-					.taskId(task.getId())
-					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-					.productId(repairedProductId)
-					.asiId(asiId)
-					.warrantyCase(task.getWarrantyCase())
-					.qtyReserved(repairOrder.getRepairedQty())
-					.reservedVhuId(repairedVhuId)
-					.build());
-		}
-
-		task = task.withRepairOrderDone(true);
-		projectTaskRepository.save(task);
-	}
-
-	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(
-			@NonNull final ServiceRepairProjectTask task,
-			@NonNull final RepairManufacturingCostCollector consumedComponentOrResource)
-	{
-		return CreateProjectCostCollectorRequest.builder()
-				.taskId(task.getId())
-				.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
-				.productId(consumedComponentOrResource.getProductId())
-				.qtyConsumed(consumedComponentOrResource.getQtyConsumed())
-				.repairOrderCostCollectorId(consumedComponentOrResource.getId())
-				.warrantyCase(task.getWarrantyCase())
-				.build();
+		ImportProjectCostsFromRepairOrderCommand.builder()
+				.projectTaskRepository(projectTaskRepository)
+				.projectCostCollectorRepository(projectCostCollectorRepository)
+				.serviceRepairProjectService(this)
+				.handlingUnitsBL(handlingUnitsBL)
+				//
+				.repairOrder(repairOrder)
+				//
+				.build()
+				.execute();
 	}
 
 	public void unimportCostsFromRepairOrder(@NonNull final RepairManufacturingOrderInfo repairOrder)
@@ -470,6 +433,10 @@ public class ServiceRepairProjectService
 				.collect(ImmutableList.toImmutableList());
 
 		deleteCostCollectors(costCollectorsToDelete, false);
+
+		projectTaskRepository.save(
+				projectTaskRepository.getById(taskId)
+						.withRepairOrderNotDone());
 	}
 
 	private void deleteCostCollectors(
@@ -495,7 +462,7 @@ public class ServiceRepairProjectService
 			costCollectorIdsToDelete.add(costCollector.getId());
 		}
 
-		huReservationService.deleteReservations(reservedVHUIds);
+		huReservationService.deleteReservationsByVHUIds(reservedVHUIds);
 		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
 		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}

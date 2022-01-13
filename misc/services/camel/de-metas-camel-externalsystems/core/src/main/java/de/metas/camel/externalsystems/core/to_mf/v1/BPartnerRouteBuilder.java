@@ -72,6 +72,6 @@ public class BPartnerRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-bpartner.api.uri}}/${header." + HEADER_ORG_CODE + "}");
+				.toD("{{metasfresh.upsert-bpartner.api.uri}}/${header." + HEADER_ORG_CODE + "}");
 	}
 }

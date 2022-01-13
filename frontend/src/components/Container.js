@@ -10,6 +10,7 @@ import {
 
 import DocumentList from '../containers/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
+import SpinnerOverlay from './app/SpinnerOverlay';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
@@ -32,7 +33,8 @@ class Container extends PureComponent {
       actions,
       showSidelist,
       siteName,
-      connectionError,
+      showSpinner, // indicator flag to show spinner while fetching data for the advanced search
+      connectionErrorType,
       noMargin,
       entity,
       children,
@@ -67,9 +69,8 @@ class Container extends PureComponent {
 
       if (modalPluginName) {
         // get the plugin holding the required component
-        const parentPlugin = window.META_HOST_APP.getRegistry().getEntry(
-          modalPluginName
-        );
+        const parentPlugin =
+          window.META_HOST_APP.getRegistry().getEntry(modalPluginName);
 
         PluginModalComponent = parentPlugin.components.filter(
           (component) => component.id === pluginModal.id
@@ -107,7 +108,10 @@ class Container extends PureComponent {
           />
         )}
 
-        {connectionError && <ErrorScreen />}
+        {/* error type display */}
+        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
+
+        {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
         <div
           className={
@@ -137,7 +141,8 @@ class Container extends PureComponent {
               isDocumentNotSaved={
                 modal.saveStatus &&
                 !modal.saveStatus.saved &&
-                (modal.validStatus && !modal.validStatus.initialValue)
+                modal.validStatus &&
+                !modal.validStatus.initialValue
               }
             />
           )}
@@ -219,7 +224,7 @@ class Container extends PureComponent {
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
- * @prop {bool} connectionError
+ * @prop {string} connectionErrorType
  * @prop {*} closeModalCallback
  * @prop {string} dataId
  * @prop {*} docNoData
@@ -259,7 +264,7 @@ Container.propTypes = {
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
-  connectionError: PropTypes.bool,
+  connectionErrorType: PropTypes.string,
   dataId: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
@@ -290,6 +295,7 @@ Container.propTypes = {
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
   hasComments: PropTypes.bool,
+  showSpinner: PropTypes.bool,
 };
 
 /**
@@ -306,14 +312,15 @@ const mapStateToProps = (state, { windowId }) => {
 
   return {
     notFound: master.notFound,
-    connectionError: state.windowHandler.connectionError || false,
+    connectionErrorType: state.appHandler.connectionErrorType || '',
+    showSpinner: state.windowHandler.showSpinner || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,
     breadcrumb: state.menuHandler.breadcrumb,
   };
 };
 
-export default connect(
-  mapStateToProps,
-  { setRawModalTitle, setRawModalDescription }
-)(Container);
+export default connect(mapStateToProps, {
+  setRawModalTitle,
+  setRawModalDescription,
+})(Container);

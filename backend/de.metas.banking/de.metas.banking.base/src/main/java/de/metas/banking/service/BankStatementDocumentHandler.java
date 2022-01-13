@@ -1,25 +1,7 @@
 package de.metas.banking.service;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -39,6 +21,25 @@ import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -235,7 +236,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		//
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
-		final HashSet<PaymentId> consideredPaymentIds = new HashSet<>();
+		final HashSet<PaymentId> consideredPaymentIds = extractCurrentPaymentIds(lines);
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -285,18 +286,32 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		return IDocument.STATUS_Completed;
 	}
 
+	private HashSet<PaymentId> extractCurrentPaymentIds(final List<I_C_BankStatementLine> lines)
+	{
+		final HashSet<PaymentId> paymentIds = new HashSet<>();
+
+		lines.stream()
+				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
+				.filter(Objects::nonNull)
+				.forEach(paymentIds::add);
+
+		final ImmutableSet<BankStatementLineId> bankStatementLineIds = extractBankStatementLineIds(lines);
+		services.getBankStatementLineReferences(bankStatementLineIds)
+				.stream()
+				.map(BankStatementLineReference::getPaymentId)
+				.forEach(paymentIds::add);
+
+		return paymentIds;
+	}
+
 	private List<PaymentReconcileRequest> extractPaymentReconcileRequests(final List<I_C_BankStatementLine> lines)
 	{
 		final ArrayList<PaymentReconcileRequest> requests = new ArrayList<>();
-		final ArrayList<BankStatementLineId> bankStatementLineIds = new ArrayList<>();
 
 		//
 		// Extract payment reconcile requests from bank statement lines
 		for (final I_C_BankStatementLine line : lines)
 		{
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-			bankStatementLineIds.add(bankStatementLineId);
-
 			final PaymentReconcileRequest request = extractPaymentReconcileRequestOrNull(line);
 			if (request != null)
 			{
@@ -306,6 +321,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		// Extract payment reconcile requests from bank statement line references
+		final ImmutableSet<BankStatementLineId> bankStatementLineIds = extractBankStatementLineIds(lines);
 		final List<PaymentReconcileRequest> lineRefRequests = services
 				.getBankStatementLineReferences(bankStatementLineIds)
 				.stream()
@@ -339,6 +355,14 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final PaymentId paymentId = lineRef.getPaymentId();
 		final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLineRef(lineRef.getId());
 		return PaymentReconcileRequest.of(paymentId, reconcileRef);
+	}
+
+	private static ImmutableSet<BankStatementLineId> extractBankStatementLineIds(@NonNull final List<I_C_BankStatementLine> lines)
+	{
+		return lines.stream()
+				.map(line -> BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID()))
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

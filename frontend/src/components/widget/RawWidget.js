@@ -2,12 +2,11 @@ import React, { createRef, PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
-import { List as ImmutableList } from 'immutable';
 
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
@@ -21,19 +20,7 @@ export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
-    const { widgetData } = props;
-    let cachedValue = undefined;
-
-    if (widgetData && widgetData[0]) {
-      if (widgetData[0].value !== undefined) {
-        cachedValue = widgetData[0].value;
-      } else if (
-        widgetData[0].status &&
-        widgetData[0].status.value !== undefined
-      ) {
-        cachedValue = widgetData[0].status.value;
-      }
-    }
+    const cachedValue = RawWidget.getCachedValue(props);
 
     this.rawWidget = createRef(null);
 
@@ -53,6 +40,7 @@ export class RawWidget extends PureComponent {
     if (rawWidget.current && autoFocus) {
       try {
         rawWidget.current.focus();
+        this.setState({ isFocused: true });
       } catch (e) {
         console.error(`Custom widget doesn't have 'focus' function defined`);
       }
@@ -67,28 +55,93 @@ export class RawWidget extends PureComponent {
   // (Selection attributes) so we have to update the `cachedValue` to the
   // value from widgetData, once it's available
   static getDerivedStateFromProps(props, state) {
-    if (
-      typeof state.cachedValue === 'undefined' &&
-      props.widgetData &&
-      props.widgetData[0]
-    ) {
-      let cachedValue = undefined;
-      if (props.widgetData[0].value !== undefined) {
-        cachedValue = props.widgetData[0].value;
-      } else if (
-        props.widgetData[0].status &&
-        props.widgetData[0].status.value !== undefined
-      ) {
-        cachedValue = props.widgetData[0].status.value;
-      }
+    if (typeof state.cachedValue === 'undefined') {
+      const cachedValue = RawWidget.getCachedValue(props);
 
-      return {
-        cachedValue,
-      };
+      if (cachedValue) {
+        return {
+          cachedValue,
+        };
+      }
     }
 
     return null;
   }
+
+  /**
+   * @method getCachedValue
+   * @summary extract cached value from widget props
+   *
+   * @param {object} props
+   */
+  static getCachedValue(props) {
+    const { widgetData } = props;
+    let cachedValue = undefined;
+
+    if (widgetData && widgetData[0]) {
+      if (widgetData[0].value !== undefined) {
+        cachedValue = widgetData[0].value;
+      } else if (
+        widgetData[0].status &&
+        widgetData[0].status.value !== undefined
+      ) {
+        cachedValue = widgetData[0].status.value;
+      }
+    }
+
+    return cachedValue;
+  }
+
+  /**
+   * @method resetCachedValue
+   * @summary used by parent components to force resetting cached value in case
+   * there's new data but widget is reused
+   */
+  resetCachedValue = () => {
+    const cachedValue = RawWidget.getCachedValue(this.props);
+
+    this.setState({ cachedValue });
+  };
+
+  /**
+   * @method setWidgetType
+   * @summary used for password fields, when user wants to reveal the typed password
+   *
+   * @param {string} type - toggles between text/password
+   */
+  setWidgetType = (type) => (this.rawWidget.current.type = type);
+
+  /**
+   * @method showErrorPopup
+   * @summary shows error message on mouse over
+   */
+  showErrorPopup = () => this.setState({ errorPopup: true });
+
+  /**
+   * @method hideErrorPopup
+   * @summary hides error message on mouse out
+   */
+  hideErrorPopup = () => this.setState({ errorPopup: false });
+
+  /**
+   * @method clearFieldWarning
+   * @summary Suppress showing the error message, as user already acknowledged it
+   * @param {*} warning
+   */
+  clearFieldWarning = (warning) => {
+    if (warning) {
+      this.setState({
+        clearedFieldWarning: true,
+      });
+    }
+  };
+
+  /**
+   * @method toggleTooltip
+   * @summary toggle tooltip (if it's available)
+   * @param {bool} show
+   */
+  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
 
   /**
    * @method handleListFocus
@@ -114,12 +167,8 @@ export class RawWidget extends PureComponent {
    * duplicated focus actions in the parent TableRow
    */
   handleFocus = () => {
-    const {
-      handleFocus,
-      listenOnKeysFalse,
-      disableShortcut,
-      widgetType,
-    } = this.props;
+    const { handleFocus, listenOnKeysFalse, disableShortcut, widgetType } =
+      this.props;
 
     // fix issue in Cypress with cut underscores - false positive failing tests
     // - commented out because if you focus on an item and you disable the shourtcuts
@@ -157,12 +206,10 @@ export class RawWidget extends PureComponent {
       listenOnKeysTrue,
       enableOnClickOutside,
     } = this.props;
+    const { isFocused } = this.state;
 
-    this.setState(
-      {
-        isFocused: false,
-      },
-      () => {
+    if (isFocused) {
+      this.setState({ isFocused: false }, () => {
         enableOnClickOutside && enableOnClickOutside();
         allowShortcut();
         handleBlur && handleBlur();
@@ -171,8 +218,8 @@ export class RawWidget extends PureComponent {
         if (widgetField) {
           this.handlePatch(widgetField, value, id);
         }
-      }
-    );
+      });
+    }
   };
 
   /**
@@ -209,13 +256,8 @@ export class RawWidget extends PureComponent {
    * @param {*} e - DOM event
    */
   handleKeyDown = (e) => {
-    const {
-      lastFormField,
-      widgetType,
-      filterWidget,
-      fields,
-      closeTableField,
-    } = this.props;
+    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
+      this.props;
     const value = e.target.value;
     const { key } = e;
     const widgetField = getWidgetField({ filterWidget, fields });
@@ -223,13 +265,13 @@ export class RawWidget extends PureComponent {
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
-    const NumberWidgets = ImmutableList([
+    const NumberWidgets = [
       'Integer',
       'Amount',
       'Quantity',
       'Number',
       'CostPrice',
-    ]);
+    ];
     if (
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)
@@ -281,13 +323,8 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const {
-      handlePatch,
-      inProgress,
-      widgetType,
-      maxLength,
-      widgetData,
-    } = this.props;
+    const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
+      this.props;
     const { cachedValue } = this.state;
     const willPatch = shouldPatch({
       property,
@@ -340,46 +377,6 @@ export class RawWidget extends PureComponent {
   };
 
   /**
-   * @method setWidgetType
-   * @summary used for password fields, when user wants to reveal the typed password
-   *
-   * @param {string} type - toggles between text/password
-   */
-  setWidgetType = (type) => (this.rawWidget.type = type);
-
-  /**
-   * @method showErrorPopup
-   * @summary shows error message on mouse over
-   */
-  showErrorPopup = () => this.setState({ errorPopup: true });
-
-  /**
-   * @method hideErrorPopup
-   * @summary hides error message on mouse out
-   */
-  hideErrorPopup = () => this.setState({ errorPopup: false });
-
-  /**
-   * @method clearFieldWarning
-   * @summary Suppress showing the error message, as user already acknowledged it
-   * @param {*} warning
-   */
-  clearFieldWarning = (warning) => {
-    if (warning) {
-      this.setState({
-        clearedFieldWarning: true,
-      });
-    }
-  };
-
-  /**
-   * @method toggleTooltip
-   * @summary toggle tooltip (if it's available)
-   * @param {bool} show
-   */
-  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
-
-  /**
    * @method renderErrorPopup
    * @summary this is self explanatory
    * @param {string} reason - the cause of error
@@ -407,6 +404,8 @@ export class RawWidget extends PureComponent {
       defaultValue,
       fieldName,
       maxLength,
+      isFilterActive,
+      suppressChange,
     } = this.props;
     let tabIndex = this.props.tabIndex;
     const { isFocused, charsTyped } = this.state;
@@ -464,6 +463,8 @@ export class RawWidget extends PureComponent {
           widgetProperties,
           showErrorBorder,
           isFocused,
+          isFilterActive,
+          suppressChange,
         }}
         ref={this.rawWidget}
         charsTyped={charsTypedCount}
@@ -474,6 +475,34 @@ export class RawWidget extends PureComponent {
         onHandleProcess={this.handleProcess}
       />
     );
+  };
+
+  /**
+   * @method isScanQRbuttonPanel
+   * @returns boolean value indicating that we care in the case where the widget is rendered within a panel layout and has a barcodeScannerType (qrcode)
+   */
+  isScanQRbuttonPanel = () => {
+    const { barcodeScannerType, layoutType } = this.props;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
+  };
+
+  /**
+   * @method getAdaptedFieldColSize
+   * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
+   */
+  getAdaptedFieldColSize = () =>
+    this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
+
+  /**
+   * @method onDetectedQR
+   * @summary After the QR code is detected the value of the field is updated with the corresponding string
+   * @param {string} qrCode
+   */
+  onDetectedQR = (qrCode) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, qrCode);
   };
 
   render() {
@@ -497,12 +526,10 @@ export class RawWidget extends PureComponent {
       fieldInputClass,
     } = this.props;
 
-    const {
-      errorPopup,
-      clearedFieldWarning,
-      tooltipToggled,
-      isFocused,
-    } = this.state;
+    const fieldColSize = this.getAdaptedFieldColSize();
+
+    const { errorPopup, clearedFieldWarning, tooltipToggled, isFocused } =
+      this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
     const quickInput = subentity === 'quickInput';
@@ -563,7 +590,8 @@ export class RawWidget extends PureComponent {
             ? 'col-sm-12 '
             : type === 'primaryLongLabels'
             ? 'col-sm-6'
-            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
       }
     }
 
@@ -658,6 +686,10 @@ export class RawWidget extends PureComponent {
               />
             )}
           </div>
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          )}
         </div>
       </div>
     );

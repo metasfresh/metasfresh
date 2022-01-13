@@ -1,18 +1,19 @@
 package de.metas.material.event.stockestimate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -46,18 +47,29 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 	@JsonCreator
 	@Builder
 	public StockEstimateCreatedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("date") final Instant date,
+			@NonNull @JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@NonNull @JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@NonNull @JsonProperty("date") final Instant date,
 			@JsonProperty("plantId") final int plantId,
-			@JsonProperty("quantity") final BigDecimal quantity)
+			@JsonProperty("freshQtyOnHandId") final int freshQtyOnHandId,
+			@JsonProperty("freshQtyOnHandLineId") final int freshQtyOnHandLineId,
+			@Nullable @JsonProperty("qtyStockEstimateSeqNo") final Integer qtyStockEstimateSeqNo,
+			@NonNull @JsonProperty("eventDate") final Instant eventDate
+	)
 	{
-		super(eventDescriptor, productDescriptor, date, plantId, quantity);
+		super(eventDescriptor, 
+			  materialDescriptor, 
+			  date, 
+			  plantId, 
+			  freshQtyOnHandId, 
+			  freshQtyOnHandLineId, 
+			  qtyStockEstimateSeqNo, 
+			  eventDate);
 	}
 
 	@Override
 	public BigDecimal getQuantityDelta()
 	{
-		return getQuantity();
+		return getMaterialDescriptor().getQuantity();
 	}
 }

@@ -30,6 +30,7 @@ import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 
 /*
  * #%L
@@ -114,7 +115,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 
 			// preview
 			getResult().setReportData(
-					pickList.getReportContent(),
+					new ByteArrayResource(pickList.getReportContent()),
 					buildFilename(row),
 					OutputType.PDF.getContentType());
 

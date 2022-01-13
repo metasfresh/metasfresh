@@ -17,9 +17,14 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserAuthTokenRepository;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserId;
+import de.metas.user.UserMailRepository;
+import de.metas.user.UserQueryRepository;
+import de.metas.user.UserSubstituteRepository;
 import de.metas.user.api.ChangeUserPasswordRequest;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
@@ -33,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -47,12 +53,16 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
+
+
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
@@ -65,6 +75,26 @@ public class UserBL implements IUserBL
 	private MailService mailService()
 	{
 		return SpringContextHolder.instance.getBean(MailService.class);
+	}
+
+	private UserAuthTokenRepository getUserAuthTokenRepository()
+	{
+		return SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
+	}
+
+	private UserQueryRepository getUserQueryRepository()
+	{
+		return SpringContextHolder.instance.getBean(UserQueryRepository.class);
+	}
+
+	private UserMailRepository getUserMailRepository()
+	{
+		return SpringContextHolder.instance.getBean(UserMailRepository.class);
+	}
+
+	private UserSubstituteRepository getUserSubstituteRepository()
+	{
+		return SpringContextHolder.instance.getBean(UserSubstituteRepository.class);
 	}
 
 	@Override
@@ -308,15 +338,15 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public String buildContactName(final String firstName, final String lastName)
+	public String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
 	{
 		final StringBuilder contactName = new StringBuilder();
-		if (!Check.isEmpty(lastName, true))
+		if (lastName != null && !Check.isBlank(lastName))
 		{
 			contactName.append(lastName.trim());
 		}
 
-		if (!Check.isEmpty(firstName, true))
+		if (firstName != null && !Check.isBlank(firstName))
 		{
 			if (contactName.length() > 0)
 			{
@@ -407,12 +437,19 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public Language getUserLanguage(@NonNull final UserId userId)
+	{
+		final I_AD_User user = getById(userId);
+		return getUserLanguage(user);
+	}
+
+	@Override
 	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final String languageStr = CoalesceUtil.coalesceSuppliers(
-				() -> userRecord.getAD_Language(),
+				userRecord::getAD_Language,
 				() -> getBPartnerLanguage(userRecord),
-				() -> Env.getADLanguageOrBaseLanguage());
+				Env::getADLanguageOrBaseLanguage);
 
 		return Language.getLanguage(languageStr);
 	}
@@ -445,6 +482,29 @@ public class UserBL implements IUserBL
 				.username(userRecord.getEMailUser())
 				.password(userRecord.getEMailUserPW())
 				.build();
+	}
+
+	@Override
+	public void deleteUserDependency(@NonNull final I_AD_User userRecord)
+	{
+
+		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
+
+		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
+		getUserAuthTokenRepository().deleteUserAuthTokenByUserId(userId);
+
+		userRolePermissionsDAO.deleteUserOrgAccessByUserId(userId);
+
+		userRolePermissionsDAO.deleteUserOrgAssignmentByUserId(userId);
+
+		roleDAO.deleteUserRolesByUserId(userId);
+
+		getUserSubstituteRepository().deleteUserSubstituteByUserId(userId);
+
+		getUserMailRepository().deleteUserMailByUserId(userId);
+
+		getUserQueryRepository().deleteUserQueryByUserId(userId);
+
 	}
 
 }

@@ -16,17 +16,17 @@ public class Topic
 	Type type;
 	String fullName;
 
-	public static final Topic remote(final String name)
+	public static Topic remote(final String name)
 	{
 		return builder().name(name).type(Type.REMOTE).build();
 	}
 
-	public static final Topic local(final String name)
+	public static Topic local(final String name)
 	{
 		return builder().name(name).type(Type.LOCAL).build();
 	}
 
-	public static final Topic of(final String name, Type type)
+	public static Topic of(final String name, final Type type)
 	{
 		return builder().name(name).type(type).build();
 	}

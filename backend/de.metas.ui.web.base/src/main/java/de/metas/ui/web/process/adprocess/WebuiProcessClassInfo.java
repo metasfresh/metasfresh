@@ -1,21 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.reflect.MethodReference;
-import org.reflections.ReflectionUtils;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
@@ -24,7 +8,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
 import de.metas.process.JavaProcess;
@@ -35,6 +18,7 @@ import de.metas.ui.web.devices.providers.DeviceDescriptorsProviders;
 import de.metas.ui.web.process.descriptor.ProcessParamDevicesProvider;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -44,6 +28,21 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.MethodReference;
+import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -68,10 +67,9 @@ import lombok.NonNull;
  */
 
 /**
- * Decorates a {@link ProcessClassInfo} and contains webui related informations too.
- * 
- * @author metas-dev <dev@metasfresh.com>
+ * Decorates a {@link ProcessClassInfo} and contains webui related information too.
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class WebuiProcessClassInfo
 {
@@ -86,7 +84,7 @@ public final class WebuiProcessClassInfo
 
 	public static WebuiProcessClassInfo of(@Nullable final String processClassname)
 	{
-		if (Check.isEmpty(processClassname, true))
+		if (processClassname == null || Check.isBlank(processClassname))
 		{
 			return NULL;
 		}
@@ -109,7 +107,9 @@ public final class WebuiProcessClassInfo
 		}
 	}
 
-	/** Reset {@link ProcessClassInfo} cache */
+	/**
+	 * Reset {@link ProcessClassInfo} cache
+	 */
 	public static void resetCache()
 	{
 		cache.invalidateAll();
@@ -118,12 +118,14 @@ public final class WebuiProcessClassInfo
 
 	private static final Logger logger = LogManager.getLogger(WebuiProcessClassInfo.class);
 
-	/** "Process class" to {@link WebuiProcessClassInfo} cache */
+	/**
+	 * "Process class" to {@link WebuiProcessClassInfo} cache
+	 */
 	private static final LoadingCache<Class<?>, WebuiProcessClassInfo> cache = CacheBuilder.newBuilder().weakKeys() // to prevent ClassLoader memory leaks nightmare
 			.build(new CacheLoader<Class<?>, WebuiProcessClassInfo>()
 			{
 				@Override
-				public WebuiProcessClassInfo load(final Class<?> processClass)
+				public WebuiProcessClassInfo load(final @NonNull Class<?> processClass)
 				{
 					try
 					{
@@ -138,7 +140,7 @@ public final class WebuiProcessClassInfo
 			});
 
 	@VisibleForTesting
-	static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass) throws Exception
+	static WebuiProcessClassInfo createWebuiProcessClassInfo(final Class<?> processClass)
 	{
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.of(processClass);
 
@@ -147,13 +149,13 @@ public final class WebuiProcessClassInfo
 		@SuppressWarnings("unchecked")
 		final Set<Method> lookupValuesProviderMethods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withAnnotation(ProcessParamLookupValuesProvider.class));
 		final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders = lookupValuesProviderMethods.stream()
-				.map(method -> createParamLookupValuesProvider(method))
+				.map(WebuiProcessClassInfo::createParamLookupValuesProvider)
 				.collect(GuavaCollectors.toImmutableMap());
 
 		@SuppressWarnings("unchecked")
 		final Set<Method> deviceProviderMethods = ReflectionUtils.getAllMethods(processClass, ReflectionUtils.withAnnotation(ProcessParamDevicesProvider.class));
 		final ImmutableMap<String, DeviceDescriptorsProvider> paramDeviceProviders = deviceProviderMethods.stream()
-				.map(method -> createDeviceDescriptorsProvider(method))
+				.map(WebuiProcessClassInfo::createDeviceDescriptorsProvider)
 				.collect(GuavaCollectors.toImmutableMap());
 
 		//
@@ -179,7 +181,9 @@ public final class WebuiProcessClassInfo
 	private final ImmutableMap<String, DeviceDescriptorsProvider> paramDeviceProviders;
 	private final PanelLayoutType layoutType;
 
-	/** Null constructor */
+	/**
+	 * Null constructor
+	 */
 	private WebuiProcessClassInfo()
 	{
 		processClassInfo = ProcessClassInfo.NULL;
@@ -265,14 +269,17 @@ public final class WebuiProcessClassInfo
 	//
 	//
 
-	/** @return parameterName and provider */
+	/**
+	 * @return parameterName and provider
+	 */
 	private static Map.Entry<String, LookupDescriptorProvider> createParamLookupValuesProvider(final Method method)
 	{
 		final ProcessParamLookupValuesProvider ann = method.getAnnotation(ProcessParamLookupValuesProvider.class);
 
-		if (!LookupValuesList.class.isAssignableFrom(method.getReturnType()))
+		if (!LookupValuesPage.class.isAssignableFrom(method.getReturnType())
+				&& !LookupValuesList.class.isAssignableFrom(method.getReturnType()))
 		{
-			throw new AdempiereException("Method's return type shall be " + LookupValuesList.class + ": " + method);
+			throw new AdempiereException("Method's return type shall be " + LookupValuesPage.class + " or " + LookupValuesList.class + ": " + method);
 		}
 
 		final ImmutableList<Function<LookupDataSourceContext, Object>> parameterValueProviders = Stream.of(method.getParameterTypes())
@@ -296,14 +303,14 @@ public final class WebuiProcessClassInfo
 				.setLookupTableName(ann.lookupTableName())
 				.setDependsOnFieldNames(ann.dependsOn())
 				.setLookupSourceType(ann.lookupSource())
-				.setLookupValues(ann.numericKey(), evalCtx -> retriveLookupValues(methodToInvoke, parameterValueProviders, evalCtx))
+				.setLookupValues(ann.numericKey(), evalCtx -> retrieveLookupValues(methodToInvoke, parameterValueProviders, evalCtx))
 				.build();
 
 		final LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.singleton(lookupDescriptor);
 		return GuavaCollectors.entry(ann.parameterName(), lookupDescriptorProvider);
 	}
 
-	private static LookupValuesList retriveLookupValues(
+	private static LookupValuesPage retrieveLookupValues(
 			@NonNull final MethodReference methodRef,
 			@NonNull final List<Function<LookupDataSourceContext, Object>> parameterValueProviders,
 			final LookupDataSourceContext evalCtx)
@@ -323,8 +330,24 @@ public final class WebuiProcessClassInfo
 				method.setAccessible(true);
 			}
 
-			final LookupValuesList lookupValues = (LookupValuesList)method.invoke(processClassInstance, methodParams);
-			return lookupValues;
+			final Object resultObj = method.invoke(processClassInstance, methodParams);
+			if (resultObj == null)
+			{
+				return null;
+			}
+			else if (resultObj instanceof LookupValuesList)
+			{
+				final LookupValuesList lookupValuesList = (LookupValuesList)resultObj;
+				return LookupValuesPage.allValues(lookupValuesList);
+			}
+			else if (resultObj instanceof LookupValuesPage)
+			{
+				return (LookupValuesPage)resultObj;
+			}
+			else
+			{
+				throw new AdempiereException("Unexpected return value of " + method + ". Got: " + resultObj + " (" + resultObj.getClass() + ")");
+			}
 		}
 		catch (IllegalAccessException | InvocationTargetException e)
 		{
@@ -335,7 +358,7 @@ public final class WebuiProcessClassInfo
 			}
 			else
 			{
-				throw new AdempiereException("Failed invoking " + method + " using " + methodParams, cause);
+				throw new AdempiereException("Failed invoking " + method + " using " + Arrays.toString(methodParams), cause);
 			}
 		}
 		catch (final Exception e)

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2039473194L;
+	private static final long serialVersionUID = -1398694279L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -48,6 +48,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
+	}
+
+	@Override
+	public void setAD_User_Responsible_ID (final int AD_User_Responsible_ID)
+	{
+		if (AD_User_Responsible_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_Responsible_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_Responsible_ID, AD_User_Responsible_ID);
+	}
+
+	@Override
+	public int getAD_User_Responsible_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_Responsible_ID);
 	}
 
 	@Override
@@ -297,6 +312,36 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setCurrent_Receiving_LU_HU_ID (final int Current_Receiving_LU_HU_ID)
+	{
+		if (Current_Receiving_LU_HU_ID < 1) 
+			set_Value (COLUMNNAME_Current_Receiving_LU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_Receiving_LU_HU_ID, Current_Receiving_LU_HU_ID);
+	}
+
+	@Override
+	public int getCurrent_Receiving_LU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_Receiving_LU_HU_ID);
+	}
+
+	@Override
+	public void setCurrent_Receiving_TU_PI_Item_Product_ID (final int Current_Receiving_TU_PI_Item_Product_ID)
+	{
+		if (Current_Receiving_TU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getCurrent_Receiving_TU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
 	public void setDateConfirm (final @Nullable java.sql.Timestamp DateConfirm)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateConfirm, DateConfirm);
@@ -530,6 +575,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** ServiceRepairOrder = MRO */
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -801,6 +848,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override
@@ -1205,6 +1267,33 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScrap);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRepairOrderSummary (final @Nullable java.lang.String RepairOrderSummary)
+	{
+		set_Value (COLUMNNAME_RepairOrderSummary, RepairOrderSummary);
+	}
+
+	@Override
+	public java.lang.String getRepairOrderSummary() 
+	{
+		return get_ValueAsString(COLUMNNAME_RepairOrderSummary);
+	}
+
+	@Override
+	public void setRepairServicePerformed_Product_ID (final int RepairServicePerformed_Product_ID)
+	{
+		if (RepairServicePerformed_Product_ID < 1) 
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, RepairServicePerformed_Product_ID);
+	}
+
+	@Override
+	public int getRepairServicePerformed_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_RepairServicePerformed_Product_ID);
 	}
 
 	@Override

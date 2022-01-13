@@ -3,9 +3,7 @@ package de.metas.ui.web.dashboard;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketProducerFactory;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.websocket.WebsocketTopicName;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -48,8 +46,6 @@ public final class UserDashboard
 	@NonNull private final ClientId adClientId;
 	private final ImmutableMap<UserDashboardItemId, UserDashboardItem> _targetIndicatorItemsById;
 	private final ImmutableMap<UserDashboardItemId, UserDashboardItem> _kpiItemsById;
-	@Getter
-	private final WebsocketTopicName websocketEndpoint;
 
 	@Builder
 	private UserDashboard(
@@ -65,7 +61,6 @@ public final class UserDashboard
 		this._kpiItemsById = items.stream()
 				.filter(item -> item.getWidgetType() == DashboardWidgetType.KPI)
 				.collect(ImmutableMap.toImmutableMap(UserDashboardItem::getId, item -> item));
-		this.websocketEndpoint = UserDashboardWebsocketProducerFactory.createWebsocketTopicName(id);
 	}
 
 	private ImmutableMap<UserDashboardItemId, UserDashboardItem> getItemsById(final DashboardWidgetType widgetType)

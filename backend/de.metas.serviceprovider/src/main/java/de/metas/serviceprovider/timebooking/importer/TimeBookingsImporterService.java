@@ -100,12 +100,14 @@ public class TimeBookingsImporterService
 
 	private void importTimeBooking(@NonNull final ImportTimeBookingInfo importTimeInfo)
 	{
+		OrgId orgId = OrgId.ANY;
 		try
 		{
 			final boolean isNewRecord = importTimeInfo.getTimeBookingId() == null;
 
 			final IssueEntity issueEntity = issueRepository.getById(importTimeInfo.getIssueId());
-
+			orgId = issueEntity.getOrgId();
+			
 			checkIfTheEffortCanBeBooked(importTimeInfo, issueEntity);
 
 			final TimeBooking timeBooking = TimeBooking
@@ -113,7 +115,7 @@ public class TimeBookingsImporterService
 					.timeBookingId(importTimeInfo.getTimeBookingId())
 					.issueId(importTimeInfo.getIssueId())
 					.performingUserId(importTimeInfo.getPerformingUserId())
-					.orgId(issueEntity.getOrgId())
+					.orgId(orgId)
 					.bookedDate(importTimeInfo.getBookedDate())
 					.bookedSeconds(importTimeInfo.getBookedSeconds())
 					.hoursAndMins(HmmUtils.secondsToHmm(importTimeInfo.getBookedSeconds()))
@@ -134,7 +136,7 @@ public class TimeBookingsImporterService
 					.addLog(" {} *** Error while importing timeBooking: {}, errorMessage: {}",
 							IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX, importTimeInfo.toString(), e.getMessage(), e);
 
-			storeFailed(importTimeInfo, e.getMessage());
+			storeFailed(orgId, importTimeInfo, e.getMessage());
 		}
 	}
 
@@ -199,10 +201,14 @@ public class TimeBookingsImporterService
 		}
 	}
 
-	private void storeFailed(@NonNull final ImportTimeBookingInfo importTimeBookingInfo, @NonNull final String errorMsg)
+	private void storeFailed(
+			@NonNull final OrgId orgId, 
+			@NonNull final ImportTimeBookingInfo importTimeBookingInfo, 
+			@NonNull final String errorMsg)
 	{
 
 		final FailedTimeBooking failedTimeBooking = FailedTimeBooking.builder()
+				.orgId(orgId)
 				.externalId(importTimeBookingInfo.getExternalTimeBookingId().getId())
 				.externalSystem(importTimeBookingInfo.getExternalTimeBookingId().getExternalSystem())
 				.errorMsg(errorMsg)

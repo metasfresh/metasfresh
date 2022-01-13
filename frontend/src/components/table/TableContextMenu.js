@@ -13,9 +13,11 @@ import {
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 import {
-  DROPDOWN_OFFSET_BIG,
-  TBL_CONTEXT_MENU_HEIGHT,
-  TBL_CONTEXT_MENU_MAX_Y,
+  TBL_CONTEXT_Y_OFFSET,
+  TBL_CONTEXT_X_OFFSET,
+  TBL_CONTEXT_MENU_X_MAX,
+  TBL_CONTEXT_MENU_Y_MAX,
+  TBL_CONTEXT_POPUP_HEIGHT,
 } from '../../constants/Constants';
 
 class TableContextMenu extends Component {
@@ -28,18 +30,13 @@ class TableContextMenu extends Component {
       },
       loadingReferences: false,
       references: [],
+      display: 'block',
     };
   }
 
   componentDidMount() {
-    const {
-      x,
-      y,
-      fieldName,
-      supportZoomInto,
-      supportFieldEdit,
-      docId,
-    } = this.props;
+    const { x, y, fieldName, supportZoomInto, supportFieldEdit, docId } =
+      this.props;
 
     this.updateContextMenuState(
       x,
@@ -102,7 +99,7 @@ class TableContextMenu extends Component {
   };
 
   loadReferences = () => {
-    const { windowId, docId, tabId, selected, updateTableHeight } = this.props;
+    const { windowId, docId, tabId, selected } = this.props;
 
     this.setState({ loadingReferences: true });
 
@@ -124,46 +121,7 @@ class TableContextMenu extends Component {
       },
 
       onComplete: () => {
-        let offset;
-        const { references, contextMenu } = this.state;
-        const { y: initialY } = contextMenu;
-        const mainPanel = document.querySelector('.panel-vertical-scroll');
-
-        if (references.length > 2) {
-          // for more than 5 links we add scroll, no of links is not limited
-          if (references.length > 5) {
-            this.contextMenu.style.height = TBL_CONTEXT_MENU_HEIGHT;
-            this.contextMenu.style.overflowY = 'auto';
-          }
-          updateTableHeight(DROPDOWN_OFFSET_BIG);
-          offset = DROPDOWN_OFFSET_BIG;
-          // mainPanel.scrollTop = mainPanel.scrollHeight;
-
-          this.setState((prevState) => {
-            const { y: lastY } = prevState.contextMenu;
-            return {
-              contextMenu: {
-                ...prevState.contextMenu,
-                y: lastY - offset,
-              },
-            };
-          });
-        } else if (initialY > TBL_CONTEXT_MENU_MAX_Y) {
-          // routine to calculate and adjust position for bottom of the table clicks, also scroll automatically
-          const beforeAssign = mainPanel.scrollTop;
-          // mainPanel.scrollTop = mainPanel.scrollHeight;
-          let offset = initialY - mainPanel.scrollTop;
-          this.setState((prevState) => {
-            return {
-              contextMenu: {
-                ...prevState.contextMenu,
-                y: offset + beforeAssign,
-              },
-            };
-          });
-        }
-
-        this.setState({ loadingReferences: false });
+        this.setState({ display: 'block', loadingReferences: false });
       },
     });
   };
@@ -201,10 +159,19 @@ class TableContextMenu extends Component {
       handleDelete,
       handleFieldEdit,
       handleZoomInto,
+      supportOpenRecord,
+      docId,
     } = this.props;
 
     const { contextMenu } = this.state;
-
+    const positionY =
+      contextMenu.y > TBL_CONTEXT_MENU_Y_MAX
+        ? contextMenu.y - TBL_CONTEXT_Y_OFFSET
+        : contextMenu.y;
+    const positionX =
+      contextMenu.x > TBL_CONTEXT_MENU_X_MAX
+        ? contextMenu.x - TBL_CONTEXT_X_OFFSET
+        : contextMenu.x;
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
       isSelectedOne &&
@@ -221,8 +188,17 @@ class TableContextMenu extends Component {
           }
         }}
         style={{
-          left: contextMenu.x,
-          top: contextMenu.y,
+          left: positionX,
+          top: positionY,
+          display:
+            supportOpenRecord === false &&
+            (!contextMenu.supportZoomInto ||
+              !showFieldEdit ||
+              !isSelectedOne ||
+              !handleDelete)
+              ? 'none'
+              : 'block',
+          height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
         }}
         className={
           'context-menu context-menu-open panel-bordered panel-primary'
@@ -230,53 +206,59 @@ class TableContextMenu extends Component {
         tabIndex="0"
         onBlur={blur}
       >
-        {contextMenu.supportZoomInto && (
-          <div
-            className="context-menu-item"
-            onClick={() => handleZoomInto(contextMenu.fieldName)}
-          >
-            <i className="meta-icon-share" />
-            {` ${counterpart.translate('window.table.zoomInto')}`}
+        <div className="context-menu-main-options">
+          {contextMenu.supportZoomInto && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleZoomInto(contextMenu.fieldName)}
+            >
+              <i className="meta-icon-share" />
+              {` ${counterpart.translate('window.table.zoomInto')}`}
+            </div>
+          )}
+
+          {showFieldEdit && (
+            <div className="context-menu-item" onClick={handleFieldEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.editField')}`}
+              <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
+            </div>
+          )}
+
+          {(contextMenu.supportZoomInto || showFieldEdit) && (
+            <hr className="context-menu-separator" />
+          )}
+
+          {isSelectedOne && !mainTable && (
+            <div className="context-menu-item" onClick={handleAdvancedEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.advancedEdit')}`}
+              <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
+            </div>
+          )}
+
+          {mainTable && (
+            <div className="context-menu-item" onClick={this.handleOpenNewTab}>
+              <i className="meta-icon-file" />
+              {` ${counterpart.translate('window.table.openInNewTab')}`}
+              <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
+            </div>
+          )}
+
+          {handleDelete && (
+            <div className="context-menu-item" onClick={handleDelete}>
+              <i className="meta-icon-trash" />
+              {` ${counterpart.translate('window.delete.caption')}`}
+              <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
+            </div>
+          )}
+        </div>
+
+        {docId && (
+          <div className="context-menu-references">
+            {this.renderReferences()}
           </div>
         )}
-
-        {showFieldEdit && (
-          <div className="context-menu-item" onClick={handleFieldEdit}>
-            <i className="meta-icon-edit" />
-            {` ${counterpart.translate('window.table.editField')}`}
-            <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
-          </div>
-        )}
-
-        {(contextMenu.supportZoomInto || showFieldEdit) && (
-          <hr className="context-menu-separator" />
-        )}
-
-        {isSelectedOne && !mainTable && (
-          <div className="context-menu-item" onClick={handleAdvancedEdit}>
-            <i className="meta-icon-edit" />
-            {` ${counterpart.translate('window.table.advancedEdit')}`}
-            <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
-          </div>
-        )}
-
-        {mainTable && (
-          <div className="context-menu-item" onClick={this.handleOpenNewTab}>
-            <i className="meta-icon-file" />
-            {` ${counterpart.translate('window.table.openInNewTab')}`}
-            <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
-          </div>
-        )}
-
-        {handleDelete && (
-          <div className="context-menu-item" onClick={handleDelete}>
-            <i className="meta-icon-trash" />
-            {` ${counterpart.translate('window.delete.caption')}`}
-            <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
-          </div>
-        )}
-
-        {this.renderReferences()}
       </div>
     );
   }
@@ -330,6 +312,7 @@ TableContextMenu.propTypes = {
   handleFieldEdit: PropTypes.func,
   handleZoomInto: PropTypes.func,
   updateTableHeight: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
 };
 
 export default connect()(TableContextMenu);

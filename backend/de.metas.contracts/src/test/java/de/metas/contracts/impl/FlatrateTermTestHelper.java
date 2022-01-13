@@ -8,6 +8,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -205,18 +210,21 @@ public class FlatrateTermTestHelper
 	public final void setupModuleInterceptors_Contracts_Full()
 	{
 		final ContractOrderService contractOrderService = new ContractOrderService();
+		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
 				new OrderGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
 						Optional.empty() // advisors
 				),
-				new GroupTemplateRepository(Optional.empty()));
+				new GroupTemplateRepository(Optional.empty()),
+				new FlatrateConditionsExcludedProductsRepository());
 
 		final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo = new InOutLinesWithMissingInvoiceCandidate();
 
 		final MainValidator mainInterceptor = new MainValidator(
 				contractOrderService,
+				documentLocationBL,
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo);
 

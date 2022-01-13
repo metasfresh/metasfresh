@@ -1,12 +1,12 @@
 package de.metas.ui.web.window.model;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.Check;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,14 +16,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
-import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.util.Check;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -684,7 +682,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	public boolean isVirtualColumn(final String columnName)
 	{
 		final IDocumentFieldView field = document.getFieldViewOrNull(columnName);
-		return field != null && field.isVirtualField();
+		return field != null && field.isReadonlyVirtualField();
 	}
 
 	@Override

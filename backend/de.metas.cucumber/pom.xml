@@ -39,7 +39,7 @@
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
         <cucumber.version>6.8.1</cucumber.version>
-        <testcontainers.version>1.15.1</testcontainers.version>
+        <testcontainers.version>1.16.2</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -54,6 +54,13 @@
             <artifactId>metasfresh-dist-serverRoot</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- spring-boot-starter-data-elasticsearch hauls in netty-transport:4.1.49 which lacks the class Duplex ChannelConfig -->
+                <exclusion>
+                    <artifactId>netty-transport</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.migration</groupId>
@@ -70,6 +77,13 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>${amqp-client.version}</version>
@@ -80,13 +94,6 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.skyscreamer</groupId>-->
-<!--            <artifactId>jsonassert</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--            <version>1.5.0</version>-->
-<!--        </dependency>-->
 
         <!--
         Not using junit5 (jupiter) right now, because it seems to be half baked.

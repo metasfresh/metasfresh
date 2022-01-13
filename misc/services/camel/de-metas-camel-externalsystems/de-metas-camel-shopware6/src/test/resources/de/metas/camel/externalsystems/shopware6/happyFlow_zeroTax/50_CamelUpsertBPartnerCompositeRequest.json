@@ -1,0 +1,86 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-Shopware6-customerId1",
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": {
+            "code": "ext-Shopware6-customerNumber",
+            "name": "firstName lastName",
+            "companyName": "company",
+            "customer": true,
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "DONT_UPDATE"
+            }
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-Shopware6-customerId1-billTo",
+                "location": {
+                  "address1": "billingAddressStreet",
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
+                  "postal": "0000123",
+                  "city": "Billing City",
+                  "countryCode": "DE",
+                  "shipTo": false,
+                  "billTo": true,
+                  "bpartnerName": "billingCompany\nbillingDepartment\nbillingSalutationDisplayName billingTitle firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "billingEmailAddress"
+                }
+              },
+              {
+                "locationIdentifier": "ext-Shopware6-customerId1-shipTo",
+                "location": {
+                  "address1": "ShippingAddressStreet",
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
+                  "postal": "0000123",
+                  "city": "Test City",
+                  "countryCode": "DE",
+                  "shipTo": true,
+                  "billTo": false,
+                  "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "emailAddress"
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "FAIL",
+              "ifExists": "DONT_UPDATE"
+            }
+          },
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-Shopware6-customerId1",
+                "contact": {
+                  "firstName": "firstName",
+                  "lastName": "lastName",
+                  "email": "someEamil@web.de",
+                  "invoiceEmailEnabled": true,
+                  "shipToDefault": true,
+                  "billToDefault": true
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "FAIL",
+              "ifExists": "DONT_UPDATE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

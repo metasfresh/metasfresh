@@ -1,14 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { Map } from 'immutable';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { allowShortcut, disableShortcut } from '../../../actions/WindowActions';
 import { DROPUP_START } from '../../../constants/Constants';
 
-import RawWidget from '../RawWidget';
+import WidgetWrapper from '../../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -19,7 +16,7 @@ class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      patchCallbacks: Map(),
+      patchCallbacks: new Map(),
     };
   }
 
@@ -65,13 +62,9 @@ class AttributesDropdown extends PureComponent {
         },
         () => {
           return handlePatch(prop, value, attrId, () => {
-            const resolvedCallbacks = this.state.patchCallbacks.delete(id);
+            this.state.patchCallbacks.delete(id);
 
             res();
-
-            this.setState({
-              patchCallbacks: resolvedCallbacks,
-            });
           });
         }
       );
@@ -94,23 +87,21 @@ class AttributesDropdown extends PureComponent {
       disableOnClickOutside,
       enableOnClickOutside,
       isModal,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
     } = this.props;
 
     if (layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         return (
-          <RawWidget
+          <WidgetWrapper
+            dataSource="attributes-dropdown"
             entity={attributeType}
             widgetType={item.widgetType}
             fields={item.fields}
             dataId={attrId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
+            suppressChange={item.widgetType === 'YesNo'}
             key={idx}
             type={item.type}
             caption={item.caption}
@@ -122,10 +113,6 @@ class AttributesDropdown extends PureComponent {
             {...{
               tabIndex,
               isModal,
-              modalVisible,
-              timeZone,
-              allowShortcut,
-              disableShortcut,
             }}
           />
         );
@@ -155,15 +142,6 @@ class AttributesDropdown extends PureComponent {
     );
   }
 }
-
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
-
-  return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-  };
-};
 
 /**
  * @typedef {object} Props Component props
@@ -196,16 +174,6 @@ AttributesDropdown.propTypes = {
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    allowShortcut,
-    disableShortcut,
-  }
-)(onClickOutside(AttributesDropdown));
+export default onClickOutside(AttributesDropdown);

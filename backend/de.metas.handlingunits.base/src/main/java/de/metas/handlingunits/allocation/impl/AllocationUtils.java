@@ -300,9 +300,7 @@ public final class AllocationUtils
 	 */
 	public static IAllocationRequestBuilder derive(@NonNull final IAllocationRequest request)
 	{
-		Check.assumeNotNull(request, "request not null");
-		return builder()
-				.setBaseAllocationRequest(request);
+		return builder().setBaseAllocationRequest(request);
 	}
 
 	@Nullable

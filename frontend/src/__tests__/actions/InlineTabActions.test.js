@@ -1,6 +1,6 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import {
   updateInlineTabItemFields,
   updateInlineTabWrapperFields,
@@ -19,8 +19,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },

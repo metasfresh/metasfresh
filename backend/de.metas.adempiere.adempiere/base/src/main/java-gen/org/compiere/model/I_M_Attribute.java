@@ -1,95 +1,76 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Attribute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_Attribute 
 {
 
-    /** TableName=M_Attribute */
-    public static final String Table_Name = "M_Attribute";
+	String Table_Name = "M_Attribute";
 
-    /** AD_Table_ID=562 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=562 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Client>(I_M_Attribute.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Java Klasse.
+	 * Set Java Class.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_JavaClass_ID (int AD_JavaClass_ID);
+	void setAD_JavaClass_ID (int AD_JavaClass_ID);
 
 	/**
-	 * Get Java Klasse.
+	 * Get Java Class.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_JavaClass_ID();
+	int getAD_JavaClass_ID();
 
-    /** Column definition for AD_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "AD_JavaClass_ID", null);
-    /** Column name AD_JavaClass_ID */
-    public static final String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
+	ModelColumn<I_M_Attribute, Object> COLUMN_AD_JavaClass_ID = new ModelColumn<>(I_M_Attribute.class, "AD_JavaClass_ID", null);
+	String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Org>(I_M_Attribute.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Dynamische Validierung.
@@ -99,7 +80,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
+	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
 	 * Get Dynamische Validierung.
@@ -109,123 +90,105 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Val_Rule_ID();
+	int getAD_Val_Rule_ID();
 
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
+	@Nullable org.compiere.model.I_AD_Val_Rule getAD_Val_Rule();
 
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
+	void setAD_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule AD_Val_Rule);
 
-    /** Column definition for AD_Val_Rule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Val_Rule>(I_M_Attribute.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
-    /** Column name AD_Val_Rule_ID */
-    public static final String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
+	ModelColumn<I_M_Attribute, org.compiere.model.I_AD_Val_Rule> COLUMN_AD_Val_Rule_ID = new ModelColumn<>(I_M_Attribute.class, "AD_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
+	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Merkmals Wert Typ.
+	 * Set Attribute Value Type.
 	 * Type of Attribute Value
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAttributeValueType (java.lang.String AttributeValueType);
+	void setAttributeValueType (java.lang.String AttributeValueType);
 
 	/**
-	 * Get Merkmals Wert Typ.
+	 * Get Attribute Value Type.
 	 * Type of Attribute Value
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAttributeValueType();
+	java.lang.String getAttributeValueType();
 
-    /** Column definition for AttributeValueType */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_AttributeValueType = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "AttributeValueType", null);
-    /** Column name AttributeValueType */
-    public static final String COLUMNNAME_AttributeValueType = "AttributeValueType";
+	ModelColumn<I_M_Attribute, Object> COLUMN_AttributeValueType = new ModelColumn<>(I_M_Attribute.class, "AttributeValueType", null);
+	String COLUMNNAME_AttributeValueType = "AttributeValueType";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_C_UOM>(I_M_Attribute.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_Attribute, Object> COLUMN_Created = new ModelColumn<>(I_M_Attribute.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User>(I_M_Attribute.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_Attribute, Object> COLUMN_Description = new ModelColumn<>(I_M_Attribute.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Description Pattern.
@@ -234,7 +197,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescriptionPattern (java.lang.String DescriptionPattern);
+	void setDescriptionPattern (@Nullable java.lang.String DescriptionPattern);
 
 	/**
 	 * Get Description Pattern.
@@ -243,37 +206,56 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescriptionPattern();
+	@Nullable java.lang.String getDescriptionPattern();
 
-    /** Column definition for DescriptionPattern */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_DescriptionPattern = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "DescriptionPattern", null);
-    /** Column name DescriptionPattern */
-    public static final String COLUMNNAME_DescriptionPattern = "DescriptionPattern";
+	ModelColumn<I_M_Attribute, Object> COLUMN_DescriptionPattern = new ModelColumn<>(I_M_Attribute.class, "DescriptionPattern", null);
+	String COLUMNNAME_DescriptionPattern = "DescriptionPattern";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Attribute.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Always Updateable.
+	 * The column is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAlwaysUpdateable (boolean IsAlwaysUpdateable);
+
+	/**
+	 * Get Always Updateable.
+	 * The column is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAlwaysUpdateable();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsAlwaysUpdateable = new ModelColumn<>(I_M_Attribute.class, "IsAlwaysUpdateable", null);
+	String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
 
 	/**
 	 * Set Auf Belegen auszuweisen.
@@ -283,7 +265,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAttrDocumentRelevant (boolean IsAttrDocumentRelevant);
+	void setIsAttrDocumentRelevant (boolean IsAttrDocumentRelevant);
 
 	/**
 	 * Get Auf Belegen auszuweisen.
@@ -293,12 +275,10 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAttrDocumentRelevant();
+	boolean isAttrDocumentRelevant();
 
-    /** Column definition for IsAttrDocumentRelevant */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsAttrDocumentRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsAttrDocumentRelevant", null);
-    /** Column name IsAttrDocumentRelevant */
-    public static final String COLUMNNAME_IsAttrDocumentRelevant = "IsAttrDocumentRelevant";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsAttrDocumentRelevant = new ModelColumn<>(I_M_Attribute.class, "IsAttrDocumentRelevant", null);
+	String COLUMNNAME_IsAttrDocumentRelevant = "IsAttrDocumentRelevant";
 
 	/**
 	 * Set High Volume.
@@ -308,7 +288,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsHighVolume (boolean IsHighVolume);
+	void setIsHighVolume (boolean IsHighVolume);
 
 	/**
 	 * Get High Volume.
@@ -318,37 +298,33 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isHighVolume();
+	boolean isHighVolume();
 
-    /** Column definition for IsHighVolume */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsHighVolume = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsHighVolume", null);
-    /** Column name IsHighVolume */
-    public static final String COLUMNNAME_IsHighVolume = "IsHighVolume";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsHighVolume = new ModelColumn<>(I_M_Attribute.class, "IsHighVolume", null);
+	String COLUMNNAME_IsHighVolume = "IsHighVolume";
 
 	/**
-	 * Set Instanz Merkmal.
+	 * Set Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInstanceAttribute (boolean IsInstanceAttribute);
+	void setIsInstanceAttribute (boolean IsInstanceAttribute);
 
 	/**
-	 * Get Instanz Merkmal.
+	 * Get Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInstanceAttribute();
+	boolean isInstanceAttribute();
 
-    /** Column definition for IsInstanceAttribute */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsInstanceAttribute = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsInstanceAttribute", null);
-    /** Column name IsInstanceAttribute */
-    public static final String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsInstanceAttribute = new ModelColumn<>(I_M_Attribute.class, "IsInstanceAttribute", null);
+	String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
 
 	/**
 	 * Set Pflichtangabe.
@@ -358,7 +334,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMandatory (boolean IsMandatory);
+	void setIsMandatory (boolean IsMandatory);
 
 	/**
 	 * Get Pflichtangabe.
@@ -368,12 +344,10 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMandatory();
+	boolean isMandatory();
 
-    /** Column definition for IsMandatory */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsMandatory = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsMandatory", null);
-    /** Column name IsMandatory */
-    public static final String COLUMNNAME_IsMandatory = "IsMandatory";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsMandatory = new ModelColumn<>(I_M_Attribute.class, "IsMandatory", null);
+	String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
 	 * Set isPricingRelevant.
@@ -382,7 +356,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPricingRelevant (boolean IsPricingRelevant);
+	void setIsPricingRelevant (boolean IsPricingRelevant);
 
 	/**
 	 * Get isPricingRelevant.
@@ -391,12 +365,10 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPricingRelevant();
+	boolean isPricingRelevant();
 
-    /** Column definition for IsPricingRelevant */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsPricingRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsPricingRelevant", null);
-    /** Column name IsPricingRelevant */
-    public static final String COLUMNNAME_IsPricingRelevant = "IsPricingRelevant";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsPricingRelevant = new ModelColumn<>(I_M_Attribute.class, "IsPricingRelevant", null);
+	String COLUMNNAME_IsPricingRelevant = "IsPricingRelevant";
 
 	/**
 	 * Set Read Only.
@@ -405,7 +377,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReadOnlyValues (boolean IsReadOnlyValues);
+	void setIsReadOnlyValues (boolean IsReadOnlyValues);
 
 	/**
 	 * Get Read Only.
@@ -414,37 +386,33 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReadOnlyValues();
+	boolean isReadOnlyValues();
 
-    /** Column definition for IsReadOnlyValues */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsReadOnlyValues = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsReadOnlyValues", null);
-    /** Column name IsReadOnlyValues */
-    public static final String COLUMNNAME_IsReadOnlyValues = "IsReadOnlyValues";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsReadOnlyValues = new ModelColumn<>(I_M_Attribute.class, "IsReadOnlyValues", null);
+	String COLUMNNAME_IsReadOnlyValues = "IsReadOnlyValues";
 
 	/**
-	 * Set Ist Bestandsrelevant.
+	 * Set Ist HU-Bestandsrelevant.
 	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsStorageRelevant (boolean IsStorageRelevant);
+	void setIsStorageRelevant (boolean IsStorageRelevant);
 
 	/**
-	 * Get Ist Bestandsrelevant.
+	 * Get Ist HU-Bestandsrelevant.
 	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isStorageRelevant();
+	boolean isStorageRelevant();
 
-    /** Column definition for IsStorageRelevant */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsStorageRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsStorageRelevant", null);
-    /** Column name IsStorageRelevant */
-    public static final String COLUMNNAME_IsStorageRelevant = "IsStorageRelevant";
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsStorageRelevant = new ModelColumn<>(I_M_Attribute.class, "IsStorageRelevant", null);
+	String COLUMNNAME_IsStorageRelevant = "IsStorageRelevant";
 
 	/**
 	 * Set Merkmal.
@@ -454,7 +422,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Attribute_ID (int M_Attribute_ID);
+	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
 	 * Get Merkmal.
@@ -464,12 +432,10 @@ public interface I_M_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Attribute_ID();
+	int getM_Attribute_ID();
 
-    /** Column definition for M_Attribute_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_M_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "M_Attribute_ID", null);
-    /** Column name M_Attribute_ID */
-    public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
+	ModelColumn<I_M_Attribute, Object> COLUMN_M_Attribute_ID = new ModelColumn<>(I_M_Attribute.class, "M_Attribute_ID", null);
+	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
 	 * Set Merkmal-Suche.
@@ -479,7 +445,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSearch_ID (int M_AttributeSearch_ID);
+	void setM_AttributeSearch_ID (int M_AttributeSearch_ID);
 
 	/**
 	 * Get Merkmal-Suche.
@@ -489,96 +455,83 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSearch_ID();
+	int getM_AttributeSearch_ID();
 
-	public org.compiere.model.I_M_AttributeSearch getM_AttributeSearch();
+	@Nullable org.compiere.model.I_M_AttributeSearch getM_AttributeSearch();
 
-	public void setM_AttributeSearch(org.compiere.model.I_M_AttributeSearch M_AttributeSearch);
+	void setM_AttributeSearch(@Nullable org.compiere.model.I_M_AttributeSearch M_AttributeSearch);
 
-    /** Column definition for M_AttributeSearch_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_M_AttributeSearch> COLUMN_M_AttributeSearch_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_M_AttributeSearch>(I_M_Attribute.class, "M_AttributeSearch_ID", org.compiere.model.I_M_AttributeSearch.class);
-    /** Column name M_AttributeSearch_ID */
-    public static final String COLUMNNAME_M_AttributeSearch_ID = "M_AttributeSearch_ID";
+	ModelColumn<I_M_Attribute, org.compiere.model.I_M_AttributeSearch> COLUMN_M_AttributeSearch_ID = new ModelColumn<>(I_M_Attribute.class, "M_AttributeSearch_ID", org.compiere.model.I_M_AttributeSearch.class);
+	String COLUMNNAME_M_AttributeSearch_ID = "M_AttributeSearch_ID";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_M_Attribute, Object> COLUMN_Name = new ModelColumn<>(I_M_Attribute.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.de
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_Attribute, Object> COLUMN_Updated = new ModelColumn<>(I_M_Attribute.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Attribute, org.compiere.model.I_AD_User>(I_M_Attribute.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_M_Attribute, Object> COLUMN_Value = new ModelColumn<>(I_M_Attribute.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Max. Wert.
@@ -588,7 +541,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueMax (java.math.BigDecimal ValueMax);
+	void setValueMax (@Nullable BigDecimal ValueMax);
 
 	/**
 	 * Get Max. Wert.
@@ -598,12 +551,10 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getValueMax();
+	BigDecimal getValueMax();
 
-    /** Column definition for ValueMax */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_ValueMax = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "ValueMax", null);
-    /** Column name ValueMax */
-    public static final String COLUMNNAME_ValueMax = "ValueMax";
+	ModelColumn<I_M_Attribute, Object> COLUMN_ValueMax = new ModelColumn<>(I_M_Attribute.class, "ValueMax", null);
+	String COLUMNNAME_ValueMax = "ValueMax";
 
 	/**
 	 * Set Min. Wert.
@@ -613,7 +564,7 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueMin (java.math.BigDecimal ValueMin);
+	void setValueMin (@Nullable BigDecimal ValueMin);
 
 	/**
 	 * Get Min. Wert.
@@ -623,10 +574,8 @@ public interface I_M_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getValueMin();
+	BigDecimal getValueMin();
 
-    /** Column definition for ValueMin */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_ValueMin = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "ValueMin", null);
-    /** Column name ValueMin */
-    public static final String COLUMNNAME_ValueMin = "ValueMin";
+	ModelColumn<I_M_Attribute, Object> COLUMN_ValueMin = new ModelColumn<>(I_M_Attribute.class, "ValueMin", null);
+	String COLUMNNAME_ValueMin = "ValueMin";
 }

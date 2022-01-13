@@ -56,6 +56,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -69,7 +70,7 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -145,7 +146,7 @@ public class M_InOut
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
-		if(!shipment.isSOTrx())
+		if (!shipment.isSOTrx())
 		{
 			return;
 		}
@@ -213,7 +214,6 @@ public class M_InOut
 		}
 
 		// task #1306: Do not genertate empties movements for customer returns
-
 		if (returnsServiceFacade.isCustomerReturn(inout))
 		{
 			return;
@@ -289,7 +289,7 @@ public class M_InOut
 
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
@@ -322,14 +322,17 @@ public class M_InOut
 	{
 		if (!returnsServiceFacade.isCustomerReturn(customerReturn))
 		{
-			// do nothing if the inout is not a customer return
-			return;
+			return; // do nothing if the inout is not a customer return
 		}
 
 		if (inOutBL.isReversal(customerReturn))
 		{
-			// nothing to do
-			return;
+			return; // nothing to do
+		}
+
+		if (returnsServiceFacade.isEmptiesReturn(customerReturn))
+		{
+			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
 		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
@@ -374,7 +377,7 @@ public class M_InOut
 
 		if (returnsServiceFacade.isCustomerReturn(returnInOut))
 		{
-			huMovementBL.moveHUsToWarehouse(hus, returnInOut.getM_Warehouse());
+			huMovementBL.moveHUsToWarehouse(hus, WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID()));
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
@@ -387,4 +390,17 @@ public class M_InOut
 				.restoreFromSnapshot();
 
 	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateAttributesOnShipmentCompletion(final I_M_InOut shipment)
+	{
+		if (!shipment.isSOTrx())
+		{
+			// nothing to do
+			return;
+		}
+
+		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
+	}
+
 }

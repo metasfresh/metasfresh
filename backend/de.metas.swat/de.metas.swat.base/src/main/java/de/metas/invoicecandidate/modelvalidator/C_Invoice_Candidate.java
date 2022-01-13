@@ -1,32 +1,31 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.invoicecandidate.api.IAggregationBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.location.InvoiceCandidateLocationsUpdater;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.Tax;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -44,56 +43,53 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.util.Properties;
 
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.invoicecandidate.api.IAggregationBL;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
-import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
-import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.logging.TableRecordMDC;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_OrderLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 @Component
 public class C_Invoice_Candidate
 {
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
-
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
 	private final AttachmentEntryService attachmentEntryService;
-
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
-
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
-
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IDocumentLocationBL documentLocationBL;
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
 		this.attachmentEntryService = attachmentEntryService;
+		this.documentLocationBL = documentLocationBL;
 	}
 
 	@ModelChange( //
@@ -104,7 +100,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
-		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{
 			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 			if (invoiceCandBL.isUpdateProcessInProgress())
@@ -187,11 +183,11 @@ public class C_Invoice_Candidate
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,
 			ModelValidator.TYPE_BEFORE_SAVE_TRX }, ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_PriceEntered, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_Discount, I_C_Invoice_Candidate.COLUMNNAME_Discount_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID,
-					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+			I_C_Invoice_Candidate.COLUMNNAME_PriceEntered, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override,
+			I_C_Invoice_Candidate.COLUMNNAME_Discount, I_C_Invoice_Candidate.COLUMNNAME_Discount_Override,
+			I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID,
+			I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override,
+			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateNetAmtToInvoice(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -244,9 +240,8 @@ public class C_Invoice_Candidate
 
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
-	 *
-	 * @param ic
-	 * @task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
@@ -268,8 +263,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Set the POReference of the C_Order, in case of Sales Orders
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updatePOReference(final I_C_Invoice_Candidate ic)
@@ -277,11 +270,23 @@ public class C_Invoice_Candidate
 		Services.get(IInvoiceCandBL.class).updatePOReferenceFromOrder(ic);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
+	{
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
+		{
+			InvoiceCandidateLocationsUpdater.builder()
+					.documentLocationBL(documentLocationBL)
+					.record(ic)
+					.build()
+					.updateAllIfNeeded();
+		}
+	}
+
 	/**
 	 * Configure {@link I_C_Invoice_Candidate#COLUMN_PriceActual_Net_Effective}, depending on the <code>PriceActual</code> and <code>IsTaxIncluded</code> (which if true, is removed).
-	 *
-	 * @param candidate
-	 * @task 08457
+	 * <p>
+	 * Task 08457
 	 */
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
@@ -346,8 +351,6 @@ public class C_Invoice_Candidate
 	 * This method sets {@link I_M_InOutLine#COLUMNNAME_IsInvoiceCandidate} back to <code>N</code> if the given <code>ic</code> references an inOutLine.
 	 * <p>
 	 * TODO in task 07067: extract this into the listener architecture.
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void resetIolIsInvoiceCandidateFlag(final I_C_Invoice_Candidate ic)
@@ -357,9 +360,9 @@ public class C_Invoice_Candidate
 		if (ic.getAD_Table_ID() == adTableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name))
 		{
 			final I_M_InOutLine iol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic),
-					ic.getRecord_ID(),
-					I_M_InOutLine.class,
-					InterfaceWrapperHelper.getTrxName(ic));
+																	ic.getRecord_ID(),
+																	I_M_InOutLine.class,
+																	InterfaceWrapperHelper.getTrxName(ic));
 
 			iol.setIsInvoiceCandidate(false);
 			InterfaceWrapperHelper.save(iol);
@@ -368,10 +371,8 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 *
-	 * @param ic
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
@@ -426,8 +427,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Update header aggregation key, unless (=>task 08451) the given <code>id</code> is already processed or a background process (creating, updating or invoicing) is currently in progress.
-	 *
-	 * @param ic
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
@@ -448,20 +447,15 @@ public class C_Invoice_Candidate
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
-	 *
-	 * @param candidate
-	 * @task 07814
+	 * <p>
+	 * Task 07814
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
+		final Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
 
-		final I_C_Tax taxNotFound = Services.get(ITaxDAO.class).retrieveNoTaxFound(ctx);
-
-		final I_C_Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
-
-		if (taxNotFound.getC_Tax_ID() == taxEffective.getC_Tax_ID())
+		if (taxEffective.isTaxNotFound())
 		{
 			candidate.setIsError(true);
 		}
@@ -483,8 +477,8 @@ public class C_Invoice_Candidate
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
 				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(ic.getBill_BPartner_ID())
-						.build());
+												  .bpartnerId(ic.getBill_BPartner_ID())
+												  .build());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)

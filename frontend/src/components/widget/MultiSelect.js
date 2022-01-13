@@ -65,7 +65,7 @@ class MultiSelect extends Component {
 
   render() {
     const { data, checkedItems } = this.state;
-    const dataSource = data.size > 0 ? data : this.props.options;
+    const dataSource = data.length > 0 ? data : this.props.options;
 
     return (
       <div className="filter-multiselect">
@@ -103,7 +103,7 @@ class MultiSelect extends Component {
 }
 
 MultiSelect.propTypes = {
-  options: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  options: PropTypes.array,
   onFocus: PropTypes.func,
   onSelect: PropTypes.func,
   selectedItems: PropTypes.any,

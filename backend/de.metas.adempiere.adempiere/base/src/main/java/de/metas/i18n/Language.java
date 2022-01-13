@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -391,11 +392,14 @@ public final class Language implements Serializable
 
 	public static Language asLanguage(@Nullable final String languageInfo)
 	{
-		if (Check.isEmpty(languageInfo, true))
-		{
-			return null;
-		}
-		return getLanguage(languageInfo);
+		return !Check.isBlank(languageInfo) ? getLanguage(languageInfo) : null;
+	}
+
+	public static Optional<Language> optionalOfNullable(@Nullable final String adLanguage)
+	{
+		return !Check.isBlank(adLanguage)
+				? Optional.of(getLanguage(adLanguage))
+				: Optional.empty();
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperId;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
@@ -43,7 +45,7 @@ public interface DraftDeliveryOrderCreator
 
 	@Value
 	@Builder
-	public static class CreateDraftDeliveryOrderRequest
+	class CreateDraftDeliveryOrderRequest
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
@@ -53,16 +55,17 @@ public interface DraftDeliveryOrderCreator
 	}
 
 	@Value
-	public static final class DeliveryOrderKey
+  	class DeliveryOrderKey
 	{
 		ShipperId shipperId;
 		ShipperTransportationId shipperTransportationId;
-		int fromOrgId;
+		int fromOrgId;				
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;
 		LocalTime timeFrom;
 		LocalTime timeTo;
+		AsyncBatchId asyncBatchId;
 
 		@Builder
 		public DeliveryOrderKey(
@@ -73,7 +76,8 @@ public interface DraftDeliveryOrderCreator
 				final int deliverToBPartnerLocationId,
 				@NonNull final LocalDate pickupDate,
 				@NonNull final LocalTime timeFrom,
-				@NonNull final LocalTime timeTo)
+				@NonNull final LocalTime timeTo,
+				@Nullable final AsyncBatchId asyncBatchId)
 		{
 			Check.assume(shipperId != null, "shipperId != null");
 			Check.assume(shipperTransportationId != null, "shipperTransportationId != null");
@@ -89,6 +93,8 @@ public interface DraftDeliveryOrderCreator
 			this.pickupDate = pickupDate;
 			this.timeFrom = timeFrom;
 			this.timeTo = timeTo;
+
+			this.asyncBatchId = asyncBatchId;
 		}
 	}
 }

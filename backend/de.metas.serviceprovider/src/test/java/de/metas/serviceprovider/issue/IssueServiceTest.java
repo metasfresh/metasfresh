@@ -27,9 +27,12 @@ import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.serviceprovider.timebooking.TimeBooking;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,7 +53,7 @@ import static org.junit.Assert.assertNull;
 public class IssueServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
 	private final IssueService issueService = new IssueService(issueRepository, timeBookingRepository);
@@ -63,7 +66,7 @@ public class IssueServiceTest
 
 	/**
 	 * Given the following issue hierarchy:
-	 *
+	 * <p>
 	 * ----1----
 	 * ---/-\---
 	 * --2---3--
@@ -71,53 +74,53 @@ public class IssueServiceTest
 	 * --4---5--
 	 * /-|-\----
 	 * 6-7-8----
-	 *
+	 * <p>
 	 * with issues having:
-	 *      	node 1) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 2) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 4) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 8) - latestActivityOnIssue = MOCK_DATE_2020_03_07
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 1:30
+	 * node 1) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
+	 * - aggregatedEffort = 1:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 2) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
+	 * - aggregatedEffort = 1:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 4) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = null
+	 * - aggregatedEffort = 1:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 8) - latestActivityOnIssue = MOCK_DATE_2020_03_07
+	 * - latestActivityOnSubIssues = null
+	 * - aggregatedEffort = 1:30
+	 * - issueEffort = 1:30
 	 * When: {@link IssueService#addIssueProgress(AddIssueProgressRequest)} where request is:
-	 * 	- IssueId = 8
-	 * 	- bookedEffort = 1:00
-	 * 	- bookedDate of the latest added S_TimeBooking = MOCK_DATE_2020_03_12
+	 * - IssueId = 8
+	 * - bookedEffort = 1:00
+	 * - bookedDate of the latest added S_TimeBooking = MOCK_DATE_2020_03_12
 	 * Then:
-	 *      	node 1) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
-	 *                  - aggregatedEffort = 2:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 2) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
-	 *                  - aggregatedEffort = 2:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 4) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
-	 *                  - aggregatedEffort = 2:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 8) - latestActivityOnIssue = MOCK_DATE_2020_03_12
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 2:30
-	 *                  - issueEffort = 2:30
-	 *
-	 *  - meanwhile [3,5,6,7] will not be altered
+	 * node 1) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
+	 * - aggregatedEffort = 2:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 2) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
+	 * - aggregatedEffort = 2:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 4) - latestActivityOnIssue = null
+	 * - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
+	 * - aggregatedEffort = 2:30
+	 * - issueEffort = 0:00
+	 * <p>
+	 * node 8) - latestActivityOnIssue = MOCK_DATE_2020_03_12
+	 * - latestActivityOnSubIssues = null
+	 * - aggregatedEffort = 2:30
+	 * - issueEffort = 2:30
+	 * <p>
+	 * - meanwhile [3,5,6,7] will not be altered
 	 */
 	@Test
 	public void addIssueProgress()
@@ -178,7 +181,7 @@ public class IssueServiceTest
 
 	/**
 	 * Builds a Issue hierarchy as described below:
-	 *
+	 * <p>
 	 * ----1----
 	 * ---/-\---
 	 * --2---3--
@@ -186,17 +189,20 @@ public class IssueServiceTest
 	 * --4---5--
 	 * /-|-\----
 	 * 6-7-8----
-	 *
 	 */
 	static void prepareDataContext()
 	{
-		buildAndStoreIssueRecord(IssueId.ofRepoId(1), null, null, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		buildAndStoreIssueRecord(IssueId.ofRepoId(2), IssueId.ofRepoId(1), null, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		buildAndStoreIssueRecord(IssueId.ofRepoId(3), IssueId.ofRepoId(1), null, null, null);
-		buildAndStoreIssueRecord(IssueId.ofRepoId(4), IssueId.ofRepoId(2), null, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		buildAndStoreIssueRecord(IssueId.ofRepoId(5), IssueId.ofRepoId(3), null, null, null);
-		buildAndStoreIssueRecord(IssueId.ofRepoId(6), IssueId.ofRepoId(4), null, null, null);
-		buildAndStoreIssueRecord(IssueId.ofRepoId(7), IssueId.ofRepoId(4), null, null, null);
-		buildAndStoreIssueRecord(IssueId.ofRepoId(8), IssueId.ofRepoId(4), MOCK_EFFORT_1_30, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant(), null);
+		final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.saveRecord(mockUOMRecord);
+		final UomId effortUomId = UomId.ofRepoId(mockUOMRecord.getC_UOM_ID());
+
+		buildAndStoreIssueRecord(null, IssueId.ofRepoId(1), null, effortUomId, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		buildAndStoreIssueRecord(IssueId.ofRepoId(1), IssueId.ofRepoId(2), null, effortUomId, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		buildAndStoreIssueRecord(IssueId.ofRepoId(1), IssueId.ofRepoId(3), null, effortUomId, null, null);
+		buildAndStoreIssueRecord(IssueId.ofRepoId(2), IssueId.ofRepoId(4), null, effortUomId, null, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		buildAndStoreIssueRecord(IssueId.ofRepoId(3), IssueId.ofRepoId(5), null, effortUomId, null, null);
+		buildAndStoreIssueRecord(IssueId.ofRepoId(4), IssueId.ofRepoId(6), null, effortUomId, null, null);
+		buildAndStoreIssueRecord(IssueId.ofRepoId(4), IssueId.ofRepoId(7), null, effortUomId, null, null);
+		buildAndStoreIssueRecord(IssueId.ofRepoId(4), IssueId.ofRepoId(8), MOCK_EFFORT_1_30, effortUomId, MOCK_DATE_2020_03_07.atStartOfDay(ZoneId.systemDefault()).toInstant(), null);
 	}
 }

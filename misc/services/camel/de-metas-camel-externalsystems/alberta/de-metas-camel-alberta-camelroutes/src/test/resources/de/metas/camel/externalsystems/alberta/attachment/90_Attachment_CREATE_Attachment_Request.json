@@ -1,0 +1,36 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "UserID",
+      "externalReferenceIdentifier": "ext-ALBERTA-attachment_createdBy"
+    },
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "ext-ALBERTA-attachment_patientId"
+    }
+  ],
+  "attachment": {
+    "fileName": "attachmentFileName.png",
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ==",
+    "mimeType": "image/png",
+    "tags": [
+      {
+        "name": "alberta_attachment_id",
+        "value": "attachmentId"
+      },
+      {
+        "name": "alberta_attachment_uploadDate",
+        "value": "2021-05-25T06:50:24.568Z"
+      },
+      {
+        "name": "alberta_attachment_createdAt",
+        "value": "2021-05-25T06:50:24.561Z"
+      },
+      {
+        "name": "alberta_attachment_endpoint",
+        "value": "/attachment"
+      }
+    ]
+  }
+}

@@ -22,39 +22,12 @@ package de.metas.dunning;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.document.service.impl.DummyDocumentLocationBL;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-
 import de.metas.acct.api.IPostingService;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.IDocumentLocationBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -79,11 +52,41 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.PlainInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import de.metas.location.impl.DummyDocumentLocationBL;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 public class DunningTestBase
 {
-	/** Watches current test and dumps the database to console in case of failure */
+	/**
+	 * Watches current test and dumps the database to console in case of failure
+	 */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -109,7 +112,7 @@ public class DunningTestBase
 	{
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.get().setCopyOnSave(true); // FIXME : Adapt dunning tests to new behavior
-		
+
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
@@ -119,7 +122,7 @@ public class DunningTestBase
 
 		db = dao.getDB();
 
-		Services.registerService(IDocumentLocationBL.class, new DummyDocumentLocationBL());
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 		//
 		invoiceBL = new PlainInvoiceBL();
@@ -175,15 +178,13 @@ public class DunningTestBase
 
 	/**
 	 * Process {@link I_C_Dunning_Candidate}s and generate {@link I_C_DunningDoc}s.
-	 *
-	 * @param dunningContext
 	 */
 	protected void processDunningCandidates(final PlainDunningContext dunningContext)
 	{
 		dunningBL.processCandidates(dunningContext);
 	}
 
-	protected void processDunningDocs(final PlainDunningContext dunningContext)
+	protected void processDunningDocs()
 	{
 		final List<I_C_DunningDoc> dunningDocs = db.getRecords(I_C_DunningDoc.class);
 		for (final I_C_DunningDoc dunningDoc : dunningDocs)
@@ -222,10 +223,7 @@ public class DunningTestBase
 	}
 
 	/**
-	 *
 	 * @param dunningDateStr dunningDate in format yyyy-MM-dd
-	 * @param dunningLevel
-	 * @return
 	 */
 	protected PlainDunningContext createPlainDunningContext(String dunningDateStr, I_C_DunningLevel dunningLevel)
 	{
@@ -257,6 +255,7 @@ public class DunningTestBase
 		return dunning;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	protected I_C_DunningLevel createDunningLevel(I_C_Dunning dunning, int DaysBetweenDunning, int DaysAfterDue, int InterestPercent)
 	{
 		final IDunningContext dunningContext = null; // not needed for creating an instance
@@ -281,15 +280,11 @@ public class DunningTestBase
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)
 	{
 		final MockedDunnableSourceFactory factory = (MockedDunnableSourceFactory)context.getDunningConfig().getDunnableSourceFactory();
-		final MockedDunnableSource source = factory.getSource();
-		return source;
+		return factory.getSource();
 	}
 
 	/**
 	 * Live list of dunnable documents.
-	 *
-	 * @param context
-	 * @return
 	 */
 	public List<IDunnableDoc> getLiveDunnableDocList(final IDunningContext context)
 	{

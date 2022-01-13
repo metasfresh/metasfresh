@@ -24,7 +24,6 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -36,6 +35,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
@@ -318,6 +318,33 @@ public class DefaultPaymentBuilder
 		{
 			payment.setExternalId(externalId.getValue());
 		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder orderId(@Nullable final OrderId orderId)
+	{
+		assertNotBuilt();
+		if (orderId != null)
+		{
+			payment.setC_Order_ID(orderId.getRepoId());
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder orderExternalId(@Nullable final String orderExternalId)
+	{
+		assertNotBuilt();
+		if (Check.isNotBlank(orderExternalId))
+		{
+			payment.setExternalOrderId(orderExternalId);
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder isAutoAllocateAvailableAmt(final boolean isAutoAllocateAvailableAmt)
+	{
+		assertNotBuilt();
+		payment.setIsAutoAllocateAvailableAmt(isAutoAllocateAvailableAmt);
 		return this;
 	}
 }

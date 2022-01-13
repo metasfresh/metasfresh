@@ -33,7 +33,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import de.metas.greeting.GreetingRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
@@ -79,9 +81,8 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
-
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	@Test

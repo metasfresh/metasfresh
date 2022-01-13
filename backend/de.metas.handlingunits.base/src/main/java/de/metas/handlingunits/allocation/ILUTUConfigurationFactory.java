@@ -44,9 +44,6 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	/**
 	 * @param tuPIItemProduct  may not be {@code null}
-	 * @param cuProductId
-	 * @param cuUomId
-	 * @param bpartnerId
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
 	 *                         Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
 	 */
@@ -67,17 +64,12 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * <p>
 	 * NOTE: it is not saving the new configuration.
 	 *
-	 * @param lutuConfiguration
 	 * @return copy of <code>lutuConfiguration</code>
 	 */
 	I_M_HU_LUTU_Configuration copy(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	/**
 	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface.
-	 *
-	 * @param lutuConfiguration1
-	 * @param lutuConfiguration2
-	 * @return
 	 */
 	boolean isSameForHUProducer(
 			I_M_HU_LUTU_Configuration lutuConfiguration1,
@@ -85,8 +77,6 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Called before saving the configuration
-	 *
-	 * @param lutuConfiguration
 	 */
 	void assertNotChanged(I_M_HU_LUTU_Configuration lutuConfiguration);
 

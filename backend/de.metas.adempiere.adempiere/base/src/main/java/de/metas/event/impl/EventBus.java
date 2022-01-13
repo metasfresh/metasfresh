@@ -1,7 +1,5 @@
 package de.metas.event.impl;
 
-import java.util.IdentityHashMap;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,21 +22,10 @@ import java.util.IdentityHashMap;
  * #L%
  */
 
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
-
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
@@ -54,12 +41,23 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
 	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
-	/** Log all event bus exceptions */
+	/**
+	 * Log all event bus exceptions
+	 */
 	private static final SubscriberExceptionHandler exceptionHandler = (exception, context) -> {
 		final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
 				+ "\n Event: " + context.getEvent()
@@ -72,6 +70,7 @@ final class EventBus implements IEventBus
 
 	@Getter
 	private final String topicName;
+
 	private com.google.common.eventbus.EventBus eventBus;
 
 	private final IdentityHashMap<IEventListener, GuavaEventListenerAdapter> subscribedEventListener2GuavaListener = new IdentityHashMap<>();
@@ -90,17 +89,19 @@ final class EventBus implements IEventBus
 
 	private final ExecutorService executorOrNull;
 
-	private final EventBusStatsCollector stats;
+	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
 	public EventBus(
 			@NonNull final String topicName,
-			@Nullable final ExecutorService executor)
+			@Nullable final ExecutorService executor,
+			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector)
 	{
 		Check.assumeNotEmpty(topicName, "name not empty");
 
+		this.micrometerEventBusStatsCollector = micrometerEventBusStatsCollector;
 		this.executorOrNull = executor;
 		this.topicName = topicName;
 
@@ -115,8 +116,6 @@ final class EventBus implements IEventBus
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
 			this.async = true;
 		}
-
-		this.stats = new EventBusStatsCollector();
 	}
 
 	@Override
@@ -147,20 +146,22 @@ final class EventBus implements IEventBus
 		{
 			executorOrNull.shutdown(); // not 100% sure it's needed, but better safe than sorry
 		}
-		logger.trace("{0} - Destroyed", this);
+		logger.trace("Destroyed EventBus={}", this);
 	}
 
 	@Override
-	public void subscribe(@NonNull Consumer<Event> eventConsumer)
+	public void subscribe(@NonNull final Consumer<Event> eventConsumer)
 	{
 		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
 		subscribe(listener);
 	}
 
 	@Override
-	public <T> void subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
+	public <T> IEventListener subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
 	{
-		subscribe(new TypedConsumerAsEventListener<>(type, eventConsumer));
+		final TypedConsumerAsEventListener<T> listener = new TypedConsumerAsEventListener<>(type, eventConsumer);
+		subscribe(listener);
+		return listener;
 	}
 
 	@Override
@@ -170,6 +171,12 @@ final class EventBus implements IEventBus
 		if (destroyed)
 		{
 			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
+			return;
+		}
+
+		if (subscribedEventListener2GuavaListener.get(listener) != null)
+		{
+			logger.warn("Attempt to register a listener that was already registered. Ignored. \n Bus: {} \n Listener: {}", this, listener);
 			return;
 		}
 
@@ -214,15 +221,15 @@ final class EventBus implements IEventBus
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.shallBeLogged()
-				.build());
+						  .putProperty(PROP_Body, json)
+						  .shallBeLogged()
+						  .build());
 	}
 
 	@Override
 	public void postEvent(@NonNull final Event event)
 	{
-		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			// Do nothing if destroyed
 			if (destroyed)
@@ -249,7 +256,7 @@ final class EventBus implements IEventBus
 			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
 
-			stats.incrementEventsEnqueued();
+			micrometerEventBusStatsCollector.incrementEventsEnqueued();
 		}
 	}
 
@@ -274,7 +281,7 @@ final class EventBus implements IEventBus
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			try (final MDCCloseable ignored = EventMDC.putEvent(event))
 			{
 				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
@@ -283,7 +290,6 @@ final class EventBus implements IEventBus
 				eventConsumer.accept(obj);
 			}
 		}
-
 	}
 
 	@AllArgsConstructor
@@ -296,13 +302,18 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
-			stats.incrementEventsDequeued();
-
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-				invokeEventListener(this.eventListener, event);
-			}
+			micrometerEventBusStatsCollector.incrementEventsDequeued();
+			
+			micrometerEventBusStatsCollector
+					.getEventProcessingTimer()
+					.record(() ->
+							{
+								try (final MDCCloseable ignored = EventMDC.putEvent(event))
+								{
+									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+									invokeEventListener(this.eventListener, event);
+								}
+							});
 		}
 	}
 
@@ -324,7 +335,7 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
+		try (final EventLogEntryCollector ignored = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
 			try
 			{
@@ -350,6 +361,6 @@ final class EventBus implements IEventBus
 	@Override
 	public EventBusStats getStats()
 	{
-		return stats.snapshot();
+		return micrometerEventBusStatsCollector.snapshot();
 	}
 }

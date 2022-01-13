@@ -35,6 +35,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
@@ -50,6 +51,7 @@ import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.HashMap;
 
@@ -70,7 +72,7 @@ public class PP_Order_RecordWork
 	private WFDurationUnit durationUnit;
 
 	@Param(parameterName = "Duration", mandatory = true)
-	private int duration;
+	private BigDecimal duration;
 
 	private static final String PARAM_DurationBooked = "DurationBooked";
 	@Param(parameterName = PARAM_DurationBooked, mandatory = true)
@@ -173,7 +175,7 @@ public class PP_Order_RecordWork
 	protected String doIt()
 	{
 		final Duration duration = getDuration();
-		if(duration.isNegative() || duration.isZero())
+		if (duration.isNegative() || duration.isZero())
 		{
 			throw new FillMandatoryException("Duration");
 		}
@@ -216,6 +218,6 @@ public class PP_Order_RecordWork
 
 	private Duration getDuration()
 	{
-		return durationUnit.getDuration().multipliedBy(duration);
+		return DurationUtils.toWorkDurationRoundUp(duration, durationUnit.getTemporalUnit());
 	}
 }

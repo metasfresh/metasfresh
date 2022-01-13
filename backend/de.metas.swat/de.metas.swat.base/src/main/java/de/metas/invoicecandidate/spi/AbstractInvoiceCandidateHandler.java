@@ -47,6 +47,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
  *
@@ -72,7 +74,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
 		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
+		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore, we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
 
 		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID()));
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
@@ -114,9 +116,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	/**
 	 * Checks if the underlying product is a service which will never ever be received.
 	 *
-	 * @param ic
 	 * @return true if we deal with a service which will never ever be received
-	 * @task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
+	 * task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
 	 */
 	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
 	{
@@ -156,7 +157,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * @param ic invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */
-	protected final void setDeliveredDataFromFirstInOut(final I_C_Invoice_Candidate ic, final I_M_InOut firstInOut)
+	protected final void setDeliveredDataFromFirstInOut(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOut firstInOut)
 	{
 		ic.setM_InOut(firstInOut);
 
@@ -170,11 +171,5 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			ic.setDeliveryDate(firstInOut.getMovementDate());
 			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
 		}
-	}
-
-	@Override
-	public boolean isMissingInvoiceCandidate(Object model)
-	{
-		return true;
 	}
 }

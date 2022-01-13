@@ -31,12 +31,10 @@ public class GroupMatchers
 
 	private static final class AlwaysMatching implements GroupMatcher
 	{
-
 		@Override
-		public boolean isMatching(Group group)
+		public boolean isMatching(final Group group)
 		{
 			return true;
 		}
-
 	}
 }

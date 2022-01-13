@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.compensationGroup;
 
 import java.util.List;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -43,7 +44,7 @@ public class InvoiceCandidatesStorage
 	@Getter
 	private final GroupId groupId;
 	private final boolean performDatabaseChanges;
-	private final ImmutableMap<Integer, I_C_Invoice_Candidate> invoiceCandidatesById;
+	private final ImmutableMap<InvoiceCandidateId, I_C_Invoice_Candidate> invoiceCandidatesById;
 
 	@Builder
 	private InvoiceCandidatesStorage(
@@ -55,7 +56,7 @@ public class InvoiceCandidatesStorage
 		this.performDatabaseChanges = performDatabaseChanges;
 		invoiceCandidatesById = invoiceCandidates.stream()
 				.peek(InvoiceCandidateCompensationGroupUtils::assertCompensationLine)
-				.collect(GuavaCollectors.toImmutableMapByKey(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
+				.collect(GuavaCollectors.toImmutableMapByKey(record -> InvoiceCandidateId.ofRepoId(record.getC_Invoice_Candidate_ID())));
 	}
 
 	public void save(final I_C_Invoice_Candidate compensationLinePO)
@@ -84,7 +85,7 @@ public class InvoiceCandidatesStorage
 		}
 	}
 
-	public I_C_Invoice_Candidate getByIdIfPresent(final int invoiceCandidateId)
+	public I_C_Invoice_Candidate getByIdIfPresent(final InvoiceCandidateId invoiceCandidateId)
 	{
 		return invoiceCandidatesById.get(invoiceCandidateId);
 	}

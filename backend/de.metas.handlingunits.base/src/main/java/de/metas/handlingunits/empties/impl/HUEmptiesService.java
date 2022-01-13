@@ -59,10 +59,8 @@ import de.metas.util.Services;
 public class HUEmptiesService implements IHUEmptiesService
 {
 	@Override
-	public I_M_Warehouse getEmptiesWarehouse(final I_M_Warehouse warehouse)
+	public I_M_Warehouse getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
 		// services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
@@ -81,7 +79,7 @@ public class HUEmptiesService implements IHUEmptiesService
 		final List<I_DD_NetworkDistributionLine> lines = distributionNetworkDAO.retrieveNetworkLinesBySourceWarehouse(emptiesNetworkDistribution, warehouse.getM_Warehouse_ID());
 
 		if (lines.isEmpty())
-		{
+		{   // we did find the empties distribution network, but it contained no line to tell us what the given 'warehouse's empty-warehouse is.
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
 					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
 		}
@@ -104,10 +102,8 @@ public class HUEmptiesService implements IHUEmptiesService
 	}
 
 	@Override
-	public void generateMovementFromEmptiesInout(final I_M_InOut emptiesInOut)
+	public void generateMovementFromEmptiesInout(@NonNull final I_M_InOut emptiesInOut)
 	{
-		Check.assumeNotNull(emptiesInOut, "Parameter emptiesInOut is not null");
-
 		//
 		// Fetch shipment/receipt lines and convert them to packing material line candidates.
 		final List<HUPackingMaterialDocumentLineCandidate> lines = Services.get(IInOutDAO.class).retrieveLines(emptiesInOut, I_M_InOutLine.class)

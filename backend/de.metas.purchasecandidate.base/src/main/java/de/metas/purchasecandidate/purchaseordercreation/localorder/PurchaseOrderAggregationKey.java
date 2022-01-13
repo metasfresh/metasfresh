@@ -6,11 +6,13 @@ import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 
@@ -38,31 +40,44 @@ import java.util.Comparator;
 
 @Value
 @Builder
-public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggregationKey>
+public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggregationKey>
 {
-	private final OrgId orgId;
-	private final WarehouseId warehouseId;
-	private final BPartnerId vendorId;
-	private final ZonedDateTime datePromised;
-	private final ForecastLineId forecastLineId;
-	private final Dimension dimension;
+	OrgId orgId;
+	
+	@Nullable
+	ExternalId externalId;
+	
+	@Nullable
+	String poReference;
+	
+	WarehouseId warehouseId;
+	BPartnerId vendorId;
+	ZonedDateTime datePromised;
+	ForecastLineId forecastLineId;
+	Dimension dimension;
+	String externalPurchaseOrderUrl;
 
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
-			.thenComparing(PurchaseOrderAggregationKey::getDimension);
+			.thenComparing(PurchaseOrderAggregationKey::getDimension, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
 
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
+				.externalId(purchaseOrderItem.getExternalHeaderId())
 				.warehouseId(purchaseOrderItem.getWarehouseId())
 				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
 				.dimension(purchaseOrderItem.getDimension())
-
+				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
+				.poReference(purchaseOrderItem.getPOReference())
 				.build();
 	}
 
@@ -70,11 +85,14 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseCandidate.getOrgId())
+				.externalId(purchaseCandidate.getExternalHeaderId())
+				.poReference(purchaseCandidate.getPOReference())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
 				.forecastLineId(purchaseCandidate.getForecastLineId())
 				.dimension(purchaseCandidate.getDimension())
+				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 				.build();
 	}
 

@@ -1,13 +1,13 @@
 package de.metas.picking.api;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -40,12 +40,13 @@ public class PickingSlotId implements RepoIdAware
 		return new PickingSlotId(repoId);
 	}
 
+	@Nullable
 	public static PickingSlotId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new PickingSlotId(repoId) : null;
 	}
 
-	public static int toRepoId(final PickingSlotId pickingSlotId)
+	public static int toRepoId(@Nullable final PickingSlotId pickingSlotId)
 	{
 		return pickingSlotId != null ? pickingSlotId.getRepoId() : -1;
 	}

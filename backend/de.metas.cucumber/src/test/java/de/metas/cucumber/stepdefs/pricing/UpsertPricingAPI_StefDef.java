@@ -35,8 +35,10 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
@@ -49,7 +51,9 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
@@ -77,9 +81,17 @@ public class UpsertPricingAPI_StefDef
 	private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper()
 			.registerModule(new JavaTimeModule());
 
-	public UpsertPricingAPI_StefDef(final TestContext testContext)
+	private final StepDefData<I_M_PriceList> priceListTable;
+	private final M_Product_StepDefData productTable;
+
+	public UpsertPricingAPI_StefDef(
+			@NonNull final TestContext testContext,
+			@NonNull final StepDefData<I_M_PriceList> priceListTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.testContext = testContext;
+		this.priceListTable = priceListTable;
+		this.productTable = productTable;
 	}
 
 	@When("the user adds price list version data")
@@ -95,7 +107,7 @@ public class UpsertPricingAPI_StefDef
 		jsonRequestPriceListVersionUpsert.requestItems(requestItems.build());
 	}
 
-	@When("the user adds product prices data")
+	@And("the user adds product prices data")
 	public void userAddsProductPrices(@NonNull final DataTable dataTable)
 	{
 		final ImmutableList.Builder<JsonRequestProductPriceUpsertItem> requestItems = ImmutableList.builder();
@@ -164,15 +176,15 @@ public class UpsertPricingAPI_StefDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, "Identifier");
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OrgCode");
-		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PriceList_ID");
-		final String description = DataTableUtil.extractStringForColumnName(row, "Description");
+		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_PriceList.COLUMNNAME_M_PriceList_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final Instant validFrom = DataTableUtil.extractInstantForColumnName(row, "ValidFrom");
-		final String isActiveValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.IsActive");
+		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
-		final boolean isActive = !isActiveValue.equals("false");
+		final I_M_PriceList m_priceList = priceListTable.get(priceListIdentifier);
 
 		final JsonRequestPriceListVersion jsonRequestPriceListVersion = new JsonRequestPriceListVersion();
-		jsonRequestPriceListVersion.setPriceListIdentifier(priceListIdentifier);
+		jsonRequestPriceListVersion.setPriceListIdentifier(String.valueOf(m_priceList.getM_PriceList_ID()));
 		jsonRequestPriceListVersion.setOrgCode(orgCode);
 		jsonRequestPriceListVersion.setValidFrom(validFrom);
 		jsonRequestPriceListVersion.setActive(isActive);
@@ -189,8 +201,8 @@ public class UpsertPricingAPI_StefDef
 	{
 		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "Identifier");
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OrgCode");
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
-
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
 		final String priceStd = DataTableUtil.extractStringForColumnName(row, "PriceStd");
 		final String priceLimit = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.PriceLimit");
 		final String priceList = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.PriceList");
@@ -201,7 +213,7 @@ public class UpsertPricingAPI_StefDef
 		final boolean isActive = !isActiveValue.equals("false");
 
 		final JsonRequestProductPrice jsonRequestProductPrice = new JsonRequestProductPrice();
-		jsonRequestProductPrice.setProductIdentifier(productIdentifier);
+		jsonRequestProductPrice.setProductIdentifier(String.valueOf(product.getM_Product_ID()));
 		jsonRequestProductPrice.setOrgCode(orgCode);
 		jsonRequestProductPrice.setPriceList(new BigDecimal(priceList));
 		jsonRequestProductPrice.setPriceStd(new BigDecimal(priceStd));
@@ -265,7 +277,7 @@ public class UpsertPricingAPI_StefDef
 				.create()
 				.firstOnlyOptional(I_M_ProductPrice.class).orElse(null);
 
-		final Optional<TaxCategoryId> taxCategoryId = Services.get(ITaxBL.class).getTaxCategoryIdByInternalName(jsonRequestProductPrice.getTaxCategory().getValue());
+		final Optional<TaxCategoryId> taxCategoryId = Services.get(ITaxBL.class).getTaxCategoryIdByInternalName(jsonRequestProductPrice.getTaxCategory().getInternalName());
 
 		assertThat(persistedProductPrice).isNotNull();
 		assertThat(persistedProductPrice.getAD_Org_ID()).isEqualTo(defaultOrgId.getRepoId());

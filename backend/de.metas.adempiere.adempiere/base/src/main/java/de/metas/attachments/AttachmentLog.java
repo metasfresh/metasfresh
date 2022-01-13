@@ -33,16 +33,16 @@ import lombok.Value;
  */
 @Value
 @ToString
-public final class AttachmentLog
+public class AttachmentLog
 {
-	private String filename;
-	private Type type;
-	private URI url;
-	private final AttachmentTags attachmentTags;
-	private final ITableRecordReference recordRef;
-	private final String contentType;
-	private final String description;
-	private final AttachmentEntry attachmentEntry;
+	String filename;
+	Type type;
+	URI url;
+	AttachmentTags attachmentTags;
+	ITableRecordReference recordRef;
+	String contentType;
+	String description;
+	AttachmentEntry attachmentEntry;
 
 	@Builder
 	private AttachmentLog(@NonNull final AttachmentEntry attachmentEntry,

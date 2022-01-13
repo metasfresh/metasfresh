@@ -33,19 +33,17 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class GroupCompensationLineCreateRequest
+public class GroupCompensationLineCreateRequest
 {
-	private final ProductId productId;
-	private final UomId uomId;
+	ProductId productId;
+	UomId uomId;
 
-	@NonNull
-	private final GroupCompensationType type;
-	@NonNull
-	private final GroupCompensationAmtType amtType;
+	@NonNull GroupCompensationType type;
+	@NonNull GroupCompensationAmtType amtType;
 
-	private final Percent percentage;
-	private final BigDecimal qtyEntered;
-	private final BigDecimal price;
+	Percent percentage;
+	BigDecimal qtyEntered;
+	BigDecimal price;
 
-	private final GroupTemplateLineId groupTemplateLineId;
+	GroupTemplateLineId groupTemplateLineId;
 }

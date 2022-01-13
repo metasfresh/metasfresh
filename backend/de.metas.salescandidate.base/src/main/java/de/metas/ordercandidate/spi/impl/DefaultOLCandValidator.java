@@ -4,8 +4,12 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Properties;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,8 +65,7 @@ import lombok.NonNull;
  */
 
 /**
- *
- * @task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
+ * task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
  */
 @Component
 public class DefaultOLCandValidator implements IOLCandValidator
@@ -70,25 +73,26 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	private static final AdMessageKey MSG_NO_UOM_CONVERSION = AdMessageKey.of("NoUOMConversion_Params");
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultOLCandValidator.class);
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private final IOLCandBL olCandBL;
 	private final IOLCandWithUOMForTUsCapacityProvider olCandCapacityProvider;
 
 	// error messages
-	private static final String ERR_Bill_Location_Inactive = "ERR_Bill_Location_Inactive";
-	private static final String ERR_C_BPartner_Location_Effective_Inactive = "ERR_C_BPartner_Location_Effective_Inactive";
-	private static final String ERR_DropShip_Location_Inactive = "ERR_DropShip_Location_Inactive";
-	private static final String ERR_HandOver_Location_Inactive = "ERR_HandOver_Location_Inactive";
+	private static final AdMessageKey ERR_Bill_Location_Inactive = AdMessageKey.of("ERR_Bill_Location_Inactive");
+	private static final AdMessageKey ERR_C_BPartner_Location_Effective_Inactive = AdMessageKey.of("ERR_C_BPartner_Location_Effective_Inactive");
+	private static final AdMessageKey ERR_DropShip_Location_Inactive = AdMessageKey.of("ERR_DropShip_Location_Inactive");
+	private static final AdMessageKey ERR_HandOver_Location_Inactive = AdMessageKey.of("ERR_HandOver_Location_Inactive");
 
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
-	 *
+	 * <p>
 	 * task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	private static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(DefaultOLCandValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
@@ -101,7 +105,9 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		this.olCandBL = olCandBL;
 	}
 
-	/** @return {@code 20}; this validator shall be executed after OLCandProductFromPIIPvalidator */
+	/**
+	 * @return {@code 20}; this validator shall be executed after OLCandProductFromPIIPvalidator
+	 */
 	@Override
 	public int getSeqNo()
 	{
@@ -149,17 +155,16 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (billLocation != null && !billLocation.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_Bill_Location_Inactive);
-			msg.append(localMsg + "\n");
+			msg.append(localMsg).append("\n");
 			isValid = false;
 		}
 
 		// C_BPartner_Location_Effective
-
 		final I_C_BPartner_Location bpLocationEffective = olCandEffectiveValuesBL.getC_BP_Location_Effective(olCand);
 		if (bpLocationEffective != null && !bpLocationEffective.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_C_BPartner_Location_Effective_Inactive);
-			msg.append(localMsg + "\n");
+			msg.append(localMsg).append("\n");
 			isValid = false;
 		}
 
@@ -169,7 +174,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (dropShipLocation != null && !dropShipLocation.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_DropShip_Location_Inactive);
-			msg.append(localMsg + "\n");
+			msg.append(localMsg).append("\n");
 			isValid = false;
 		}
 
@@ -178,7 +183,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (handOverLocation != null && !handOverLocation.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_HandOver_Location_Inactive);
-			msg.append(localMsg + "\n");
+			msg.append(localMsg).append("\n");
 			isValid = false;
 		}
 
@@ -192,9 +197,6 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	{
 		if (olCand.isManualPrice())
 		{
-			// Set the price actual as the price entered
-			olCand.setPriceActual(olCand.getPriceEntered());
-
 			// still, make sure that we have a currency set
 			if (olCand.getC_Currency_ID() <= 0)
 			{
@@ -210,7 +212,22 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
-			if (pricingResult == null || pricingResult.getTaxCategoryId() == null)
+			final CurrencyPrecision precision = pricingResult.getPrecision();
+			if (precision != null)
+			{
+				final BigDecimal priceEntered = olCand.getPriceEntered();
+				final BigDecimal priceEnteredRounded = precision.round(priceEntered);
+				if (priceEnteredRounded.compareTo(priceEntered) != 0)
+				{
+					logger.info("Round priceEntered={} to {} according to currencyPrecision={}", priceEntered, priceEnteredRounded, precision);
+				}
+				olCand.setPriceEntered(priceEnteredRounded);
+			}
+
+			// Set the price actual as the price entered; possible discounts will be applied later
+			olCand.setPriceActual(olCand.getPriceEntered());
+
+			if (pricingResult.getTaxCategoryId() == null)
 			{
 				final String msg = "@NotFound@ @C_TaxCategory_ID@";
 				throw new AdempiereException(TranslatableStrings.parse(msg));
@@ -269,11 +286,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	{
 		try
 		{
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(olCand.getAD_Org_ID()));
 			final BigDecimal qtyOverride = null;
-			final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
-			final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, qtyOverride, PricingSystemId.NULL, datePromisedEffective);
+			final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand), timeZone);
 
-			return pricingResult;
+			return olCandBL.computePriceActual(olCand, qtyOverride, PricingSystemId.NULL, datePromisedEffective);
 		}
 		catch (final AdempiereException e)
 		{
@@ -304,6 +321,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 				productId,
 				targetUOMRecord,
 				olCand.getQtyEntered());
+
 		if (convertedQty == null)
 		{
 			final String productName = productBL.getProductName(productId);

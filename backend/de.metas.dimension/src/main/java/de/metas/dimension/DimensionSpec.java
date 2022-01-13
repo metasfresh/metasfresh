@@ -1,7 +1,9 @@
 package de.metas.dimension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -405,6 +407,7 @@ public class DimensionSpec
 		final Collection<Entry<IPair<String, AttributeId>, Collection<AttributeValueId>>> //
 		entrySet = groupNameToAttributeValueIds.asMap().entrySet();
 
+		final ArrayList<DimensionSpecGroup> newGroups = new ArrayList<>();
 		for (final Entry<IPair<String, AttributeId>, Collection<AttributeValueId>> entry : entrySet)
 		{
 			final String groupName = entry.getKey().getLeft();
@@ -416,8 +419,11 @@ public class DimensionSpec
 					() -> groupNameTrl,
 					attributesKey,
 					groupAttributeId);
-			list.add(newGroup);
+			newGroups.add(newGroup);
 		}
+		
+		newGroups.sort(Comparator.comparing(DimensionSpecGroup::getAttributesKey));
+		list.addAll(newGroups);
 	}
 
 	private static AttributesKey createAttributesKey(final Collection<AttributeValueId> values)

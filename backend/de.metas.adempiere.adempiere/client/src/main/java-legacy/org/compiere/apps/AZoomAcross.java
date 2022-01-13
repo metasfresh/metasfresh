@@ -16,11 +16,17 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.*;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocuments;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.document.references.related_documents.fact_acct.FactAcctRelatedDocumentsProvider;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
@@ -31,37 +37,27 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.POZoomSource;
-import de.metas.document.references.related_documents.ZoomInfo;
-import de.metas.document.references.related_documents.ZoomInfoFactory;
-import de.metas.document.references.related_documents.ZoomInfoPermissions;
-import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import javax.swing.*;
+import java.util.List;
 
 /**
  * Application Zoom Across Launcher.
  * Called from APanel; Queries available Zoom Targets for Table.
  *
  * @author Jorg Janke
- * @version $Id: AZoomAcross.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL - FR [ 1762465 ]
  * @author afalcone - Bug Fix [ 1659420 ] Usability: zoom across
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
+ * @version $Id: AZoomAcross.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 public class AZoomAcross
 {
 	/**
 	 * Constructor
-	 * 
-	 * @param invoker component to display popup (optional)
+	 *
+	 * @param invoker   component to display popup (optional)
 	 * @param tableName zoom source table (i.e. the table we start from)
-	 * @param query query that specifies the zoom source PO (i.e. the PO we start from)
+	 * @param query     query that specifies the zoom source PO (i.e. the PO we start from)
 	 */
 	public AZoomAcross(JComponent invoker, String tableName, final AdWindowId windowID, MQuery query)
 	{
@@ -81,18 +77,17 @@ public class AZoomAcross
 
 	private AZoomAcross(final JComponent invoker, IZoomSource source)
 	{
-		super();
 		logger.info("source={}", source);
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
 
-		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
-		for (final ZoomInfo zoomInfo : zoomInfos)
+		final List<RelatedDocuments> relatedDocumentsList = retrieveZoomTargets(source);
+		for (final RelatedDocuments relatedDocuments : relatedDocumentsList)
 		{
-			final String caption = zoomInfo.getCaption().translate(adLanguage);
-			m_popup.add(caption).addActionListener(event -> launch(zoomInfo));
+			final String caption = relatedDocuments.getCaption().translate(adLanguage);
+			m_popup.add(caption).addActionListener(event -> launch(relatedDocuments));
 		}
 
-		if (zoomInfos.isEmpty())
+		if (relatedDocumentsList.isEmpty())
 		{
 			m_popup.add(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "NoZoomTarget")); // Added
 		}
@@ -106,29 +101,25 @@ public class AZoomAcross
 
 	private static final Logger logger = LogManager.getLogger(AZoomAcross.class);
 
-	private List<ZoomInfo> retrieveZoomTargets(final IZoomSource source)
+	private List<RelatedDocuments> retrieveZoomTargets(final IZoomSource source)
 	{
 		if (source == null)
 		{
 			return ImmutableList.of(); // guard against NPE
 		}
 
-		final List<ZoomInfo> zoomInfos = new ArrayList<>();
-		final ZoomInfoFactory zoomProvider = SpringContextHolder.instance.getBean(ZoomInfoFactory.class);
-		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
-		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
-		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, permissions))
-		{
-			zoomInfos.add(zoomInfo);
-		}
+		// in Swing this is not needed because we have the Posted button
+		SpringContextHolder.instance.getBean(FactAcctRelatedDocumentsProvider.class).disable();
 
-		return ImmutableList.copyOf(zoomInfos);
+		final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
+		return relatedDocumentsFactory.retrieveRelatedDocuments(source, permissions);
 	}
 
-	private void launch(final ZoomInfo zoomInfo)
+	private void launch(final RelatedDocuments relatedDocuments)
 	{
-		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
-		final MQuery query = zoomInfo.getQuery();
+		final AdWindowId adWindowId = relatedDocuments.getAdWindowId();
+		final MQuery query = relatedDocuments.getQuery();
 
 		logger.info("AD_Window_ID={} - {}", adWindowId, query);
 
@@ -147,6 +138,6 @@ public class AZoomAcross
 			AEnv.showCenterScreen(frame);
 		}
 		frame = null;
-	}	// launchZoom
+	}    // launchZoom
 
-}	// AZoom
+}    // AZoom

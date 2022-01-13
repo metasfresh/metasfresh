@@ -56,7 +56,8 @@ public class ManufacturingComponentGeneratorService
 		final IComponentGenerator generatorInstance = javaClassBL.newInstance(generator.getJavaClassId());
 		return generatorInstance.generate(ComponentGeneratorContext.builder()
 				.qty(request.getQty())
-				.existingAttributes(request.getAttributes())
+				.existingAttributes(request.getTargetHUAttributes())
+				.bomLineAttributes(request.getBomLineAttributes())
 				.parameters(generator.getParams())
 				.clientId(request.getClientId())
 				.overrideExistingValues(request.isOverrideExistingValues())

@@ -2,6 +2,7 @@ import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
+import { formatSortingQuery } from '../utils';
 
 /**
  * @param attributeType 'pattribute' or 'address'
@@ -87,7 +88,7 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: orderBy,
+    orderBy: formatSortingQuery(orderBy),
   })
     .then(
       (res) =>
@@ -111,7 +112,7 @@ export function getTabLayoutRequest(windowId, tabId) {
 /**
  * getAPIUrl function
  */
-const getAPIUrl = function({ windowId, docId, tabId, rowId, path }) {
+const getAPIUrl = function ({ windowId, docId, tabId, rowId, path }) {
   let documentId = docId;
 
   if (!docId && rowId) {
@@ -223,5 +224,54 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
       (tabId ? '/' + tabId : '') +
       (rowId ? '/' + rowId : '') +
       '/printingOptions'
+  );
+}
+
+/**
+ * @method initQuickInput
+ * @summary Fetch data for table quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ */
+export function initQuickInput(entity, windowId, docId, tabId, subentity) {
+  tabId = tabId ? `/${tabId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+
+  return post(
+    `${config.API_URL}/${entity}/${windowId}/${docId}${tabId}${subentity}`
+  );
+}
+
+/**
+ * @method completeRequest
+ * @summary Save changes in attributes/quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ * @param {string} subentityId
+ */
+export function completeRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId
+) {
+  docType = docType ? `/${docType}` : '';
+  docId = docId ? `/${docId}` : '';
+  tabId = tabId ? `/${tabId}` : '';
+  rowId = rowId ? `/${rowId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+  subentityId = subentityId ? `/${subentityId}` : '';
+
+  return post(
+    `${config.API_URL}/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
   );
 }

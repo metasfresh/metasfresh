@@ -1,17 +1,6 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
@@ -20,7 +9,17 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public class AbstractStockEstimateHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(StockEstimateCreatedEvent.class, StockEstimateDeletedEvent.class);
 	}
@@ -76,17 +75,22 @@ public class AbstractStockEstimateHandler
 	{
 		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
+
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-				.productDescriptor(stockEstimateEvent.getProductDescriptor())
+				.productDescriptor(stockEstimateEvent.getMaterialDescriptor())
 				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), timeZone))
-				.plantId(stockEstimateEvent.getPlantId())
+				.warehouseId(stockEstimateEvent.getMaterialDescriptor().getWarehouseId())
 				.build();
 
-		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+		final BigDecimal qtyStockEstimate = stockEstimateEvent instanceof StockEstimateDeletedEvent
+				? BigDecimal.ZERO
+				: stockEstimateEvent.getQuantityDelta();
+		
+		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
-				.countedQty(stockEstimateEvent.getQuantityDelta())
+				.qtyStockEstimateSeqNo(stockEstimateEvent.getQtyStockEstimateSeqNo())
+				.qtyStockEstimateCount(qtyStockEstimate)
+				.qtyStockEstimateTime(stockEstimateEvent.getDate())
 				.build();
-		return request;
 	}
 }

@@ -22,22 +22,22 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
-import de.metas.order.OrderLineBuilder;
-import de.metas.organization.IOrgDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
-import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
-import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
-import de.metas.uom.UomId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,38 +49,42 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class QuotationAggregator
 {
+	// services
+	private final OrderGroupRepository orderGroupRepository;
+
 	private final ServiceRepairProjectInfo project;
-	private final ProductId serviceProductId;
-	private final UomId serviceProductUomId;
+	private final ImmutableMap<ServiceRepairProjectTaskId, ServiceRepairProjectTask> tasksById;
 	private final ProjectQuotationPricingInfo pricingInfo;
 	private final DocTypeId quotationDocTypeId;
 
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
-	private ImmutableMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> generatedQuotationLineIdsIndexedByCostCollectorId;
+	private final AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
+	private QuotationLineIdsByCostCollectorIdIndex generatedQuotationLineIdsIndexedByCostCollectorId;
 
 	@Builder
 	private QuotationAggregator(
-			@NonNull final IOrgDAO orgDAO,
+			@NonNull final IPricingBL pricingBL,
+			@NonNull final OrderGroupRepository orderGroupRepository,
+			//
 			@NonNull final ServiceRepairProjectInfo project,
+			@NonNull final List<ServiceRepairProjectTask> tasks,
 			@NonNull final ProjectQuotationPricingInfo pricingInfo,
-			@NonNull final ProductId serviceProductId,
-			@NonNull final UomId serviceProductUomId,
 			@NonNull final DocTypeId quotationDocTypeId)
 	{
+		this.orderGroupRepository = orderGroupRepository;
+
 		this.project = project;
+		this.tasksById = Maps.uniqueIndex(tasks, ServiceRepairProjectTask::getId);
 		this.pricingInfo = pricingInfo;
-		this.serviceProductId = serviceProductId;
-		this.serviceProductUomId = serviceProductUomId;
 		this.quotationDocTypeId = quotationDocTypeId;
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		this.priceCalculator = ProjectQuotationPriceCalculator.builder()
 				.pricingBL(pricingBL)
 				.pricingInfo(pricingInfo)
@@ -102,41 +106,112 @@ public class QuotationAggregator
 			throw new AdempiereException("No cost collectors to aggregate");
 		}
 
-		// Make sure they are ordered by Task ID, so the quotation lines will be in same order as the repair tasks
+		//
+		// Make sure they are ordered by Task ID, so the quotation lines will be in same ordering as the repair tasks
 		costCollectorsToAggregate.sort(Comparator.comparing(ServiceRepairProjectCostCollector::getTaskId));
 
 		//
-		// Create the empty quotation line aggregators (i.e. buckets)
-		final LinkedHashMap<QuotationLineKey, QuotationLineAggregator> quotationLineAggregators = new LinkedHashMap<>();
+		// Create lines groups
+		final LinkedHashMap<QuotationLinesGroupKey, QuotationLinesGroupAggregator> linesGroups = new LinkedHashMap<>();
 		for (final ServiceRepairProjectCostCollector costCollector : costCollectorsToAggregate)
 		{
-			final QuotationLineKey key = extractQuotationLineKey(costCollector);
-			quotationLineAggregators.computeIfAbsent(key, this::newQuotationLineAggregator);
+			linesGroups
+					.computeIfAbsent(
+							QuotationLinesGroupAggregator.extractKey(costCollector),
+							this::createGroupAggregator)
+					.add(costCollector);
 		}
 
 		//
-		// Iterate (again!) all cost collectors and add each of them to each bucket
-		for (final ServiceRepairProjectCostCollector costCollector : costCollectorsToAggregate)
+		// Create the quotation
+		final OrderFactory orderFactory = newOrderFactory();
+		for (final QuotationLinesGroupAggregator groupAggregator : linesGroups.values())
 		{
-			final QuotationLineKey costCollectorKey = extractQuotationLineKey(costCollector);
+			groupAggregator.createOrderLines(orderFactory);
+		}
+		final I_C_Order quotation = orderFactory.createDraft();
 
-			for (final Map.Entry<QuotationLineKey, QuotationLineAggregator> keyAndLineAggregator : quotationLineAggregators.entrySet())
-			{
-				final QuotationLineKey lineAggregatorKey = keyAndLineAggregator.getKey();
-				final QuotationLineAggregator lineAggregator = keyAndLineAggregator.getValue();
+		//
+		// Group the order lines
+		linesGroups.values().forEach(this::groupOrderLinesIfNeeded);
+		orderGroupRepository.renumberOrderLinesForOrderId(OrderId.ofRepoId(quotation.getC_Order_ID()));
 
-				if (QuotationLineKey.equals(costCollectorKey, lineAggregatorKey))
-				{
-					lineAggregator.collectMatchingItem(costCollector);
-				}
-				else
-				{
-					lineAggregator.collectNotMatchingItem(costCollector);
-				}
-			}
+		//
+		//
+		generatedQuotationLineIdsIndexedByCostCollectorId = QuotationLineIdsByCostCollectorIdIndex.of(
+				linesGroups.values()
+						.stream()
+						.flatMap(QuotationLinesGroupAggregator::streamQuotationLineIdsIndexedByCostCollectorId)
+						.distinct()
+						.collect(GuavaCollectors.toImmutableListMultimap()));
+
+		//
+		return quotation;
+	}
+
+	private void groupOrderLinesIfNeeded(@NonNull final QuotationLinesGroupAggregator linesGroup)
+	{
+		final GroupTemplate groupTemplate = linesGroup.getGroupTemplate();
+		if (groupTemplate == null)
+		{
+			return;
 		}
 
-		final OrderFactory orderFactory = OrderFactory.newSalesOrder()
+		final ImmutableList<OrderLineId> orderLineIds = getOrderLineIds(linesGroup);
+		if (orderLineIds.isEmpty())
+		{
+			return;
+		}
+
+		orderGroupRepository.prepareNewGroup()
+				.groupTemplate(groupTemplate)
+				.createGroup(orderLineIds);
+	}
+
+	private static ImmutableList<OrderLineId> getOrderLineIds(@NonNull final QuotationLinesGroupAggregator linesGroup)
+	{
+		return linesGroup.streamQuotationLineIdsIndexedByCostCollectorId()
+				.map(entry -> entry.getValue().getOrderLineId())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private QuotationLinesGroupAggregator createGroupAggregator(@NonNull final QuotationLinesGroupKey key)
+	{
+		if (key.getType() == QuotationLinesGroupKey.Type.REPAIRED_PRODUCT)
+		{
+			final ServiceRepairProjectTask task = tasksById.get(key.getTaskId());
+			if (task == null)
+			{
+				// shall not happen
+				throw new AdempiereException("No task found for " + key);
+			}
+
+			final int groupIndex = nextRepairingGroupIndex.getAndIncrement();
+
+			return RepairedProductAggregator.builder()
+					.priceCalculator(priceCalculator)
+					.key(key)
+					.groupCaption(String.valueOf(groupIndex))
+					.repairOrderSummary(task.getRepairOrderSummary())
+					.repairServicePerformedId(task.getRepairServicePerformedId())
+					.build();
+		}
+		else if (key.getType() == QuotationLinesGroupKey.Type.OTHERS)
+		{
+			return OtherLinesAggregator.builder()
+					.priceCalculator(priceCalculator)
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown key type: " + key);
+		}
+	}
+	
+	private OrderFactory newOrderFactory()
+	{
+		return OrderFactory.newSalesOrder()
 				.docType(quotationDocTypeId)
 				.orgId(pricingInfo.getOrgId())
 				.dateOrdered(extractDateOrdered(project, pricingInfo.getOrgTimeZone()))
@@ -148,30 +223,10 @@ public class QuotationAggregator
 				.paymentTermId(project.getPaymentTermId())
 				.campaignId(project.getCampaignId())
 				.projectId(project.getProjectId());
-
-		for (final QuotationLineAggregator quotationLineAggregator : quotationLineAggregators.values())
-		{
-			final OrderLineBuilder orderLineBuilder = orderFactory.newOrderLine()
-					.productId(quotationLineAggregator.getProductId())
-					.asiId(quotationLineAggregator.getAsiId())
-					.qty(quotationLineAggregator.getQty())
-					.manualPrice(quotationLineAggregator.getManualPrice())
-					.details(quotationLineAggregator.getDetails());
-
-			quotationLineAggregator.setOrderLineBuilderUsed(orderLineBuilder);
-		}
-
-		final I_C_Order quotation = orderFactory.createDraft();
-
-		generatedQuotationLineIdsIndexedByCostCollectorId = quotationLineAggregators.values()
-				.stream()
-				.flatMap(QuotationLineAggregator::streamQuotationLineIdsIndexedByCostCollectorId)
-				.collect(GuavaCollectors.toImmutableMap());
-
-		return quotation;
 	}
 
-	public final ImmutableMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> getQuotationLineIdsIndexedByCostCollectorId()
+	
+	public final QuotationLineIdsByCostCollectorIdIndex getQuotationLineIdsIndexedByCostCollectorId()
 	{
 		Objects.requireNonNull(generatedQuotationLineIdsIndexedByCostCollectorId, "generatedQuotationLineIdsIndexedByCostCollectorId");
 		return generatedQuotationLineIdsIndexedByCostCollectorId;
@@ -181,58 +236,5 @@ public class QuotationAggregator
 	{
 		this.costCollectorsToAggregate.addAll(costCollectors);
 		return this;
-	}
-
-	private QuotationLineKey extractQuotationLineKey(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		final ServiceRepairProjectCostCollectorType type = costCollector.getType();
-		if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
-		{
-			return QuotationLineKey.builder()
-					.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
-					.productId(serviceProductId)
-					.uomId(serviceProductUomId)
-					.warrantyCase(costCollector.getWarrantyCase())
-					.build();
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-		{
-			return QuotationLineKey.builder()
-					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-					.productId(costCollector.getProductId())
-					.asiId(costCollector.getAsiId())
-					.warrantyCase(costCollector.getWarrantyCase())
-					.uomId(costCollector.getUomId())
-					.singleCostCollectorId(costCollector.getId())
-					.build();
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
-		{
-			return QuotationLineKey.builder()
-					.type(ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
-					.productId(costCollector.getProductId())
-					.uomId(costCollector.getUomId())
-					.build();
-		}
-		else if (type == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
-		{
-			return QuotationLineKey.builder()
-					.type(ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
-					.productId(costCollector.getProductId())
-					.uomId(costCollector.getUomId())
-					.build();
-		}
-		else
-		{
-			throw new AdempiereException("Unknown type: " + type);
-		}
-	}
-
-	private QuotationLineAggregator newQuotationLineAggregator(@NonNull final QuotationLineKey key)
-	{
-		return QuotationLineAggregator.builder()
-				.key(key)
-				.priceCalculator(priceCalculator)
-				.build();
 	}
 }

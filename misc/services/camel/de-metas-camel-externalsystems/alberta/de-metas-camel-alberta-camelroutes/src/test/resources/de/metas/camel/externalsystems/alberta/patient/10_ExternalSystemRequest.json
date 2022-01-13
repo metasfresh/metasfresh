@@ -1,0 +1,17 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Alberta",
+  "command": "pushProducts",
+  "adPInstanceId": 10009936,
+  "externalSystemConfigId": 1,
+  "traceId": "traceId",
+  "externalSystemChildConfigValue": "ChildConfigValue",
+  "parameters": {
+    "APIKey": "APIKey",
+    "Tenant": "Tenant",
+    "ChildConfigValue": "ChildConfigValue",
+    "BasePath": "https://basePath",
+    "UpdatedAfter": "2021-01-01T02:17:20Z",
+    "RootBPartnerId": 200
+  }
+}

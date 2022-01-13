@@ -22,18 +22,35 @@ package de.metas.fresh.freshQtyOnHand.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.i18n.AdMessageKey;
+import de.metas.material.planning.ProductPlanningService;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 
 @Interceptor(I_Fresh_QtyOnHand_Line.class)
+@Callout(I_Fresh_QtyOnHand_Line.class)
 public class Fresh_QtyOnHand_Line
 {
-	@ModelChange(timings={ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void onBeforeSave(final I_Fresh_QtyOnHand_Line line)
 	{
 		// Make sure that we always keep DateDoc in sync with the document header
@@ -43,9 +60,27 @@ public class Fresh_QtyOnHand_Line
 		// NOTE: ASIKey will be set automatically by Fresh_QtyOnHand_Line_OnUpdate_Trigger
 	}
 
-	@ModelChange(timings={ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void fireStouckEstimatedEvent(final I_Fresh_QtyOnHand_Line line)
 	{
 
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE,
+			ModelValidator.TYPE_BEFORE_NEW
+	}, ifColumnsChanged = {
+			I_Fresh_QtyOnHand_Line.COLUMNNAME_M_Warehouse_ID,
+	})
+	@CalloutMethod(columnNames = I_Fresh_QtyOnHand_Line.COLUMNNAME_M_Warehouse_ID)
+	public void fireWarehouseChanges(@NonNull final I_Fresh_QtyOnHand_Line line)
+	{
+		final ProductPlanningService productPlanningService = SpringContextHolder.instance.getBean(ProductPlanningService.class);
+
+		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
+				.orElseThrow(() -> new AdempiereException(AdMessageKey.of("Fresh_QtyOnHand_Line.MissingWarehousePlant"))
+						.markAsUserValidationError());
+
+		line.setPP_Plant_ID(plantId.getRepoId());
 	}
 }

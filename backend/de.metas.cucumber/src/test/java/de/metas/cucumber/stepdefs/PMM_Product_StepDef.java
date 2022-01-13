@@ -41,12 +41,12 @@ import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product
 
 public class PMM_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productStepDefData;
+	private final M_Product_StepDefData productStepDefData;
 	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PMM_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productStepDefData,
+			@NonNull final M_Product_StepDefData productStepDefData,
 			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
 	{
 		this.productStepDefData = productStepDefData;
@@ -73,10 +73,8 @@ public class PMM_Product_StepDef
 			pmmProductRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			pmmProductRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 
-			try (final IAutoCloseable ignored = Services.get(IWebuiPush.class).disable())
-			{ // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
-				InterfaceWrapperHelper.save(pmmProductRecord);
-			}
+			InterfaceWrapperHelper.save(pmmProductRecord);
+			
 			pmmProductStepDefData.put(
 					DataTableUtil.extractRecordIdentifier(tableRow, "PMM_Product"),
 					pmmProductRecord);

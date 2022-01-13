@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 
 import com.google.common.io.Files;
 
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.impexp.excel.GridTabExcelExporter;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.impexp.spreadsheet.excel.GridTabExcelExporter;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 

@@ -22,20 +22,20 @@
 
 package de.metas.externalsystem.process;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
+import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParameter;
@@ -49,16 +49,12 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -68,13 +64,16 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	public final RuntimeParametersRepository runtimeParametersRepository = SpringContextHolder.instance.getBean(RuntimeParametersRepository.class);
+	private final ExternalSystemConfigService externalSystemConfigService = SpringContextHolder.instance.getBean(ExternalSystemConfigService.class);
+
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public static final String PARAM_CHILD_CONFIG_ID = "ChildConfigId";
 	@Param(parameterName = PARAM_CHILD_CONFIG_ID)
 	protected int childConfigId;
 
-	private static final String PARAM_SINCE = "since";
+	private static final String PARAM_SINCE = "Since";
 	@Param(parameterName = PARAM_SINCE)
 	private Timestamp since;
 
@@ -82,7 +81,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Param(parameterName = PARAM_EXTERNAL_REQUEST)
 	protected String externalRequest;
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -90,41 +89,30 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
 
 		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff.toInstant(), externalRequest);
-		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
-		{
-			return aDefault.execute(getRequest(), response -> {
-				final int statusCode = response.getStatusLine().getStatusCode();
-				if (statusCode != 200)
-				{
-					addLog("Camel request error message: {}", response);
-				}
-				else
-				{
-					addLog("Status code from camel: {}", statusCode);
-				}
-				return statusCode == 200 ? JavaProcess.MSG_OK : JavaProcess.MSG_Error + " request returned code: " + response.toString();
-			});
-		}
+
+		final JsonExternalSystemRequest externalSystemRequest = getRequest();
+
+		SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class).send(externalSystemRequest);
+
+		return MSG_OK;
 	}
 
-	protected HttpPut getRequest() throws UnsupportedEncodingException, JsonProcessingException
+	@NonNull
+	protected JsonExternalSystemRequest getRequest()
 	{
 		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
 
-		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
+		return JsonExternalSystemRequest.builder()
+				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
-				.parameters(extractExternalSystemParameters(config))
-				.orgCode(orgDAO.getById(getOrgId()).getValue())
+				.parameters(extractParameters(config))
+				.orgCode(getOrgCode())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
+				.traceId(externalSystemConfigService.getTraceId())
+				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
+				.externalSystemChildConfigValue(config.getChildConfig().getValue())
 				.build();
-
-		final HttpPut request = new HttpPut(config.getCamelUrl());
-		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
-
-		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
-
-		return request;
 	}
 
 	@Override
@@ -138,7 +126,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		final long selectedRecordsCount = getSelectedRecordCount(context);
 		if (selectedRecordsCount > 1)
 		{
-			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
 		}
 		else if (selectedRecordsCount == 0)
 		{
@@ -147,7 +135,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 			if (!childConfig.isPresent())
 			{
-				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
 			}
 		}
 
@@ -164,23 +152,53 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
-	/** Needed so we also have a "since" when the process is run via AD_Scheduler */
+	/**
+	 * Needed so we also have a "since" when the process is run via AD_Scheduler
+	 */
 	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
 		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue(), () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
-	
+
 	private Timestamp retrieveSinceValue()
 	{
 		final ProcessInfo processInfo = getProcessInfo();
 		return pInstanceDAO.getLastRunDate(processInfo.getAdProcessId(), processInfo.getPinstanceId());
 	}
 
+	private Map<String, String> extractParameters(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
+	{
+		final Map<String, String> parameters = new HashMap<>();
+
+		final Map<String, String> childSpecificParams = extractExternalSystemParameters(externalSystemParentConfig);
+
+		if (childSpecificParams != null && !childSpecificParams.isEmpty())
+		{
+			parameters.putAll(childSpecificParams);
+		}
+
+		runtimeParametersRepository.getByConfigIdAndRequest(externalSystemParentConfig.getId(), externalRequest)
+				.forEach(runtimeParameter -> parameters.put(runtimeParameter.getName(), runtimeParameter.getValue()));
+
+		return parameters;
+	}
+
+	protected String getOrgCode()
+	{
+		return orgDAO.getById(getOrgId()).getValue();
+	}
+
+	@Nullable
+	protected Timestamp getSinceParameterValue()
+	{
+		return since;
+	}
+
 	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
 
 	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
-	
+
 	protected abstract String getTabName();
 
 	protected abstract ExternalSystemType getExternalSystemType();

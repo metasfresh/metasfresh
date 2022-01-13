@@ -9,6 +9,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
@@ -31,6 +32,7 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
@@ -43,6 +45,7 @@ import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
+import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
@@ -150,6 +153,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
+	private BPartnerBL bpartnerBL;
 	private TestMasterdata testMasterdata;
 
 	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
@@ -163,7 +167,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
-	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
+	private OrderCandidatesRestController orderCandidatesRestControllerImpl;
 
 	private OLCandBL olCandBL;
 
@@ -186,10 +190,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
+		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -238,7 +243,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -253,7 +258,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonServiceFactory,
 				new JsonRequestConsolidateService());
 
-		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
+		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
@@ -278,9 +283,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService));
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService));
 	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
@@ -436,6 +443,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			assertThat(bpartner.getVatId()).isEqualTo("newVatId");
 		}
 
+		@SuppressWarnings({ "SameParameterValue", "OptionalUsedAsFieldOrParameterType" })
 		private JsonOLCand importOLCandWithVatId(
 				final String currentVatId,
 				@Nullable final Optional<String> newVatId)
@@ -901,7 +909,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1027,7 +1035,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1068,7 +1076,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
@@ -1141,7 +1149,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(

@@ -1,0 +1,237 @@
+{
+  "total": 1,
+  "data": [
+    {
+      "parentId": null,
+      "childCount": 6,
+      "autoIncrement": 83,
+      "taxId": "989b55bae94d4e1295ea228b7a68d4b2",
+      "manufacturerId": "d0acf79c9f254ba08381605dc6029c21",
+      "unitId": "unitId",
+      "active": true,
+      "displayGroup": null,
+      "price": [
+        {
+          "currencyId": "currencyId",
+          "net": 2.24,
+          "gross": 2.4,
+          "linked": true,
+          "listPrice": null,
+          "extensions": [],
+          "apiAlias": "price"
+        }
+      ],
+      "manufacturerNumber": null,
+      "ean": "!!ean!!",
+      "sales": 0,
+      "productNumber": "!!productNumber!!",
+      "stock": 333,
+      "availableStock": 333,
+      "available": true,
+      "deliveryTimeId": "0053ada2830c44c4b12c9d0431564649",
+      "deliveryTime": null,
+      "restockTime": 3,
+      "isCloseout": false,
+      "purchaseSteps": 1,
+      "maxPurchase": null,
+      "minPurchase": 1,
+      "purchaseUnit": 45,
+      "referenceUnit": 100,
+      "shippingFree": false,
+      "purchasePrice": null,
+      "purchasePrices": null,
+      "markAsTopseller": null,
+      "weight": 0.045,
+      "width": null,
+      "height": null,
+      "length": null,
+      "releaseDate": null,
+      "categoryTree": [
+        "f160e02f2c8b423ea4d3376c72efaa0b",
+        "c97aeb093186420ca21c5ef49dbd490f",
+        "5d85c8874beb4bdabd00bf4b9fd03737",
+        "a074054f6dbe4c1fb9723173456febf9",
+        "0220273cb1784659990d4e7fe8619df5",
+        "1c273f6a73fe431287bc3f75d1261e43",
+        "a7c5001cdb8d4ad99479e16ce2f1b97b",
+        "c8c968cb94f8465fa51bbe6ace4c067a"
+      ],
+      "optionIds": null,
+      "propertyIds": [
+        "dca36155a62d456e84f4964b2ecfcb9e"
+      ],
+      "name": "!!name!!",
+      "description": "Herkömmliche Crispy-Riegel enthalten meist hauptsächlich Kohlenhydrate (Zucker) und nur wenig Eiweiß. SANA-PRO PREMIUM EIWEISSRIEGEL CRISPY WALDFRUCHT, KNUSPER, SCHOKO und CRUNCHY KAKAO hingegen sind nach neuesten ernährungswissenschaftlichen Erkenntnissen entwickelt, daher arm an Kohlenhydraten und reich an Eiweiß.\n<div>Als Eiweißquelle dient die Sojabohne, eine Hülsenfrucht mit dem höchsten Eiweißgehalt und einer hohen biologischen Wertigkeit, zusätzlich ist Gelatinehydrolysat enthalten.\n</div><div>\n<span style=\"letter-spacing: 0px;\">Genießen Sie SANA-PRO PREMIUM EIWEISSRIEGEL CRISPY WALDFRUCHT, KNUSPER und CRUNCHY KAKAO im Rahmen des BODYMED-Ernährungskonzepts als leckere Nachspeise zur Hauptmahlzeit oder als Extraportion Eiweiß – ideal für alle Personen mit einem täglichen Mehrbedarf (z. B. Sportler, ältere Menschen, Kinder und Jugendliche).&nbsp;</span></div><div>\n<span style=\"letter-spacing: 0px;\">Auf Reisen oder wenn es mal schnell gehen soll, greifen Ernährungsbewusste gerne nach der wohlschmeckenden Alternative, um eine Portion SANA-FIT PREMIUM-Eiweißshake zu ersetzen.</span></div>",
+      "metaDescription": null,
+      "metaTitle": null,
+      "packUnit": null,
+      "packUnitPlural": null,
+      "variantRestrictions": null,
+      "configuratorGroupConfig": null,
+      "grouped": false,
+      "mainVariantId": null,
+      "variation": [],
+      "tax": {
+        "taxRate": 7,
+        "name": "Reduzierte MwSt 7%",
+        "products": null,
+        "customFields": null,
+        "rules": null,
+        "shippingMethods": null,
+        "_uniqueIdentifier": "989b55bae94d4e1295ea228b7a68d4b2",
+        "versionId": null,
+        "translated": [],
+        "createdAt": "2020-11-09T19:15:14.882+00:00",
+        "updatedAt": "2021-03-25T12:37:50.830+00:00",
+        "extensions": {
+          "internal_mapping_storage": {
+            "apiAlias": null,
+            "extensions": []
+          },
+          "foreignKeys": {
+            "apiAlias": null,
+            "extensions": []
+          }
+        },
+        "id": "989b55bae94d4e1295ea228b7a68d4b2",
+        "apiAlias": "tax"
+      },
+      "manufacturer": null,
+      "unit": null,
+      "prices": [],
+      "listingPrices": [
+        {
+          "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+          "ruleId": null,
+          "from": {
+            "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+            "net": 1.12,
+            "gross": 1.2,
+            "linked": true,
+            "listPrice": {
+              "net": 1.4,
+              "gross": 1.5,
+              "linked": true,
+              "listPrice": null,
+              "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+              "extensions": []
+            },
+            "extensions": [],
+            "apiAlias": "price"
+          },
+          "to": {
+            "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+            "net": 2.24,
+            "gross": 2.4,
+            "linked": true,
+            "listPrice": null,
+            "extensions": [],
+            "apiAlias": "price"
+          },
+          "extensions": [],
+          "apiAlias": "listing_price"
+        },
+        {
+          "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+          "ruleId": "7c9bb971165e472d84af771316c63242",
+          "from": {
+            "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+            "net": 0.8,
+            "gross": 0.8600000000000001,
+            "linked": true,
+            "listPrice": {
+              "net": 1,
+              "gross": 1.07,
+              "linked": true,
+              "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca"
+            },
+            "extensions": [],
+            "apiAlias": "price"
+          },
+          "to": {
+            "currencyId": "b7d2554b0ce847cd82f3ac9bd1c0dfca",
+            "net": 1.62,
+            "gross": 1.7300000000000002,
+            "linked": true,
+            "listPrice": null,
+            "extensions": [],
+            "apiAlias": "price"
+          },
+          "extensions": [],
+          "apiAlias": "listing_price"
+        }
+      ],
+      "cover": null,
+      "parent": null,
+      "children": null,
+      "media": null,
+      "cmsPageId": null,
+      "cmsPage": null,
+      "searchKeywords": null,
+      "translations": null,
+      "categories": null,
+      "customFieldSets": null,
+      "tags": null,
+      "properties": null,
+      "options": null,
+      "configuratorSettings": null,
+      "categoriesRo": null,
+      "coverId": "f599eb83477f4807bc124f349aa628ef",
+      "blacklistIds": null,
+      "whitelistIds": null,
+      "customFields": {
+        "custom_product_info_quick_facts": "<ul><li>Eiweißriegel\n</li><li>Nährstoffe und Vitamine\n</li><li>Sättigt und liefert zusätzlich Eiweiß\n</li><li>Kohlenhydratreduziert\n</li><li>Ideal für unterwegs</li></ul>",
+        "custom_product_configuration_quantity_button": true,
+        "custom_product_configuration_quantity_button_scale": 25
+      },
+      "visibilities": null,
+      "tagIds": null,
+      "productReviews": null,
+      "ratingAverage": null,
+      "mainCategories": null,
+      "seoUrls": null,
+      "orderLineItems": null,
+      "crossSellings": null,
+      "crossSellingAssignedProducts": null,
+      "featureSetId": null,
+      "featureSet": null,
+      "customFieldSetSelectionActive": null,
+      "customSearchKeywords": null,
+      "wishlists": null,
+      "canonicalProductId": null,
+      "canonicalProduct": null,
+      "_uniqueIdentifier": "03174d9e5f9b4c55953cf9ee1b08ae3a",
+      "versionId": "0fa91ce3e96a4bc2be4bd9ce752c3425",
+      "translated": {
+        "metaDescription": null,
+        "name": "SANA-PRO PREMIUM EIWEISSRIEGEL",
+        "keywords": null,
+        "description": "Herkömmliche Crispy-Riegel enthalten meist hauptsächlich Kohlenhydrate (Zucker) und nur wenig Eiweiß. SANA-PRO PREMIUM EIWEISSRIEGEL CRISPY WALDFRUCHT, KNUSPER, SCHOKO und CRUNCHY KAKAO hingegen sind nach neuesten ernährungswissenschaftlichen Erkenntnissen entwickelt, daher arm an Kohlenhydraten und reich an Eiweiß.\n<div>Als Eiweißquelle dient die Sojabohne, eine Hülsenfrucht mit dem höchsten Eiweißgehalt und einer hohen biologischen Wertigkeit, zusätzlich ist Gelatinehydrolysat enthalten.\n</div><div>\n<span style=\"letter-spacing: 0px;\">Genießen Sie SANA-PRO PREMIUM EIWEISSRIEGEL CRISPY WALDFRUCHT, KNUSPER und CRUNCHY KAKAO im Rahmen des BODYMED-Ernährungskonzepts als leckere Nachspeise zur Hauptmahlzeit oder als Extraportion Eiweiß – ideal für alle Personen mit einem täglichen Mehrbedarf (z. B. Sportler, ältere Menschen, Kinder und Jugendliche).&nbsp;</span></div><div>\n<span style=\"letter-spacing: 0px;\">Auf Reisen oder wenn es mal schnell gehen soll, greifen Ernährungsbewusste gerne nach der wohlschmeckenden Alternative, um eine Portion SANA-FIT PREMIUM-Eiweißshake zu ersetzen.</span></div>",
+        "metaTitle": null,
+        "packUnit": null,
+        "packUnitPlural": null,
+        "customFields": {
+          "custom_product_info_quick_facts": "<ul><li>Eiweißriegel\n</li><li>Nährstoffe und Vitamine\n</li><li>Sättigt und liefert zusätzlich Eiweiß\n</li><li>Kohlenhydratreduziert\n</li><li>Ideal für unterwegs</li></ul>",
+          "custom_product_configuration_quantity_button": true,
+          "custom_product_configuration_quantity_button_scale": 25
+        },
+        "customSearchKeywords": null
+      },
+      "createdAt": "2020-12-02T18:12:46.978+00:00",
+      "updatedAt": "2021-06-21T07:44:09.708+00:00",
+      "extensions": {
+        "foreignKeys": {
+          "apiAlias": null,
+          "extensions": [],
+          "bundleProduct": null
+        },
+        "bundle": null
+      },
+      "id": "!!productId!!",
+      "parentVersionId": "0fa91ce3e96a4bc2be4bd9ce752c3425",
+      "productManufacturerVersionId": "0fa91ce3e96a4bc2be4bd9ce752c3425",
+      "productMediaVersionId": null,
+      "apiAlias": "product"
+    }
+  ]
+}

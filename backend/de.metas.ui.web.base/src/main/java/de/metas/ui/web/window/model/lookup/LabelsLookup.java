@@ -1,8 +1,10 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -14,10 +16,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -51,47 +54,72 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return (LabelsLookup)lookupDescriptor;
 	}
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Getter
+	@NonNull
+	private final String fieldName;
+
 	/**
 	 * Labels table name (e.g. C_BPartner_Attribute)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsTableName;
+
 	/**
 	 * Labels reference List column name (e.g. C_BPartner_Attribute's Attribute)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsValueColumnName;
+	@NonNull
 	private final LookupDataSource labelsValuesLookupDataSource;
 	@Getter
 	private final boolean labelsValuesUseNumericKey;
+
 	/**
 	 * Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsLinkColumnName;
+
+	@Getter
+	@Nullable
+	private final ReferenceId labelsValueReferenceId;
+
 	/**
 	 * Table name (e.g. C_BPartner)
 	 */
+	@NonNull
 	private final String tableName;
+
 	/**
 	 * Table's link column name (e.g. C_BPartner's C_BPartner_ID)
 	 */
 	@Getter
+	@NonNull
 	private final String linkColumnName;
 
-	private final Set<CtxName> parameters;
+	@NonNull
+	private final ImmutableSet<CtxName> parameters;
 
 	@Builder
 	private LabelsLookup(
+			@NonNull final String fieldName,
 			@NonNull final String tableName,
 			@NonNull final String linkColumnName,
 			@NonNull final String labelsTableName,
 			@NonNull final String labelsValueColumnName,
 			@NonNull final String labelsLinkColumnName,
-			@NonNull final LookupDescriptor labelsValuesLookupDescriptor)
+			@NonNull final LookupDescriptor labelsValuesLookupDescriptor,
+			@Nullable final ReferenceId labelsValueReferenceId)
 	{
+		this.fieldName = fieldName;
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
+		this.labelsValueReferenceId = labelsValueReferenceId;
 		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
 		this.labelsValuesUseNumericKey = labelsValuesLookupDescriptor.isNumericKey();
 		this.labelsLinkColumnName = labelsLinkColumnName;
@@ -107,14 +135,14 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return DocumentFieldWidgetType.Labels.getValueClass();
 	}
 
-	public LookupValuesList retrieveExistingValues(final int linkId)
+	public LookupValuesList retrieveExistingValuesByLinkId(final int linkId)
 	{
 		if (linkId <= 0)
 		{
 			return LookupValuesList.EMPTY;
 		}
 
-		final List<String> existingItems = retrieveExistingValuesRecordQuery(linkId)
+		final List<String> existingItems = queryValueRecordsByLinkId(linkId)
 				.create()
 				.listDistinct(labelsValueColumnName, String.class);
 		if (existingItems.isEmpty())
@@ -122,13 +150,18 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			return LookupValuesList.EMPTY;
 		}
 
-		return labelsValuesLookupDataSource.findByIdsOrdered(existingItems);
+		return retrieveExistingValuesByIds(existingItems);
 	}
 
-	public IQueryBuilder<Object> retrieveExistingValuesRecordQuery(final int linkId)
+	public LookupValuesList retrieveExistingValuesByIds(@NonNull final Collection<?> ids)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(labelsTableName, PlainContextAware.newWithThreadInheritedTrx())
+		return !ids.isEmpty() ? labelsValuesLookupDataSource.findByIdsOrdered(ids) : LookupValuesList.EMPTY;
+	}
+
+	public IQueryBuilder<Object> queryValueRecordsByLinkId(final int linkId)
+	{
+		return queryBL
+				.createQueryBuilder(labelsTableName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(getLabelsLinkColumnName(), linkId); // parent link
 	}
@@ -152,6 +185,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	}
 
 	@Override
+	@Nullable
 	public String getCachePrefix()
 	{
 		return null; // not important because isCached() returns false
@@ -202,13 +236,14 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(tableName).putFilterById(id);
+		return LookupDataSourceContext.builder(tableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final String id = evalCtx.getIdToFilterAsString();
+		final Object id = evalCtx.getSingleIdToFilterAsObject();
 		if (id == null)
 		{
 			throw new IllegalStateException("No ID provided in " + evalCtx);
@@ -222,11 +257,12 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	{
 		return LookupDataSourceContext.builder(tableName)
 				.setRequiredParameters(parameters)
-				.requiresAD_Language();
+				.requiresAD_Language()
+				.requiresUserRolePermissionsKey();
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final String filter = evalCtx.getFilter();
 		return labelsValuesLookupDataSource.findEntities(evalCtx, filter);
@@ -247,7 +283,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		}
 		else
 		{
-			return ImmutableSet.<Object>copyOf(stringIds);
+			return ImmutableSet.copyOf(stringIds);
 		}
 	}
 
@@ -257,9 +293,17 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		{
 			return Integer.parseInt(stringId);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed converting `" + stringId + "` to int.", ex);
 		}
+	}
+
+	public String getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
+	{
+		return "SELECT array_agg(" + labelsValueColumnName + ")"
+				+ " FROM " + labelsTableName
+				+ " WHERE " + labelsLinkColumnName + "=" + tableNameOrAlias + "." + linkColumnName
+				+ " AND IsActive='Y'";
 	}
 }

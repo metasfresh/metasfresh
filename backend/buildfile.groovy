@@ -1,8 +1,6 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
 import de.metas.jenkins.DockerConf
-@Library('misc')
-import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
 
 Map build(
@@ -110,8 +108,8 @@ Map build(
 				"""
 
                 dir('de.metas.cucumber') {
-                    def distributionBuildFile = load('buildfile.groovy')
-                    distributionBuildFile.build(mvnConf)
+                    def cucumberBuildFile = load('buildfile.groovy')
+                    cucumberBuildFile.build(mvnConf, scmVars)
                 }
 
                 final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"

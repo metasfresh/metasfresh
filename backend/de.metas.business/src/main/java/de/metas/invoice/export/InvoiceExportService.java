@@ -81,7 +81,7 @@ public class InvoiceExportService
 
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			try (final MDCCloseable invoiceMDC = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoiceIdToExport))
+			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoiceIdToExport))
 			{
 				final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
 				if (!invoiceToExport.isPresent())
@@ -131,7 +131,7 @@ public class InvoiceExportService
 		{
 			byteArrayData = ByteStreams.toByteArray(exportResult.getData());
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}

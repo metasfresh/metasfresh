@@ -64,7 +64,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 			return MSG_Error + ": 0 records enqueued";
 		}
 
-		final I_C_Async_Batch asyncbatch = createAsycnBatch();
+		final I_C_Async_Batch asyncbatch = createAsyncBatch();
 		for (final Integer campaignContactPersonId : campaignContactPersonIds)
 		{
 			enqueue(asyncbatch, campaignContactPersonId);
@@ -73,7 +73,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 		return MSG_OK;
 	}
 
-	private I_C_Async_Batch createAsycnBatch()
+	private I_C_Async_Batch createAsyncBatch()
 	{
 		// Create Async Batch for tracking
 		return asyncBatchBL.newAsyncBatch()
@@ -84,7 +84,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.build();
 	}
 
-	private void enqueue(@NonNull final I_C_Async_Batch asyncbatch, final Integer campaignContactPersonId)
+	private void enqueue(@NonNull final I_C_Async_Batch asyncBatch, final Integer campaignContactPersonId)
 	{
 		if (campaignContactPersonId == null || campaignContactPersonId <= 0)
 		{
@@ -99,7 +99,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 		queue.newBlock()
 				.setContext(getCtx())
 				.newWorkpackage()
-				.setC_Async_Batch(asyncbatch) // set the async batch in workpackage in order to track it
+				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
 				.setUserInChargeId(getUserId())
 				.build();

@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.order.DeliveryRule;
@@ -10,7 +11,9 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -43,8 +46,15 @@ final class OLCandFactory
 
 	public OLCand toOLCand(@NonNull final I_C_OLCand record)
 	{
+		final OrderLineGroup orderLineGroup = Check.isBlank(record.getCompensationGroupKey())
+				? null
+				: OrderLineGroup.builder()
+				.groupKey(record.getCompensationGroupKey())
+				.isGroupingError(record.isGroupingError())
+				.groupingErrorMessage(record.getGroupingErrorMessage())
+				.discount(Percent.ofNullable(record.getGroupCompensationDiscountPercentage()))
+				.build();
 
-		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(record.getCompensationGroupKey(), record.isGroupCompensationLine(), record.isGroupingError(), record.getGroupingErrorMessage());
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(record)
@@ -57,6 +67,12 @@ final class OLCandFactory
 				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.orderLineGroup(orderLineGroup)
+				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
+				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
+				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
+				.bpartnerName(record.getBPartnerName())
+				.email(record.getEMail())
+				.phone(record.getPhone())
 				.build();
 	}
 }

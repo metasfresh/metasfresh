@@ -1,5 +1,7 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import de.metas.document.engine.IDocumentBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
 import de.metas.util.Loggables;
@@ -35,6 +37,9 @@ import java.util.ArrayList;
 @ToString
 public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 {
+	final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT = I_C_OrderLine.COLUMNNAME_QtyOrdered;
 

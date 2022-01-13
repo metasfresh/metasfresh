@@ -83,7 +83,6 @@ public interface TestConstants
 	OrgId MOCK_ORG_ID = OrgId.ANY;
 	ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
 	UserId MOCK_USER_ID = UserId.ofRepoId(1);
-	UomId MOCK_UOM_ID = UomId.ofRepoId(1);
 	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
 	String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
 	String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();

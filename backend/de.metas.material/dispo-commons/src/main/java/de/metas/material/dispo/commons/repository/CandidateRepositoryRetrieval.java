@@ -20,11 +20,13 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -45,7 +47,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -84,10 +85,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 public class CandidateRepositoryRetrieval
 {
 	private final DimensionService dimensionService;
+	private final StockChangeDetailRepo stockChangeDetailRepo;
 
-	public CandidateRepositoryRetrieval(@NonNull final DimensionService dimensionService)
+	public CandidateRepositoryRetrieval(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
 		this.dimensionService = dimensionService;
+		this.stockChangeDetailRepo = stockChangeDetailRepo;
 	}
 
 	/**
@@ -151,17 +156,20 @@ public class CandidateRepositoryRetrieval
 		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
 		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
 		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
+		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateRecordOrNull);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
 		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
+		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
 
-		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail > 1,
-					  "A candidate may not have both a distribution, production and a production detail; candidateRecord={}", candidateRecordOrNull);
+		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
+					  "A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
 
-		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull, demandDetailOrNull);
+		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull,
+																			demandDetailOrNull, stockChangeDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
 		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{
@@ -334,6 +342,12 @@ public class CandidateRepositoryRetrieval
 				.first();
 
 		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
+	}
+
+	@NonNull
+	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesQuery query)
+	{
+		return Optional.ofNullable(retrieveLatestMatchOrNull(query));
 	}
 
 	private static IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(

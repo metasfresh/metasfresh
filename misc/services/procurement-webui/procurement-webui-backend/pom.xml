@@ -48,11 +48,14 @@
         <spring-boot.version>2.4.1</spring-boot.version>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
+        <!-- NOTE: versions below 5.7.0 does not support junit 4.13.1
+        and when running tests fails with "Failed to parse version of junit:junit: 4.13.1" exception -->
+        <junit-jupiter.version>5.7.0</junit-jupiter.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-			<!-- Import dependency management from Spring Boot -->
+            <!-- Import dependency management from Spring Boot -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -60,15 +63,23 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
+                <!-- <version>1.18.18</version> -->
+                <version>1.18.22</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-		<dependency>
-			<groupId>de.metas.common.procurement</groupId>
-			<artifactId>de-metas-common-procurement</artifactId>
-			<version>${metasfresh-common.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.common.procurement</groupId>
+            <artifactId>de-metas-common-procurement</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,27 +134,25 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Swagger -->
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
+            <artifactId>springfox-boot-starter</artifactId>
             <version>${springfox-swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${springfox-swagger.version}</version>
         </dependency>
-
     </dependencies>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -175,8 +184,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <configuration>
-                   <!-- disabling because it's a pain in the rear, and i can't disable e.g. just dependency-conversion -->
-                   <skip>true</skip>
+                    <!-- disabling because it's a pain in the rear, and i can't disable e.g. just dependency-conversion -->
+                    <skip>true</skip>
                 </configuration>
             </plugin>
 
@@ -202,6 +211,12 @@
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
                         <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- we authenticate on pulls to avoid the rate limit -->
+                            <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                 </configuration>
                 <executions>

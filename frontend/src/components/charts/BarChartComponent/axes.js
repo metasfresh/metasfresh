@@ -18,10 +18,7 @@ export const populateY0Axis = (svg, rangeY, width, data, fields) => {
   });
   if (minY >= 0) return;
 
-  svg
-    .select('g.y0-axis')
-    .selectAll('*')
-    .remove();
+  svg.select('g.y0-axis').selectAll('*').remove();
 
   svg
     .select('g.y0-axis')
@@ -43,7 +40,7 @@ export const populateXAxis = (svg, rangeX0) => {
     .call(d3.axisBottom(rangeX0))
     .selectAll('text')
     .classed('x-axis-label', true)
-    .each(function() {
+    .each(function () {
       sizes.push(this.getBBox());
     });
 
@@ -86,7 +83,7 @@ export const populateXAxis = (svg, rangeX0) => {
 export const getXAxisLabelsHeight = (svg) => {
   const heights = [];
 
-  svg.selectAll('.tick').each(function() {
+  svg.selectAll('.tick').each(function () {
     heights.push(this.getBBox().height);
   });
 

@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.process.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -40,6 +41,7 @@ import de.metas.rest_api.process.response.RunProcessResponse;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -132,6 +134,8 @@ public class ProcessRestController
 	{
 		final List<ProcessBasicInfo> processList = processService.getProcessesByType(ProcessType.getTypesRunnableFromAppRestController());
 
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process-info items", processList.size());
+				
 		final List<JSONProcessBasicInfo> jsonProcessList = processList
 				.stream()
 				.map(this::buildJSONProcessBasicInfo)
@@ -144,7 +148,7 @@ public class ProcessRestController
 
 		return ResponseEntity
 				.ok()
-				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON)
 				.body(response);
 	}
 
@@ -170,7 +174,7 @@ public class ProcessRestController
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
-					.body(processExecutionResult.getReportDataAsByteArray());
+					.body(processExecutionResult.getReportData());
 		}
 		else
 		{
@@ -181,7 +185,7 @@ public class ProcessRestController
 
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
+					.contentType(MediaType.APPLICATION_JSON)
 					.body(runProcessResponse);
 		}
 	}

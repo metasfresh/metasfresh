@@ -2,7 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+
+import history from '../../services/History';
 import { setFilter } from '../../actions/ListActions';
 import { referencesEventSource } from '../../api/documentReferences';
 import {
@@ -89,7 +90,7 @@ class DocumentReferences extends Component {
     if (ctrlKeyPressed) {
       window.open(url, '_blank');
     } else {
-      dispatch(push(url));
+      history.push(url);
     }
   };
 

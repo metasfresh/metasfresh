@@ -36,6 +36,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
@@ -55,6 +56,7 @@ import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -69,7 +71,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_RemittanceAdvice;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -97,6 +98,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -105,7 +107,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(null);
 		if (processFilter == null)
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -196,7 +198,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
 			serviceFeeProductId = ProductId.ofRepoIdOrNull(firstInvoiceLine.getM_Product_ID());
 
-			final I_C_Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
+			final Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
 			serviceFeeTaxVATRate = serviceFeeTax.getRate();
 		}
 
@@ -300,6 +302,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.serviceFeeAmt(serviceFeeInREMADVCurrency)
 				.discountAmt(paymentDiscountAmt)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.invoiceIsCreditMemo(invoiceBL.isCreditMemo(invoice))
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(remittanceAdvice.getOrgId())
 				.clientId(remittanceAdvice.getClientId())

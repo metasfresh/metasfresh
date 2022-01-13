@@ -1,7 +1,6 @@
 package de.metas.material.cockpit.availableforsales;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -33,5 +32,5 @@ import lombok.Value;
 public class AvailableForSalesMultiResult
 {
 	@Singular
-	List<AvailableForSalesResult> availableForSalesResults;
+	ImmutableList<AvailableForSalesResult> availableForSalesResults;
 }

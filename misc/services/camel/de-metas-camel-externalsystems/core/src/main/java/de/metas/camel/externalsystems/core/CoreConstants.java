@@ -22,9 +22,23 @@
 
 package de.metas.camel.externalsystems.core;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+
 public interface CoreConstants
 {
 	String AUTHORIZATION = "Authorization";
 
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
+
+	String AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY = "metasfresh.audit.sensitive-data.pattern";
+	String AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY = "metasfresh.audit.sensitive-data.pattern.group";
+
+	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT = "\".*?(auth|key|pass|token).*?\":(.*?\"(.+?)\")";
+	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP = "3";
+
+	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
+			+ "?durable=true"
+			+ "&autoDelete=false"
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
+			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
 }

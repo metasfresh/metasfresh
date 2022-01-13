@@ -16,11 +16,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.IDocument;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
@@ -31,15 +35,10 @@ import org.compiere.model.MTimeExpenseLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocument;
-import de.metas.money.CurrencyId;
-import de.metas.order.IOrderBL;
-import de.metas.organization.OrgId;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 /**
  * Create Sales Orders from Expense Reports
@@ -211,7 +210,8 @@ public class ExpenseSOrder extends JavaProcess
 			log.info("New Order for " + bp + ", Project=" + tel.getC_Project_ID());
 			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setAD_Org_ID(tel.getAD_Org_ID());
-			orderBL.setDocTypeTargetId(m_order, MOrder.DocSubType_OnCredit);
+			m_order.setIsSOTrx(true);
+			orderBL.setSODocTypeTargetId(m_order, MOrder.DocSubType_OnCredit);
 			//
 			m_order.setBPartner(bp);
 			if (m_order.getC_BPartner_Location_ID() == 0)

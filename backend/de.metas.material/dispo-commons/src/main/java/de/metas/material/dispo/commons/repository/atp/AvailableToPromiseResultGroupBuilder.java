@@ -1,19 +1,20 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-
-import org.compiere.util.Util.ArrayKey;
-
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.util.Util.ArrayKey;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -47,7 +48,7 @@ final class AvailableToPromiseResultGroupBuilder
 	private final WarehouseClassifier warehouse;
 
 	@Getter
-	private final int productId;
+	private final ProductId productId;
 
 	@Getter
 	private final AttributesKey storageAttributesKey;
@@ -65,12 +66,12 @@ final class AvailableToPromiseResultGroupBuilder
 	private AvailableToPromiseResultGroupBuilder(
 			@NonNull final BPartnerClassifier bpartner,
 			@NonNull final WarehouseClassifier warehouse,
-			final int productId,
+			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey)
 	{
 		this.bpartner = bpartner;
 		this.warehouse = warehouse;
-		this.productId = Check.assumeGreaterThanZero(productId, "productId");
+		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 
 		this.qty = ZERO;
@@ -123,7 +124,7 @@ final class AvailableToPromiseResultGroupBuilder
 		final DateAndSeqNo dateAndSeq = includedRequestKeys.get(key);
 
 		// if our bpartnerless request is "earlier" than the latest request (with same key) that we already added, then the quantity of the bpartnerless request is contained within that other request which we already added
-		return request.getDateAndSeqNo().isBefore(dateAndSeq);
+		return DateAndSeqNo.ofAddToResultGroupRequest(request).isBefore(dateAndSeq);
 	}
 
 	public void addQty(@NonNull final AddToResultGroupRequest request)
@@ -133,7 +134,7 @@ final class AvailableToPromiseResultGroupBuilder
 		final ArrayKey computeKey = request.computeKey();
 
 		final DateAndSeqNo oldTimeAndSeqNo = includedRequestKeys.get(computeKey);
-		final DateAndSeqNo latest = request.getDateAndSeqNo().max(oldTimeAndSeqNo);
+		final DateAndSeqNo latest = DateAndSeqNo.ofAddToResultGroupRequest(request).max(oldTimeAndSeqNo);
 
 		includedRequestKeys.put(computeKey, latest);
 	}

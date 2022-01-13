@@ -29,6 +29,18 @@ properties([
                         description: 'If true, then don\'t build backend, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
+
                 string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
                         description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
                         name: 'MF_SQL_SEED_DUMP_URL'),
@@ -56,7 +68,10 @@ try {
                                 "mvn-${env.BRANCH_NAME}".replace("/", "-"), // mvnRepoName
                                 'https://repo.metasfresh.com' // mvnRepoBaseURL
                         )
-                        echo "mvnConf=${mvnConf.toString()}"
+                        // This toString() method causes problems in the area of "CPS".
+                        // Namely, our cucumber-tests are not executed and the message is
+                        // "expected to call Script5.build but wound up catching de.metas.jenkins.MvnConf.toString; see: https://jenkins.io/redirect/pipeline-cps-method-mismatches/"
+                        //echo "mvnConf=${mvnConf.toString()}" this can interfere
 
                         final def scmVars = checkout scm
                         echo "git debug scmVars=>>>>>${scmVars}<<<<<"
@@ -78,7 +93,9 @@ try {
                     } // configFileProvider
 
             cucumber failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/target/cucumber.json', pendingStepsNumber: -1, skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
-            cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
+
+            // always clean up the workspace. otherwise, if e.g. github or docker-hub acts up all out jenkins nodes' disk might run full
+            cleanWs cleanWhenAborted: true, cleanWhenFailure: true
         } // node
     } // timestamps
 } catch (all) {
@@ -96,51 +113,43 @@ try {
 
 private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
-    withEnv(["MF_VERSION=${mfVersion}"])
-            {
+    withEnv(["MF_VERSION=${mfVersion}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+
                     nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
-                    stage('Build parent-pom & commons') // for display purposes
-                            {
-                                dir('misc/parent-pom')
-                                        {
+                    stage('Build parent-pom & commons') { // for display purposes
+                    
+                                dir('misc/parent-pom') {
                                             def buildFile = load('buildfile.groovy')
                                             buildFile.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
-                                        }
-                                dir('misc/de-metas-common')
-                                        {
+                                }
+                                dir('misc/de-metas-common') {
                                             def buildFile = load('buildfile.groovy')
                                             buildFile.build(mvnConf, scmVars) // this one we also always build&deploy; it's tiny
-                                        }
-                            }
+                                }
+                    }
                     // note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
-                    dir('frontend')
-                            {
+                    dir('frontend') {
                                 def frontendBuildFile = load('buildfile.groovy')
                                 frontendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_FRONTEND_BUILD)
                             }
-                    dir('backend')
-                            {
+                    dir('backend') {
                                 def backendBuildFile = load('buildfile.groovy')
                                 backendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_BACKEND_BUILD)
                             }
                 }
-                dir('misc/services') // misc/services has modules with different maven/jdk settings
-                        {
+                dir('misc/services') { // misc/services has modules with different maven/jdk settings
                             def miscServices = load('buildfile.groovy')
-                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_MOBILE_WEBUI_BUILD, params.MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD)
                         }
 
-                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
-                        {
-                            dir('e2e')
-                                    {
+                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+                            dir('e2e') {
                                         def e2eBuildFile = load('buildfile.groovy')
-                                        e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD)
+                                        e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_CYPRESS_BUILD)
                                     }
-                            dir('distribution')
-                                    {
+                            dir('distribution') {
                                         def distributionBuildFile = load('buildfile.groovy')
                                         distributionBuildFile.build(mvnConf)
                                     }

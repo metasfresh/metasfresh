@@ -3,7 +3,8 @@ package de.metas.rest_api.invoicecandidates.impl;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonSOTrx;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
@@ -87,7 +88,8 @@ class JsonInsertInvoiceCandidateServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository())); // needed in case a ProductNotOnPriceListException shluld be thrown
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, partnerBL); // needed in case a ProductNotOnPriceListException shluld be thrown
 
 		final I_C_ILCandHandler manualICHandler = newInstance(I_C_ILCandHandler.class);
 		manualICHandler.setClassname(ManualCandidateHandler.class.getName());
@@ -148,11 +150,12 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
 		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
 		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
+		taxRecord.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,

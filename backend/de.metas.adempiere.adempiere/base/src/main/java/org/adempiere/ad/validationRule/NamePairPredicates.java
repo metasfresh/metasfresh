@@ -46,12 +46,12 @@ public final class NamePairPredicates
 		throw new IllegalStateException();
 	}
 
-	public static final INamePairPredicate NULL = new INamePairPredicate()
+	public static final INamePairPredicate ACCEPT_ALL = new INamePairPredicate()
 	{
 		@Override
 		public String toString()
 		{
-			return "NULL";
+			return "ACCEPT_ALL";
 		}
 
 		@Override
@@ -67,7 +67,7 @@ public final class NamePairPredicates
 		}
 	};
 
-	public static final Composer compose()
+	public static Composer compose()
 	{
 		return new Composer();
 	}
@@ -158,7 +158,7 @@ public final class NamePairPredicates
 		{
 			if (collectedPredicates == null || collectedPredicates.isEmpty())
 			{
-				return NULL;
+				return ACCEPT_ALL;
 			}
 			else if (collectedPredicates.size() == 1)
 			{
@@ -172,7 +172,7 @@ public final class NamePairPredicates
 
 		public Composer add(final INamePairPredicate predicate)
 		{
-			if (predicate == null || predicate == NULL)
+			if (predicate == null || predicate == ACCEPT_ALL)
 			{
 				return this;
 			}

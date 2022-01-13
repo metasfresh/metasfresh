@@ -1,7 +1,7 @@
 # <img src='/images/metasfresh-logo-slogan-969x248.png' height='60' alt='metasfresh - We do Open Source ERP' aria-label='metasfresh.com' /></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
-[![release](https://img.shields.io/badge/release-5.164-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.164)
+[![release](https://img.shields.io/badge/release-5.173-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.173)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 <!-- [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh) -->
 
@@ -38,7 +38,7 @@ metasfresh can be installed via **Docker** or **Ubuntu Installer**.
 >- [How do I create my first Shipment?](https://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
 >- [How do I create my first Invoice?](https://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)
 
-## Documentation
+## Documentationbadge
 If you are new to metasfresh and would like to learn more, then you can find our documentation here:
 
 - [Admins](https://docs.metasfresh.org/pages/installation/index_en)

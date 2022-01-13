@@ -45,10 +45,12 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
         withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
-            // build and install
-            // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-            // maven.test.failure.ignore=true: see metasfresh stage
-            sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
+            withCredentials([usernamePassword(credentialsId: 'dockerhub_metasfresh', passwordVariable: 'DOCKERHUB_REGISTRY_PASSWORD', usernameVariable: 'DOCKERHUB_REGISTRY_USERNAME')]) { /* pull without rate limit */
+                // build and install
+                // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+                // maven.test.failure.ignore=true: see metasfresh stage
+                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
+            }
         }
     }
     final def dockerInfo = readJSON file: 'core/target/jib-image.json'

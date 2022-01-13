@@ -31,10 +31,7 @@ export const isYRangeChanged = (data, prevData, fields) => {
 
 export const isXRangeChanged = (data, prevData, svg) => {
   if (data.length !== (prevData && prevData.length)) {
-    svg
-      .select('g.datasets')
-      .selectAll('g')
-      .remove();
+    svg.select('g.datasets').selectAll('g').remove();
   } else {
     data.map((item, index) => {
       if (
@@ -42,10 +39,7 @@ export const isXRangeChanged = (data, prevData, svg) => {
         JSON.stringify(Object.keys(data[index])) !==
           JSON.stringify(Object.keys(prevData[index]))
       ) {
-        svg
-          .select('g.datasets')
-          .selectAll('g')
-          .remove();
+        svg.select('g.datasets').selectAll('g').remove();
       }
     });
   }
@@ -62,10 +56,7 @@ export const drawData = (
   reRender
 ) => {
   if (reRender) {
-    svg
-      .select('g.datasets')
-      .selectAll('g')
-      .remove();
+    svg.select('g.datasets').selectAll('g').remove();
   }
 
   let chartData = [];
@@ -76,10 +67,7 @@ export const drawData = (
   const yChanged = isYRangeChanged(data, prev, fields);
   isXRangeChanged(data, prev, svg);
 
-  const groups = svg
-    .select('g.datasets')
-    .selectAll('g')
-    .data(chartData);
+  const groups = svg.select('g.datasets').selectAll('g').data(chartData);
 
   const bars = groups
     .enter()

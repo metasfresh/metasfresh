@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -67,8 +68,6 @@ public interface IAttributeDAO extends ISingletonService
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
 	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
-	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
-
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
 	/** @return attributes, ordered by M_AttributeUse.SeqNo */
@@ -174,6 +173,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
+	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
+
 	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
 
 	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
@@ -208,6 +209,8 @@ public interface IAttributeDAO extends ISingletonService
 		return retrieveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
 	}
 
+	Optional<AttributeSetAttribute> getAttributeSetAttributeId(AttributeSetId attributeSetId, AttributeId attributeId);
+
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
 	 *
@@ -220,7 +223,7 @@ public interface IAttributeDAO extends ISingletonService
 	 *
 	 * @return asi copy
 	 */
-	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
+	default I_M_AttributeSetInstance copy(@NonNull final I_M_AttributeSetInstance fromASI)
 	{
 		return ASICopy.newInstance(fromASI).copy();
 	}

@@ -48,7 +48,7 @@ import de.metas.util.Services;
  */
 public class InOutGeneratedNotificationChecker implements IEventListener
 {
-	public static final InOutGeneratedNotificationChecker createAndSubscribe()
+	public static InOutGeneratedNotificationChecker createAndSubscribe()
 	{
 		final InOutGeneratedNotificationChecker notificationsChecker = new InOutGeneratedNotificationChecker();
 
@@ -77,8 +77,6 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 
 	/**
 	 * Asserts that all the inouts from given list were notified on the bus.
-	 *
-	 * @param inouts
 	 */
 	public void assertAllNotified(final Iterable<? extends I_M_InOut> inouts)
 	{

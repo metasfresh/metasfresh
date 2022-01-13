@@ -1,25 +1,17 @@
 package de.metas.greeting;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Greeting;
 import org.springframework.stereotype.Repository;
 
-import de.metas.i18n.IModelTranslation;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.Language;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -46,92 +38,68 @@ import lombok.Value;
 @Repository
 public class GreetingRepository
 {
-	private static final Map<CacheKey, Greeting> cache = new HashMap<>();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Value
-	private static class CacheKey
+	private final CCache<Integer, GreetingsMap> cache = CCache.<Integer, GreetingsMap>builder()
+			.tableName(I_C_Greeting.Table_Name)
+			.build();
+
+	public Greeting getById(@NonNull final GreetingId id)
 	{
-		GreetingId greetingId;
-		Language language;
+		return getGreetingsMap().getById(id);
 	}
 
-	public Greeting getByIdAndLang(@NonNull final GreetingId id, @Nullable final Language language)
+	private GreetingsMap getGreetingsMap()
 	{
-		final I_C_Greeting greetingRecord = loadOutOfTrx(id, I_C_Greeting.class);
+		return cache.getOrLoad(0, this::retrieveGreetingsMap);
+	}
 
-		final I_C_Greeting greetingTrlRecord;
-		if (language == null)
-		{
-			greetingTrlRecord = translate(greetingRecord, I_C_Greeting.class);
-		}
-		else
-		{
-			greetingTrlRecord = translate(greetingRecord, I_C_Greeting.class, language.getAD_Language());
-		}
+	private GreetingsMap retrieveGreetingsMap()
+	{
+		final ImmutableList<Greeting> list = queryBL
+				.createQueryBuilder(I_C_Greeting.class)
+
+				// We need also inactive greetings. If we have to render an address, but the AD_User's greeting was dectivated,
+				// then we still need the greeting in order to render that address
+				//.addOnlyActiveRecordsFilter()
+
+				.create()
+				.stream(I_C_Greeting.class)
+				.map(GreetingRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new GreetingsMap(list);
+	}
+
+	private static Greeting fromRecord(@NonNull final I_C_Greeting record)
+	{
+		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return Greeting.builder()
-				.id(id)
-				.language(language)
-				.greeting(greetingTrlRecord.getGreeting())
+				.id(GreetingId.ofRepoId(record.getC_Greeting_ID()))
+				.name(record.getName())
+				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
+				.standardType(GreetingStandardType.ofNullableCode(record.getGreetingStandardType()))
+				.active(record.isActive())
 				.build();
 	}
 
-	private void loadAll()
+	public Greeting createGreeting(@NonNull final CreateGreetingRequest request)
 	{
-		final List<I_C_Greeting> greetingRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Greeting.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_C_Greeting.class);
+		final I_C_Greeting record = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
+		record.setName(request.getName());
+		record.setGreeting(request.getGreeting());
+		record.setGreetingStandardType(GreetingStandardType.toCode(request.getStandardType()));
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		InterfaceWrapperHelper.saveRecord(record);
 
-		final Language baseLanguage = Language.getBaseLanguage();
-
-		for (final I_C_Greeting greetingRecord : greetingRecords)
-		{
-			final GreetingId greetingId = addGreetingRecordToCache(greetingRecord, baseLanguage);
-
-			final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(greetingRecord);
-			final Map<String, IModelTranslation> allTranslations = modelTranslationMap.getAllTranslations();
-
-			final Collection<IModelTranslation> values = allTranslations.values();
-
-			for (final IModelTranslation value : values)
-			{
-				addGreetingTrlToCache(greetingId, value);
-			}
-		}
+		return fromRecord(record);
 	}
 
-	private GreetingId addGreetingRecordToCache(
-			@NonNull final I_C_Greeting greetingRecord,
-			@NonNull final Language baseLanguage)
+	public Optional<Greeting> getComposite(
+			@Nullable final GreetingId greetingId1,
+			@Nullable final GreetingId greetingId2)
 	{
-		final GreetingId greetingId = GreetingId.ofRepoId(greetingRecord.getC_Greeting_ID());
-
-		final CacheKey baseLangKey = new CacheKey(greetingId, baseLanguage);
-
-		final Greeting baseLangGreeting = Greeting.builder()
-				.id(greetingId)
-				.language(baseLanguage)
-				.greeting(greetingRecord.getGreeting())
-				.build();
-		cache.put(baseLangKey, baseLangGreeting);
-		return greetingId;
-	}
-
-	private void addGreetingTrlToCache(
-			@NonNull final GreetingId greetingId,
-			@NonNull final IModelTranslation value)
-	{
-		final Language language = Language.asLanguage(value.getAD_Language());
-
-		final CacheKey key = new CacheKey(greetingId, language);
-
-		final Greeting greeting = Greeting.builder()
-				.id(greetingId)
-				.language(language)
-				.greeting(value.getTranslation(I_C_Greeting.COLUMNNAME_Greeting))
-				.build();
-		cache.put(key, greeting);
+		return getGreetingsMap().getComposite(greetingId1, greetingId2);
 	}
 }

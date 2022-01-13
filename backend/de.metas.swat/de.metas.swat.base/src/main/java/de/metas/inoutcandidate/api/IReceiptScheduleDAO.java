@@ -36,6 +36,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +50,10 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 * <p>
 	 * The receipt schedules will be ordered by {@link I_M_ReceiptSchedule#COLUMNNAME_HeaderAggregationKey}.
 	 *
-	 * @param query
-	 * @return
 	 */
-	Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query);
+	Iterator<I_M_ReceiptSchedule> retrieve(IQuery<I_M_ReceiptSchedule> query);
 
-	I_M_ReceiptSchedule retrieveForRecord(final Object model);
+	@Nullable I_M_ReceiptSchedule retrieveForRecord(@Nullable Object model);
 
 	List<I_M_ReceiptSchedule_Alloc> retrieveRsaForRs(I_M_ReceiptSchedule rs);
 

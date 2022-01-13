@@ -3,6 +3,7 @@ package de.metas.util.lang;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,7 +32,7 @@ import javax.annotation.Nullable;
  */
 
 @Value
-public class ExternalId
+public class ExternalId implements Comparable<ExternalId>
 {
 	String value;
 
@@ -66,5 +67,11 @@ public class ExternalId
 	public String getValue()
 	{
 		return value;
+	}
+
+	@Override
+	public int compareTo(@NonNull final ExternalId o)
+	{
+		return value.compareTo(o.value);
 	}
 }

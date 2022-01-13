@@ -18,6 +18,8 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
@@ -29,6 +31,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -36,6 +41,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class HUPPOrderBL implements IHUPPOrderBL
 {
@@ -45,6 +51,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -117,10 +124,13 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
+		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
+				.addOnlyInWarehouseIds(issueFromWarehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
@@ -200,4 +210,16 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		ppOrderBL.closeOrder(ppOrderId);
 	}
 
+	@Override
+	public Stream<I_PP_Order> streamManufacturingOrders(final ManufacturingOrderQuery query)
+	{
+		return ppOrderBL.streamManufacturingOrders(query)
+				.map(ppOrder -> InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class));
+	}
+
+	@Override
+	public void save(final org.eevolution.model.I_PP_Order ppOrder)
+	{
+		ppOrderBL.save(ppOrder);
+	}
 }

@@ -7,7 +7,10 @@
 import de.metas.jenkins.MvnConf
 
 
-def build(final MvnConf mvnConf) {
+def build(
+        final MvnConf mvnConf, 
+        final Map scmVars) {
+
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
     // set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version when the root pom is deployed to our maven-repo
@@ -25,6 +28,16 @@ def build(final MvnConf mvnConf) {
     // maven.test.failure.ignore=true: see metasfresh stage
     // trimStackTrace=false: thx to https://github.com/cucumber/cucumber-jvm/issues/1877#issuecomment-578685012
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean test"
+
+    withCredentials([string(credentialsId: 'studio.cucumber.io-API-token', variable: 'secretCucumberTokenl')]) {
+        sh """curl -X POST https://studio.cucumber.io/cucumber_project/results \
+     -F messages=@target/cucumber.message \
+     -H \"project-access-token: ${secretCucumberTokenl}\" \
+     -H \"provider: github\" \
+     -H \"repo: metasfresh/metasfresh\" \
+     -H \"branch: master\" \
+     -H \"revision: ${scmVars.GIT_COMMIT}\""""
+    }
 }
 
 return this

@@ -1,18 +1,16 @@
 package de.metas.process;
 
-import java.util.HashSet;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.security.IUserRolePermissions;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.security.IUserRolePermissions;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -38,56 +36,85 @@ import lombok.Value;
 
 /**
  * A small immutable object which contains the AD_Process_ID and it's attached flags (is quick action, is the default quick action etc).
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
-@Immutable
 @Value
-public final class RelatedProcessDescriptor
+public class RelatedProcessDescriptor
 {
-	public static Builder builder()
-	{
-		return new Builder();
-	}
+	@NonNull AdProcessId processId;
 
-	private final AdProcessId processId;
-
-	private final int tableId;
-	private final AdWindowId windowId;
-	private final AdTabId tabId;
+	@Nullable
+	AdTableId tableId;
+	@Nullable
+	AdWindowId windowId;
+	@Nullable
+	AdTabId tabId;
 
 	public enum DisplayPlace
 	{
-		SingleDocumentActionsMenu, //
-		IncludedTabTopActionsMenu, //
-		ViewActionsMenu, //
-		ViewQuickActions, //
+		SingleDocumentActionsMenu,
+		IncludedTabTopActionsMenu,
+		ViewActionsMenu,
+		ViewQuickActions,
 	}
 
-	private final ImmutableSet<DisplayPlace> displayPlaces;
+	@NonNull
+	ImmutableSet<DisplayPlace> displayPlaces;
+	private static final ImmutableSet<DisplayPlace> DEFAULT_displayPlaces = ImmutableSet.of(DisplayPlace.SingleDocumentActionsMenu);
 
-	private final boolean webuiDefaultQuickAction;
+	boolean webuiDefaultQuickAction;
 
-	private final String webuiShortcut;
+	@Nullable
+	String webuiShortcut;
 
-	private final int sortNo;
+	int sortNo;
 
-	private RelatedProcessDescriptor(final Builder builder)
+	@Builder(toBuilder = true)
+	private RelatedProcessDescriptor(
+			@NonNull final AdProcessId processId,
+			@Nullable final AdTableId tableId,
+			@Nullable final AdWindowId windowId,
+			@Nullable final AdTabId tabId,
+			@Singular final ImmutableSet<DisplayPlace> displayPlaces,
+			final boolean webuiDefaultQuickAction,
+			@Nullable final String webuiShortcut,
+			final int sortNo)
 	{
-		processId = builder.processId;
-		Preconditions.checkArgument(processId != null, "adProcessId not set");
+		this.processId = processId;
+		this.tableId = tableId;
+		this.windowId = windowId;
+		this.tabId = tabId;
 
-		tableId = builder.tableId > 0 ? builder.tableId : 0;
-		windowId = builder.windowId;
-		tabId = builder.tabId;
+		this.displayPlaces = displayPlaces != null && !displayPlaces.isEmpty()
+				? displayPlaces
+				: DEFAULT_displayPlaces;
 
-		displayPlaces = builder.getDisplayPlaces();
-		webuiDefaultQuickAction = builder.webuiDefaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
+		this.webuiDefaultQuickAction = webuiDefaultQuickAction && this.displayPlaces.contains(DisplayPlace.ViewQuickActions);
 
-		webuiShortcut = builder.webuiShortcut;
+		this.webuiShortcut = webuiShortcut;
 
-		sortNo = builder.sortNo > 0 ? builder.sortNo : 0;
+		this.sortNo = Math.max(sortNo, 0);
+	}
+
+	public static class RelatedProcessDescriptorBuilder
+	{
+		public RelatedProcessDescriptorBuilder anyTable()
+		{
+			return tableId(null);
+		}
+
+		public RelatedProcessDescriptorBuilder anyWindow()
+		{
+			return windowId(null);
+		}
+
+		public RelatedProcessDescriptorBuilder displayPlaceIfTrue(final boolean cond, @NonNull final DisplayPlace displayPlace)
+		{
+			if (cond)
+			{
+				displayPlace(displayPlace);
+			}
+			return this;
+		}
 	}
 
 	public boolean isDisplayedOn(@NonNull final DisplayPlace displayPlace)
@@ -98,114 +125,5 @@ public final class RelatedProcessDescriptor
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
 	{
 		return permissions.checkProcessAccessRW(processId.getRepoId());
-	}
-
-	//
-	//
-	//
-
-	public static final class Builder
-	{
-		private AdProcessId processId;
-		private int tableId;
-		private AdWindowId windowId;
-		private AdTabId tabId;
-
-		private final HashSet<DisplayPlace> displayPlaces = new HashSet<>();
-		private final ImmutableSet<DisplayPlace> DEFAULT_displayPlaces = ImmutableSet.of(DisplayPlace.SingleDocumentActionsMenu);
-
-		private boolean webuiDefaultQuickAction;
-
-		private String webuiShortcut;
-
-		private int sortNo = 0;
-
-		private Builder()
-		{
-		}
-
-		public RelatedProcessDescriptor build()
-		{
-			return new RelatedProcessDescriptor(this);
-		}
-
-		public Builder processId(final AdProcessId adProcessId)
-		{
-			processId = adProcessId;
-			return this;
-		}
-
-		public Builder tableId(final int adTableId)
-		{
-			tableId = adTableId;
-			return this;
-		}
-
-		public Builder anyTable()
-		{
-			return tableId(0);
-		}
-
-		public Builder windowId(final AdWindowId windowId)
-		{
-			this.windowId = windowId;
-			return this;
-		}
-
-		public Builder anyWindow()
-		{
-			return windowId(null);
-		}
-
-		public Builder tabId(final AdTabId tabId)
-		{
-			this.tabId = tabId;
-			return this;
-		}
-
-		public Builder displayPlace(@NonNull final DisplayPlace displayPlace)
-		{
-			this.displayPlaces.add(displayPlace);
-			return this;
-		}
-
-		public Builder displayPlaceIfTrue(final boolean cond, @NonNull final DisplayPlace displayPlace)
-		{
-			if (cond)
-			{
-				displayPlace(displayPlace);
-			}
-			return this;
-		}
-
-		private ImmutableSet<DisplayPlace> getDisplayPlaces()
-		{
-			return !displayPlaces.isEmpty()
-					? ImmutableSet.copyOf(displayPlaces)
-					: DEFAULT_displayPlaces;
-		}
-
-		public Builder webuiDefaultQuickAction(final boolean webuiDefaultQuickAction)
-		{
-			this.webuiDefaultQuickAction = webuiDefaultQuickAction;
-			return this;
-		}
-
-		public Builder webuiDefaultQuickAction()
-		{
-			return webuiDefaultQuickAction(true);
-		}
-
-		public Builder webuiShortcut(final String webuiShortcut)
-		{
-			this.webuiShortcut = webuiShortcut;
-			return this;
-		}
-
-		public Builder sortNo(final int sortNo)
-		{
-			this.sortNo = sortNo;
-			return this;
-		}
 	}
 }

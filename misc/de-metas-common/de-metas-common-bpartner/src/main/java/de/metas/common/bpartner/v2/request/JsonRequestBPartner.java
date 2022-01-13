@@ -22,18 +22,17 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
 @Getter
 @ToString
@@ -123,6 +122,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean invoiceRuleSet;
 
+	@ApiModelProperty(position = 105, //
+			value = "Optional; if specified, it will be used, e.g. when a purchase order is created for this business partner.")
+	private JsonInvoiceRule poInvoiceRule;
+
+	@ApiModelProperty(hidden = true)
+	private boolean poInvoiceRuleSet;
+
+
+
 	@ApiModelProperty(position = 110)
 	private String url;
 
@@ -162,9 +170,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean vatIdSet;
 
+	@ApiModelProperty(position = 165, //
+			value = "This translates to `C_BPartner.memo`")
+	private String memo;
+
+	private boolean memoIsSet;
+
 	@ApiModelProperty(position = 170, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
-			+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
+					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(hidden = true)
@@ -242,6 +256,12 @@ public class JsonRequestBPartner
 		this.invoiceRuleSet = true;
 	}
 
+	public void setPOInvoiceRule(final JsonInvoiceRule invoiceRule)
+	{
+		this.poInvoiceRule = invoiceRule;
+		this.poInvoiceRuleSet = true;
+	}
+
 	public void setUrl(final String url)
 	{
 		this.url = url;
@@ -282,5 +302,11 @@ public class JsonRequestBPartner
 	{
 		this.vatId = vatId;
 		this.vatIdSet = true;
+	}
+
+	public void setMemo(final String memo)
+	{
+		this.memo = memo;
+		this.memoIsSet = true;
 	}
 }

@@ -1,0 +1,44 @@
+{
+  "products": [
+    {
+      "id": 2005604,
+      "productNo": "1000004",
+      "productCategoryId": 100001,
+      "name": "My new Product updated",
+      "description": "My new description updated",
+      "uom": "Stk",
+      "manufacturerId": 2156474,
+      "manufacturerName": "myManufacturerName",
+      "manufacturerNumber": "myNewManufacturerNumber",
+      "discontinuedFrom": "2021-06-07",
+      "bpartners": [],
+      "albertaProductInfo": {
+        "albertaProductId": "7bc17275-cfe4-4ea5-a965-c7fdab54d0df",
+        "additionalDescription": "AlbertaAdditionalDecUpdated",
+        "productGroupId": "82d3d688-4035-48fa-90cb-d9d39b8975bd",
+        "size": "20",
+        "medicalAidPositionNumber": "myMedicalAidPositionNumberUpdated",
+        "inventoryType": "1",
+        "status": "2",
+        "assortmentType": "2",
+        "purchaseRating": "A",
+        "stars": 4,
+        "pharmacyPrice": 1600.00,
+        "fixedPrice": 11.00,
+        "billableTherapies": [
+          "1"
+        ],
+        "packagingUnits": [
+          {
+            "unit": "Stk",
+            "quantity": 10
+          },
+          {
+            "unit": "Ktn",
+            "quantity": 15
+          }
+        ]
+      }
+    }
+  ]
+}

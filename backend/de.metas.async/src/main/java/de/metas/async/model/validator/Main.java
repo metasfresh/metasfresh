@@ -1,5 +1,30 @@
 package de.metas.async.model.validator;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.api.impl.AsyncBatchDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Log;
+import de.metas.async.model.I_C_Queue_WorkPackage_Param;
+import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.spi.impl.DefaultAsyncBatchListener;
+import de.metas.event.Topic;
+import de.metas.impexp.DataImportService;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
 import java.util.List;
 
 /*
@@ -24,32 +49,6 @@ import java.util.List;
  * #L%
  */
 
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.Profiles;
-import de.metas.async.Async_Constants;
-import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.async.api.impl.AsyncBatchDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Log;
-import de.metas.async.model.I_C_Queue_WorkPackage_Param;
-import de.metas.async.processor.IQueueProcessorExecutorService;
-import de.metas.async.spi.impl.DefaultAsyncBatchListener;
-import de.metas.event.Topic;
-import de.metas.impexp.DataImportService;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-
 /**
  * ASync module main validator. This is the entry point for all other stuff.
  *
@@ -65,7 +64,7 @@ public class Main extends AbstractModuleInterceptor
 
 	private static final Logger logger = LogManager.getLogger(Main.class);
 
-	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
+	public static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
 
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
@@ -87,7 +86,6 @@ public class Main extends AbstractModuleInterceptor
 	{
 		// task 04585: start queue processors only if we are running on the backend server.
 		// =>why not always run them?
-		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
 		if (!SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
@@ -114,24 +112,22 @@ public class Main extends AbstractModuleInterceptor
 	 *
 	 * @return how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
 	 */
-	private final int getInitDelayMillis()
+	private int getInitDelayMillis()
 	{
 		// I will leave the default value of 3 minutes, which was the common time until #2894
-		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
-
-		return delayTimeInMillis;
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
 
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine)
+	protected void registerInterceptors(@NonNull final  IModelValidationEngine engine)
 	{
 		engine.addModelValidator(new C_Queue_PackageProcessor());
 		engine.addModelValidator(new C_Queue_Processor());
 		engine.addModelValidator(new de.metas.lock.model.validator.Main());
 		engine.addModelValidator(new C_Async_Batch());
-		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE);
 	}
+
 
 	/**
 	 * Init the async queue processor service on user login.
@@ -146,7 +142,6 @@ public class Main extends AbstractModuleInterceptor
 
 		final int delayMillis = getInitDelayMillis();
 		Services.get(IQueueProcessorExecutorService.class).init(delayMillis);
-		return;
 	}
 
 	/**

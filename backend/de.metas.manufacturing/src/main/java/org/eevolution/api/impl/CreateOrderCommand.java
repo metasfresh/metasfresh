@@ -2,6 +2,7 @@
 package org.eevolution.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -33,6 +34,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
@@ -41,6 +43,7 @@ import org.eevolution.model.X_PP_Order;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 /*
  * #%L
@@ -150,6 +153,7 @@ final class CreateOrderCommand
 		//
 		// Dimensions / References
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
+		ppOrderRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
 		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 
@@ -213,6 +217,7 @@ final class CreateOrderCommand
 		return null;
 	}
 
+	@NonNull
 	private ProductBOMId getBOMId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
 		if (request.getBomId() != null)
@@ -220,26 +225,23 @@ final class CreateOrderCommand
 			return request.getBomId();
 		}
 
-		if (productPlanning != null)
+		final Optional<ProductBOMId> productBOMIdFromPlanning = Optional.ofNullable(productPlanning)
+				.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
+				.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
+				.flatMap(bomsRepo::getLatestBOMByVersion);
+
+		if (productBOMIdFromPlanning.isPresent())
 		{
-			final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
-			if (bomId != null)
-			{
-				return bomId;
-			}
+			return productBOMIdFromPlanning.get();
 		}
 
 		final ProductId productId = request.getProductId();
-		final ProductBOMId defaultBOMId = bomsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
-		if (defaultBOMId != null)
-		{
-			return defaultBOMId;
-		}
 
-		throw new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
-				.appendParametersToMessage()
-				.setParameter("request", request)
-				.setParameter("productPlanning", productPlanning);
+		return bomsRepo.getDefaultBOMIdByProductId(productId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
+						.appendParametersToMessage()
+						.setParameter("request", request)
+						.setParameter("productPlanning", productPlanning));
 	}
 
 	private PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
@@ -262,7 +264,7 @@ final class CreateOrderCommand
 	}
 
 	@Nullable
-	private BPartnerId getCustomerIdOrNull(final PPOrderCreateRequest request)
+	private BPartnerId getCustomerIdOrNull(@NonNull final PPOrderCreateRequest request)
 	{
 		if (request.getCustomerId() != null)
 		{
@@ -284,10 +286,10 @@ final class CreateOrderCommand
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
-				.adClientId(clientAndOrgId.getClientId().getRepoId())
-				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
-				.build());
+												 .docBaseType(docBaseType.getCode())
+												 .adClientId(clientAndOrgId.getClientId().getRepoId())
+												 .adOrgId(clientAndOrgId.getOrgId().getRepoId())
+												 .build());
 	}
 
 	private void setQtyRequired(

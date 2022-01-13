@@ -22,9 +22,12 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +40,7 @@ import java.util.Map;
 @Value
 @Builder
 @JsonDeserialize(builder = JsonQuery.JsonQueryBuilder.class)
+@JsonPropertyOrder({ "field", "type", "parameters", "value" })
 public class JsonQuery
 {
 	@NonNull
@@ -45,17 +49,27 @@ public class JsonQuery
 
 	@NonNull
 	@JsonProperty("type")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	QueryType queryType;
 
+	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
 	@Nullable
 	@JsonProperty("parameters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Map<String, String> parameters;
+
+	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
+	@Nullable
+	@JsonProperty("value")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String value;
 
 	@AllArgsConstructor
 	@Getter
 	public enum QueryType
 	{
-		RANGE("range");
+		RANGE("range"),
+		EQUALS("equals");
 
 		@JsonValue
 		private final String value;

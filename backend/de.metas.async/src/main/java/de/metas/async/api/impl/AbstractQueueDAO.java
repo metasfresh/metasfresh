@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.qos.logback.classic.Level;
+import de.metas.util.Loggables;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -62,13 +64,15 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
 	protected final Logger logger = LogManager.getLogger(getClass());
 
 	/**
 	 * Filter used to skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued, even if in another working package
-	 *
+	 * <p>
 	 * NOTE: to be set by extending classes
 	 */
 	protected IQueryFilter<I_C_Queue_Element> filter_C_Queue_Element_SkipAlreadyScheduledItems;
@@ -77,7 +81,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	// Order by (very important): Priority (0 to 9), and ID
 	protected final IQueryOrderBy queueOrderByComparator = Services.get(IQueryBL.class)
 			.createQueryOrderByBuilder(I_C_Queue_WorkPackage.class)
-			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority)
+			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority) /* 1 is the most urgent */
 			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 			.createQueryOrderBy();
 
@@ -88,13 +92,11 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	/**
 	 * Retrieve object from given <code>element</code>
 	 *
-	 * @param element
-	 * @param clazz
-	 * @param trxName
-	 * @return object
+	 * @param clazz note that {@link TableRecordReference} is supported as well
 	 * @throws PackageItemNotAvailableException if underlying object was not found at this moment. Never return <code>null</code>.
 	 */
-	protected abstract <T> T retrieveItem(I_C_Queue_Element element, Class<T> clazz, String trxName);
+	@NonNull
+	protected abstract <T> T retrieveItem(@NonNull I_C_Queue_Element element, @NonNull Class<T> clazz, @Nullable String trxName);
 
 	@Override
 	public List<I_C_Queue_PackageProcessor> retrieveWorkpackageProcessors(final I_C_Queue_Processor processor)
@@ -243,15 +245,15 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	/**
 	 * Creates a {@link IQueryBuilder} which selects all {@link I_C_Queue_Element}s for given work package.
 	 *
-	 * @param workPackage
 	 * @param skipAlreadyScheduledItems true if we shall skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued earlier and not yet processed.
-	 * @param trxName transaction name
+	 * @param trxName                   transaction name
 	 * @return query builder already configured
 	 */
-	protected final IQueryBuilder<I_C_Queue_Element> createQueueElementsQueryBuilder(final I_C_Queue_WorkPackage workPackage, final boolean skipAlreadyScheduledItems, final String trxName)
+	protected final IQueryBuilder<I_C_Queue_Element> createQueueElementsQueryBuilder(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			final boolean skipAlreadyScheduledItems,
+			@Nullable final String trxName)
 	{
-		Check.assume(workPackage != null, "workPackage not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 		final IQueryBuilder<I_C_Queue_Element> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Queue_Element.class, ctx, trxName);
@@ -304,16 +306,19 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
+	@Deprecated
 	public final <T> List<T> retrieveItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final String trxName)
 	{
 		return retrieveItems(workPackage, clazz, DEFAULT_skipAlreadyScheduledItems, false, trxName);
 	}
 
+	@NonNull
 	@Override
-	public final <T> List<T> retrieveItemsSkipMissing(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final String trxName)
+	public final <T> List<T> retrieveAllItemsSkipMissing(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Class<T> clazz)
 	{
+		final boolean skipAlreadyScheduledItems = false;
 		final boolean skipMissingItems = true;
-		return retrieveItems(workPackage, clazz, DEFAULT_skipAlreadyScheduledItems, skipMissingItems, trxName);
+		return retrieveItems(workPackage, clazz, skipAlreadyScheduledItems, skipMissingItems, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -322,7 +327,12 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		return retrieveItems(workPackage, clazz, false, false, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private final <T> List<T> retrieveItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz, final boolean skipAlreadyScheduledItems, final boolean skipMissingItems, final String trxName)
+	private <T> List<T> retrieveItems(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final Class<T> clazz,
+			final boolean skipAlreadyScheduledItems,
+			final boolean skipMissingItems,
+			@Nullable final String trxName)
 	{
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, skipAlreadyScheduledItems);
 
@@ -339,7 +349,9 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			{
 				if (skipMissingItems)
 				{
-					continue; // just skip, no stress
+					Loggables.withLogger(logger, Level.DEBUG)
+							.addLog("Skip C_Queue_Element_ID={} (C_Queue_WorkPackage_ID={}) because referenced AD_Table_ID={}/Record_ID={} does not exist and skipMissingItems=true",
+									e.getC_Queue_Element_ID(), e.getC_Queue_WorkPackage_ID(), e.getAD_Table_ID(), e.getRecord_ID());
 				}
 				else
 				{

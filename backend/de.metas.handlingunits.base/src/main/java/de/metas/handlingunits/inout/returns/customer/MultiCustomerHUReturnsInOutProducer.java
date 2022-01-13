@@ -275,7 +275,7 @@ public class MultiCustomerHUReturnsInOutProducer
 	{
 		if (_movementDate == null)
 		{
-			_movementDate = Env.getDate(Env.getCtx()); // use login date by default
+			_movementDate = Env.getDate(); // use login date by default
 		}
 		return _movementDate;
 	}

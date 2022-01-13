@@ -3,11 +3,11 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
@@ -80,17 +81,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		{
 			throw new AdempiereException("@NotFound@: " + orderId);
 		}
-		return order;
-	}
-
-	@Nullable
-	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
-	{
-		final I_C_Order order = createQueryBuilder()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
-				.create()
-				.first();
-
 		return order;
 	}
 
@@ -242,7 +232,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
-		if(orderIds.isEmpty())
+		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -251,6 +241,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
+				.create()
+				.listImmutable(I_C_OrderLine.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_OrderLine> retrieveOrderLinesByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
 				.create()
 				.listImmutable(I_C_OrderLine.class);
 	}
@@ -348,6 +353,28 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return Optional.empty();
 	}
 
+	@NonNull
+	public Set<OrderId> retrieveIdsByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public I_C_Order assignAsyncBatchId(@NonNull final OrderId orderId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		orderRecord.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		save(orderRecord);
+
+		return orderRecord;
+	}
+
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
@@ -360,7 +387,44 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
 
-		final I_C_Order order = queryBuilder.create().firstOnly(I_C_Order.class);
-		return order == null ? null : order;
+		return queryBuilder.create().firstOnly(I_C_Order.class);
+	}
+
+	@NonNull
+	public Set<OrderLineId> retrieveSOLineIdsByPOLineId(@NonNull final OrderLineId poLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, poLineId)
+				.create()
+				.list()
+				.stream()
+				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableSet<OrderId> getSalesOrderIdsViaPOAllocation(@NonNull final OrderId purchaseOrderId)
+	{
+		return retrieveOrderLines(purchaseOrderId)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(this::retrieveSOLineIdsByPOLineId)
+				.map(this::retrieveIdsByOrderLineIds)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void allocatePOLineToSOLine(
+			@NonNull final OrderLineId purchaseOrderLineId, 
+			@NonNull final OrderLineId salesOrderLineId)
+	{
+		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
+		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getRepoId());
+		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getRepoId());
+
+		InterfaceWrapperHelper.save(poLineAllocation);
 	}
 }

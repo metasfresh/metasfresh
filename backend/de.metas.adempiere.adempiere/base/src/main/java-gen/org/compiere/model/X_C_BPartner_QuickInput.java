@@ -1,715 +1,533 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_QuickInput
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_C_BPartner_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1965289375L;
+	private static final long serialVersionUID = 1035994458L;
 
     /** Standard Constructor */
-    public X_C_BPartner_QuickInput (Properties ctx, int C_BPartner_QuickInput_ID, String trxName)
+    public X_C_BPartner_QuickInput (final Properties ctx, final int C_BPartner_QuickInput_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_QuickInput_ID, trxName);
-      /** if (C_BPartner_QuickInput_ID == 0)
-        {
-			setC_BP_Group_ID (0);
-			setC_BPartner_QuickInput_ID (0);
-			setC_Location_ID (0);
-			setIsCompany (true); // Y
-			setIsCustomer (false); // N
-			setIsNewsletter (false); // N
-			setIsVendor (false); // N
-			setProcessed (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_C_BPartner_QuickInput (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BPartner_QuickInput (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
 	 */
 	public static final int AD_LANGUAGE_AD_Reference_ID=327;
-	/** Set Sprache.
-		@param AD_Language 
-		Sprache für diesen Eintrag
-	  */
 	@Override
-	public void setAD_Language (java.lang.String AD_Language)
+	public void setAD_Language (final @Nullable java.lang.String AD_Language)
 	{
-
 		set_Value (COLUMNNAME_AD_Language, AD_Language);
 	}
 
-	/** Get Sprache.
-		@return Sprache für diesen Eintrag
-	  */
 	@Override
-	public java.lang.String getAD_Language () 
+	public java.lang.String getAD_Language() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+		return get_ValueAsString(COLUMNNAME_AD_Language);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Email (final @Nullable java.lang.String C_BPartner_Location_Email)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Email, C_BPartner_Location_Email);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Email() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Email);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Fax (final @Nullable java.lang.String C_BPartner_Location_Fax)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Fax, C_BPartner_Location_Fax);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Fax() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Fax);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Mobile (final @Nullable java.lang.String C_BPartner_Location_Mobile)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Mobile, C_BPartner_Location_Mobile);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Mobile() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Mobile);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Phone (final @Nullable java.lang.String C_BPartner_Location_Phone)
+	{
+		set_Value (COLUMNNAME_C_BPartner_Location_Phone, C_BPartner_Location_Phone);
+	}
+
+	@Override
+	public java.lang.String getC_BPartner_Location_Phone() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_BPartner_Location_Phone);
+	}
+
+	@Override
+	public void setC_BPartner_QuickInput_ID (final int C_BPartner_QuickInput_ID)
+	{
+		if (C_BPartner_QuickInput_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_QuickInput_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_QuickInput_ID, C_BPartner_QuickInput_ID);
+	}
+
+	@Override
+	public int getC_BPartner_QuickInput_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_QuickInput_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
 	}
 
 	@Override
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
+	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
 	{
 		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
 	}
 
-	/** Set Geschäftspartnergruppe.
-		@param C_BP_Group_ID 
-		Geschäftspartnergruppe
-	  */
 	@Override
-	public void setC_BP_Group_ID (int C_BP_Group_ID)
+	public void setC_BP_Group_ID (final int C_BP_Group_ID)
 	{
 		if (C_BP_Group_ID < 1) 
 			set_Value (COLUMNNAME_C_BP_Group_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
-	}
-
-	/** Get Geschäftspartnergruppe.
-		@return Geschäftspartnergruppe
-	  */
-	@Override
-	public int getC_BP_Group_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+			set_Value (COLUMNNAME_C_BP_Group_ID, C_BP_Group_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public int getC_BP_Group_ID() 
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public void setC_DocTypeTarget_ID (final int C_DocTypeTarget_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		if (C_DocTypeTarget_ID < 1) 
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, C_DocTypeTarget_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_DocTypeTarget_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
-	{
-		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
-	}
-
-	/** Get Standort.
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BPartner_Location_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set New BPartner quick input.
-		@param C_BPartner_QuickInput_ID New BPartner quick input	  */
-	@Override
-	public void setC_BPartner_QuickInput_ID (int C_BPartner_QuickInput_ID)
-	{
-		if (C_BPartner_QuickInput_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_QuickInput_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_QuickInput_ID, Integer.valueOf(C_BPartner_QuickInput_ID));
-	}
-
-	/** Get New BPartner quick input.
-		@return New BPartner quick input	  */
-	@Override
-	public int getC_BPartner_QuickInput_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_QuickInput_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
-	}
-
-	/** Set Anrede (ID).
-		@param C_Greeting_ID 
-		Anrede zum Druck auf Korrespondenz
-	  */
-	@Override
-	public void setC_Greeting_ID (int C_Greeting_ID)
+	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
 		if (C_Greeting_ID < 1) 
 			set_Value (COLUMNNAME_C_Greeting_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
+			set_Value (COLUMNNAME_C_Greeting_ID, C_Greeting_ID);
 	}
 
-	/** Get Anrede (ID).
-		@return Anrede zum Druck auf Korrespondenz
-	  */
 	@Override
-	public int getC_Greeting_ID () 
+	public int getC_Greeting_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Greeting_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
+	public org.compiere.model.I_C_Location getC_Location()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
 	}
 
 	@Override
-	public void setC_Location(org.compiere.model.I_C_Location C_Location)
+	public void setC_Location(final org.compiere.model.I_C_Location C_Location)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
 	}
 
-	/** Set Anschrift.
-		@param C_Location_ID 
-		Adresse oder Anschrift
-	  */
 	@Override
-	public void setC_Location_ID (int C_Location_ID)
+	public void setC_Location_ID (final int C_Location_ID)
 	{
 		if (C_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
+			set_Value (COLUMNNAME_C_Location_ID, C_Location_ID);
 	}
 
-	/** Get Anschrift.
-		@return Adresse oder Anschrift
-	  */
 	@Override
-	public int getC_Location_ID () 
+	public int getC_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Location_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
-	}
-
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
-	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
-	}
-
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public int getC_PaymentTerm_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Firmenname.
-		@param Companyname Firmenname	  */
-	@Override
-	public void setCompanyname (java.lang.String Companyname)
+	public void setCompanyname (final @Nullable java.lang.String Companyname)
 	{
 		set_Value (COLUMNNAME_Companyname, Companyname);
 	}
 
-	/** Get Firmenname.
-		@return Firmenname	  */
 	@Override
-	public java.lang.String getCompanyname () 
+	public java.lang.String getCompanyname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
+		return get_ValueAsString(COLUMNNAME_Companyname);
 	}
 
-	/** Set eMail.
-		@param EMail 
-		EMail-Adresse
-	  */
 	@Override
-	public void setEMail (java.lang.String EMail)
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
+	}
+
+	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
 	{
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get eMail.
-		@return EMail-Adresse
-	  */
 	@Override
-	public java.lang.String getEMail () 
+	public java.lang.String getEMail() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+		return get_ValueAsString(COLUMNNAME_EMail);
 	}
 
-	/** Set Vorname.
-		@param Firstname 
-		Vorname
-	  */
 	@Override
-	public void setFirstname (java.lang.String Firstname)
+	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
+	{
+		set_Value (COLUMNNAME_ExcludeFromPromotions, ExcludeFromPromotions);
+	}
+
+	@Override
+	public boolean isExcludeFromPromotions() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ExcludeFromPromotions);
+	}
+
+	@Override
+	public void setFirstname (final @Nullable java.lang.String Firstname)
 	{
 		set_Value (COLUMNNAME_Firstname, Firstname);
 	}
 
-	/** Get Vorname.
-		@return Vorname
-	  */
 	@Override
-	public java.lang.String getFirstname () 
+	public java.lang.String getFirstname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
+		return get_ValueAsString(COLUMNNAME_Firstname);
 	}
 
-	/** Set Firma.
-		@param IsCompany Firma	  */
 	@Override
-	public void setIsCompany (boolean IsCompany)
+	public void setIsCompany (final boolean IsCompany)
 	{
-		set_Value (COLUMNNAME_IsCompany, Boolean.valueOf(IsCompany));
+		set_Value (COLUMNNAME_IsCompany, IsCompany);
 	}
 
-	/** Get Firma.
-		@return Firma	  */
 	@Override
-	public boolean isCompany () 
+	public boolean isCompany() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCompany);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCompany);
 	}
 
-	/** Set Kunde.
-		@param IsCustomer 
-		Zeigt an, ob dieser Geschäftspartner ein Kunde ist
-	  */
 	@Override
-	public void setIsCustomer (boolean IsCustomer)
+	public void setIsCustomer (final boolean IsCustomer)
 	{
-		set_Value (COLUMNNAME_IsCustomer, Boolean.valueOf(IsCustomer));
+		set_Value (COLUMNNAME_IsCustomer, IsCustomer);
 	}
 
-	/** Get Kunde.
-		@return Zeigt an, ob dieser Geschäftspartner ein Kunde ist
-	  */
 	@Override
-	public boolean isCustomer () 
+	public boolean isCustomer() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCustomer);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomer);
 	}
 
-	/** Set Newsletter.
-		@param IsNewsletter Newsletter	  */
 	@Override
-	public void setIsNewsletter (boolean IsNewsletter)
+	public void setIsNewsletter (final boolean IsNewsletter)
 	{
-		set_Value (COLUMNNAME_IsNewsletter, Boolean.valueOf(IsNewsletter));
+		set_Value (COLUMNNAME_IsNewsletter, IsNewsletter);
 	}
 
-	/** Get Newsletter.
-		@return Newsletter	  */
 	@Override
-	public boolean isNewsletter () 
+	public boolean isNewsletter() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsNewsletter);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsNewsletter);
 	}
 
-	/** Set Lieferant.
-		@param IsVendor 
-		Zeigt an, ob dieser Geschaäftspartner ein Lieferant ist
-	  */
 	@Override
-	public void setIsVendor (boolean IsVendor)
+	public void setIsVendor (final boolean IsVendor)
 	{
-		set_Value (COLUMNNAME_IsVendor, Boolean.valueOf(IsVendor));
+		set_Value (COLUMNNAME_IsVendor, IsVendor);
 	}
 
-	/** Get Lieferant.
-		@return Zeigt an, ob dieser Geschaäftspartner ein Lieferant ist
-	  */
 	@Override
-	public boolean isVendor () 
+	public boolean isVendor() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsVendor);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsVendor);
 	}
 
-	/** Set Nachname.
-		@param Lastname Nachname	  */
 	@Override
-	public void setLastname (java.lang.String Lastname)
+	public void setLastname (final @Nullable java.lang.String Lastname)
 	{
 		set_Value (COLUMNNAME_Lastname, Lastname);
 	}
 
-	/** Get Nachname.
-		@return Nachname	  */
 	@Override
-	public java.lang.String getLastname () 
+	public java.lang.String getLastname() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
+		return get_ValueAsString(COLUMNNAME_Lastname);
 	}
 
 	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
+	public void setMKTG_Campaign_ID (final int MKTG_Campaign_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+		if (MKTG_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, MKTG_Campaign_ID);
 	}
 
 	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
+	public int getMKTG_Campaign_ID() 
 	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_ID);
 	}
 
-	/** Set Preissystem.
-		@param M_PricingSystem_ID 
-		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
 	@Override
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
+	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
-	/** Get Preissystem.
-		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
 	@Override
-	public int getM_PricingSystem_ID () 
+	public int getM_PricingSystem_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
-
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	@Override
-	public java.lang.String getName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
-	}
-
-	/** Set Name Zusatz.
-		@param Name2 
-		Zusätzliche Bezeichnung
-	  */
-	@Override
-	public void setName2 (java.lang.String Name2)
+	public void setName2 (final @Nullable java.lang.String Name2)
 	{
 		set_Value (COLUMNNAME_Name2, Name2);
 	}
 
-	/** Get Name Zusatz.
-		@return Zusätzliche Bezeichnung
-	  */
 	@Override
-	public java.lang.String getName2 () 
+	public java.lang.String getName2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name2);
+		return get_ValueAsString(COLUMNNAME_Name2);
 	}
 
-	/** Set Telefon.
-		@param Phone 
-		Beschreibt eine Telefon Nummer
-	  */
+	/** 
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
 	@Override
-	public void setPhone (java.lang.String Phone)
+	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
+	{
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	@Override
+	public java.lang.String getPaymentRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRule);
+	}
+
+	@Override
+	public void setPhone (final @Nullable java.lang.String Phone)
 	{
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Telefon.
-		@return Beschreibt eine Telefon Nummer
-	  */
 	@Override
-	public java.lang.String getPhone () 
+	public java.lang.String getPhone() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Phone);
+		return get_ValueAsString(COLUMNNAME_Phone);
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, PO_PaymentTerm);
-	}
-
-	/** Set Zahlungskondition.
-		@param PO_PaymentTerm_ID 
-		Zahlungskondition für die Bestellung
-	  */
-	@Override
-	public void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID)
+	public void setPO_PaymentTerm_ID (final int PO_PaymentTerm_ID)
 	{
 		if (PO_PaymentTerm_ID < 1) 
 			set_Value (COLUMNNAME_PO_PaymentTerm_ID, null);
 		else 
-			set_Value (COLUMNNAME_PO_PaymentTerm_ID, Integer.valueOf(PO_PaymentTerm_ID));
+			set_Value (COLUMNNAME_PO_PaymentTerm_ID, PO_PaymentTerm_ID);
 	}
 
-	/** Get Zahlungskondition.
-		@return Zahlungskondition für die Bestellung
-	  */
 	@Override
-	public int getPO_PaymentTerm_ID () 
+	public int getPO_PaymentTerm_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PO_PaymentTerm_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_PricingSystem getPO_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setPO_PricingSystem(org.compiere.model.I_M_PricingSystem PO_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, PO_PricingSystem);
-	}
-
-	/** Set Einkaufspreissystem.
-		@param PO_PricingSystem_ID Einkaufspreissystem	  */
-	@Override
-	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID)
+	public void setPO_PricingSystem_ID (final int PO_PricingSystem_ID)
 	{
 		if (PO_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_PO_PricingSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_PO_PricingSystem_ID, Integer.valueOf(PO_PricingSystem_ID));
+			set_Value (COLUMNNAME_PO_PricingSystem_ID, PO_PricingSystem_ID);
 	}
 
-	/** Get Einkaufspreissystem.
-		@return Einkaufspreissystem	  */
 	@Override
-	public int getPO_PricingSystem_ID () 
+	public int getPO_PricingSystem_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PricingSystem_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PO_PricingSystem_ID);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setReferrer (final @Nullable java.lang.String Referrer)
+	{
+		set_Value (COLUMNNAME_Referrer, Referrer);
+	}
+
+	@Override
+	public java.lang.String getReferrer() 
+	{
+		return get_ValueAsString(COLUMNNAME_Referrer);
+	}
+
+	@Override
+	public void setVATaxID (final @Nullable java.lang.String VATaxID)
+	{
+		set_Value (COLUMNNAME_VATaxID, VATaxID);
+	}
+
+	@Override
+	public java.lang.String getVATaxID() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxID);
 	}
 }

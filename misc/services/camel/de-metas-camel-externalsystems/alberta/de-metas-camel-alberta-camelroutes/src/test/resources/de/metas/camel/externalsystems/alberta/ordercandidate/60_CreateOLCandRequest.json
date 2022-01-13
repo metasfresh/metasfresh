@@ -1,0 +1,53 @@
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalLineId": "externalLineId",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Alberta",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "ext-ALBERTA-patientId",
+        "bpartnerLocationIdentifier": "1",
+        "contactIdentifier": null
+      },
+      "dateRequired": "2021-03-06",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "ext-ALBERTA-productId",
+      "qty": 100,
+      "poReference": "salesId",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "albertaOrderInfo": {
+        "externalId": "externalHeaderId",
+        "rootId": "rootId",
+        "creationDate": 1614784090.000000000,
+        "startDate": "2021-03-05",
+        "endDate": "2021-04-02",
+        "dayOfDelivery": 2,
+        "nextDelivery": "2021-04-01",
+        "doctorBPartnerIdentifier": "ext-ALBERTA-doctorId",
+        "pharmacyBPartnerIdentifier": "ext-ALBERTA-pharmacyId",
+        "isInitialCare": true,
+        "isSeriesOrder": true,
+        "isArchived": true,
+        "annotation": "annotation",
+        "deliveryInformation": "deliveryInformation",
+        "deliveryNote": "deliveryNote",
+        "orderLineInfo": {
+          "externalId": "externalLineId",
+          "salesLineId": "salesLineId",
+          "unit": "Stk",
+          "isPrivateSale": true,
+          "isRentalEquipment": true,
+          "updated": null,
+          "durationAmount": 10,
+          "timePeriod": 11
+        },
+        "updated": null,
+        "therapy": "2",
+        "therapyTypes": ["1","2","3"]
+      }
+    }
+  ]
+}

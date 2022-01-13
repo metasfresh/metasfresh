@@ -8,6 +8,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.slf4j.Logger;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -78,7 +80,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 						Env.getAD_Client_ID(),
 						Env.getAD_Org_ID(Env.getCtx()));
 		Check.assume(invoiceDocReportProcessId > 0, "The sysconfig with name {} needs to have a value greater than 0; AD_Client_ID={}; AD_Org_ID={}", C_INVOICE_REPORT_AD_PROCESS_ID, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
-		final byte[] invoiceData = ExecuteReportStrategyUtil.executeJasperProcess(invoiceDocReportProcessId, processInfo, outputType);
+		final Resource invoiceData = ExecuteReportStrategyUtil.executeJasperProcess(invoiceDocReportProcessId, processInfo, outputType);
 
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)
@@ -99,10 +101,11 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
 				.map(AttachmentEntry::getId)
 				.map(attachmentEntryService::retrieveData)
+				.map(ByteArrayResource::new)
 				.map(PdfDataProvider::forData)
 				.collect(ImmutableList.toImmutableList());
 
-		final byte[] result = ExecuteReportStrategyUtil.concatenatePDF(invoiceData, additionalPdfData);
+		final Resource result = ExecuteReportStrategyUtil.concatenatePDF(invoiceData, additionalPdfData);
 
 		return ExecuteReportResult.of(outputType, result);
 	}

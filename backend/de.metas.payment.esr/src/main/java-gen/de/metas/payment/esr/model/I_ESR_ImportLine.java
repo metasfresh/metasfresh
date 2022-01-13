@@ -1,15 +1,13 @@
 package de.metas.payment.esr.model;
 
 import java.math.BigDecimal;
-
 import javax.annotation.Nullable;
-
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ESR_ImportLine
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_ESR_ImportLine 
 {
 
@@ -455,7 +453,32 @@ public interface I_ESR_ImportLine
 	String COLUMNNAME_ESRFullReferenceNumber = "ESRFullReferenceNumber";
 
 	/**
-	 * Set ESR Zahlungsimport.
+	 * Set ESR Import File.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setESR_ImportFile_ID (int ESR_ImportFile_ID);
+
+	/**
+	 * Get ESR Import File.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getESR_ImportFile_ID();
+
+	@Nullable de.metas.payment.esr.model.I_ESR_ImportFile getESR_ImportFile();
+
+	void setESR_ImportFile(@Nullable de.metas.payment.esr.model.I_ESR_ImportFile ESR_ImportFile);
+
+	ModelColumn<I_ESR_ImportLine, de.metas.payment.esr.model.I_ESR_ImportFile> COLUMN_ESR_ImportFile_ID = new ModelColumn<>(I_ESR_ImportLine.class, "ESR_ImportFile_ID", de.metas.payment.esr.model.I_ESR_ImportFile.class);
+	String COLUMNNAME_ESR_ImportFile_ID = "ESR_ImportFile_ID";
+
+	/**
+	 * Set ESR Payment Import.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -464,7 +487,7 @@ public interface I_ESR_ImportLine
 	void setESR_Import_ID (int ESR_Import_ID);
 
 	/**
-	 * Get ESR Zahlungsimport.
+	 * Get ESR Payment Import.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

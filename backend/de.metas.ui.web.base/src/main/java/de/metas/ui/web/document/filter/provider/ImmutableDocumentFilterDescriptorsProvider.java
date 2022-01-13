@@ -48,7 +48,7 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
 	}
 
-	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor... descriptors)
+	public static ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor... descriptors)
 	{
 		if (descriptors == null || descriptors.length == 0)
 		{

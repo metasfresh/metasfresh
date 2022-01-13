@@ -1,18 +1,46 @@
 import React from 'react';
-import { shallow, render } from 'enzyme';
+import { shallow, render, mount } from 'enzyme';
 import renderer from 'react-test-renderer';
 import nock from 'nock';
+import { omit } from 'lodash';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import configureStore from 'redux-mock-store';
+import { merge } from 'merge-anything';
+
+import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as widgetHandlerState } from '../../../reducers/widgetHandler';
+import { parseToDisplay } from '../../../utils/documentListHelper';
 
 import quickInputData from '../../../../test_setup/fixtures/table/table_quickinput.json';
-import { TableQuickInput } from '../../../components/table/TableQuickInput';
+import ConnectedTableQuickInput, { TableQuickInput } from '../../../components/table/TableQuickInput';
 
+const middlewares = [thunk];
+const mockStore = configureStore(middlewares);
+const createStore = function(state = {}) {
+  const res = merge(
+    {
+      widgetHandler: widgetHandlerState,
+    },
+    state
+  );
+
+  return res;
+};
+const promiseMock = jest.fn(() => Promise.resolve(true));
 const initialProps = {
   ...quickInputData.basicProps,
-  modalVisible: false,
-  timeZone: 'Europe/Berlin',
+  data: quickInputData.data1.fieldsByName,
+  layout: quickInputData.layout.elements,
+  inProgress: false,
+  id: quickInputData.data1.id,
   addNotification: jest.fn(),
-  allowShortcut: jest.fn(),
-  disableShortcut: jest.fn(),
+  fetchQuickInputData: promiseMock,
+  fetchQuickInputLayout: promiseMock,
+  deleteQuickInput: jest.fn(),
+  setQuickinputData: jest.fn(),
+  patchQuickInput: promiseMock,
+  closeBatchEntry: jest.fn(),
 };
 
 // leaving this so that I won't have to look it up again in case we need it
@@ -46,9 +74,28 @@ describe('TableQuickInput', () => {
     // nock.restore();
   });
 
-  it('renders without error 22s', () => {
-    const wrapperTableCMenu = render(<TableQuickInput {...initialProps} />);
-    expect(wrapperTableCMenu.find('.hint').text()).toBe(
+  it('renders without error 22s', (done) => {
+    const moduleMock = jest.requireActual('../../../actions/IndependentWidgetsActions');
+
+    const initialState = createStore({
+      widgetHandler: {
+        layout: quickInputData.layout.elements,
+        data: parseToDisplay(quickInputData.data1.fieldsByName),
+      }
+    });
+
+    const localProps = omit(initialProps, ['layout', 'data']);
+    const store = mockStore(initialState);
+    const fetchQuickInputLayoutMock = (args, dispatch) => {
+      return dispatch(moduleMock.fetchQuickInputLayout({ ...args })).then(done);
+    };
+    const wrapper = mount(
+      <Provider store={store}>
+        <ConnectedTableQuickInput {...localProps} fetchQuickInputLayout={fetchQuickInputLayoutMock} />
+      </Provider>
+    );
+
+    expect(wrapper.find('.hint').text()).toBe(
       `(Press 'Enter' to add)`
     );
   });

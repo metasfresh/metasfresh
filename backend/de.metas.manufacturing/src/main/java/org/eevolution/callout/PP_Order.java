@@ -6,6 +6,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingId;
@@ -31,9 +32,13 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
+
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -52,15 +57,18 @@ public class PP_Order extends CalloutEngine
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+	private final ProductBOMVersionsDAO bomVersionsRepo;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 
 	public PP_Order(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
+			@NonNull final ProductBOMVersionsDAO bomVersionsRepo)
 	{
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
+		this.bomVersionsRepo = bomVersionsRepo;
 	}
 
 	/**
@@ -107,14 +115,16 @@ public class PP_Order extends CalloutEngine
 		final I_PP_Product_Planning pp = findPP_Product_Planning(ppOrder);
 		ppOrder.setAD_Workflow_ID(pp.getAD_Workflow_ID());
 
-		final ProductBOMId productBOMId = ProductBOMId.ofRepoIdOrNull(pp.getPP_Product_BOM_ID());
-		ppOrder.setPP_Product_BOM_ID(ProductBOMId.toRepoId(productBOMId));
+		final ProductBOMVersionsId productBOMVersionsId = Optional.ofNullable(ProductBOMVersionsId.ofRepoIdOrNull(pp.getPP_Product_BOMVersions_ID()))
+				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOMVersions_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
 
-		if (productBOMId != null)
-		{
-			final I_PP_Product_BOM bom = bomsRepo.getById(productBOMId);
-			ppOrder.setC_UOM_ID(bom.getC_UOM_ID());
-		}
+		final ProductBOMId productBOMId = bomsRepo.getLatestBOMByVersion(productBOMVersionsId)
+				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productId.getRepoId() + ")"));
+
+		ppOrder.setPP_Product_BOM_ID(productBOMId.getRepoId());
+
+		final I_PP_Product_BOM bom = bomsRepo.getById(productBOMId);
+		ppOrder.setC_UOM_ID(bom.getC_UOM_ID());
 
 		updateQtyOrderedAndBatches(ppOrder);
 	}
@@ -172,42 +182,40 @@ public class PP_Order extends CalloutEngine
 	 * Find Product Planning Data for given manufacturing order. If not planning found, a new one is created and filled with default values.
 	 */
 	@NonNull
-	private I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrder)
+	private I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrderWithProductId)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(OrgId.ofRepoIdOrAny(ppOrder.getAD_Org_ID()))
-				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrder.getM_Warehouse_ID()))
-				.plantId(ResourceId.ofRepoIdOrNull(ppOrder.getS_Resource_ID()))
-				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(ppOrderWithProductId.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
+				.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
 		I_PP_Product_Planning pp = productPlanningDAO.find(query).orElse(null);
 
 		if (pp == null)
 		{
 			pp = newInstance(I_PP_Product_Planning.class);
-			pp.setAD_Org_ID(ppOrder.getAD_Org_ID());
-			pp.setM_Warehouse_ID(ppOrder.getM_Warehouse_ID());
-			pp.setS_Resource_ID(ppOrder.getS_Resource_ID());
-			pp.setM_Product_ID(ppOrder.getM_Product_ID());
+			pp.setAD_Org_ID(ppOrderWithProductId.getAD_Org_ID());
+			pp.setM_Warehouse_ID(ppOrderWithProductId.getM_Warehouse_ID());
+			pp.setS_Resource_ID(ppOrderWithProductId.getS_Resource_ID());
+			pp.setM_Product_ID(ppOrderWithProductId.getM_Product_ID());
 		}
 		InterfaceWrapperHelper.setSaveDeleteDisabled(pp, true);
 
-		final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()); // pp itself might not have M_Product_ID>0, so we use the PP_Order's one
 		if (pp.getAD_Workflow_ID() <= 0)
 		{
 			final PPRoutingId routingId = routingRepo.getRoutingIdByProductId(productId);
 			pp.setAD_Workflow_ID(PPRoutingId.toRepoId(routingId));
 		}
-		if (pp.getPP_Product_BOM_ID() <= 0)
-		{
-			final ProductBOMId bomId = bomsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
-			if (bomId != null)
-			{
-				pp.setPP_Product_BOM_ID(bomId.getRepoId());
-			}
-		}
 
+		if (pp.getPP_Product_BOMVersions_ID() <= 0)
+		{
+			bomVersionsRepo.retrieveBOMVersionsId(productId)
+					.map(ProductBOMVersionsId::getRepoId)
+					.ifPresent(pp::setPP_Product_BOMVersions_ID);
+		}
 		return pp;
 	}
 }

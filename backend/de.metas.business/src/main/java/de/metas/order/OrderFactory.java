@@ -8,9 +8,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -21,6 +23,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -138,7 +141,7 @@ public class OrderFactory
 
 			if (order.getC_DocTypeTarget_ID() <= 0)
 			{
-				orderBL.setDocTypeTargetId(order);
+				orderBL.setDefaultDocTypeTargetId(order);
 			}
 
 			if (order.getBill_BPartner_ID() <= 0)
@@ -191,6 +194,22 @@ public class OrderFactory
 	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
 	{
 		order.setIsSOTrx(soTrx.toBoolean());
+		return this;
+	}
+
+	public OrderFactory externalPurchaseOrderUrl(@Nullable final String externalPurchaseOrderUrl)
+	{
+		order.setExternalPurchaseOrderURL(externalPurchaseOrderUrl);
+
+		assertNotBuilt();
+		return this;
+	}
+
+	public OrderFactory externalHeaderId(@Nullable final ExternalId externalId)
+	{
+		order.setExternalId(externalId != null ? externalId.getValue() : null);
+
+		assertNotBuilt();
 		return this;
 	}
 
@@ -261,7 +280,6 @@ public class OrderFactory
 		return OrgId.ofRepoId(order.getAD_Org_ID());
 	}
 
-
 	public OrderFactory dateOrdered(final LocalDate dateOrdered)
 	{
 		assertNotBuilt();
@@ -288,18 +306,14 @@ public class OrderFactory
 	{
 		assertNotBuilt();
 
-		if (bpartnerLocationId != null && !BPartnerId.equals(bpartnerId, bpartnerLocationId.getBpartnerId()))
-		{
-			throw new AdempiereException("BPartner not matching: " + bpartnerLocationId + ", " + bpartnerId);
-		}
-		if (contactId != null && !BPartnerId.equals(bpartnerId, contactId.getBpartnerId()))
-		{
-			throw new AdempiereException("BPartner not matching: " + contactId + ", " + bpartnerId);
-		}
+		OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(bpartnerId)
+								 .bpartnerLocationId(bpartnerLocationId)
+								 .contactId(contactId)
+								 .build());
 
-		order.setC_BPartner_ID(bpartnerId.getRepoId());
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
-		order.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		return this;
 	}
 

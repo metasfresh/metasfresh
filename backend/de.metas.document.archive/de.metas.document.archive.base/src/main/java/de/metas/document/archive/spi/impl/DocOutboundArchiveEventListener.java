@@ -9,10 +9,12 @@ import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -21,6 +23,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -31,9 +34,9 @@ import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -52,12 +55,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
 	private final AttachmentEntryService attachmentEntryService;
+	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public DocOutboundArchiveEventListener(
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
 	{
 		this.attachmentEntryService = attachmentEntryService;
+		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 	}
 
 	@Override
@@ -122,10 +128,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-						   @Nullable final UserId userId,
-						   final String printerName,
-						   final int copies,
-						   @NonNull final ArchivePrintOutStatus status)
+			@Nullable final UserId userId,
+			final String printerName,
+			final int copies,
+			@NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (status.isSuccess())
@@ -219,6 +225,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
@@ -229,7 +236,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
 		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
+		docOutboundLogRecord.setDocumentNo(archiveRecord.getDocumentNo());
+		docOutboundLogRecord.setFileName(archiveRecord.getName());
 
 		final LocalDate documentDate = CoalesceUtil.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),
@@ -248,9 +256,13 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
-		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
-
-		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
+		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
+						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+						.build());
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
 	}

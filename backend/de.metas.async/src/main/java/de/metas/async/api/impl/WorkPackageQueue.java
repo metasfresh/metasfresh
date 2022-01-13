@@ -103,7 +103,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final int enquingPackageProcessorId;
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+	 * Task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	private final String enquingPackageProcessorInternalName;
 
@@ -280,10 +280,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	 * Update context from work package (AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID etc).
 	 *
 	 * NOTE: this will be the context that work package processors will use on processing
-	 *
-	 * @param workPackageCtx
 	 */
-	private final void setupWorkpackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
+	private void setupWorkpackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
 	{
 		//
 		// AD_Client_ID/AD_Org_ID
@@ -321,7 +319,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 							orgId,
 							userId,
 							Env.getLocalDate(workPackageCtx))
-					.orNull();
+					.orElse(null);
 			roleId = role == null ? null : role.getRoleId();
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId, Env.CTXVALUE_AD_Role_ID_NONE));
@@ -344,7 +342,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			workPackage = null;
 
 			final String threadName = Thread.currentThread().getName();
-			logger.warn("Aquired {} on thread {} but is not valid. Unlocking and returning null.", new Object[] { workpackageToUnlock, threadName });
+			logger.warn("Aquired {} on thread {} but is not valid. Unlocking and returning null.", workpackageToUnlock, threadName);
 
 		}
 		return workPackage;
@@ -473,7 +471,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 
 		// C_Async_Batch_ID - get it from context if available
-		// set only if is not new workpackage; the first new one is always for the the async batch itself and we do want to track it
+		// set only if is not new workpackage; the first new one is always for the async batch itself and we do want to track it
 		if (!asyncBatchForNewWorkpackagesSet)
 		{
 			final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
@@ -738,7 +736,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public void markReadyForProcessing(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final IQueueProcessorListener callback)
 	{
-		try (final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage))
+		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(workPackage))
 		{
 			final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
 

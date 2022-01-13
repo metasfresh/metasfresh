@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -22,7 +22,9 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( $P{RECORD_ID}, $P{ad_language}) r
-JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
+JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1
+JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
+;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
@@ -47,6 +49,9 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 	</field>
 	<field name="showqrbill" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
+	</field>
+	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
 	</field>
 	<background>
 		<band height="842" splitType="Stretch">
@@ -293,6 +298,9 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
 			</subreport>
@@ -301,7 +309,7 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1;]]>
 	<summary>
 		<band height="154">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showesr_qr})]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="3" width="595" height="150" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>

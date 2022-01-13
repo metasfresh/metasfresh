@@ -1,0 +1,57 @@
+[
+  {
+    "_id": "externalHeaderId",
+    "patientId": "patientId",
+    "salesId": "salesId",
+    "creationDate": "2021-03-03T15:08:10.631Z",
+    "deliveryDate": "2021-03-06",
+    "startDate": "2021-03-05",
+    "endDate": "2021-04-02",
+    "deliveryAddress": {
+      "gender": 1,
+      "title": 4,
+      "name": "address name",
+      "address": "address",
+      "additionalAddress": "additionalAddress",
+      "additionalAddress2": "additionalAddress2",
+      "postalCode": "99999",
+      "city": "test-city"
+    },
+    "doctorId": "doctorId",
+    "pharmacyId": "pharmacyId",
+    "therapyId": 2,
+    "therapyTypeIds": [
+      1,
+      2,
+      3
+    ],
+    "isInitialCare": true,
+    "orderedArticleLines": [
+      {
+        "_id": "externalLineId",
+        "articleId": "productId",
+        "articleCustomerNumber": "ignore",
+        "quantity": 100,
+        "unit": "Stk",
+        "isRentalEquipment": true,
+        "isPrivateSale": true,
+        "salesLineId": "salesLineId",
+        "duration": {
+          "amount": 10,
+          "timePeriod": 11
+        }
+      }
+    ],
+    "createdBy": "5a6a12698f0d3933b02e5f4c",
+    "status": 1,
+    "isSeriesOrder": true,
+    "archived": true,
+    "timestamp": "2021-03-03T15:08:41.239Z",
+    "rootId": "rootId",
+    "dayOfDelivery": 2,
+    "nextDelivery": "2021-04-01",
+    "annotation":"annotation",
+    "deliveryInformation": "deliveryInformation",
+    "deliveryNote": "deliveryNote"
+  }
+]

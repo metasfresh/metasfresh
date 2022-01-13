@@ -22,12 +22,15 @@ package org.adempiere.mm.attributes.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
@@ -37,18 +40,13 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Attribute;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.weightable.IWeightable;
-import de.metas.handlingunits.attribute.weightable.Weightables;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * Common super class of all weight related callouts.
- *
  */
 /* package */abstract class AbstractWeightAttributeValueCallout implements IAttributeValueGenerator,
 		IAttributeValueCallout
@@ -62,6 +60,8 @@ import de.metas.util.Services;
 	// Services
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 

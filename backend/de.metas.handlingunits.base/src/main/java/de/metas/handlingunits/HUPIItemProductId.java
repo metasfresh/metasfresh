@@ -1,15 +1,14 @@
 package de.metas.handlingunits;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -33,6 +32,9 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Aka {@code M_HU_PI_Item_Product_ID}
+ */
 @Value
 public class HUPIItemProductId implements RepoIdAware
 {
@@ -63,6 +65,8 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : VIRTUAL_HU;
 	}
 
+	public static Optional<HUPIItemProductId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
+
 	public static int toRepoId(@Nullable final HUPIItemProductId id)
 	{
 		return id != null ? id.getRepoId() : -1;
@@ -70,7 +74,7 @@ public class HUPIItemProductId implements RepoIdAware
 
 	public static boolean isRegular(@Nullable final HUPIItemProductId id)
 	{
-		return id != null ? id.isRegular() : false;
+		return id != null && id.isRegular();
 	}
 
 	public static final HUPIItemProductId TEMPLATE_HU = new HUPIItemProductId(100);

@@ -1,10 +1,10 @@
-DROP VIEW IF EXISTS M_Packageable_V
+DROP VIEW IF EXISTS m_packageable_v$new
 ;
 
-CREATE OR REPLACE VIEW M_Packageable_V AS
+CREATE OR REPLACE VIEW m_packageable_v$new AS
 SELECT p.*
 
-     -- note: keep in sync with de.metas.inoutcandidate.api.Packageable.getQtyPickedOrDelivered()
+     -- note: keep in sync with de.metas.picking.api.Packageable.getQtyPickedOrDelivered()
      , p.QtyDelivered + p.QtyPickedNotDelivered + p.QtyPickedPlanned AS QtyPickedOrDelivered
 FROM (
          SELECT
@@ -12,13 +12,17 @@ FROM (
              -- BPartner
              p.C_BPartner_ID                                           AS C_BPartner_Customer_ID,
              p.Value                                                   AS BPartnerValue,
-             (coalesce(p.Name, '') || coalesce(p.Name2, ''))           AS BPartnerName,
+             (COALESCE(p.Name, '') || COALESCE(p.Name2, ''))           AS BPartnerName,
 
              --
              -- BPartner location
              l.C_BPartner_Location_ID,
              l.Name                                                    AS BPartnerLocationName,
-             s.BPartnerAddress_Override,
+             (CASE
+                  WHEN s.BPartnerAddress_Override IS NOT NULL AND s.BPartnerAddress_Override != ''
+                      THEN s.BPartnerAddress_Override
+                      ELSE s.BPartnerAddress
+              END)                                                     AS BPartnerAddress_Override,
 
              --
              -- Order Info
@@ -104,6 +108,10 @@ FROM (
              -- Picking/Manufacturing
              s.PickFrom_Order_ID,
 
+            --
+            -- Packing
+            coalesce(s.M_HU_PI_Item_Product_Override_ID, s.M_HU_PI_Item_Product_ID) AS PackTo_HU_PI_Item_Product_ID,
+
              --
              -- Locking
              -- NOTE: assume there is only one M_ShipmentSchedule_Lock record per each M_ShipmentSchedule_ID
@@ -140,3 +148,13 @@ FROM (
 ;
 
 
+SELECT db_alter_view(
+               'm_packageable_v',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE views.table_name = 'm_packageable_v$new')
+           )
+;
+
+DROP VIEW IF EXISTS m_packageable_v$new
+;

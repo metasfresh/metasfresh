@@ -14,25 +14,48 @@
     <artifactId>metasfresh-admin</artifactId>
 
     <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
-    <version>1.0.0</version>
+    <version>10.0.0</version>
 
     <properties>
         <spring-boot.version>2.4.3</spring-boot.version>
+        <spring-cloud.version>2020.0.3</spring-cloud.version>
         <start-class>de.metas.admin.SpringBootAdminApplication</start-class>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-server</artifactId>
             <version>${spring-boot-admin.version}</version>
         </dependency>
-
+        <dependency> <!-- with this we can statically specify the instances of interest in application.yml -->
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -46,7 +69,7 @@
                     <target>14</target>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -100,6 +123,12 @@
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
                         <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- we authenticate on pulls to avoid the rate limit -->
+                            <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                 </configuration>
                 <executions>
@@ -110,6 +139,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

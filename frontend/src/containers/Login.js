@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import React, { PureComponent } from 'react';
 import { detect } from 'detect-browser';
-
+import { connect } from 'react-redux';
 import LoginForm from '../components/app/LoginForm';
+import ErrorScreen from '../components/app/ErrorScreen';
 
 const BROWSER = detect();
 
@@ -13,24 +12,10 @@ const BROWSER = detect();
  * @module Login
  * @extends Component
  */
-class Login extends Component {
-  constructor(props) {
-    super(props);
-  }
-  /**
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method.
-   */
-  UNSAFE_componentWillMount() {
-    const { logged, dispatch } = this.props;
-    if (logged) {
-      dispatch(push('/'));
-    }
-  }
-
+class Login extends PureComponent {
   /**
    * @method browserSupport
-   * @summary ToDo: Describe the method.
+   * @summary Method checking if user is using a supported browser
    */
   browserSupport = (...supportedBrowsers) => {
     const userBrowser = BROWSER !== null ? BROWSER.name : 'chrome';
@@ -44,14 +29,10 @@ class Login extends Component {
     return isSupported;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
-    const { redirect, auth, splat, token } = this.props;
+    const { auth, splat, token, connectionErrorType } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
-    const component = <LoginForm {...{ redirect, auth, token }} path={splat} />;
+    const component = <LoginForm {...{ auth, token }} path={splat} />;
 
     return (
       <div className="fullscreen">
@@ -64,26 +45,26 @@ class Login extends Component {
             </div>
           )}
         </div>
+        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
       </div>
     );
   }
 }
 
+const mapStateToProps = (state) => ({
+  connectionErrorType: state.appHandler.connectionErrorType || '',
+});
+
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
- * @prop {bool} logged
- * @prop {string} redirect
  * @prop {string} splat
  * @prop {string} token
  */
 Login.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  logged: PropTypes.bool,
-  redirect: PropTypes.string,
   splat: PropTypes.string,
   token: PropTypes.string,
   auth: PropTypes.object,
+  connectionErrorType: PropTypes.string,
 };
 
-export default connect()(Login);
+export default connect(mapStateToProps, null)(Login);

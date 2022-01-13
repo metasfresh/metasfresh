@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.core.from_mf;
 
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
@@ -29,19 +30,20 @@ import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.util.SocketUtils;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class CallDispatcherRouteBuilderTest extends CamelTestSupport
 {
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new CallDispatcherRouteBuilder();
+		return new CallDispatcherRouteBuilder(Mockito.mock(ProcessLogger.class));
 	}
 
 	@Override
@@ -75,7 +77,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 		final var externalSystem = "myExternalSystem";
 		
 		AdviceWith.adviceWith(context,
-				CallDispatcherRouteBuilder.ROUTE_ID,
+				CallDispatcherRouteBuilder.DISPATCH_ROUTE_ID,
 				a -> a.interceptSendToEndpoint("direct:" + externalSystem + "-" + command)
 						.skipSendToOriginalEndpoint()
 						.process(postEndpoint));
@@ -84,7 +86,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 				.wereSentTo("direct:" + externalSystem + "-" + command)
 				.whenDone(1).create();
 
-		final String jsonRequest = "{\"orgCode\":\"orgCode\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
+		final String jsonRequest = "{\"externalSystemConfigId\":1, \"orgCode\":\"orgCode\",\"traceId\":\"traceId\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"externalSystemChildConfigValue\":\"childValue\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
 
 		template.requestBody("direct:dispatch", jsonRequest);
 

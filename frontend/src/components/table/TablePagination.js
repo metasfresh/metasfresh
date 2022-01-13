@@ -27,12 +27,8 @@ class TablePagination extends PureComponent {
   };
 
   _handleSelectAll = () => {
-    const {
-      selected,
-      rowLength,
-      handleSelectAll,
-      handleSelectRange,
-    } = this.props;
+    const { selected, rowLength, handleSelectAll, handleSelectRange } =
+      this.props;
     const selectedWholePage = selected && selected.length === rowLength;
 
     return selectedWholePage ? handleSelectRange(['all']) : handleSelectAll();
@@ -313,13 +309,8 @@ class TablePagination extends PureComponent {
   };
 
   render() {
-    const {
-      size,
-      pageLength,
-      page,
-      compressed,
-      disablePaginationShortcuts,
-    } = this.props;
+    const { size, pageLength, page, compressed, disablePaginationShortcuts } =
+      this.props;
     const pages = size ? Math.ceil(size / pageLength) : 0;
     let pagination = [];
 

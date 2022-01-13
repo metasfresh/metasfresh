@@ -6,6 +6,11 @@
         "cypress/globals": true
     },
     "parser": "babel-eslint",
+    "parserOptions": {
+      "babelOptions": {
+        "configFile": "/babel.config.js"
+      }
+    },
     "extends": [
         "eslint:recommended",
         "plugin:cypress/recommended",

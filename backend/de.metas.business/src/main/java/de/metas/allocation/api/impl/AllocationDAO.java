@@ -1,39 +1,21 @@
 package de.metas.allocation.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -51,18 +33,17 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.util.DB;
 
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.SetMultimap;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.payment.PaymentId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AllocationDAO implements IAllocationDAO
 {
@@ -147,7 +128,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
-	/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
+		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
 			final int allocationHdrId,
 			final boolean retrieveAll,
 			final @CacheTrx String trxName)
@@ -171,30 +152,26 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public final List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice)
+	public final List<I_C_Payment> retrieveAvailablePaymentsToAutoAllocate(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final SOTrx invoiceSOTrx,
+			@NonNull final ClientAndOrgId invoiceClientAndOrgId)
 	{
-		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Payment.class, invoice)
+		final PaymentDirection paymentDirection = PaymentDirection.ofSOTrx(invoiceSOTrx);
+
+		return queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient();
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_Payment.COLUMN_DateTrx)
-				.addColumn(I_C_Payment.COLUMN_C_Payment_ID);
-
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID());
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed);
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_Processed, true);
-
-		// Matching DocType
-		final boolean isReceipt = invoice.isSOTrx();
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, isReceipt);
-
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_IsAutoAllocateAvailableAmt, true);
-
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, false);
-
-		return queryBuilder.create()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Client_ID, invoiceClientAndOrgId.getClientId())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, invoiceClientAndOrgId.getOrgId()) // consider only invoice's organization
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
+				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, paymentDirection.isReceipt())
+				.addEqualsFilter(I_C_Payment.COLUMN_IsAutoAllocateAvailableAmt, true)
+				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, false)
+				.orderBy(I_C_Payment.COLUMN_DateTrx)
+				.orderBy(I_C_Payment.COLUMN_C_Payment_ID)
+				.create()
 				.list(I_C_Payment.class);
 	}
 
@@ -237,8 +214,6 @@ public class AllocationDAO implements IAllocationDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(COALESCE(v_AllocatedAmt,0), 2);
@@ -265,16 +240,16 @@ public class AllocationDAO implements IAllocationDAO
 	{
 		BigDecimal retValue = null;
 
-		String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-				+ "FROM C_AllocationLine al"
-				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-				+ "WHERE al.C_Invoice_ID=?"
-				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
+		StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
+													  + "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+													  + "FROM C_AllocationLine al"
+													  + " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
+													  + " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
+													  + "WHERE al.C_Invoice_ID=?"
+													  + " AND ah.IsActive='Y' AND al.IsActive='Y'");
 		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
 		{
-			sql += " AND (al.C_Payment_ID NOT IN (-1";
+			sql.append(" AND (al.C_Payment_ID NOT IN (-1");
 
 			for (final Integer paymentIdToExclude : paymentIDsToIgnore)
 			{
@@ -282,9 +257,9 @@ public class AllocationDAO implements IAllocationDAO
 				{
 					continue; // guard agains NPE
 				}
-				sql += ", " + paymentIdToExclude;
+				sql.append(", ").append(paymentIdToExclude);
 			}
-			sql += ") OR al.C_Payment_ID IS NULL )";
+			sql.append(") OR al.C_Payment_ID IS NULL )");
 		}
 
 		PreparedStatement pstmt = null;
@@ -294,7 +269,7 @@ public class AllocationDAO implements IAllocationDAO
 		{
 			final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt = DB.prepareStatement(sql.toString(), trxName);
 			pstmt.setInt(1, invoice.getC_Invoice_ID());
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -309,8 +284,6 @@ public class AllocationDAO implements IAllocationDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(NVL(v_AllocatedAmt,0), 2);
@@ -385,7 +358,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_Payment.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID()) // add explicit invoice in payment
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, invoiceAllocationLineFilter);
 
-		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
+		return queryBL.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID())
 				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
@@ -396,8 +369,6 @@ public class AllocationDAO implements IAllocationDAO
 				.orderBy().addColumn(I_C_Payment.COLUMN_DateTrx).endOrderBy()
 				.create()
 				.list();
-
-		return availablePayments;
 	}
 
 	@Override
@@ -425,5 +396,11 @@ public class AllocationDAO implements IAllocationDAO
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> PaymentId.ofRepoId(record.getC_Payment_ID()),
 						record -> InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID())));
+	}
+
+	@Override
+	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
+	{
+		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
 	}
 }

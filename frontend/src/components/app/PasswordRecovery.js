@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { push } from 'react-router-redux';
 
 import {
   resetPasswordRequest,
@@ -11,6 +9,7 @@ import {
   resetPasswordComplete,
   resetPasswordGetAvatar,
 } from '../../api';
+import history from '../../services/History';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 class PasswordRecovery extends Component {
@@ -64,8 +63,7 @@ class PasswordRecovery extends Component {
   };
 
   redirectToLogin = () => {
-    const { dispatch } = this.props;
-    dispatch(push('/login'));
+    history.push('/login');
   };
 
   handleChange = (e, name) => {
@@ -311,10 +309,9 @@ class PasswordRecovery extends Component {
 }
 
 PasswordRecovery.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
   token: PropTypes.string,
   onResetOk: PropTypes.func,
 };
 
-export default connect()(PasswordRecovery);
+export default PasswordRecovery;

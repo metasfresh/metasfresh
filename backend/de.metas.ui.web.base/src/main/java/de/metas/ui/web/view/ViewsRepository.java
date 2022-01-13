@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
+import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -15,7 +16,9 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.websocket.WebsocketActiveSubscriptionsIndex;
+import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
@@ -122,6 +125,7 @@ public class ViewsRepository implements IViewsRepository
 		{
 			truncateTable(I_T_WEBUI_ViewSelection.Table_Name);
 			truncateTable(I_T_WEBUI_ViewSelectionLine.Table_Name);
+			truncateTable(I_T_ES_FTS_Search_Result.Table_Name);
 		}
 		else
 		{
@@ -202,7 +206,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public boolean isWatchedByFrontend(final ViewId viewId)
 	{
-		return websocketActiveSubscriptionsIndex.hasViewSubscriptions(viewId);
+		final WebsocketTopicName topicName = WebsocketTopicNames.buildViewNotificationsTopicName(viewId.toJson());
+		return websocketActiveSubscriptionsIndex.hasSubscriptionsForTopicName(topicName);
 	}
 
 	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -456,7 +461,7 @@ public class ViewsRepository implements IViewsRepository
 		{
 			try
 			{
-				final boolean watchedByFrontend = websocketActiveSubscriptionsIndex.hasViewSubscriptions(view.getViewId());
+				final boolean watchedByFrontend = isWatchedByFrontend(view.getViewId());
 				view.notifyRecordsChanged(recordRefs, watchedByFrontend);
 				notifiedCount.incrementAndGet();
 			}

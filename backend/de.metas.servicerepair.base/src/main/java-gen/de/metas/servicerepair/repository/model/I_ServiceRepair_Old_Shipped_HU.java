@@ -187,6 +187,29 @@ public interface I_ServiceRepair_Old_Shipped_HU
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Note.
+	 * Optional additional user defined information
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNote (@Nullable java.lang.String Note);
+
+	/**
+	 * Get Note.
+	 * Optional additional user defined information
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNote();
+
+	ModelColumn<I_ServiceRepair_Old_Shipped_HU, Object> COLUMN_Note = new ModelColumn<>(I_ServiceRepair_Old_Shipped_HU.class, "Note", null);
+	String COLUMNNAME_Note = "Note";
+
+	/**
 	 * Set Product No.
 	 *
 	 * <br>Type: String
@@ -252,7 +275,7 @@ public interface I_ServiceRepair_Old_Shipped_HU
 	String COLUMNNAME_SerialNo = "SerialNo";
 
 	/**
-	 * Set Old Shipped HU.
+	 * Set Shipped HUs from legacy application.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -261,7 +284,7 @@ public interface I_ServiceRepair_Old_Shipped_HU
 	void setServiceRepair_Old_Shipped_HU_ID (int ServiceRepair_Old_Shipped_HU_ID);
 
 	/**
-	 * Get Old Shipped HU.
+	 * Get Shipped HUs from legacy application.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

@@ -33,10 +33,9 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 
 /**
  * Returned by {@link IWorkpackageProcessor2} implementations and invoked by the framework.<br>
- * See {@link #postponeIfNeeded(I_C_Queue_WorkPackage, Collection)}.
+ * See {@link #postponeIfNeeded(I_C_Queue_WorkPackage, IQueryBuilder)} .
  * 
- * @author ts
- * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+ * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
  */
 public interface ILatchStragegy
 {

@@ -1,27 +1,10 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
@@ -33,6 +16,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.util.Check.assume;
 
 /*
  * #%L
@@ -60,6 +57,7 @@ import lombok.Singular;
 @JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public final class BPartnerComposite
 {
+	@Nullable
 	private OrgId orgId;
 
 	private BPartner bpartner;
@@ -120,7 +118,9 @@ public final class BPartnerComposite
 		return result.build();
 	}
 
-	/** Only active instances are actually validated. Empty list means "valid" */
+	/**
+	 * Only active instances are actually validated. Empty list means "valid"
+	 */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
@@ -135,7 +135,6 @@ public final class BPartnerComposite
 		}
 		else
 		{
-			result.addAll(validateLookupKeys());
 			result.addAll(bpartner.validate());
 		}
 
@@ -227,32 +226,6 @@ public final class BPartnerComposite
 		return result.build();
 	}
 
-	private ImmutableList<ITranslatableString> validateLookupKeys()
-	{
-		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
-
-		final boolean hasLookupKey = bpartner.isIdentifiedByExternalReference()
-				|| bpartner.getId() != null
-				|| !isEmpty(bpartner.getValue(), true)
-				|| bpartner.getExternalId() != null
-				|| !extractLocationGlns().isEmpty();
-		if (!hasLookupKey)
-		{
-			result.add(TranslatableStrings.constant("At least one of bpartner.id, bpartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
-		}
-
-		return result.build();
-	}
-
-	public Optional<BPartnerContact> extractContactOpt(@NonNull final BPartnerContactId contactId)
-	{
-		assume(contactId.getBpartnerId().equals(bpartner.getId()), "The given contactId's bpartnerId needs to be equal to {}; contactId={}", bpartner.getId(), contactId);
-		return getContacts()
-				.stream()
-				.filter(c -> contactId.equals(c.getId()))
-				.findAny();
-	}
-
 	public Optional<BPartnerContact> extractContact(@NonNull final BPartnerContactId contactId)
 	{
 		assume(contactId.getBpartnerId().equals(bpartner.getId()), "The given contactId's bpartnerId needs to be equal to {}; contactId={}", bpartner.getId(), contactId);
@@ -279,7 +252,9 @@ public final class BPartnerComposite
 				.filter(filter);
 	}
 
-	/** Changes this instance by removing all contacts whose IDs are not in the given set */
+	/**
+	 * Changes this instance by removing all contacts whose IDs are not in the given set
+	 */
 	public void retainContacts(@NonNull final Set<BPartnerContactId> contactIdsToRetain)
 	{
 		contacts.removeIf(contact -> !contactIdsToRetain.contains(contact.getId()));
@@ -312,8 +287,7 @@ public final class BPartnerComposite
 
 	public Optional<BPartnerLocation> extractLocationByHandle(@NonNull final String handle)
 	{
-		final Predicate<BPartnerLocation> predicate = l -> l.getHandles().contains(handle);
-		return extractLocation(predicate);
+		return extractLocation(bpLocation -> bpLocation.containsHandle(handle));
 	}
 
 	public Optional<BPartnerLocation> extractLocation(@NonNull final Predicate<BPartnerLocation> filter)

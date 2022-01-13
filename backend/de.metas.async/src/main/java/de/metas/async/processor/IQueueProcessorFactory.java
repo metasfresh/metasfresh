@@ -6,11 +6,9 @@ import de.metas.util.ISingletonService;
 
 public interface IQueueProcessorFactory extends ISingletonService
 {
-
 	IQueueProcessor createSynchronousQueueProcessor(IWorkPackageQueue queue);
 
 	IQueueProcessor createAsynchronousQueueProcessor(I_C_Queue_Processor config, IWorkPackageQueue queue);
 
 	IQueueProcessorEventDispatcher getQueueProcessorEventDispatcher();
-
 }

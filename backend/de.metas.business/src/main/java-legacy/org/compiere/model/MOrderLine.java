@@ -16,14 +16,26 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.tax.api.TaxId;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -38,45 +50,35 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
 /**
  * Order Line Model. <code>
- * 			MOrderLine ol = new MOrderLine(m_order);
-			ol.setM_Product_ID(wbl.getM_Product_ID());
-			ol.setQtyOrdered(wbl.getQuantity());
-			ol.setPrice();
-			ol.setPriceActual(wbl.getPrice());
-			ol.setTax();
-			ol.save();
-
- *	</code>
+ * MOrderLine ol = new MOrderLine(m_order);
+ * ol.setM_Product_ID(wbl.getM_Product_ID());
+ * ol.setQtyOrdered(wbl.getQuantity());
+ * ol.setPrice();
+ * ol.setPriceActual(wbl.getPrice());
+ * ol.setTax();
+ * ol.save();
+ *
+ * </code>
  *
  * @author Jorg Janke
- * @version $Id: MOrderLine.java,v 1.6 2006/10/02 05:18:39 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <ul>
- *         <li>BF [ 2588043 ] Insufficient message ProductNotOnPriceList
+ * <ul>
+ * <li>BF [ 2588043 ] Insufficient message ProductNotOnPriceList
  * @author Michael Judd, www.akunagroup.com
- *         <ul>
- *         <li>BF [ 1733602 ] Price List including Tax Error - when a user changes the orderline or invoice line for a product on a price list that includes tax, the net amount is incorrectly
- *         calculated.
+ * <ul>
+ * <li>BF [ 1733602 ] Price List including Tax Error - when a user changes the orderline or invoice line for a product on a price list that includes tax, the net amount is incorrectly
+ * calculated.
+ * @version $Id: MOrderLine.java,v 1.6 2006/10/02 05:18:39 jjanke Exp $
  */
 public class MOrderLine extends X_C_OrderLine
 {
@@ -90,11 +92,11 @@ public class MOrderLine extends X_C_OrderLine
 	/**
 	 * Get Order Unreserved Qty
 	 *
-	 * @param ctx context
-	 * @param M_Warehouse_ID wh
-	 * @param M_Product_ID product
+	 * @param ctx                       context
+	 * @param M_Warehouse_ID            wh
+	 * @param M_Product_ID              product
 	 * @param M_AttributeSetInstance_ID asi
-	 * @param excludeC_OrderLine_ID exclude C_OrderLine_ID
+	 * @param excludeC_OrderLine_ID     exclude C_OrderLine_ID
 	 * @return Unreserved Qty
 	 */
 	public static BigDecimal getNotReserved(Properties ctx, int M_Warehouse_ID,
@@ -104,7 +106,7 @@ public class MOrderLine extends X_C_OrderLine
 		String sql = "SELECT SUM(ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved) "
 				+ "FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
-				+ "WHERE ol.M_Warehouse_ID=?"	// #1
+				+ "WHERE ol.M_Warehouse_ID=?"    // #1
 				// metas: adding table alias "ol" to M_Product_ID to distinguish it from C_Order's M_Product_ID
 				+ " AND ol.M_Product_ID=?" // #2
 				+ " AND o.IsSOTrx='Y' AND o.DocStatus='DR'"
@@ -160,9 +162,11 @@ public class MOrderLine extends X_C_OrderLine
 			s_log.debug(retValue.toString());
 		}
 		return retValue;
-	}	// getNotReserved
+	}    // getNotReserved
 
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static Logger s_log = LogManager.getLogger(MOrderLine.class);
 
 	/**************************************************************************
@@ -199,17 +203,17 @@ public class MOrderLine extends X_C_OrderLine
 			setM_AttributeSetInstance_ID(0);
 			//
 			setQtyEntered(BigDecimal.ZERO);
-			setQtyOrdered(BigDecimal.ZERO);	// 1
+			setQtyOrdered(BigDecimal.ZERO);    // 1
 			setQtyDelivered(BigDecimal.ZERO);
 			setQtyInvoiced(BigDecimal.ZERO);
 			// task 09358: get rid of this; instead, update qtyReserved at one central place
 			// setQtyReserved(BigDecimal.ZERO);
 			//
-			setIsDescription(false);	// N
+			setIsDescription(false);    // N
 			setProcessed(false);
 			setLine(0);
 		}
-	}	// MOrderLine
+	}    // MOrderLine
 
 	/**
 	 * Parent Constructor.
@@ -232,28 +236,34 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			throw new IllegalArgumentException("Header not saved");
 		}
-		setC_Order_ID(order.getC_Order_ID());	// parent
+		setC_Order_ID(order.getC_Order_ID());    // parent
 		Services.get(IOrderLineBL.class).setOrder(this, order);
-	}	// MOrderLine
+	}    // MOrderLine
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set record
+	 * @param ctx     context
+	 * @param rs      result set record
 	 * @param trxName transaction
 	 */
 	public MOrderLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MOrderLine
+	}    // MOrderLine
 
-	/** Tax */
+	/**
+	 * Tax
+	 */
 	private MTax m_tax = null;
 
-	/** Product */
+	/**
+	 * Product
+	 */
 	private MProduct m_product = null;
-	/** Charge */
+	/**
+	 * Charge
+	 */
 	private MCharge m_charge = null;
 
 	/**
@@ -264,7 +274,7 @@ public class MOrderLine extends X_C_OrderLine
 	public MOrder getParent()
 	{
 		return LegacyAdapters.convertToPO(getC_Order());
-	}	// getParent
+	}    // getParent
 
 	/**
 	 * Set Price Entered/Actual. Use this Method if the Line UOM is the Product UOM
@@ -275,7 +285,7 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		setPriceEntered(PriceActual);
 		setPriceActual(PriceActual);
-	}	// setPrice
+	}    // setPrice
 
 	/**
 	 * Set Price Actual. (actual price is not updateable)
@@ -290,7 +300,7 @@ public class MOrderLine extends X_C_OrderLine
 			throw new IllegalArgumentException("PriceActual is mandatory");
 		}
 		set_ValueNoCheck("PriceActual", PriceActual);
-	}	// setPriceActual
+	}    // setPriceActual
 
 	/**
 	 * Set Price for Product and PriceList. Use only if newly created.
@@ -302,9 +312,8 @@ public class MOrderLine extends X_C_OrderLine
 			return;
 		}
 
-		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
-		Services.get(IOrderLineBL.class).updatePrices(ol);
-	}	// setPrice
+		Services.get(IOrderLineBL.class).updatePrices(this);
+	}    // setPrice
 
 	/**
 	 * Set Tax or throw an exception if that was not possible
@@ -316,26 +325,35 @@ public class MOrderLine extends X_C_OrderLine
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId);
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(this).getBPartnerLocationAndCaptureId();
 
-		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
-				getCtx(),
-				countryFromId,
-				OrgId.ofRepoId(getAD_Org_ID()),
-				bpLocation, // should be bill to
-				getDateOrdered(),
-				taxCategoryId,
-				getParent().isSOTrx(),
-				true); // throwEx
+		final boolean isSOTrx = getParent().isSOTrx();
+		final Timestamp taxDate = getDateOrdered();
+		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(OrgId.ofRepoId(getAD_Org_ID()))
+				.bPartnerLocationId(bpLocationId)
+				.warehouseId(warehouseId)
+				.dateOfInterest(taxDate)
+				.taxCategoryId(taxCategoryId)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.build());
 
-		setC_Tax_ID(TaxId.toRepoId(taxId));
-		if (taxId != null)
+		if (tax == null)
 		{
-			final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId.getRepoId(), I_C_Tax.class, ITrx.TRXNAME_None);
-			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+			TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.billDate(taxDate)
+					.billFromCountryId(countryFromId)
+					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
+					.build()
+					.throwOrLogWarning(true, log);
 		}
-	}	// setTax
+
+		setC_Tax_ID(tax.getTaxId().getRepoId());
+		setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
+	}    // setTax
 
 	/**
 	 * Calculate Extended Amt. May or may not include tax
@@ -368,7 +386,7 @@ public class MOrderLine extends X_C_OrderLine
 			// get the standard tax
 			if (getProduct() == null)
 			{
-				if (getCharge() != null)	// Charge
+				if (getCharge() != null)    // Charge
 				{
 					stdTax = new MTax(getCtx(),
 							((MTaxCategory)getCharge().getC_TaxCategory()).getDefaultTax().getC_Tax_ID(),
@@ -404,7 +422,7 @@ public class MOrderLine extends X_C_OrderLine
 			bd = bd.setScale(taxPrecision.toInt(), BigDecimal.ROUND_HALF_UP);
 		}
 		super.setLineNetAmt(bd);
-	}	// setLineNetAmt
+	}    // setLineNetAmt
 
 	/**
 	 * Get Charge
@@ -432,7 +450,7 @@ public class MOrderLine extends X_C_OrderLine
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
 		}
 		return m_tax;
-	}	// getTax
+	}    // getTax
 
 	public void setM_Product_ID(final int productRepoId, final boolean setUOM)
 	{
@@ -444,7 +462,7 @@ public class MOrderLine extends X_C_OrderLine
 	 * Set Product and UOM
 	 *
 	 * @param M_Product_ID product
-	 * @param C_UOM_ID uom
+	 * @param C_UOM_ID     uom
 	 */
 	public void setM_Product_ID(int M_Product_ID, int C_UOM_ID)
 	{
@@ -454,7 +472,7 @@ public class MOrderLine extends X_C_OrderLine
 			super.setC_UOM_ID(C_UOM_ID);
 		}
 		setM_AttributeSetInstance_ID(0);
-	}	// setM_Product_ID
+	}    // setM_Product_ID
 
 	/**
 	 * Get Product
@@ -468,7 +486,7 @@ public class MOrderLine extends X_C_OrderLine
 			m_product = MProduct.get(getCtx(), getM_Product_ID());
 		}
 		return m_product;
-	}	// getProduct
+	}    // getProduct
 
 	/**
 	 * Set M_AttributeSetInstance_ID
@@ -486,7 +504,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			super.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 		}
-	}	// setM_AttributeSetInstance_ID
+	}    // setM_AttributeSetInstance_ID
 
 	/**
 	 * Set Warehouse
@@ -507,7 +525,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			super.setM_Warehouse_ID(M_Warehouse_ID);
 		}
-	}	// setM_Warehouse_ID
+	}    // setM_Warehouse_ID
 
 	/**
 	 * Can Change Warehouse
@@ -529,7 +547,7 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		// We can change
 		return true;
-	}	// canChangeWarehouse
+	}    // canChangeWarehouse
 
 	/**
 	 * Get C_Project_ID
@@ -545,7 +563,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getC_Project_ID();
 		}
 		return ii;
-	}	// getC_Project_ID
+	}    // getC_Project_ID
 
 	/**
 	 * Get C_Activity_ID
@@ -561,7 +579,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getC_Activity_ID();
 		}
 		return ii;
-	}	// getC_Activity_ID
+	}    // getC_Activity_ID
 
 	/**
 	 * Get C_Campaign_ID
@@ -577,7 +595,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getC_Campaign_ID();
 		}
 		return ii;
-	}	// getC_Campaign_ID
+	}    // getC_Campaign_ID
 
 	/**
 	 * Get User2_ID
@@ -593,7 +611,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getUser1_ID();
 		}
 		return ii;
-	}	// getUser1_ID
+	}    // getUser1_ID
 
 	/**
 	 * Get User2_ID
@@ -609,7 +627,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getUser2_ID();
 		}
 		return ii;
-	}	// getUser2_ID
+	}    // getUser2_ID
 
 	/**
 	 * Get AD_OrgTrx_ID
@@ -625,7 +643,7 @@ public class MOrderLine extends X_C_OrderLine
 			ii = getParent().getAD_OrgTrx_ID();
 		}
 		return ii;
-	}	// getAD_OrgTrx_ID
+	}    // getAD_OrgTrx_ID
 
 	/**************************************************************************
 	 * String Representation
@@ -645,7 +663,7 @@ public class MOrderLine extends X_C_OrderLine
 				.append(", LineNet=").append(getLineNetAmt())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Add to Description
@@ -663,7 +681,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}    // addDescription
 
 	/**
 	 * Get Description Text. For jsp access (vs. isDescription)
@@ -673,7 +691,7 @@ public class MOrderLine extends X_C_OrderLine
 	public String getDescriptionText()
 	{
 		return super.getDescription();
-	}	// getDescriptionText
+	}    // getDescriptionText
 
 	/**
 	 * Get Name
@@ -693,7 +711,7 @@ public class MOrderLine extends X_C_OrderLine
 			return charge.getName();
 		}
 		return "";
-	}	// getName
+	}    // getName
 
 	/**
 	 * Set C_Charge_ID
@@ -708,7 +726,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			set_ValueNoCheck("C_UOM_ID", null);
 		}
-	}	// setC_Charge_ID
+	}    // setC_Charge_ID
 
 	/**
 	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM
@@ -719,7 +737,7 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		super.setQtyEntered(Qty);
 		super.setQtyOrdered(getQtyEntered());
-	}	// setQty
+	}    // setQty
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
@@ -735,7 +753,7 @@ public class MOrderLine extends X_C_OrderLine
 			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
-	}	// setQtyEntered
+	}    // setQtyEntered
 
 	/**
 	 * Set Qty Ordered - enforce Product UOM
@@ -752,7 +770,7 @@ public class MOrderLine extends X_C_OrderLine
 			QtyOrdered = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		super.setQtyOrdered(QtyOrdered);
-	}	// setQtyOrdered
+	}    // setQtyOrdered
 
 	/**************************************************************************
 	 * Before Save
@@ -792,7 +810,7 @@ public class MOrderLine extends X_C_OrderLine
 				&& (is_ValueChanged(COLUMNNAME_M_Product_ID) || is_ValueChanged(COLUMNNAME_M_Warehouse_ID)))
 		{
 			canChangeWarehouse(true);
-		}	// Product Changed
+		}    // Product Changed
 
 		// Charge
 		if (getC_Charge_ID() > 0 && getM_Product_ID() > 0)
@@ -873,7 +891,7 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		return true;
-	}	// beforeSave
+	}    // beforeSave
 
 	/**
 	 * Before Delete
@@ -914,13 +932,13 @@ public class MOrderLine extends X_C_OrderLine
 		MRequisitionLine.unlinkC_OrderLine_ID(getCtx(), get_ID(), get_TrxName());
 
 		return true;
-	}	// beforeDelete
+	}    // beforeDelete
 
 	/**
 	 * After Save
 	 *
 	 * @param newRecord new
-	 * @param success success
+	 * @param success   success
 	 * @return saved
 	 */
 	@Override
@@ -942,7 +960,7 @@ public class MOrderLine extends X_C_OrderLine
 			}
 		}
 		return updateHeaderTax();
-	}	// afterSave
+	}    // afterSave
 
 	/**
 	 * After Delete
@@ -964,14 +982,13 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		return updateHeaderTax();
-	}	// afterDelete
+	}    // afterDelete
 
 	/**
 	 * Recalculate order tax
 	 *
 	 * @param oldTax true if the old C_Tax_ID should be used
 	 * @return true if success, false otherwise
-	 *
 	 * @author teo_sarca [ 1583825 ]
 	 */
 	private boolean updateOrderTax(final boolean oldTax)
@@ -1045,7 +1062,7 @@ public class MOrderLine extends X_C_OrderLine
 				});
 
 		return true;
-	}	// updateHeaderTax
+	}    // updateHeaderTax
 
 	/**
 	 * See the comment in {@link #updateHeaderTax()}.
@@ -1081,4 +1098,4 @@ public class MOrderLine extends X_C_OrderLine
 			}
 		}
 	}
-}	// MOrderLine
+}    // MOrderLine

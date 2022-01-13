@@ -35,12 +35,15 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_RemittanceAdvice;
+import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +53,7 @@ import org.springframework.stereotype.Component;
 public class C_RemittanceAdvice
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final RemittanceAdviceRepository remittanceAdviceRepository;
 
@@ -113,5 +117,14 @@ public class C_RemittanceAdvice
 		remittanceAdvice.setProcessedFlag(record.isProcessed());
 
 		remittanceAdviceRepository.updateRemittanceAdvice(remittanceAdvice);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteLines(@NonNull final I_C_RemittanceAdvice record)
+	{
+		queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
+				.addEqualsFilter(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_ID, record.getC_RemittanceAdvice_ID())
+				.create()
+				.delete();
 	}
 }

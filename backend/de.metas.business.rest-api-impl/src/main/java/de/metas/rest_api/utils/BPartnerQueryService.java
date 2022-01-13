@@ -13,7 +13,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.organization.OrgId;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import lombok.NonNull;
 
 /*

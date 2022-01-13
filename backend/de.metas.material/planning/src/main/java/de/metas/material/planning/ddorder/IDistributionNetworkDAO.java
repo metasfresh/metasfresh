@@ -36,7 +36,6 @@ public interface IDistributionNetworkDAO extends ISingletonService
 	/**
 	 * Retrieve all (including inactive ones) {@link I_DD_NetworkDistributionLine}s for given {@link I_DD_NetworkDistribution}.
 	 *
-	 * @param distributionNetwork
 	 * @return distribution network lines, ordered by <code>PriorityNo</code> and <code>M_Shipper_ID</code>
 	 */
 	List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(I_DD_NetworkDistribution distributionNetwork);
@@ -44,8 +43,6 @@ public interface IDistributionNetworkDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_DD_NetworkDistributionLine}s for given {@link I_DD_NetworkDistribution} which match the given target warehouse (<code>M_Warehouse_ID</code>).
 	 *
-	 * @param distributionNetwork
-	 * @param targetWarehouseId
 	 * @return distribution network lines
 	 */
 	List<I_DD_NetworkDistributionLine> retrieveNetworkLinesByTargetWarehouse(I_DD_NetworkDistribution distributionNetwork, int targetWarehouseId);
@@ -53,8 +50,6 @@ public interface IDistributionNetworkDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_DD_NetworkDistributionLine}s for given {@link I_DD_NetworkDistribution} which match the given source warehouse (<code>M_WarehouseSource_ID</code>).
 	 *
-	 * @param distributionNetwork
-	 * @param sourceWarehouseId
 	 * @return distribution network lines
 	 */
 	List<I_DD_NetworkDistributionLine> retrieveNetworkLinesBySourceWarehouse(I_DD_NetworkDistribution distributionNetwork, int sourceWarehouseId);
@@ -62,10 +57,6 @@ public interface IDistributionNetworkDAO extends ISingletonService
 	/**
 	 * Check the {@link I_DD_NetworkDistributionLine}s and collect the {@link I_DD_NetworkDistributionLine#COLUMN_M_WarehouseSource_ID}s for those who have the given target warehouse and which have
 	 * {@link I_DD_NetworkDistributionLine#COLUMN_IsKeepTargetPlant} set.
-	 *
-	 * @param ctx
-	 * @param targetWarehouseId
-	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesInSamePlantAs(Properties ctx, int targetWarehouseId);
 }

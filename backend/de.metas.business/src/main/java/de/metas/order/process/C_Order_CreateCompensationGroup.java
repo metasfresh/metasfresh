@@ -1,17 +1,18 @@
 package de.metas.order.process;
 
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.order.compensationGroup.GroupTemplate;
-import de.metas.order.compensationGroup.GroupTemplateLine;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 /*
  * #%L
@@ -40,14 +41,14 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
 	private int compensationProductId;
 
-	@Param(parameterName = I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, mandatory = false)
+	@Param(parameterName = I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
 	private I_M_Product_Category productCategory;
 
-	@Param(parameterName = "Name", mandatory = false)
+	@Param(parameterName = "Name")
 	private String groupName;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
 		return acceptIfEligibleOrder(context)
 				.and(() -> acceptIfOrderLinesNotInGroup(context));
@@ -57,9 +58,8 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 	protected String doIt()
 	{
 		groupsRepo.prepareNewGroup()
-				.linesToGroup(getSelectedOrderLineIds())
 				.groupTemplate(createNewGroupTemplate())
-				.createGroup();
+				.createGroup(getSelectedOrderLineIds());
 
 		return MSG_OK;
 	}
@@ -79,9 +79,8 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 		return GroupTemplate.builder()
 				.name(groupNameEffective)
 				.productCategoryId(productCategory != null ? ProductCategoryId.ofRepoId(productCategory.getM_Product_Category_ID()) : null)
-				.line(GroupTemplateLine.builder()
-						.productId(ProductId.ofRepoId(compensationProductId))
-						.build())
+				.compensationLine(GroupTemplateCompensationLine.ofProductId(ProductId.ofRepoId(compensationProductId)))
+				.regularLinesToAdd(ImmutableList.of())
 				.build();
 	}
 }

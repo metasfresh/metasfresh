@@ -2,7 +2,9 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import org.compiere.model.I_C_OrderLine;
 
 /*
  * #%L
@@ -27,18 +29,13 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
  */
 
 /**
- * Instances of this class are provided by {@link IShipmentScheduleHandlerBL#createDeliverRequest(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)}, but the actual implementation is in the implementaers
- * of {@link ShipmentScheduleHandler}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Instances of this class are provided by {@link ShipmentScheduleHandler#createDeliverRequest(I_M_ShipmentSchedule, I_C_OrderLine)}, 
+ * but the actual implementation is in the implementers of {@link ShipmentScheduleHandler}.
  */
 public interface IDeliverRequest
 {
 	/**
 	 * The qty that still needs to be delivered, in the product's UOM.
-	 *
-	 * @return
 	 */
 	BigDecimal getQtyOrdered();
 }

@@ -22,12 +22,12 @@ package de.metas.tax.api;
  * #L%
  */
 
-import de.metas.location.CountryId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 
 import javax.annotation.Nullable;
@@ -38,40 +38,26 @@ import java.util.Properties;
 
 public interface ITaxBL extends ISingletonService
 {
-	I_C_Tax getTaxById(TaxId taxId);
+	Tax getTaxById(TaxId taxId);
 
 	/**
-	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
-	 * If that doesn't work, try retrieving the German tax
-	 *
-	 * @param shipC_BPartner_Location_ID place where the service is provided
+	 * Do not attempt to retrieve the C_Tax for an order (i.e invoicing is done at a different time - 1 year - from the order)<br>
+	 * Also note that packaging material receipts don't have an order line and if this one had, no IC would be created for it by this handler.<br>
+	 * Instead, always rely on taxing BL to bind the tax to the invoice candidate
+	 * <p>
+	 * Try to rely on the tax category from the pricing result<br>
+	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
 	@NonNull
-	TaxId getTaxNotNull(Properties ctx,
+	TaxId getTaxNotNull(
 			@Nullable Object model,
 			@Nullable TaxCategoryId taxCategoryId,
 			int productId,
 			Timestamp shipDate,
-			OrgId orgId,
+			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
-			int shipC_BPartner_Location_ID,
-			boolean isSOTrx);
-
-	/**
-	 * Retrieve <code>taxId<code> from the given <code>taxCategoryId</code>
-	 *
-	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. <br>
-	 * 			Otherwise, just log and return <code>-1</code>.
-	 * @return taxId
-	 */
-	TaxId retrieveTaxIdForCategory(Properties ctx,
-			CountryId countryFromId,
-			OrgId orgId,
-			org.compiere.model.I_C_BPartner_Location bpLocTo,
-			Timestamp billDate,
-			TaxCategoryId taxCategoryId,
-			boolean isSOTrx,
-			boolean throwEx);
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			SOTrx soTrx);
 
 	/**
 	 * Calculate Tax - no rounding
@@ -100,9 +86,9 @@ public interface ITaxBL extends ISingletonService
 	 *  if IsSOTrx is false, bill and ship are reversed
 	 * </pre>
 	 *
-	 * @param billDate invoice date
-	 * @param shipDate ship date (ignored)
-	 * @param M_Warehouse_ID warehouse (ignored)
+	 * @param billDate                   invoice date
+	 * @param shipDate                   ship date (ignored)
+	 * @param M_Warehouse_ID             warehouse (ignored)
 	 * @param billC_BPartner_Location_ID invoice location
 	 * @param shipC_BPartner_Location_ID ship location (ignored)
 	 * @return C_Tax_ID
@@ -110,7 +96,8 @@ public interface ITaxBL extends ISingletonService
 	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
 			Timestamp billDate, Timestamp shipDate,
 			int AD_Org_ID, int M_Warehouse_ID,
-			int billC_BPartner_Location_ID, int shipC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
 			boolean IsSOTrx);
 
 	/**

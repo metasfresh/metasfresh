@@ -5,6 +5,7 @@ import {
   DATE_FORMAT,
   TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
+  DATE_FIELD_FORMATS,
 } from '../constants/Constants';
 
 /*
@@ -46,15 +47,8 @@ export function getFormattedDate(value, FORMAT) {
  * @param {boolean} forcedPrimary
  */
 export function getClassNames({ icon, forcedPrimary } = {}) {
-  const {
-    widgetData,
-    gridAlign,
-    type,
-    updated,
-    rowId,
-    isModal,
-    isFocused,
-  } = this.props;
+  const { widgetData, gridAlign, type, updated, rowId, isModal, isFocused } =
+    this.props;
   const { readonly, value, mandatory, validStatus } = widgetData[0];
 
   const ret = cx(`input-block`, {
@@ -194,4 +188,15 @@ export function shouldPatch({
  */
 export function getWidgetField({ filterWidget = false, fields }) {
   return filterWidget ? fields[0].parameterName : fields[0].field;
+}
+
+/**
+ * @method isFocusableWidgetType
+ * @summary Returns if the widget can be auto focused programmatically. Due to how Date related widgets
+ *          are built now it doesn't work there.
+ *
+ * @param {string} widgetType - type of the widget
+ */
+export function isFocusableWidgetType(widgetType) {
+  return !Object.keys(DATE_FIELD_FORMATS).includes(widgetType);
 }

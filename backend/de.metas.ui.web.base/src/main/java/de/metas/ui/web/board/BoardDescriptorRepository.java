@@ -1,6 +1,7 @@
 package de.metas.ui.web.board;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -64,8 +66,8 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -272,7 +274,7 @@ public class BoardDescriptorRepository
 		return boardDescriptor.build();
 	}
 
-	private final BoardCardFieldDescriptor createBoardCardFieldDescriptor(final I_WEBUI_Board_CardField cardFieldPO, final DocumentEntityDescriptor documentEntityDescriptor)
+	private BoardCardFieldDescriptor createBoardCardFieldDescriptor(final I_WEBUI_Board_CardField cardFieldPO, final DocumentEntityDescriptor documentEntityDescriptor)
 	{
 		final String fieldName = cardFieldPO.getAD_Column().getColumnName(); // TODO: might be not so performant, we just need the ColumnName
 
@@ -325,7 +327,7 @@ public class BoardDescriptorRepository
 				.build();
 	}
 
-	private final BoardLaneDescriptor createBoardLaneDescriptor(final I_WEBUI_Board_Lane lanePO)
+	private BoardLaneDescriptor createBoardLaneDescriptor(final I_WEBUI_Board_Lane lanePO)
 	{
 		final IModelTranslationMap laneTrlMap = InterfaceWrapperHelper.getModelTranslationMap(lanePO);
 		return BoardLaneDescriptor.builder()
@@ -464,7 +466,7 @@ public class BoardDescriptorRepository
 		return retrieveCardsFromSql(sql, sqlParams, boardDescriptor);
 	}
 
-	private static final IStringExpression buildSqlSelectDocument(final BoardDescriptor boardDescriptor)
+	private static IStringExpression buildSqlSelectDocument(final BoardDescriptor boardDescriptor)
 	{
 		final String tableName = boardDescriptor.getTableName();
 		final String tableAlias = boardDescriptor.getTableAlias();
@@ -504,7 +506,7 @@ public class BoardDescriptorRepository
 		return sql.build();
 	}
 
-	private final List<BoardCard> retrieveCardsFromSql(final String sql, final List<Object> sqlParams, final BoardDescriptor boardDescriptor)
+	private List<BoardCard> retrieveCardsFromSql(final String sql, final List<Object> sqlParams, final BoardDescriptor boardDescriptor)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -517,7 +519,7 @@ public class BoardDescriptorRepository
 			final ImmutableList.Builder<BoardCard> cards = ImmutableList.builder();
 			while (rs.next())
 			{
-				final BoardCard card = createCard(rs, boardDescriptor);
+				final BoardCard card = retrieveCard(rs, boardDescriptor);
 				if (card == null)
 				{
 					continue;
@@ -538,12 +540,12 @@ public class BoardDescriptorRepository
 		}
 	}
 
-	private BoardCard createCard(final ResultSet rs, final BoardDescriptor boardDescriptor) throws SQLException
+	private BoardCard retrieveCard(final ResultSet rs, final BoardDescriptor boardDescriptor) throws SQLException
 	{
 		final String adLanguage = null;
 		final int laneId = rs.getInt(I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_Lane_ID);
 		final int recordId = rs.getInt(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID);
-		final String caption = rs.getString("card$caption");
+		final String caption = retrieveCardCaption(rs);
 		final int userId = rs.getInt("card$user_id");
 		final String userAvatarId = rs.getString("card$user_avatar_id");
 		final String userFullname = rs.getString("card$user_fullname");
@@ -581,7 +583,25 @@ public class BoardDescriptorRepository
 				.build();
 	}
 
-	private static final ITranslatableString buildDescription(final Map<String, Object> cardValues, final BoardDescriptor board)
+	private static String retrieveCardCaption(@NonNull final ResultSet rs) throws SQLException
+	{
+		final ITranslatableString displayName;
+		final ITranslatableString description;
+
+		final Array array = rs.getArray("card$caption");
+		if (array == null)
+		{
+			return rs.getString("card$caption");
+		}
+		else
+		{
+			final String[] nameAndDescription = (String[])array.getArray();
+			return nameAndDescription[0];
+		}
+	}
+
+
+	private static ITranslatableString buildDescription(final Map<String, Object> cardValues, final BoardDescriptor board)
 	{
 		final List<ITranslatableString> fieldDescriptions = cardValues.entrySet()
 				.stream()
@@ -591,7 +611,7 @@ public class BoardDescriptorRepository
 					final BoardCardFieldDescriptor cardField = board.getCardFieldByName(fieldName);
 					return buildDescription(fieldValue, cardField);
 				})
-				.filter(fieldDescription -> fieldDescription != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return TranslatableStrings.joinList("\n", fieldDescriptions);
@@ -660,7 +680,7 @@ public class BoardDescriptorRepository
 		return TranslatableStrings.constant(value.toString());
 	}
 
-	private static final ITranslatableString buildDescription(final Object value, final BoardCardFieldDescriptor cardField)
+	private static ITranslatableString buildDescription(final Object value, final BoardCardFieldDescriptor cardField)
 	{
 		if (value == null)
 		{
@@ -677,16 +697,17 @@ public class BoardDescriptorRepository
 				.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
 				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
 				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_Lane_ID, laneId)
-				.orderBy()
-				.addColumn(I_WEBUI_Board_RecordAssignment.COLUMN_SeqNo)
-				.addColumn(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_RecordAssignment_ID)
-				.endOrderBy()
+				.orderBy(I_WEBUI_Board_RecordAssignment.COLUMN_SeqNo)
+				.orderBy(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_RecordAssignment_ID)
 				.create()
-				.listDistinct(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, Integer.class);
+				.stream()
+				.map(I_WEBUI_Board_RecordAssignment::getRecord_ID)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 		return new LaneCardsSequence(laneId, cardIds);
 	}
 
-	private final void updateCardsOrder(final int boardId, final int laneId, final List<Integer> cardIds)
+	private void updateCardsOrder(final int boardId, final int laneId, final List<Integer> cardIds)
 	{
 		final String sql = "UPDATE " + I_WEBUI_Board_RecordAssignment.Table_Name
 				+ " SET " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_SeqNo + "=?"
@@ -725,7 +746,7 @@ public class BoardDescriptorRepository
 		}
 	}
 
-	private final LaneCardsSequence changeCardsOrder(final int boardId, final int laneId, final Consumer<LaneCardsSequence> reorderCards)
+	private LaneCardsSequence changeCardsOrder(final int boardId, final int laneId, final Consumer<LaneCardsSequence> reorderCards)
 	{
 		final LaneCardsSequence orderedCardIdsOld = retrieveCardIdsOrdered(boardId, laneId);
 		final LaneCardsSequence orderedCardIdsNew = orderedCardIdsOld.copy();

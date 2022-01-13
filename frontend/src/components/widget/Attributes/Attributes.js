@@ -2,8 +2,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
-import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
-import { completeRequest } from '../../../actions/GenericActions';
+import {
+  getAttributesInstance,
+  getLayout,
+  patchRequest,
+  completeRequest,
+} from '../../../api';
 import {
   parseToDisplay,
   formatDateWithZeros,
@@ -216,24 +220,37 @@ export default class Attributes extends Component {
         value,
       }).then((response) => {
         if (response.data && response.data.length) {
-          const fields = response.data[0].fieldsByName;
+          const { fieldsByName, id } = response.data[0];
+          let fetchLayout = false;
+          const updatedDataState = this.state.data;
 
-          Object.keys(fields).map((fieldName) => {
-            this.setState(
-              (prevState) => ({
-                data: {
-                  ...prevState.data,
-                  [fieldName]: {
-                    ...prevState.data[fieldName],
-                    value,
-                  },
-                },
-              }),
-              () => {
-                cb && cb();
-              }
-            );
+          Object.keys(fieldsByName).map((fieldName) => {
+            if (
+              updatedDataState[fieldName].displayed !==
+              fieldsByName[fieldName].displayed
+            ) {
+              fetchLayout = true;
+            }
+
+            updatedDataState[fieldName] = {
+              ...updatedDataState[fieldName],
+              ...fieldsByName[fieldName],
+            };
           });
+
+          this.setState({ data: updatedDataState }, cb);
+
+          if (fetchLayout) {
+            getLayout(attributeType, id).then((response) => {
+              const { elements } = response.data;
+
+              this.setState({
+                layout: elements,
+                loading: false,
+              });
+            });
+          }
+
           return Promise.resolve(true);
         }
         return Promise.resolve(false);
@@ -283,12 +300,29 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   doCompleteRequest = () => {
-    const { attributeType, patch } = this.props;
+    const { attributeType, patch, openModal, closeModal } = this.props;
     const { data } = this.state;
     const attrId = data && data.ID ? data.ID.value : -1;
 
     completeRequest(attributeType, attrId).then((response) => {
-      patch(response.data);
+      patch(response.data).then(({ triggerActions }) => {
+        // post PATCH actions if we have `triggerActions` present
+        if (triggerActions) {
+          closeModal();
+          triggerActions.forEach((itemTriggerAction) => {
+            let {
+              selectedDocumentPath: { documentId },
+              processId,
+            } = itemTriggerAction;
+
+            openModal({
+              windowId: processId,
+              modalType: 'process',
+              viewDocumentIds: [`${documentId}`],
+            });
+          });
+        }
+      });
     });
   };
 
@@ -387,4 +421,6 @@ Attributes.propTypes = {
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
   disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
+  openModal: PropTypes.func,
+  closeModal: PropTypes.func,
 };

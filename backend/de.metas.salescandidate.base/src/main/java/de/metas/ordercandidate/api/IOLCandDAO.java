@@ -23,13 +23,17 @@ package de.metas.ordercandidate.api;
  */
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.async.AsyncBatchId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.LocalDateInterval;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -43,10 +47,6 @@ public interface IOLCandDAO extends ISingletonService
 	/**
 	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given parameters.
 	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param recordId
-	 * @param trxName
 	 * @return matched order candidates
 	 */
 	List<I_C_OLCand> retrieveReferencing(Properties ctx, String tableName, int recordId, String trxName);
@@ -54,20 +54,24 @@ public interface IOLCandDAO extends ISingletonService
 	/**
 	 * Loads an returns all <code>C_Order_Line_Alloc</code> records that reference the given order line.<br>
 	 * Note that this includes records with <code>IsActive='N'</code> as well as records that have a different <code>AD_Client_ID</code>.
-	 *
-	 * @param ol
-	 * @return
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OrderLine ol);
 
 	/**
 	 * Loads an returns all <code>C_Order_Line_Alloc</code> records that reference the given order candidate.<br>
 	 * Note that this includes records with <code>IsActive='N'</code> as well as records that have a different <code>AD_Client_ID</code>.
-	 *
-	 * @param ol
-	 * @return
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
 
 	ImmutableMap<PoReferenceLookupKey, Integer> getNumberOfRecordsWithTheSamePOReference(Set<PoReferenceLookupKey> targetKeySet, LocalDateInterval searchingTimeWindow);
+
+	Set<OrderId> getOrderIdsByOLCandIds(Set<OLCandId> olCandIds);
+
+	Map<OLCandId, I_C_OLCand> retrieveByIds(Set<OLCandId> olCandIds);
+
+	I_C_OLCand retrieveByIds(OLCandId olCandId);
+	
+	Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(Set<OLCandId> olCandIds);
+
+	void assignAsyncBatchId(Set<OLCandId> olCandIds, AsyncBatchId asyncBatchId);
 }

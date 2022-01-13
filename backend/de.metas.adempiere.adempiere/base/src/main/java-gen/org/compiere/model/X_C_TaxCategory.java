@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCategory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -762326678L;
+	private static final long serialVersionUID = -1084149038L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (final Properties ctx, final int C_TaxCategory_ID, @Nullable final String trxName)
@@ -95,6 +95,35 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * ProductType AD_Reference_ID=270
+	 * Reference name: M_Product_ProductType
+	 */
+	public static final int PRODUCTTYPE_AD_Reference_ID=270;
+	/** Item = I */
+	public static final String PRODUCTTYPE_Item = "I";
+	/** Service = S */
+	public static final String PRODUCTTYPE_Service = "S";
+	/** Resource = R */
+	public static final String PRODUCTTYPE_Resource = "R";
+	/** ExpenseType = E */
+	public static final String PRODUCTTYPE_ExpenseType = "E";
+	/** Online = O */
+	public static final String PRODUCTTYPE_Online = "O";
+	/** FreightCost = F */
+	public static final String PRODUCTTYPE_FreightCost = "F";
+	@Override
+	public void setProductType (final @Nullable java.lang.String ProductType)
+	{
+		set_Value (COLUMNNAME_ProductType, ProductType);
+	}
+
+	@Override
+	public java.lang.String getProductType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductType);
 	}
 
 	/** 

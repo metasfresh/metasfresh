@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -34,6 +35,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
@@ -57,9 +59,6 @@ import java.util.Properties;
 
 /**
  * Generate {@link I_C_Invoice}s for given {@link I_C_Invoice_Candidate}s.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -67,6 +66,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
@@ -95,9 +95,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// use the workpackge's ctx. It contains the client, org and user that created the queu-block this package belongs to
 		final Properties localCtx = InterfaceWrapperHelper.getCtx(workPackage);
 
-		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveItems(workPackage, I_C_Invoice_Candidate.class, localTrxName);
+		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveAllItems(workPackage, I_C_Invoice_Candidate.class);
 
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			// Validate all invoice candidates
 			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
@@ -125,8 +125,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// After invoices were generated, schedule another update invalid workpackage to update any remaining invoice candidates.
 		// This is a workaround and we do that because our testers reported that randomly, when we do mass invoicing,
 		// sometimes there are some invoice candidates invalidated.
-		Services.get(IInvoiceCandUpdateSchedulerService.class)
-				.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName));
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName, asyncBatchId));
 
 		return Result.SUCCESS;
 	}
@@ -146,7 +147,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private final IInvoicingParams getInvoicingParams()
+	private IInvoicingParams getInvoicingParams()
 	{
 		if (_invoicingParams == null)
 		{
@@ -178,7 +179,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				.setContext(localCtx, localTrxName)
 				.setLockedBy(elementsLock)
 				.setTaggedWithAnyTag()
-				.setOnlyC_Invoice_Candidates(candidates)
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(candidates))
 				.update();
 
 		// Make sure the invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)

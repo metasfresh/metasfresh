@@ -48,7 +48,7 @@ import lombok.ToString;
 public class BankAccountAcctRepository
 {
 	private static final String TABLENAME_C_BP_BankAccount_Acct = "C_BP_BankAccount_Acct";
-	private CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap> builder()
+	private final CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap> builder()
 			.tableName(TABLENAME_C_BP_BankAccount_Acct)
 			.build();
 
@@ -87,6 +87,7 @@ public class BankAccountAcctRepository
 				.interestRevenueAcct(AccountId.ofRepoId(rs.getInt("B_InterestRev_Acct")))
 				.interestExpenseAcct(AccountId.ofRepoId(rs.getInt("B_InterestExp_Acct")))
 				.paymentBankFeeAcct(AccountId.ofRepoId(rs.getInt("PayBankFee_Acct")))
+				.paymentWriteOffAcct(AccountId.optionalOfRepoId(rs.getInt("Payment_WriteOff_Acct")))
 				//
 				.build();
 	}
@@ -112,12 +113,10 @@ public class BankAccountAcctRepository
 				+ " WHERE a.C_AcctSchema_ID=?"
 				+ " AND EXISTS (SELECT 1 FROM C_BP_BankAccount_Acct x WHERE x.C_BP_BankAccount_ID=a.C_BP_BankAccount_ID)";
 
-		final int updatedCount = DB.executeUpdateEx(
+		return DB.executeUpdateEx(
 				sql,
 				new Object[] { acctSchemaId },
 				ITrx.TRXNAME_ThreadInherited);
-
-		return updatedCount;
 	}
 
 	public int createMissing(@NonNull final AcctSchemaId acctSchemaId)
@@ -142,12 +141,10 @@ public class BankAccountAcctRepository
 				+ " WHERE acct.C_AcctSchema_ID=?"
 				+ " AND NOT EXISTS (SELECT 1 FROM C_BP_BankAccount_Acct a WHERE a.C_BP_BankAccount_ID=x.C_BP_BankAccount_ID AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
 
-		final int insertCount = DB.executeUpdateEx(
+		return DB.executeUpdateEx(
 				sql,
 				new Object[] { acctSchemaId },
 				ITrx.TRXNAME_ThreadInherited);
-
-		return insertCount;
 	}
 
 	//

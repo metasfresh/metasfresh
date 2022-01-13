@@ -73,12 +73,12 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 	/**
 	 * @return HU Context; never return null
 	 */
-	private final IHUContext getHUContext()
+	private IHUContext getHUContext()
 	{
 		return _huContext;
 	}
 
-	private final IHUTrxListener getTrxListeners()
+	private IHUTrxListener getTrxListeners()
 	{
 		return _huContext.getTrxListeners();
 	}
@@ -197,7 +197,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		getTrxListeners().afterTrxProcessed(trxHdrRef, trxLines);
 	}
 
-	private final void processTrxLine(final I_M_HU_Trx_Line trxLine)
+	private void processTrxLine(@NonNull final I_M_HU_Trx_Line trxLine)
 	{
 		// Skip if already processed
 		if (trxLine.isProcessed())
@@ -226,12 +226,12 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		getTrxListeners().trxLineProcessed(huContext, trxLine);
 	}
 
-	private final void saveTrxHdr(final I_M_HU_Trx_Hdr trxHdr)
+	private void saveTrxHdr(final I_M_HU_Trx_Hdr trxHdr)
 	{
 		InterfaceWrapperHelper.save(trxHdr);
 	}
 
-	private final void saveTrxLine(final I_M_HU_Trx_Line trxLine)
+	private void saveTrxLine(final I_M_HU_Trx_Line trxLine)
 	{
 		if (!HUConstants.DEBUG_07277_saveHUTrxLine)
 		{

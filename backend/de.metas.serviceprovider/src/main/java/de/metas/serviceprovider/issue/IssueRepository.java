@@ -28,6 +28,8 @@ import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.milestone.MilestoneId;
@@ -76,11 +78,11 @@ public class IssueRepository
 	}
 
 	/**
-	 *  Retrieves the record identified by the given issue ID.
+	 * Retrieves the record identified by the given issue ID.
 	 *
-	 * @param issueId		Issue ID
-	 * @return	issue entity
+	 * @param issueId Issue ID
 	 * @throws AdempiereException in case no record was found for the given ID.
+	 * @return issue entity
 	 */
 	@NonNull
 	public IssueEntity getById(@NonNull final IssueId issueId)
@@ -149,7 +151,7 @@ public class IssueRepository
 	/**
 	 * Creates an IssueHierarchy containing only the nodes from
 	 * the given issue to root.
-	 *
+	 * <p>
 	 * e.g
 	 * Given the following issue hierarchy:
 	 * ----1----
@@ -159,7 +161,7 @@ public class IssueRepository
 	 * --4---5--
 	 * /-|-\----
 	 * 6-7-8----
-	 *
+	 * <p>
 	 * when {@code buildUpStreamIssueHierarchy(8)}
 	 * it will return IssueHierarchy(root=1) with nodes: [1,2,4,8]
 	 *
@@ -209,11 +211,11 @@ public class IssueRepository
 	{
 		final IssueType issueType = IssueType
 				.getTypeByValue(record.getIssueType())
-				.orElseThrow( () ->new AdempiereException("Unknown IssueType!").appendParametersToMessage()
+				.orElseThrow(() -> new AdempiereException("Unknown IssueType!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
 		final Status status = Status.ofCodeOptional(record.getStatus())
-				.orElseThrow( () ->new AdempiereException("Unknown Status!").appendParametersToMessage()
+				.orElseThrow(() -> new AdempiereException("Unknown Status!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
 		return IssueEntity.builder()
@@ -238,6 +240,7 @@ public class IssueRepository
 				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
+				.invoicableChildEffort(Quantitys.create(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
 				.latestActivityOnIssue(TimeUtil.asInstant(record.getLatestActivity()))
 				.latestActivityOnSubIssues(TimeUtil.asInstant(record.getLatestActivityOnSubIssues()))
 				.externalIssueNo(record.getExternalIssueNo())
@@ -275,7 +278,8 @@ public class IssueRepository
 		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
 		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
 		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
-
+		record.setInvoiceableChildEffort(Quantity.toBigDecimal(issueEntity.getInvoicableChildEffort()));
+		
 		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
 		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
 

@@ -1,28 +1,27 @@
 package de.metas.ui.web.window.datatypes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.window.datatypes.json.JSONNullValue;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -47,13 +46,15 @@ import lombok.NonNull;
  */
 
 @Immutable
-@SuppressWarnings("serial")
 // JSON
 public abstract class DocumentId implements Serializable
 {
 	private static final transient int NEW_ID = -1;
-	/** If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}. */
+	/**
+	 * If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}.
+	 */
 	public static final transient String NEW_ID_STRING = "NEW";
+	@SuppressWarnings("StaticInitializerReferencesSubClass")
 	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
 
 	private static final transient String DOCUMENT_ID_PREFIX = "D";
@@ -65,10 +66,9 @@ public abstract class DocumentId implements Serializable
 	 * Attempts to parse the given {@code idStr} into an integer and return an {@link IntDocumentId}. If the parsing fails, it returns a {@link StringDocumentId} instead.
 	 *
 	 * @param idStr might represent an integer or a string, but may not be empty or {@code null}.
-	 * @return
 	 */
 	@JsonCreator
-	public static final DocumentId of(final String idStr)
+	public static DocumentId of(final String idStr)
 	{
 		if (NEW_ID_STRING.equals(idStr))
 		{
@@ -100,7 +100,7 @@ public abstract class DocumentId implements Serializable
 	}
 
 	@JsonCreator
-	public static final DocumentId of(final int idInt)
+	public static DocumentId of(final int idInt)
 	{
 		if (idInt == NEW_ID)
 		{
@@ -110,12 +110,27 @@ public abstract class DocumentId implements Serializable
 		return new IntDocumentId(idInt);
 	}
 
-	public static final DocumentId of(@NonNull final RepoIdAware id)
+	public static DocumentId of(@NonNull final RepoIdAware id)
 	{
 		return of(id.getRepoId());
 	}
 
-	public static final DocumentId ofStringOrEmpty(@Nullable final String idStr)
+	public static <T extends RepoIdAware> ImmutableSet<DocumentId> ofRepoIdsSet(@NonNull final Set<T> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else
+		{
+			return ids.stream()
+					.map(DocumentId::of)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+	@Nullable
+	public static DocumentId ofStringOrEmpty(@Nullable final String idStr)
 	{
 		if (Check.isEmpty(idStr, true))
 		{
@@ -129,7 +144,10 @@ public abstract class DocumentId implements Serializable
 		return new StringDocumentId(idStr);
 	}
 
-	/** @return {@code null} if the given {@code idObj} is null or an empty string */
+	/**
+	 * @return {@code null} if the given {@code idObj} is null or an empty string
+	 */
+	@Nullable
 	public static DocumentId ofObjectOrNull(@Nullable final Object idObj)
 	{
 		if (idObj == null)
@@ -170,12 +188,12 @@ public abstract class DocumentId implements Serializable
 		}
 	}
 
-	public static final Supplier<DocumentId> supplier(@NonNull final IntSupplier intSupplier)
+	public static Supplier<DocumentId> supplier(@NonNull final IntSupplier intSupplier)
 	{
 		return () -> of(intSupplier.getAsInt());
 	}
 
-	public static final Supplier<DocumentId> supplier(@NonNull final String prefix, final int firstId)
+	public static Supplier<DocumentId> supplier(@NonNull final String prefix, final int firstId)
 	{
 		final AtomicInteger nextId = new AtomicInteger(firstId);
 		return () -> ofString(prefix + nextId.getAndIncrement());
@@ -193,14 +211,15 @@ public abstract class DocumentId implements Serializable
 		else
 		{
 			final String idStr = composedKeyParts.stream()
-					.map(idPart -> convertToDocumentIdPart(idPart))
+					.map(DocumentId::convertToDocumentIdPart)
 					.map(String::valueOf)
 					.collect(Collectors.joining(COMPOSED_KEY_SEPARATOR));
 			return ofString(idStr);
 		}
 	}
 
-	private static final Object convertToDocumentIdPart(final Object idPartObj)
+	@Nullable
+	private static Object convertToDocumentIdPart(final Object idPartObj)
 	{
 		if (idPartObj == null)
 		{
@@ -269,18 +288,6 @@ public abstract class DocumentId implements Serializable
 	public int toIntOr(final int fallbackValue)
 	{
 		return isInt() ? toInt() : fallbackValue;
-	}
-
-	public <X extends Throwable> int toIntOrThrow(@NonNull final Supplier<? extends X> exceptionSupplier) throws X
-	{
-		if (isInt())
-		{
-			return toInt();
-		}
-		else
-		{
-			throw exceptionSupplier.get();
-		}
 	}
 
 	public <T extends RepoIdAware> T toId(@NonNull final IntFunction<T> mapper)
@@ -429,7 +436,7 @@ public abstract class DocumentId implements Serializable
 		@Override
 		public boolean isComposedKey()
 		{
-			return idStr.indexOf(COMPOSED_KEY_SEPARATOR) >= 0;
+			return idStr.contains(COMPOSED_KEY_SEPARATOR);
 		}
 
 		@Override

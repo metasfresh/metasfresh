@@ -36,8 +36,6 @@ import org.compiere.util.NamePair;
  */
 public interface INamePairPredicate
 {
-	INamePairPredicate NULL = NamePairPredicates.NULL;
-
 	/**
 	 * @return true if the predicate accepts given item
 	 */

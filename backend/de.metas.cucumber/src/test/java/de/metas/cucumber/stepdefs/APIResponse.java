@@ -22,13 +22,14 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class APIResponse
 {
 	@Nullable
@@ -36,4 +37,7 @@ public class APIResponse
 
 	@Nullable
 	String contentType;
+
+	@Nullable
+	JsonMetasfreshId requestId;
 }
