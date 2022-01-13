@@ -9,10 +9,10 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InventoryDisposalMobileApplication implements MobileApplication
+public class HUManagerMobileApplication implements MobileApplication
 {
-	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("inventoryDisposal");
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.inventoryDisposal.appName");
+	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("huManager");
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.huManager.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
