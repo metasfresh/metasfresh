@@ -20,13 +20,22 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.product;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -34,15 +43,20 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 
@@ -53,6 +67,8 @@ public class M_Product_StepDef
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
 
 	public M_Product_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
@@ -118,6 +134,26 @@ public class M_Product_StepDef
 		}
 	}
 
+	@And("locate product by external identifier")
+	public void locate_product_by_external_identifier(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			locate_product_by_external_identifier(tableRow);
+		}
+	}
+
+	@And("verify product info")
+	public void verify_product_info(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			verify_product_info(tableRow);
+		}
+	}
+
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
@@ -139,5 +175,65 @@ public class M_Product_StepDef
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
 		productTable.putOrReplace(recordIdentifier, productRecord);
+	}
+
+	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)
+	{
+		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
+
+		final Optional<ProductId> productIdOptional = productRestService.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID);
+
+		assertThat(productIdOptional).isPresent();
+
+		final I_M_Product productRecord = productDAO.getById(productIdOptional.get());
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		productTable.putOrReplace(productIdentifier, productRecord);
+	}
+
+	private void verify_product_info(@NonNull final Map<String, String> row)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(row, I_M_Product.COLUMNNAME_Value);
+		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
+		final String productType = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_ProductType);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		final String ean = DataTableUtil.extractStringOrNullForColumnName(row, I_M_Product.COLUMNNAME_UPC);
+		final String gtin = DataTableUtil.extractStringOrNullForColumnName(row, I_M_Product.COLUMNNAME_GTIN);
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, I_M_Product.COLUMNNAME_Description);
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, I_M_Product.COLUMNNAME_IsActive);
+
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		assertThat(productRecord.getValue()).isEqualTo(value);
+		assertThat(productRecord.getName()).isEqualTo(name);
+		assertThat(productRecord.getProductType()).isEqualTo(getProductType(productType));
+		assertThat(productRecord.getC_UOM_ID()).isEqualTo(productUomId.getRepoId());
+		assertThat(productRecord.getUPC()).isEqualTo(ean);
+		assertThat(productRecord.getGTIN()).isEqualTo(gtin);
+		assertThat(productRecord.getDescription()).isEqualTo(description);
+		assertThat(productRecord.isActive()).isEqualTo(isActive);
+	}
+
+	@NonNull
+	private String getProductType(@NonNull final String type)
+	{
+		final String productType;
+		switch (type)
+		{
+			case "SERVICE":
+				productType = X_M_Product.PRODUCTTYPE_Service;
+				break;
+			case "ITEM":
+				productType = X_M_Product.PRODUCTTYPE_Item;
+				break;
+			default:
+				throw Check.fail("Unexpected type={}", type);
+		}
+		return productType;
 	}
 }

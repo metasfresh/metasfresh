@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -349,7 +350,11 @@ public class C_OrderLine
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
-		partnerProductBL.assertNotExcludedFromSaleToCustomer(productId, partnerId);
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final SOTrx soTrx = SOTrx.ofBooleanNonNull(order.isSOTrx());
+
+		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
