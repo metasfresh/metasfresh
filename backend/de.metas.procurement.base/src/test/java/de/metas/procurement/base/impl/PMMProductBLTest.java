@@ -1,11 +1,18 @@
 package de.metas.procurement.base.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.procurement.base.IPMMProductBL;
+import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.product.ProductId;
+import de.metas.uom.X12DE355;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeId;
@@ -26,19 +33,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.procurement.base.IPMMProductBL;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.uom.X12DE355;
-import de.metas.util.Services;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -514,7 +514,7 @@ public class PMMProductBLTest
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
-		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
+		piItem.setItemType(HUItemType.Material.getCode());
 		piItem.setM_HU_PI_Version(version);
 
 		InterfaceWrapperHelper.save(piItem);
