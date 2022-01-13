@@ -100,7 +100,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.setContext(getCtx())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setOrgId(p_OrgId)
-				.setName(C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating.class.getSimpleName())
+				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
+				.setName(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.build();
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
