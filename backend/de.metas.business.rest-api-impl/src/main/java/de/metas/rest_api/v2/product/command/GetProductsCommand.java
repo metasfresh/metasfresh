@@ -224,6 +224,11 @@ public class GetProductsCommand
 				//
 				.leadTimeInDays(record.getDeliveryTime_Promised())
 				//
+				.excludedFromSale(record.isExcludedFromSale())
+				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
+				.excludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				//
 				.build();
 	}
 

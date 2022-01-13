@@ -24,10 +24,10 @@ package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
-import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
@@ -42,6 +42,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
 
 public class PushRawMaterialsProcessor implements Processor
 {
@@ -102,6 +104,9 @@ public class PushRawMaterialsProcessor implements Processor
 		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsBPartnerProductItem.getBpartnerId()));
 		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
 		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
+		jsonRequestBPartnerProductUpsert.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase());
+		jsonRequestBPartnerProductUpsert.setExclusionFromPurchaseReason(grsBPartnerProductItem.isExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
+		jsonRequestBPartnerProductUpsert.setActive(grsBPartnerProductItem.isActive());
 
 		return jsonRequestBPartnerProductUpsert;
 	}

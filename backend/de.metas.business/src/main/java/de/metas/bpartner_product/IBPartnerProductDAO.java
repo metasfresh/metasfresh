@@ -25,20 +25,19 @@ package de.metas.bpartner_product;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
 
 /**
  * @author cg
@@ -81,6 +80,8 @@ public interface IBPartnerProductDAO extends ISingletonService
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
+
+	Optional<ProductExclude> getExcludedFromPurchaseFromVendor(ProductId productId, BPartnerId partnerId);
 
 	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
 
