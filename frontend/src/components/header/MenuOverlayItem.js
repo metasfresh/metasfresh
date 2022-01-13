@@ -179,7 +179,7 @@ class MenuOverlayItem extends Component {
         {!query && (
           <BookmarkButton
             isBookmark={favorite}
-            {...{ onUpdateData, nodeId, transparentBookmarks }}
+            {...{ type, onUpdateData, nodeId, transparentBookmarks }}
           >
             <span
               className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
