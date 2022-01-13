@@ -251,14 +251,12 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		final BPartnerBankAccountId bPartnerBankAccountId = remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerBankAccountId()
 				: remittanceAdvice.getDestinationBPartnerBankAccountId();
 
-		final Optional<BigDecimal> serviceFeeAmount = Optional.ofNullable(remittanceAdvice.getServiceFeeAmount());
-
 		return paymentBuilder
 				.adOrgId(remittanceAdvice.getOrgId())
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
-				.payAmt(remittanceAdvice.getRemittedAmountSum().add(serviceFeeAmount.orElse(BigDecimal.ZERO)))
+				.payAmt(remittanceAdvice.getRemittedAmountSum())
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
