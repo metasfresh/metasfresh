@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
@@ -41,8 +42,6 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CREATE_PAYMENT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORDER_ID;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORDER_NO;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_STORE_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
@@ -54,8 +53,18 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
-public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteBuilder_HappyFlow_Tests
+public class GetOrdersRouteBuilder_HappyFlow_withBPartnerLookupVia_metasfreshId extends GetOrdersRouteBuilder_HappyFlow_Tests
 {
+
+	private static final String HAPPY_FLOW_METASFRESH_ID = "happyFlow_bPartnerLookupVia_metasfreshId/";
+	private static final String JSON_SHOPWARE_MAPPINGS = HAPPY_FLOW_METASFRESH_ID + "01_JsonExternalSystemShopware6ConfigMappings.json";
+
+	private static final String JSON_UPSERT_BPARTNER_REQUEST = HAPPY_FLOW_METASFRESH_ID + "50_CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_BPARTNER_RESPONSE = HAPPY_FLOW_METASFRESH_ID + "50_CamelUpsertBPartnerCompositeResponse.json";
+
+	private static final String JSON_OL_CAND_CREATE_REQUEST = HAPPY_FLOW_METASFRESH_ID + "60_JsonOLCandCreateBulkRequest.json";
+	private static final String JSON_ORDER_PAYMENT_CREATE_REQUEST = HAPPY_FLOW_METASFRESH_ID + "63_JsonOrderPaymentCreateRequest.json";
+
 	@Override
 	@Test
 	void happyFlow() throws Exception
@@ -66,10 +75,9 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 
-		final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
-				.orderId(MOCK_ORDER_ID)
-				.orderNo(MOCK_ORDER_NO)
+		final JsonExternalSystemRequest request = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
 				.productLookup(JsonProductLookup.ProductId)
+				.customJsonShopwareMappingPath(JSON_SHOPWARE_MAPPINGS)
 				.build();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
@@ -77,7 +85,7 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 							   successfullyClearOrdersProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
-							   externalSystemRequest);
+							   request);
 
 		context.start();
 
@@ -111,13 +119,19 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 		final MockEndpoint createPaymentEndpoint = getMockEndpoint(MOCK_CREATE_PAYMENT);
 		createPaymentEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonCreatePaymentRequest, JsonOrderPaymentCreateRequest.class));
 
+		//validate upsert runtime parameters request
+		final InputStream jsonUpsertRuntimeParamsRequest = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
+
+		final MockEndpoint upsertRuntimeParametersEndpoint = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
+		upsertRuntimeParametersEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonUpsertRuntimeParamsRequest, JsonESRuntimeParameterUpsertRequest.class));
+
 		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Body not relevant!");
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
-		assertThat(runtimeParamsProcessor.called).isEqualTo(0);
 		assertMockEndpointsSatisfied();
 	}
 
@@ -127,12 +141,12 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
 			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
-			final JsonExternalSystemRequest externalSystemRequest) throws Exception
+			final JsonExternalSystemRequest request) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockGetOrdersProcessor(externalSystemRequest)));
+									  .process(new MockGetOrdersProcessor(request)));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {

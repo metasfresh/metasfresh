@@ -196,20 +196,21 @@ public class OLCandRequestProcessor implements Processor
 
 		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
 
-		// extract the AD_User_ID (contact-ID)
-		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
-				bPartnerUpsertResponse.getResponseContactItems(),
-				bPartnerExternalIdentifier);
-
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				shippingBPLocationExternalIdentifier);
 
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
+				.filter(items -> !items.isEmpty())
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.orElse(null);
+
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
 				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(shippingBPartnerLocationId))
-				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
+				.contactIdentifier(JsonMetasfreshId.toValueStrOrNull(contactId))
 				.build();
 	}
 
@@ -227,19 +228,21 @@ public class OLCandRequestProcessor implements Processor
 
 		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
 
-		// extract the AD_User_ID (contact-ID)
-		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
-				bPartnerUpsertResponse.getResponseContactItems(),
-				bPartnerExternalIdentifier);
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				billingBPLocationExternalIdentifier);
 
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
+				.filter(items -> !items.isEmpty())
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.orElse(null);
+
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
 				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(billingBPartnerLocationId))
-				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
+				.contactIdentifier(JsonMetasfreshId.toValueStrOrNull(contactId))
 				.build();
 	}
 
