@@ -77,6 +77,9 @@ public class C_Order_CreatePOFromSOs
 	@Param(parameterName = "IsVendorInOrderLinesRequired")
 	private boolean p_IsVendorInOrderLinesRequired;
 
+	@Param(parameterName = "IsPurchaseBOMComponents")
+	private boolean p_isPurchaseBOMComponents;
+
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
@@ -108,8 +111,9 @@ public class C_Order_CreatePOFromSOs
 
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
-																							  purchaseQtySource,
-																							  p_TypeOfPurchase);
+				purchaseQtySource,
+				p_TypeOfPurchase,
+				p_isPurchaseBOMComponents);
 
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
 		workpackageAggregator.setGroupsBufferSize(100);
@@ -117,8 +121,8 @@ public class C_Order_CreatePOFromSOs
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
-																								   p_allowMultiplePOOrders,
-																								   purchaseQtySource);
+					p_allowMultiplePOOrders,
+					purchaseQtySource);
 			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 			{
 				workpackageAggregator.add(salesOrderLine);
