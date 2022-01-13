@@ -139,7 +139,8 @@ public class S_ExternalReference_StepDef
 				.stream()
 				.map(bPartner -> JsonMetasfreshId.of(bPartner.getC_BPartner_ID())).collect(Collectors.toList());
 
-		dataTableEntries.forEach(dataTableEntry -> {
+		for (final Map<String, String> dataTableEntry : dataTableEntries)
+		{
 			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
 			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_Type));
@@ -166,8 +167,7 @@ public class S_ExternalReference_StepDef
 					.build();
 
 			externalReferenceRepository.save(externalReference);
-		});
-
+		}
 	}
 
 	private void createS_ExternalReference(@NonNull final Map<String, String> tableRow)
