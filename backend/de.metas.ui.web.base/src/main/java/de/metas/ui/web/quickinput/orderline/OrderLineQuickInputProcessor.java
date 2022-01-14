@@ -1,6 +1,5 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -231,13 +230,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 	private List<OrderLineCandidate> explodePhantomBOM(final OrderLineCandidate initialCandidate)
 	{
-		final List<OrderLineCandidate> explodedOLCandidates = BOMExploderCommand.builder()
+		return BOMExploderCommand.builder()
 				.bomToUse(BOMUse.Phantom)
 				.initialCandidate(initialCandidate)
 				.build()
 				.execute();
-
-		return explodedOLCandidates == null ? ImmutableList.of(initialCandidate) : explodedOLCandidates;
 	}
 
 	private void updateOrderLine(final I_C_OrderLine to, final OrderLineCandidate candidate)

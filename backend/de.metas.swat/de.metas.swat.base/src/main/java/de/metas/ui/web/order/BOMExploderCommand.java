@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Builder(toBuilder = true)
 public class BOMExploderCommand
 {
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
@@ -63,7 +64,6 @@ public class BOMExploderCommand
 	@NonNull
 	private final OrderLineCandidate initialCandidate;
 
-	@Builder
 	public BOMExploderCommand(@Nullable final BOMUse bomToUse,
 			final @NonNull OrderLineCandidate initialCandidate)
 	{
@@ -72,9 +72,9 @@ public class BOMExploderCommand
 	}
 
 	/**
-	 * @return null if the initial product is not a BOM
+	 * @return initial candidate if the initial product is not a BOM
 	 */
-	@Nullable
+	@NonNull
 	public List<OrderLineCandidate> execute()
 	{
 
@@ -82,7 +82,7 @@ public class BOMExploderCommand
 		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
 		if (bom == null)
 		{
-			return null;
+			return ImmutableList.of(initialCandidate);
 		}
 
 		final BOMUse bomUse = BOMUse.ofNullableCode(bom.getBOMUse());
@@ -113,14 +113,18 @@ public class BOMExploderCommand
 						.build());
 			}
 
-			result.add(initialCandidate.toBuilder()
+			final OrderLineCandidate lineCandidate = initialCandidate.toBuilder()
 					.productId(bomLineProductId)
 					.attributes(attributes)
 					.qty(bomLineQty)
 					.compensationGroupId(compensationGroupId)
 					.uomId(bomUomId)
 					.explodedFromBOMLineId(bomLineId)
-					.build());
+					.build();
+			result.addAll(this.toBuilder()
+					.initialCandidate(lineCandidate)
+					.build()
+					.execute());
 		}
 
 		return result;

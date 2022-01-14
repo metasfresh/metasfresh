@@ -186,6 +186,7 @@ public class C_Order_StepDef
 					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
+			assertThat(purchaseOrder).isNotNull();
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);

@@ -24,7 +24,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.math.BigDecimal;
@@ -92,9 +91,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 	{
 		this.purchaseOrder = purchaseOrder;
-
 		this.purchaseQtySource = purchaseQtySource;
-
 		this.purchaseType = purchaseType;
 	}
 
@@ -184,9 +181,9 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
 			orderDAO.allocatePOLineToSOLine(
-					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()), 
+					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()),
 					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
-			
+
 			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
 		}
 

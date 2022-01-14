@@ -1,45 +1,27 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.Group;
-import de.metas.order.compensationGroup.GroupId;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.ui.web.order.BOMExploderCommand;
-import de.metas.ui.web.order.OrderLineCandidate;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.PO;
-import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -85,7 +67,6 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
-	private final boolean p_onlyBOMComponents;
 	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregator.class);
 
 	@NonNull
@@ -97,8 +78,6 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -108,14 +87,12 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
 			final String purchaseQtySource,
-			@NonNull final PurchaseTypeEnum p_TypeOfPurchase,
-			final boolean p_onlyBOMComponents)
+			@NonNull final PurchaseTypeEnum p_TypeOfPurchase)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_TypeOfPurchase.equals(PurchaseTypeEnum.DROPSHIP);
 		this.p_TypeOfPurchase = p_TypeOfPurchase;
 		this.purchaseQtySource = purchaseQtySource;
-		this.p_onlyBOMComponents = p_onlyBOMComponents;
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
@@ -205,49 +182,6 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 	}
 
-	private OrderLineCandidate toOrderLineCandidate(final I_C_OrderLine ol)
-	{
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(ol.getM_AttributeSetInstance_ID()));
-
-		return OrderLineCandidate.builder()
-				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))
-				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
-				.attributes(attributeSet)
-				.uomId(UomId.ofRepoId(ol.getC_UOM_ID()))
-				// .piItemProductId()
-				.qty(ol.getQtyEntered())
-				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(ol.getShipmentAllocation_BestBefore_Policy()))
-				.bpartnerId(BPartnerId.ofRepoId(ol.getC_BPartner_ID()))
-				.soTrx(SOTrx.SALES)
-				.build();
-	}
-
-	private I_C_OrderLine fromOrderLineCandidate(final OrderLineCandidate candidate, final I_C_OrderLine bomSalesOrderLine)
-	{
-		final I_C_OrderLine newOrderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, bomSalesOrderLine);
-		PO.copyValues((X_C_OrderLine)bomSalesOrderLine, (X_C_OrderLine)newOrderLine);
-
-		newOrderLine.setM_Product_ID(candidate.getProductId().getRepoId());
-		newOrderLine.setC_UOM_ID(candidate.getUomId().getRepoId());
-		newOrderLine.setQtyEntered(candidate.getQty());
-		newOrderLine.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
-		newOrderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
-		newOrderLine.setExplodedFrom_BOMLine_ID(candidate.getExplodedFromBOMLineId().getRepoId());
-
-		final GroupId compensationGroupId = candidate.getCompensationGroupId();
-
-		if (compensationGroupId != null)
-		{
-			final Group group = orderGroupsRepo.retrieveGroupIfExists(compensationGroupId);
-
-			final ActivityId groupActivityId = group == null ? null : group.getActivityId();
-
-			newOrderLine.setC_Order_CompensationGroup_ID(compensationGroupId.getOrderCompensationGroupId());
-			newOrderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
-		}
-		return newOrderLine;
-	}
-
 	@Override
 	protected void addItemToGroup(final I_C_Order purchaseOrder, final I_C_OrderLine salesOrderLine)
 	{
@@ -259,25 +193,6 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped sales order line: {}", salesOrderLine.getC_OrderLine_ID());
 			return;// nothing to do
-		}
-
-		if (p_onlyBOMComponents)
-		{
-			final List<OrderLineCandidate> explodedOLCandidates = BOMExploderCommand.builder()
-					.initialCandidate(toOrderLineCandidate(salesOrderLine))
-					.build()
-					.execute();
-			if (explodedOLCandidates != null)
-			{
-				explodedOLCandidates
-						.stream()
-						.map(orderLine -> this.fromOrderLineCandidate(orderLine, salesOrderLine))
-						.forEach(orderLineAggregator::add);
-			}
-		}
-		else
-		{
-			orderLineAggregator.add(salesOrderLine);
 		}
 
 		if (purchaseOrder.getLink_Order_ID() > 0 &&
