@@ -62,7 +62,7 @@
     "@testing-library/dom": "8.11.1",
     "@testing-library/react": "12.1.2",
     "@welldone-software/why-did-you-render": "6.2.3",
-    "autoprefixer": "10.3.4",
+    "autoprefixer": "10.4.2",
     "axios-mock-adapter": "1.20.0",
     "babel-jest": "27.4.6",
     "babel-loader": "8.2.3",
