@@ -1,9 +1,12 @@
 ## Current data mapping
 
 ****
-Values computed in Metasfresh
+
+## Values pulled from Shopware6
 
 * `Order` - pulled via the search endpoint `api/v3/search/order/`
+
+## Values computed in metasfresh
 
 computed from the following parameters set on window `541116 - ExternalSystem_Config_Shopware6`
 
@@ -19,14 +22,25 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
 * `JsonExternalSystemRequest.parameters.FreightCost_NormalVAT_Rates`
 * `JsonExternalSystemRequest.parameters.M_FreightCost_ReducedVAT_Product_ID`
 * `JsonExternalSystemRequest.parameters.FreightCost_Reduced_VAT_Rates`
+* `JsonExternalSystemRequest.parameters.JsonExternalSystemShopware6ConfigMappings`
+    * `JsonExternalSystemShopware6ConfigMappings.seqNo`
+    * `JsonExternalSystemShopware6ConfigMappings.docTypeOrder`
+    * `JsonExternalSystemShopware6ConfigMappings.paymentRule`
+    * `JsonExternalSystemShopware6ConfigMappings.bpartnerSyncAdvice`
+    * `JsonExternalSystemShopware6ConfigMappings.bpartnerLocationSyncAdvice`
+    * `JsonExternalSystemShopware6ConfigMappings.invoiceEmailEnabled`
+    * `JsonExternalSystemShopware6ConfigMappings.paymentTerm`
+    * `JsonExternalSystemShopware6ConfigMappings.sw6CustomerGroup`
+    * `JsonExternalSystemShopware6ConfigMappings.sw6PaymentMethod`
+    * `JsonExternalSystemShopware6ConfigMappings.description`
+    * `JsonExternalSystemShopware6ConfigMappings.bpartnerIdJSONPath`
+    * `JsonExternalSystemShopware6ConfigMappings.bpartnerLookup`
 
-* `JsonExternalSystemShopware6ConfigMappings` - computed from mappings set on window `541116 - ExternalSystem_Config_Shopware6` send on `JsonExternalSystemRequest.parameters.ConfigMappings`
-
-**Shopware6 => metasfresh BPartners**
+## Shopware6 => metasfresh BPartners
 
 we need to invoke the endpoint `api/v2/bpartner`
 
-1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
+#### 1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -37,22 +51,26 @@ Order.OrderCustomer.customerNumber | `Value` | N | JsonRequestBPartner.code | Co
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | Y | JsonRequestBPartner.syncAdvise | |
 JsonExternalSystemRequest.orgCode | `ad_org_id` | N | JsonRequestComposite.orgCode | orgId computed from orgCode |
 Order.effectiveCustomerId | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId |
---- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | default value CREATE_OR_MERGE |
+--- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | JsonExternalSystemShopware6ConfigMappings.bpartnerSyncAdvice if available, else CREATE_OR_MERGE |
 
-2. Contact - all `metasfresh-column` values refer to `AD_User` columns
+---
+
+#### 2. Contact - all `metasfresh-column` values refer to `AD_User` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 Order.firstName | `firstName` | N | JsonRequestContact.firstName | |
 Order.lastName | `lastName` | N | JsonRequestContact.lastName | |
 Order.email | `email` | N | JsonRequestContact.email | |
----- | 'isbilltocontact_default' | Y | JsonRequestContact.billToDefault | always true | 
----- | 'isshiptocontact_default' | Y | JsonRequestContact.shipToDefault | always true | 
+---- | `isbilltocontact_default` | Y | JsonRequestContact.billToDefault | always true | 
+---- | `isshiptocontact_default` | Y | JsonRequestContact.shipToDefault | always true | 
 JsonExternalSystemShopware6ConfigMappings.mappings.invoiceEmailEnabled | `IsInvoiceEmailEnabled` | N | JsonRequestContact.invoiceEmailEnabled | |
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | N | JsonRequestContactUpsert.syncAdvise | |
 Order.effectiveCustomerId | `AD_User_ID` | Y | JsonRequestContactUpsertItem.contactIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId|
 
-3. BPartnerLocation
+---
+
+#### 3. BPartnerLocation
 
 3.1. For *delivery*, the information is pulled via the deliveries endpoint `api/v3/order/{{Order.id}}/deliveries`
 
@@ -64,10 +82,10 @@ Order.effectiveCustomerId | `AD_User_ID` | Y | JsonRequestContactUpsertItem.cont
 3.3 `OrderAddressDetails` - computed for both delivery and shipping address and mapped to metas POJOs
 
 * `JsonOrderAddress` mapping for a shopware address (billing or shipping)
-* `customId` custom identifier of the shopware resource
+* `customId` custom identifier of the shopware address
 * `customEmail` custom email of the shopware address
 
-3.4 `JsonSalutation` - the information is pulled via the salutation endpoint 'api/v3/salutation'
+3.4 `JsonSalutation` - the information is pulled via the salutation endpoint `api/v3/salutation`
 
 3.5 `BPartnerName` - computed in the following way:
 
@@ -95,14 +113,12 @@ OrderAddressDetails.customEmail | `C_BPartner_Location.email` | N | JsonRequestL
 Order.OrderCustomer.CustomerId | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonRequestLocationUpsertItem.locationIdentifier | "ext-Shopware6-{{customerNumber}}-{{suffix}}" where suffix is OrderAddressDetails.customId or computed|
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | Y | JsonRequestLocationUpsert.syncAdvise | |
 
-***
-**Shopware6 => metasfresh orderCandidate**
+
+## **Shopware6 => metasfresh orderCandidate**
 
 we need to invoke the endpoint `api/v2/orders/sales/candidates/bulk`
 
-OLCandRequestProcessor - JsonOLCandCreateBulkRequest
-
-1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
+#### 1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -128,7 +144,7 @@ JsonExternalSystemShopware6ConfigMappings.mappings.docTypeOrder |  `c_doctypeord
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentRule |  `paymentrule` | Y | JsonOLCandCreateRequest.paymentRule | sets the JSONPaymentRule from paymentRule code |
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentTermValue |  `c_paymentterm_id` | N | JsonOLCandCreateRequest.paymentTerm | is paymentTermValue is defined then value "val-{{paymentTermValue}} is set" |
 
-2. JsonOrderLine
+#### 2. JsonOrderLine
 
 * represents a shopware order line, pulled via `api/v3/order/{Order.Id}/line-items`
 * all `metasfresh-column` values refer to `C_OLCand` columns
@@ -143,7 +159,7 @@ JsonOrderLine.description |  `description` | N | JsonOLCandCreateRequest.descrip
 JsonOrderLine.position |  `line` | N | JsonOLCandCreateRequest.line | |
 JsonOrderLine.JsonOrderLinePayload.isBundle |  `compensationgroupkey`,  `isgroupcompensationline` | N | JsonOLCandCreateRequest.orderLineGroup | it is set only if JsonOrderLine.JsonOrderLinePayload is defined and JsonOrderLine.JsonOrderLinePayload.isBundle is true|
 
-3. JsonTax
+#### 3. JsonTax
     * shopware resource found at path: `delivery/shippingCosts/calculatedTaxes`
     * all `metasfresh-column` values refer to `C_OLCand` columns
 
@@ -162,14 +178,14 @@ JsonTax.taxRate |  `externalLineId` | Y | JsonOLCandCreateRequest.externalLineId
 JsonTax.price |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | |
 ---- | `qtyentered` | Y | JsonOLCandCreateRequest.qty | default value `1` |
 
-***
-**Shopware6 => metasfresh payment**
+
+## **Shopware6 => metasfresh payment**
 
 we need to invoke the endpoint `api/v2/orders/sales/payment`
 
 PaymentRequestProcessor
 
-1. `JsonOrderTransaction` - OrderPayment
+#### 1. `JsonOrderTransaction` - OrderPayment
 
 * pulled via endpoint: `api/v3/order/{{Order.Id}}/transactions`
 * all `metasfresh-column` values refer to `C_Payment` columns except from `C_Order_ID.c_payment_id`
