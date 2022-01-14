@@ -195,6 +195,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			return;// nothing to do
 		}
 
+		orderLineAggregator.add(salesOrderLine);
+
 		if (purchaseOrder.getLink_Order_ID() > 0 &&
 				purchaseOrder.getLink_Order_ID() != salesOrder.getC_Order_ID())
 		{
