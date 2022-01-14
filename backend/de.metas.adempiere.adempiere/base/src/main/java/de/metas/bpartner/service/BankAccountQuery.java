@@ -1,15 +1,17 @@
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoice.InvoiceId;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 import static de.metas.util.Check.assume;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,7 +37,9 @@ import static de.metas.util.Check.assume;
 @Value
 public class BankAccountQuery
 {
-	BPBankAcctUse bpBankAcctUse;
+	@Nullable
+	@Singular
+	List<BPBankAcctUse> bpBankAcctUses;
 	@Nullable
 	BPartnerId bPartnerId;
 	@Nullable
@@ -44,12 +48,14 @@ public class BankAccountQuery
 
 	@Builder(toBuilder = true)
 	private BankAccountQuery(
-			final BPBankAcctUse bpBankAcctUse,
+			@Nullable @Singular final List<BPBankAcctUse> bpBankAcctUses,
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final InvoiceId invoiceId,
 			final Boolean containsQRIBAN)
 	{
-		this.bpBankAcctUse = bpBankAcctUse;
+		this.bpBankAcctUses = bpBankAcctUses != null ?
+				ImmutableList.copyOf(bpBankAcctUses) :
+				null;
 		this.bPartnerId = bPartnerId;
 		this.invoiceId = invoiceId;
 		this.containsQRIBAN = CoalesceUtil.coalesce(containsQRIBAN, false);

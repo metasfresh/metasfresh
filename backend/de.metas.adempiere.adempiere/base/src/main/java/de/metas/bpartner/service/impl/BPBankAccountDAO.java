@@ -138,9 +138,9 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceId())
 							.create());
 		}
-		if (query.getBpBankAcctUse() != null)
+		if (query.getBpBankAcctUses() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_BPBankAcctUse, query.getBpBankAcctUse());
+			queryBuilder.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_BPBankAcctUse, query.getBpBankAcctUses());
 		}
 		if (query.isContainsQRIBAN())
 		{

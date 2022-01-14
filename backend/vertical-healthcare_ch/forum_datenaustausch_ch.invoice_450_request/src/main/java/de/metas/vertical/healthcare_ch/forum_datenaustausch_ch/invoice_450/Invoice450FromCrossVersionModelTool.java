@@ -25,6 +25,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -1591,6 +1592,7 @@ public class Invoice450FromCrossVersionModelTool
 	private String getQrIbanOrNull(final BPartnerId bpartnerID)
 	{
 		final BPartnerBankAccount bPartnerBankAccount = bpBankAccountDAO.getBpartnerBankAccount(BankAccountQuery.builder()
+				.bpBankAcctUses(ImmutableList.of(BPBankAcctUse.DEBIT_OR_DEPOSIT, BPBankAcctUse.DEPOSIT))
 				.containsQRIBAN(true)
 				.bPartnerId(bpartnerID)
 				.build()).stream().findFirst().orElse(null);

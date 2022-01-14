@@ -24,23 +24,21 @@ package de.metas.bpartner.service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 import org.compiere.model.X_C_BP_BankAccount;
 
-import java.util.Arrays;
-
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public enum BPBankAcctUse
+public enum BPBankAcctUse implements ReferenceListAwareEnum
 {
 	NONE(X_C_BP_BankAccount.BPBANKACCTUSE_Nichts),
-	BOTH(X_C_BP_BankAccount.BPBANKACCTUSE_Both),
+	DEBIT_OR_DEPOSIT(X_C_BP_BankAccount.BPBANKACCTUSE_Both),
 	DEBIT(X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit),
 	DEPOSIT(X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit),
 	PROVISION(X_C_BP_BankAccount.BPBANKACCTUSE_Provision);
 	private final String code;
-	private static final ImmutableMap<String, BPBankAcctUse> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), BPBankAcctUse::getCode);
+	private static final ReferenceListAwareEnums.ValuesIndex<BPBankAcctUse> typesByCode = ReferenceListAwareEnums.index(values());
 
 	BPBankAcctUse(final String code)
 	{
@@ -54,7 +52,7 @@ public enum BPBankAcctUse
 
 	public static BPBankAcctUse ofCode(@NonNull final String code)
 	{
-		return typesByCode.get(code);
+		return typesByCode.ofCode(code);
 	}
 
 }

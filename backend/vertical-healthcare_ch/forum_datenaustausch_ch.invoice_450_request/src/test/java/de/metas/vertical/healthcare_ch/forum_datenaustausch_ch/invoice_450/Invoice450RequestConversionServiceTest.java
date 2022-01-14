@@ -23,6 +23,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
@@ -77,6 +78,7 @@ public class Invoice450RequestConversionServiceTest
 	public void init()
 	{
 		invoice450RequestConversionService = new Invoice450RequestConversionService();
+		invoice450RequestConversionService.setUsePrettyPrint(true);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -118,6 +120,12 @@ public class Invoice450RequestConversionServiceTest
 		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		assertOutputMatchesSnapshot(outputStream);
+	}
+
+	private void assertOutputMatchesSnapshot(final ByteArrayOutputStream outputStream)
+	{
+
 		final String exportXmlString = outputStream.toString();
 
 		expect(exportXmlString).toMatchSnapshot();
@@ -149,10 +157,7 @@ public class Invoice450RequestConversionServiceTest
 		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
-		final String exportXmlString = outputStream.toString();
-		System.out.println(exportXmlString);
-
-		expect(exportXmlString).toMatchSnapshot();
+		assertOutputMatchesSnapshot(outputStream);
 	}
 
 	@Test
@@ -165,6 +170,7 @@ public class Invoice450RequestConversionServiceTest
 		bankAccount.setQR_IBAN("CH0930769016110591261");
 		bankAccount.setC_Currency_ID(123);
 		bankAccount.setAD_Org_Mapping_ID(123);
+		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
 		bankAccount.setIBAN("123");
 		InterfaceWrapperHelper.save(bankAccount);
 
@@ -188,10 +194,7 @@ public class Invoice450RequestConversionServiceTest
 		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
-		final String exportXmlString = outputStream.toString();
-		System.out.println(exportXmlString);
-
-		expect(exportXmlString).toMatchSnapshot();
+		assertOutputMatchesSnapshot(outputStream);
 	}
 
 	private void testWithPublicExampleXmlFile(@NonNull final String inputXmlFileName)
