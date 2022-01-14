@@ -277,7 +277,7 @@ public class JsonOLCandCreateRequest
 	JsonApplySalesRepFrom applySalesRepFrom;
 
 	@ApiModelProperty( //
-			value = "Translates to `C_OLCand.BPartnerName`. If omitted, `C_OLCand.BPartnerName` will be set from the shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
+			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
 	@JsonInclude(Include.NON_NULL)
 	String bpartnerName;
 
