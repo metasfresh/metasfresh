@@ -91,7 +91,9 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 	{
 		this.purchaseOrder = purchaseOrder;
+
 		this.purchaseQtySource = purchaseQtySource;
+
 		this.purchaseType = purchaseType;
 	}
 
@@ -181,9 +183,9 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
 			orderDAO.allocatePOLineToSOLine(
-					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()),
+					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()), 
 					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
-
+			
 			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
 		}
 
