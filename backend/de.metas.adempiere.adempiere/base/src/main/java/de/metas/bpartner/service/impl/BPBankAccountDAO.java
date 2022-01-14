@@ -146,6 +146,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		{
 			queryBuilder.addNotNull(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN);
 		}
+		queryBuilder.orderBy(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID);
 		return queryBuilder.create()
 				.stream()
 				.map(this::of)

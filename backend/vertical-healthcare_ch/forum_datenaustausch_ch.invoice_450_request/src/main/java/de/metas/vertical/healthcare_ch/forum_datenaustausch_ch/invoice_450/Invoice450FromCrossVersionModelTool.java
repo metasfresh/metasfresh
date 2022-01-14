@@ -1592,10 +1592,13 @@ public class Invoice450FromCrossVersionModelTool
 	private String getQrIbanOrNull(final BPartnerId bpartnerID)
 	{
 		final BPartnerBankAccount bPartnerBankAccount = bpBankAccountDAO.getBpartnerBankAccount(BankAccountQuery.builder()
-				.bpBankAcctUses(ImmutableList.of(BPBankAcctUse.DEBIT_OR_DEPOSIT, BPBankAcctUse.DEPOSIT))
-				.containsQRIBAN(true)
-				.bPartnerId(bpartnerID)
-				.build()).stream().findFirst().orElse(null);
+						.bpBankAcctUses(ImmutableList.of(BPBankAcctUse.DEBIT_OR_DEPOSIT, BPBankAcctUse.DEPOSIT))
+						.containsQRIBAN(true)
+						.bPartnerId(bpartnerID)
+						.build())
+				.stream()
+				.findFirst()
+				.orElse(null);
 		return bPartnerBankAccount == null ? null : bPartnerBankAccount.getQrIban();
 	}
 
