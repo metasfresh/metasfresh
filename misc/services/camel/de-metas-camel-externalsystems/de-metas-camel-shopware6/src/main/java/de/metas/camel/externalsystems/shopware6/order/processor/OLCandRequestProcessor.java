@@ -117,7 +117,8 @@ public class OLCandRequestProcessor implements Processor
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
-				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null);
+				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null)
+				.bpartnerName(context.getExtendedShippingLocationBPartnerName());
 
 		if (Check.isNotBlank(context.getShippingMethodId()))
 		{

@@ -276,6 +276,9 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
+	@JsonInclude(Include.NON_NULL)
+	String bpartnerName;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -322,7 +325,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
-			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom)
+			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
+			@JsonProperty("bpartnerName") final @Nullable String bpartnerName)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -352,6 +356,7 @@ public class JsonOLCandCreateRequest
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
+		this.bpartnerName = bpartnerName;
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;

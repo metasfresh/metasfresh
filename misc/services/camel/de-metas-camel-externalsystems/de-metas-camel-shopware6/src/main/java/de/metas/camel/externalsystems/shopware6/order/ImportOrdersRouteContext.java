@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
@@ -38,6 +39,7 @@ import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -52,6 +54,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 @Data
 @Builder
@@ -137,6 +140,9 @@ public class ImportOrdersRouteContext
 
 	@NonNull
 	private JsonProductLookup jsonProductLookup;
+
+	@Nullable
+	JsonOrderAddress orderShippingAddress;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -296,5 +302,39 @@ public class ImportOrdersRouteContext
 
 					default -> throw new RuntimeException("Unsupported JsonBPartnerLookup=" + configMapping.getBpartnerLookup());
 				};
+	}
+
+	@Nullable
+	public String getExtendedShippingLocationBPartnerName()
+	{
+		if (orderShippingAddress == null)
+		{
+			throw new RuntimeException("orderShippingAddress cannot be null at this stage!");
+		}
+
+		final BiFunction<String, String, String> prepareNameSegment = (segment, separator) -> Optional.ofNullable(segment)
+				.map(StringUtils::trimBlankToNull)
+				.map(s -> s + separator)
+				.orElse("");
+
+		final String locationBPartnerName = prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
+				+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
+				+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
+				+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
+				+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
+
+		return StringUtils.trimBlankToNull(locationBPartnerName);
+	}
+
+	@Nullable
+	private String getSalutationDisplayNameById(@Nullable final String salutationId)
+	{
+		if (Check.isBlank(salutationId))
+		{
+			return null;
+		}
+
+		return salutationInfoProvider.getDisplayNameBySalutationIdNotNull(salutationId);
 	}
 }

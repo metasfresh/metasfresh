@@ -129,11 +129,16 @@ public class OLCandRepository
 			olCandPO.setC_BPartner_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
+			olCandPO.setBPartnerName(request.getBpartnerName());
+
 			final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
 
 			if (bPartnerLocation != null)
 			{
-				olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
+				if (Check.isBlank(request.getBpartnerName()))
+				{
+					olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
+				}
 				olCandPO.setPhone(bPartnerLocation.getPhone());
 				olCandPO.setEMail(bPartnerLocation.getEMail());
 			}

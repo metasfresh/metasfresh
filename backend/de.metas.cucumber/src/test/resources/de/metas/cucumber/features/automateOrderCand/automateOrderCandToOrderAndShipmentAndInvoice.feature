@@ -38,7 +38,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "discount": 0,
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
-    "deliveryRule": "F"
+    "deliveryRule": "F",
+    "bpartnerName": "testName"
 }
 """
 
@@ -58,8 +59,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1          | shipment_1          | invoice_1          |
 
     And validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 1444       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
+      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
+      | order_1          | 1444       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         |
 
     And validate the created order lines
       | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -109,7 +110,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
     "deliveryRule": "F",
-    "qtyShipped": 8
+    "qtyShipped": 8,
+    "bpartnerName": "testName"
 }
 """
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -128,8 +130,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1          | shipment_1          | null               |
 
     And validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 222        | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
+      | order_1          | 222        | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
       | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -200,7 +202,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "discount": 0,
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
-    "deliveryRule": "F"
+    "deliveryRule": "F",
+    "bpartnerName": "testName"
 }
 """
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -219,8 +222,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1          | null                | null               |
 
     And validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 444        | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
+      | order_1          | 444        | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
       | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -311,7 +314,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
     "deliveryRule": "F",
-    "qtyShipped": 8
+    "qtyShipped": 8,
+    "bpartnerName": "testName"
 }
 """
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -330,8 +334,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1          | shipment_1          | null               |
 
     And validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 9999       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
+      | order_1          | 9999       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
       | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
