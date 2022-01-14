@@ -238,6 +238,9 @@ public class C_Order_CreatePOFromSOs
 			newOrderLine.setC_Order_CompensationGroup_ID(compensationGroupId.getOrderCompensationGroupId());
 			newOrderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 		}
+
+		//needed to know to what SO line the resulting PO Lines should be allocated to
+		newOrderLine.setC_OrderLine_ID(bomSalesOrderLine.getC_OrderLine_ID());
 		return newOrderLine;
 	}
 }
