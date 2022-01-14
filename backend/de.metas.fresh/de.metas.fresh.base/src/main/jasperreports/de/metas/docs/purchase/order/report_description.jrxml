@@ -272,7 +272,7 @@
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-6" x="37" y="154" width="117" height="13" forecolor="#000000" uuid="76c8cc26-2ae8-4007-93f5-48cc00a50528">
+				<reportElement key="textField-16" x="37" y="154" width="117" height="13" forecolor="#000000" uuid="76c8cc26-2ae8-4007-93f5-48cc00a50528">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
