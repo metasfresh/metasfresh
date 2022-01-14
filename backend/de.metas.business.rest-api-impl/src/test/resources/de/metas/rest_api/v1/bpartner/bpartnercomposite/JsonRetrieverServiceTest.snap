@@ -196,6 +196,10 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",

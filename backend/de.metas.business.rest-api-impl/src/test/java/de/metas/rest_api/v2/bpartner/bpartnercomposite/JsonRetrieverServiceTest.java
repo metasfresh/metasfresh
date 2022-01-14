@@ -31,6 +31,7 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.job.JobRepository;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -97,6 +98,7 @@ class JsonRetrieverServiceTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
+				new JobRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

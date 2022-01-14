@@ -22,13 +22,14 @@ package de.metas.user.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.job.JobId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Preference;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
@@ -100,4 +101,5 @@ public interface IUserDAO extends ISingletonService
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
 
+	ImmutableSet<UserId> retrieveUsersByJobId(JobId jobId);
 }

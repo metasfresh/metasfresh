@@ -29,9 +29,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @JsonDeserialize(builder = JsonBPartner.JsonBPartnerBuilder.class)
@@ -49,11 +51,41 @@ public class JsonBPartner
 	@JsonProperty("KURZBEZEICHNUNG")
 	String name;
 
+	@JsonProperty("NAMENSZUSATZ")
+	String name2;
+
 	@JsonProperty("INAKTIV")
 	Integer inactiveBit;
 
 	@JsonProperty("MID")
 	String tenantId;
+
+	@JsonProperty("ADRESSE 1")
+	String address1;
+
+	@JsonProperty("ADRESSE 2")
+	String address2;
+
+	@JsonProperty("ADRESSE 3")
+	String address3;
+
+	@JsonProperty("ADRESSE 4")
+	String address4;
+
+	@JsonProperty("PLZ")
+	String postal;
+
+	@JsonProperty("ORT")
+	String city;
+
+	@JsonProperty("LANDESCODE")
+	String countryCode;
+
+	@JsonProperty("GLN")
+	String gln;
+
+	@JsonProperty("KONTAKTE")
+	List<JsonBPartnerContact> contacts;
 
 	@Builder
 	public JsonBPartner(
@@ -61,13 +93,33 @@ public class JsonBPartner
 			@JsonProperty("MKREDID") final @NonNull String id,
 			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String name,
 			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("MID") final @Nullable String tenantId)
+			@JsonProperty("MID") final @Nullable String tenantId,
+			@JsonProperty("NAMENSZUSATZ") final @Nullable String name2,
+			@JsonProperty("ADRESSE 1") final @Nullable String address1,
+			@JsonProperty("ADRESSE 2") final @Nullable String address2,
+			@JsonProperty("ADRESSE 3") final @Nullable String address3,
+			@JsonProperty("ADRESSE 4") final @Nullable String address4,
+			@JsonProperty("PLZ") final @Nullable String postal,
+			@JsonProperty("ORT") final @Nullable String city,
+			@JsonProperty("LANDESCODE") final @Nullable String countryCode,
+			@JsonProperty("GLN") final @Nullable String gln,
+			@JsonProperty("KONTAKTE") final @Nullable @Singular List<JsonBPartnerContact> contacts)
 	{
 		this.flag = flag;
 		this.id = id;
 		this.name = name;
 		this.inactiveBit = inactive;
 		this.tenantId = tenantId;
+		this.name2 = name2;
+		this.address1 = address1;
+		this.address2 = address2;
+		this.address3 = address3;
+		this.address4 = address4;
+		this.postal = postal;
+		this.city = city;
+		this.countryCode = countryCode;
+		this.gln = gln;
+		this.contacts = contacts;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
