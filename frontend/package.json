@@ -52,7 +52,7 @@
     "@babel/plugin-transform-regenerator": "7.16.7",
     "@babel/preset-env": "7.16.8",
     "@babel/preset-react": "7.16.7",
-    "@babel/register": "7.16.8",
+    "@babel/register": "7.16.9",
     "@babel/runtime": "7.16.7",
     "@storybook/addon-actions": "6.4.12",
     "@storybook/addon-docs": "6.4.12",
