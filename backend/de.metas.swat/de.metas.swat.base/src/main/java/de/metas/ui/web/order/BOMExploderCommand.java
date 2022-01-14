@@ -32,10 +32,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.SpringContextHolder;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMUse;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -46,6 +48,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,11 +67,17 @@ public class BOMExploderCommand
 	@NonNull
 	private final OrderLineCandidate initialCandidate;
 
+	@NonNull
+	@Singular
+	private final List<BOMComponentType> explodeOnlyComponentTypes;
+
 	public BOMExploderCommand(@Nullable final BOMUse bomToUse,
-			final @NonNull OrderLineCandidate initialCandidate)
+			final @NonNull OrderLineCandidate initialCandidate,
+			@Nullable @Singular final List<BOMComponentType> explodeOnlyComponentTypes)
 	{
 		this.bomToUse = bomToUse;
 		this.initialCandidate = initialCandidate;
+		this.explodeOnlyComponentTypes = explodeOnlyComponentTypes == null ? Collections.emptyList() : ImmutableList.copyOf(explodeOnlyComponentTypes);
 	}
 
 	/**
@@ -97,6 +106,11 @@ public class BOMExploderCommand
 		final List<I_PP_Product_BOMLine> bomLines = bomsRepo.retrieveLines(bom);
 		for (final I_PP_Product_BOMLine bomLine : bomLines)
 		{
+			final BOMComponentType bomLineComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
+			if (!explodeOnlyComponentTypes.contains(bomLineComponentType))
+			{
+				continue;
+			}
 			final ProductBOMLineId bomLineId = ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID());
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
 			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty());

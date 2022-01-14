@@ -24,6 +24,7 @@ import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -35,6 +36,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 
 import java.sql.Timestamp;
@@ -153,11 +155,12 @@ public class C_Order_CreatePOFromSOs
 					final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 					if (bomDAO.hasBOMs(productId))
 					{
-						BOMExploderCommand.builder()
+						final List<OrderLineCandidate> orderLines = BOMExploderCommand.builder()
 								.initialCandidate(toOrderLineCandidate(salesOrderLine))
+								.explodeOnlyComponentType(BOMComponentType.Component)
 								.build()
-								.execute()
-								.stream()
+								.execute();
+						orderLines.stream()
 								.map(orderLine -> this.fromOrderLineCandidate(orderLine, salesOrderLine))
 								.forEach(orderLine -> addLineToAggregator(purchaseOrderLineCount, workpackageAggregator, orderLine));
 					}
@@ -203,7 +206,6 @@ public class C_Order_CreatePOFromSOs
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.attributes(attributeSet)
 				.uomId(UomId.ofRepoId(ol.getC_UOM_ID()))
-				// .piItemProductId()
 				.qty(ol.getQtyEntered())
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(ol.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(BPartnerId.ofRepoId(ol.getC_BPartner_ID()))
@@ -211,14 +213,26 @@ public class C_Order_CreatePOFromSOs
 				.build();
 	}
 
-	private I_C_OrderLine fromOrderLineCandidate(final OrderLineCandidate candidate, final I_C_OrderLine bomSalesOrderLine)
+	/**
+	 * Returns a "virtual" I_C_OrderLine which represents a single BOM component from:
+	 * <ul>
+	 *     <li>the given sales order line containing a Product that has a BOM</li>
+	 *     <li>the given BOM component</li>
+	 * </ul>
+	 *
+	 * @param candidate         a BOM component
+	 * @param bomSalesOrderLine the original BOM product C_OrderLine
+	 * @return a NOT SAFE FOR PERSISTING instance of I_C_OrderLine which should only be used for creating a PO OrderLine
+	 */
+	private @NonNull I_C_OrderLine fromOrderLineCandidate(final @NonNull OrderLineCandidate candidate, @NonNull final I_C_OrderLine bomSalesOrderLine)
 	{
 		final I_C_OrderLine newOrderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, bomSalesOrderLine);
 		PO.copyValues((X_C_OrderLine)bomSalesOrderLine, (X_C_OrderLine)newOrderLine);
 
 		newOrderLine.setM_Product_ID(candidate.getProductId().getRepoId());
 		newOrderLine.setC_UOM_ID(candidate.getUomId().getRepoId());
-		newOrderLine.setQtyEntered(candidate.getQty());
+		newOrderLine.setQtyOrdered(candidate.getQty());
+		newOrderLine.setQtyReserved(candidate.getQty());
 		if (candidate.getBestBeforePolicy() != null)
 		{
 			newOrderLine.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
