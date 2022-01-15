@@ -1,0 +1,19 @@
+de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1Test.checkJsonFormatIsNotChanging=[ {
+  "attributes" : [ {
+    "code" : "A1",
+    "displayName" : "Attribute 1",
+    "value" : "value"
+  }, {
+    "code" : "A2",
+    "displayName" : "Attribute 2",
+    "value" : "value",
+    "valueRendered" : "rendered value"
+  } ],
+  "huUnitType" : "TU",
+  "id" : "53c5f490f46d4aaea357fefc2c0d-30386",
+  "product" : {
+    "code" : "productCode",
+    "id" : 111,
+    "name" : "productName"
+  }
+} ]

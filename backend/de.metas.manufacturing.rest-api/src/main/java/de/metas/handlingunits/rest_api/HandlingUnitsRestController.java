@@ -38,51 +38,74 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Supplier;
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu")
+@RequestMapping(HandlingUnitsRestController.ENDPOINT)
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
 {
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	final IProductBL productBL = Services.get(IProductBL.class);
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu";
+
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final InventoryCandidateService inventoryCandidateService;
+	private final HUQRCodesService huQRCodesService;
 
 	public HandlingUnitsRestController(
-			@NonNull final InventoryCandidateService inventoryCandidateService)
+			@NonNull final InventoryCandidateService inventoryCandidateService,
+			@NonNull final HUQRCodesService huQRCodesService)
 	{
 		this.inventoryCandidateService = inventoryCandidateService;
+		this.huQRCodesService = huQRCodesService;
 	}
 
 	@GetMapping("/bySerialNo/{serialNo}")
@@ -252,10 +275,10 @@ public class HandlingUnitsRestController
 	public JsonDisposalReasonsList getDisposalReasons()
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return toJson(inventoryCandidateService.getDisposalReasons(), adLanguage);
+		return toJsonDisposalReasonsList(inventoryCandidateService.getDisposalReasons(), adLanguage);
 	}
 
-	private static JsonDisposalReasonsList toJson(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
+	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
@@ -266,5 +289,95 @@ public class HandlingUnitsRestController
 								.build())
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@PostMapping("/qrCodes/generate")
+	public ResponseEntity<?> generateQRCodes(@RequestBody @NonNull final JsonQRCodesGenerateRequest request)
+	{
+		final List<HUQRCode> qrCodes = huQRCodesService.generate(toHUQRCodeGenerateRequest(request));
+		final Resource pdf = huQRCodesService.createPDF(qrCodes, request.isOnlyPrint());
+
+		if (request.isOnlyPrint())
+		{
+			return ResponseEntity.ok().body(null);
+		}
+		else
+		{
+			final String filename = StringUtils.trimBlankToOptional(pdf.getFilename()).orElse("qrCodes.pdf");
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MimeType.getMediaType(filename));
+			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+		}
+
+	}
+
+	private HUQRCodeGenerateRequest toHUQRCodeGenerateRequest(final JsonQRCodesGenerateRequest json)
+	{
+		final int count = json.getCount();
+		if (count >= 100)
+		{
+			throw new AdempiereException("Maximum allowed count is 100");
+		}
+
+		return HUQRCodeGenerateRequest.builder()
+				.count(count)
+				.huUnitType(json.getHuUnitType())
+				.productId(json.getProductId())
+				.attributes(json.getAttributes()
+						.stream()
+						.map(this::toHUQRCodeGenerateRequestAttribute)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private HUQRCodeGenerateRequest.Attribute toHUQRCodeGenerateRequestAttribute(final JsonQRCodesGenerateRequest.Attribute json)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(json.getAttributeCode());
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final AttributeValueType valueType = AttributeValueType.ofCode(attribute.getAttributeValueType());
+
+		final HUQRCodeGenerateRequest.Attribute.AttributeBuilder resultBuilder = HUQRCodeGenerateRequest.Attribute.builder()
+				.attributeId(attributeId);
+
+		switch (valueType)
+		{
+			case STRING:
+			{
+				return resultBuilder.valueString(json.getValue()).build();
+			}
+			case NUMBER:
+			{
+				final BigDecimal valueNumber = NumberUtils.asBigDecimal(json.getValue());
+				return resultBuilder.valueNumber(valueNumber).build();
+			}
+			case DATE:
+			{
+				final LocalDate valueDate = StringUtils.trimBlankToOptional(json.getValue()).map(LocalDate::parse).orElse(null);
+				return resultBuilder.valueDate(valueDate).build();
+			}
+			case LIST:
+			{
+				final String listItemCode = json.getValue();
+				if (listItemCode != null)
+				{
+					final AttributeListValue listItem = attributeDAO.retrieveAttributeValueOrNull(attributeId, listItemCode);
+					if (listItem == null)
+					{
+						throw new AdempiereException("No M_AttributeValue_ID found for " + attributeId + " and `" + listItemCode + "`");
+					}
+					return resultBuilder.valueListId(listItem.getId()).build();
+				}
+				else
+				{
+					return resultBuilder.valueListId(null).build();
+				}
+			}
+			default:
+			{
+				throw new AdempiereException("Unsupported value type: " + valueType);
+			}
+		}
 	}
 }
