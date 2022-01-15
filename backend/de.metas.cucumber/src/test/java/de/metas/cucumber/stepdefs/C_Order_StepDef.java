@@ -293,6 +293,7 @@ public class C_Order_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "processed", false);
 		final String externalId = DataTableUtil.extractStringForColumnName(row, "externalId");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
+		final String bpartnerName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_BPartnerName);
 
 		final I_C_Order order = orderTable.get(identifier);
 
@@ -304,6 +305,11 @@ public class C_Order_StepDef
 		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 		assertThat(order.isProcessed()).isEqualTo(processed);
 		assertThat(order.getDocStatus()).isEqualTo(docStatus);
+
+		if(Check.isNotBlank(bpartnerName))
+		{
+			assertThat(order.getBPartnerName()).isEqualTo(bpartnerName);
+		}
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());

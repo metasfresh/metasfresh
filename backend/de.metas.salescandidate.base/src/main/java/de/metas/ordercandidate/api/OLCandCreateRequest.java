@@ -128,6 +128,8 @@ public class OLCandCreateRequest
 
 	BPartnerId salesRepInternalId;
 
+	String bpartnerName;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -174,7 +176,8 @@ public class OLCandCreateRequest
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
 			@Nullable final AssignSalesRepRule assignSalesRepRule,
-			@Nullable final BPartnerId salesRepInternalId)
+			@Nullable final BPartnerId salesRepInternalId,
+			@Nullable final String bpartnerName)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -235,5 +238,7 @@ public class OLCandCreateRequest
 
 		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
 		this.salesRepInternalId = salesRepInternalId;
+
+		this.bpartnerName = bpartnerName;
 	}
 }

@@ -72,6 +72,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		importOrdersRouteContext.setDateRequired(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingDateLatest().toLocalDate());
 		importOrdersRouteContext.setShippingCost(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingCost());
 		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
+		importOrdersRouteContext.setOrderShippingAddress(lastOrderDeliveryItem.getOrderAddressDetails().getJsonOrderAddress());
 
 		final JsonCustomerGroup jsonCustomerGroup = getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
 

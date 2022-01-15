@@ -216,7 +216,7 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestLocation.setPostal(orderAddress.getZipcode());
 		jsonRequestLocation.setShipTo(isShippingAddress);
 		jsonRequestLocation.setBillTo(isBillingAddress);
-		jsonRequestLocation.setBpartnerName(getLocationBPartnerName(orderAddress));
+		jsonRequestLocation.setBpartnerName(computeBPartnerName());
 		jsonRequestLocation.setPhone(orderAddress.getPhoneNumber());
 		jsonRequestLocation.setEmail(orderAddressWithCustomId.getCustomEmail());
 
@@ -265,17 +265,6 @@ public class BPartnerUpsertRequestProducer
 				.contactIdentifier(externalBPartnerId.getIdentifier())
 				.contact(contactRequest)
 				.build();
-	}
-
-	@Nullable
-	private String getSalutationDisplayNameById(@Nullable final String salutationId)
-	{
-		if (Check.isBlank(salutationId))
-		{
-			return null;
-		}
-
-		return salutationInfoProvider.getDisplayNameBySalutationIdNotNull(salutationId);
 	}
 
 	@NonNull
@@ -339,22 +328,17 @@ public class BPartnerUpsertRequestProducer
 		return EXTERNAL_ID_PREFIX + "-" + SHOPWARE6_SYSTEM_NAME + "-" + externalId;
 	}
 
-	@Nullable
-	private String getLocationBPartnerName(@NonNull final JsonOrderAddress orderAddress)
+	@NonNull
+	private String computeBPartnerName()
 	{
 		final BiFunction<String, String, String> prepareNameSegment = (segment, separator) -> Optional.ofNullable(segment)
 				.map(StringUtils::trimBlankToNull)
 				.map(s -> s + separator)
 				.orElse("");
 
-		final String locationBPartnerName = prepareNameSegment.apply(orderAddress.getCompany(), "\n")
-				+ prepareNameSegment.apply(orderAddress.getDepartment(), "\n")
-				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderAddress.getSalutationId()), " ")
-				+ prepareNameSegment.apply(orderAddress.getTitle(), " ")
-				+ prepareNameSegment.apply(orderAddress.getFirstName(), " ")
-				+ prepareNameSegment.apply(orderAddress.getLastName(), "");
-
-		return StringUtils.trimBlankToNull(locationBPartnerName);
+		return prepareNameSegment.apply(orderCustomer.getCompany(), ", ")
+				+ prepareNameSegment.apply(orderCustomer.getFirstName(), " ")
+				+ prepareNameSegment.apply(orderCustomer.getLastName(), "");
 	}
 }
 
