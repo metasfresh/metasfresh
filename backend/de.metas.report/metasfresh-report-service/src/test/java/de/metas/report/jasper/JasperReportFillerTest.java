@@ -22,6 +22,10 @@ package de.metas.report.jasper;
  * #L%
  */
 
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.util.JRLoader;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -30,17 +34,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.util.JRLoader;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.report.jasper.JasperReportFiller;
-
-public class ADJasperFillerTest
+public class JasperReportFillerTest
 {
+	@SuppressWarnings("SameParameterValue")
 	private JasperReport loadJasperReport(String name) throws JRException
 	{
 		final String resourceName = name + ".jasper";
@@ -49,31 +47,30 @@ public class ADJasperFillerTest
 		{
 			throw new RuntimeException("Resource not found: " + resourceName);
 		}
-		final JasperReport jasperReport = (JasperReport)JRLoader.loadObject(jasperInputStream);
-		return jasperReport;
+
+		return (JasperReport)JRLoader.loadObject(jasperInputStream);
 	}
 
 	@Test
 	public void test_fixParameterTypes() throws Exception
 	{
-		final JasperReportFiller filler = JasperReportFiller.getInstance();
 		final JasperReport jasperReport = loadJasperReport("paramsTestReport");
-		final Map<String, Object> params = new HashMap<String, Object>();
+		final HashMap<String, Object> params = new HashMap<>();
 		
 		final Date date = new Date();
 		final Timestamp ts = new Timestamp(date.getTime());
 
-		params.put("PARAM_BigDecimal", Integer.valueOf(10));
+		params.put("PARAM_BigDecimal", 10);
 		params.put("PARAM_Integer", new BigDecimal("20"));
 		params.put("PARAM_StRiNg", "string");
 		params.put("PARAM_Date", ts);
 		params.put("PARAM_Timestamp", date);
 		params.put("PARAM_Boolean", "Y");
 
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 
 		assertParameterValue(params, "PARAM_BigDecimal", BigDecimal.valueOf(10));
-		assertParameterValue(params, "PARAM_Integer", Integer.valueOf(20));
+		assertParameterValue(params, "PARAM_Integer", 20);
 		assertParameterValue(params, "PARAM_String", "string");
 		assertParameterValue(params, "PARAM_Date", date);
 		assertParameterValue(params, "PARAM_Timestamp", ts);
@@ -83,43 +80,42 @@ public class ADJasperFillerTest
 	@Test
 	public void test_fixParameterTypes_Boolean() throws Exception
 	{
-		final JasperReportFiller filler = JasperReportFiller.getInstance();
 		final JasperReport jasperReport = loadJasperReport("paramsTestReport");
-		final Map<String, Object> params = new HashMap<String, Object>();
+		final HashMap<String, Object> params = new HashMap<>();
 		final String parameterName = "PARAM_Boolean";
 		
 		assertParameterValue(params, parameterName, null);
 		
 		params.put(parameterName, false);
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.FALSE);
 		
 		params.put(parameterName, true);
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.TRUE);
 		
 		params.put(parameterName, "false");
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.FALSE);
 		
 		params.put(parameterName, "true");
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.TRUE);
 		
 		params.put(parameterName, "N");
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.FALSE);
 		
 		params.put(parameterName, "Y");
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.TRUE);
 
 		params.put(parameterName, "any other string");
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, Boolean.FALSE);
 		
 		params.put(parameterName, null);
-		filler.fixParameterTypes(jasperReport, params);
+		JasperReportFiller.fixParameterTypes(jasperReport, params);
 		assertParameterValue(params, parameterName, null);
 	}
 
@@ -127,6 +123,6 @@ public class ADJasperFillerTest
 	private void assertParameterValue(Map<String, Object> params, String parameterName, Object expectedValue)
 	{
 		final Object actualValue = params.get(parameterName);
-		Assert.assertEquals("Invalid value for paramter "+parameterName, expectedValue, actualValue);
+		assertThat(actualValue).as("Invalid value for parameter " + parameterName).isEqualTo(expectedValue);
 	}
 }

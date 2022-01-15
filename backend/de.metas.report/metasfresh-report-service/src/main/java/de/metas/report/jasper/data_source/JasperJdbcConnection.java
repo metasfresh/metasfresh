@@ -1,5 +1,12 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.data_source;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -18,16 +25,6 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -75,7 +72,7 @@ final class JasperJdbcConnection implements Connection
 
 	private static String normalizeQueryInfo(final String queryInfo)
 	{
-		if (Check.isEmpty(queryInfo, true))
+		if (queryInfo == null || Check.isBlank(queryInfo))
 		{
 			return null;
 		}
@@ -104,8 +101,7 @@ final class JasperJdbcConnection implements Connection
 			return sql;
 		}
 
-		final String sqlWithInfo = queryInfo + sql;
-		return sqlWithInfo;
+		return queryInfo + sql;
 	}
 
 	@VisibleForTesting
@@ -138,13 +134,13 @@ final class JasperJdbcConnection implements Connection
 		{
 			logger.debug("injectSecurityWhereClauses - found a 'ORDER BY' at idx={}; -> later append it to the end", idxSemicolon);
 			orderBy = sql.substring(idxOrderBy, idxSemicolon);
-			sqlCustomized.append(sql.substring(0, idxOrderBy));
+			sqlCustomized.append(sql, 0, idxOrderBy);
 		}
 		else if (idxSemicolon != -1)
 		{
 			logger.debug("injectSecurityWhereClauses - found a semicolon at idx={}; -> will omit it", idxSemicolon);
 			orderBy = null;
-			sqlCustomized.append(sql.substring(0, idxSemicolon));
+			sqlCustomized.append(sql, 0, idxSemicolon);
 		}
 		else
 		{
@@ -153,7 +149,7 @@ final class JasperJdbcConnection implements Connection
 		}
 
 		// Do we have to add WHERE or AND
-		if (sql.indexOf(" WHERE ") == -1)
+		if (!sql.contains(" WHERE "))
 		{
 			logger.debug("injectSecurityWhereClauses - found no ' WHERE '; -> will add the securityWhereClause with a WHERE");
 			sqlCustomized.append("\nWHERE ");
@@ -164,7 +160,7 @@ final class JasperJdbcConnection implements Connection
 			sqlCustomized.append("\nAND ");
 		}
 
-		sqlCustomized.append(securityWhereClause+" /*JasperJdbcConnection.securityWhereClause*/");
+		sqlCustomized.append(securityWhereClause).append(" /*JasperJdbcConnection.securityWhereClause*/");
 
 		if (orderBy != null)
 		{

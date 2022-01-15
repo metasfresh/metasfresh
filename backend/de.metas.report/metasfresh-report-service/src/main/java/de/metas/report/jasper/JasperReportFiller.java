@@ -22,6 +22,22 @@ package de.metas.report.jasper;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
+import net.sf.jasperreports.engine.util.JRSwapFile;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -29,21 +45,6 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
-
-import de.metas.util.Services;
-import lombok.NonNull;
-import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
-import net.sf.jasperreports.engine.util.JRSwapFile;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
 
 /**
  * Helper class used to fill a {@link JasperReport} and produce {@link JasperPrint}.
@@ -70,17 +71,17 @@ import net.sf.jasperreports.engine.JasperReport;
 	}
 
 	public JasperPrint fillReport(
-			final JasperReport jasperReport,
-			final Map<String, Object> parameters,
-			final Connection connection,
-			final ClassLoader jasperLoader) throws JRException
+			@NonNull final JasperReport jasperReport,
+			@NonNull final Map<String, Object> parameters,
+			@Nullable final Connection connection,
+			@NonNull final ClassLoader jasperLoader) throws JRException
 	{
 		final Thread currentThread = Thread.currentThread();
 		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
 
 		try
 		{
-			final Map<String, Object> paramsFixed = new HashMap<>(parameters);
+			final HashMap<String, Object> paramsFixed = new HashMap<>(parameters);
 			fixParameterTypes(jasperReport, paramsFixed);
 			setupAndPutVirtualizer(paramsFixed);
 
@@ -101,7 +102,8 @@ import net.sf.jasperreports.engine.JasperReport;
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
 					.setParameter("jasperReport.name", jasperReport.getName());
 		}
 		finally
@@ -112,7 +114,7 @@ import net.sf.jasperreports.engine.JasperReport;
 	}
 
 	// thx to https://piotrminkowski.wordpress.com/2017/06/12/generating-large-pdf-files-using-jasperreports/
-	private void setupAndPutVirtualizer(@NonNull final Map<String, Object> paramsFixed)
+	private void setupAndPutVirtualizer(@NonNull final HashMap<String, Object> paramsFixed)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		
@@ -135,23 +137,16 @@ import net.sf.jasperreports.engine.JasperReport;
 		}
 		catch (final IOException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
 					.setParameter("paramsFixed", paramsFixed);
 		}
 	}
 
-	public JasperPrint fillReport(
-			final JasperReport jasperReport,
-			final Map<String, Object> parameters,
-			final ClassLoader jasperLoader) throws JRException
-	{
-		final Connection connection = null;
-		return fillReport(jasperReport, parameters, connection, jasperLoader);
-	}
-
-	protected void fixParameterTypes(
+	@VisibleForTesting
+	static void fixParameterTypes(
 			@NonNull final JasperReport jasperReport,
-			@NonNull final Map<String, Object> params)
+			@NonNull final HashMap<String, Object> params)
 	{
 		final JRParameter[] jrParameters = jasperReport.getParameters();
 		if (jrParameters == null || jrParameters.length == 0)
@@ -188,7 +183,7 @@ import net.sf.jasperreports.engine.JasperReport;
 			{
 				if (jrParam.isForPrompting() && !jrParam.isSystemDefined())
 				{
-					logger.info("No parameter found for JR paramter: {}", jrParamName);
+					logger.info("No parameter found for JR parameter: {}", jrParamName);
 				}
 				continue;
 			}
@@ -202,7 +197,8 @@ import net.sf.jasperreports.engine.JasperReport;
 		}
 	}
 
-	private Object convertValue(final Object value, final Class<?> targetClass)
+	@Nullable
+	private static Object convertValue(@Nullable final Object value, @NonNull final Class<?> targetClass)
 	{
 		if (value == null)
 		{

@@ -1,10 +1,8 @@
-package de.metas.report.jasper;
-
-import static org.assertj.core.api.Assertions.assertThat;
+package de.metas.report.jasper.data_source;
 
 import org.junit.jupiter.api.Test;
 
-import de.metas.report.jasper.JasperJdbcConnection;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
