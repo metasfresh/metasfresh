@@ -489,16 +489,6 @@ public class ProductRestService
 			builder.description(existingBPartnerProduct.getDescription());
 		}
 
-		// exclusionFromSalesReason
-		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
-		{
-			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
-		}
-		else
-		{
-			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
-		}
-
 		// ean
 		if (jsonRequestBPartnerProductUpsert.isCuEANSet())
 		{
@@ -573,6 +563,16 @@ public class ProductRestService
 			builder.isExcludedFromSales(existingBPartnerProduct.getIsExcludedFromSales());
 		}
 
+		// exclusionFromSalesReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
+		{
+			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
+		}
+		else
+		{
+			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
+		}
+
 		// isDropShip
 		if (jsonRequestBPartnerProductUpsert.isDropShipSet())
 		{
@@ -605,6 +605,33 @@ public class ProductRestService
 		else
 		{
 			builder.usedForVendor(existingBPartnerProduct.getUsedForVendor());
+		}
+
+		// isExcludedFromPurchase
+		if (jsonRequestBPartnerProductUpsert.isExcludedFromPurchaseSet())
+		{
+			if (jsonRequestBPartnerProductUpsert.getExcludedFromPurchase() == null)
+			{
+				logger.debug("Ignoring boolean property \"isExcludedFromPurchase\" : null ");
+			}
+			else
+			{
+				builder.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase());
+			}
+		}
+		else
+		{
+			builder.isExcludedFromPurchase(existingBPartnerProduct.getIsExcludedFromPurchase());
+		}
+
+		// exclusionFromPurchaseReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromPurchaseReasonSet())
+		{
+			builder.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason());
+		}
+		else
+		{
+			builder.exclusionFromPurchaseReason(existingBPartnerProduct.getExclusionFromPurchaseReason());
 		}
 
 		builder.productId(existingBPartnerProduct.getProductId());
@@ -808,6 +835,8 @@ public class ProductRestService
 				.dropShip(jsonRequestBPartnerProductUpsert.getDropShip())
 				.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor())
 				.productId(productId)
+				.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase())
+				.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason())
 				.build();
 	}
 

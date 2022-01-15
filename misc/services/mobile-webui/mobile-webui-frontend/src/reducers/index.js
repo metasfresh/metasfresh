@@ -7,8 +7,13 @@ import applications from './applications';
 import update from './update';
 import wfProcesses_status from './wfProcesses_status/index';
 
-const createRootReducer = (history) =>
-  combineReducers({
+import { getApplicationReduxReducers } from '../apps/index';
+
+const createRootReducer = (history) => {
+  const appsReducers = getApplicationReduxReducers();
+
+  const reducers = {
+    ...appsReducers,
     update,
     router: connectRouter(history),
     appHandler,
@@ -16,6 +21,10 @@ const createRootReducer = (history) =>
     applications,
     launchers,
     wfProcesses_status,
-  });
+  };
 
+  console.log('Registered app reducers', appsReducers);
+
+  return combineReducers(reducers);
+};
 export default createRootReducer;

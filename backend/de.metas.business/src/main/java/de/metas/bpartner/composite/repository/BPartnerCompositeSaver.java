@@ -339,6 +339,7 @@ final class BPartnerCompositeSaver
 				locationType.getBillToDefault().ifPresent(bpartnerLocationRecord::setIsBillToDefault);
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
+				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);

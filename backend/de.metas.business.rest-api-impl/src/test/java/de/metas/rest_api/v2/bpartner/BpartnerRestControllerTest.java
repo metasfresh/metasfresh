@@ -69,6 +69,7 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.user.UserId;
@@ -181,6 +182,7 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				currencyRepository,
+				new JobRepository(),
 				externalReferenceRestControllerService,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

@@ -1,0 +1,15 @@
+{
+  "HU": "HU",
+  "barcode": "Barcode",
+  "locator": "Locator",
+  "product": "Product",
+  "qty": "Quantity",
+  "action": {
+    "dispose": {
+      "buttonCaption": "Dispose"
+    },
+    "scanAgain": {
+      "buttonCaption": "Scan again"
+    }
+  }
+}

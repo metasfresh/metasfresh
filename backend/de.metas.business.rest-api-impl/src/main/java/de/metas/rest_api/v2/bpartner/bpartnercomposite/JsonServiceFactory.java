@@ -27,6 +27,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -44,6 +45,7 @@ public class JsonServiceFactory
 	private final BPGroupRepository bpGroupRepository;
 	private final GreetingRepository greetingRepository;
 	private final CurrencyRepository currencyRepository;
+	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
@@ -54,6 +56,7 @@ public class JsonServiceFactory
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final JobRepository jobRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
@@ -62,6 +65,7 @@ public class JsonServiceFactory
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
+		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
 	}
@@ -94,6 +98,7 @@ public class JsonServiceFactory
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				greetingRepository,
+				jobRepository,
 				externalReferenceService,
 				identifier);
 	}

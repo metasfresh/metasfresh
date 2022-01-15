@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.job.JobId;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -386,6 +387,7 @@ final class BPartnerCompositesLoader
 				.billToDefault(bpartnerLocationRecord.isBillToDefault())
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
+				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
 				.build();
 	}
 
@@ -482,6 +484,7 @@ final class BPartnerCompositesLoader
 				.subjectMatterContact(contactRecord.isSubjectMatterContact())
 				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
+				.phone2(trimBlankToNull(contactRecord.getPhone2()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))
 				.fax(trimBlankToNull(contactRecord.getFax()))
@@ -493,6 +496,8 @@ final class BPartnerCompositesLoader
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
 				.email2(trimBlankToNull(contactRecord.getEMail2()))
 				.email3(trimBlankToNull(contactRecord.getEMail3()))
+				.title(trimBlankToNull(contactRecord.getTitle()))
+				.jobId(JobId.ofRepoIdOrNull(contactRecord.getC_Job_ID()))
 				.build();
 	}
 

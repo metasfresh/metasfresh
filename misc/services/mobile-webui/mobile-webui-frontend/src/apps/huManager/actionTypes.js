@@ -1,0 +1,2 @@
+export const CLEAR_LOADED_DATA = 'huManager/CLEAR_LOADED_DATA';
+export const HANDLING_UNIT_LOADED = 'huManager/HANDLING_UNIT_LOADED';

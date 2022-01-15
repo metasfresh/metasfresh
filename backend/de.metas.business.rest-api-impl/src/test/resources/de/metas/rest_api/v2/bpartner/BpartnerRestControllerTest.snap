@@ -291,6 +291,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "l1_poBox",
@@ -350,6 +354,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }
@@ -632,6 +640,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -909,6 +921,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -1119,6 +1135,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }
@@ -1333,6 +1353,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
@@ -1392,6 +1416,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
             "present" : true
           },
           "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "visitorsAddress" : {
             "value" : false,
             "present" : true
           }

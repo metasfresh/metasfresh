@@ -1,13 +1,14 @@
-import * as inventoryDisposalApp from './inventoryDisposal/index';
+import * as huManagerApp from './huManager';
 
 const registeredApplications = {};
 
-const registerApplication = ({ applicationId, routes, messages, startApplication }) => {
+const registerApplication = ({ applicationId, routes, messages, startApplication, reduxReducer }) => {
   registeredApplications[applicationId] = {
     applicationId,
     routes,
     messages,
     startApplication,
+    reduxReducer,
   };
 
   console.log(`Registered application ${applicationId}`);
@@ -40,8 +41,17 @@ export const getApplicationMessages = () => {
   }, {});
 };
 
+export const getApplicationReduxReducers = () => {
+  return Object.values(registeredApplications).reduce((result, applicationDescriptor) => {
+    if (applicationDescriptor.reduxReducer) {
+      result['applications/' + applicationDescriptor.applicationId] = applicationDescriptor.reduxReducer;
+    }
+    return result;
+  }, {});
+};
+
 //
 // SETUP
 //
 
-registerApplication(inventoryDisposalApp.applicationDescriptor);
+registerApplication(huManagerApp.applicationDescriptor);

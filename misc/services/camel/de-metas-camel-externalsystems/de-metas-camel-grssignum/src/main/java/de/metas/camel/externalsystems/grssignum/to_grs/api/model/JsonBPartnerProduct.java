@@ -41,14 +41,23 @@ public class JsonBPartnerProduct
 	@JsonProperty("STDKRED")
 	boolean currentVendor;
 
+	@JsonProperty("LIEFERANTENFREIGABE")
+	boolean isExcludedFromPurchase;
+
+	@JsonProperty("INAKTIV")
+	boolean isActive;
+
 	@Builder
 	public JsonBPartnerProduct(
 			@JsonProperty("MKREDID") final @NonNull String bpartnerId,
-			@JsonProperty("STDKRED") final @NonNull Integer currentVendor
-	)
+			@JsonProperty("STDKRED") final @NonNull Integer currentVendor,
+			@JsonProperty("LIEFERANTENFREIGABE") final int approvedForPurchase,
+			@JsonProperty("INAKTIV") final int inactive)
 	{
 		this.bpartnerId = bpartnerId;
 		this.currentVendor = currentVendor == 1;
+		this.isExcludedFromPurchase = approvedForPurchase != 1;
+		this.isActive = inactive != 1;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

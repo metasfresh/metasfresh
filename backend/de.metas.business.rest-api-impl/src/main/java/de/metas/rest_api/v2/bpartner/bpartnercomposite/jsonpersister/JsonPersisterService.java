@@ -1238,6 +1238,18 @@ public class JsonPersisterService
 			}
 		}
 
+		// title
+		if (jsonBPartnerContact.isTitleSet())
+		{
+			contact.setTitle(StringUtils.trim(jsonBPartnerContact.getTitle()));
+		}
+
+		// phone2
+		if (jsonBPartnerContact.isPhone2Set())
+		{
+			contact.setPhone2(StringUtils.trim(jsonBPartnerContact.getPhone2()));
+		}
+
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
 	}
@@ -1722,6 +1734,18 @@ public class JsonPersisterService
 			else
 			{
 				locationType.shipToDefault(jsonBPartnerLocation.getShipToDefault());
+			}
+		}
+
+		if (jsonBPartnerLocation.isVisitorsAddressSet())
+		{
+			if (jsonBPartnerLocation.getVisitorsAddress() == null)
+			{
+				logger.debug("Ignoring boolean property \"visitorsAddress\" : null ");
+			}
+			else
+			{
+				locationType.visitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
 			}
 		}
 

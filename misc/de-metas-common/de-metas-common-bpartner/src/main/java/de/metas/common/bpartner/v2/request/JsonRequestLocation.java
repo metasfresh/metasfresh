@@ -176,6 +176,13 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
+	@ApiModelProperty(position = 220, //
+			value = "Translates to C_BPartner_Location.VisitorsAddress")
+	private Boolean visitorsAddress;
+
+	@ApiModelProperty(hidden = true)
+	private boolean visitorsAddressSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -294,5 +301,11 @@ public class JsonRequestLocation
 	{
 		this.phone = phone;
 		this.phoneSet = true;
+	}
+
+	public void setVisitorsAddress(final Boolean visitorsAddress)
+	{
+		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressSet = true;
 	}
 }
