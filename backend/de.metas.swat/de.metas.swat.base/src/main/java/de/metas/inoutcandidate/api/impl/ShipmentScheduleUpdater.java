@@ -263,9 +263,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		//
-		// Briefly update our shipment schedules:
-		// * set BPartnerAddress_Override if was not set before
-		// * update HeaderAggregationKey
+		// first update those shipment schedule properties that don't need two passes
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))

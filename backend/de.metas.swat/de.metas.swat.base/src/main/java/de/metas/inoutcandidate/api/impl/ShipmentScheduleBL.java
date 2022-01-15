@@ -367,7 +367,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public IStorageQuery createStorageQuery(
 			@NonNull final I_M_ShipmentSchedule sched,
-			final boolean considerAttributes)
+			final boolean considerAttributes,
+			final boolean excludeAllReserved)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -397,13 +398,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 
-		if (sched.getC_OrderLine_ID() > 0)
+		if (sched.getC_OrderLine_ID() <= 0 || excludeAllReserved)
 		{
-			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
+			storageQuery.setExcludeReserved();
 		}
 		else
 		{
-			storageQuery.setExcludeReserved();
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));			
 		}
 		return storageQuery;
 	}

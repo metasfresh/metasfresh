@@ -41,10 +41,6 @@ public interface IStorageEngine
 
 	/**
 	 * Retrieve a <b>union</b> of all storage records that match the given {@code storageQueries}
-	 *
-	 * @param context
-	 * @param storageQueries
-	 * @return
 	 */
 	Set<IStorageRecord> retrieveStorageRecords(IContextAware context, Set<IStorageQuery> storageQueries);
 
@@ -55,9 +51,6 @@ public interface IStorageEngine
 	 *
 	 * TODO: actually this is not the right place for this method but because we lack time and all IAttributeSet implementations are in handlingunits module, I decided to but this here to have a
 	 * quick&dirty way of getting it.
-	 *
-	 * @param asi
-	 * @return attribute set
 	 */
 	IAttributeSet getAttributeSet(I_M_AttributeSetInstance asi);
 

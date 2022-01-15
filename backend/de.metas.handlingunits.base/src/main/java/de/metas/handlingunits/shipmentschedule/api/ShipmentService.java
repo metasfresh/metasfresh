@@ -29,6 +29,8 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -100,7 +102,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService());
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
 		}
 		else
 		{
