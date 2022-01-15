@@ -3,12 +3,12 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
             "code": "ext-Shopware6-customerNumber",
-            "name":"firstName lastName",
+            "name": "firstName lastName",
             "companyName": "company",
             "customer": true,
             "syncAdvise": {
@@ -29,7 +29,7 @@
                   "countryCode": "DE",
                   "shipTo": false,
                   "billTo": true,
-                  "bpartnerName": "company, firstName lastName",
+                  "bpartnerName": "billingCompany\nbillingDepartment\nbillingSalutationDisplayName firstName lastName",
                   "phone": "phoneNumber",
                   "email": "billingEmailAddress"
                 }
@@ -45,28 +45,9 @@
                   "countryCode": "DE",
                   "shipTo": true,
                   "billTo": false,
-                  "bpartnerName": "company, firstName lastName",
+                  "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
                   "phone": "phoneNumber",
                   "email": "emailAddress"
-                }
-              }
-            ],
-            "syncAdvise": {
-              "ifNotExists": "FAIL",
-              "ifExists": "DONT_UPDATE"
-            }
-          },
-          "contacts": {
-            "requestItems": [
-              {
-                "contactIdentifier": "ext-Shopware6-customerId",
-                "contact": {
-                  "firstName": "firstName",
-                  "lastName": "lastName",
-                  "email": "someEamil@web.de",
-                  "invoiceEmailEnabled": true,
-                  "shipToDefault": true,
-                  "billToDefault": true
                 }
               }
             ],

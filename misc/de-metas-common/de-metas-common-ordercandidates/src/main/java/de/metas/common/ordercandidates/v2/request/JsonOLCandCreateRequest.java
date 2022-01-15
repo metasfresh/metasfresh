@@ -271,10 +271,15 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 440)
+	@ApiModelProperty(position = 440, //
+			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
+	@JsonInclude(Include.NON_NULL)
+	String bpartnerName;
+
+	@ApiModelProperty(position = 450)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
-	
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -321,7 +326,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
-			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom)
+			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
+			@JsonProperty("bpartnerName") final @Nullable String bpartnerName)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -351,6 +357,7 @@ public class JsonOLCandCreateRequest
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
+		this.bpartnerName = bpartnerName;
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;

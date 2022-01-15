@@ -9,12 +9,12 @@
       "bpartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "billBPartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
@@ -44,9 +44,8 @@
       },
       "description": "lineDescription",
       "dateOrdered": "2021-01-12",
-      "importWarningMessage": null,
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "shipper": "ext-Shopware6-shippingMethodId"
     },
     {
       "orgCode": "orgCode",
@@ -57,12 +56,12 @@
       "bpartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "billBPartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
@@ -92,25 +91,24 @@
       },
       "description": "lineDescription2",
       "dateOrdered": "2021-01-12",
-      "importWarningMessage": null,
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "shipper": "ext-Shopware6-shippingMethodId"
     },
     {
       "orgCode": "orgCode",
-      "externalLineId": "TaxRate_0",
+      "externalLineId": "TaxRate_19",
       "externalHeaderId": "externalHeaderId",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "billBPartner": {
         "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
+        "contactIdentifier": null
       },
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
@@ -122,7 +120,7 @@
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": 1001,
       "qty": 1,
-      "price": 7.5,
+      "price": 10,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "poReference",
@@ -137,9 +135,52 @@
       "orderLineGroup": null,
       "description": null,
       "dateOrdered": "2021-01-12",
-      "importWarningMessage": null,
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "shipper": "ext-Shopware6-shippingMethodId"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "TaxRate_5.5",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": null
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": null
+      },
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
+      "productIdentifier": 1002,
+      "qty": 1,
+      "price": 7,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "dateCandidate": "2021-01-11",
+      "line": null,
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "orderLineGroup": null,
+      "description": null,
+      "dateOrdered": "2021-01-12",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "shipper": "ext-Shopware6-shippingMethodId"
     }
   ]
 }
