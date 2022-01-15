@@ -229,7 +229,7 @@ public class M_ShipmentSchedule_StepDef
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-			final Supplier<Boolean> shipmentScheduleWasRecomputed = () -> shipmentScheduleInvalidateRepository.isFlaggedForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
+			final Supplier<Boolean> shipmentScheduleWasRecomputed = () -> !shipmentScheduleInvalidateRepository.isFlaggedForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, shipmentScheduleWasRecomputed);
 		}
