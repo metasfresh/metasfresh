@@ -49,8 +49,10 @@ public class AD_User
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void triggerSyncBPartnerWithExternalSystem(@NonNull final I_AD_User adUser)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(adUser.getC_BPartner_ID());
-
-		trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(adUser.getC_BPartner_ID());
+		if(bpartnerId != null)
+		{
+			trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+		}
 	}
 }
