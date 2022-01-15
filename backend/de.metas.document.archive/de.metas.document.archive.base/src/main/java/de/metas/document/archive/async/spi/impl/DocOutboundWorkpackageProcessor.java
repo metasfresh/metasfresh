@@ -87,7 +87,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : null)))
+			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : -1)))
 			{
 				generateOutboundDocument(record, userId);
 			}
