@@ -23,20 +23,25 @@ package de.metas.report.jasper.class_loader;
  */
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.report.jasper.JasperEngine;
-import de.metas.util.Check;
 import de.metas.util.FileUtil;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -45,19 +50,19 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Alternative class loader to be used when doing dev-tests on a local machine.<br>
  * This class loader will be used by {@link JasperEngine} if we run in developer mode.
  *
  * @author tsa
- *
  */
 public class JasperCompileClassLoader extends ClassLoader
 {
@@ -69,7 +74,9 @@ public class JasperCompileClassLoader extends ClassLoader
 	private static final String xlsExtension = ".xls";
 
 	private final ImmutableSet<File> additionalResourceDirNames;
-	private final Map<String, Optional<JasperEntry>> jasperEntriesByJrxmlPath = new ConcurrentHashMap<>();
+
+	private static final CCache<String, Optional<JasperEntry>> jasperEntriesByJrxmlPathCache = CCache.<String, Optional<JasperEntry>>builder()
+			.build();
 
 	@Builder
 	private JasperCompileClassLoader(
@@ -93,15 +100,14 @@ public class JasperCompileClassLoader extends ClassLoader
 	@Override
 	protected URL findResource(final String name)
 	{
-		if (Check.isEmpty(name, true))
+		final String nameNormalized = StringUtils.trimBlankToNull(name.trim());
+		if (nameNormalized == null)
 		{
 			return null;
 		}
-
-		final String nameNormalized = name.trim();
-		if (nameNormalized.endsWith(jasperExtension))
+		else if (nameNormalized.endsWith(jasperExtension))
 		{
-			return getJaserResource(nameNormalized);
+			return getJasperResource(nameNormalized);
 		}
 		else if (nameNormalized.endsWith(xlsExtension))
 		{
@@ -118,17 +124,23 @@ public class JasperCompileClassLoader extends ClassLoader
 		}
 	}
 
-	private URL getJaserResource(final String name)
+	@Nullable
+	private URL getJasperResource(final String name)
 	{
 		final String jrxmlPath = toLocalPath(name, jrxmlExtension);
-		if (jrxmlPath == null)
+		JasperEntry entry = jasperEntriesByJrxmlPathCache.getOrLoad(jrxmlPath, this::computeJasperEntry).orElse(null);
+		if (entry != null)
 		{
-			return null;
+			final BooleanWithReason recompileRequired = checkRecompileRequired(entry);
+			if (recompileRequired.isTrue())
+			{
+				logger.info("Recompiling `{}` because {}", jrxmlPath, recompileRequired.getReason());
+				jasperEntriesByJrxmlPathCache.remove(jrxmlPath);
+				entry = jasperEntriesByJrxmlPathCache.getOrLoad(jrxmlPath, this::computeJasperEntry).orElse(null);
+			}
 		}
 
-		return jasperEntriesByJrxmlPath.computeIfAbsent(jrxmlPath, this::computeJasperEntry)
-				.map(JasperEntry::getJasperUrl)
-				.orElse(null);
+		return entry != null ? entry.getJasperUrl() : null;
 	}
 
 	private Optional<JasperEntry> computeJasperEntry(@NonNull final String jrxmlPath)
@@ -155,12 +167,53 @@ public class JasperCompileClassLoader extends ClassLoader
 
 		final File jrxmlFile = toLocalFile(jrxmlUrl);
 		final File jasperFile = compileJrxml(jrxmlFile);
-		logger.trace("Compiled jasper report: {} <- {}", jasperFile, jrxmlFile);
 
 		return Optional.of(JasperEntry.builder()
 				.jrxmlFile(jrxmlFile)
+				.jrxmlFileHash(computeHash(jrxmlFile))
 				.jasperFile(jasperFile)
 				.build());
+	}
+
+	private static BooleanWithReason checkRecompileRequired(@NonNull final JasperEntry entry)
+	{
+		final File jrxmlFile = entry.getJrxmlFile();
+		if (!jrxmlFile.exists() || !jrxmlFile.canRead())
+		{
+			return BooleanWithReason.trueBecause("" + jrxmlFile + " is missing or it cannot be read");
+		}
+
+		final File jasperFile = entry.getJasperFile();
+		if (!jasperFile.exists() || !jasperFile.canRead())
+		{
+			return BooleanWithReason.trueBecause("" + jasperFile + " is missing or it cannot be read");
+		}
+
+		final String jrxmlFileHashNow = computeHash(jrxmlFile);
+		if (!Objects.equals(entry.getJrxmlFileHash(), jrxmlFileHashNow))
+		{
+			return BooleanWithReason.trueBecause("" + jrxmlFile + " has changed");
+		}
+
+		return BooleanWithReason.FALSE;
+	}
+
+	private static String computeHash(final File file)
+	{
+		try
+		{
+			final MessageDigest md = MessageDigest.getInstance("MD5");
+			final byte[] fileContent = Util.readBytes(file);
+			md.update(fileContent);
+
+			final byte[] digest = md.digest();
+			return DatatypeConverter.printHexBinary(digest).toUpperCase();
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
 	}
 
 	private URL findMiscResource(final String name)
@@ -221,7 +274,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		}
 	}
 
-	private static String toLocalPath(final String resourceName, final String fileExtension)
+	private static String toLocalPath(@NonNull final String resourceName, @Nullable final String fileExtension)
 	{
 		String resourcePath = resourceName.trim()
 				.replace(JasperClassLoader.PLACEHOLDER, "")
@@ -232,21 +285,25 @@ public class JasperCompileClassLoader extends ClassLoader
 			resourcePath = "/" + resourcePath;
 		}
 
-		final String jasperReportJrxmlPath = FileUtil.changeFileExtension(resourcePath, fileExtension);
-
-		return jasperReportJrxmlPath;
+		return FileUtil.changeFileExtension(resourcePath, fileExtension);
 	}
 
 	private static File compileJrxml(final File jrxmlFile)
 	{
-		try (InputStream jrxmlStream = new FileInputStream(jrxmlFile))
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		try (final InputStream jrxmlStream = new FileInputStream(jrxmlFile))
 		{
-			final File jasperFile = File.createTempFile("JasperReport", jasperExtension);
+			final File jasperFile = File.createTempFile(
+					FileUtil.getFileBaseName(jrxmlFile.getName()),
+					jasperExtension);
 
-			try (FileOutputStream jasperStream = new FileOutputStream(jasperFile))
+			try (final FileOutputStream jasperStream = new FileOutputStream(jasperFile))
 			{
 				JasperCompileManager.compileReportToStream(jrxmlStream, jasperStream);
 			}
+
+			stopwatch.stop();
+			logger.info("Compiled jasper report: {} <- {} and it took {}", jasperFile, jrxmlFile, stopwatch);
 
 			return jasperFile;
 		}
@@ -272,11 +329,9 @@ public class JasperCompileClassLoader extends ClassLoader
 	@Builder
 	private static class JasperEntry
 	{
-		@NonNull
-		File jrxmlFile;
-
-		@NonNull
-		File jasperFile;
+		@NonNull File jrxmlFile;
+		@NonNull String jrxmlFileHash;
+		@NonNull File jasperFile;
 
 		public URL getJasperUrl()
 		{
