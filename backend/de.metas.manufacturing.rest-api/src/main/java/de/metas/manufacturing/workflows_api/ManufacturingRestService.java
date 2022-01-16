@@ -8,7 +8,6 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedulePro
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
-import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
@@ -95,8 +94,6 @@ public class ManufacturingRestService
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
-
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
 
 	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
 	{
