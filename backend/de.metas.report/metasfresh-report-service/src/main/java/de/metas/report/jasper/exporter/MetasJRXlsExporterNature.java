@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.exporter;
 
 /*
  * #%L
@@ -22,14 +22,14 @@ package de.metas.report.jasper;
  * #L%
  */
 
-import java.util.Map;
-
 import net.sf.jasperreports.engine.JRPrintElement;
 import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.export.Cut;
 import net.sf.jasperreports.engine.export.CutsInfo;
 import net.sf.jasperreports.engine.export.ExporterFilter;
 import net.sf.jasperreports.engine.export.JRXlsExporterNature;
+
+import java.util.Map;
 
 /**
  * Extension of {@link JRXlsExporterNature} which implements {@link MetasJRXlsExporter#PROPERTY_COLUMN_HIDDEN}.
@@ -75,7 +75,6 @@ final class MetasJRXlsExporterNature extends JRXlsExporterNature
 	 * Evaluates the given <code>element</code> and check if it has the property {@value MetasJRXlsExporter#PROPERTY_COLUMN_HIDDEN} set to <code>true</code>.
 	 * If that's the case, then it returns <code>true</code>.
 	 *
-	 * @param element
 	 * @return <code>true</code> if the element was annotated to require a hidden column
 	 */
 	private boolean isColumnHidden(final JRPrintElement element)

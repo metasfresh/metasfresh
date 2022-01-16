@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.class_loader;
 
 /*
  * #%L
@@ -55,7 +55,6 @@ import java.util.Properties;
 final class OrgImageLocalFileLoader
 {
 	private static final transient Logger logger = LogManager.getLogger(OrgImageLocalFileLoader.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
@@ -65,6 +64,7 @@ final class OrgImageLocalFileLoader
 
 	public OrgImageLocalFileLoader()
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		this.orgLogoResourceNameMatcher = new OrgLogoResourceNameMatcher(sysConfigBL);
 	}
 
@@ -107,19 +107,12 @@ final class OrgImageLocalFileLoader
 		// Save the image in a temporary file, to be locally available
 		return createTempImageFile(image);
 	}
-	
-	public boolean isLogoOrImageResourceName(final OrgResourceNameContext context )
-	{
-		if (orgLogoResourceNameMatcher.matches(context.getResourceName()) 
-				|| OrgImageResourceNameMatcher.instance.matches(context.getResourceName()))
-		{
-			return true;
-		}
 
-		// Fallback: not a logo/image resource
-		return false;
+	public boolean isLogoOrImageResourceName(final OrgResourceNameContext context)
+	{
+		return orgLogoResourceNameMatcher.matches(context.getResourceName())
+				|| OrgImageResourceNameMatcher.instance.matches(context.getResourceName());
 	}
-	
 
 	@Nullable
 	private I_AD_Image retrieveImage(@NonNull final OrgResourceNameContext context)
@@ -159,8 +152,8 @@ final class OrgImageLocalFileLoader
 	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
 	{
 		//
-		// Get Logo from Org's BPartner
-		// task FRESH-356: get logo also from org's bpartner if is set
+		// Get Logo from Organization's BPartner
+		// task FRESH-356: get logo also from organization's bpartner if is set
 		final Properties ctx = Env.getCtx();
 		final I_AD_Org org = orgsRepo.getById(adOrgId);
 		if (org != null)

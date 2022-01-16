@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.report.jasper;
+package de.metas.report.jasper.class_loader;
 
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
@@ -54,17 +54,12 @@ class OrgImageResourceNameMatcher
 	public boolean matches(@NonNull final String resourceName)
 	{
 		// Skip if no resourceName
-		if (resourceName == null || resourceName.isEmpty())
+		if (resourceName.isEmpty())
 		{
 			return false;
 		}
 
 		final int idx = resourceName.indexOf(RESOURCENAME_PREFIX);
-		if (idx < 0)
-		{
-			return false;
-		}
-
-		return true;
+		return idx >= 0;
 	}
 }

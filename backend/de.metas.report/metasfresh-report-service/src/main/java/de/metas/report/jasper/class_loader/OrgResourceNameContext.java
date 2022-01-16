@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.class_loader;
 
 import de.metas.organization.OrgId;
 import lombok.Builder;

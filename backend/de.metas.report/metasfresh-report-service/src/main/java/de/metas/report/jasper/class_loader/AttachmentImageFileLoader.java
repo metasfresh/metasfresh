@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.class_loader;
 
 /*
  * #%L
@@ -22,25 +22,21 @@ package de.metas.report.jasper;
  * #L%
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_PrintFormat;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 import de.metas.report.PrintFormatId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_PrintFormat;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Builds and returns the attachment image {@link File}.
@@ -97,9 +93,6 @@ final class AttachmentImageFileLoader
 	
 	/**
 	 * get one attachment entry; does not matter if are several
-	 * 
-	 * @param printFormatId
-	 * @return
 	 */
 	private AttachmentEntryId getAttachmentEntryIdByPrintFormatId(@NonNull final PrintFormatId printFormatId)
 	{

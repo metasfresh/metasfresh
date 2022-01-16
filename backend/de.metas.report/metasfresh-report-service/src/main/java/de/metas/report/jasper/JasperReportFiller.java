@@ -49,7 +49,7 @@ import java.util.Map;
 /**
  * Helper class used to fill a {@link JasperReport} and produce {@link JasperPrint}.
  */
-/* package */final class JasperReportFiller
+final class JasperReportFiller
 {
 	private static final transient Logger logger = LogManager.getLogger(JasperReportFiller.class);
 

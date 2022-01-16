@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.class_loader;
 
 /*
  * #%L
@@ -22,6 +22,21 @@ package de.metas.report.jasper;
  * #L%
  */
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.report.jasper.JasperEngine;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,30 +45,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.FileUtil;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import net.sf.jasperreports.engine.JasperCompileManager;
 
 /**
  * Alternative class loader to be used when doing dev-tests on a local machine.<br>
@@ -268,7 +265,7 @@ public class JasperCompileClassLoader extends ClassLoader
 			return super.findResources(name);
 		}
 
-		return Collections.enumeration(Arrays.asList(url));
+		return Collections.enumeration(Collections.singletonList(url));
 	}
 
 	@Value

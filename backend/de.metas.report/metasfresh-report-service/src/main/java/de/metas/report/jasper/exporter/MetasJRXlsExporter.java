@@ -1,4 +1,4 @@
-package de.metas.report.jasper;
+package de.metas.report.jasper.exporter;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 
@@ -39,7 +39,7 @@ public class MetasJRXlsExporter extends JRXlsExporter
 	 * Configure standard parameters.
 	 * Mainly our aim is to get a clean Excel report.
 	 */
-	private final void setStandardParameters()
+	private void setStandardParameters()
 	{
 		// TODO: use the modern API, but note that we can't mix calls to this deprecated API with calls to the new one.
 
