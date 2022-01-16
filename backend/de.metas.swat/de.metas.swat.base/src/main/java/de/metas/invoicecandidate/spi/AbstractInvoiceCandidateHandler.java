@@ -22,12 +22,6 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
-
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
@@ -46,6 +40,11 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
@@ -165,11 +164,13 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		{
 			ic.setDeliveryDate(null);
 			ic.setFirst_Ship_BPLocation_ID(-1);
+			ic.setC_Shipping_Location_ID(-1);
 		}
 		else
 		{
 			ic.setDeliveryDate(firstInOut.getMovementDate());
-			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
+			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID()); // C_BPartner_Location
+			ic.setC_Shipping_Location_ID(firstInOut.getC_BPartner_Location_Value_ID()); // C_Location
 		}
 	}
 }
