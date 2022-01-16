@@ -11,6 +11,7 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.WorkReportActivityHandler;
@@ -76,6 +77,8 @@ public class ManufacturingRestService
 				return builder.wfActivityType(WorkReportActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case ActivityConfirmation:
 				return builder.wfActivityType(ConfirmationActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case GenerateHUQRCodes:
+				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			default:
 				throw new AdempiereException("Unknown type: " + jobActivity);
 		}
