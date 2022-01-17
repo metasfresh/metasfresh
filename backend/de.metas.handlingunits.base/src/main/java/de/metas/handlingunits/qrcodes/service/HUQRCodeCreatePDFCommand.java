@@ -1,6 +1,8 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
@@ -9,6 +11,7 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -30,15 +33,30 @@ public class HUQRCodeCreatePDFCommand
 
 	public Resource execute()
 	{
+		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
+
+		// TODO:
+		// 1. generate labels for those printableQRCodes
+		// 2. If sendToPrinter is true then also send the PDF to mass printing
+		System.out.println("printableQRCodesJSON: " + printableQRCodesJSON);
+		System.out.println("sendToPrinter: " + sendToPrinter);
+		throw new UnsupportedOperationException("not implemented yet");
+	}
+
+	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
+	{
 		final ImmutableList<PrintableQRCode> printableQRCodes = qrCodes.stream()
 				.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
 
-		// TODO: generate labels for those printableQRCodes
-		// If sendToPrinter is true then also send the PDF to mass printing
-
-		printableQRCodes.forEach(System.out::println);
-		throw new UnsupportedOperationException("not implemented yet");
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(printableQRCodes);
+		}
+		catch (JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed converting QR codes to JSON", e);
+		}
 	}
 
 	private static PrintableQRCode toPrintableQRCode(final HUQRCode qrCode)
