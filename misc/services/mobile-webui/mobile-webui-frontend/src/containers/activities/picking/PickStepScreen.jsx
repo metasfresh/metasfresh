@@ -25,15 +25,16 @@ import NotFoundButton from '../NotFoundButton';
 class PickStepScreen extends Component {
   componentDidMount() {
     const {
-      pushHeaderEntry,
-      stepProps: { mainPickFrom },
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
       stepId,
       altStepId,
+      stepProps: { mainPickFrom },
+      pushHeaderEntry,
     } = this.props;
-    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
+    const location = pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
 
     pushHeaderEntry({
       location,
@@ -62,17 +63,18 @@ class PickStepScreen extends Component {
 
   onUnpickButtonClick = () => {
     const {
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
       stepId,
+      altStepId,
+      stepProps,
       postStepUnPicked,
       push,
       updatePickingStepQty,
-      altStepId,
-      stepProps,
     } = this.props;
-    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
+    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     postStepUnPicked({
       wfProcessId,
@@ -123,8 +125,17 @@ class PickStepScreen extends Component {
   };
 
   onScanButtonClick = () => {
+    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
     const { push } = this.props;
-    const location = pickingStepScanScreenLocation(this.props);
+
+    const location = pickingStepScanScreenLocation({
+      applicationId,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      altStepId,
+    });
 
     push(location);
   };
@@ -191,14 +202,13 @@ class PickStepScreen extends Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = ownProps.match.params;
 
   const activity = selectWFProcessFromState(state, wfProcessId).activities[activityId];
   const stepProps = activity.dataStored.lines[lineId].steps[stepId];
-  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
-    appId,
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -211,6 +221,7 @@ const mapStateToProps = (state, ownProps) => {
 PickStepScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

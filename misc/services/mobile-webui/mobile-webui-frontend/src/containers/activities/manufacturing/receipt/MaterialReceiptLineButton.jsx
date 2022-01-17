@@ -16,7 +16,8 @@ class MaterialReceiptLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyReceived, qtyToReceive, completeStatus, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyReceived, qtyToReceive, completeStatus, applicationId, lineId, isUserEditable } =
+      this.props;
 
     return (
       <button
@@ -30,7 +31,7 @@ class MaterialReceiptLineButton extends PureComponent {
             qtyCurrent={qtyReceived}
             qtyTarget={qtyToReceive}
             uom={uom}
-            appId="mfg"
+            applicationId={applicationId}
             subtypeId="receipts"
           />
         </ButtonWithIndicator>

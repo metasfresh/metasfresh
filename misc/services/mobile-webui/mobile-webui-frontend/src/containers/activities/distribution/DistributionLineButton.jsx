@@ -26,7 +26,7 @@ class DistributionLineButton extends PureComponent {
         onClick={this.handleClick}
       >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId="distribution" />
+          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} applicationId="distribution" />
         </ButtonWithIndicator>
       </button>
     );

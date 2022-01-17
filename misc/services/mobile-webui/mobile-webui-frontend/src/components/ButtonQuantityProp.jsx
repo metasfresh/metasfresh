@@ -2,17 +2,17 @@ import React from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
-const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, uom, appId, subtypeId }) => (
+const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, uom, applicationId, subtypeId }) => (
   <div className="row is-full is-size-7">
     <div className="picking-row-info">
       <div className="picking-to-pick">
-        {counterpart.translate(`activities.${appId}${subtypeId ? `.${subtypeId}` : ''}.target`)}:
+        {counterpart.translate(`activities.${applicationId}${subtypeId ? `.${subtypeId}` : ''}.target`)}:
       </div>
       <div className="picking-row-qty">
         {qtyTarget} {uom}
       </div>
       <div className="picking-row-picking">
-        {counterpart.translate(`activities.${appId}${subtypeId ? `.${subtypeId}` : ''}.picked`)}:
+        {counterpart.translate(`activities.${applicationId}${subtypeId ? `.${subtypeId}` : ''}.picked`)}:
       </div>
       <div className="picking-row-picked">
         {qtyCurrent} {uom}
@@ -25,7 +25,7 @@ ButtonQuantityProp.propTypes = {
   qtyTarget: PropTypes.number.isRequired,
   qtyCurrent: PropTypes.number.isRequired,
   uom: PropTypes.string.isRequired,
-  appId: PropTypes.string.isRequired,
+  applicationId: PropTypes.string.isRequired,
   subtypeId: PropTypes.string,
 };
 

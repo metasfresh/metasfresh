@@ -13,13 +13,14 @@ import PickStepButton from './PickStepButton';
 class PickLineScreen extends PureComponent {
   componentDidMount() {
     const {
-      pushHeaderEntry,
-      lineProps: { caption },
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
+      lineProps: { caption },
+      pushHeaderEntry,
     } = this.props;
-    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
+    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     pushHeaderEntry({
       location,
@@ -34,7 +35,7 @@ class PickLineScreen extends PureComponent {
   }
 
   render() {
-    const { wfProcessId, activityId, lineId, steps } = this.props;
+    const { applicationId, wfProcessId, activityId, lineId, steps } = this.props;
 
     return (
       <div className="pt-2 section lines-screen-container">
@@ -44,6 +45,7 @@ class PickLineScreen extends PureComponent {
               return (
                 <PickStepButton
                   key={idx}
+                  applicationId={applicationId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
@@ -63,7 +65,7 @@ class PickLineScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
@@ -71,6 +73,7 @@ const mapStateToProps = (state, ownProps) => {
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -83,6 +86,7 @@ const mapStateToProps = (state, ownProps) => {
 PickLineScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

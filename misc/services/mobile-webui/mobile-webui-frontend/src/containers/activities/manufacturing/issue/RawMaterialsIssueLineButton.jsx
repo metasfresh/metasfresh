@@ -29,7 +29,7 @@ class RawMaterialsIssueLineButton extends Component {
   };
 
   render() {
-    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyIssued, qtyToIssue, completeStatus, applicationId, lineId, isUserEditable } = this.props;
 
     return (
       <button
@@ -39,7 +39,13 @@ class RawMaterialsIssueLineButton extends Component {
         onClick={this.handleClick}
       >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyIssued} qtyTarget={qtyToIssue} uom={uom} appId="mfg" subtypeId="issues" />
+          <ButtonQuantityProp
+            qtyCurrent={qtyIssued}
+            qtyTarget={qtyToIssue}
+            uom={uom}
+            applicationId={applicationId}
+            subtypeId="issues"
+          />
         </ButtonWithIndicator>
       </button>
     );

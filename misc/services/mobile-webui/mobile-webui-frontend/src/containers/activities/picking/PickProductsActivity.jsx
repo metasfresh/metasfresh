@@ -43,10 +43,11 @@ const computeStepQtyPickedTotal = (step) => {
 class PickProductsActivity extends PureComponent {
   render() {
     const {
-      componentProps: { lines },
-      activityState,
+      applicationId,
       wfProcessId,
       activityId,
+      activityState,
+      componentProps: { lines },
     } = this.props;
     const dataStored = activityState ? activityState.dataStored : {};
     const { completeStatus, isUserEditable } = dataStored;
@@ -61,6 +62,7 @@ class PickProductsActivity extends PureComponent {
               return (
                 <PickLineButton
                   key={lineId}
+                  applicationId={applicationId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
@@ -80,8 +82,9 @@ class PickProductsActivity extends PureComponent {
 }
 
 PickProductsActivity.propTypes = {
-  wfProcessId: PropTypes.string,
-  activityId: PropTypes.string,
+  applicationId: PropTypes.string.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
+  activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,

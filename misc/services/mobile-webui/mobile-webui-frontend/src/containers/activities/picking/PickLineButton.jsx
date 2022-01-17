@@ -9,14 +9,14 @@ import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 
 class PickLineButton extends PureComponent {
   handleClick = () => {
-    const { push, wfProcessId, activityId, lineId } = this.props;
-    const location = pickingLineScreenLocation({ wfProcessId, activityId, lineId });
+    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
+    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     push(location);
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToPick, completeStatus, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyPicked, qtyToPick, completeStatus, applicationId, lineId, isUserEditable } = this.props;
 
     return (
       <div className="buttons">
@@ -27,7 +27,7 @@ class PickLineButton extends PureComponent {
           onClick={this.handleClick}
         >
           <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-            <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} appId="picking" />
+            <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToPick} uom={uom} applicationId={applicationId} />
           </ButtonWithIndicator>
         </button>
       </div>
@@ -38,6 +38,7 @@ class PickLineButton extends PureComponent {
 PickLineButton.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

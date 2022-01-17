@@ -2,23 +2,28 @@ import PickStepScreen from '../containers/activities/picking/PickStepScreen';
 import PickStepScanScreen from '../containers/activities/picking/PickStepScanScreen';
 import PickLineScreen from '../containers/activities/picking/PickLineScreen';
 
-export const pickingLineScreenLocation = ({ wfProcessId, activityId, lineId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}`;
+export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
+  `/${applicationId}/${wfProcessId}/A/${activityId}/L/${lineId}`;
 
-export const pickingStepScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) =>
-  `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${
-    altStepId ? `/altStepId/${altStepId}` : ''
-  }`;
+export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>
+  pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) +
+  `/S/${stepId}${altStepId ? `/ALT/${altStepId}` : ''}`;
 
-export const pickingStepScanScreenLocation = ({ wfProcessId, activityId, lineId, stepId, altStepId }) => {
-  return `/app/picking/${wfProcessId}/activityId/${activityId}/lineId/${lineId}/stepId/${stepId}${
-    altStepId ? `/altStepId/${altStepId}` : ''
-  }/scanner`;
+export const pickingStepScanScreenLocation = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  altStepId,
+}) => {
+  return pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) + `/scanner`;
 };
 
 export const pickingRoutes = [
   {
     path: pickingLineScreenLocation({
+      applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
@@ -27,6 +32,7 @@ export const pickingRoutes = [
   },
   {
     path: pickingStepScreenLocation({
+      applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
@@ -36,6 +42,7 @@ export const pickingRoutes = [
   },
   {
     path: pickingStepScreenLocation({
+      applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
@@ -46,6 +53,7 @@ export const pickingRoutes = [
   },
   {
     path: pickingStepScanScreenLocation({
+      applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',
@@ -55,6 +63,7 @@ export const pickingRoutes = [
   },
   {
     path: pickingStepScanScreenLocation({
+      applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
       lineId: ':lineId',

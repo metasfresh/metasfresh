@@ -12,15 +12,25 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses_status/pick
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
-    const { push, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
-    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
+    const { push, applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
+    const location = pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
 
     push(location);
   };
 
   render() {
-    const { wfProcessId, activityId, lineId, stepId, altStepId, pickFromAlternatives, uom, qtyToPick, pickFrom } =
-      this.props;
+    const {
+      applicationId,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      altStepId,
+      pickFromAlternatives,
+      uom,
+      qtyToPick,
+      pickFrom,
+    } = this.props;
     const isAlternative = altStepId;
     const completeStatus = computePickFromStatus(pickFrom);
 
@@ -57,6 +67,7 @@ class PickStepButton extends PureComponent {
         </button>
         {pickFromAlternatives && !altStepId && (
           <PickAlternatives
+            applicationId={applicationId}
             wfProcessId={wfProcessId}
             activityId={activityId}
             lineId={lineId}
@@ -73,7 +84,7 @@ class PickStepButton extends PureComponent {
 PickStepButton.propTypes = {
   //
   // Props
-  appId: PropTypes.string.isRequired,
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

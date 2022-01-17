@@ -5,7 +5,7 @@ import PickStepButton from './PickStepButton';
 
 class PickAlternatives extends Component {
   renderAlternatives = () => {
-    const { wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom } = this.props;
+    const { applicationId, wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom } = this.props;
 
     return (
       <div>
@@ -16,6 +16,7 @@ class PickAlternatives extends Component {
               return (
                 <PickStepButton
                   key={pickFromAlternative.alternativeId}
+                  applicationId={applicationId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
@@ -38,6 +39,7 @@ class PickAlternatives extends Component {
 }
 
 PickAlternatives.propTypes = {
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

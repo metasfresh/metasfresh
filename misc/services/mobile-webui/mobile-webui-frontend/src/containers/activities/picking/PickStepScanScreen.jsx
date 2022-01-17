@@ -25,8 +25,16 @@ class PickStepScanScreen extends PureComponent {
   }
 
   onComponentDidMount() {
-    const { pushHeaderEntry, wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
-    const location = pickingStepScanScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
+    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
+    const { pushHeaderEntry } = this.props;
+    const location = pickingStepScanScreenLocation({
+      applicationId,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      altStepId,
+    });
     const headerHuCode = getPickFrom({ stepProps, altStepId }).huBarcode;
     const headerQtyToPick = getQtyToPick({ stepProps, altStepId }).qtyPicked;
 
@@ -80,25 +88,29 @@ class PickStepScanScreen extends PureComponent {
   };
 
   render() {
+    const { eligibleBarcode, qtyTarget, stepProps } = this.props;
     return (
       <StepScanScreenComponent
+        eligibleBarcode={eligibleBarcode}
+        qtyTarget={qtyTarget}
+        qtyCaption={counterpart.translate('general.QtyToPick')}
+        stepProps={stepProps}
+        //
         pushUpdatedQuantity={this.pushUpdatedQuantity}
         setScannedBarcode={this.setScannedBarcode}
-        qtyCaption={counterpart.translate('general.QtyToPick')}
-        {...this.props}
       />
     );
   }
 }
 
 const mapStateToProps = (state, { match }) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId, appId, altStepId } = match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = match.params;
 
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   return {
-    appId,
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -111,7 +123,7 @@ const mapStateToProps = (state, { match }) => {
 };
 
 PickStepScanScreen.propTypes = {
-  componentProps: PropTypes.object,
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
