@@ -1,6 +1,6 @@
 -- 2022-01-10T14:14:18.348Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580471,0,TO_TIMESTAMP('2022-01-10 16:14:18','YYYY-MM-DD HH24:MI:SS'),100,'Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.','D','Y','Stücklisten-Komponenten bestellen','Stücklisten-Komponenten bestellen',TO_TIMESTAMP('2022-01-10 16:14:18','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580471,0,TO_TIMESTAMP('2022-01-10 16:14:18','YYYY-MM-DD HH24:MI:SS'),100,'Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.','D','Y','Stücklisten-Komponenten bestellen','Stücklisten-Komponenten bestellen',TO_TIMESTAMP('2022-01-10 16:14:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-01-10T14:14:18.356Z
@@ -18,26 +18,6 @@ UPDATE AD_Element_Trl SET Description='If ticked, then for all sales order lines
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580471,'en_US') 
 ;
 
--- 2022-01-10T14:24:09.375Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element SET ColumnName='PurchaseBOMComponents',Updated=TO_TIMESTAMP('2022-01-10 16:24:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580471
-;
-
--- 2022-01-10T14:24:09.379Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='PurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
-;
-
--- 2022-01-10T14:24:09.380Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='PurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL, AD_Element_ID=580471 WHERE UPPER(ColumnName)='PURCHASEBOMCOMPONENTS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
-;
-
--- 2022-01-10T14:24:09.381Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='PurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
-;
-
 -- 2022-01-10T14:24:50.348Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Element SET ColumnName=NULL,Updated=TO_TIMESTAMP('2022-01-10 16:24:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580471
@@ -45,38 +25,17 @@ UPDATE AD_Element SET ColumnName=NULL,Updated=TO_TIMESTAMP('2022-01-10 16:24:50'
 
 -- 2022-01-10T14:24:50.350Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName=NULL, Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
+UPDATE AD_Column SET ColumnName=NULL, Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
 ;
 
 -- 2022-01-10T14:24:50.351Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName=NULL, Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
-;
-
-
--- 2022-01-10T14:55:38.142Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element SET ColumnName='purchaseBOMComponents',Updated=TO_TIMESTAMP('2022-01-10 16:55:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580471
-;
-
--- 2022-01-10T14:55:38.151Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='purchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
-;
-
--- 2022-01-10T14:55:38.152Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='purchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL, AD_Element_ID=580471 WHERE UPPER(ColumnName)='PURCHASEBOMCOMPONENTS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
-;
-
--- 2022-01-10T14:55:38.153Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='purchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2022-01-10T14:56:11.496Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,580471,0,193,542168,20,'purchaseBOMComponents',TO_TIMESTAMP('2022-01-10 16:56:11','YYYY-MM-DD HH24:MI:SS'),100,'Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.','de.metas.order',1,'Y','N','Y','N','N','N','Stücklisten-Komponenten bestellen',100,TO_TIMESTAMP('2022-01-10 16:56:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,580471,0,193,542168,20,'purchaseBOMComponents',TO_TIMESTAMP('2022-01-10 16:56:11','YYYY-MM-DD HH24:MI:SS'),100,'Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.','de.metas.order',1,'Y','N','Y','N','N','N','Stücklisten-Komponenten bestellen',100,TO_TIMESTAMP('2022-01-10 16:56:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-01-10T14:56:11.497Z
@@ -91,16 +50,16 @@ UPDATE AD_Element SET ColumnName='IsPurchaseBOMComponents',Updated=TO_TIMESTAMP(
 
 -- 2022-01-10T14:59:26.935Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
+UPDATE AD_Column SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471
 ;
 
 -- 2022-01-10T14:59:26.935Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL, AD_Element_ID=580471 WHERE UPPER(ColumnName)='ISPURCHASEBOMCOMPONENTS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL, AD_Element_ID=580471 WHERE UPPER(ColumnName)='ISPURCHASEBOMCOMPONENTS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2022-01-10T14:59:26.936Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='IsPurchaseBOMComponents', Name='Stücklisten-Komponenten bestellen', Description='Wenn angehakt, dann werden für alle Auftragszeilen mit Stücklistenprodukt die entsprechenden Komponenten bzw. Subkomponenten als Bestellzeilen hinzugefügt. Alle anderen Auftragszeilen werden ignoriert.', Help=NULL WHERE AD_Element_ID=580471 AND IsCentrallyMaintained='Y'
 ;
 

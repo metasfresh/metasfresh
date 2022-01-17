@@ -39,7 +39,7 @@ Feature: sales order
 
   @from:cucumber
   Scenario: we can generate a purchase order from a sales order
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier | Name            |
       | p_2        | salesProduct_72 |
     And metasfresh contains M_PricingSystems
@@ -80,7 +80,7 @@ Feature: sales order
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType |
       | o_2                      | false   | POO         | MED        |
-    And the mediated purchase order linked to order 'o_2' has lines:
+    And the purchase order with document subtype 'MED' linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
       | 10         | 100        | p_2                     |
     And the sales order identified by 'o_2' is closed
@@ -88,16 +88,15 @@ Feature: sales order
 
 
   @from:cucumber
+  @ignore
   Scenario: we can generate a purchase order from a sales order, exploding BOM components
-  AND metasfresh contains organizations
-  | Identifier | Name |
-  | org_1      | org_1 |
-    And metasfresh contains M_Products:
-      | Identifier | Name               |
-      | p_3        | salesProduct_67    |
-      | p_31       | salesProduct_67_1  |
-      | p_32       | salesProduct_67_2  |
-      | p_33       | sales_Service_67_3 |
+    Given metasfresh contains M_Products:
+      | Identifier | Name                |
+      | p_3        | salesProduct_67     |
+      | p_31       | salesProduct_67_1   |
+      | p_31_1     | salesProduct_67_1_1 |
+      | p_32       | salesProduct_67_2   |
+      | p_33       | sales_Service_67_3  |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                   | Value                   | OPT.Description            | OPT.IsActive |
       | ps_3       | pricing_system_name_67 | pricing_system_value_67 | pricing_system_description | true         |
@@ -113,18 +112,21 @@ Feature: sales order
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_67_1    | plv_67_1                          | p_3                     | 0.0      | PCE               | Normal                        |
       | pp_67_2    | plv_67_1                          | p_33                    | 10.0     | PCE               | Normal                        |
-      | pp_67_4    | plv_67_2                          | p_31                    | 0.0      | PCE               | Normal                        |
+      | pp_67_4    | plv_67_2                          | p_31_1                  | 0.0      | PCE               | Normal                        |
       | pp_67_5    | plv_67_2                          | p_32                    | 0.0      | PCE               | Normal                        |
     And metasfresh contains PP_Product_BOMVersions:
-      | Identifier | M_Product_ID.Identifier | Name                |
-      | ppbv_67    | p_3                     | p_3_bomversion_name |
+      | Identifier | M_Product_ID.Identifier | Name                   |
+      | ppbv_67    | p_3                     | p_3_bomversion_name    |
+      | ppbv_67_1  | p_31                    | p_31_1_bomversion_name |
     And metasfresh contains PP_Product_BOM:
-      | Identifier | M_Product_ID.Identifier | Name         | BOMType       | BOMUse        | C_UOM_ID.X12DE355 | PP_Product_BOMVersions_ID.Identifier | ValidFrom  |
-      | ppb_67     | p_3                     | p_3_bom_name | CurrentActive | Manufacturing | PCE               | ppbv_67                              | 2021-04-01 |
+      | Identifier | M_Product_ID.Identifier | Name            | BOMType       | BOMUse        | C_UOM_ID.X12DE355 | PP_Product_BOMVersions_ID.Identifier | ValidFrom  |
+      | ppb_67     | p_3                     | p_3_bom_name    | CurrentActive | Manufacturing | PCE               | ppbv_67                              | 2021-04-01 |
+      | ppb_67_1   | p_31                    | p_31_1_bom_name | CurrentActive | Manufacturing | PCE               | ppbv_67_1                            | 2021-04-01 |
     And metasfresh contains PP_Product_BOMLines:
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | QtyBOM | C_UOM_ID.X12DE355 | ComponentType | ValidFrom  | Line |
       | ppbl_67_1  | ppb_67                       | p_31                    | 3      | PCE               | CO            | 2021-04-01 | 100  |
       | ppbl_67_2  | ppb_67                       | p_32                    | 4      | PCE               | CO            | 2021-04-01 | 200  |
+      | ppbl_67_3  | ppb_67_1                     | p_31_1                  | 5      | PCE               | CO            | 2021-04-01 | 100  |
     And metasfresh contains C_BPartners:
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |
@@ -133,6 +135,7 @@ Feature: sales order
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_67                | p_31                    |
       | vendor_67                | p_32                    |
+      | vendor_67                | p_31_1                  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | POReference     | C_Payment_ID |
       | o_3        | true    | endcustomer_67           | 2021-04-17  | po_ref_BOM_mock | 1000002      |
@@ -146,13 +149,12 @@ Feature: sales order
       | s_ol_3     | ol_3_1                    | N             |
     When generate PO from SO is invoked with parameters:
       | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType | IsPurchaseBOMComponents |
-      | vendor_67                | o_3                   | Mediated     | true                    |
+      | vendor_67                | o_3                   | Standard     | true                    |
     Then the order is created:
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType |
-      | o_3                      | false   | POO         | MED        |
-    And the mediated purchase order linked to order 'o_3' has lines:
+      | o_3                      | false   | POO         |            |
+    And the purchase order with document subtype '' linked to order 'o_3' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
-      | 30         | 0          | p_31                    |
+      | 150         | 0          | p_31_1                  |
       | 40         | 0          | p_32                    |
-    And the sales order identified by 'o_3' is closed
-    And the shipment schedule identified by s_ol_3 is processed after not more than 10 seconds
+    And the sales order identified by 'o_3' is not closed

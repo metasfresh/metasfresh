@@ -194,7 +194,7 @@ public class C_Order_StepDef
 			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
 			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
 
-			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 		}
 	}
@@ -206,6 +206,15 @@ public class C_Order_StepDef
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
+	}
+
+	@Then("the sales order identified by {string} is not closed")
+	public void salesOrderIsNotClosed(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		assertThat(salesOrder.getDocStatus()).isNotEqualTo(IDocument.STATUS_Closed);
 	}
 
 	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")

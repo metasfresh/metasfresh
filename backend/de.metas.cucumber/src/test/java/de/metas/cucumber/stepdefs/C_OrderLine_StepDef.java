@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -36,8 +37,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -45,7 +46,7 @@ import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_OrderLine_StepDef
 {
@@ -90,8 +91,8 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-	@Then("the mediated purchase order linked to order {string} has lines:")
-	public void thePurchaseOrderLinkedToOrderO_HasLines(@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
+	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
+	public void thePurchaseOrderLinkedToOrderO_HasLines(@Nullable final String docSubType, @NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
 	{
 		final I_C_Order purchaseOrder = queryBL
 				.createQueryBuilder(I_C_Order.class)
@@ -108,7 +109,10 @@ public class C_OrderLine_StepDef
 				.create().firstOnly(I_C_DocType.class);
 
 		assertThat(docType).isNotNull();
-		assertThat(docType.getDocSubType()).isEqualTo(X_C_DocType.DOCSUBTYPE_Mediated);
+		if (Check.isNotBlank(docSubType))
+		{
+			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
 
 		final List<I_C_OrderLine> purchaseOrderLines = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)

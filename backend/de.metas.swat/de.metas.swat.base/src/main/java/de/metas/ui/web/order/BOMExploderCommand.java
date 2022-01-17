@@ -138,7 +138,7 @@ public class BOMExploderCommand
 			result.addAll(this.toBuilder()
 					.initialCandidate(lineCandidate)
 					.build()
-					.execute());
+					.execute());  // recurse
 		}
 
 		return result;
