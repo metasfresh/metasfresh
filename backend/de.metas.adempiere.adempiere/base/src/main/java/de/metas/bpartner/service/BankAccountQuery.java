@@ -10,6 +10,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Set;
 
 import static de.metas.util.Check.assume;
 /*
@@ -39,7 +40,7 @@ public class BankAccountQuery
 {
 	@Nullable
 	@Singular
-	Collection<BPBankAcctUse> bpBankAcctUses;
+	Set<BPBankAcctUse> bpBankAcctUses;
 	@Nullable
 	BPartnerId bPartnerId;
 	@Nullable
