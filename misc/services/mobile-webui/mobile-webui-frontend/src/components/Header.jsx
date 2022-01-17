@@ -1,19 +1,30 @@
 import React from 'react';
-import { useStore } from 'react-redux';
-import { useLocation, useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import { useLocation, useHistory, useRouteMatch } from 'react-router-dom';
+import { useStore } from 'react-redux';
 
 import BackButton from './BackButton';
+import { getApplicationCaptionById } from '../reducers/applications';
+import counterpart from 'counterpart';
 
-const Header = ({ appName, hidden }) => {
+const Header = (props) => {
   const store = useStore();
   const state = store.getState();
   const location = useLocation();
   const history = useHistory();
-  const { activeApplication } = state.applications;
   const showBackButton = state.appHandler.token && location.pathname !== '/' && location.pathname !== '/login';
-  const applicationName = activeApplication ? activeApplication.caption : appName;
+
+  let applicationId = props.applicationId;
+  if (!applicationId) {
+    const routerMatch = useRouteMatch();
+    applicationId = routerMatch.params.applicationId;
+  }
+
+  const applicationName = getApplicationCaptionById({
+    state,
+    applicationId,
+    fallbackCaption: counterpart.translate('appName'),
+  });
 
   const handleClick = () => {
     if (showBackButton) {
@@ -22,7 +33,7 @@ const Header = ({ appName, hidden }) => {
   };
 
   return (
-    <header className={classnames('p-4', { hidden: hidden, header: !hidden })}>
+    <header className="p-4 header">
       <div className="columns is-mobile">
         <div className="column pt-1 is-2">{showBackButton ? <BackButton onClickExec={handleClick} /> : null}</div>
         <div className="column is-flex-grow-2 has-text-centered header-title">
@@ -36,8 +47,7 @@ const Header = ({ appName, hidden }) => {
 };
 
 Header.propTypes = {
-  appName: PropTypes.string,
-  hidden: PropTypes.bool,
+  applicationId: PropTypes.string,
 };
 
 export default Header;

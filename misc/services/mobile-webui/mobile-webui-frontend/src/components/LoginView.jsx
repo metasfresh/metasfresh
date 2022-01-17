@@ -13,7 +13,7 @@ import { toastError } from '../utils/toast';
  * Route handling login and showing login form
  */
 
-function LoginRoute() {
+function LoginView() {
   const history = useHistory();
   const location = useLocation();
   const auth = useAuth();
@@ -92,4 +92,4 @@ function LoginRoute() {
   );
 }
 
-export default LoginRoute;
+export default LoginView;

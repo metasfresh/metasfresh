@@ -2,7 +2,6 @@ import React from 'react';
 import { ConnectedRouter } from 'connected-react-router';
 import { Route, Switch } from 'react-router';
 
-import Main from '../components/Main';
 import Header from '../components/Header';
 import ViewHeader from '../containers/ViewHeader';
 import LoginView from '../components/LoginView';
@@ -34,23 +33,24 @@ const routesArray = [
 const Routes = () => {
   return (
     <ConnectedRouter history={history} basename="./">
-      <Main>
-        <Switch>
-          <Route exact path="/login" component={LoginView} />
-          <PrivateRoute path="/">
-            <div>
-              {routesArray.map(({ path, Component }) => (
-                <Route key={path} exact path={path}>
-                  <Header appName="metasfresh mobile" hidden />
-                  <ViewHeader />
-                  <Component />
-                  <ScreenToaster />
-                </Route>
-              ))}
-            </div>
-          </PrivateRoute>
-        </Switch>
-      </Main>
+      <Switch>
+        <Route exact path="/login">
+          <Header />
+          <LoginView />
+        </Route>
+        <PrivateRoute path="/">
+          <div>
+            {routesArray.map(({ path, Component, applicationId }) => (
+              <Route key={path} exact path={path}>
+                <Header applicationId={applicationId} />
+                <ViewHeader />
+                <Component />
+                <ScreenToaster />
+              </Route>
+            ))}
+          </div>
+        </PrivateRoute>
+      </Switch>
     </ConnectedRouter>
   );
 };
