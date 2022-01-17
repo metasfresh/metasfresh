@@ -824,6 +824,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
         .meta-icon-close-alt, .meta-icon-preview {
             cursor: default;
             font-size: 20px;
+            width: 25px;
         }
     }
 
@@ -866,7 +867,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 }
 
 .lookup-tooltip {
-    flex: 0.05;
+    flex: 0.02;
     justify-content: flex-end;
     pointer-events: initial;
 }
