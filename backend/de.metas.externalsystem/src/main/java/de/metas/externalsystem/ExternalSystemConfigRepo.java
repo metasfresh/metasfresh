@@ -81,9 +81,9 @@ public class ExternalSystemConfigRepo
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
 	{
-		return getAllByType(type)
+		return getActiveByType(type)
 				.stream()
-				.anyMatch(ExternalSystemParentConfig::getIsActive);
+				.anyMatch(ExternalSystemParentConfig::isActive);
 	}
 
 	@NonNull
@@ -165,27 +165,41 @@ public class ExternalSystemConfigRepo
 		return externalSystemConfigRecord.getType();
 	}
 
+	/**
+	 * @return the configs if both their parent and child records have {@code IsActive='Y'}
+	 */
 	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	public ImmutableList<ExternalSystemParentConfig> getActiveByType(@NonNull final ExternalSystemType externalSystemType)
 	{
+		final ImmutableList<ExternalSystemParentConfig> result;
+
 		switch (externalSystemType)
 		{
 			case Alberta:
-				return getAllByTypeAlberta();
+				result = getAllByTypeAlberta();
+				break;
 			case RabbitMQ:
-				return getAllByTypeRabbitMQ();
+				result = getAllByTypeRabbitMQ();
+				break;
 			case WOO:
-				return getAllByTypeWOO();
+				result = getAllByTypeWOO();
+				break;
+			case GRSSignum:
+				result = getAllByTypeGRS();
+				break;
 			case Shopware6:
 			case Other:
 				throw new AdempiereException("Method not supported")
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", externalSystemType);
-			case GRSSignum:
-				return getAllByTypeGRS();
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
+
+		return result
+				.stream()
+				.filter(ExternalSystemParentConfig::isActive)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
@@ -194,7 +208,7 @@ public class ExternalSystemConfigRepo
 		{
 			case Shopware6:
 				storeShopware6Config(config);
-				return;
+				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
 		}
@@ -459,7 +473,7 @@ public class ExternalSystemConfigRepo
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
-				.isActive(externalSystemConfigRecord.isActive())
+				.active(externalSystemConfigRecord.isActive())
 				.writeAudit(externalSystemConfigRecord.isWriteAudit())
 				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
@@ -651,7 +665,7 @@ public class ExternalSystemConfigRepo
 
 		record.setName(config.getName());
 		record.setType(config.getType().getCode());
-		record.setIsActive(config.getIsActive());
+		record.setIsActive(config.isActive());
 
 		return record;
 	}
