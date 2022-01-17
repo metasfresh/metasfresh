@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
+package de.metas.camel.externalsystems.grssignum.to_grs;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ExportBPartnerRouteContext
+public class ExportGRSRouteContext
 {
 	@NonNull
 	String remoteUrl;

@@ -142,9 +142,9 @@ import java.util.Map;
 	}
 
 	@Override
-	public final void createDraftReceiptCandidatesAndPlanningHUs()
+	public final List<I_M_HU> createDraftReceiptCandidatesAndPlanningHUs()
 	{
-		trxManager.callInNewTrx(() -> {
+		return trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())

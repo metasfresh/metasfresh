@@ -69,7 +69,9 @@ public class ExternalSystemConstants
 	public static final String PARAM_EXTERNAL_SYSTEM_HTTP_URL = "RemoteURL";
 	public static final String PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN = "AuthToken";
 	public static final String PARAM_BPARTNER_ID = "BPartnerId";
+	public static final String PARAM_HU_ID = "HUId";
 	public static final String PARAM_TENANT_ID = "TenantId";
+	public static final String PARAM_HU_ATTR = "HUAttributes";
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";

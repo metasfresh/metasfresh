@@ -1,0 +1,18 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "GRSSignum",
+  "command": "exportHU",
+  "adPInstanceId": null,
+  "externalSystemConfigId": 1,
+  "writeAuditEndpoint": "auditFileFolder",
+  "externalSystemChildConfigValue": "grsValue",
+  "parameters": {
+    "RemoteURL": "baseUrl",
+    "HUId": "1000000",
+    "AuthToken": "authToken",
+    "ChildConfigValue": "grsValue",
+    "TenantId": "tenantId",
+    "HUAttributes": "{\"LockNotice\":\"de_DE_HUAttributeLockNotice\"}"
+  }
+}

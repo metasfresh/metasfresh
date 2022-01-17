@@ -24,9 +24,6 @@ package de.metas.externalsystem.export.bpartner;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import de.metas.audit.data.model.DataExportAudit;
-import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
@@ -37,19 +34,16 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -59,59 +53,40 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
-public abstract class ExportToExternalSystemService
+public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSystemService
 {
-	private static final Logger logger = LogManager.getLogger(ExportToExternalSystemService.class);
-
-	protected final ExternalSystemConfigRepo externalSystemConfigRepo;
-	protected final DataExportAuditRepository dataExportAuditRepository;
-	protected final DataExportAuditLogRepository dataExportAuditLogRepository;
-	protected final ExternalSystemMessageSender externalSystemMessageSender;
-	protected final Debouncer<BPartnerId> syncBPartnerDebouncer;
-	protected final ExternalSystemConfigService externalSystemConfigService;
+	private static final Logger logger = LogManager.getLogger(ExportBPartnerToExternalSystem.class);
 
 	protected final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ExternalSystemConfigService externalSystemConfigService;
+	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
 
-	protected ExportToExternalSystemService(
+	protected ExportBPartnerToExternalSystem(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
-		this.externalSystemMessageSender = externalSystemMessageSender;
-		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
-		this.dataExportAuditRepository = dataExportAuditRepository;
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
+
 		this.externalSystemConfigService = externalSystemConfigService;
+
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
 				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
 				.distinct(true)
-				.consumer(this::syncBPartners)
+				.consumer(this::syncCollectedBPartnersIfRequired)
 				.build();
 	}
 
 	/**
-	 * Sends a {@link JsonExternalSystemRequest} that requests metasfresh-externalsystems to export the given {@code bpartnerId}.
-	 */
-	public void exportBPartner(
-			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
-			@NonNull final BPartnerId bpartnerId,
-			@Nullable final PInstanceId pInstanceId)
-	{
-		toJsonExternalSystemRequest(externalSystemChildConfigId, bpartnerId, pInstanceId)
-				.ifPresent(externalSystemMessageSender::send);
-	}
-
-	/**
-	 * Similar to {@link #exportBPartner(IExternalSystemChildConfigId, BPartnerId, PInstanceId)}, but
+	 * Similar to {@link ExportToExternalSystemService#exportToExternalSystem(IExternalSystemChildConfigId, TableRecordReference, PInstanceId)}, but
 	 * <li>uses a debouncer, so it might send the same {@code bPartnerId} just once</li>
 	 * <li>uses the export-audit-log to check to which external systems the respective bpartner was exported in the past; then re-exports it to those systems</li>
 	 */
@@ -124,11 +99,13 @@ public abstract class ExportToExternalSystemService
 
 	@VisibleForTesting
 	@NonNull
-	public Optional<JsonExternalSystemRequest> toJsonExternalSystemRequest(
+	public Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
 			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
-			@NonNull final BPartnerId bpartnerId,
+			@NonNull final TableRecordReference bPartnerRecordReference,
 			@Nullable final PInstanceId pInstanceId)
 	{
+		final BPartnerId bpartnerId = bPartnerRecordReference.getIdAssumingTableName(I_C_BPartner.Table_Name, BPartnerId::ofRepoId);
+
 		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
@@ -160,7 +137,7 @@ public abstract class ExportToExternalSystemService
 								   .build());
 	}
 
-	private void syncBPartners(@NonNull final Collection<BPartnerId> bPartnerIdList)
+	private void syncCollectedBPartnersIfRequired(@NonNull final Collection<BPartnerId> bPartnerIdList)
 	{
 		if (bPartnerIdList.isEmpty())
 		{
@@ -174,63 +151,23 @@ public abstract class ExportToExternalSystemService
 			return; // nothing to do
 		}
 
-		bPartnerIdList.forEach(this::syncBPartnerIfRequired);
-	}
+		for (final BPartnerId bPartnerId : bPartnerIdList)
+		{
+			final TableRecordReference bPartnerToExportRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
 
-	private void syncBPartnerIfRequired(@NonNull final BPartnerId bPartnerId)
-	{
-		final ImmutableSet.Builder<IExternalSystemChildConfigId> externalSysChildConfigCollector = ImmutableSet.builder();
-
-		externalSysChildConfigCollector.addAll(getExternalSysConfigIdsFromExportAudit(bPartnerId));
-		externalSysChildConfigCollector.addAll(getAdditionalExternalSystemConfigIds(bPartnerId));
-
-		externalSysChildConfigCollector.build()
-				.forEach(id -> exportBPartner(id, bPartnerId, null));
+			exportToExternalSystemIfRequired(bPartnerToExportRecordRef, () -> getAdditionalExternalSystemConfigIds(bPartnerId));
+		}
 	}
 
 	@NonNull
-	private ImmutableSet<IExternalSystemChildConfigId> getExternalSystemConfigsToSyncWith(@NonNull final DataExportAuditId dataExportAuditId)
+	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bpartnerId)
 	{
-		return dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId)
-				.stream()
-				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), getExternalSystemType()))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(IExternalSystemChildConfig::getId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	private ImmutableSet<IExternalSystemChildConfigId> getExternalSysConfigIdsFromExportAudit(@NonNull final BPartnerId bPartnerId)
-	{
-		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
-
-		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
-		if (!dataExportAudit.isPresent())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No dataExportAudit found for bPartnerRecordReference: {}! No action is performed!", bPartnerRecordReference);
-			return ImmutableSet.of();
-		}
-
-		final DataExportAuditId dataExportAuditId = dataExportAudit.get().getId();
-
-		final ImmutableSet<IExternalSystemChildConfigId> externalSystemConfigIds = getExternalSystemConfigsToSyncWith(dataExportAuditId);
-
-		if (externalSystemConfigIds.isEmpty())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No externalSystemConfigIds found for DataExportAuditId: {}! No action is performed!", dataExportAuditId);
-		}
-
-		return externalSystemConfigIds;
+		return Optional.empty();
 	}
 
 	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final BPartnerId bPartnerId);
 
 	protected abstract boolean isSyncBPartnerEnabled(@NonNull final IExternalSystemChildConfig childConfig);
 
-	protected abstract ExternalSystemType getExternalSystemType();
-
 	protected abstract String getExternalCommand();
-
-	protected abstract ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId);
 }

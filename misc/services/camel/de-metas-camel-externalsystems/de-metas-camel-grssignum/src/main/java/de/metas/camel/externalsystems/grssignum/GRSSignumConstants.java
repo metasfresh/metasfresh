@@ -31,7 +31,9 @@ public interface GRSSignumConstants
 
 	String ROUTE_PROPERTY_PUSH_BOMs_CONTEXT = "PushBOMsRouteContext";
 
-	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
+	String ROUTE_PROPERTY_EXPORT_GRS_CONTEXT = "ExportGRSRouteContext";
+
+	String ROUTE_PROPERTY_EXPORT_HU_GRS_CONTEXT = "ExportHUGRSRouteContext";
 
 	String ROUTE_PROPERTY_GRS_REST_API_CONTEXT = "GRSRestAPIRouteContext";
 

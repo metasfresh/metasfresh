@@ -1,18 +1,7 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -35,13 +24,22 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * This class is used by {@link HUSplitBuilder} but can also be called from others. It does the "generic" splitting work while HUSplitBuilder has a lot of setters that can help callers in setting up a particular {@link IHUProducerAllocationDestination} which is then passed to this class.
  * If you have your own {@link IAllocationSource}, {@link IAllocationDestination} etc, you can call this class directly.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUSplitBuilderCoreEngine
 {
@@ -52,6 +50,7 @@ public class HUSplitBuilderCoreEngine
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext huContextInitital;
 	private final I_M_HU huToSplit;
@@ -68,7 +67,7 @@ public class HUSplitBuilderCoreEngine
 	/**
 	 * @param huContextInitital an initial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
 	 * @param huToSplit
-	 * @param requestProvider a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
+	 * @param requestProvider   a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
 	 * @param destination
 	 */
 	@Builder
@@ -249,7 +248,10 @@ public class HUSplitBuilderCoreEngine
 		}
 		//
 		// Destroy empty HUs from huToSplit
-		handlingUnitsBL.destroyIfEmptyStorage(localHuContextCopy, huToSplit);
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+				.runAfterCommit(() -> trxManager
+						.runInNewTrx(() -> handlingUnitsBL
+								.destroyIfEmptyStorage(localHuContextCopy, huToSplit)));
 
 		return result;
 	}
@@ -297,8 +299,8 @@ public class HUSplitBuilderCoreEngine
 			return null;
 		}
 		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(
-				tuPIItem, 
-				BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), 
+				tuPIItem,
+				BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()),
 				productId,
 				SystemTime.asZonedDateTime());
 		return piip;

@@ -58,6 +58,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
 import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
@@ -201,6 +203,9 @@ public class ExternalSystem_Config_StepDef
 				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
 				break;
 			case GRSSignum:
+				final boolean isSyncHUsOnMaterialReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnMaterialReceipt, false);
+				final boolean isSyncHUsOnProductionReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnProductionReceipt, false);
+
 				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_GRSSignum.class);
 				externalSystemConfigGrsSignum.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
 				externalSystemConfigGrsSignum.setExternalSystemValue(externalSystemChildValue);
@@ -209,6 +214,8 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigGrsSignum.setTenantId("tenantId");
 				externalSystemConfigGrsSignum.setIsSyncBPartnersToRestEndpoint(true);
 				externalSystemConfigGrsSignum.setIsActive(true);
+				externalSystemConfigGrsSignum.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
+				externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
 				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
 				break;
 			default:

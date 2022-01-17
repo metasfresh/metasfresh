@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO implements I_ExternalSystem_Config_GRSSignum, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1146452755L;
+	private static final long serialVersionUID = -1588297937L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_GRSSignum (final Properties ctx, final int ExternalSystem_Config_GRSSignum_ID, @Nullable final String trxName)
@@ -158,6 +158,30 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public boolean isSyncBPartnersToRestEndpoint() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSyncBPartnersToRestEndpoint);
+	}
+
+	@Override
+	public void setIsSyncHUsOnMaterialReceipt (final boolean IsSyncHUsOnMaterialReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnMaterialReceipt, IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnMaterialReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public void setIsSyncHUsOnProductionReceipt (final boolean IsSyncHUsOnProductionReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnProductionReceipt, IsSyncHUsOnProductionReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnProductionReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnProductionReceipt);
 	}
 
 	/** 

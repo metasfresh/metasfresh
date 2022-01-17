@@ -32,9 +32,11 @@ import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.handlingunits.model.I_M_HU;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -50,20 +52,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
+import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final StepDefData<I_M_HU> huTable;
 	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final StepDefData<I_M_HU> huTable,
 			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable)
 	{
 		this.bpartnerTable = bpartnerTable;
+		this.huTable = huTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
@@ -92,7 +101,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		final Map<String, String> tableRow = dataTable.asMaps().get(0);
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
-		final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
+		final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
 
 		final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 		assertThat(bpartner).isNotNull();
@@ -104,6 +113,30 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		assertThat(Integer.valueOf(requestBPartnerId)).isEqualTo(bpartner.getC_BPartner_ID());
 		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue()).isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
+	}
+
+	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:")
+	public void rabbitMQ_receives_an_external_system_request_param(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
+	{
+		final JsonExternalSystemRequest requestToRabbitMQ = pollRequestFromQueue();
+
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
+		assertThat(externalSystemConfig).isNotNull();
+		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue()).isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
+
+		//HU
+		final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(huIdentifier))
+		{
+			final I_M_HU hu = huTable.get(huIdentifier);
+			assertThat(hu).isNotNull();
+
+			final String requestHuId = requestToRabbitMQ.getParameters().get(PARAM_HU_ID);
+			assertThat(Integer.valueOf(requestHuId)).isEqualTo(hu.getM_HU_ID());
+		}
 	}
 
 	private JsonExternalSystemRequest pollRequestFromQueue() throws IOException, TimeoutException, InterruptedException

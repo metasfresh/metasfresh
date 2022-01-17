@@ -22,7 +22,6 @@
 
 package de.metas.externalsystem.rabbitmqhttp;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
@@ -31,8 +30,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.export.bpartner.ExportToExternalSystemService;
+import de.metas.externalsystem.export.bpartner.ExportBPartnerToExternalSystem;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -44,11 +42,11 @@ import java.util.Map;
  * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link ExternalSystemType#RabbitMQ}.
  */
 @Service
-public class ExportToRabbitMQService extends ExportToExternalSystemService
+public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSystem
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER = "exportBPartner";
 
-	public ExportToRabbitMQService(
+	public ExportBPartnerToRabbitMQService(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
@@ -95,11 +93,5 @@ public class ExportToRabbitMQService extends ExportToExternalSystemService
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER;
-	}
-
-	@Override
-	protected ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartner)
-	{
-		return ImmutableSet.of();
 	}
 }

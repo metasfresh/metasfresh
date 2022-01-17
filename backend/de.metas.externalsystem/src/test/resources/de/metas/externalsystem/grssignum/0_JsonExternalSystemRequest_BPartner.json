@@ -5,7 +5,7 @@
   "command": "exportBPartner",
   "adPInstanceId": 3,
   "externalSystemConfigId": 1,
-  "writeAuditEndpoint": "fileFolder",
+  "writeAuditEndpoint": "auditFileFolder",
   "externalSystemChildConfigValue": "grsValue",
   "parameters": {
     "RemoteURL": "baseUrl",

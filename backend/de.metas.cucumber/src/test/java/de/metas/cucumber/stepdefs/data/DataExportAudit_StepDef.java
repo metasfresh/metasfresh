@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -67,6 +68,7 @@ public class DataExportAudit_StepDef
 	private final StepDefData<I_Data_Export_Audit> dataExportAuditTable;
 	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
 	private final StepDefData<I_AD_PInstance> pinstanceTable;
+	private final StepDefData<I_M_HU> huTable;
 
 	private final TestContext testContext;
 
@@ -79,6 +81,7 @@ public class DataExportAudit_StepDef
 			@NonNull final StepDefData<I_Data_Export_Audit> dataExportAuditTable,
 			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable,
 			@NonNull final StepDefData<I_AD_PInstance> pinstanceTable,
+			@NonNull final StepDefData<I_M_HU> huTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
@@ -87,6 +90,7 @@ public class DataExportAudit_StepDef
 		this.dataExportAuditTable = dataExportAuditTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.pinstanceTable = pinstanceTable;
+		this.huTable = huTable;
 		this.testContext = testContext;
 	}
 
@@ -194,6 +198,10 @@ public class DataExportAudit_StepDef
 			case I_C_Location.Table_Name:
 				final I_C_Location location = locationTable.get(recordIdentifier);
 				tableRecordReference = TableRecordReference.of(location);
+				break;
+			case I_M_HU.Table_Name:
+				final I_M_HU hu = huTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(hu);
 				break;
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);

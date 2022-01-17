@@ -27,6 +27,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 @UtilityClass
@@ -67,5 +69,11 @@ public class StepDefUtil
 	{
 		final long waitingTimeMillis = waitingTimeSec * 1000L;
 		Thread.sleep(waitingTimeMillis);
+	}
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 }

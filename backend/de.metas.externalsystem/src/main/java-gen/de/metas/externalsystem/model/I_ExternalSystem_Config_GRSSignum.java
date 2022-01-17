@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -292,6 +293,48 @@ public interface I_ExternalSystem_Config_GRSSignum
 
 	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncBPartnersToRestEndpoint = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncBPartnersToRestEndpoint", null);
 	String COLUMNNAME_IsSyncBPartnersToRestEndpoint = "IsSyncBPartnersToRestEndpoint";
+
+	/**
+	 * Set IsSyncHUsOnMaterialReceipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncHUsOnMaterialReceipt (boolean IsSyncHUsOnMaterialReceipt);
+
+	/**
+	 * Get IsSyncHUsOnMaterialReceipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncHUsOnMaterialReceipt();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncHUsOnMaterialReceipt = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncHUsOnMaterialReceipt", null);
+	String COLUMNNAME_IsSyncHUsOnMaterialReceipt = "IsSyncHUsOnMaterialReceipt";
+
+	/**
+	 * Set IsSyncHUsOnProductionReceipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncHUsOnProductionReceipt (boolean IsSyncHUsOnProductionReceipt);
+
+	/**
+	 * Get IsSyncHUsOnProductionReceipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncHUsOnProductionReceipt();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncHUsOnProductionReceipt = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncHUsOnProductionReceipt", null);
+	String COLUMNNAME_IsSyncHUsOnProductionReceipt = "IsSyncHUsOnProductionReceipt";
 
 	/**
 	 * Set Tenant-ID (MID).

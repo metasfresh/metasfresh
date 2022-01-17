@@ -40,6 +40,7 @@ public class ExternalSystemCamelConstants
 	public static String HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE = "externalSystemChildConfigValue";
 	public static String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
 	public static String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
+	public static String HEADER_HU_ID = "M_HU_ID";
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
@@ -103,4 +104,10 @@ public class ExternalSystemCamelConstants
 	public static String MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI= "metasfresh.create-service-status-v2.camel.uri";
 	public static String MF_GET_SERVICE_STATUS_V2_CAMEL_URI = "metasfresh.service-status-v2.camel.uri";
 	public static String MF_INVOKE_EXTERNAL_SYSTEM_ACTION_V2_CAMEL_URI= "metasfresh.invoke-external-system-action-v2.camel.uri";
+
+	public static final String MF_RETRIEVE_HU_V2_CAMEL_ROUTE_ID = "To-MF_retrieveHU_V2-Route";
+	public static String MF_RETRIEVE_HU_V2_CAMEL_URI = "metasfresh.retrieve-hu-v2.api.uri";
+
+	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID = "To-MF_updateHUAttributes_V2-Route";
+	public static String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI = "metasfresh.update-hu-attributes-v2.api.uri";
 }

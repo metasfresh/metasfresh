@@ -26,8 +26,9 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.to_grs.ExportGRSRouteContext;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -90,13 +91,13 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 
 		final String authToken = request.getParameters().get(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN);
 
-		final ExportBPartnerRouteContext context = ExportBPartnerRouteContext.builder()
+		final ExportGRSRouteContext context = ExportGRSRouteContext.builder()
 				.remoteUrl(remoteUrl)
 				.authToken(authToken)
 				.tenantId(tenantId)
 				.build();
 
-		exchange.setProperty(GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, context);
+		exchange.setProperty(GRSSignumConstants.ROUTE_PROPERTY_EXPORT_GRS_CONTEXT, context);
 	}
 
 	private void buildBPRetrieveCamelRequest(@NonNull final Exchange exchange)
