@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Desc
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(record_id   numeric,
-                                                                                           ad_language character varying)
+                                                                                ad_language character varying)
     RETURNS TABLE
             (
                 description  character varying,
