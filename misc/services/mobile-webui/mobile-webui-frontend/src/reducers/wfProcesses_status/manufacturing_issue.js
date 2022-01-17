@@ -28,7 +28,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
-  updateStepStatus({
+  updateStepStatusAndRollup({
     draftWFProcess,
     activityId,
     lineId,
@@ -38,7 +38,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
+const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   draftStep.completeStatus = computeStepStatus({ draftStep });
@@ -46,22 +46,19 @@ const updateStepStatus = ({ draftWFProcess, activityId, lineId, stepId }) => {
 
   //
   // Rollup:
-  updateLineStatusFromSteps({ draftWFProcess, activityId, lineId });
+  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
 };
 
-const computeStepStatus = ({ draftStep }) => {
-  const isStepCompleted =
-    draftStep.qtyIssued !== null &&
-    // is completely picked or a reject code is set
-    (draftStep.qtyToIssue - draftStep.qtyIssued === 0 || !!draftStep.qtyRejectedReasonCode);
-
+// @VisibleForTesting
+export const computeStepStatus = ({ draftStep }) => {
+  const isStepCompleted = !!draftStep.qtyIssued || !!draftStep.qtyRejectedReasonCode;
   return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
-const updateLineStatusFromSteps = ({ draftWFProcess, activityId, lineId }) => {
+const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
-  draftLine.qtyIssued = computeLineQuantityFromSteps({ draftLine });
+  draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
@@ -73,24 +70,36 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
 
   const stepStatuses = [];
+  let hasCompletedAlternativeSteps = false;
   stepIds.forEach((stepId) => {
     const draftStep = draftLine.steps[stepId];
-    // TEMP: We want to step over issues with target quantity 0, as otherwise they influence line's
-    // complete status
-    const status = draftStep.qtyToIssue === 0 ? CompleteStatus.COMPLETED : draftStep.completeStatus;
 
-    if (!stepStatuses.includes(status)) {
-      stepStatuses.push(status);
+    const status = draftStep.completeStatus;
+    const isAlternativeStep = draftStep.qtyToIssue === 0;
+    if (!isAlternativeStep) {
+      if (!stepStatuses.includes(status)) {
+        stepStatuses.push(status);
+      }
+    } else {
+      if (status === CompleteStatus.COMPLETED) {
+        hasCompletedAlternativeSteps = true;
+      }
     }
   });
 
-  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+  let lineStatus = CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+
+  if (lineStatus === CompleteStatus.NOT_STARTED && hasCompletedAlternativeSteps) {
+    lineStatus = CompleteStatus.COMPLETED;
+  }
+
+  return lineStatus;
 };
 
-const computeLineQuantityFromSteps = ({ draftLine }) => {
+// @VisibleForTesting
+export const computeLineQtyIssuedFromSteps = ({ draftLine }) => {
   const steps = isDraft(draftLine) ? Object.values(current(draftLine.steps)) : Object.values(draftLine.steps);
-
-  return steps.reduce((acc, { qtyIssued }) => (acc += qtyIssued), 0);
+  return steps.reduce((acc, { qtyIssued }) => acc + (qtyIssued ? qtyIssued : 0), 0);
 };
 
 const extractDraftMapKeys = (draftMap) => {
@@ -110,7 +119,8 @@ const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
 };
 
-const computeActivityStatus = ({ draftActivity }) => {
+// @VisibleForTesting
+export const computeActivityStatus = ({ draftActivity }) => {
   const draftActivityDataStored = draftActivity.dataStored;
   if (draftActivityDataStored.lines) {
     draftActivityDataStored.lines.forEach((line) => {
