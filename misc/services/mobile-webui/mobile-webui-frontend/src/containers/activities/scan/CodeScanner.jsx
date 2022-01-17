@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BarcodeFormat, BrowserMultiFormatReader, DecodeHintType } from '@zxing/library';
-// import { connect } from 'react-redux';
 
 class CodeScanner extends Component {
   constructor(props) {
@@ -138,5 +137,4 @@ CodeScanner.propTypes = {
   onBarcodeScanned: PropTypes.func.isRequired,
 };
 
-// export default connect(null, null)(CodeScanner);
 export default CodeScanner;
