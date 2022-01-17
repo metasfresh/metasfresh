@@ -131,7 +131,7 @@ public abstract class ExportToExternalSystemService
 	{
 		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
-		if (!config.getIsActive())
+		if (!config.isActive())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemParentConfig: {} isActive = false! No action is performed!", config.getId());
 			return Optional.empty();
