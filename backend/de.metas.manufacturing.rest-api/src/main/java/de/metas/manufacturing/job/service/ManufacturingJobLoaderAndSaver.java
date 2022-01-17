@@ -132,6 +132,7 @@ public class ManufacturingJobLoaderAndSaver
 						.build();
 			case WorkReport:
 			case ActivityConfirmation:
+			case GenerateHUQRCodes:
 				return prepareJobActivity(from)
 						.build();
 			default:
