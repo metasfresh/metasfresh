@@ -103,3 +103,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_BPartner ADD CONSTRAINT CIncotermsCustomer_CBPartner FOREIGN KEY (C_Incoterms_Customer_ID) REFERENCES public.C_Incoterms DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- 2022-01-17T22:20:07.764Z
+-- URL zum Konzept
+UPDATE AD_Ref_Table SET AD_Key=577179,Updated=TO_TIMESTAMP('2022-01-18 00:20:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541534
+;
+
