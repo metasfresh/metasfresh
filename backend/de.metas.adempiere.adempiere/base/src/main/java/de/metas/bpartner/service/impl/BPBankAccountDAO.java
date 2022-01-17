@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.money.CurrencyId;
@@ -138,9 +139,10 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 							.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, query.getInvoiceId())
 							.create());
 		}
-		if (query.getBpBankAcctUses() != null)
+		final Collection<BPBankAcctUse> bankAcctUses = query.getBpBankAcctUses();
+		if (bankAcctUses != null && !bankAcctUses.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_BPBankAcctUse, query.getBpBankAcctUses());
+			queryBuilder.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_BPBankAcctUse, bankAcctUses);
 		}
 		if (query.isContainsQRIBAN())
 		{
