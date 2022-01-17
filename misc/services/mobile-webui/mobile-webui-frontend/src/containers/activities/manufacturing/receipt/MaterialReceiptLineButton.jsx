@@ -9,14 +9,14 @@ import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
-    const { push, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptScreenLocation({ wfProcessId, activityId, lineId });
+    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     push(location);
   };
 
   render() {
-    const { caption, uom, qtyCurrent, qtyTarget, completeStatus, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyReceived, qtyToReceive, completeStatus, lineId, isUserEditable } = this.props;
 
     return (
       <button
@@ -27,8 +27,8 @@ class MaterialReceiptLineButton extends PureComponent {
       >
         <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
           <ButtonQuantityProp
-            qtyCurrent={qtyCurrent}
-            qtyTarget={qtyTarget}
+            qtyCurrent={qtyReceived}
+            qtyTarget={qtyToReceive}
             uom={uom}
             appId="mfg"
             subtypeId="receipts"
@@ -42,6 +42,7 @@ class MaterialReceiptLineButton extends PureComponent {
 MaterialReceiptLineButton.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -49,8 +50,8 @@ MaterialReceiptLineButton.propTypes = {
   isUserEditable: PropTypes.bool.isRequired,
   completeStatus: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
-  qtyCurrent: PropTypes.number.isRequired,
-  qtyTarget: PropTypes.number.isRequired,
+  qtyReceived: PropTypes.number.isRequired,
+  qtyToReceive: PropTypes.number.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,

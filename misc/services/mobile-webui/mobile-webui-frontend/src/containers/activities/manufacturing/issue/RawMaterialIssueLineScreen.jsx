@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 
 const RawMaterialIssueLineScreen = (props) => {
-  const { wfProcessId, activityId, lineId, steps } = props;
+  const { applicationId, wfProcessId, activityId, lineId, steps } = props;
 
   return (
     <div className="pt-2 section lines-screen-container">
@@ -17,12 +17,16 @@ const RawMaterialIssueLineScreen = (props) => {
             return (
               <StepButton
                 key={idx}
+                applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
                 lineId={lineId}
                 stepId={stepItem.id}
-                locatorName={stepItem.productName}
-                {...stepItem}
+                locatorName={stepItem.locatorName}
+                uom={stepItem.uom}
+                qtyIssued={stepItem.qtyIssued}
+                qtyToIssue={stepItem.qtyToIssue}
+                completeStatus={stepItem.completeStatus}
               />
             );
           })}
@@ -32,7 +36,7 @@ const RawMaterialIssueLineScreen = (props) => {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
@@ -40,6 +44,7 @@ const mapStateToProps = (state, ownProps) => {
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -50,6 +55,7 @@ const mapStateToProps = (state, ownProps) => {
 RawMaterialIssueLineScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

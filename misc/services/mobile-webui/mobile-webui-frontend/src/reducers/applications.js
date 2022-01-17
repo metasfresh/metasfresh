@@ -5,6 +5,14 @@ const initialState = {
   activeApplication: null,
 };
 
+export const getApplicationCaptionById = ({ state, applicationId, fallbackCaption }) => {
+  if (!applicationId) {
+    return fallbackCaption;
+  }
+
+  return state.applications?.availableApplications?.[applicationId]?.caption ?? fallbackCaption;
+};
+
 export default function applications(state = initialState, action) {
   const { payload } = action;
   switch (action.type) {

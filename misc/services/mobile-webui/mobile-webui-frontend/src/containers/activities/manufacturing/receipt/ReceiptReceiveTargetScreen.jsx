@@ -13,15 +13,15 @@ import {
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
-    const { push, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptNewHUScreen({ wfProcessId, activityId, lineId });
+    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId });
 
     push(location);
   };
 
   handleScanClick = () => {
-    const { push, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptScanScreenLocation({ wfProcessId, activityId, lineId });
+    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptScanScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     push(location);
   };
@@ -61,29 +61,28 @@ class ReceiptReceiveTargetScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
     lineProps,
-    appId,
   };
 };
 
 ReceiptReceiveTargetScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  lineProps: PropTypes.object.isRequired,
   lineId: PropTypes.string.isRequired,
-  appId: PropTypes.string.isRequired,
+  lineProps: PropTypes.object.isRequired,
 
   // actions
   push: PropTypes.func.isRequired,

@@ -119,15 +119,13 @@ class StepScanScreenComponent extends Component {
 }
 
 StepScanScreenComponent.propTypes = {
-  componentProps: PropTypes.object,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string,
+  // Props:
   eligibleBarcode: PropTypes.string,
   qtyTarget: PropTypes.number,
   qtyCaption: PropTypes.string.isRequired,
-  stepProps: PropTypes.object.isRequired,
+  stepProps: PropTypes.object.isRequired, // TODO: replace with uom!
+
+  // Callbacks
   pushUpdatedQuantity: PropTypes.func,
   setScannedBarcode: PropTypes.func.isRequired,
 };

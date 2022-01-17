@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import { updateWFProcess } from '../../actions/WorkflowActions';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { activitiesNotStarted, selectWFProcessFromState } from '../../reducers/wfProcesses_status';
-import { getLocation } from '../../utils';
 
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
@@ -15,16 +14,17 @@ import RawMaterialIssueActivity from '../activities/manufacturing/issue/RawMater
 import MaterialReceiptActivity from '../activities/manufacturing/receipt/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
+import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
 const EMPTY_ARRAY = [];
 
 class WFProcessScreen extends PureComponent {
   componentDidMount() {
-    const { pushHeaderEntry, headerProperties, wfProcessId } = this.props;
-    const location = getLocation({ wfProcessId });
+    const { applicationId, wfProcessId, headerProperties } = this.props;
+    const { pushHeaderEntry } = this.props;
 
     pushHeaderEntry({
-      location,
+      location: getWFProcessScreenLocation({ applicationId, wfProcessId }),
       values: headerProperties,
     });
   }
@@ -38,70 +38,10 @@ class WFProcessScreen extends PureComponent {
           <div className="activities">
             {activities.length > 0 &&
               activities.map((activityItem, index) => {
-                const isLastActivity = index === activities.length - 1;
-
-                switch (activityItem.componentType) {
-                  case 'common/scanBarcode':
-                    return (
-                      <ScanActivity
-                        key={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityState={activityItem}
-                      />
-                    );
-                  case 'picking/pickProducts':
-                    return (
-                      <PickProductsActivity
-                        key={activityItem.activityId}
-                        id={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityId={activityItem.activityId}
-                        activityState={activityItem}
-                        {...activityItem}
-                      />
-                    );
-                  case 'common/confirmButton':
-                    return (
-                      <ConfirmActivity
-                        key={activityItem.activityId}
-                        id={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityId={activityItem.activityId}
-                        caption={activityItem.caption}
-                        componentProps={activityItem.componentProps}
-                        isUserEditable={activityItem.dataStored.isUserEditable}
-                        isLastActivity={isLastActivity}
-                      />
-                    );
-                  case 'manufacturing/rawMaterialsIssue':
-                    return (
-                      <RawMaterialIssueActivity
-                        key={activityItem.activityId}
-                        id={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityState={activityItem}
-                      />
-                    );
-                  case 'manufacturing/materialReceipt':
-                    return (
-                      <MaterialReceiptActivity
-                        key={activityItem.activityId}
-                        id={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityState={activityItem}
-                      />
-                    );
-                  case 'distribution/move':
-                    return (
-                      <DistributionMoveActivity
-                        key={activityItem.activityId}
-                        id={activityItem.activityId}
-                        wfProcessId={wfProcessId}
-                        activityState={activityItem}
-                        {...activityItem}
-                      />
-                    );
-                }
+                return this.renderComponent({
+                  activityItem,
+                  isLastActivity: index === activities.length - 1,
+                });
               })}
             {isWorkflowNotStarted ? <AbortButton wfProcessId={wfProcessId} /> : null}
           </div>
@@ -109,15 +49,89 @@ class WFProcessScreen extends PureComponent {
       </div>
     );
   }
+
+  renderComponent = ({ activityItem, isLastActivity }) => {
+    const { applicationId, wfProcessId } = this.props;
+
+    switch (activityItem.componentType) {
+      case 'common/scanBarcode':
+        return (
+          <ScanActivity
+            key={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityState={activityItem}
+          />
+        );
+      case 'picking/pickProducts':
+        return (
+          <PickProductsActivity
+            key={activityItem.activityId}
+            id={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityId={activityItem.activityId}
+            activityState={activityItem}
+            {...activityItem}
+          />
+        );
+      case 'common/confirmButton':
+        return (
+          <ConfirmActivity
+            key={activityItem.activityId}
+            id={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityId={activityItem.activityId}
+            caption={activityItem.caption}
+            componentProps={activityItem.componentProps}
+            isUserEditable={activityItem.dataStored.isUserEditable}
+            isLastActivity={isLastActivity}
+          />
+        );
+      case 'manufacturing/rawMaterialsIssue':
+        return (
+          <RawMaterialIssueActivity
+            key={activityItem.activityId}
+            id={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityState={activityItem}
+          />
+        );
+      case 'manufacturing/materialReceipt':
+        return (
+          <MaterialReceiptActivity
+            key={activityItem.activityId}
+            id={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityState={activityItem}
+          />
+        );
+      case 'distribution/move':
+        return (
+          <DistributionMoveActivity
+            key={activityItem.activityId}
+            id={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
+            activityState={activityItem}
+            {...activityItem}
+          />
+        );
+    }
+  };
 }
 
 function mapStateToProps(state, { match }) {
-  const { workflowId: wfProcessId } = match.params;
+  const { applicationId, workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activities = wfProcess.activities ? Object.values(wfProcess.activities) : EMPTY_ARRAY;
   const isWorkflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {
+    applicationId,
     wfProcessId,
     activities,
     isWorkflowNotStarted,
@@ -128,9 +142,10 @@ function mapStateToProps(state, { match }) {
 WFProcessScreen.propTypes = {
   //
   // Props
-  isWorkflowNotStarted: PropTypes.bool,
-  activities: PropTypes.array.isRequired,
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
+  activities: PropTypes.array.isRequired,
+  isWorkflowNotStarted: PropTypes.bool,
   headerProperties: PropTypes.array,
   //
   // Actions

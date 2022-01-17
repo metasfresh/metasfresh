@@ -12,7 +12,7 @@ import { toastError } from '../../utils/toast';
 
 class WFLauncherButton extends PureComponent {
   handleClick = () => {
-    const { startedWFProcessId, wfParameters } = this.props;
+    const { applicationId, startedWFProcessId, wfParameters } = this.props;
     const { updateWFProcess, gotoWFProcessScreen } = this.props;
 
     const wfProcessPromise = startedWFProcessId
@@ -22,7 +22,7 @@ class WFLauncherButton extends PureComponent {
     wfProcessPromise
       .then((wfProcess) => {
         updateWFProcess({ wfProcess });
-        gotoWFProcessScreen({ wfProcess });
+        gotoWFProcessScreen({ applicationId, wfProcessId: wfProcess.id });
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -44,6 +44,7 @@ class WFLauncherButton extends PureComponent {
 WFLauncherButton.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,

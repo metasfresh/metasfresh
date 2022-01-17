@@ -11,17 +11,14 @@ import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {
-    const { push, wfProcessId, activityId, lineId, stepId } = this.props;
-    const location = manufacturingStepScreenLocation({ wfProcessId, activityId, lineId, stepId });
+    const { push, applicationId, wfProcessId, activityId, lineId, stepId } = this.props;
+    const location = manufacturingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId });
 
     push(location);
   };
 
   render() {
-    const {
-      lineId,
-      stepState: { locatorName, uom, qtyIssued, qtyToIssue, completeStatus },
-    } = this.props;
+    const { lineId, locatorName, uom, qtyIssued, qtyToIssue, completeStatus } = this.props;
     const qtyCurrent = qtyIssued || 0;
 
     return (
@@ -57,26 +54,22 @@ class RawMaterialIssueStepButton extends PureComponent {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  const { wfProcessId, activityId, lineId, stepId } = ownProps;
-
-  return {
-    stepState: state.wfProcesses_status[wfProcessId].activities[activityId].dataStored.lines[lineId].steps[stepId],
-    appId: state.applications.activeApplication ? state.applications.activeApplication.id : null,
-  };
-};
-
 RawMaterialIssueStepButton.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  stepState: PropTypes.object.isRequired,
+  locatorName: PropTypes.string.isRequired,
+  uom: PropTypes.string.isRequired,
+  qtyIssued: PropTypes.number,
+  qtyToIssue: PropTypes.number.isRequired,
+  completeStatus: PropTypes.string.isRequired,
   //
   // Actions
   push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { push })(RawMaterialIssueStepButton));
+export default withRouter(connect(null, { push })(RawMaterialIssueStepButton));

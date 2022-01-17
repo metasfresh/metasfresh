@@ -14,11 +14,14 @@ export function gotoAppLaunchersBarcodeScanner(applicationId) {
   };
 }
 
-const appLaunchersLocation = ({ applicationId }) => `/launchers/${applicationId}`;
-const appLaunchersBarcodeScannerLocation = ({ applicationId }) => `/launchers/${applicationId}/scanBarcode`;
+const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;
+const appLaunchersBarcodeScannerLocation = ({ applicationId }) => `/${applicationId}/launchers/scanBarcode`;
 
 export const launchersRoutes = [
-  { path: appLaunchersLocation({ applicationId: ':applicationId' }), Component: WFLaunchersScreen },
+  {
+    path: appLaunchersLocation({ applicationId: ':applicationId' }),
+    Component: WFLaunchersScreen,
+  },
 
   {
     path: appLaunchersBarcodeScannerLocation({ applicationId: ':applicationId' }),

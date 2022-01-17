@@ -6,9 +6,10 @@ import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 const MaterialReceiptActivity = (props) => {
   const {
-    activityState: { dataStored },
-    wfProcessId,
     id,
+    applicationId,
+    wfProcessId,
+    activityState: { dataStored },
   } = props;
   const data = dataStored ? dataStored : {};
   const { isUserEditable, lines } = data;
@@ -22,14 +23,15 @@ const MaterialReceiptActivity = (props) => {
             return (
               <LineButton
                 key={lineId}
+                applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={id}
                 lineId={lineId}
                 caption={lineItem.productName}
                 isUserEditable={isUserEditable || true}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                qtyCurrent={lineItem.qtyReceived}
-                qtyTarget={lineItem.qtyToReceive}
+                qtyReceived={lineItem.qtyReceived}
+                qtyToReceive={lineItem.qtyToReceive}
                 uom={lineItem.uom}
               />
             );
@@ -40,8 +42,9 @@ const MaterialReceiptActivity = (props) => {
 };
 
 MaterialReceiptActivity.propTypes = {
-  wfProcessId: PropTypes.string,
-  id: PropTypes.string,
+  applicationId: PropTypes.string.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };

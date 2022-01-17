@@ -6,9 +6,10 @@ import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 const RawMaterialsIssueActivity = (props) => {
   const {
-    activityState: { dataStored },
+    applicationId,
     wfProcessId,
     id,
+    activityState: { dataStored },
   } = props;
   const data = dataStored ? dataStored : {};
   const { isUserEditable, lines } = data;
@@ -22,6 +23,7 @@ const RawMaterialsIssueActivity = (props) => {
             return (
               <LineButton
                 key={lineId}
+                applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={id}
                 lineId={lineId}
@@ -40,7 +42,8 @@ const RawMaterialsIssueActivity = (props) => {
 };
 
 RawMaterialsIssueActivity.propTypes = {
-  wfProcessId: PropTypes.string,
+  applicationId: PropTypes.string.isRequired,
+  wfProcessId: PropTypes.string.isRequired,
   id: PropTypes.string,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,

@@ -68,8 +68,8 @@ class MaterialReceiptLineScreen extends PureComponent {
   };
 
   handleClick = () => {
-    const { dispatch, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptReceiveTargetScreen({ wfProcessId, activityId, lineId });
+    const { dispatch, applicationId, wfProcessId, activityId, lineId } = this.props;
+    const location = manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId });
 
     dispatch(push(location));
   };
@@ -120,12 +120,13 @@ class MaterialReceiptLineScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -136,6 +137,7 @@ const mapStateToProps = (state, ownProps) => {
 MaterialReceiptLineScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

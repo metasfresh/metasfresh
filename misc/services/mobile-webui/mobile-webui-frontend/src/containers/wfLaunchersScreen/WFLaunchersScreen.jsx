@@ -70,7 +70,17 @@ class WFLaunchersScreen extends Component {
 
         {map(applicationLaunchers.list, (launcher, index) => {
           const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-          return <WFLauncherButton key={key} id={key} {...launcher} />;
+          return (
+            <WFLauncherButton
+              key={key}
+              id={key}
+              applicationId={launcher.applicationId}
+              caption={launcher.caption}
+              startedWFProcessId={launcher.startedWFProcessId}
+              wfParameters={launcher.wfParameters}
+              showWarningSign={launcher.showWarningSign}
+            />
+          );
         })}
       </div>
     );

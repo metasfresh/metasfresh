@@ -73,14 +73,12 @@ const mapStateToProps = (state, ownProps) => {
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-  const appId = state.applications.activeApplication ? state.applications.activeApplication.id : null;
 
   return {
     wfProcessId,
     activityId,
     lineId,
     lineProps,
-    appId,
   };
 };
 
@@ -92,7 +90,7 @@ ReceiptNewHUScreen.propTypes = {
   lineProps: PropTypes.object.isRequired,
   lineId: PropTypes.string.isRequired,
 
-  // Actons
+  // Actions
   updateManufacturingReceiptTarget: PropTypes.func.isRequired,
   updateManufacturingReceipt: PropTypes.func.isRequired,
   go: PropTypes.func.isRequired,

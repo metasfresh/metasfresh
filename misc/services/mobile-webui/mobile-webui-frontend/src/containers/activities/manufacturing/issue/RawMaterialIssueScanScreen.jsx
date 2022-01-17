@@ -24,13 +24,14 @@ class RawMaterialIssueScanScreen extends PureComponent {
 
   componentDidMount() {
     const {
-      stepProps: { huBarcode, qtyToIssue },
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
       stepId,
+      stepProps: { huBarcode, qtyToIssue },
     } = this.props;
-    const location = manufacturingScanScreenLocation({ wfProcessId, activityId, lineId, stepId });
+    const location = manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId });
 
     pushHeaderEntry({
       location,
@@ -69,42 +70,43 @@ class RawMaterialIssueScanScreen extends PureComponent {
   };
 
   render() {
+    const { stepProps } = this.props;
     return (
       <StepScanScreenComponent
+        eligibleBarcode={stepProps.huBarcode}
+        qtyTarget={stepProps.qtyToIssue}
+        qtyCaption={counterpart.translate('general.QtyToPick')}
+        stepProps={stepProps}
+        // Callbacks:
         pushUpdatedQuantity={this.pushUpdatedQuantity}
         setScannedBarcode={this.setScannedBarcode}
-        qtyCaption={counterpart.translate('general.QtyToPick')}
-        {...this.props}
       />
     );
   }
 }
 
 const mapStateToProps = (state, { match }) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId, appId } = match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId } = match.params;
 
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
     stepId,
     stepProps,
-    appId,
-    qtyTarget: stepProps.qtyToIssue,
-    eligibleBarcode: stepProps.huBarcode,
   };
 };
 
 RawMaterialIssueScanScreen.propTypes = {
-  componentProps: PropTypes.object,
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  eligibleBarcode: PropTypes.string.isRequired,
   stepProps: PropTypes.object.isRequired,
   // Actions:
   go: PropTypes.func.isRequired,
