@@ -11,8 +11,8 @@ import { getLocation } from '../../utils';
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
-import RawMaterialIssueActivity from '../activities/manufacturing/RawMaterialIssueActivity';
-import MaterialReceiptActivity from '../activities/manufacturing/MaterialReceiptActivity';
+import RawMaterialIssueActivity from '../activities/manufacturing/issue/RawMaterialIssueActivity';
+import MaterialReceiptActivity from '../activities/manufacturing/receipt/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
 

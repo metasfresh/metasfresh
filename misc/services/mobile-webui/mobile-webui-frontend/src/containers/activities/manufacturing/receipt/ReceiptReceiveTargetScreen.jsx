@@ -5,8 +5,11 @@ import counterpart from 'counterpart';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { manufacturingReceiptScanScreenLocation, manufacturingReceiptNewHUScreen } from '../../../routes/manufacturing';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+import {
+  manufacturingReceiptScanScreenLocation,
+  manufacturingReceiptNewHUScreen,
+} from '../../../../routes/manufacturing_receipt';
 
 class ReceiptReceiveTargetScreen extends PureComponent {
   handleNewHUClick = () => {
@@ -30,7 +33,7 @@ class ReceiptReceiveTargetScreen extends PureComponent {
           <div className="buttons">
             <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleNewHUClick}>
               <div className="full-size-btn">
-                <div className="left-btn-side"></div>
+                <div className="left-btn-side" />
                 <div className="caption-btn">
                   <div className="rows">
                     <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.newHU')}</div>
@@ -40,7 +43,7 @@ class ReceiptReceiveTargetScreen extends PureComponent {
             </button>
             <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleScanClick}>
               <div className="full-size-btn">
-                <div className="left-btn-side"></div>
+                <div className="left-btn-side" />
                 <div className="caption-btn">
                   <div className="rows">
                     <div className="row is-full pl-5">

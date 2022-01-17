@@ -3,14 +3,17 @@ import PropTypes from 'prop-types';
 import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import PickQuantityButton from './PickQuantityButton';
-import { toastError } from '../../../utils/toast';
+import { toastError } from '../../../../utils/toast';
 import {
-  manufacturingLineScreenLocation,
+  manufacturingReceiptScreenLocation,
   manufacturingReceiptReceiveTargetScreen,
-} from '../../../routes/manufacturing';
+} from '../../../../routes/manufacturing_receipt';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 
 class MaterialReceiptLineScreen extends PureComponent {
   componentDidMount() {
@@ -21,7 +24,7 @@ class MaterialReceiptLineScreen extends PureComponent {
       activityId,
       lineId,
     } = this.props;
-    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
+    const location = manufacturingReceiptScreenLocation({ wfProcessId, activityId, lineId });
 
     dispatch(
       pushHeaderEntry({
@@ -116,14 +119,29 @@ class MaterialReceiptLineScreen extends PureComponent {
   }
 }
 
+const mapStateToProps = (state, ownProps) => {
+  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const wfProcess = selectWFProcessFromState(state, wfProcessId);
+  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
+
+  return {
+    wfProcessId,
+    activityId,
+    lineId,
+    lineProps,
+  };
+};
+
 MaterialReceiptLineScreen.propTypes = {
   //
   // Props
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  lineProps: PropTypes.object.isRequired,
   lineId: PropTypes.string.isRequired,
+  lineProps: PropTypes.object.isRequired,
+  //
   dispatch: PropTypes.func.isRequired,
 };
 
-export default MaterialReceiptLineScreen;
+export default withRouter(connect(mapStateToProps)(MaterialReceiptLineScreen));

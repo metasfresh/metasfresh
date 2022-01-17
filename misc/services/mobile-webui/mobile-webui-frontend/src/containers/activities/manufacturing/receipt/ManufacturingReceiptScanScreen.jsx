@@ -5,11 +5,11 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 
-import StepScanScreenComponent from '../common/StepScanScreenComponent';
-import { toastError } from '../../../utils/toast';
+import StepScanScreenComponent from '../../common/StepScanScreenComponent';
+import { toastError } from '../../../../utils/toast';
 
 const EMPTY_OBJECT = {};
 

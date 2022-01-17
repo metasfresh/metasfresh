@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import LineButton from './MaterialReceiptLineButton';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
+import LineButton from './RawMaterialsIssueLineButton';
+import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
-const MaterialReceiptActivity = (props) => {
+const RawMaterialsIssueActivity = (props) => {
   const {
     activityState: { dataStored },
     wfProcessId,
@@ -14,7 +14,7 @@ const MaterialReceiptActivity = (props) => {
   const { isUserEditable, lines } = data;
 
   return (
-    <div className="mfg-materialReceipt-activity-container mt-5">
+    <div className="mfg-rawMaterialsIssue-activity-container mt-5">
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;
@@ -26,10 +26,10 @@ const MaterialReceiptActivity = (props) => {
                 activityId={id}
                 lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={isUserEditable || true}
+                isUserEditable={isUserEditable}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                qtyCurrent={lineItem.qtyReceived}
-                qtyTarget={lineItem.qtyToReceive}
+                qtyIssued={lineItem.qtyIssued}
+                qtyToIssue={lineItem.qtyToIssue}
                 uom={lineItem.uom}
               />
             );
@@ -39,11 +39,11 @@ const MaterialReceiptActivity = (props) => {
   );
 };
 
-MaterialReceiptActivity.propTypes = {
+RawMaterialsIssueActivity.propTypes = {
   wfProcessId: PropTypes.string,
   id: PropTypes.string,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };
 
-export default MaterialReceiptActivity;
+export default RawMaterialsIssueActivity;

@@ -14,7 +14,8 @@ import ScreenToaster from '../components/ScreenToaster';
 import { commonRoutes } from './common';
 import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
-import { manufacturingRoutes } from './manufacturing';
+import { manufacturingIssueRoutes } from './manufacturing_issue';
+import { manufacturingReceiptRoutes } from './manufacturing_receipt';
 import { distributionRoutes } from './distribution';
 import { pickingRoutes } from './picking';
 import { getApplicationRoutes } from '../apps';
@@ -24,7 +25,8 @@ const routesArray = [
   ...launchersRoutes,
   ...workflowRoutes,
   ...distributionRoutes,
-  ...manufacturingRoutes,
+  ...manufacturingIssueRoutes,
+  ...manufacturingReceiptRoutes,
   ...pickingRoutes,
   ...getApplicationRoutes(),
 ];

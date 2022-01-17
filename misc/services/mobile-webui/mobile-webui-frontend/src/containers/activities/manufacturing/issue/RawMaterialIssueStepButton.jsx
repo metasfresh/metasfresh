@@ -5,9 +5,9 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';
 
-import { manufacturingStepScreenLocation } from '../../../routes/manufacturing';
-import Indicator from '../../../components/Indicator';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
+import Indicator from '../../../../components/Indicator';
+import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 class RawMaterialIssueStepButton extends PureComponent {
   handleClick = () => {

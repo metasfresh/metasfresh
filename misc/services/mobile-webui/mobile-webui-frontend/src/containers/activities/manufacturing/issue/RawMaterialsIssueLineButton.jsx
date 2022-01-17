@@ -4,10 +4,10 @@ import counterpart from 'counterpart';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 
-import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 class RawMaterialsIssueLineButton extends Component {
   handleClick = () => {

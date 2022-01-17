@@ -5,13 +5,16 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { manufacturingStepScreenLocation, manufacturingScanScreenLocation } from '../../../routes/manufacturing';
-import * as CompleteStatus from '../../../constants/CompleteStatus';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import {
+  manufacturingStepScreenLocation,
+  manufacturingScanScreenLocation,
+} from '../../../../routes/manufacturing_issue';
+import * as CompleteStatus from '../../../../constants/CompleteStatus';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ScreenToaster from '../../../components/ScreenToaster';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ScreenToaster from '../../../../components/ScreenToaster';
 
 class RawMaterialIssueStepScreen extends PureComponent {
   componentDidMount() {

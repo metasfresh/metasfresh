@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 
-import { manufacturingLineScreenLocation } from '../../../routes/manufacturing';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
+import { manufacturingReceiptScreenLocation } from '../../../../routes/manufacturing_receipt';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
 
 class MaterialReceiptLineButton extends PureComponent {
   handleClick = () => {
     const { push, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingLineScreenLocation({ wfProcessId, activityId, lineId });
+    const location = manufacturingReceiptScreenLocation({ wfProcessId, activityId, lineId });
 
     push(location);
   };

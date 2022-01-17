@@ -5,13 +5,13 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { toastError } from '../../../utils/toast';
-import { manufacturingScanScreenLocation } from '../../../routes/manufacturing';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../../actions/ManufacturingActions';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { toastError } from '../../../../utils/toast';
+import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 
-import StepScanScreenComponent from '../common/StepScanScreenComponent';
+import StepScanScreenComponent from '../../common/StepScanScreenComponent';
 
 class RawMaterialIssueScanScreen extends PureComponent {
   constructor(props) {

@@ -2,10 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-// import * as CompleteStatus from '../../../constants/CompleteStatus';
-// import Indicator from '../../../components/Indicator';
-import PickQuantityPrompt from '../PickQuantityPrompt';
-import { toastError } from '../../../utils/toast';
+import PickQuantityPrompt from '../../PickQuantityPrompt';
+import { toastError } from '../../../../utils/toast';
 
 class PickQuantityButton extends PureComponent {
   constructor(props) {

@@ -4,9 +4,9 @@ import { go } from 'connected-react-router';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
-import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../actions/ManufacturingActions';
-import { toastError } from '../../../utils/toast';
+import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
+import { toastError } from '../../../../utils/toast';
 
 class ReceiptNewHUScreen extends PureComponent {
   handleClick = (target) => {
@@ -47,7 +47,7 @@ class ReceiptNewHUScreen extends PureComponent {
                 onClick={() => this.handleClick(target)}
               >
                 <div className="full-size-btn">
-                  <div className="left-btn-side"></div>
+                  <div className="left-btn-side" />
                   <div className="caption-btn">
                     <div className="rows">
                       <div className="row is-full pl-5">{target.caption}</div>
