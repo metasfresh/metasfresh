@@ -29,9 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -43,17 +45,21 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateBOM_StepDef
 {
@@ -62,6 +68,8 @@ public class CreateBOM_StepDef
 
 	private final StepDefData<I_PP_Product_BOM> bomTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable;
+	private final StepDefData<I_PP_Product_BOM> productBomTable;
+	private final StepDefData<I_PP_Product_BOMLine> productBomLineTable;
 	private final StepDefData<I_M_Product> productTable;
 	private final TestContext testContext;
 
@@ -74,11 +82,15 @@ public class CreateBOM_StepDef
 	public CreateBOM_StepDef(
 			@NonNull final StepDefData<I_PP_Product_BOM> bomTable,
 			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable,
+			@NonNull final StepDefData<I_PP_Product_BOM> productBomTable,
+			@NonNull final StepDefData<I_PP_Product_BOMLine> productBomLineTable,
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bomTable = bomTable;
 		this.productBOMVersionsTable = productBOMVersionsTable;
+		this.productBomTable = productBomTable;
+		this.productBomLineTable = productBomLineTable;
 		this.productTable = productTable;
 		this.testContext = testContext;
 	}
@@ -193,4 +205,115 @@ public class CreateBOM_StepDef
 
 		productBOMVersionsTable.putOrReplace(bomVersionsIdentifier, bomVersions);
 	}
+
+	@And("metasfresh contains PP_Product_BOMVersions:")
+	public void add_PP_Product_BOMVersions(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createPPProductBOMVersions(dataTableRow);
+		}
+	}
+
+	private void createPPProductBOMVersions(final Map<String, String> tableRow)
+	{
+		final String bomIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(bomIdentifier);
+
+		final I_PP_Product_BOMVersions productBOMVersion = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class);
+
+		productBOMVersion.setM_Product_ID(product.getM_Product_ID());
+		productBOMVersion.setName(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_Name));
+		productBOMVersion.setIsActive(true);
+
+		saveRecord(productBOMVersion);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_BOMVersions.Table_Name);
+		productBOMVersionsTable.putOrReplace(recordIdentifier, productBOMVersion);
+	}
+
+	@And("metasfresh contains PP_Product_BOM:")
+	public void add_PP_Product_BOM(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createPPProductBOM(dataTableRow);
+		}
+	}
+
+	private void createPPProductBOM(final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productBom = productTable.get(productIdentifier);
+
+		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_PP_Product_BOMVersions bomVersions = productBOMVersionsTable.get(bomVersionsIdentifier);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		final BOMUse bomUse = BOMUse.valueOf(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_BOMUse));
+		final BOMType bomType = BOMType.valueOf(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_BOMType));
+
+		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_ValidFrom);
+
+		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper.newInstance(I_PP_Product_BOM.class);
+
+		productBOM.setM_Product_ID(productBom.getM_Product_ID());
+		productBOM.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+		productBOM.setC_UOM_ID(productPriceUomId.getRepoId());
+		productBOM.setBOMUse(bomUse.getCode());
+		productBOM.setBOMType(bomType.getCode());
+		productBOM.setName(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_Name));
+		productBOM.setValidFrom(validFrom);
+		productBOM.setIsActive(true);
+
+		saveRecord(productBOM);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_BOM.Table_Name);
+		productBomTable.putOrReplace(recordIdentifier, productBOM);
+	}
+
+	@And("metasfresh contains PP_Product_BOMLines:")
+	public void add_PP_Product_BOMLines(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createPPProductBOMLines(dataTableRow);
+		}
+	}
+
+	private void createPPProductBOMLines(final Map<String, String> tableRow)
+	{
+		final String bomIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_PP_Product_BOM bom = productBomTable.get(bomIdentifier);
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productBom = productTable.get(productIdentifier);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		final BigDecimal qtyBOM = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBOM);
+
+		final I_PP_Product_BOMLine productBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMLine.class);
+
+		productBOMLine.setPP_Product_BOM_ID(bom.getPP_Product_BOM_ID());
+		productBOMLine.setM_Product_ID(productBom.getM_Product_ID());
+		productBOMLine.setC_UOM_ID(productPriceUomId.getRepoId());
+		productBOMLine.setQtyBOM(qtyBOM);
+		productBOMLine.setComponentType(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_ComponentType));
+		productBOMLine.setValidFrom(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_ValidFrom));
+		productBOMLine.setLine(DataTableUtil.extractIntForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_Line));
+		productBOMLine.setIsActive(true);
+
+		saveRecord(productBOMLine);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_BOMLine.Table_Name);
+		productBomLineTable.putOrReplace(recordIdentifier, productBOMLine);
+	}
+
 }

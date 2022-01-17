@@ -60,7 +60,7 @@ import java.util.function.Supplier;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
@@ -106,11 +106,11 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
-			final ZonedDateTime prepartionDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
-			if (prepartionDate != null)
+			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			if (preparationDate != null)
 			{
-				order.setPreparationDate(TimeUtil.asTimestamp(prepartionDate));
-				order.setDatePromised(TimeUtil.asTimestamp(prepartionDate));
+				order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
+				order.setDatePromised(TimeUtil.asTimestamp(preparationDate));
 			}
 
 			if (EmptyUtil.isNotBlank(poReference))
@@ -146,6 +146,7 @@ public class C_Order_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String purchaseType = DataTableUtil.extractStringForColumnName(tableRow, "PurchaseType");
+			final boolean purchaseBomComponents = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsPurchaseBOMComponents", false);
 
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
@@ -159,6 +160,7 @@ public class C_Order_StepDef
 			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
 			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
 			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);
+			processInfoBuilder.addParameter("IsPurchaseBOMComponents", purchaseBomComponents);
 
 			processInfoBuilder
 					.buildAndPrepareExecution()
@@ -184,6 +186,7 @@ public class C_Order_StepDef
 					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
+			assertThat(purchaseOrder).isNotNull();
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
@@ -191,7 +194,7 @@ public class C_Order_StepDef
 			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
 			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
 
-			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 		}
 	}
@@ -203,6 +206,15 @@ public class C_Order_StepDef
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
+	}
+
+	@Then("the sales order identified by {string} is not closed")
+	public void salesOrderIsNotClosed(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		assertThat(salesOrder.getDocStatus()).isNotEqualTo(IDocument.STATUS_Closed);
 	}
 
 	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")
