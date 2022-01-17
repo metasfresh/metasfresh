@@ -25,11 +25,10 @@ function App() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.appHandler.token);
 
+  // If endpoint call returned 401 - Authentication error
+  // then redirect user to login page
   useConstructor(() => {
     axios.interceptors.response.use(undefined, function (error) {
-      /*
-       * Authorization error
-       */
       if (error.response && error.response.status === 401) {
         auth.logout().finally(() => {
           dispatch(push('/login'));
