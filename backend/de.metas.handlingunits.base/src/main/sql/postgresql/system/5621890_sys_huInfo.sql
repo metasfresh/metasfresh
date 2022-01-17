@@ -1,4 +1,9 @@
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".huInfo(
+    p_M_HU_ID numeric
+)
+;
+
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".huInfo(
     p_M_HU_ID     numeric,
     p_storageInfo boolean
 )
