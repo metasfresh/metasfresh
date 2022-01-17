@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(IN p_C_Customs_Invoice_Id numeric)
 
