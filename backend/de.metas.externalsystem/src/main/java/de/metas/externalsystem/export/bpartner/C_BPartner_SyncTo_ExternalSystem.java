@@ -53,9 +53,8 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	{
 		if (getExternalSystemParam().equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getAllByType(getExternalSystemType())
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getActiveByType(getExternalSystemType())
 					.stream()
-					.filter(ExternalSystemParentConfig::getIsActive)
 					.collect(ImmutableList.toImmutableList());
 
 			return activeConfigs.size() == 1

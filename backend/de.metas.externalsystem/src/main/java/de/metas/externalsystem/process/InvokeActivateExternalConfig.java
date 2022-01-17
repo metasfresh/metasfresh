@@ -91,7 +91,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getExternalSystemType().getName()));
 			}
 
-			if (config.get().getIsActive())
+			if (config.get().isActive())
 			{
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE));
 			}
