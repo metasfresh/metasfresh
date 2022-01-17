@@ -88,7 +88,6 @@ Feature: sales order
 
 
   @from:cucumber
-  @ignore
   Scenario: we can generate a purchase order from a sales order, exploding BOM components
     Given metasfresh contains M_Products:
       | Identifier | Name                |
