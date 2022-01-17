@@ -1,24 +1,8 @@
-package de.metas.invoice;
-
-import java.util.Collection;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,21 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoice;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+
 @Value
 public class InvoiceId implements RepoIdAware
 {

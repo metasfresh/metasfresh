@@ -22,6 +22,8 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request.RequestType;
@@ -42,6 +44,8 @@ public class Invoice450RequestConversionService implements CrossVersionRequestCo
 {
 	public static final String INVOICE_450_REQUEST_XSD = "http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_450.xsd";
 
+	private boolean usePrettyPrint = false;
+
 	@Override
 	public void fromCrossVersionRequest(@NonNull final XmlRequest xRequest, @NonNull final OutputStream outputStream)
 	{
@@ -51,7 +55,8 @@ public class Invoice450RequestConversionService implements CrossVersionRequestCo
 				jaxbType,
 				RequestType.class,
 				INVOICE_450_REQUEST_XSD,
-				outputStream);
+				outputStream,
+				usePrettyPrint);
 	}
 
 	@Override
@@ -72,5 +77,16 @@ public class Invoice450RequestConversionService implements CrossVersionRequestCo
 	public XmlVersion getVersion()
 	{
 		return XmlVersion.v450;
+	}
+
+	public XmlRequest augmentRequest(final XmlRequest xAugmentedRequest, final BPartnerId invoice)
+	{
+		return Invoice450FromCrossVersionModelTool.INSTANCE.augmentRequest(xAugmentedRequest, invoice);
+	}
+
+	@VisibleForTesting
+	public void setUsePrettyPrint(final boolean usePrettyPrint)
+	{
+		this.usePrettyPrint = usePrettyPrint;
 	}
 }

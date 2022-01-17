@@ -6,6 +6,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -61,7 +62,7 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			//
-			.skip(de.metas.invoice.InvoiceLineId.class)
+			.skip(InvoiceLineId.class)
 			//
 			.skip(de.metas.phonecall.PhonecallSchemaVersionId.class)
 			.skip(de.metas.phonecall.PhonecallSchemaVersionLineId.class)
