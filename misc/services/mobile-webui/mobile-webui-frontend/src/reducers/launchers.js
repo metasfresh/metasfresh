@@ -4,10 +4,10 @@ import * as types from '../constants/LaunchersActionTypes';
 
 export const initialState = {};
 
-const getApplicationLaunchers = (state, appId) => state.launchers[appId] || {};
+const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
 
 export const selectApplicationLaunchersFromState = createSelector(
-  (state, appId) => getApplicationLaunchers(state, appId),
+  (state, applicationId) => getApplicationLaunchers(state, applicationId),
   (applicationLaunchers) => applicationLaunchers
 );
 

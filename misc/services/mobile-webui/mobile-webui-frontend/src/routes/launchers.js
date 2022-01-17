@@ -15,7 +15,8 @@ export function gotoAppLaunchersBarcodeScanner(applicationId) {
 }
 
 const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;
-const appLaunchersBarcodeScannerLocation = ({ applicationId }) => `/${applicationId}/launchers/scanBarcode`;
+const appLaunchersBarcodeScannerLocation = ({ applicationId }) =>
+  appLaunchersLocation({ applicationId }) + `/scanBarcode`;
 
 export const launchersRoutes = [
   {

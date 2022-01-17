@@ -9,9 +9,9 @@ import { gotoAppLaunchers } from '../../routes/launchers';
 
 class AbortButton extends PureComponent {
   onUserConfirmed = () => {
-    const { wfProcessId, appId, gotoAppLaunchers } = this.props;
+    const { applicationId, wfProcessId, gotoAppLaunchers } = this.props;
 
-    abortWorkflowRequest(wfProcessId).then(gotoAppLaunchers(appId));
+    abortWorkflowRequest(wfProcessId).then(gotoAppLaunchers(applicationId));
   };
 
   render() {
@@ -30,18 +30,10 @@ class AbortButton extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { activeApplication } = state.applications;
-
-  return {
-    appId: activeApplication ? activeApplication.id : null,
-  };
-};
-
 AbortButton.propTypes = {
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
-  appId: PropTypes.string.isRequired,
   gotoAppLaunchers: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, { gotoAppLaunchers })(AbortButton);
+export default connect(null, { gotoAppLaunchers })(AbortButton);

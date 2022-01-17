@@ -61,7 +61,7 @@ class ManufacturingReceiptScanScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, { match }) => {
-  const { workflowId: wfProcessId, activityId, lineId, appId } = match.params;
+  const { workflowId: wfProcessId, activityId, lineId } = match.params;
 
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
@@ -71,7 +71,6 @@ const mapStateToProps = (state, { match }) => {
     wfProcessId,
     activityId,
     lineId,
-    appId,
     lineProps,
     stepProps: EMPTY_OBJECT,
     qtyTarget: null,

@@ -30,7 +30,7 @@ class WFProcessScreen extends PureComponent {
   }
 
   render() {
-    const { wfProcessId, activities, isWorkflowNotStarted } = this.props;
+    const { applicationId, wfProcessId, activities, isWorkflowNotStarted } = this.props;
 
     return (
       <div className="pt-2 section wf-process-container">
@@ -43,7 +43,7 @@ class WFProcessScreen extends PureComponent {
                   isLastActivity: index === activities.length - 1,
                 });
               })}
-            {isWorkflowNotStarted ? <AbortButton wfProcessId={wfProcessId} /> : null}
+            {isWorkflowNotStarted ? <AbortButton applicationId={applicationId} wfProcessId={wfProcessId} /> : null}
           </div>
         </div>
       </div>
