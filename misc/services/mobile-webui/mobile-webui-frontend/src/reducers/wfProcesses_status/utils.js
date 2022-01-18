@@ -1,4 +1,4 @@
-import { isDraft, original } from 'immer';
+import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import {
   normalizeComponentProps,
@@ -11,12 +11,8 @@ import {
  * Updates isUserEditable flag for all activities.
  */
 export const updateUserEditable = ({ draftWFProcess }) => {
-  const activityIds = Object.keys(
-    isDraft(draftWFProcess.activities) ? original(draftWFProcess.activities) : draftWFProcess.activities
-  );
-
   let previousActivity = null;
-  activityIds.forEach((activityId) => {
+  draftWFProcess.activityIdsInOrder.forEach((activityId) => {
     const currentActivity = draftWFProcess.activities[activityId];
     const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
@@ -68,7 +64,7 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   }
 
   mergeActivitiesToState({
-    draftActivities: draftWFProcess.activities,
+    targetWFProcess: draftWFProcess,
     fromActivities: fromWFProcess.activities,
   });
 
@@ -77,16 +73,53 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   return draftWFProcess;
 };
 
-const mergeActivitiesToState = ({ draftActivities, fromActivities }) => {
-  fromActivities.forEach((fromActivity) => {
-    if (!draftActivities[fromActivity.activityId]) {
-      draftActivities[fromActivity.activityId] = { ...fromActivity };
+// @VisibleForTesting
+export const mergeActivitiesToState = ({ targetWFProcess, fromActivities }) => {
+  const fromActivitiesById = fromActivities.reduce((acc, activity) => {
+    acc[activity.activityId] = activity;
+    return acc;
+  }, {});
+
+  //
+  // Merge existing activities and collect those we have to remove from target
+  const activityIdsToDelete = [];
+  const targetActivitiesById = targetWFProcess.activities;
+  const targetActivityIds = Object.keys(
+    isDraft(targetActivitiesById) ? current(targetActivitiesById) : targetActivitiesById
+  );
+  targetActivityIds.forEach((targetActivityId) => {
+    const fromActivity = fromActivitiesById[targetActivityId];
+    if (!fromActivity) {
+      activityIdsToDelete.push(targetActivityId);
+    } else {
+      delete fromActivitiesById[targetActivityId];
+      const targetActivity = targetActivitiesById[targetActivityId];
+      mergeActivityToState({ draftActivity: targetActivity, fromActivity });
     }
-
-    const draftActivity = draftActivities[fromActivity.activityId];
-
-    mergeActivityToState({ draftActivity, fromActivity });
   });
+
+  //
+  // Remove activities which exist in target but not in source
+  activityIdsToDelete.forEach((activityIdToDelete) => {
+    delete targetActivitiesById[activityIdToDelete];
+  });
+
+  //
+  // Add activities which exist in source but not yet in target
+  Object.values(fromActivitiesById).forEach((activityToAdd) => {
+    targetActivitiesById[activityToAdd.activityId] = { ...activityToAdd };
+    mergeActivityToState({
+      draftActivity: targetActivitiesById[activityToAdd.activityId],
+      fromActivity: activityToAdd,
+    });
+  });
+
+  //
+  // Capture the order of the activities
+  targetWFProcess.activityIdsInOrder = fromActivities.reduce((acc, activity) => {
+    acc.push(activity.activityId);
+    return acc;
+  }, []);
 };
 
 const mergeActivityToState = ({ draftActivity, fromActivity }) => {

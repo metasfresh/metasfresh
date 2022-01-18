@@ -124,7 +124,9 @@ class WFProcessScreen extends PureComponent {
 function mapStateToProps(state, { match }) {
   const { applicationId, workflowId: wfProcessId } = match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activities = wfProcess.activities ? Object.values(wfProcess.activities) : EMPTY_ARRAY;
+  const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
+  const activitiesById = wfProcess.activities ?? {};
+  const activities = activityIdsInOrder.map((activityId) => activitiesById[activityId]);
   const isWorkflowNotStarted = activitiesNotStarted(state, wfProcessId);
 
   return {
