@@ -118,9 +118,9 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		final HuId huId = huRecordReference.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
 
-		final I_M_HU hu = handlingUnitsBL.getTopLevelParent(huId);
+		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
 
-		final String orgCode = orgDAO.getById(hu.getAD_Org_ID()).getValue();
+		final String orgCode = orgDAO.getById(topLevelHU.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
@@ -128,7 +128,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
 								   .command(getExternalCommand())
-								   .parameters(buildParameters(config.getChildConfig(), huId))
+								   .parameters(buildParameters(config.getChildConfig(), HuId.ofRepoId(topLevelHU.getM_HU_ID())))
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())

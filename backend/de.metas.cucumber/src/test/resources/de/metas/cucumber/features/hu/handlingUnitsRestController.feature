@@ -3,6 +3,7 @@ Feature: Handling unit rest controller
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
   Scenario: retrieve HU by id and update HU attributes EPs validation
     Given metasfresh contains M_Products:
@@ -35,7 +36,7 @@ Feature: Handling unit rest controller
 
     And metasfresh initially has M_Inventory data
       | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-01-05T00:00:00Z | inventoryDocNo |
+      | huProduct_inventory       | 2022-01-02T00:00:00Z | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        |

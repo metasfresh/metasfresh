@@ -4,6 +4,7 @@ Feature: Handling unit data export audit
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
+    And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
     And metasfresh contains M_Products:
       | Identifier     | Value          | Name           |
@@ -35,7 +36,7 @@ Feature: Handling unit data export audit
 
     And metasfresh initially has M_Inventory data
       | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | inventory_1               | 2022-01-05T00:00:00Z | inventoryDocNo |
+      | inventory_1               | 2022-01-02T00:00:00Z | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory_1               | inventory_line                | huAuditProduct          | 0       | 10       |

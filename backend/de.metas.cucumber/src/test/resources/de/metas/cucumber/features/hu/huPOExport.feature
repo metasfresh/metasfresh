@@ -4,6 +4,7 @@ Feature: Handling unit export from purchase order
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And RabbitMQ MF_TO_ExternalSystem queue is purged
+    And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
   Scenario: HU export from purchase order
     Given add external system parent-child pair

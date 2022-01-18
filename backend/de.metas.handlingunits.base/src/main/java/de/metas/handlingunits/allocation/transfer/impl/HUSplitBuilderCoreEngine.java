@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -91,7 +92,6 @@ public class HUSplitBuilderCoreEngine
 	 * Note that this is <b>not</b> about attribute propagation.
 	 *
 	 * @return
-	 *
 	 * @task 06902: Make sure the split keys inherit the status and locator.
 	 */
 	public HUSplitBuilderCoreEngine withPropagateHUValues()
@@ -173,7 +173,7 @@ public class HUSplitBuilderCoreEngine
 				.run(localHuContext -> {
 					// Make a copy of the processing context, we will need to modify it
 					final IMutableHUContext localHuContextCopy = localHuContext.copyAsMutable();
-					if(!automaticallyMovePackingMaterials)
+					if (!automaticallyMovePackingMaterials)
 					{
 						localHuContextCopy.getHUPackingMaterialsCollector().disable();
 					}
@@ -246,12 +246,8 @@ public class HUSplitBuilderCoreEngine
 		{
 			result = Collections.emptyList();
 		}
-		//
-		// Destroy empty HUs from huToSplit
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.runAfterCommit(() -> trxManager
-						.runInNewTrx(() -> handlingUnitsBL
-								.destroyIfEmptyStorage(localHuContextCopy, huToSplit)));
+
+		destroyIfEmptyStorage(localHuContextCopy);
 
 		return result;
 	}
@@ -304,5 +300,21 @@ public class HUSplitBuilderCoreEngine
 				productId,
 				SystemTime.asZonedDateTime());
 		return piip;
+	}
+
+	private void destroyIfEmptyStorage(@NonNull final IHUContext localHuContextCopy)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			handlingUnitsBL.destroyIfEmptyStorage(localHuContextCopy, huToSplit); // in unit test mode, there won't be a commit
+			return;
+		}
+
+		// Destroy empty HUs from huToSplit
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+				.runAfterCommit(() -> trxManager
+						.runInNewTrx(() -> handlingUnitsBL
+								.destroyIfEmptyStorage(localHuContextCopy, huToSplit)));
+
 	}
 }

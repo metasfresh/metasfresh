@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -41,15 +43,18 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
@@ -97,7 +102,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")
 	public void rabbitMQ_receives_an_external_system_request(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
 	{
-		final JsonExternalSystemRequest requestToRabbitMQ = pollRequestFromQueue();
+		final int numberOfMessages = 1;
+		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
+		final JsonExternalSystemRequest requestToRabbitMQ = requests.get(numberOfMessages);
 
 		final Map<String, String> tableRow = dataTable.asMaps().get(0);
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
@@ -118,45 +125,53 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:")
 	public void rabbitMQ_receives_an_external_system_request_param(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
 	{
-		final JsonExternalSystemRequest requestToRabbitMQ = pollRequestFromQueue();
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
 
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
-		final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int numberOfMessages = tableRows.size();
+		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
 
-		final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
-		assertThat(externalSystemConfig).isNotNull();
-		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue()).isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
-
-		//HU
-		final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(huIdentifier))
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final I_M_HU hu = huTable.get(huIdentifier);
-			assertThat(hu).isNotNull();
+			final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final String requestHuId = requestToRabbitMQ.getParameters().get(PARAM_HU_ID);
-			assertThat(Integer.valueOf(requestHuId)).isEqualTo(hu.getM_HU_ID());
+			final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
+			assertThat(externalSystemConfig).isNotNull();
+
+			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(huIdentifier))
+			{
+				final I_M_HU hu = huTable.get(huIdentifier);
+				assertThat(hu).isNotNull();
+
+				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_HU_ID)) == hu.getM_HU_ID())
+						.findFirst()
+						.orElse(null);
+				assertThat(jsonExternalSystemRequest).isNotNull();
+			}
 		}
 	}
 
-	private JsonExternalSystemRequest pollRequestFromQueue() throws IOException, TimeoutException, InterruptedException
+	private List<JsonExternalSystemRequest> pollRequestFromQueue(final int numberOfMessages) throws IOException, TimeoutException, InterruptedException
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 		final Channel channel = connection.createChannel();
 
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
+		final CountDownLatch countDownLatch = new CountDownLatch(numberOfMessages);
 
-		final String[] message = new String[1];
+		final String[] messages = new String[numberOfMessages];
 
 		final DefaultConsumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
 			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
 			{
-				message[0] = new String(body, StandardCharsets.UTF_8);
+				messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
 				countDownLatch.countDown();
 			}
 		};
+
 		channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
 
 		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
@@ -165,6 +180,17 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		channel.close();
 
-		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message[0], JsonExternalSystemRequest.class);
+		return Stream.of(messages)
+				.map(message -> {
+					try
+					{
+						return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message, JsonExternalSystemRequest.class);
+					}
+					catch (final JsonProcessingException e)
+					{
+						throw AdempiereException.wrapIfNeeded(e);
+					}
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 }
