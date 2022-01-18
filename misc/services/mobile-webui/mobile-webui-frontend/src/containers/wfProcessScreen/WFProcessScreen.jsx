@@ -72,7 +72,6 @@ class WFProcessScreen extends PureComponent {
             wfProcessId={wfProcessId}
             activityId={activityItem.activityId}
             activityState={activityItem}
-            {...activityItem}
           />
         );
       case 'common/confirmButton':

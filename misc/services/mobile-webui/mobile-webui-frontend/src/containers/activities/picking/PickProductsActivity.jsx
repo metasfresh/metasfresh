@@ -46,18 +46,17 @@ class PickProductsActivity extends PureComponent {
       applicationId,
       wfProcessId,
       activityId,
-      activityState,
-      componentProps: { lines },
+      activityState: {
+        dataStored: { lines, completeStatus, isUserEditable },
+      },
     } = this.props;
-    const dataStored = activityState ? activityState.dataStored : {};
-    const { completeStatus, isUserEditable } = dataStored;
 
     return (
       <div className="pick-products-activity-container mt-5">
-        {activityState && lines.length > 0
+        {lines && lines.length > 0
           ? lines.map((lineItem, lineIndex) => {
               const lineId = '' + lineIndex;
-              const { picked, toPick, uom } = computeLineQuantities(dataStored.lines[lineIndex]);
+              const { picked, toPick, uom } = computeLineQuantities(lineItem);
 
               return (
                 <PickLineButton
@@ -85,9 +84,7 @@ PickProductsActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  caption: PropTypes.string,
-  componentProps: PropTypes.object,
-  activityState: PropTypes.object,
+  activityState: PropTypes.object.isRequired,
 };
 
 export default PickProductsActivity;
