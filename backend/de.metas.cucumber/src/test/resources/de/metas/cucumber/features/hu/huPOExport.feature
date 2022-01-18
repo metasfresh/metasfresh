@@ -3,7 +3,6 @@ Feature: Handling unit export from purchase order
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
   Scenario: HU export from purchase order
@@ -59,7 +58,6 @@ Feature: Handling unit export from purchase order
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier |
       | supplierLocation_PO | supplierPO01 | supplier_PO              |
-
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
       | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             |
@@ -77,6 +75,8 @@ Feature: Handling unit export from purchase order
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 2     | N               | 9     | huItemPurchaseProduct              | huPackingLU                  |
+
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -114,3 +114,6 @@ Feature: Handling unit export from purchase order
       | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice       | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
       | processedTopHU     | LU         | processedTU | Erwartet Freigabe durch GRS | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
       | processedTU        | TU         |             | Erwartet Freigabe durch GRS | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 2                     | A        |
+    And update external system config:
+      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
+      | GRSConfig_PO                        | GRS  | false    |

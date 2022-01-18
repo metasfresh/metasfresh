@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -46,6 +47,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +68,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
+
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_M_HU> huTable;
@@ -104,7 +108,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	{
 		final int numberOfMessages = 1;
 		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
-		final JsonExternalSystemRequest requestToRabbitMQ = requests.get(numberOfMessages);
+		final JsonExternalSystemRequest requestToRabbitMQ = requests.get(0);
 
 		final Map<String, String> tableRow = dataTable.asMaps().get(0);
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
@@ -148,6 +152,11 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 						.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_HU_ID)) == hu.getM_HU_ID())
 						.findFirst()
 						.orElse(null);
+
+				if (jsonExternalSystemRequest == null)
+				{
+					logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+				}
 				assertThat(jsonExternalSystemRequest).isNotNull();
 			}
 		}
@@ -167,6 +176,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@Override
 			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
 			{
+				final String body1 = new String(body, StandardCharsets.UTF_8); //todo fp
+				System.out.println("******* Flo: " + body1);
+
 				messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
 				countDownLatch.countDown();
 			}

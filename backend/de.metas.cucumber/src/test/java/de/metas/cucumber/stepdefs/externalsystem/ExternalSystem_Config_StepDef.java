@@ -27,7 +27,9 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -135,6 +137,37 @@ public class ExternalSystem_Config_StepDef
 
 			final I_AD_PInstance_Para parameter = paramNameToParameter.get(key);
 			assertThat(parameter.getP_String()).isEqualTo(value);
+		}
+	}
+
+	@And("update external system config:")
+	public void update_externalSystem(@NonNull final Map<String, String> tableRow)
+	{
+		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
+
+		final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
+		final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
+
+		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()), externalSystemType);
+
+		assertThat(childConfig).isPresent();
+
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_IsActive);
+
+		externalSystemConfig.setIsActive(isActive);
+
+		InterfaceWrapperHelper.save(externalSystemConfig);
+
+		switch (externalSystemType)
+		{
+			case GRSSignum:
+				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.load(childConfig.get().getId().getRepoId(), I_ExternalSystem_Config_GRSSignum.class);
+				externalSystemConfigGrsSignum.setIsActive(isActive);
+				InterfaceWrapperHelper.saveRecord(externalSystemConfigGrsSignum);
+				break;
+			default:
+				return;
 		}
 	}
 

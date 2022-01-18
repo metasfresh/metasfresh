@@ -52,14 +52,14 @@ Feature: Handling unit data export audit
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate "retrieve hu" response:
+    Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
       | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
-    Then after not more than 10s, there are added records in Data_Export_Audit
+    And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | cu_data_export                  | M_HU      | createdCU            |                                        |
-    Then there are added records in Data_Export_Audit_Log
+    And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | cu_data_export                  | Exported-Standalone | null                                | null                       |
 
@@ -71,20 +71,23 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    Given store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate "retrieve hu" response:
+    Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
       | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
-    Then after not more than 10s, there are added records in Data_Export_Audit
+    And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | cu_data_export                  | M_HU      | createdCU            |                                        |
-    Then there are added records in Data_Export_Audit_Log
+    And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | cu_data_export                  | Exported-Standalone | GRSConfig_HU                        | pInstance_exportHU         |
+    And update external system config:
+      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
+      | GRSConfig_HU                        | GRS  | false    |
 
   Scenario: When M_HU is changed, a proper camel-request is sent to rabbit-mq
     Given add external system parent-child pair
@@ -94,18 +97,18 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    Given store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate "retrieve hu" response:
+    Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
       | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
-    Then after not more than 10s, there are added records in Data_Export_Audit
+    And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
       | cu_data_export                  | M_HU      | createdCU            |                                        |
-    Then there are added records in Data_Export_Audit_Log
+    And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | cu_data_export                  | Exported-Standalone | GRSConfig_HU                        | pInstance_exportHU         |
 
@@ -115,7 +118,10 @@ Feature: Handling unit data export audit
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 10    | huAuditProductTU                   | createdTU                 | newCreatedCU              |
 
-    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+    And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_HU                        | createdTU              |
       | GRSConfig_HU                        | createdCU              |
+    And update external system config:
+      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
+      | GRSConfig_HU                        | GRS  | false    |
