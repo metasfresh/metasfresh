@@ -8,11 +8,11 @@ const RawMaterialsIssueActivity = (props) => {
   const {
     applicationId,
     wfProcessId,
-    id,
-    activityState: { dataStored },
+    activityId,
+    activityState: {
+      dataStored: { isUserEditable, lines },
+    },
   } = props;
-  const data = dataStored ? dataStored : {};
-  const { isUserEditable, lines } = data;
 
   return (
     <div className="mfg-rawMaterialsIssue-activity-container mt-5">
@@ -25,7 +25,7 @@ const RawMaterialsIssueActivity = (props) => {
                 key={lineId}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
-                activityId={id}
+                activityId={activityId}
                 lineId={lineId}
                 caption={lineItem.productName}
                 isUserEditable={isUserEditable}
@@ -44,8 +44,7 @@ const RawMaterialsIssueActivity = (props) => {
 RawMaterialsIssueActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
-  id: PropTypes.string,
-  componentProps: PropTypes.object,
+  activityId: PropTypes.string.isRequired,
   activityState: PropTypes.object,
 };
 
