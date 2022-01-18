@@ -57,11 +57,11 @@ Feature: Handling unit export from manufacturing order
       | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
       | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 10    | huItemManufacturingProduct         |
 
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
       | ppOrder_manufacturing  |
-
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And after not more than 30s, M_HUs should have
       | M_HU_ID.Identifier | OPT.HUStatus |

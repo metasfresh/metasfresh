@@ -176,9 +176,6 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@Override
 			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
 			{
-				final String body1 = new String(body, StandardCharsets.UTF_8); //todo fp
-				System.out.println("******* Flo: " + body1);
-
 				messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
 				countDownLatch.countDown();
 			}

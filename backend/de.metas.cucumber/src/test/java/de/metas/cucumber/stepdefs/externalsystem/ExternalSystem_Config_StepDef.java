@@ -141,33 +141,37 @@ public class ExternalSystem_Config_StepDef
 	}
 
 	@And("update external system config:")
-	public void update_externalSystem(@NonNull final Map<String, String> tableRow)
+	public void update_externalSystem(@NonNull final DataTable dataTable)
 	{
-		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
-
-		final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
-		final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
-
-		final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()), externalSystemType);
-
-		assertThat(childConfig).isPresent();
-
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_IsActive);
-
-		externalSystemConfig.setIsActive(isActive);
-
-		InterfaceWrapperHelper.save(externalSystemConfig);
-
-		switch (externalSystemType)
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			case GRSSignum:
-				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.load(childConfig.get().getId().getRepoId(), I_ExternalSystem_Config_GRSSignum.class);
-				externalSystemConfigGrsSignum.setIsActive(isActive);
-				InterfaceWrapperHelper.saveRecord(externalSystemConfigGrsSignum);
-				break;
-			default:
-				return;
+			final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
+
+			final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
+			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
+
+			final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()), externalSystemType);
+
+			assertThat(childConfig).isPresent();
+
+			final boolean isActive = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_IsActive);
+
+			externalSystemConfig.setIsActive(isActive);
+
+			InterfaceWrapperHelper.save(externalSystemConfig);
+
+			switch (externalSystemType)
+			{
+				case GRSSignum:
+					final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.load(childConfig.get().getId().getRepoId(), I_ExternalSystem_Config_GRSSignum.class);
+					externalSystemConfigGrsSignum.setIsActive(isActive);
+					InterfaceWrapperHelper.saveRecord(externalSystemConfigGrsSignum);
+					break;
+				default:
+					return;
+			}
 		}
 	}
 
