@@ -1,10 +1,10 @@
 import React from 'react';
 import { isEqual } from 'lodash';
 import PropTypes from 'prop-types';
-import { useStore } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
-import history from '../services/History';
 
 /**
  * @file Function component.
@@ -16,10 +16,13 @@ import history from '../services/History';
 const TokenRoute = ({ match }) => {
   const { tokenId } = match.params;
   const auth = useAuth();
-  const state = useStore().getState();
+  const history = useHistory();
+  const loggedIn = useSelector((state) => state.appHandler.isLogged);
 
-  if (!auth.authRequestPending() && !state.appHandler.isLogged) {
-    auth.tokenLogin(tokenId).then(() => history.push('/'));
+  if (!auth.authRequestPending() && !loggedIn) {
+    auth.tokenLogin(tokenId).then(() => {
+      history.push('/');
+    });
   }
 
   return null;
