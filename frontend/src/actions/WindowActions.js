@@ -479,17 +479,21 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
           fetchAdvancedFields: isAdvanced,
         }).catch((e) => {
           dispatch(getWindowBreadcrumb(windowType));
-          dispatch(
-            initDataSuccess({
-              data: {},
-              docId: 'notfound',
-              includedTabsInfo: {},
-              scope: 'master',
-              saveStatus: { saved: true },
-              standardActions: [],
-              validStatus: {},
-            })
-          );
+          if (e.response.status === 404) {
+            dispatch(
+              initDataSuccess({
+                data: {},
+                docId: 'notfound',
+                includedTabsInfo: {},
+                scope: 'master',
+                saveStatus: { saved: true },
+                standardActions: [],
+                validStatus: {},
+              })
+            );
+          } else {
+            dispatch(setSpinner(true));
+          }
 
           return { status: e.status, message: e.statusText };
         });
@@ -663,6 +667,7 @@ export function createWindow({
         }
       } else {
         dispatch(getWindowBreadcrumb(windowType));
+        dispatch(setSpinner(false));
       }
 
       return getLayout('window', windowType, tabId, null, null, isAdvanced)
