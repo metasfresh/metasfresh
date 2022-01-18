@@ -4,10 +4,11 @@ import counterpart from 'counterpart';
 import { useHistory } from 'react-router-dom';
 
 import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import { scanBarcodeLocation } from '../../../routes/scan';
 
 const ScanActivity = (props) => {
   const history = useHistory();
-  const { activityState } = props;
+  const { applicationId, wfProcessId, activityState } = props;
 
   const isUserEditable = activityState.dataStored.isUserEditable;
 
@@ -22,11 +23,9 @@ const ScanActivity = (props) => {
     counterpart.translate('activities.scanBarcode.defaultCaption');
 
   const handleClick = () => {
-    const { wfProcessId } = props;
     const { activityId } = activityState;
 
-    console.log('history:', history);
-    history.push(`/workflow/${wfProcessId}/activityId/${activityId}/scanner`);
+    history.push(scanBarcodeLocation({ applicationId, wfProcessId, activityId }));
   };
 
   return (
@@ -39,6 +38,7 @@ const ScanActivity = (props) => {
 };
 
 ScanActivity.propTypes = {
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityState: PropTypes.object.isRequired,
 };

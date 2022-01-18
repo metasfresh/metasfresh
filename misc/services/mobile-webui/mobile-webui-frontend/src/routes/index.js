@@ -1,6 +1,7 @@
 import { commonRoutes } from './common';
 import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
+import { scanRoutes } from './scan';
 import { manufacturingIssueRoutes } from './manufacturing_issue';
 import { manufacturingReceiptRoutes } from './manufacturing_receipt';
 import { distributionRoutes } from './distribution';
@@ -11,6 +12,7 @@ export const routesArray = [
   ...commonRoutes,
   ...launchersRoutes,
   ...workflowRoutes,
+  ...scanRoutes,
   ...distributionRoutes,
   ...manufacturingIssueRoutes,
   ...manufacturingReceiptRoutes,

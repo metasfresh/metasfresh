@@ -34,6 +34,7 @@ class ScanScreen extends Component {
   };
 
   render() {
+    console.log('ScanScreen.render!!!!');
     return (
       <div className="mt-0">
         <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
