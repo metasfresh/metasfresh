@@ -67,7 +67,6 @@ class WFProcessScreen extends PureComponent {
         return (
           <PickProductsActivity
             key={activityItem.activityId}
-            id={activityItem.activityId}
             applicationId={applicationId}
             wfProcessId={wfProcessId}
             activityId={activityItem.activityId}
@@ -78,12 +77,11 @@ class WFProcessScreen extends PureComponent {
         return (
           <ConfirmActivity
             key={activityItem.activityId}
-            id={activityItem.activityId}
             applicationId={applicationId}
             wfProcessId={wfProcessId}
             activityId={activityItem.activityId}
             caption={activityItem.caption}
-            componentProps={activityItem.componentProps}
+            promptQuestion={activityItem.componentProps.promptQuestion}
             isUserEditable={activityItem.dataStored.isUserEditable}
             isLastActivity={isLastActivity}
           />

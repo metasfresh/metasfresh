@@ -23,11 +23,7 @@ class ConfirmActivity extends PureComponent {
   };
 
   render() {
-    const {
-      caption,
-      componentProps: { promptQuestion },
-      isUserEditable,
-    } = this.props;
+    const { caption, promptQuestion, isUserEditable } = this.props;
 
     return (
       <div className="mt-5">
@@ -46,7 +42,7 @@ ConfirmActivity.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   caption: PropTypes.string,
-  componentProps: PropTypes.object.isRequired,
+  promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool.isRequired,
   isLastActivity: PropTypes.bool.isRequired,
   //
