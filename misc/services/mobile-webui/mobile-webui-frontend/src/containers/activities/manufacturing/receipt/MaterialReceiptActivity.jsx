@@ -6,13 +6,13 @@ import * as CompleteStatus from '../../../../constants/CompleteStatus';
 
 const MaterialReceiptActivity = (props) => {
   const {
-    id,
     applicationId,
     wfProcessId,
-    activityState: { dataStored },
+    activityId,
+    activityState: {
+      dataStored: { isUserEditable, lines },
+    },
   } = props;
-  const data = dataStored ? dataStored : {};
-  const { isUserEditable, lines } = data;
 
   return (
     <div className="mfg-materialReceipt-activity-container mt-5">
@@ -25,7 +25,7 @@ const MaterialReceiptActivity = (props) => {
                 key={lineId}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
-                activityId={id}
+                activityId={activityId}
                 lineId={lineId}
                 caption={lineItem.productName}
                 isUserEditable={isUserEditable || true}
@@ -44,7 +44,7 @@ const MaterialReceiptActivity = (props) => {
 MaterialReceiptActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
+  activityId: PropTypes.string.isRequired,
   componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };

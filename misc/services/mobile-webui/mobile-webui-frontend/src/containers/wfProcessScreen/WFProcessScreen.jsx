@@ -100,9 +100,9 @@ class WFProcessScreen extends PureComponent {
         return (
           <MaterialReceiptActivity
             key={activityItem.activityId}
-            id={activityItem.activityId}
             applicationId={applicationId}
             wfProcessId={wfProcessId}
+            activityId={activityItem.activityId}
             activityState={activityItem}
           />
         );
