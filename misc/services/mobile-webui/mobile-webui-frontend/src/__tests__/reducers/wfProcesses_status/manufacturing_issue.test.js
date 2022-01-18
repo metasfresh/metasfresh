@@ -1,9 +1,9 @@
-import * as CompleteStatus from '../../constants/CompleteStatus';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
 import {
   computeActivityStatus,
   computeLineQtyIssuedFromSteps,
   computeStepStatus,
-} from '../../reducers/wfProcesses_status/manufacturing_issue';
+} from '../../../reducers/wfProcesses_status/manufacturing_issue';
 
 describe('reducers: manufacturing issue tests', () => {
   describe('computeStepStatus', () => {
