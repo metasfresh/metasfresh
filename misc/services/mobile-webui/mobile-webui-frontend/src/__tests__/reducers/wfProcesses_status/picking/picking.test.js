@@ -1,12 +1,12 @@
-import rawstateJson from '../../fixtures/rawstate.json';
-import draftActivityDataStored from '../../fixtures/picking/activityDataStored.json';
-import fromActivity from '../../fixtures/picking/fromActivity.json';
+import rawstateJson from './rawstate.json';
+import draftActivityDataStored from './activityDataStored.json';
+import fromActivity from './fromActivity.json';
 
 import { produce } from 'immer';
 import {
   allocatePickingAlternatives,
   mergeActivityDataStoredAndAllocateAlternatives,
-} from '../../../reducers/wfProcesses_status/picking';
+} from '../../../../reducers/wfProcesses_status/picking';
 
 const wfProcessId = 'picking-1000001';
 const activityId = 'A2';
