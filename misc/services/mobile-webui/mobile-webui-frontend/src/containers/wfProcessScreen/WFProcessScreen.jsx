@@ -16,8 +16,6 @@ import DistributionMoveActivity from '../activities/distribution/DistributionMov
 import AbortButton from './AbortButton';
 import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
-const EMPTY_ARRAY = [];
-
 class WFProcessScreen extends PureComponent {
   componentDidMount() {
     const { applicationId, wfProcessId, headerProperties } = this.props;
