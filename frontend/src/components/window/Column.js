@@ -105,7 +105,6 @@ class Column extends PureComponent {
         cols,
         colsCount: group.columnCount,
       });
-      console.log('columnsArray: ', columnsArray);
 
       return columnsArray;
     }, []);

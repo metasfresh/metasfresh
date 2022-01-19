@@ -473,9 +473,7 @@ class TableRow extends PureComponent {
       multilineTextLines,
       activeCellName,
     } = this.state;
-    console.log('FieldsBYName: ', fieldsByName);
-    console.log('totalFieldsByName:', Object.keys(fieldsByName).length);
-    console.log('cols:', cols);
+
     // Iterate over layout settings
     if (colspan) {
       return <td colSpan={cols.length}>{caption}</td>;
@@ -491,8 +489,7 @@ class TableRow extends PureComponent {
             const tableCellData = fieldsByName[property]
               ? fieldsByName[property]
               : undefined;
-            console.log('property:', property);
-            console.log('tableCellData:', tableCellData);
+
             const isEditable = isCellEditable(item, cells);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
@@ -510,7 +507,6 @@ class TableRow extends PureComponent {
               isEdited,
               isGerman,
             });
-            console.log(`${property}-tdValue:`, tdValue);
             const description = getDescription({ widgetData, tdValue });
             const { tooltipData, tooltipWidget } = getTooltipWidget(
               item,
