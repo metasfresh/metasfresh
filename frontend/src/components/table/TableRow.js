@@ -489,7 +489,6 @@ class TableRow extends PureComponent {
             const tableCellData = fieldsByName[property]
               ? fieldsByName[property]
               : undefined;
-
             const isEditable = isCellEditable(item, cells);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
