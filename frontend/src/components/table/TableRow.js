@@ -15,7 +15,7 @@ import {
   nestedSelect,
   getTooltipWidget,
 } from '../../utils/tableHelpers';
-
+import { v4 as uuidv4 } from 'uuid';
 import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 
@@ -474,6 +474,7 @@ class TableRow extends PureComponent {
       activeCellName,
     } = this.state;
     console.log('FieldsBYName: ', fieldsByName);
+    console.log('totalFieldsByName:', Object.keys(fieldsByName).length);
     console.log('cols:', cols);
     // Iterate over layout settings
     if (colspan) {
@@ -509,6 +510,7 @@ class TableRow extends PureComponent {
               isEdited,
               isGerman,
             });
+            console.log(`${property}-tdValue:`, tdValue);
             const description = getDescription({ widgetData, tdValue });
             const { tooltipData, tooltipWidget } = getTooltipWidget(
               item,
@@ -563,7 +565,7 @@ class TableRow extends PureComponent {
                 colIndex={idx}
                 hasComments={!!(hasComments && idx === 0)}
                 cellExtended={cellsExtended}
-                key={`${rowId}-${property}`}
+                key={`${rowId}-${property}-${uuidv4()}`}
                 isRowSelected={isSelected}
                 handleDoubleClick={this.handleEditProperty}
                 handleFocusAction={handleFocusAction}
