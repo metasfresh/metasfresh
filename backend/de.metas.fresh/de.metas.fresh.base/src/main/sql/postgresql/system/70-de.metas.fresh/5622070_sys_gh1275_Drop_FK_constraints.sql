@@ -18,7 +18,8 @@ $$
                                 ON ccu.constraint_name = tc.constraint_name
                                     AND ccu.table_schema = tc.table_schema
                   WHERE tc.constraint_type = 'FOREIGN KEY'
-                    AND kcu.column_name = 'ad_issue_id')
+                    AND kcu.column_name = 'ad_issue_id'
+                  ORDER BY tc.table_name, kcu.column_name)
             LOOP
                 RAISE INFO '%','dropping constraint: ' || r.constraint_name || ' - from table: ' || r.table_name;
                 EXECUTE CONCAT('ALTER TABLE ' || r.table_name || ' DROP CONSTRAINT ' || r.constraint_name);
@@ -46,7 +47,8 @@ $$
                                 ON ccu.constraint_name = tc.constraint_name
                                     AND ccu.table_schema = tc.table_schema
                   WHERE tc.constraint_type = 'FOREIGN KEY'
-                    AND kcu.column_name = 'ad_pinstance_id')
+                    AND kcu.column_name = 'ad_pinstance_id'
+                  ORDER BY tc.table_name, kcu.column_name)
             LOOP
                 RAISE INFO '%','dropping constraint: ' || r.constraint_name || ' - from table: ' || r.table_name;
                 EXECUTE CONCAT('ALTER TABLE ' || r.table_name || ' DROP CONSTRAINT ' || r.constraint_name);
