@@ -28,19 +28,18 @@ import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import lombok.Builder;
-import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,15 +57,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-public class ExportToGRSServiceTest
+public class ExportBPartnerToGRSServiceTest
 {
 	private final static BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(1000000);
 	private final static PInstanceId PINSTANCE_ID = PInstanceId.ofRepoId(3);
 
-	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
+	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest_BPartner.json";
 
 	private JsonExternalSystemRequest expectedJsonExternalSystemRequest;
-	private ExportToGRSService exportToGRSService;
+	private ExportBPartnerToGRSService exportBPartnerToGRSService;
 
 	@BeforeEach
 	public void init() throws IOException
@@ -76,11 +75,11 @@ public class ExportToGRSServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportToGRSService = new ExportToGRSService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
-													new DataExportAuditRepository(),
-													new DataExportAuditLogRepository(),
-													new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
-													externalSystemConfigServiceMock);
+		exportBPartnerToGRSService = new ExportBPartnerToGRSService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+																	new DataExportAuditRepository(),
+																	new DataExportAuditLogRepository(),
+																	new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
+																	externalSystemConfigServiceMock);
 
 		createPrerequisites();
 
@@ -93,14 +92,22 @@ public class ExportToGRSServiceTest
 	public void givenGRSConfigId_whenToJsonExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final ExternalSystemGRSSignumConfigId externalSystemGRSSignumConfigId = createGRSSignumConfigBuilder()
-				.parentConfigId(1)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.customParentConfigId(1)
+				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.build();
+
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("grsValue")
 				.syncBPartnersToRestEndpoint(true)
 				.build();
 
+		final ExternalSystemGRSSignumConfigId childConfigId = ExternalSystemGRSSignumConfigId.ofRepoId(externalSystemConfigGrsSignum.getExternalSystem_Config_GRSSignum_ID());
+
 		// when
-		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportToGRSService.toJsonExternalSystemRequest(
-				externalSystemGRSSignumConfigId, BPARTNER_ID, PINSTANCE_ID);
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, BPARTNER_ID);
+		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportBPartnerToGRSService.getExportExternalSystemRequest(childConfigId, bPartnerRecordRef, PINSTANCE_ID);
 
 		// then
 		assertThat(externalSystemRequest).isPresent();
@@ -111,47 +118,24 @@ public class ExportToGRSServiceTest
 	public void givenSyncBPartnersToRestEndpointDisabled_whenToJsonExternalSystemRequest_thenReturnNoExternalSystemRequest()
 	{
 		// given
-		final ExternalSystemGRSSignumConfigId externalSystemGRSSignumConfigId = createGRSSignumConfigBuilder()
-				.parentConfigId(2)
-				.syncBPartnersToRestEndpoint(false)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.customParentConfigId(2)
+				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
 				.build();
 
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("doesntmatter")
+				.build();
+
+		final ExternalSystemGRSSignumConfigId childConfigId = ExternalSystemGRSSignumConfigId.ofRepoId(externalSystemConfigGrsSignum.getExternalSystem_Config_GRSSignum_ID());
+
 		// when
-		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportToGRSService.toJsonExternalSystemRequest(
-				externalSystemGRSSignumConfigId, BPARTNER_ID, PINSTANCE_ID);
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, BPARTNER_ID);
+		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportBPartnerToGRSService.getExportExternalSystemRequest(childConfigId, bPartnerRecordRef, PINSTANCE_ID);
 
 		// then
 		assertThat(externalSystemRequest).isNotPresent();
-	}
-
-	@Builder(builderMethodName = "createGRSSignumConfigBuilder", builderClassName = "GRSSignumConfigBuilder")
-	private @NonNull ExternalSystemGRSSignumConfigId createGRSSignumConfig(
-			@NonNull final Integer parentConfigId,
-			final boolean syncBPartnersToRestEndpoint)
-	{
-		final I_ExternalSystem_Config parentConfig = newInstance(I_ExternalSystem_Config.class);
-		parentConfig.setExternalSystem_Config_ID(parentConfigId);
-		parentConfig.setName("ParentConfig");
-		parentConfig.setIsActive(true);
-		parentConfig.setType(ExternalSystemType.GRSSignum.getCode());
-		parentConfig.setWriteAudit(true);
-		parentConfig.setAuditFileFolder("fileFolder");
-
-		saveRecord(parentConfig);
-
-		final Boolean isSyncBPartnersToRestEndpoint = CoalesceUtil.coalesceNotNull(syncBPartnersToRestEndpoint, Boolean.FALSE);
-
-		final I_ExternalSystem_Config_GRSSignum grsConfig = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		grsConfig.setBaseURL("baseUrl");
-		grsConfig.setExternalSystem_Config_ID(parentConfig.getExternalSystem_Config_ID());
-		grsConfig.setExternalSystemValue("grsValue");
-		grsConfig.setTenantId("tenantId");
-		grsConfig.setCamelHttpResourceAuthKey("authKey");
-		grsConfig.setAuthToken("authToken");
-		grsConfig.setIsSyncBPartnersToRestEndpoint(isSyncBPartnersToRestEndpoint);
-		saveRecord(grsConfig);
-
-		return ExternalSystemGRSSignumConfigId.ofRepoId(grsConfig.getExternalSystem_Config_GRSSignum_ID());
 	}
 
 	private void createPrerequisites()

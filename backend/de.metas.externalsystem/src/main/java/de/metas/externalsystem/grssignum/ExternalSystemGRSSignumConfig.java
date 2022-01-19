@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.grssignum;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import lombok.Builder;
@@ -60,6 +61,10 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 
 	boolean autoSendCustomers;
 
+	boolean syncHUsOnMaterialReceipt;
+
+	boolean syncHUsOnProductionReceipt;
+
 	@Builder
 	ExternalSystemGRSSignumConfig(
 			@NonNull final ExternalSystemGRSSignumConfigId id,
@@ -71,7 +76,9 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 			@Nullable final String authToken,
 			final boolean syncBPartnersToRestEndpoint,
 			final boolean autoSendVendors,
-			final boolean autoSendCustomers)
+			final boolean autoSendCustomers,
+			final boolean syncHUsOnMaterialReceipt,
+			final boolean syncHUsOnProductionReceipt)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -83,10 +90,18 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 		this.syncBPartnersToRestEndpoint = syncBPartnersToRestEndpoint;
 		this.autoSendVendors = autoSendVendors;
 		this.autoSendCustomers = autoSendCustomers;
+		this.syncHUsOnMaterialReceipt = syncHUsOnMaterialReceipt;
+		this.syncHUsOnProductionReceipt = syncHUsOnProductionReceipt;
 	}
 
 	public static ExternalSystemGRSSignumConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemGRSSignumConfig)childConfig;
+	}
+
+	@JsonIgnore
+	public boolean isHUsSyncEnabled()
+	{
+		return syncHUsOnMaterialReceipt || syncHUsOnProductionReceipt;
 	}
 }

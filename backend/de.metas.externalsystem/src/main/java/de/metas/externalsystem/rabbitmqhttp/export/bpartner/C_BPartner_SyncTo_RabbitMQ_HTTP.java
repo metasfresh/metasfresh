@@ -22,36 +22,23 @@
 
 package de.metas.externalsystem.rabbitmqhttp.export.bpartner;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.bpartner.C_BPartner_SyncTo_ExternalSystem;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
-import de.metas.externalsystem.rabbitmqhttp.ExportToRabbitMQService;
+import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.process.PInstanceId;
 import de.metas.process.Param;
-import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-
-import javax.annotation.Nullable;
 
 public class C_BPartner_SyncTo_RabbitMQ_HTTP extends C_BPartner_SyncTo_ExternalSystem
 {
-	private final ExportToRabbitMQService exportToRabbitMQService = SpringContextHolder.instance.getBean(ExportToRabbitMQService.class);
+	private final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService = SpringContextHolder.instance.getBean(ExportBPartnerToRabbitMQService.class);
 
 	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystem_Config_RabbitMQ_HTTP_ID;
 	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID)
 	private int externalSystemConfigRabbitMQId;
-
-	@Override
-	protected void exportBPartner(
-			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
-			@NonNull final BPartnerId bpartnerId,
-			@Nullable final PInstanceId pInstanceId)
-	{
-		exportToRabbitMQService.exportBPartner(externalSystemChildConfigId, bpartnerId, pInstanceId);
-	}
 
 	@Override
 	protected ExternalSystemType getExternalSystemType()
@@ -69,5 +56,11 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends C_BPartner_SyncTo_ExternalS
 	protected String getExternalSystemParam()
 	{
 		return PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID;
+	}
+
+	@Override
+	protected ExportToExternalSystemService getExportToBPartnerExternalSystem()
+	{
+		return exportBPartnerToRabbitMQService;
 	}
 }

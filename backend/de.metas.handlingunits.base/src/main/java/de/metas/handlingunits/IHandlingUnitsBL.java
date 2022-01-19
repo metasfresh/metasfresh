@@ -232,6 +232,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	I_M_HU getTopLevelParent(I_M_HU hu);
 
+	I_M_HU getTopLevelParent(HuId huId);
+
 	ImmutableSet<HuId> getTopLevelHUs(@NonNull Collection<HuId> huIds);
 
 	/**

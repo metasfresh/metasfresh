@@ -24,7 +24,7 @@ package de.metas.externalsystem.grssignum.export.interceptor;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.grssignum.ExportToGRSService;
+import de.metas.externalsystem.grssignum.ExportBPartnerToGRSService;
 import de.metas.job.JobId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -43,13 +43,13 @@ public class C_Job
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ExportToGRSService exportToGRSService;
+	private final ExportBPartnerToGRSService exportBPartnerToGRSService;
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	public C_Job(@NonNull final ExportToGRSService exportToGRSService)
+	public C_Job(@NonNull final ExportBPartnerToGRSService exportBPartnerToGRSService)
 	{
-		this.exportToGRSService = exportToGRSService;
+		this.exportBPartnerToGRSService = exportBPartnerToGRSService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
@@ -62,7 +62,7 @@ public class C_Job
 
 			if (bpartnerId != null)
 			{
-				trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+				trxManager.runAfterCommit(() -> exportBPartnerToGRSService.enqueueBPartnerSync(bpartnerId));
 			}
 		}
 	}
