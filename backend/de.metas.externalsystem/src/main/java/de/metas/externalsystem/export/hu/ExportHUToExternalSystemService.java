@@ -118,9 +118,9 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		final HuId huId = huRecordReference.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
 
-		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(huId);
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
 
-		final String orgCode = orgDAO.getById(topLevelHU.getAD_Org_ID()).getValue();
+		final String orgCode = orgDAO.getById(hu.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
@@ -128,7 +128,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
 								   .command(getExternalCommand())
-								   .parameters(buildParameters(config.getChildConfig(), HuId.ofRepoId(topLevelHU.getM_HU_ID())))
+								   .parameters(buildParameters(config.getChildConfig(), huId))
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
@@ -151,9 +151,11 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		for (final ExportHUCandidate exportHUCandidate : huCandidates)
 		{
-			final TableRecordReference huRecordRef = TableRecordReference.of(I_M_HU.Table_Name, exportHUCandidate.getHuId());
+			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(exportHUCandidate.getHuId());
 
-			exportToExternalSystemIfRequired(huRecordRef, () -> getAdditionalExternalSystemConfigIds(exportHUCandidate));
+			final TableRecordReference topLevelRef = TableRecordReference.of(I_M_HU.Table_Name, topLevelParent.getM_HU_ID());
+
+			exportToExternalSystemIfRequired(topLevelRef, () -> getAdditionalExternalSystemConfigIds(exportHUCandidate));
 		}
 	}
 

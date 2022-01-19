@@ -12,7 +12,6 @@
     "HUId": "huIdentifier",
     "AuthToken": "authToken",
     "ChildConfigValue": "grsValue",
-    "TenantId": "myTenant",
-    "HUAttributes": "{\"LockNotice\":\"de_DE_HUAttributeLockNotice\"}"
+    "TenantId": "myTenant"
   }
 }

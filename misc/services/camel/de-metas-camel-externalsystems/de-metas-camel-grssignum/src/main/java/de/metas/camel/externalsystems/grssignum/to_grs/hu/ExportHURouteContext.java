@@ -22,18 +22,19 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.hu;
 
-import de.metas.common.handlingunits.JsonHUAttributes;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class ExportHUGRSRouteContext
+public class ExportHURouteContext
 {
 	@NonNull
-	String huIdentifier;
+	String remoteUrl;
 
-	@NonNull
-	JsonHUAttributes afterExportAttributes;
+	@Nullable
+	String authToken;
 }

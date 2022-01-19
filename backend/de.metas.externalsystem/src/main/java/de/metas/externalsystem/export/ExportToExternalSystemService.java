@@ -85,6 +85,8 @@ public abstract class ExportToExternalSystemService
 			@NonNull final TableRecordReference recordReference,
 			@Nullable final PInstanceId pInstanceId)
 	{
+		runPreExportHook(recordReference);
+
 		getExportExternalSystemRequest(externalSystemChildConfigId, recordReference, pInstanceId)
 				.ifPresent(externalSystemMessageSender::send);
 	}
@@ -145,4 +147,6 @@ public abstract class ExportToExternalSystemService
 			IExternalSystemChildConfigId externalSystemChildConfigId,
 			TableRecordReference recordReference,
 			PInstanceId pInstanceId);
+
+	protected abstract void runPreExportHook(TableRecordReference recordReferenceToExport);
 }

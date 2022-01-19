@@ -165,6 +165,9 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 		return Optional.empty();
 	}
 
+	@Override
+	protected void runPreExportHook(final TableRecordReference recordReferenceToExport) {}
+
 	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final BPartnerId bPartnerId);
 
 	protected abstract boolean isSyncBPartnerEnabled(@NonNull final IExternalSystemChildConfig childConfig);

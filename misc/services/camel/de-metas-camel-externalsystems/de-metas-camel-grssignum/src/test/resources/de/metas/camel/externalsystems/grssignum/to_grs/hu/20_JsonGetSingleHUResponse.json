@@ -18,6 +18,7 @@
     ],
     "attributes": {
       "1000004": null,
+      "LockNotice": "Erwartet Freigabe durch GRS",
       "QualityDiscountPercent": "0",
       "HU_CostPrice": "1.00",
       "HU_Expired": null,

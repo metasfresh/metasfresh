@@ -22,13 +22,10 @@
 
 package de.metas.externalsystem.grssignum;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
-import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.util.EmptyUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
@@ -41,7 +38,7 @@ import de.metas.externalsystem.export.hu.ExportHUCandidate;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceType;
@@ -49,17 +46,16 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.handlingunits.attribute.HUAttributeConstants.ATTR_Lock_Notice;
 import static de.metas.handlingunits.trace.HUTraceType.MATERIAL_RECEIPT;
 import static de.metas.handlingunits.trace.HUTraceType.PRODUCTION_RECEIPT;
 import static de.metas.handlingunits.trace.HUTraceType.TRANSFORM_LOAD;
@@ -72,6 +68,7 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 	private static final AdMessageKey MSG_HU_ATTRIBUTE_LOCK_NOTICE = AdMessageKey.of("HUAttributeLockNotice");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	protected ExportHUToGRSService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
@@ -120,7 +117,6 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, grsSignumConfig.getValue());
 		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN, grsSignumConfig.getAuthToken());
 		parameters.put(ExternalSystemConstants.PARAM_HU_ID, String.valueOf(huId.getRepoId()));
-		parameters.put(ExternalSystemConstants.PARAM_HU_ATTR, getLockNoticeHUAttribute());
 
 		return parameters;
 	}
@@ -145,6 +141,21 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 		final TableRecordReference sourceTopLevelHUTableRecordRef = TableRecordReference.of(I_M_HU.Table_Name, sourceTopLevelId);
 
 		return Optional.of(getExternalSysConfigIdsFromExportAudit(sourceTopLevelHUTableRecordRef));
+	}
+
+	@Override
+	protected void runPreExportHook(final TableRecordReference recordReferenceToExport)
+	{
+		final HuId huId = recordReferenceToExport.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
+
+		final String huAttributeValue = msgBL.getMsg(Env.getAD_Language(), MSG_HU_ATTRIBUTE_LOCK_NOTICE);
+
+		if (EmptyUtil.isEmpty(huAttributeValue))
+		{
+			return;
+		}
+
+		huAttributesBL.updateHUAttributeRecursive(huId, ATTR_Lock_Notice, huAttributeValue, null);
 	}
 
 	private void exportIfAlreadyExportedOnce(@NonNull final I_M_HU_Trace huTrace)
@@ -206,31 +217,6 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 				return grsSignumConfig.isSyncHUsOnProductionReceipt();
 			default:
 				return false;
-		}
-	}
-
-	@Nullable
-	private String getLockNoticeHUAttribute()
-	{
-		final String huAttributeValue = msgBL.getMsg(Env.getAD_Language(), MSG_HU_ATTRIBUTE_LOCK_NOTICE);
-
-		if (EmptyUtil.isEmpty(huAttributeValue))
-		{
-			return null;
-		}
-
-		final JsonHUAttributes attributes = new JsonHUAttributes();
-		attributes.putAttribute(HUAttributeConstants.ATTR_Lock_Notice.getCode(), huAttributeValue);
-
-		try
-		{
-			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(attributes);
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw new AdempiereException("Fail to parse huAttribute to export for huId")
-					.appendParametersToMessage()
-					.setParameter("HuAttribute", HUAttributeConstants.ATTR_Lock_Notice);
 		}
 	}
 }

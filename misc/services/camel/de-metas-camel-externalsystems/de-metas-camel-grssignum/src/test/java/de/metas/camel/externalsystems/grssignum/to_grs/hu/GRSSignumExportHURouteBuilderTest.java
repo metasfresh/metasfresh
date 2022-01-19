@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.RetrieveHUCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUUpdate;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -43,22 +42,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.grssignum.from_grs.hu.UpdateHURouteBuilder.UPDATE_HU_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.hu.GRSSignumExportHURouteBuilder.EXPORT_HU_ROUTE_ID;
-import static de.metas.camel.externalsystems.grssignum.to_grs.hu.GRSSignumExportHURouteBuilder.PREPARE_JSON_HU_UPDATE_PROCESSOR_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_HU_RETRIEVE_ENDPOINT = "mock:HURetrieveEndpoint";
 	private static final String MOCK_GRSSIGNUM_DISPATCHER_ENDPOINT = "mock:grsSignumDispatcherEndpoint";
-	private static final String MOCK_UPDATE_HU_ROUTE_ID = "mock:updateHU";
 
 	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
 	private static final String JSON_RETRIEVE_HU_CAMEL_REQUEST = "10_RetrieveHUCamelRequest.json";
 	private static final String JSON_GET_HU_RESPONSE = "20_JsonGetSingleHUResponse.json";
 	private static final String JSON_DISPATCH_REQUEST = "30_DispatchRequest.json";
-	private static final String JSON_HU_UPDATE_REQUEST = "40_JsonHUUpdateRequest.json";
 
 	@Override
 	public boolean isUseAdviceWith()
@@ -93,9 +88,8 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 		final MockGetHUProcessor mockGetHUProcessor = new MockGetHUProcessor();
-		final MockUpdateHUProcessor mockUpdateHUProcessor = new MockUpdateHUProcessor();
 
-		prepareRouteForTesting(mockGetHUProcessor, mockUpdateHUProcessor);
+		prepareRouteForTesting(mockGetHUProcessor);
 
 		context.start();
 
@@ -109,11 +103,6 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 		final MockEndpoint grsSignumDispatcherMockEndpoint = getMockEndpoint(MOCK_GRSSIGNUM_DISPATCHER_ENDPOINT);
 		grsSignumDispatcherMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedDispatchRequestIS, DispatchRequest.class));
 
-		// validate the JsonHUUpdate
-		final InputStream expectedJsonHUUpdateIS = this.getClass().getResourceAsStream(JSON_HU_UPDATE_REQUEST);
-		final MockEndpoint grsUpdateHUMockEndpoint = getMockEndpoint(MOCK_UPDATE_HU_ROUTE_ID);
-		grsUpdateHUMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedJsonHUUpdateIS, JsonHUUpdate.class));
-
 		//input request
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -123,13 +112,10 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertThat(mockGetHUProcessor.called).isEqualTo(1);
-		assertThat(mockUpdateHUProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
-	private void prepareRouteForTesting(
-			@NonNull final MockGetHUProcessor mockGetHUProcessor,
-			@NonNull final MockUpdateHUProcessor mockUpdateHUProcessor) throws Exception
+	private void prepareRouteForTesting(@NonNull final MockGetHUProcessor mockGetHUProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, EXPORT_HU_ROUTE_ID,
 							  advice -> {
@@ -141,14 +127,6 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
 										  .to(MOCK_GRSSIGNUM_DISPATCHER_ENDPOINT);
-
-								  advice.weaveById(PREPARE_JSON_HU_UPDATE_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPDATE_HU_ROUTE_ID);
-
-								  advice.interceptSendToEndpoint("direct:" + UPDATE_HU_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(mockUpdateHUProcessor);
 							  });
 	}
 
@@ -163,17 +141,6 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 
 			final InputStream jsonHUToExport = GRSSignumExportHURouteBuilderTest.class.getResourceAsStream(JSON_GET_HU_RESPONSE);
 			exchange.getIn().setBody(jsonHUToExport);
-		}
-	}
-
-	private static class MockUpdateHUProcessor implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
 		}
 	}
 }

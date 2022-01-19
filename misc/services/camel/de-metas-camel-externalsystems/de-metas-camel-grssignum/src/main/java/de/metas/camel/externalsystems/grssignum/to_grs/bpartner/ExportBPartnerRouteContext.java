@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.to_grs;
+package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ExportGRSRouteContext
+public class ExportBPartnerRouteContext
 {
 	@NonNull
 	String remoteUrl;

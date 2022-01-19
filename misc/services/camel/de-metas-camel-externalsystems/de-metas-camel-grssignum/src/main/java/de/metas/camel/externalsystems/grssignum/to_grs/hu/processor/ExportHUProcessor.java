@@ -24,9 +24,8 @@ package de.metas.camel.externalsystems.grssignum.to_grs.hu.processor;
 
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
-import de.metas.camel.externalsystems.grssignum.to_grs.ExportGRSRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
+import de.metas.camel.externalsystems.grssignum.to_grs.hu.ExportHURouteContext;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.util.EmptyUtil;
@@ -35,12 +34,14 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.ROUTE_PROPERTY_EXPORT_HU_CONTEXT;
+
 public class ExportHUProcessor implements Processor
 {
 	@Override
 	public void process(@NonNull final Exchange exchange) throws Exception
 	{
-		final ExportGRSRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_GRS_CONTEXT, ExportGRSRouteContext.class);
+		final ExportHURouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_HU_CONTEXT, ExportHURouteContext.class);
 
 		final JsonGetSingleHUResponse jsonGetSingleHUResponse = exchange.getIn().getBody(JsonGetSingleHUResponse.class);
 
