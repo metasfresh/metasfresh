@@ -1,7 +1,7 @@
 import React from 'react';
 import { isEqual } from 'lodash';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useStore } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
@@ -17,9 +17,9 @@ const TokenRoute = ({ match }) => {
   const { tokenId } = match.params;
   const auth = useAuth();
   const history = useHistory();
-  const loggedIn = useSelector((state) => state.appHandler.isLogged);
+  const state = useStore().getState();
 
-  if (!auth.authRequestPending() && !loggedIn) {
+  if (!auth.authRequestPending() && !state.appHandler.isLogged) {
     auth.tokenLogin(tokenId).then(() => {
       history.push('/');
     });

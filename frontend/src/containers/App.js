@@ -1,7 +1,7 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
 import {
@@ -43,7 +43,7 @@ const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
-  const loggedIn = useSelector((state) => state.appHandler.isLogged);
+  const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
 
   useConstructor(() => {
@@ -91,7 +91,7 @@ const App = () => {
 
             // we got not authenticated error, but locally still have the authenticated flag truthy
             // (ie user logged out in another window, or session timed out)
-            if (auth.isLoggedIn || loggedIn) {
+            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
               auth.logout().finally(() => {
                 history.push('/login');
               });
@@ -122,7 +122,7 @@ const App = () => {
           }
 
           //if not logged in
-          if (!auth.isLoggedIn && !loggedIn) {
+          if (!auth.isLoggedIn && !store.getState().appHandler.isLogged) {
             return auth.checkAuthentication().then((authenticated) => {
               if (authenticated) {
                 history.push(location.pathname);
