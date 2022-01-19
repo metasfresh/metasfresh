@@ -16,6 +16,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
@@ -33,6 +36,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull IOrgDAO orgDAO;
 	@NonNull IWarehouseBL warehouseBL;
 	@NonNull IProductBL productBL;
+	@NonNull IAttributeDAO attributeDAO;
 	@NonNull IHUPPOrderBL ppOrderBL;
 	@NonNull IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
@@ -60,4 +64,10 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	{
 		return Multimaps.index(ppOrderIssueScheduleService.getByOrderId(ppOrderId), PPOrderIssueSchedule::getPpOrderBOMLineId);
 	}
+
+	public ImmutableAttributeSet getImmutableAttributeSet(final AttributeSetInstanceId asiId)
+	{
+		return attributeDAO.getImmutableAttributeSetById(asiId);
+	}
+
 }

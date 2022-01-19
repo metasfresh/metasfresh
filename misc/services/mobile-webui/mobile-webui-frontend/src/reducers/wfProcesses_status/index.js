@@ -27,13 +27,13 @@ export const selectWFProcessFromState = createSelector(
         }
 );
 
-const getActivities = createSelector(
+const selectActivities = createSelector(
   (state, wfProcessId) => getWfProcess(state, wfProcessId),
   (wfProcess) => (wfProcess ? wfProcess.activities : {})
 );
 
-const getActivitiesStatuses = createSelector(
-  (state, wfProcessId) => getActivities(state, wfProcessId),
+const selectActivitiesStatuses = createSelector(
+  (state, wfProcessId) => selectActivities(state, wfProcessId),
   (activities) => {
     const statuses = [];
 
@@ -46,7 +46,7 @@ const getActivitiesStatuses = createSelector(
 );
 
 export const activitiesNotStarted = createSelector(
-  (state, wfProcessId) => getActivitiesStatuses(state, wfProcessId),
+  (state, wfProcessId) => selectActivitiesStatuses(state, wfProcessId),
   (activitiesStatuses) => {
     let notStarted = true;
 
@@ -61,6 +61,10 @@ export const activitiesNotStarted = createSelector(
     return notStarted;
   }
 );
+
+export const getActivityById = (state, wfProcessId, activityId) => {
+  return getWfProcess(state, wfProcessId)?.activities?.[activityId];
+};
 
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });

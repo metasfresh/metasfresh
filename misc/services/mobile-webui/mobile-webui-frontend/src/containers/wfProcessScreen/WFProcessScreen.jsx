@@ -15,6 +15,7 @@ import MaterialReceiptActivity from '../activities/manufacturing/receipt/Materia
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 import AbortButton from './AbortButton';
 import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
+import GenerateHUQRCodesActivity from '../activities/manufacturing/generateHUQRCodes/GenerateHUQRCodesActivity';
 
 class WFProcessScreen extends PureComponent {
   componentDidMount() {
@@ -101,6 +102,15 @@ class WFProcessScreen extends PureComponent {
             applicationId={applicationId}
             wfProcessId={wfProcessId}
             activityId={activityItem.activityId}
+            activityState={activityItem}
+          />
+        );
+      case 'manufacturing/generateHUQRCodes':
+        return (
+          <GenerateHUQRCodesActivity
+            key={activityItem.activityId}
+            applicationId={applicationId}
+            wfProcessId={wfProcessId}
             activityState={activityItem}
           />
         );

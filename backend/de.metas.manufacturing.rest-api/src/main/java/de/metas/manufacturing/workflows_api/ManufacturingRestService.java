@@ -11,7 +11,7 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.GenerateHUQRCodesActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.WorkReportActivityHandler;

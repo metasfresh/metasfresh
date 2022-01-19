@@ -336,48 +336,51 @@ public class HandlingUnitsRestController
 	{
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(json.getAttributeCode());
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		final AttributeValueType valueType = AttributeValueType.ofCode(attribute.getAttributeValueType());
 
 		final HUQRCodeGenerateRequest.Attribute.AttributeBuilder resultBuilder = HUQRCodeGenerateRequest.Attribute.builder()
 				.attributeId(attributeId);
 
-		switch (valueType)
-		{
-			case STRING:
-			{
-				return resultBuilder.valueString(json.getValue()).build();
-			}
-			case NUMBER:
-			{
-				final BigDecimal valueNumber = NumberUtils.asBigDecimal(json.getValue());
-				return resultBuilder.valueNumber(valueNumber).build();
-			}
-			case DATE:
-			{
-				final LocalDate valueDate = StringUtils.trimBlankToOptional(json.getValue()).map(LocalDate::parse).orElse(null);
-				return resultBuilder.valueDate(valueDate).build();
-			}
-			case LIST:
-			{
-				final String listItemCode = json.getValue();
-				if (listItemCode != null)
+		return AttributeValueType.ofCode(attribute.getAttributeValueType())
+				.map(new AttributeValueType.CaseMapper<HUQRCodeGenerateRequest.Attribute>()
 				{
-					final AttributeListValue listItem = attributeDAO.retrieveAttributeValueOrNull(attributeId, listItemCode);
-					if (listItem == null)
+					@Override
+					public HUQRCodeGenerateRequest.Attribute string()
 					{
-						throw new AdempiereException("No M_AttributeValue_ID found for " + attributeId + " and `" + listItemCode + "`");
+						return resultBuilder.valueString(json.getValue()).build();
 					}
-					return resultBuilder.valueListId(listItem.getId()).build();
-				}
-				else
-				{
-					return resultBuilder.valueListId(null).build();
-				}
-			}
-			default:
-			{
-				throw new AdempiereException("Unsupported value type: " + valueType);
-			}
-		}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute number()
+					{
+						final BigDecimal valueNumber = NumberUtils.asBigDecimal(json.getValue());
+						return resultBuilder.valueNumber(valueNumber).build();
+					}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute date()
+					{
+						final LocalDate valueDate = StringUtils.trimBlankToOptional(json.getValue()).map(LocalDate::parse).orElse(null);
+						return resultBuilder.valueDate(valueDate).build();
+					}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute list()
+					{
+						final String listItemCode = json.getValue();
+						if (listItemCode != null)
+						{
+							final AttributeListValue listItem = attributeDAO.retrieveAttributeValueOrNull(attributeId, listItemCode);
+							if (listItem == null)
+							{
+								throw new AdempiereException("No M_AttributeValue_ID found for " + attributeId + " and `" + listItemCode + "`");
+							}
+							return resultBuilder.valueListId(listItem.getId()).build();
+						}
+						else
+						{
+							return resultBuilder.valueListId(null).build();
+						}
+					}
+				});
 	}
 }

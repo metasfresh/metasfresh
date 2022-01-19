@@ -1,10 +1,16 @@
 package de.metas.manufacturing.workflows_api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonFinishedGoodsReceiveLine;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.user.UserId;
@@ -20,10 +26,15 @@ import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -39,12 +50,15 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
+	private final HUQRCodesService huQRCodesService;
 
 	public ManufacturingMobileApplication(
-			@NonNull final ManufacturingRestService manufacturingRestService)
+			@NonNull final ManufacturingRestService manufacturingRestService,
+			@NonNull final HUQRCodesService huQRCodesService)
 	{
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
+		this.huQRCodesService = huQRCodesService;
 	}
 
 	@Override
@@ -96,6 +110,12 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		return manufacturingRestService.getJobById(ppOrderId);
 	}
 
+	@NonNull
+	private static ManufacturingJob getManufacturingJob(final WFProcess wfProcess)
+	{
+		return wfProcess.getDocumentAs(ManufacturingJob.class);
+	}
+
 	@Override
 	public WFProcess changeWFProcessById(final WFProcessId wfProcessId, final UnaryOperator<WFProcess> remappingFunction)
 	{
@@ -106,7 +126,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = getManufacturingJob(wfProcess);
 		return WFProcessHeaderProperties.builder()
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
@@ -143,7 +163,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
 		if (receiveFrom != null)
 		{
-			final FinishedGoodsReceiveLine receiveLine = changedWFProcess.getDocumentAs(ManufacturingJob.class)
+			final FinishedGoodsReceiveLine receiveLine = getManufacturingJob(changedWFProcess)
 					.getActivityById(wfActivityId)
 					.getFinishedGoodsReceiveAssumingNotNull()
 					.getLineById(receiveFrom.getFinishedGoodsReceiveLineId());
@@ -153,5 +173,66 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		}
 
 		return result;
+	}
+
+	public void generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
+	{
+		final ManufacturingJob manufacturingJob = getManufacturingJob(getWFProcessById(request.getWfProcessId()));
+		final FinishedGoodsReceiveLine finishedGoodsReceiveLine = manufacturingJob.getFinishedGoodsReceiveLineById(request.getFinishedGoodsReceiveLineId());
+
+		final List<HUQRCode> qrCodes = huQRCodesService.generate(
+				HUQRCodeGenerateRequest.builder()
+						.count(request.getQtyTUs().toInt())
+						.huUnitType(HUQRCodeUnitType.TU)
+						.productId(finishedGoodsReceiveLine.getProductId())
+						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))
+						.build());
+
+		huQRCodesService.print(qrCodes);
+	}
+
+	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)
+	{
+		return attributes
+				.getAttributeCodes()
+				.stream()
+				.map(attributeCode -> toHUQRCodeGenerateRequestAttribute(attributes, attributeCode))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static HUQRCodeGenerateRequest.Attribute toHUQRCodeGenerateRequestAttribute(final ImmutableAttributeSet attributes, AttributeCode attributeCode)
+	{
+		final AttributeId attributeId = attributes.getAttributeIdByCode(attributeCode);
+
+		final HUQRCodeGenerateRequest.Attribute.AttributeBuilder resultBuilder = HUQRCodeGenerateRequest.Attribute.builder()
+				.attributeId(attributeId);
+
+		return attributes.getAttributeValueType(attributeCode)
+				.map(new AttributeValueType.CaseMapper<HUQRCodeGenerateRequest.Attribute>()
+				{
+					@Override
+					public HUQRCodeGenerateRequest.Attribute string()
+					{
+						return resultBuilder.valueString(attributes.getValueAsString(attributeCode)).build();
+					}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute number()
+					{
+						return resultBuilder.valueNumber(attributes.getValueAsBigDecimal(attributeCode)).build();
+					}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute date()
+					{
+						return resultBuilder.valueDate(attributes.getValueAsLocalDate(attributeCode)).build();
+					}
+
+					@Override
+					public HUQRCodeGenerateRequest.Attribute list()
+					{
+						return resultBuilder.valueListId(attributes.getAttributeValueIdOrNull(attributeCode)).build();
+					}
+				});
 	}
 }

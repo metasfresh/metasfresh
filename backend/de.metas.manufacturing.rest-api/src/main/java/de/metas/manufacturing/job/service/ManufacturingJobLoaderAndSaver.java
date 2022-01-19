@@ -29,6 +29,7 @@ import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -236,6 +237,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
@@ -275,6 +277,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(orderBOMLine.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))

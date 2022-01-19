@@ -2,6 +2,7 @@ import { commonRoutes } from './common';
 import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
 import { scanRoutes } from './scan';
+import { generateHUQRCodesRoutes } from './generateHUQRCodes';
 import { manufacturingIssueRoutes } from './manufacturing_issue';
 import { manufacturingReceiptRoutes } from './manufacturing_receipt';
 import { distributionRoutes } from './distribution';
@@ -14,6 +15,7 @@ export const routesArray = [
   ...workflowRoutes,
   ...scanRoutes,
   ...distributionRoutes,
+  ...generateHUQRCodesRoutes,
   ...manufacturingIssueRoutes,
   ...manufacturingReceiptRoutes,
   ...pickingRoutes,
