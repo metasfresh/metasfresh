@@ -290,6 +290,19 @@ export class DraggableWrapper extends Component {
     );
   };
 
+  renderLogo = () => {
+    const { indicators } = this.state;
+    return indicators.length > 0 ? (
+      false
+    ) : (
+      <div className="dashboard-wrapper dashboard-logo-wrapper">
+        <div className="logo-wrapper">
+          <img src={logo} />
+        </div>
+      </div>
+    );
+  };
+
   renderKpis = () => {
     const { cards, idMaximized } = this.state;
     const { editmode } = this.props;
@@ -314,52 +327,48 @@ export class DraggableWrapper extends Component {
 
     return (
       <div className="kpis-wrapper">
-        {cards.length > 0 ? (
-          cards.map((item, id) => {
-            return (
-              <DndWidget
-                key={id}
-                index={id}
-                id={item.id}
-                moveCard={this.moveCard}
-                addCard={this.addCard}
-                onDrop={this.onDrop}
-                removeCard={this.removeCard}
-                entity={'cards'}
-                className={
-                  'draggable-widget ' +
-                  (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
-                }
-                transparent={!editmode}
-              >
-                <ChartWidget
-                  key={item.id}
-                  id={item.id}
+        {cards.length > 0
+          ? cards.map((item, id) => {
+              return (
+                <DndWidget
+                  key={id}
                   index={id}
-                  chartType={item.kpi.chartType}
-                  caption={item.caption}
-                  fields={item.kpi.fields}
-                  groupBy={item.kpi.groupByField}
-                  kpi={true}
+                  id={item.id}
                   moveCard={this.moveCard}
-                  idMaximized={idMaximized}
-                  maximizeWidget={this.maximizeWidget}
-                  text={item.caption}
-                  data={item.data}
-                  noData={item.fetchOnDrop}
-                  handleChartOptions={this.handleChartOptions}
-                  {...{ editmode }}
-                />
-              </DndWidget>
-            );
-          })
-        ) : (
-          <div className="dashboard-wrapper dashboard-logo-wrapper">
-            <div className="logo-wrapper">
-              <img src={logo} />
-            </div>
-          </div>
-        )}
+                  addCard={this.addCard}
+                  onDrop={this.onDrop}
+                  removeCard={this.removeCard}
+                  entity={'cards'}
+                  className={
+                    'draggable-widget ' +
+                    (idMaximized === item.id
+                      ? 'draggable-widget-maximize '
+                      : '')
+                  }
+                  transparent={!editmode}
+                >
+                  <ChartWidget
+                    key={item.id}
+                    id={item.id}
+                    index={id}
+                    chartType={item.kpi.chartType}
+                    caption={item.caption}
+                    fields={item.kpi.fields}
+                    groupBy={item.kpi.groupByField}
+                    kpi={true}
+                    moveCard={this.moveCard}
+                    idMaximized={idMaximized}
+                    maximizeWidget={this.maximizeWidget}
+                    text={item.caption}
+                    data={item.data}
+                    noData={item.fetchOnDrop}
+                    handleChartOptions={this.handleChartOptions}
+                    {...{ editmode }}
+                  />
+                </DndWidget>
+              );
+            })
+          : this.renderLogo()}
       </div>
     );
   };
