@@ -12,7 +12,12 @@ import {
  */
 export const updateUserEditable = ({ draftWFProcess }) => {
   let previousActivity = null;
-  draftWFProcess.activityIdsInOrder.forEach((activityId) => {
+
+  const activityIdsInOrder = isDraft(draftWFProcess.activityIdsInOrder)
+    ? current(draftWFProcess.activityIdsInOrder)
+    : draftWFProcess.activityIdsInOrder;
+
+  activityIdsInOrder.forEach((activityId) => {
     const currentActivity = draftWFProcess.activities[activityId];
     const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
@@ -41,11 +46,7 @@ export const updateUserEditable = ({ draftWFProcess }) => {
       if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
         previousActivity.dataStored.isUserEditable = false;
         console.log(
-          `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${
-            previousActivity.activityId
-          } ${previousActivityCompleteStatus} ] => isUserEditable=${
-            draftWFProcess.activities[previousActivity.activityId].dataStored.isUserEditable
-          } because current activity is started/completed`
+          `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${previousActivity.activityId} ${previousActivityCompleteStatus} ] => isUserEditable=${previousActivity.dataStored.isUserEditable} because current activity is started/completed`
         );
       }
     }
