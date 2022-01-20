@@ -28,7 +28,7 @@ export class DraggableWrapper extends Component {
   state = {
     cards: [],
     indicators: [],
-    indicatorsUpdated: false,
+    indicatorsLoaded: false,
     idMaximized: null,
     websocketEndpoint: null,
     chartOptions: false,
@@ -135,7 +135,7 @@ export class DraggableWrapper extends Component {
     getTargetIndicatorsDashboard().then((response) => {
       this.setState({
         indicators: response.data.items,
-        indicatorsUpdated: true,
+        indicatorsLoaded: true,
       });
     });
   };
@@ -293,9 +293,9 @@ export class DraggableWrapper extends Component {
   };
 
   renderLogo = () => {
-    const { indicators, indicatorsUpdated } = this.state;
+    const { indicators, indicatorsLoaded } = this.state;
 
-    return indicators.length > 0 || !indicatorsUpdated ? (
+    return indicators.length > 0 || !indicatorsLoaded ? (
       false
     ) : (
       <div className="dashboard-wrapper dashboard-logo-wrapper">
