@@ -70,12 +70,8 @@ public class JsonBPartnerTest
 				+ "   				 \"MOBIL\": \"TELEFON2\",\n"
 				+ "   				 \"FAX\": \"FAX\",\n"
 				+ "    				 \"ROLLEN\":[\n "
-				+ "       					 {\n"
-				+ "									\"ROLLE\": \"ROLE1\"\n"
-				+ "        					 },\n"
-				+ "       					 {\n"
-				+ "									\"ROLLE\": \"ROLE2\" \n"
-				+ "       					 }\n"
+				+ "									\"ROLE1\",\n"
+				+ "									\"ROLE2\"\n"
 				+ "    					]\n"
 				+ "			}\n"
 				+ "    	]\n"
@@ -112,14 +108,7 @@ public class JsonBPartnerTest
 	public void serialize_deserialize_test() throws Exception
 	{
 		//given
-		final JsonBPartnerContactRole role1 = JsonBPartnerContactRole.builder()
-				.role("ROLE1")
-				.build();
-
-		final JsonBPartnerContactRole role2 = JsonBPartnerContactRole.builder()
-				.role("ROLE2")
-				.build();
-		final List<JsonBPartnerContactRole> roles = ImmutableList.of(role1, role2);
+		final List<String> roles = ImmutableList.of("ROLE1", "ROLE2");
 
 		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
 				.metasfreshId(JsonMetasfreshId.of(100))
