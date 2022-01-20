@@ -451,9 +451,8 @@ export default class Table extends PureComponent {
 
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
-
     if (pending) {
-      return false;
+      return <div>LOADING...</div>;
     }
 
     if (!rows.length) {

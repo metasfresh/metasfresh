@@ -270,6 +270,7 @@ const mapStateToProps = (state, props) => {
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,
     isGerman: isGermanLanguage(state.appHandler.me.language),
+    pending: table.pending,
   };
 };
 

@@ -398,12 +398,15 @@ export function indicatorState(state) {
  */
 export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
+    const tableId = getTableId({ windowId, docId, tabId });
+    dispatch(updateTabTable({ tableId, tableResponse: {}, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
-        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
-        dispatch(updateTabTable(tableId, tableData));
+        dispatch(
+          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+        );
 
         return Promise.resolve(response);
       })
@@ -683,7 +686,13 @@ export function createWindow({
                 tabId,
                 ...tab,
               };
-              dispatch(updateTabTable(tableId, tableData));
+              dispatch(
+                updateTabTable({
+                  tableId,
+                  tableResponse: tableData,
+                  pending: false,
+                })
+              );
             });
           }
           /** post get layout action triggered for the inlineTab case */
