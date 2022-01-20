@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
 import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
-import Spinner from '../app/SpinnerOverlay';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 
@@ -497,7 +496,6 @@ export default class Table extends PureComponent {
       onDeselectAll,
       tableRefreshToggle,
       setActiveSort,
-      pending,
     } = this.props;
 
     return (
