@@ -43,6 +43,7 @@ import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
+const pending = true;
 
 const createState = function(state = {}) {
   return merge(
@@ -482,7 +483,6 @@ describe('TableActions tab', () => {
         ...tab,
       };
 
-      const pending = true;
       dispatchedActions.push(store.dispatch(updateTabTable({ tableId, tableResponse: dataResponse, pending })));
       expectedActions.push({
         type: ACTION_TYPES.UPDATE_TABLE,
@@ -540,7 +540,6 @@ describe('TableActions tab', () => {
       },
     });
 
-    const pending = true;
     const store = mockStore(initialState);
     const tabId = rowDataResponse[0].tabId;
     const tableId = getTableId({ windowId: windowType, docId, tabId });
