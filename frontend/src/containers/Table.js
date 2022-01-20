@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-
 import { getZoomIntoWindow, deleteRequest } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';

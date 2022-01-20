@@ -452,13 +452,7 @@ export default class Table extends PureComponent {
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
     if (pending) {
-      return (
-        <div className="spinner-wrapper-in-tab">
-          <div>
-            <Spinner iconSize={50} spinnerType="modal" />
-          </div>
-        </div>
-      );
+      return false;
     }
 
     if (!rows.length) {
@@ -503,6 +497,7 @@ export default class Table extends PureComponent {
       onDeselectAll,
       tableRefreshToggle,
       setActiveSort,
+      pending,
     } = this.props;
 
     return (

@@ -3,7 +3,7 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-
+import Spinner from '../../components/app/SpinnerOverlay';
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -335,6 +335,7 @@ class TableWrapper extends PureComponent {
       onHandleAdvancedEdit,
       onOpenTableModal,
       supportOpenRecord,
+      pending,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -405,17 +406,25 @@ class TableWrapper extends PureComponent {
               wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
             />
           )}
+          {pending && (
+            <div className="spinner-wrapper-in-tab">
+              <div>
+                <Spinner iconSize={50} spinnerType="modal" />
+              </div>
+            </div>
+          )}
 
-          <Table
-            {...this.props}
-            handleSelect={this.handleSelect}
-            handleFocusAction={this.handleFocusAction}
-            onRightClick={this.handleRightClick}
-            onFastInlineEdit={this.handleFastInlineEdit}
-            rowRefs={this.rowRefs}
-            ref={this.setTableRef}
-          />
-
+          {!pending && (
+            <Table
+              {...this.props}
+              handleSelect={this.handleSelect}
+              handleFocusAction={this.handleFocusAction}
+              onRightClick={this.handleRightClick}
+              onFastInlineEdit={this.handleFastInlineEdit}
+              rowRefs={this.rowRefs}
+              ref={this.setTableRef}
+            />
+          )}
           {
             // Other 'table-flex-wrapped' components
             // like selection attributes
