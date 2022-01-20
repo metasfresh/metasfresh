@@ -7,7 +7,6 @@ Feature: check invoice candidates status
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
-  @ignore
   Scenario: Generate invoice from order and validate check invoice candidate status EP
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -47,6 +46,13 @@ Feature: check invoice candidates status
     "closeOrder": true
 }
    """
+    And after not more than 30s, locate C_Invoice_Candidates by externalHeaderId
+      | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId |
+      | i_c_1                             | ExtHeader_6      |
+
+    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | i_c_1                             |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/status' and fulfills with '200' status code
 
