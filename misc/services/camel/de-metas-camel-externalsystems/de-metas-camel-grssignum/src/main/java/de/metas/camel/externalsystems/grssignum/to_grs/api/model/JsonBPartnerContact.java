@@ -70,7 +70,7 @@ public class JsonBPartnerContact
 	String fax;
 
 	@JsonProperty("ROLLEN")
-	List<JsonBPartnerContactRole> contactRoles;
+	List<String> contactRoles;
 
 	@Builder
 	public JsonBPartnerContact(
@@ -84,7 +84,7 @@ public class JsonBPartnerContact
 			@JsonProperty("TELEFON") final @Nullable String phone,
 			@JsonProperty("MOBIL") final @Nullable String phone2,
 			@JsonProperty("FAX") final @Nullable String fax,
-			@JsonProperty("ROLLEN") final @Nullable List<JsonBPartnerContactRole> contactRoles)
+			@JsonProperty("ROLLEN") final @Nullable List<String> contactRoles)
 	{
 		this.metasfreshId = metasfreshId;
 		this.lastName = lastName;

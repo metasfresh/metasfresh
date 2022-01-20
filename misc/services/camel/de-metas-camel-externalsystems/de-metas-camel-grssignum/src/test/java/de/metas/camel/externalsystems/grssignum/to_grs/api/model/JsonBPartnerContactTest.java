@@ -52,15 +52,10 @@ public class JsonBPartnerContactTest
 				+ "    \"TELEFON\": \"TELEFON\",\n"
 				+ "    \"MOBIL\": \"TELEFON2\",\n"
 				+ "    \"FAX\": \"FAX\",\n"
-				+ "    \"ROLLEN\":[\n "
-				+ "        {\n"
-				+ "				\"ROLLE\": \"ROLE1\"\n"
-				+ "        },\n"
-				+ "        {\n"
-				+ "				\"ROLLE\": \"ROLE2\" \n"
-				+ "        }\n"
-				+ "    ]\n"
-
+				+ "    	\"ROLLEN\":[\n "
+				+ "						\"ROLE1\",\n"
+				+ "						\"ROLE2\"\n"
+				+ "    		]\n"
 				+ "}";
 
 		//when
@@ -91,10 +86,6 @@ public class JsonBPartnerContactTest
 	@Builder(builderMethodName = "createJsonBPartnerContactBuilder", builderClassName = "JsonBPartnerContactBuilder")
 	public static JsonBPartnerContact createJsonBPartnerContact()
 	{
-		final JsonBPartnerContactRole role1 = JsonBPartnerContactRoleTest.createJsonBPartnerContactRole("ROLE1");
-
-		final JsonBPartnerContactRole role2 = JsonBPartnerContactRoleTest.createJsonBPartnerContactRole("ROLE2");
-
 		return JsonBPartnerContact.builder()
 				.metasfreshId(JsonMetasfreshId.of(100))
 				.lastName("LASTNAME")
@@ -106,7 +97,7 @@ public class JsonBPartnerContactTest
 				.phone("TELEFON")
 				.fax("FAX")
 				.phone2("TELEFON2")
-				.contactRoles(ImmutableList.of(role1, role2))
+				.contactRoles(ImmutableList.of("ROLE1", "ROLE2"))
 				.build();
 	}
 }
