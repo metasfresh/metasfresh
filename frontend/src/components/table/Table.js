@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
 import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
-
+import Spinner from '../app/SpinnerOverlay';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 
@@ -452,7 +452,13 @@ export default class Table extends PureComponent {
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
     if (pending) {
-      return <div>LOADING...</div>;
+      return (
+        <div className="spinner-wrapper-in-tab">
+          <div>
+            <Spinner iconSize={50} spinnerType="modal" />
+          </div>
+        </div>
+      );
     }
 
     if (!rows.length) {
