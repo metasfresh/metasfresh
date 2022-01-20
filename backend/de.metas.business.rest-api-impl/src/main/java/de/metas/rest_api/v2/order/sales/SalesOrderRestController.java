@@ -30,7 +30,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.v2.attachment.JsonAttachmentType;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -229,7 +229,7 @@ public class SalesOrderRestController
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
-				.type(JsonAttachmentType.valueOf(entry.getType().toString()))
+				.type(JsonAttachmentSourceType.valueOf(entry.getType().name()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

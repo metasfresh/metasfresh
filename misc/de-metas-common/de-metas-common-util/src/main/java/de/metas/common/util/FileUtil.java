@@ -22,9 +22,18 @@
 
 package de.metas.common.util;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class FileUtil
@@ -63,5 +72,57 @@ public class FileUtil
 		}
 
 		return sb.toString();
+	}
+
+	public boolean isAccessible(@NonNull final URL url) throws IOException
+	{
+		final Path filePath = getFilePath(url);
+
+		if (filePath == null)
+		{
+			throw new RuntimeException("Couldn't parse path from:" + url);
+		}
+
+		return filePath.toFile().isFile();
+	}
+
+	@Nullable
+	public Path getFilePath(@NonNull final URL url) throws MalformedURLException
+	{
+		return Optional.ofNullable(parseNetworkFileURLOrNull(url))
+				.orElseGet(() -> parseLocalFileURLOrNull(url));
+	}
+
+	@Nullable
+	private Path parseLocalFileURLOrNull(@NonNull final URL url)
+	{
+		try
+		{
+			final String normalizedPath = url.getAuthority() + "\\" + Arrays.stream(url.getPath().split("/"))
+					.filter(string -> !string.isEmpty())
+					.collect(Collectors.joining("\\"));
+
+			return Paths.get(normalizedPath);
+		}
+		catch (final Throwable throwable)
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	private Path parseNetworkFileURLOrNull(@NonNull final URL url)
+	{
+		try
+		{
+			final String normalizedPath = "\\\\" + url.getAuthority() + "\\" + Arrays.stream(url.getPath().split("/"))
+					.filter(string -> !string.isEmpty())
+					.collect(Collectors.joining("\\"));
+			return Paths.get(normalizedPath);
+		}
+		catch (final Throwable throwable)
+		{
+			return null;
+		}
 	}
 }

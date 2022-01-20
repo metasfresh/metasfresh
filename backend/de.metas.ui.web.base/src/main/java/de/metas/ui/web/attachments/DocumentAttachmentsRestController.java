@@ -1,8 +1,8 @@
 package de.metas.ui.web.attachments;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -172,7 +173,7 @@ public class DocumentAttachmentsRestController
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<byte[]> getAttachmentById(
+	public ResponseEntity<StreamingResponseBody> getAttachmentById(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
 			, @PathVariable("id") final String entryIdStr)
@@ -183,50 +184,55 @@ public class DocumentAttachmentsRestController
 		final IDocumentAttachmentEntry entry = getDocumentAttachments(windowIdStr, documentId)
 				.getEntry(entryId);
 
-		final AttachmentEntry.Type type = entry.getType();
-		if (type == AttachmentEntry.Type.Data)
+		final AttachmentEntryType type = entry.getType();
+		switch (type)
 		{
-			return extractResponseEntryFromData(entry);
-		}
-		else if (type == AttachmentEntry.Type.URL)
-		{
-			return extractResponseEntryFromURL(entry);
-		}
-		else
-		{
-			throw new AdempiereException("Invalid attachment entry")
-					.setParameter("reason", "invalid type")
-					.setParameter("type", type)
-					.setParameter("entry", entry);
+			case Data:
+				return DocumentAttachmentRestControllerHelper.extractResponseEntryFromData(entry);
+			case URL:
+				return DocumentAttachmentRestControllerHelper.extractResponseEntryFromURL(entry);
+			case LocalFileURL:
+				return DocumentAttachmentRestControllerHelper.extractResponseEntryFromLocalFileURL(entry);
+			default:
+				throw new AdempiereException("Invalid attachment entry")
+						.setParameter("reason", "invalid type")
+						.setParameter("type", type)
+						.setParameter("entry", entry);
 		}
 	}
 
-	private static ResponseEntity<byte[]> extractResponseEntryFromData(@NonNull final IDocumentAttachmentEntry entry)
+	private static ResponseEntity<StreamingResponseBody> extractResponseEntryFromData(@NonNull final IDocumentAttachmentEntry entry)
 	{
-		final String entryFilename = entry.getFilename();
-		final byte[] entryData = entry.getData();
-		if (entryData == null || entryData.length == 0)
+		if (entry.getData() == null)
 		{
 			throw new EntityNotFoundException("No attachment found")
 					.setParameter("entry", entry)
 					.setParameter("reason", "data is null or empty");
 		}
 
+		final String entryFilename = entry.getFilename();
 		final String entryContentType = entry.getContentType();
+
+		final StreamingResponseBody entryData = outputStream -> {
+			outputStream.write(entry.getData());
+		};
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(entryContentType));
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + entryFilename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<>(entryData, headers, HttpStatus.OK);
-		return response;
+
+		return new ResponseEntity<>(entryData, headers, HttpStatus.OK);
 	}
 
-	private static ResponseEntity<byte[]> extractResponseEntryFromURL(@NonNull final IDocumentAttachmentEntry entry)
+	private static ResponseEntity<StreamingResponseBody> extractResponseEntryFromURL(@NonNull final IDocumentAttachmentEntry entry)
 	{
+		final StreamingResponseBody responseBody = outputStream -> {
+			outputStream.write(new byte[] {});
+		};
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(entry.getUrl()); // forward to attachment entry's URL
-		final ResponseEntity<byte[]> response = new ResponseEntity<>(new byte[] {}, headers, HttpStatus.FOUND);
+		final ResponseEntity<StreamingResponseBody> response = new ResponseEntity<>(responseBody, headers, HttpStatus.FOUND);
 		return response;
 	}
 
@@ -247,5 +253,4 @@ public class DocumentAttachmentsRestController
 		getDocumentAttachments(windowIdStr, documentId)
 				.deleteEntry(entryId);
 	}
-
 }
