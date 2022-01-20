@@ -35,6 +35,7 @@ import org.adempiere.warehouse.WarehouseId;
 public class StepDefConstants
 {
 	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
+	public static final String CODE = "Code";
 	public static final String METASFRESH_VALUE = "metasfresh";
 
 	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
@@ -47,4 +48,5 @@ public class StepDefConstants
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
+	public static final int MANAGEMENT_CREDIT_LIMIT_TYPE_ID = 540001;
 }

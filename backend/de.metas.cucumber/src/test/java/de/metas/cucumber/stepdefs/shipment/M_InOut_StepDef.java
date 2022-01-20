@@ -24,12 +24,20 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -44,15 +52,21 @@ public class M_InOut_StepDef
 	private final StepDefData<I_M_InOut> shipmentTable;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
+	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	public M_InOut_StepDef(
 			@NonNull final StepDefData<I_M_InOut> shipmentTable,
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
+			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
+			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
 
 	@And("validate created shipments")
@@ -63,7 +77,7 @@ public class M_InOut_StepDef
 		{
 			final String identifier = DataTableUtil.extractStringForColumnName(row, "Shipment.Identifier");
 			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
-			final String poReference = DataTableUtil.extractStringForColumnName(row, "poreference");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "poreference");
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 			final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
@@ -83,5 +97,29 @@ public class M_InOut_StepDef
 			assertThat(shipment.isProcessed()).isEqualTo(processed);
 			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
 		}
+	}
+
+	@Then("locate M_InOut by shipment schedule Id")
+	public void locate_shipment_by_scheduleId(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			locateShipmentByScheduleId(row);
+		}
+	}
+
+	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedRecords = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final InOutLineId lineId = InOutLineId.ofRepoId(shipmentScheduleQtyPickedRecords.get(0).getM_InOutLine_ID());
+
+		final I_M_InOut shipmentRecord = inOutDAO.retrieveInOutByLineIds(ImmutableSet.of(lineId)).get(lineId);
+
+		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
+		shipmentTable.put(shipmentIdentifier, shipmentRecord);
 	}
 }

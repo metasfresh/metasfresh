@@ -23,6 +23,7 @@
 package de.metas.async.asyncbatchmilestone;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -31,13 +32,16 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -53,11 +57,26 @@ public class AsyncBatchMilestoneObserver
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final Map<AsyncBatchMilestoneId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
+	private final Map<AsyncBatchMilestoneId, MilestoneProgress> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	public void observeOn(@NonNull final AsyncBatchMilestoneId id)
 	{
-		asyncBatch2Completion.put(id, new CompletableFuture<>());
+		getMilestoneProgressByAsyncBatchId(id.getAsyncBatchId())
+				.forEach(milestoneProgress -> {
+					try
+					{
+						//dev-note: make sure to wait for all milestones enqueued and running for the same async batch
+						milestoneProgress.getCompletableFuture().get();
+					}
+					catch (final Throwable t)
+					{
+						throw AdempiereException.wrapIfNeeded(t)
+								.appendParametersToMessage()
+								.setParameter("AsyncBatchMilestoneId", id);
+					}
+				});
+
+		asyncBatch2Completion.put(id, new MilestoneProgress(Instant.now()));
 	}
 
 	public void notifyMilestoneProcessedFor(@NonNull final AsyncBatchMilestoneId id, final boolean successful)
@@ -71,13 +90,13 @@ public class AsyncBatchMilestoneObserver
 		if (successful)
 		{
 			logger.debug("asyncBatchMilestoneId={} completed successfully", id);
-			asyncBatch2Completion.get(id).complete(null);
+			asyncBatch2Completion.get(id).getCompletableFuture().complete(null);
 		}
 		else
 		{
-			asyncBatch2Completion.get(id).completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
-																		.appendParametersToMessage()
-																		.setParameter("asyncBatchMilestoneId", id));
+			asyncBatch2Completion.get(id).getCompletableFuture().completeExceptionally(new AdempiereException("Workpackage completed exceptionally")
+																							   .appendParametersToMessage()
+																							   .setParameter("asyncBatchMilestoneId", id));
 		}
 	}
 
@@ -95,13 +114,11 @@ public class AsyncBatchMilestoneObserver
 
 		try
 		{
-			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id);
+			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id).getCompletableFuture();
 
 			final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
 			completableFuture.get(timeoutMS, TimeUnit.MILLISECONDS);
-
-			removeObserver(id);
 		}
 		catch (final TimeoutException timeoutException)
 		{
@@ -125,6 +142,16 @@ public class AsyncBatchMilestoneObserver
 					.appendParametersToMessage()
 					.setParameter("asyncBatchMilestoneId", id);
 		}
+		finally
+		{
+			removeObserver(id);
+		}
+	}
+
+	@NonNull
+	public Optional<Instant> getStartMonitoringTimestamp(@NonNull final AsyncBatchMilestoneId asyncBatchMilestoneId)
+	{
+		return Optional.ofNullable(asyncBatch2Completion.get(asyncBatchMilestoneId)).map(MilestoneProgress::getEnqueuedAt);
 	}
 
 	private void removeObserver(@NonNull final AsyncBatchMilestoneId id)
@@ -136,5 +163,31 @@ public class AsyncBatchMilestoneObserver
 		}
 
 		asyncBatch2Completion.remove(id);
+	}
+
+	@NonNull
+	private List<MilestoneProgress> getMilestoneProgressByAsyncBatchId(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return asyncBatch2Completion.entrySet()
+				.stream()
+				.filter(entry -> entry.getKey().getAsyncBatchId().equals(asyncBatchId))
+				.map(Map.Entry::getValue)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Value
+	private static class MilestoneProgress
+	{
+		public MilestoneProgress(@NonNull final Instant enqueuedAt)
+		{
+			this.completableFuture = new CompletableFuture<>();
+			this.enqueuedAt = enqueuedAt;
+		}
+
+		@NonNull
+		CompletableFuture<Void> completableFuture;
+
+		@NonNull
+		Instant enqueuedAt;
 	}
 }
