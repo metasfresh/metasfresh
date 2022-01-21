@@ -18,6 +18,7 @@ import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 import { DEBOUNCE_TIME_SEARCH } from '../../constants/Constants';
+import SpinnerOverlay from '../app/SpinnerOverlay';
 
 /**
  * @file Class based component.
@@ -96,18 +97,21 @@ class MenuOverlay extends Component {
     if (targetValue) {
       this.setState({
         query: e.target.value,
+        pendingQuery: e.target.value ? true : false,
       });
 
       queryPathsRequest(e.target.value, 9)
         .then((response) => {
           this.setState({
             queriedResults: flattenLastElem(response.data),
+            pendingQuery: false,
           });
         })
         .catch((err) => {
           if (err.response && err.response.status === 404) {
             this.setState({
               queriedResults: [],
+              pendingQuery: false,
             });
           }
         });
@@ -116,6 +120,7 @@ class MenuOverlay extends Component {
         {
           query: '',
           queriedResults: [],
+          pendingQuery: false,
         },
         () => {
           if (this.searchInputQuery) this.searchInputQuery.value = '';
@@ -609,7 +614,8 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { queriedResults, deepSubNode, query, data } = this.state;
+    const { queriedResults, deepSubNode, query, data, pendingQuery } =
+      this.state;
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
@@ -675,10 +681,18 @@ class MenuOverlay extends Component {
                     />
                   ))}
 
-                {queriedResults.length === 0 && query !== '' && (
-                  <span>
-                    {counterpart.translate('window.noResults.caption')}
-                  </span>
+                {queriedResults.length === 0 &&
+                  query !== '' &&
+                  !pendingQuery && (
+                    <span>
+                      {counterpart.translate('window.noResults.caption')}
+                    </span>
+                  )}
+
+                {pendingQuery && queriedResults.length === 0 && (
+                  <div className="menu-overlay-spinner">
+                    <SpinnerOverlay iconSize={50} />
+                  </div>
                 )}
               </div>
             </div>
