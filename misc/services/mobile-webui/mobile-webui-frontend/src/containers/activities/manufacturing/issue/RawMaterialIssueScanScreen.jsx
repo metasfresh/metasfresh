@@ -5,7 +5,11 @@ import counterpart from 'counterpart';
 
 import { toastError } from '../../../../utils/toast';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
-import { getStepById } from '../../../../reducers/wfProcesses_status';
+import {
+  getActivityById,
+  getQtyRejectedReasonsFromActivity,
+  getStepById,
+} from '../../../../reducers/wfProcesses_status';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 
@@ -16,11 +20,14 @@ const RawMaterialIssueScanScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  console.log('RawMaterialIssueScanScreen', { wfProcessId, activityId, lineId, stepId });
-
   const { huBarcode, qtyToIssue, uom } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
+
+  const qtyRejectedReasons = useSelector((state) => {
+    const activity = getActivityById(state, wfProcessId, activityId);
+    return getQtyRejectedReasonsFromActivity(activity);
+  });
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -65,6 +72,7 @@ const RawMaterialIssueScanScreen = () => {
       qtyTarget={qtyToIssue}
       qtyInitial={qtyToIssue}
       uom={uom}
+      qtyRejectedReasons={qtyRejectedReasons}
       // Callbacks:
       onResult={onResult}
     />

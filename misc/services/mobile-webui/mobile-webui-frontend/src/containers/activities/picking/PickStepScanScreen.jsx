@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import { go } from 'connected-react-router';
 import counterpart from 'counterpart';
 
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { getQtyRejectedReasonsFromActivity, selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { toastError } from '../../../utils/toast';
 import { pickingStepScanScreenLocation } from '../../../routes/picking';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
@@ -74,7 +74,7 @@ class PickStepScanScreen extends PureComponent {
   };
 
   render() {
-    const { eligibleBarcode, qtyToPick, uom } = this.props;
+    const { eligibleBarcode, qtyToPick, uom, qtyRejectedReasons } = this.props;
     return (
       <ScanHUAndGetQtyComponent
         eligibleBarcode={eligibleBarcode}
@@ -82,6 +82,7 @@ class PickStepScanScreen extends PureComponent {
         qtyTarget={qtyToPick}
         qtyInitial={qtyToPick}
         uom={uom}
+        qtyRejectedReasons={qtyRejectedReasons}
         //
         onResult={this.onResult}
       />
@@ -93,10 +94,13 @@ const mapStateToProps = (state, { match }) => {
   const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId } = match.params;
 
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
+  const activity = wfProcess.activities[activityId];
 
+  const stepProps = activity.dataStored.lines[lineId].steps[stepId];
   const eligibleBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
   const qtyToPick = getQtyToPick({ stepProps, altStepId });
+
+  const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
   return {
     applicationId,
@@ -108,6 +112,7 @@ const mapStateToProps = (state, { match }) => {
     eligibleBarcode: eligibleBarcode,
     qtyToPick: qtyToPick,
     uom: stepProps.uom,
+    qtyRejectedReasons,
   };
 };
 
@@ -121,6 +126,7 @@ PickStepScanScreen.propTypes = {
   eligibleBarcode: PropTypes.string.isRequired,
   qtyToPick: PropTypes.number,
   uom: PropTypes.string.isRequired,
+  qtyRejectedReasons: PropTypes.array.isRequired,
   // Actions:
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,

@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { postDistributionPickFrom } from '../../../api/distribution';
 import { distributionStepPickFromScreenLocation } from '../../../routes/distribution';
 import { toastError } from '../../../utils/toast';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { getQtyRejectedReasonsFromActivity, selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ScanHUAndGetQtyComponent from '../ScanHUAndGetQtyComponent';
@@ -67,7 +67,7 @@ class DistributionStepPickFromScreen extends PureComponent {
   };
 
   render() {
-    const { huBarcode, qtyToMove, uom } = this.props;
+    const { huBarcode, qtyToMove, uom, qtyRejectedReasons } = this.props;
     return (
       <ScanHUAndGetQtyComponent
         eligibleBarcode={huBarcode}
@@ -75,6 +75,7 @@ class DistributionStepPickFromScreen extends PureComponent {
         qtyInitial={qtyToMove}
         qtyTarget={qtyToMove}
         uom={uom}
+        qtyRejectedReasons={qtyRejectedReasons}
         invalidQtyMessageKey={'activities.distribution.invalidQtyToMove'}
         onResult={this.onResult}
       />
@@ -92,6 +93,7 @@ DistributionStepPickFromScreen.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyToMove: PropTypes.number.isRequired,
   huBarcode: PropTypes.string.isRequired,
+  qtyRejectedReasons: PropTypes.array.isRequired,
   //
   // Actions
   go: PropTypes.func.isRequired,
@@ -105,6 +107,8 @@ const mapStateToProps = (state, ownProps) => {
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepProps = lineProps != null && lineProps.steps ? lineProps.steps[stepId] : {};
 
+  const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+
   return {
     wfProcessId,
     activityId,
@@ -113,6 +117,7 @@ const mapStateToProps = (state, ownProps) => {
     qtyToMove: stepProps.qtyToMove,
     uom: stepProps.uom,
     huBarcode: stepProps.pickFromHU.barcode,
+    qtyRejectedReasons,
   };
 };
 

@@ -1,73 +1,36 @@
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
 import counterpart from 'counterpart';
-import { get } from 'lodash';
-
-import { selectWFProcessFromState } from '../../reducers/wfProcesses_status';
 import QtyReasonsRadioGroup from '../../components/QtyReasonsRadioGroup';
+import Button from '../../components/buttons/Button';
 
-class QtyReasonsView extends PureComponent {
-  constructor(props) {
-    super(props);
+const QtyReasonsView = ({ qtyRejected, uom, qtyRejectedReasons, onHide }) => {
+  const [selectedRejectedReason, setSelectedRejectedReason] = useState('');
 
-    this.state = { rejectedReason: '' };
-  }
-
-  onRejectedReasonSelected = (rejectedReason) => {
-    this.setState({ rejectedReason });
-  };
-
-  onSubmit = () => {
-    const { onHide } = this.props;
-
-    onHide(this.state.rejectedReason);
-  };
-
-  render() {
-    const { rejectedReason } = this.state;
-    const { rejectedReasons, uom, qtyRejected } = this.props;
-
-    return (
-      <div className="pt-3 section picking-step-container">
-        <div className="content">
-          <h5>{`${counterpart.translate('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
-        </div>
-        <div className="picking-step-details centered-text is-size-5">
-          <QtyReasonsRadioGroup reasons={rejectedReasons} onReasonSelected={this.onRejectedReasonSelected} />
-          <div className="buttons is-centered mt-4">
-            <button
-              className="button is-medium btn-green confirm-button"
-              disabled={!rejectedReason}
-              onClick={this.onSubmit}
-            >
-              {counterpart.translate('activities.picking.confirmDone')}
-            </button>
-          </div>
-        </div>
+  return (
+    <div className="section pt-3">
+      <h5>{`${counterpart.translate('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
+      <div className="centered-text is-size-5">
+        <QtyReasonsRadioGroup reasons={qtyRejectedReasons} onReasonSelected={setSelectedRejectedReason} />
       </div>
-    );
-  }
-}
-
-const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess.activities[activityId];
-  const rejectedReasons = get(activity, ['componentProps', 'qtyRejectedReasons', 'reasons'], []);
-
-  return {
-    rejectedReasons,
-  };
+      <Button
+        caption={counterpart.translate('activities.picking.confirmDone')}
+        disabled={!selectedRejectedReason}
+        onClick={() => onHide(selectedRejectedReason)}
+      />
+    </div>
+  );
 };
 
 QtyReasonsView.propTypes = {
-  rejectedReasons: PropTypes.array.isRequired,
+  //
+  // Properties:
   uom: PropTypes.string.isRequired,
   qtyRejected: PropTypes.number.isRequired,
+  qtyRejectedReasons: PropTypes.array.isRequired,
   //
+  // Callbacks:
   onHide: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps)(QtyReasonsView));
+export default QtyReasonsView;

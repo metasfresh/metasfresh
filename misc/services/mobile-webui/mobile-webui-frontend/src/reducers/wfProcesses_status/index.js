@@ -93,6 +93,10 @@ export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   return stepsById[stepId];
 };
 
+export const getQtyRejectedReasonsFromActivity = (activity) => {
+  return activity?.componentProps?.qtyRejectedReasons?.reasons ?? [];
+};
+
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });

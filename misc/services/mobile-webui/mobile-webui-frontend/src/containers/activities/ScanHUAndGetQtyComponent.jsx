@@ -5,6 +5,7 @@ import { toastError } from '../../utils/toast';
 import CodeScanner from './scan/CodeScanner';
 import PickQuantityPrompt from './PickQuantityPrompt';
 import QtyReasonsView from './QtyReasonsView';
+import Button from '../../components/buttons/Button';
 
 class ScanHUAndGetQtyComponent extends Component {
   constructor(props) {
@@ -86,13 +87,18 @@ class ScanHUAndGetQtyComponent extends Component {
   };
 
   render() {
-    const { uom, qtyCaption, qtyInitial, qtyTarget } = this.props;
+    const { uom, qtyCaption, qtyInitial, qtyTarget, qtyRejectedReasons } = this.props;
     const { promptVisible, reasonsPanelVisible, qtyRejected } = this.state;
 
     return (
       <div className="mt-0">
         {reasonsPanelVisible ? (
-          <QtyReasonsView onHide={this.hideReasonsPanel} uom={uom} qtyRejected={qtyRejected} />
+          <QtyReasonsView
+            onHide={this.hideReasonsPanel}
+            uom={uom}
+            qtyRejected={qtyRejected}
+            qtyRejectedReasons={qtyRejectedReasons}
+          />
         ) : (
           <>
             {promptVisible ? (
@@ -118,13 +124,10 @@ class ScanHUAndGetQtyComponent extends Component {
   renderDebugScanEligibleBarcodeButton = () => {
     if (window.metasfresh_debug && this.props.eligibleBarcode) {
       return (
-        <button
-          type="button"
-          className="button is-outlined is-warning is-light is-fullwidth"
+        <Button
+          caption={`DEBUG: ${this.props.eligibleBarcode}`}
           onClick={() => this.onBarcodeScanned({ scannedBarcode: this.props.eligibleBarcode })}
-        >
-          DEBUG: {this.props.eligibleBarcode}
-        </button>
+        />
       );
     } else {
       return null;
@@ -140,6 +143,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   qtyTarget: PropTypes.number,
   qtyInitial: PropTypes.number,
   uom: PropTypes.string,
+  qtyRejectedReasons: PropTypes.array,
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
