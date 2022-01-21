@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator_OLD';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { distributionLineScreenLocation } from '../../../routes/distribution';
 import { connect } from 'react-redux';
@@ -16,19 +16,17 @@ class DistributionLineButton extends PureComponent {
   };
 
   render() {
-    const { caption, uom, qtyPicked, qtyToMove, completeStatus, lineId, isUserEditable } = this.props;
+    const { caption, uom, qtyPicked, qtyToMove, completeStatus, isUserEditable } = this.props;
 
     return (
-      <button
-        key={lineId}
-        className="button is-outlined complete-btn"
+      <ButtonWithIndicator
+        caption={caption}
+        completeStatus={completeStatus}
         disabled={!isUserEditable}
         onClick={this.handleClick}
       >
-        <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} applicationId="distribution" />
-        </ButtonWithIndicator>
-      </button>
+        <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} applicationId="distribution" />
+      </ButtonWithIndicator>
     );
   }
 }

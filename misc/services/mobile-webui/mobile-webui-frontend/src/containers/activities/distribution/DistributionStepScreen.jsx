@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator_OLD';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import {
   distributionStepDropToScreenLocation,
@@ -144,43 +144,34 @@ class DistributionStepScreen extends PureComponent {
             <div className="column is-half has-text-left pb-0">{dropToLocator.caption}</div>
           </div>
 
-          <div className="mt-0">
-            <button className="button is-outlined complete-btn" disabled={isPickedFrom} onClick={this.onScanPickFromHU}>
-              <ButtonWithIndicator caption={pickFromHUCaption} completeStatus={pickFromHUStatus} />
-            </button>
-          </div>
+          <ButtonWithIndicator
+            caption={pickFromHUCaption}
+            completeStatus={pickFromHUStatus}
+            disabled={isPickedFrom}
+            onClick={this.onScanPickFromHU}
+          />
 
           {!HIDE_UNDO_BUTTONS && (
-            <div className="mt-5">
-              <button
-                className="button is-outlined complete-btn"
-                disabled={!(isPickedFrom && !isDroppedToLocator)}
-                onClick={this.onUndoPickFromHU}
-              >
-                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-              </button>
-            </div>
+            <ButtonWithIndicator
+              caption={counterpart.translate('activities.picking.unPickBtn')}
+              disabled={!(isPickedFrom && !isDroppedToLocator)}
+              onClick={this.onUndoPickFromHU}
+            />
           )}
 
-          <div className="mt-5">
-            <button
-              className="button is-outlined complete-btn"
-              disabled={!(isPickedFrom && !isDroppedToLocator)}
-              onClick={this.onScanDropToLocator}
-            >
-              <ButtonWithIndicator caption={dropToLocatorCaption} completeStatus={dropToLocatorStatus} />
-            </button>
-          </div>
+          <ButtonWithIndicator
+            caption={dropToLocatorCaption}
+            completeStatus={dropToLocatorStatus}
+            disabled={!(isPickedFrom && !isDroppedToLocator)}
+            onClick={this.onScanDropToLocator}
+          />
+
           {!HIDE_UNDO_BUTTONS && (
-            <div className="mt-5">
-              <button
-                className="button is-outlined complete-btn"
-                disabled={!isDroppedToLocator}
-                onClick={this.onUndoDropToLocator}
-              >
-                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-              </button>
-            </div>
+            <ButtonWithIndicator
+              caption={counterpart.translate('activities.picking.unPickBtn')}
+              disabled={!isDroppedToLocator}
+              onClick={this.onUndoDropToLocator}
+            />
           )}
         </div>
       </div>
