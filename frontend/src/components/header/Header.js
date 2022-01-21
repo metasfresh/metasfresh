@@ -879,7 +879,13 @@ class Header extends PureComponent {
           handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
-              ? () => this.openModal(windowId, 'window', 'Advanced edit', true)
+              ? () =>
+                  this.openModal(
+                    windowId,
+                    'window',
+                    counterpart.translate('window.advancedEdit.caption'),
+                    true
+                  )
               : undefined
           }
           handlePrint={

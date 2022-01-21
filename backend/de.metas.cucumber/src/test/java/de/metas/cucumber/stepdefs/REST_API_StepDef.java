@@ -81,6 +81,25 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
+	@When("a {string} request is sent to metasfresh REST-API with endpointPath from context and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_from_context_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
+	{
+		final String endpointPath = testContext.getEndpointPath();
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
+				.authToken(userAuthToken)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload(
 			@NonNull final String endpointPath,
@@ -196,7 +215,6 @@ public class REST_API_StepDef
 
 		assertThat(responseJson).isBlank();
 	}
-
 
 	@And("the actual non JSON response body is")
 	public void validate_non_JSON_response_body(@NonNull final String responseBody)

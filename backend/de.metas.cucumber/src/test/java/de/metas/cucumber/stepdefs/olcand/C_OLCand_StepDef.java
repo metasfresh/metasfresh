@@ -33,6 +33,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -48,7 +49,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -165,7 +165,7 @@ public class C_OLCand_StepDef
 
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+			final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
 
 			for (int index = 0; index < shipments.size(); index++)
 			{
@@ -201,9 +201,5 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
-	@NonNull
-	private List<String> splitIdentifiers(@NonNull final String identifiers)
-	{
-		return Arrays.asList(identifiers.split(","));
-	}
+
 }

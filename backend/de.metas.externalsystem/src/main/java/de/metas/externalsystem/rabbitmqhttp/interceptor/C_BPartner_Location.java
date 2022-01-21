@@ -23,7 +23,7 @@
 package de.metas.externalsystem.rabbitmqhttp.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.rabbitmqhttp.ExportToRabbitMQService;
+import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -39,11 +39,11 @@ public class C_BPartner_Location
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ExportToRabbitMQService exportToRabbitMQService;
+	private final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService;
 
-	public C_BPartner_Location(@NonNull final ExportToRabbitMQService exportToRabbitMQService)
+	public C_BPartner_Location(@NonNull final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService)
 	{
-		this.exportToRabbitMQService = exportToRabbitMQService;
+		this.exportBPartnerToRabbitMQService = exportBPartnerToRabbitMQService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
@@ -51,6 +51,6 @@ public class C_BPartner_Location
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID());
 
-		trxManager.runAfterCommit(() -> exportToRabbitMQService.enqueueBPartnerSync(bpartnerId));
+		trxManager.runAfterCommit(() -> exportBPartnerToRabbitMQService.enqueueBPartnerSync(bpartnerId));
 	}
 }

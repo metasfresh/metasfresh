@@ -1,6 +1,6 @@
 /*
  * #%L
- * metas
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,34 +20,35 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.to_grs.api.model;
+package de.metas.camel.externalsystems.common.v2;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-@JsonDeserialize(builder = JsonBPartnerContactRole.JsonBPartnerContactRoleBuilder.class)
-public class JsonBPartnerContactRole
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = RetrieveHUCamelRequest.RetrieveHUCamelRequestBuilder.class)
+public class RetrieveHUCamelRequest
 {
+	@NonNull
+	@JsonProperty("huIdentifier")
+	String huIdentifier;
+
+	@NonNull
+	@JsonProperty("externalSystemConfigId")
+	JsonMetasfreshId externalSystemConfigId;
+
 	@Nullable
-	@JsonProperty("ROLLE")
-	String role;
-
-	@Builder
-	public JsonBPartnerContactRole(@JsonProperty("ROLLE") final @Nullable String role)
-	{
-		this.role = role;
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonBPartnerContactRoleBuilder
-	{
-	}
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonProperty("adPInstanceId")
+	JsonMetasfreshId adPInstanceId;
 }

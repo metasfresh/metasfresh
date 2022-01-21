@@ -24,7 +24,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.math.BigDecimal;

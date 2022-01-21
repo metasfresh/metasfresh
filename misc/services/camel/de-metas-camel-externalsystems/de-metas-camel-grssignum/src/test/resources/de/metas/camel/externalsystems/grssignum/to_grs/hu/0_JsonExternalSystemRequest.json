@@ -2,16 +2,16 @@
   "traceId": "traceId",
   "orgCode": "orgCode",
   "externalSystemName": "GRSSignum",
-  "command": "exportBPartner",
-  "adPInstanceId": 3,
-  "externalSystemConfigId": 1,
-  "writeAuditEndpoint": "fileFolder",
   "externalSystemChildConfigValue": "grsValue",
+  "command": "exportHU",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
   "parameters": {
-    "RemoteURL": "baseUrl",
-    "BPartnerId": "1000000",
+    "RemoteURL": "https://grs",
+    "HUId": "huIdentifier",
     "AuthToken": "authToken",
     "ChildConfigValue": "grsValue",
-    "TenantId": "tenantId"
+    "TenantId": "myTenant"
   }
 }

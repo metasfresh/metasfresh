@@ -34,7 +34,7 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.export.bpartner.ExportToExternalSystemService;
+import de.metas.externalsystem.export.bpartner.ExportBPartnerToExternalSystem;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
@@ -42,13 +42,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
-public class ExportToGRSService extends ExportToExternalSystemService
+public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER = "exportBPartner";
 
-	public ExportToGRSService(
+	protected ExportBPartnerToGRSService(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
@@ -98,7 +100,8 @@ public class ExportToGRSService extends ExportToExternalSystemService
 	}
 
 	@Override
-	protected ImmutableSet<IExternalSystemChildConfigId> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId)
+	@NonNull
+	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId)
 	{
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 
@@ -107,16 +110,17 @@ public class ExportToGRSService extends ExportToExternalSystemService
 
 		if (!isCustomer && !isVendor)
 		{
-			return ImmutableSet.of();
+			return Optional.empty();
 		}
 
 		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
 
-		return grsParentConfigs.stream()
-				.map(ExternalSystemParentConfig::getChildConfig)
-				.map(ExternalSystemGRSSignumConfig::cast)
-				.filter(grsConfig -> (grsConfig.isAutoSendVendors() && isVendor) || (grsConfig.isAutoSendCustomers() && isCustomer))
-				.map(IExternalSystemChildConfig::getId)
-				.collect(ImmutableSet.toImmutableSet());
+		return Optional.of(grsParentConfigs.stream()
+							.filter(ExternalSystemParentConfig::isActive)
+							.map(ExternalSystemParentConfig::getChildConfig)
+							.map(ExternalSystemGRSSignumConfig::cast)
+							.filter(grsConfig -> (grsConfig.isAutoSendVendors() && isVendor) || (grsConfig.isAutoSendCustomers() && isCustomer))
+							.map(IExternalSystemChildConfig::getId)
+							.collect(ImmutableSet.toImmutableSet()));
 	}
 }

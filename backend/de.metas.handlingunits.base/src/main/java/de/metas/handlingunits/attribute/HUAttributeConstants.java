@@ -49,6 +49,8 @@ public final class HUAttributeConstants
 	public static final AttributeCode ATTR_Quarantine = AttributeCode.ofString("HU_Quarantine");
 	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
 
+	public static final AttributeCode ATTR_Lock_Notice = AttributeCode.ofString("LockNotice");
+
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{
 		Check.assumeNotEmpty(huIdColumnName, "huIdColumnName is not empty");

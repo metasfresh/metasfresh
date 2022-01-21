@@ -575,6 +575,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public I_M_HU getTopLevelParent(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+
+		return getTopLevelParent(hu);
+	}
+
+	@Override
 	public ImmutableSet<HuId> getTopLevelHUs(final @NonNull Collection<HuId> huIds)
 	{
 		final List<I_M_HU> hus = getByIds(huIds);
