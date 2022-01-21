@@ -1,8 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import LineButton from './RawMaterialsIssueLineButton';
+//import LineButton from './RawMaterialsIssueLineButton';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
+import { useHistory } from 'react-router-dom';
+import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
 
 const RawMaterialsIssueActivity = (props) => {
   const {
@@ -14,6 +18,13 @@ const RawMaterialsIssueActivity = (props) => {
     },
   } = props;
 
+  const history = useHistory();
+
+  const onButtonClick = (lineId) => {
+    const location = manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
+    history.push(location);
+  };
+
   return (
     <div className="mfg-rawMaterialsIssue-activity-container mt-5">
       {lines && lines.length > 0
@@ -21,19 +32,21 @@ const RawMaterialsIssueActivity = (props) => {
             const lineId = '' + lineIndex;
 
             return (
-              <LineButton
+              <ButtonWithIndicator
                 key={lineId}
-                applicationId={applicationId}
-                wfProcessId={wfProcessId}
-                activityId={activityId}
-                lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={isUserEditable}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                qtyIssued={lineItem.qtyIssued}
-                qtyToIssue={lineItem.qtyToIssue}
-                uom={lineItem.uom}
-              />
+                disabled={!isUserEditable}
+                onClick={() => onButtonClick(lineId)}
+              >
+                <ButtonQuantityProp
+                  qtyCurrent={lineItem.qtyIssued}
+                  qtyTarget={lineItem.qtyToIssue}
+                  uom={lineItem.uom}
+                  applicationId={applicationId}
+                  subtypeId="issues"
+                />
+              </ButtonWithIndicator>
             );
           })
         : null}

@@ -4,7 +4,7 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 
 import { pickingLineScreenLocation } from '../../../routes/picking';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator_OLD';
 import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 
 class PickLineButton extends PureComponent {

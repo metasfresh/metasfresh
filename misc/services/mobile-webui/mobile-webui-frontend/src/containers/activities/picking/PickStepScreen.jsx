@@ -18,7 +18,7 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator_OLD';
 import ScreenToaster from '../../../components/ScreenToaster';
 import NotFoundButton from '../NotFoundButton';
 

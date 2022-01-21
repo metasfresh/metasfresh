@@ -1,116 +1,74 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import { go } from 'connected-react-router';
+import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import counterpart from 'counterpart';
 
-import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
-import { updateManufacturingIssueQty, updateManufacturingIssue } from '../../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { toastError } from '../../../../utils/toast';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
+import { getStepById } from '../../../../reducers/wfProcesses_status';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../ScanHUAndGetQtyComponent';
 
-class RawMaterialIssueScanScreen extends PureComponent {
-  componentDidMount() {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      stepProps: { huBarcode, qtyToIssue },
-    } = this.props;
-    const location = manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId });
+const RawMaterialIssueScanScreen = () => {
+  const {
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
+  } = useRouteMatch();
 
-    pushHeaderEntry({
-      location,
-      values: [
-        {
-          caption: counterpart.translate('general.Barcode'),
-          value: huBarcode,
-        },
-        {
-          caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
-          value: qtyToIssue,
-        },
-      ],
-    });
-  }
+  console.log('RawMaterialIssueScanScreen', { wfProcessId, activityId, lineId, stepId });
 
-  onResult = ({ qty = 0, reason = null }) => {
-    const { wfProcessId, activityId, lineId, stepId, updateManufacturingIssueQty, updateManufacturingIssue, go } =
-      this.props;
+  const { huBarcode, qtyToIssue, uom } = useSelector((state) =>
+    getStepById(state, wfProcessId, activityId, lineId, stepId)
+  );
 
-    updateManufacturingIssueQty({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      qtyPicked: qty,
-      qtyRejectedReasonCode: reason,
-    });
-    updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId })
-      .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => go(-1));
-  };
-
-  render() {
-    const {
-      stepProps: { huBarcode, qtyToIssue, uom },
-    } = this.props;
-
-    return (
-      <ScanHUAndGetQtyComponent
-        eligibleBarcode={huBarcode}
-        qtyCaption={counterpart.translate('general.QtyToPick')}
-        qtyTarget={qtyToIssue}
-        qtyInitial={qtyToIssue}
-        uom={uom}
-        // Callbacks:
-        onResult={this.onResult}
-      />
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }),
+        values: [
+          {
+            caption: counterpart.translate('general.Barcode'),
+            value: huBarcode,
+          },
+          {
+            caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
+            value: qtyToIssue + ' ' + uom,
+          },
+        ],
+      })
     );
-  }
-}
+  });
 
-const mapStateToProps = (state, { match }) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId } = match.params;
-
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
-    stepId,
-    stepProps,
+  const history = useHistory();
+  const onResult = ({ qty = 0, reason = null }) => {
+    dispatch(
+      updateManufacturingIssueQty({
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        qtyPicked: qty,
+        qtyRejectedReasonCode: reason,
+      })
+    );
+    dispatch(updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId }))
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => history.go(-1));
   };
+
+  return (
+    <ScanHUAndGetQtyComponent
+      eligibleBarcode={huBarcode}
+      qtyCaption={counterpart.translate('general.QtyToPick')}
+      qtyTarget={qtyToIssue}
+      qtyInitial={qtyToIssue}
+      uom={uom}
+      // Callbacks:
+      onResult={onResult}
+    />
+  );
 };
 
-RawMaterialIssueScanScreen.propTypes = {
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string.isRequired,
-  stepProps: PropTypes.object.isRequired,
-  // Actions:
-  go: PropTypes.func.isRequired,
-  updateManufacturingIssueQty: PropTypes.func.isRequired,
-  updateManufacturingIssue: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
-};
-
-export default withRouter(
-  connect(mapStateToProps, {
-    go,
-    updateManufacturingIssueQty,
-    updateManufacturingIssue,
-    pushHeaderEntry,
-  })(RawMaterialIssueScanScreen)
-);
+export default RawMaterialIssueScanScreen;

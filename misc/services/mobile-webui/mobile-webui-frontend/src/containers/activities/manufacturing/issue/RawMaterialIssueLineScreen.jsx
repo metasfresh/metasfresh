@@ -1,33 +1,46 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { getSteps } from '../../../../reducers/wfProcesses_status';
+import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 
-import StepButton from './RawMaterialIssueStepButton';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
-import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
 
-const RawMaterialIssueLineScreen = (props) => {
-  const { applicationId, wfProcessId, activityId, lineId, steps } = props;
+const RawMaterialIssueLineScreen = () => {
+  const {
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
+
+  const history = useHistory();
+
+  const onButtonClick = ({ stepId }) => {
+    history.push(manufacturingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
+  };
+
+  const steps = useSelector((state) => getSteps(state, wfProcessId, activityId, lineId));
 
   return (
     <div className="pt-2 section">
       <div className="steps-container">
         {steps.length > 0 &&
-          steps.map((stepItem, idx) => {
+          steps.map((stepItem) => {
             return (
-              <StepButton
-                key={idx}
-                applicationId={applicationId}
-                wfProcessId={wfProcessId}
-                activityId={activityId}
-                lineId={lineId}
-                stepId={stepItem.id}
-                locatorName={stepItem.locatorName}
-                uom={stepItem.uom}
-                qtyIssued={stepItem.qtyIssued}
-                qtyToIssue={stepItem.qtyToIssue}
-                completeStatus={stepItem.completeStatus}
-              />
+              <div className="mt-3" key={stepItem.id}>
+                <ButtonWithIndicator
+                  caption={stepItem.locatorName}
+                  completeStatus={stepItem.completeStatus}
+                  onClick={() => onButtonClick({ stepId: stepItem.id })}
+                >
+                  <ButtonQuantityProp
+                    qtyCurrent={stepItem.qtyIssued ?? 0}
+                    qtyTarget={stepItem.qtyToIssue}
+                    uom={stepItem.uom}
+                    applicationId={applicationId}
+                    subtypeId="issues"
+                  />
+                </ButtonWithIndicator>
+              </div>
             );
           })}
       </div>
@@ -35,31 +48,4 @@ const RawMaterialIssueLineScreen = (props) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-
-  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-  const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
-
-  return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
-    steps: Object.values(stepsById),
-  };
-};
-
-RawMaterialIssueLineScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  steps: PropTypes.array.isRequired,
-};
-
-export default withRouter(connect(mapStateToProps)(RawMaterialIssueLineScreen));
+export default RawMaterialIssueLineScreen;

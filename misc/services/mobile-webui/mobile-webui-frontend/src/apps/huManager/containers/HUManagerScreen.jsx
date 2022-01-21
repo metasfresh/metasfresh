@@ -57,16 +57,14 @@ class HUManagerScreen extends PureComponent {
   renderHandlingUnitActions = () => {
     return (
       <div className="pt-3 section">
-        <div className="centered-text is-size-5">
-          <div className="mt-0">
-            <button className="button is-outlined complete-btn" onClick={this.onDisposeClick}>
-              <ButtonWithIndicator caption={counterpart.translate('huManager.action.dispose.buttonCaption')} />
-            </button>
-            <button className="button is-outlined complete-btn" onClick={this.onScanAgainClick}>
-              <ButtonWithIndicator caption={counterpart.translate('huManager.action.scanAgain.buttonCaption')} />
-            </button>
-          </div>
-        </div>
+        <ButtonWithIndicator
+          caption={counterpart.translate('huManager.action.dispose.buttonCaption')}
+          onClick={this.onDisposeClick}
+        />
+        <ButtonWithIndicator
+          caption={counterpart.translate('huManager.action.scanAgain.buttonCaption')}
+          onClick={this.onScanAgainClick}
+        />
       </div>
     );
   };

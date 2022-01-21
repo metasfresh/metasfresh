@@ -1,27 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
-import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
 import { selectOptionsLocation } from '../../../../routes/generateHUQRCodes';
+import Button from '../../../../components/Button';
 
 const GenerateHUQRCodesActivity = (props) => {
-  const history = useHistory();
-  const { applicationId, wfProcessId, activityState } = props;
+  const {
+    applicationId,
+    wfProcessId,
+    activityState: {
+      activityId,
+      caption,
+      dataStored: { isUserEditable },
+    },
+  } = props;
 
-  const isUserEditable = activityState.dataStored.isUserEditable;
+  const history = useHistory();
 
   const handleClick = () => {
-    const { activityId } = activityState;
     history.push(selectOptionsLocation({ applicationId, wfProcessId, activityId }));
   };
 
-  return (
-    <div className="mt-0">
-      <button className="button is-outlined complete-btn" disabled={!isUserEditable} onClick={handleClick}>
-        <ButtonWithIndicator caption={activityState.caption} />
-      </button>
-    </div>
-  );
+  return <Button caption={caption} disabled={!isUserEditable} onClick={handleClick} />;
 };
 
 GenerateHUQRCodesActivity.propTypes = {

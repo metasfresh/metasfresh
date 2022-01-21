@@ -14,7 +14,6 @@ import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_statu
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
-import ScreenToaster from '../../../../components/ScreenToaster';
 
 class RawMaterialIssueStepScreen extends PureComponent {
   componentDidMount() {
@@ -52,13 +51,13 @@ class RawMaterialIssueStepScreen extends PureComponent {
       stepProps: { huBarcode, uom, qtyToIssue, qtyIssued, qtyRejected },
     } = this.props;
 
-    const isIssued = qtyIssued || qtyRejected;
+    const isIssued = qtyIssued > 0 || qtyRejected > 0;
     const scanButtonCaption = isIssued ? `${huBarcode}` : counterpart.translate('activities.picking.scanHUBarcode');
 
     const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
-      <div className="pt-3 section picking-step-container">
+      <div className="pt-3 section">
         <div className="picking-step-details centered-text is-size-5">
           <div>
             <div className="columns is-mobile">
@@ -94,13 +93,15 @@ class RawMaterialIssueStepScreen extends PureComponent {
               </div>
             )}
             <div className="mt-0">
-              <button className="button is-outlined complete-btn" disabled={isIssued} onClick={this.onScanButtonClick}>
-                <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
-              </button>
+              <ButtonWithIndicator
+                caption={scanButtonCaption}
+                completeStatus={scanButtonStatus}
+                disabled={isIssued}
+                onClick={this.onScanButtonClick}
+              />
+              {/* Unpick button */}
             </div>
-            {/* Unpick button */}
           </div>
-          <ScreenToaster />
         </div>
       </div>
     );

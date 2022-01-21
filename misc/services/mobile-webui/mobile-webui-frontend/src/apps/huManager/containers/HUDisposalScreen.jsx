@@ -23,7 +23,7 @@ class HUDisposalScreen extends PureComponent {
 
   componentDidMount() {
     const { handlingUnitInfo, dispatch } = this.props;
-    console.log('handlingUnitInfo=', handlingUnitInfo);
+
     if (!handlingUnitInfo) {
       dispatch(goBack());
       return;
@@ -75,26 +75,18 @@ class HUDisposalScreen extends PureComponent {
 
     return (
       <>
-        <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
-
         <div className="pt-3 section">
-          <div className="centered-text is-size-5">
+          <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
+
+          <div className="centered-text pb-5">
             <QtyReasonsRadioGroup reasons={disposalReasons} onReasonSelected={this.onDisposalReasonSelected} />
           </div>
-        </div>
 
-        <div className="pt-3 section">
-          <div className="centered-text is-size-5">
-            <div className="mt-0">
-              <button
-                className="button is-outlined complete-btn"
-                onClick={this.onDisposeClick}
-                disabled={!selectedDisposalReasonKey}
-              >
-                <ButtonWithIndicator caption={counterpart.translate('huManager.action.dispose.buttonCaption')} />
-              </button>
-            </div>
-          </div>
+          <ButtonWithIndicator
+            caption={counterpart.translate('huManager.action.dispose.buttonCaption')}
+            disabled={!selectedDisposalReasonKey}
+            onClick={this.onDisposeClick}
+          />
         </div>
       </>
     );

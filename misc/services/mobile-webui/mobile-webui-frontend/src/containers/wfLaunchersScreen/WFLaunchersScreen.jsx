@@ -10,7 +10,7 @@ import { getLaunchers } from '../../api/launchers';
 import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
-import ButtonWithIndicator from '../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator_OLD';
 import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
 
 class WFLaunchersScreen extends Component {

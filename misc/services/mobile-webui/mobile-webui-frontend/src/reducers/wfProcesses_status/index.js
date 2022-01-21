@@ -12,7 +12,13 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 
-const getWfProcess = (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null;
+const getWfProcess = (state, wfProcessId) => {
+  if (!wfProcessId) {
+    console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
+  }
+
+  return state.wfProcesses_status[wfProcessId] || null;
+};
 
 export const selectWFProcessFromState = createSelector(
   (state, wfProcessId) => getWfProcess(state, wfProcessId),
@@ -70,6 +76,21 @@ export const getActivityById = (state, wfProcessId, activityId) => {
 export const getLineById = (state, wfProcessId, activityId, lineId) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   return activity != null ? activity.dataStored.lines[lineId] : null;
+};
+
+const getStepsMap = (state, wfProcessId, activityId, lineId) => {
+  const line = getLineById(state, wfProcessId, activityId, lineId);
+  return line != null && line.steps ? line.steps : {};
+};
+
+export const getSteps = (state, wfProcessId, activityId, lineId) => {
+  const stepsById = getStepsMap(state, wfProcessId, activityId, lineId);
+  return Object.values(stepsById);
+};
+
+export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
+  const stepsById = getStepsMap(state, wfProcessId, activityId, lineId);
+  return stepsById[stepId];
 };
 
 const reducer = produce((draftState, action) => {

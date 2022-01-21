@@ -1,8 +1,11 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-import LineButton from './MaterialReceiptLineButton';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
+import { manufacturingReceiptScreenLocation } from '../../../../routes/manufacturing_receipt';
+import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
 
 const MaterialReceiptActivity = (props) => {
   const {
@@ -14,6 +17,13 @@ const MaterialReceiptActivity = (props) => {
     },
   } = props;
 
+  const history = useHistory();
+
+  const onButtonClick = ({ lineId }) => {
+    const location = manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId });
+    history.push(location);
+  };
+
   return (
     <div className="mfg-materialReceipt-activity-container mt-5">
       {lines && lines.length > 0
@@ -21,19 +31,21 @@ const MaterialReceiptActivity = (props) => {
             const lineId = '' + lineIndex;
 
             return (
-              <LineButton
+              <ButtonWithIndicator
                 key={lineId}
-                applicationId={applicationId}
-                wfProcessId={wfProcessId}
-                activityId={activityId}
-                lineId={lineId}
                 caption={lineItem.productName}
-                isUserEditable={isUserEditable || true}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                qtyReceived={lineItem.qtyReceived}
-                qtyToReceive={lineItem.qtyToReceive}
-                uom={lineItem.uom}
-              />
+                disabled={!isUserEditable && false}
+                onClick={() => onButtonClick({ lineId })}
+              >
+                <ButtonQuantityProp
+                  qtyCurrent={lineItem.qtyReceived}
+                  qtyTarget={lineItem.qtyToReceive}
+                  uom={lineItem.uom}
+                  applicationId={applicationId}
+                  subtypeId="receipts"
+                />
+              </ButtonWithIndicator>
             );
           })
         : null}

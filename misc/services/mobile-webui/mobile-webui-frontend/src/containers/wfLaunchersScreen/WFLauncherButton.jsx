@@ -6,7 +6,7 @@ import { gotoWFProcessScreen } from '../../routes/workflow';
 import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
 
-import ButtonWithIndicator from '../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator_OLD';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { toastError } from '../../utils/toast';
 
