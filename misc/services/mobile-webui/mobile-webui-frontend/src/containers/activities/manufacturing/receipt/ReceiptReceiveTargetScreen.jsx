@@ -1,87 +1,37 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { push } from 'connected-react-router';
+import React from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import counterpart from 'counterpart';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 
-import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 import {
   manufacturingReceiptScanScreenLocation,
   manufacturingReceiptNewHUScreen,
 } from '../../../../routes/manufacturing_receipt';
 
-class ReceiptReceiveTargetScreen extends PureComponent {
-  handleNewHUClick = () => {
-    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId });
+import Button from '../../../../components/buttons/Button';
 
-    push(location);
+const ReceiptReceiveTargetScreen = () => {
+  const {
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
+
+  const history = useHistory();
+
+  const handleNewHUClick = () => {
+    history.push(manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  handleScanClick = () => {
-    const { push, applicationId, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptScanScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-
-    push(location);
+  const handleScanClick = () => {
+    history.push(manufacturingReceiptScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  render() {
-    return (
-      <div className="pt-2 section">
-        <div className="buttons">
-          <button className="button is-outlined complete-btn" onClick={this.handleNewHUClick}>
-            <div className="full-size-btn">
-              <div className="left-btn-side" />
-              <div className="caption-btn">
-                <div className="rows">
-                  <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.newHU')}</div>
-                </div>
-              </div>
-            </div>
-          </button>
-          <button className="button is-outlined complete-btn" onClick={this.handleScanClick}>
-            <div className="full-size-btn">
-              <div className="left-btn-side" />
-              <div className="caption-btn">
-                <div className="rows">
-                  <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.existingLU')}</div>
-                </div>
-              </div>
-            </div>
-          </button>
-        </div>
+  return (
+    <div className="pt-2 section">
+      <div className="buttons">
+        <Button caption={counterpart.translate('activities.mfg.receipts.newHU')} onClick={handleNewHUClick} />
+        <Button caption={counterpart.translate('activities.mfg.receipts.existingLU')} onClick={handleScanClick} />
       </div>
-    );
-  }
-}
-
-const mapStateToProps = (state, ownProps) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-
-  return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
-    lineProps,
-  };
+    </div>
+  );
 };
 
-ReceiptReceiveTargetScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  lineProps: PropTypes.object.isRequired,
-
-  // actions
-  push: PropTypes.func.isRequired,
-};
-
-export default withRouter(connect(mapStateToProps, { push })(ReceiptReceiveTargetScreen));
+export default ReceiptReceiveTargetScreen;
