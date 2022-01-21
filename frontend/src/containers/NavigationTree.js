@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
-
+import SpinnerOverlay from '../components/app/SpinnerOverlay';
 import history from '../services/History';
 import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
@@ -107,6 +107,7 @@ class NavigationTree extends Component {
   };
 
   queryRequest = async (value) => {
+    this.setState({ pendingQuery: true });
     try {
       const response = await queryPathsRequest(value, '', true);
 
@@ -114,6 +115,7 @@ class NavigationTree extends Component {
         this.setState(
           {
             queriedResults: response.data.children,
+            pendingQuery: false,
           },
           resolve
         )
@@ -125,6 +127,7 @@ class NavigationTree extends Component {
             {
               queriedResults: [],
               rootResults: {},
+              pendingQuery: false,
             },
             resolve
           )
@@ -318,7 +321,7 @@ class NavigationTree extends Component {
   };
 
   renderTree = () => {
-    const { queriedResults, query } = this.state;
+    const { queriedResults, query, pendingQuery } = this.state;
 
     let sitemapLeftColItems = queriedResults.filter(
       (colItem, i) => i % 2 === 0
@@ -353,24 +356,33 @@ class NavigationTree extends Component {
         </div>
 
         {/* sitemap items are listed using this */}
-        <div className="column-wrapper">
-          <div className="sitemap-column-left">
-            {sitemapLeftColItems &&
-              sitemapLeftColItems.map((subitem, subindex) =>
-                this.renderMenuOverlayContainer(subitem, subindex)
-              )}
-          </div>
-          <div className="sitemap-column-right">
-            {sitemapRightColItems &&
-              sitemapRightColItems.map((subitem, subindex) =>
-                this.renderMenuOverlayContainer(subitem, subindex)
-              )}
-          </div>
+        {!pendingQuery && (
+          <div className="column-wrapper">
+            <div className="sitemap-column-left">
+              {sitemapLeftColItems &&
+                sitemapLeftColItems.map((subitem, subindex) =>
+                  this.renderMenuOverlayContainer(subitem, subindex)
+                )}
+            </div>
+            <div className="sitemap-column-right">
+              {sitemapRightColItems &&
+                sitemapRightColItems.map((subitem, subindex) =>
+                  this.renderMenuOverlayContainer(subitem, subindex)
+                )}
+            </div>
 
-          {queriedResults.length === 0 && query !== '' && (
-            <span>{counterpart.translate('window.noResults.caption')}</span>
-          )}
-        </div>
+            {queriedResults.length === 0 && query !== '' && (
+              <span>{counterpart.translate('window.noResults.caption')}</span>
+            )}
+          </div>
+        )}
+
+        {/* display the spinner while loading */}
+        {pendingQuery && (
+          <div className="sitemap-spinner">
+            <SpinnerOverlay iconSize={50} />
+          </div>
+        )}
       </div>
     );
   };
