@@ -32,19 +32,35 @@ class ScanHUAndGetQtyComponent extends Component {
     this.setState({ progressStatus: STATUS_READ_BARCODE });
   };
 
-  onBarcodeScanned = ({ scannedBarcode }) => {
-    const { qtyTarget, onResult, invalidBarcodeMessageKey } = this.props;
+  isEligibleBarcode = (scannedBarcode) => {
+    const { eligibleBarcode } = this.props;
 
+    console.log(`checking eligibleBarcode=${eligibleBarcode} vs scannedBarcode=${scannedBarcode}`);
+    // in some cases we accept whatever code user scans and we're not constraining it
+    return eligibleBarcode ? scannedBarcode === eligibleBarcode : true;
+  };
+
+  validateScannedBarcode = ({ scannedBarcode }) => {
     if (this.isEligibleBarcode(scannedBarcode)) {
-      // in some cases we don't need store quantity (ie manufacturing receipts)
-      if (qtyTarget != null) {
+      return true;
+    } else {
+      const { invalidBarcodeMessageKey } = this.props;
+      toastError({ messageKey: invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode' });
+      return false;
+    }
+  };
+
+  onBarcodeScanned = ({ scannedBarcode }) => {
+    console.log('ScanHUAndGetQtyComponent.onBarcodeScanned()', { scannedBarcode });
+    const { qtyTarget, onResult } = this.props;
+
+    if (this.validateScannedBarcode({ scannedBarcode })) {
+      const askForQty = qtyTarget != null;
+      if (askForQty) {
         this.setState({ progressStatus: STATUS_READ_QTY, scannedBarcode });
       } else {
         onResult({ qty: 0, reason: null, scannedBarcode });
       }
-    } else {
-      // show an error to user but keep scanning...
-      toastError({ messageKey: invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode' });
     }
   };
 
@@ -83,14 +99,6 @@ class ScanHUAndGetQtyComponent extends Component {
     return qtyTarget <= 0 || qtyEntered <= qtyTarget;
   };
 
-  isEligibleBarcode = (scannedBarcode) => {
-    const { eligibleBarcode } = this.props;
-
-    console.log(`checking eligibleBarcode=${eligibleBarcode} vs scannedBarcode=${scannedBarcode}`);
-    // in some cases we accept whatever code user scans and we're not constraining it
-    return eligibleBarcode ? scannedBarcode === eligibleBarcode : true;
-  };
-
   render() {
     const { uom, qtyCaption, qtyInitial, qtyTarget, qtyRejectedReasons } = this.props;
     const { progressStatus, qtyRejected } = this.state;
@@ -99,7 +107,10 @@ class ScanHUAndGetQtyComponent extends Component {
       case STATUS_READ_BARCODE:
         return (
           <>
-            <BarcodeScannerComponent onBarcodeScanned={this.onBarcodeScanned} />
+            <BarcodeScannerComponent
+              validateScannedBarcode={this.validateScannedBarcode}
+              onBarcodeScanned={this.onBarcodeScanned}
+            />
             {this.renderDebugScanEligibleBarcodeButton()}
           </>
         );
