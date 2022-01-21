@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { getOptionByIndex } from './utils';
 import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
 import { toastError } from '../../../../utils/toast';
+import Button from '../../../../components/buttons/Button';
 
 const ConfirmOptionScreen = () => {
   const {
@@ -30,9 +31,7 @@ const ConfirmOptionScreen = () => {
     <div className="pt-2 section">
       <pre>{JSON.stringify(optionInfo, null, 2)}</pre>
       <input className="input" type="number" value={qtyTUs} onChange={onCountChanged} />
-      <button className="button btn-green is-outlined complete-btn" onClick={onPrintClick}>
-        Print {qtyTUs}
-      </button>
+      <Button caption={`Print ${qtyTUs}`} onClick={onPrintClick} />
     </div>
   );
 };

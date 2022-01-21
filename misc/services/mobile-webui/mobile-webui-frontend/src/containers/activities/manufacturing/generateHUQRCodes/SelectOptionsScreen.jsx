@@ -1,9 +1,9 @@
 import React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import OptionButton from './OptionButton';
 import { confirmOptionLocation } from '../../../../routes/generateHUQRCodes';
 import { getOptions } from './utils';
+import Button from '../../../../components/buttons/Button';
 
 const SelectOptionsScreen = () => {
   const {
@@ -19,12 +19,7 @@ const SelectOptionsScreen = () => {
   return (
     <div className="pt-2 section">
       {options.map((optionItem, optionIndex) => (
-        <OptionButton
-          key={optionIndex}
-          optionIndex={optionIndex}
-          caption={optionItem.caption}
-          onClick={onOptionButtonClicked}
-        />
+        <Button key={optionIndex} caption={optionItem.caption} onClick={() => onOptionButtonClicked(optionIndex)} />
       ))}
     </div>
   );
