@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import PickQuantityButton from './PickQuantityButton';
+import Button from '../../../../components/Button';
+
 import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';
-
 import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import PickQuantityButton from './PickQuantityButton';
 import { toastError } from '../../../../utils/toast';
 import {
   manufacturingReceiptScreenLocation,
@@ -95,20 +96,7 @@ class MaterialReceiptLineScreen extends PureComponent {
       <div className="pt-2 section lines-screen-container">
         <div className="steps-container">
           <div className="buttons">
-            <button
-              className="button is-outlined complete-btn is-fullwidth"
-              disabled={false}
-              onClick={this.handleClick}
-            >
-              <div className="full-size-btn">
-                <div className="left-btn-side" />
-                <div className="caption-btn">
-                  <div className="rows">
-                    <div className="row is-full pl-5">{targetCaption}</div>
-                  </div>
-                </div>
-              </div>
-            </button>
+            <Button caption={targetCaption} onClick={this.handleClick} />
             <PickQuantityButton
               qtyCurrent={qtyReceived}
               qtyTarget={qtyToReceive - qtyReceived}

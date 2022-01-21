@@ -28,32 +28,28 @@ class ReceiptReceiveTargetScreen extends PureComponent {
 
   render() {
     return (
-      <div className="pt-2 section lines-screen-container">
-        <div className="steps-container">
-          <div className="buttons">
-            <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleNewHUClick}>
-              <div className="full-size-btn">
-                <div className="left-btn-side" />
-                <div className="caption-btn">
-                  <div className="rows">
-                    <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.newHU')}</div>
-                  </div>
+      <div className="pt-2 section">
+        <div className="buttons">
+          <button className="button is-outlined complete-btn" onClick={this.handleNewHUClick}>
+            <div className="full-size-btn">
+              <div className="left-btn-side" />
+              <div className="caption-btn">
+                <div className="rows">
+                  <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.newHU')}</div>
                 </div>
               </div>
-            </button>
-            <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleScanClick}>
-              <div className="full-size-btn">
-                <div className="left-btn-side" />
-                <div className="caption-btn">
-                  <div className="rows">
-                    <div className="row is-full pl-5">
-                      {counterpart.translate('activities.mfg.receipts.existingLU')}
-                    </div>
-                  </div>
+            </div>
+          </button>
+          <button className="button is-outlined complete-btn" onClick={this.handleScanClick}>
+            <div className="full-size-btn">
+              <div className="left-btn-side" />
+              <div className="caption-btn">
+                <div className="rows">
+                  <div className="row is-full pl-5">{counterpart.translate('activities.mfg.receipts.existingLU')}</div>
                 </div>
               </div>
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       </div>
     );

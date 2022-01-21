@@ -2,7 +2,9 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
+import Button from '../../../../components/Button';
 import PickQuantityPrompt from '../../PickQuantityPrompt';
+
 import { toastError } from '../../../../utils/toast';
 
 class PickQuantityButton extends PureComponent {
@@ -54,20 +56,7 @@ class PickQuantityButton extends PureComponent {
             onCloseDialog={this.hideDialog}
           />
         )}
-        <button
-          className="button is-outlined complete-btn is-fullwidth"
-          disabled={isDisabled}
-          onClick={this.showDialog}
-        >
-          <div className="full-size-btn">
-            <div className="left-btn-side" />
-            <div className="caption-btn">
-              <div className="rows">
-                <div className="row is-full pl-5">{caption}</div>
-              </div>
-            </div>
-          </div>
-        </button>
+        <Button caption={caption} onClick={this.showDialog} disabled={isDisabled} />
       </>
     );
   }

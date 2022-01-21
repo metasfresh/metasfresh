@@ -10,7 +10,7 @@ const RawMaterialIssueLineScreen = (props) => {
   const { applicationId, wfProcessId, activityId, lineId, steps } = props;
 
   return (
-    <div className="pt-2 section lines-screen-container">
+    <div className="pt-2 section">
       <div className="steps-container">
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
