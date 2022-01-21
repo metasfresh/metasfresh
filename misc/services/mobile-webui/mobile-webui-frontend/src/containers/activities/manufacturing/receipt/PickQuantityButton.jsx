@@ -45,7 +45,7 @@ class PickQuantityButton extends PureComponent {
     const { isDialogOpen } = this.state;
 
     return (
-      <div>
+      <>
         {isDialogOpen && (
           <PickQuantityPrompt
             qtyTarget={qtyTarget}
@@ -54,26 +54,21 @@ class PickQuantityButton extends PureComponent {
             onCloseDialog={this.hideDialog}
           />
         )}
-        <div className="mt-3">
-          <button
-            className="button is-outlined complete-btn pick-higher-btn"
-            disabled={isDisabled}
-            onClick={this.showDialog}
-          >
-            <div className="full-size-btn">
-              <div className="left-btn-side" />
-              <div className="caption-btn">
-                <div className="rows">
-                  <div className="row is-full pl-5">{caption}</div>
-                </div>
+        <button
+          className="button is-outlined complete-btn is-fullwidth"
+          disabled={isDisabled}
+          onClick={this.showDialog}
+        >
+          <div className="full-size-btn">
+            <div className="left-btn-side" />
+            <div className="caption-btn">
+              <div className="rows">
+                <div className="row is-full pl-5">{caption}</div>
               </div>
-              {/*              <div className="right-btn-side pt-4">
-                <Indicator completeStatus={completeStatus || CompleteStatus.NOT_STARTED} />
-              </div>*/}
             </div>
-          </button>
-        </div>
-      </div>
+          </div>
+        </button>
+      </>
     );
   }
 }

@@ -11,17 +11,9 @@ import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { toastError } from '../../../../utils/toast';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 
-import StepScanScreenComponent from '../../common/StepScanScreenComponent';
+import ScanHUAndGetQtyComponent from '../../ScanHUAndGetQtyComponent';
 
 class RawMaterialIssueScanScreen extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      scannedBarcode: null,
-    };
-  }
-
   componentDidMount() {
     const {
       applicationId,
@@ -48,11 +40,7 @@ class RawMaterialIssueScanScreen extends PureComponent {
     });
   }
 
-  setScannedBarcode = (scannedBarcode) => {
-    this.setState({ scannedBarcode });
-  };
-
-  pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
+  onResult = ({ qty = 0, reason = null }) => {
     const { wfProcessId, activityId, lineId, stepId, updateManufacturingIssueQty, updateManufacturingIssue, go } =
       this.props;
 
@@ -70,16 +58,19 @@ class RawMaterialIssueScanScreen extends PureComponent {
   };
 
   render() {
-    const { stepProps } = this.props;
+    const {
+      stepProps: { huBarcode, qtyToIssue, uom },
+    } = this.props;
+
     return (
-      <StepScanScreenComponent
-        eligibleBarcode={stepProps.huBarcode}
-        qtyTarget={stepProps.qtyToIssue}
+      <ScanHUAndGetQtyComponent
+        eligibleBarcode={huBarcode}
         qtyCaption={counterpart.translate('general.QtyToPick')}
-        stepProps={stepProps}
+        qtyTarget={qtyToIssue}
+        qtyInitial={qtyToIssue}
+        uom={uom}
         // Callbacks:
-        pushUpdatedQuantity={this.pushUpdatedQuantity}
-        setScannedBarcode={this.setScannedBarcode}
+        onResult={this.onResult}
       />
     );
   }

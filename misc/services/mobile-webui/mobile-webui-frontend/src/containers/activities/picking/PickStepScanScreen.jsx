@@ -13,19 +13,12 @@ import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-import StepScanScreenComponent from '../common/StepScanScreenComponent';
+import ScanHUAndGetQtyComponent from '../ScanHUAndGetQtyComponent';
 
 class PickStepScanScreen extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      scannedBarcode: null,
-    };
-  }
-
-  onComponentDidMount() {
-    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
+  componentDidMount() {
+    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, eligibleBarcode, qtyToPick, uom } =
+      this.props;
     const { pushHeaderEntry } = this.props;
     const location = pickingStepScanScreenLocation({
       applicationId,
@@ -35,32 +28,25 @@ class PickStepScanScreen extends PureComponent {
       stepId,
       altStepId,
     });
-    const headerHuCode = getPickFrom({ stepProps, altStepId }).huBarcode;
-    const headerQtyToPick = getQtyToPick({ stepProps, altStepId }).qtyPicked;
 
     pushHeaderEntry({
       location,
       values: [
         {
           caption: counterpart.translate('general.Barcode'),
-          value: headerHuCode,
+          value: eligibleBarcode,
         },
         {
           caption: counterpart.translate('general.QtyToPick'),
-          value: headerQtyToPick,
+          value: qtyToPick + ' ' + uom,
         },
       ],
     });
   }
 
-  setScannedBarcode = (scannedBarcode) => {
-    this.setState({ scannedBarcode });
-  };
-
-  pushUpdatedQuantity = ({ qty = 0, reason = null }) => {
-    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go, altStepId, qtyTarget } = this.props;
-    const { scannedBarcode } = this.state;
-    const qtyRejected = qtyTarget - qty;
+  onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
+    const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go, altStepId, qtyToPick } = this.props;
+    const qtyRejected = qtyToPick - qty;
 
     postStepPicked({
       wfProcessId,
@@ -88,16 +74,16 @@ class PickStepScanScreen extends PureComponent {
   };
 
   render() {
-    const { eligibleBarcode, qtyTarget, stepProps } = this.props;
+    const { eligibleBarcode, qtyToPick, uom } = this.props;
     return (
-      <StepScanScreenComponent
+      <ScanHUAndGetQtyComponent
         eligibleBarcode={eligibleBarcode}
-        qtyTarget={qtyTarget}
         qtyCaption={counterpart.translate('general.QtyToPick')}
-        stepProps={stepProps}
+        qtyTarget={qtyToPick}
+        qtyInitial={qtyToPick}
+        uom={uom}
         //
-        pushUpdatedQuantity={this.pushUpdatedQuantity}
-        setScannedBarcode={this.setScannedBarcode}
+        onResult={this.onResult}
       />
     );
   }
@@ -109,6 +95,9 @@ const mapStateToProps = (state, { match }) => {
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const stepProps = wfProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
+  const eligibleBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
+  const qtyToPick = getQtyToPick({ stepProps, altStepId });
+
   return {
     applicationId,
     wfProcessId,
@@ -116,9 +105,9 @@ const mapStateToProps = (state, { match }) => {
     lineId,
     stepId,
     altStepId,
-    stepProps,
-    qtyTarget: altStepId ? stepProps.pickFromAlternatives[altStepId].qtyToPick : stepProps.qtyToPick,
-    eligibleBarcode: altStepId ? stepProps.pickFromAlternatives[altStepId].huBarcode : stepProps.mainPickFrom.huBarcode,
+    eligibleBarcode: eligibleBarcode,
+    qtyToPick: qtyToPick,
+    uom: stepProps.uom,
   };
 };
 
@@ -130,18 +119,12 @@ PickStepScanScreen.propTypes = {
   stepId: PropTypes.string.isRequired,
   altStepId: PropTypes.string,
   eligibleBarcode: PropTypes.string.isRequired,
-  stepProps: PropTypes.object.isRequired,
-  qtyTarget: PropTypes.number,
+  qtyToPick: PropTypes.number,
+  uom: PropTypes.string.isRequired,
   // Actions:
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
   pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(
-  connect(mapStateToProps, {
-    updatePickingStepQty,
-    go,
-    pushHeaderEntry,
-  })(PickStepScanScreen)
-);
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty, go, pushHeaderEntry })(PickStepScanScreen));

@@ -1,10 +1,10 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import {
-  normalizeComponentProps,
   computeActivityDataStoredInitialValue,
-  mergeActivityDataStored,
   computeActivityStatus,
+  mergeActivityDataStored,
+  normalizeComponentProps,
 } from './activityStateHandlers';
 
 /**
@@ -19,42 +19,63 @@ export const updateUserEditable = ({ draftWFProcess }) => {
 
   activityIdsInOrder.forEach((activityId) => {
     const currentActivity = draftWFProcess.activities[activityId];
-    const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
-    let isUserEditable;
+    if (currentActivity.dataStored.isAlwaysAvailableToUser) {
+      currentActivity.dataStored.isUserEditable = true;
+      // NOTE: activities which are always available to user shall be always editable
+      // They are out of the normal flow when talking about making a previous activity readonly because current activity is completed.
+    } else {
+      const { isUserEditable, makePreviousActivityReadOnly } = computeActivityIsUserEditable({
+        currentActivity,
+        previousActivity,
+      });
+
+      currentActivity.dataStored.isUserEditable = isUserEditable;
+      if (makePreviousActivityReadOnly) {
+        previousActivity.dataStored.isUserEditable = false;
+      }
+
+      previousActivity = currentActivity;
+    }
+  });
+};
+
+const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) => {
+  const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
+  const activityId = currentActivity.activityId; // needed for loggging
+
+  let isUserEditable;
+  let makePreviousActivityReadOnly = false;
+
+  //
+  // First activity is always editable
+  if (previousActivity == null) {
+    isUserEditable = true;
+    console.log(
+      `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (first currentActivity)`
+    );
+  } else {
+    const previousActivityCompleteStatus = previousActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
     //
-    // First activity is always editable
-    if (previousActivity == null) {
-      isUserEditable = true;
-      console.log(
-        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (first currentActivity)`
-      );
-    } else {
-      const previousActivityCompleteStatus = previousActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
+    // Current activity is editable only if previous activity was completed
+    isUserEditable = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
+    console.log(
+      `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (checked if prev currentActivity was completed)`
+    );
 
-      //
-      // Current activity is editable only if previous activity was completed
-      isUserEditable = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
+    //
+    // If current currentActivity was started
+    // => previous currentActivity is no longer editable
+    if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
+      makePreviousActivityReadOnly = true;
       console.log(
-        `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (checked if prev currentActivity was completed)`
+        `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${previousActivity.activityId} ${previousActivityCompleteStatus} ] => isUserEditable=${previousActivity.dataStored.isUserEditable} because current activity is started/completed`
       );
-
-      //
-      // If current currentActivity was started
-      // => previous currentActivity is no longer editable
-      if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
-        previousActivity.dataStored.isUserEditable = false;
-        console.log(
-          `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${previousActivity.activityId} ${previousActivityCompleteStatus} ] => isUserEditable=${previousActivity.dataStored.isUserEditable} because current activity is started/completed`
-        );
-      }
     }
+  }
 
-    currentActivity.dataStored.isUserEditable = isUserEditable;
-
-    previousActivity = currentActivity;
-  });
+  return { isUserEditable, makePreviousActivityReadOnly };
 };
 
 export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {

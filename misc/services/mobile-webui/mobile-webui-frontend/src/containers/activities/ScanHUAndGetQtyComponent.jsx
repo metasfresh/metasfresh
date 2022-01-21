@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { toastError } from '../../../utils/toast';
-import CodeScanner from '../scan/CodeScanner';
-import PickQuantityPrompt from '../PickQuantityPrompt';
-import QtyReasonsView from '../QtyReasonsView';
+import { toastError } from '../../utils/toast';
+import CodeScanner from './scan/CodeScanner';
+import PickQuantityPrompt from './PickQuantityPrompt';
+import QtyReasonsView from './QtyReasonsView';
 
 class ScanHUAndGetQtyComponent extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      qtyInputPromptVisible: false,
-      reasonsPanelVisible: false,
-      newQuantity: 0,
+      promptVisible: false,
       scannedBarcode: null,
+      newQuantity: 0,
+      reasonsPanelVisible: false,
       qtyRejected: 0,
     };
   }
@@ -29,9 +29,9 @@ class ScanHUAndGetQtyComponent extends Component {
     if (this.isEligibleBarcode(scannedBarcode)) {
       // in some cases we don't need store quantity (ie manufacturing receipts)
       if (qtyTarget) {
-        this.setState({ promptVisible: true });
+        this.setState({ promptVisible: true, scannedBarcode });
       } else {
-        onResult({ qty: 0, reason: null });
+        onResult({ qty: 0, reason: null, scannedBarcode });
       }
     } else {
       // show an error to user but keep scanning...
@@ -55,7 +55,7 @@ class ScanHUAndGetQtyComponent extends Component {
         const qtyRejected = qtyTarget - inputQty;
         this.setState({ reasonsPanelVisible: true, qtyRejected });
       } else {
-        onResult({ qty: inputQty });
+        onResult({ qty: inputQty, reason: null, scannedBarcode: this.state.scannedBarcode });
       }
 
       this.setState({ promptVisible: false });
@@ -68,7 +68,7 @@ class ScanHUAndGetQtyComponent extends Component {
     const { onResult } = this.props;
     this.setState({ reasonsPanelVisible: false });
 
-    onResult({ qty: this.state.newQuantity, reason });
+    onResult({ qty: this.state.newQuantity, reason, scannedBarcode: this.state.scannedBarcode });
   };
 
   validateQtyInput = (numberInput) => {
@@ -104,13 +104,32 @@ class ScanHUAndGetQtyComponent extends Component {
                 onCloseDialog={this.hidePrompt}
               />
             ) : (
-              <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+              <>
+                <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+                {this.renderDebugScanEligibleBarcodeButton()}
+              </>
             )}
           </>
         )}
       </div>
     );
   }
+
+  renderDebugScanEligibleBarcodeButton = () => {
+    if (window.metasfresh_debug && this.props.eligibleBarcode) {
+      return (
+        <button
+          type="button"
+          className="button is-outlined is-warning is-light is-fullwidth"
+          onClick={() => this.onBarcodeScanned({ scannedBarcode: this.props.eligibleBarcode })}
+        >
+          DEBUG: {this.props.eligibleBarcode}
+        </button>
+      );
+    } else {
+      return null;
+    }
+  };
 }
 
 ScanHUAndGetQtyComponent.propTypes = {

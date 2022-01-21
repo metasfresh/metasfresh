@@ -68,10 +68,13 @@ class PickQuantityPrompt extends PureComponent {
 }
 
 PickQuantityPrompt.propTypes = {
-  onQtyChange: PropTypes.func.isRequired,
+  // Properties
   qtyInitial: PropTypes.number,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string.isRequired,
+
+  // Callbacks
+  onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };
 

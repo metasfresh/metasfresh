@@ -10,6 +10,7 @@ import { pickingReducer } from './picking';
 import { distributionReducer } from './distribution';
 import { manufacturingReducer as manufacturingIssueReducer } from './manufacturing_issue';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
+import { generateHUQRCodesReducer } from './generateHUQRCodes';
 
 const getWfProcess = (state, wfProcessId) => state.wfProcesses_status[wfProcessId] || null;
 
@@ -66,12 +67,18 @@ export const getActivityById = (state, wfProcessId, activityId) => {
   return getWfProcess(state, wfProcessId)?.activities?.[activityId];
 };
 
+export const getLineById = (state, wfProcessId, activityId, lineId) => {
+  const activity = getActivityById(state, wfProcessId, activityId);
+  return activity != null ? activity.dataStored.lines[lineId] : null;
+};
+
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });
   draftState = activityUserConfirmationReducer({ draftState, action });
   draftState = pickingReducer({ draftState, action });
   draftState = distributionReducer({ draftState, action });
+  draftState = generateHUQRCodesReducer({ draftState, action });
   draftState = manufacturingIssueReducer({ draftState, action });
   draftState = manufacturingReceiptReducer({ draftState, action });
 

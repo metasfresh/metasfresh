@@ -95,7 +95,11 @@ class MaterialReceiptLineScreen extends PureComponent {
       <div className="pt-2 section lines-screen-container">
         <div className="steps-container">
           <div className="buttons">
-            <button className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
+            <button
+              className="button is-outlined complete-btn is-fullwidth"
+              disabled={false}
+              onClick={this.handleClick}
+            >
               <div className="full-size-btn">
                 <div className="left-btn-side" />
                 <div className="caption-btn">
@@ -105,14 +109,14 @@ class MaterialReceiptLineScreen extends PureComponent {
                 </div>
               </div>
             </button>
+            <PickQuantityButton
+              qtyCurrent={qtyReceived}
+              qtyTarget={qtyToReceive - qtyReceived}
+              isDisabled={!allowReceivingQty}
+              onClick={this.handleQuantityChange}
+              {...{ uom, productName, caption }}
+            />
           </div>
-          <PickQuantityButton
-            qtyCurrent={qtyReceived}
-            qtyTarget={qtyToReceive - qtyReceived}
-            isDisabled={!allowReceivingQty}
-            onClick={this.handleQuantityChange}
-            {...{ uom, productName, caption }}
-          />
         </div>
       </div>
     );
