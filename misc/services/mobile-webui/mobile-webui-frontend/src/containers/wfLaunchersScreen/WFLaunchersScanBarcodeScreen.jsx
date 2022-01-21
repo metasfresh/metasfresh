@@ -10,7 +10,6 @@ import { gotoWFProcessScreen } from '../../routes/workflow';
 
 class WFLaunchersScanBarcodeScreen extends PureComponent {
   onBarcodeScanned = ({ scannedBarcode }) => {
-    console.log('BARCODE: ', scannedBarcode);
     const { applicationId, updateWFProcess, gotoWFProcessScreen } = this.props;
     startWorkflowRequest({
       wfParameters: {
