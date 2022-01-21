@@ -212,7 +212,7 @@ public class AttachmentRestService
 
 		if (!filePath.toFile().isFile())
 		{
-			throw new AdempiereException("Provided URL: " + url + " is not accessible!")
+			throw new AdempiereException("Provided local file with URL: " + url + " is not accessible!")
 					.appendParametersToMessage()
 					.setParameter("ParsedPath", filePath.toString());
 		}

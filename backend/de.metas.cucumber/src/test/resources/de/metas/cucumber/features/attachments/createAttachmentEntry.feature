@@ -1,6 +1,6 @@
 Feature: attachment creation using metasfresh api
   As a REST-API invoker
-  I want want to be able to create attachment entries
+  As an API user I want to be able to create attachment entries
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
