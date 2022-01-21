@@ -115,3 +115,9 @@
     cursor: pointer;
     color: $brand-super-light-color;
 }
+
+.side-attachment-wrapper {
+    >.screen-freeze {
+        height: 15%;
+    }
+}
