@@ -62,18 +62,8 @@ class PickStepScreen extends Component {
   }
 
   onUnpickButtonClick = () => {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      altStepId,
-      stepProps,
-      postStepUnPicked,
-      push,
-      updatePickingStepQty,
-    } = this.props;
+    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, stepProps, push, updatePickingStepQty } =
+      this.props;
     const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
 
     postStepUnPicked({
@@ -232,11 +222,8 @@ PickStepScreen.propTypes = {
   //
   // Actions
   pushHeaderEntry: PropTypes.func.isRequired,
-  postStepUnPicked: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
 };
 
-export default withRouter(
-  connect(mapStateToProps, { pushHeaderEntry, postStepUnPicked, push, updatePickingStepQty })(PickStepScreen)
-);
+export default withRouter(connect(mapStateToProps, { pushHeaderEntry, push, updatePickingStepQty })(PickStepScreen));
