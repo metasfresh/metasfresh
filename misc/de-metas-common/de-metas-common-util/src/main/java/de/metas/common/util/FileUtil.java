@@ -98,7 +98,7 @@ public class FileUtil
 		try
 		{
 			final String normalizedPath = Stream.concat(Stream.of(url.getAuthority()), Arrays.stream(url.getPath().split("/")))
-					.filter(string -> !string.isEmpty())
+					.filter(Check::isNotBlank)
 					.collect(Collectors.joining("/"));
 
 			return Paths.get(normalizedPath);
@@ -115,7 +115,7 @@ public class FileUtil
 		try
 		{
 			final String normalizedPath = Stream.of(url.getAuthority(), url.getPath())
-							.filter(string -> !string.isEmpty())
+							.filter(Check::isNotBlank)
 							.collect(Collectors.joining());
 
 			return Paths.get("//" + normalizedPath);

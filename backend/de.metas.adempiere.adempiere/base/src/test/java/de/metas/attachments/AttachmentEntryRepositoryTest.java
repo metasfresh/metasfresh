@@ -163,8 +163,8 @@ public class AttachmentEntryRepositoryTest
 	@NonNull
 	private Path normalizePath(@NonNull final String path) throws MalformedURLException
 	{
-		final String normalizedPath = path.replace('\\', '/');
+		final String normalizedPath = path.replaceAll("\\\\","/");
 
-		return FileUtil.getFilePath(URI.create("file:///" + normalizedPath).toURL());
+		return FileUtil.getFilePath(URI.create("file://" + normalizedPath).toURL());
 	}
 }
