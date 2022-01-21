@@ -18,9 +18,8 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator_OLD';
-import ScreenToaster from '../../../components/ScreenToaster';
-import NotFoundButton from '../NotFoundButton';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ConfirmButton from '../confirmButton/ConfirmButton';
 
 class PickStepScreen extends Component {
   componentDidMount() {
@@ -131,7 +130,7 @@ class PickStepScreen extends Component {
   };
 
   render() {
-    const { wfProcessId, activityId, lineId, stepId, altStepId, stepProps } = this.props;
+    const { altStepId, stepProps } = this.props;
     const qtyToPick = getQtyToPick({ stepProps, altStepId });
     const pickFrom = getPickFrom({ stepProps, altStepId });
     const isPickedFromHU = pickFrom.qtyPicked > 0;
@@ -159,32 +158,26 @@ class PickStepScreen extends Component {
               </div>
               <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
             </div>
-            <div className="mt-0">
-              <button
-                className="button is-outlined complete-btn"
+            <div className="buttons">
+              <ButtonWithIndicator
+                caption={scanButtonCaption}
+                completeStatus={scanButtonStatus}
                 disabled={isPickedFromHU}
                 onClick={this.onScanButtonClick}
-              >
-                <ButtonWithIndicator caption={scanButtonCaption} completeStatus={scanButtonStatus} />
-              </button>
-            </div>
-            {/* Unpick button */}
-            <div className="mt-5">
-              <button
-                className="button is-outlined complete-btn"
+              />
+              <ButtonWithIndicator
+                caption={counterpart.translate('activities.picking.unPickBtn')}
                 disabled={nothingPicked}
                 onClick={this.onUnpickButtonClick}
-              >
-                <ButtonWithIndicator caption={counterpart.translate('activities.picking.unPickBtn')} />
-              </button>
+              />
+              <ConfirmButton
+                caption={counterpart.translate('activities.confirmButton.notFound')}
+                isCancelMode={true}
+                isUserEditable={nothingPicked}
+                onUserConfirmed={this.handleNotFound}
+              />
             </div>
-            <NotFoundButton
-              onNotFound={this.handleNotFound}
-              disabled={!nothingPicked}
-              {...{ wfProcessId, activityId, stepId, lineId }}
-            />
           </div>
-          <ScreenToaster />
         </div>
       </div>
     );

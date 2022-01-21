@@ -10,7 +10,11 @@ export const initialState = {
   ],
 };
 
-const launchersUrlRegExp = /\/launchers\/[A-Z]\w+/gi;
+const launchersUrlRegExp = /\/\w+\/launchers/gi;
+
+function isLaunchersPathname(pathname) {
+  return launchersUrlRegExp.test(pathname);
+}
 
 export default function reducer(state = initialState, action) {
   const { payload } = action;
@@ -19,7 +23,7 @@ export default function reducer(state = initialState, action) {
     case types.HEADER_PUSH_ENTRY: {
       const { location, values } = payload;
       // if there are no header values, there's no reason to block space
-      const hidden = values.length ? false : true;
+      const hidden = !values.length;
 
       let existingEntryUpdated = false;
       let newEntries = state.entries.map((entry) => {
@@ -55,8 +59,9 @@ export default function reducer(state = initialState, action) {
       let newEntries = null;
 
       // clear header on main urls
-      if (pathname === '/' || launchersUrlRegExp.test(pathname)) {
+      if (pathname === '/' || isLaunchersPathname(pathname)) {
         newEntries = [...initialState.entries];
+        //console.log('HEADERS: @@router/LOCATION_CHANGE: CLEAR!!!');
       } else {
         newEntries = removeEntries({
           entriesArray: state.entries,
@@ -65,8 +70,8 @@ export default function reducer(state = initialState, action) {
         });
       }
 
-      // console.log('@@router/LOCATION_CHANGE: pathname=%o', pathname);
-      // console.log('@@router/LOCATION_CHANGE=>newEntries:', newEntries);
+      //console.log('HEADERS: @@router/LOCATION_CHANGE: pathname=%o', pathname);
+      //console.log('HEADERS: @@router/LOCATION_CHANGE=>newEntries:', newEntries);
       return { ...state, entries: newEntries };
     }
 

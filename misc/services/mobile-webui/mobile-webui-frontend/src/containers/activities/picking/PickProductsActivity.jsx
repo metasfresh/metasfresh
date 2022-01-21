@@ -1,9 +1,11 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
-
-import PickLineButton from './PickLineButton';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
+import { pickingLineScreenLocation } from '../../../routes/picking';
+import { useHistory } from 'react-router-dom';
 
 const computeLineQuantities = (line) => {
   let picked = 0;
@@ -40,45 +42,39 @@ const computeStepQtyPickedTotal = (step) => {
   return qtyPickedTotal;
 };
 
-class PickProductsActivity extends PureComponent {
-  render() {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      activityState: {
-        dataStored: { lines, completeStatus, isUserEditable },
-      },
-    } = this.props;
+const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
+  const {
+    dataStored: { lines, completeStatus, isUserEditable },
+  } = activityState;
 
-    return (
-      <div className="pick-products-activity-container mt-5">
-        {lines && lines.length > 0
-          ? lines.map((lineItem, lineIndex) => {
-              const lineId = '' + lineIndex;
-              const { picked, toPick, uom } = computeLineQuantities(lineItem);
+  const history = useHistory();
+  const onButtonClick = ({ lineId }) => {
+    history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  };
 
-              return (
-                <PickLineButton
-                  key={lineId}
-                  applicationId={applicationId}
-                  wfProcessId={wfProcessId}
-                  activityId={activityId}
-                  lineId={lineId}
-                  caption={lineItem.caption}
-                  isUserEditable={isUserEditable}
-                  completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  qtyPicked={picked}
-                  qtyToPick={toPick}
-                  uom={uom}
-                />
-              );
-            })
-          : null}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="pick-products-activity-container mt-5">
+      {lines && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+            const { picked, toPick, uom } = computeLineQuantities(lineItem);
+
+            return (
+              <ButtonWithIndicator
+                key={lineId}
+                caption={lineItem.caption}
+                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                disabled={!isUserEditable}
+                onClick={() => onButtonClick({ lineId })}
+              >
+                <ButtonQuantityProp qtyCurrent={picked} qtyTarget={toPick} uom={uom} applicationId={applicationId} />
+              </ButtonWithIndicator>
+            );
+          })
+        : null}
+    </div>
+  );
+};
 
 PickProductsActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,

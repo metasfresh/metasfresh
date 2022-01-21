@@ -10,7 +10,7 @@ import { getLaunchers } from '../../api/launchers';
 import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
-import ButtonWithIndicator from '../../components/ButtonWithIndicator_OLD';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator';
 import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
 
 class WFLaunchersScreen extends Component {
@@ -60,9 +60,7 @@ class WFLaunchersScreen extends Component {
         {applicationLaunchers.scanBarcodeToStartJobSupport && (
           <>
             <div className="mt-0">
-              <button className="button is-outlined complete-btn" onClick={this.onScanBarcodeButtonClicked}>
-                <ButtonWithIndicator caption="Scan barcode" />
-              </button>
+              <ButtonWithIndicator caption="Scan barcode" onClick={this.onScanBarcodeButtonClicked} />
             </div>
             <br />
           </>
@@ -73,7 +71,6 @@ class WFLaunchersScreen extends Component {
           return (
             <WFLauncherButton
               key={key}
-              id={key}
               applicationId={launcher.applicationId}
               caption={launcher.caption}
               startedWFProcessId={launcher.startedWFProcessId}

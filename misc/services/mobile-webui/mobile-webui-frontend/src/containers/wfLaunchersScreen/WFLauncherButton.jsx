@@ -6,7 +6,7 @@ import { gotoWFProcessScreen } from '../../routes/workflow';
 import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
 
-import ButtonWithIndicator from '../../components/ButtonWithIndicator_OLD';
+import ButtonWithIndicator from '../../components/ButtonWithIndicator';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { toastError } from '../../utils/toast';
 
@@ -28,15 +28,17 @@ class WFLauncherButton extends PureComponent {
   };
 
   render() {
-    const { id, caption, startedWFProcessId, showWarningSign } = this.props;
+    const { caption, startedWFProcessId, showWarningSign } = this.props;
     const wfCompleteStatus = startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED;
 
     return (
-      <div className="buttons">
-        <button key={id} className="button is-outlined complete-btn" disabled={false} onClick={this.handleClick}>
-          <ButtonWithIndicator caption={caption} showWarningSign={showWarningSign} completeStatus={wfCompleteStatus} />
-        </button>
-      </div>
+      <ButtonWithIndicator
+        caption={caption}
+        showWarningSign={showWarningSign}
+        completeStatus={wfCompleteStatus}
+        disabled={false}
+        onClick={this.handleClick}
+      />
     );
   }
 }
@@ -45,7 +47,6 @@ WFLauncherButton.propTypes = {
   //
   // Props
   applicationId: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
   wfParameters: PropTypes.object.isRequired,

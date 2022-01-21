@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-import cx from 'classnames';
+import Button from '../../../components/Button';
 
 class ConfirmButton extends Component {
   constructor(props) {
@@ -29,51 +29,52 @@ class ConfirmButton extends Component {
   };
 
   render() {
-    const { caption, promptQuestion, isUserEditable, isCancelMode } = this.props;
+    const { caption, isUserEditable, isCancelMode } = this.props;
     const { isPromptDialogOpen } = this.state;
-
     const captionEffective = caption ? caption : counterpart.translate('activities.confirmButton.default.caption');
+
+    return (
+      <>
+        {isPromptDialogOpen && this.renderDialog(captionEffective)}
+        <Button
+          caption={captionEffective}
+          disabled={!isUserEditable}
+          isDanger={isCancelMode}
+          onClick={this.showConfirmDialog}
+        />
+      </>
+    );
+  }
+
+  renderDialog = (captionEffective) => {
+    const { promptQuestion } = this.props;
 
     const promptQuestionEffective = promptQuestion
       ? promptQuestion
       : counterpart.translate('activities.confirmButton.default.promptQuestion');
 
     return (
-      <div>
-        {/*  Full screen confirm dialog  */}
-        {isPromptDialogOpen && (
-          <div className="prompt-dialog-screen">
-            <article className="message confirm-box is-dark">
-              <div className="message-header">
-                <p>{captionEffective}</p>
-              </div>
-              <div className="message-body">
-                <strong>{promptQuestionEffective}</strong>
-                <div>&nbsp;</div>
-                <div className="buttons is-centered">
-                  <button className="button is-success confirm-button" onClick={this.onDialogYes}>
-                    {counterpart.translate('activities.confirmButton.default.yes')}
-                  </button>
-                  <button className="button is-danger confirm-button" onClick={this.onDialogNo}>
-                    {counterpart.translate('activities.confirmButton.default.no')}
-                  </button>
-                </div>
-              </div>
-            </article>
+      <div className="prompt-dialog-screen">
+        <article className="message confirm-box is-dark">
+          <div className="message-header">
+            <p>{captionEffective}</p>
           </div>
-        )}
-        <div>
-          <button
-            className={cx('button is-outlined complete-btn', { 'is-danger': isCancelMode })}
-            onClick={this.showConfirmDialog}
-            disabled={!isUserEditable}
-          >
-            {captionEffective}
-          </button>
-        </div>
+          <div className="message-body">
+            <strong>{promptQuestionEffective}</strong>
+            <div>&nbsp;</div>
+            <div className="buttons is-centered">
+              <button className="button is-success confirm-button" onClick={this.onDialogYes}>
+                {counterpart.translate('activities.confirmButton.default.yes')}
+              </button>
+              <button className="button is-danger confirm-button" onClick={this.onDialogNo}>
+                {counterpart.translate('activities.confirmButton.default.no')}
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
     );
-  }
+  };
 }
 
 /**

@@ -5,7 +5,7 @@ import cx from 'classnames';
 import Indicator from './Indicator';
 
 const ButtonWithIndicator = ({ caption, showWarningSign, completeStatus, disabled, onClick, children }) => (
-  <button className="button is-outlined complete-btn" disabled={!!disabled} onClick={onClick}>
+  <button className="button is-outlined is-fullwidth complete-btn" disabled={!!disabled} onClick={onClick}>
     <div className="full-size-btn">
       <div className="left-btn-side">{showWarningSign && <span className="warning-sign">⚠</span>}</div>
       <div className="caption-btn">
