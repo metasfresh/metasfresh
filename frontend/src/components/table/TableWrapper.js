@@ -387,7 +387,7 @@ class TableWrapper extends PureComponent {
               supportOpenRecord={supportOpenRecord}
             />
           )}
-          {!readonly && (
+          {!readonly && !pending && (
             <TableFilter
               openTableModal={onOpenTableModal}
               {...{
