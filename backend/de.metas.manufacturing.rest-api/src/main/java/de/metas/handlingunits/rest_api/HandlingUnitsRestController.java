@@ -38,10 +38,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryCandidateService;
-import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -51,17 +48,12 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.WarehouseAndLocatorValue;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
@@ -94,8 +86,6 @@ public class HandlingUnitsRestController
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final InventoryCandidateService inventoryCandidateService;
 	private final HandlingUnitsService handlingUnitsService;
@@ -105,7 +95,6 @@ public class HandlingUnitsRestController
 			@NonNull final InventoryCandidateService inventoryCandidateService,
 			@NonNull final HandlingUnitsService handlingUnitsService,
 			@NonNull final HUQRCodesService huQRCodesService)
-			)
 	{
 		this.inventoryCandidateService = inventoryCandidateService;
 		this.handlingUnitsService = handlingUnitsService;
