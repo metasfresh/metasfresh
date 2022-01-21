@@ -368,7 +368,7 @@ class NavigationTree extends Component {
           </div>
 
           {queriedResults.length === 0 && query !== '' && (
-            <span>There are no results</span>
+            <span>{counterpart.translate('window.noResults.caption')}</span>
           )}
         </div>
       </div>
