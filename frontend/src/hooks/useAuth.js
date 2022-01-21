@@ -98,7 +98,9 @@ function useProvideAuth() {
       setAuthRequestPending(true);
 
       return loginWithToken(token)
-        .then(async () => await login())
+        .then(
+          async () => await login().then(() => setAuthRequestPending(false))
+        )
         .catch((error) => {
           // user already logged in error
           if (
