@@ -56,6 +56,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 
@@ -207,9 +208,13 @@ public class AttachmentRestService
 			throw new AdempiereException("Protocol " + url.getProtocol() + " not supported!");
 		}
 
-		if (!FileUtil.isAccessible(url))
+		final Path filePath = FileUtil.getFilePath(url);
+
+		if (!filePath.toFile().isFile())
 		{
-			throw new AdempiereException("Provided URL: " + url + " is not accessible!");
+			throw new AdempiereException("Provided URL: " + url + " is not accessible!")
+					.appendParametersToMessage()
+					.setParameter("ParsedPath", filePath.toString());
 		}
 	}
 }

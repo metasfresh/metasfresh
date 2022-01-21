@@ -26,7 +26,6 @@ import de.metas.common.util.FileUtil;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -105,11 +104,6 @@ public class DocumentAttachmentRestControllerHelper
 	private StreamingResponseBody streamFile(@NonNull final URL url) throws IOException
 	{
 		final Path filePath = FileUtil.getFilePath(url);
-
-		if (filePath == null)
-		{
-			throw new AdempiereException("Couldn't parse path from:" + url);
-		}
 
 		final StreamingResponseBody responseBody = outputStream -> {
 			Files.copy(filePath, outputStream);
