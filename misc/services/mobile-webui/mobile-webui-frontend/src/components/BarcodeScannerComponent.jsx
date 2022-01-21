@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BarcodeFormat, BrowserMultiFormatReader, DecodeHintType } from '@zxing/library';
 
-class CodeScanner extends Component {
+class BarcodeScannerComponent extends Component {
   constructor(props) {
     super(props);
 
@@ -131,10 +131,10 @@ class CodeScanner extends Component {
   }
 }
 
-CodeScanner.propTypes = {
+BarcodeScannerComponent.propTypes = {
   //
   // Props:
   onBarcodeScanned: PropTypes.func.isRequired,
 };
 
-export default CodeScanner;
+export default BarcodeScannerComponent;

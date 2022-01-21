@@ -2,7 +2,7 @@ import React, { PureComponent, createRef } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-class PickQuantityPrompt extends PureComponent {
+class GetQuantityDialog extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -28,7 +28,7 @@ class PickQuantityPrompt extends PureComponent {
   };
 
   render() {
-    const { qtyTarget, qtyCaption, onCloseDialog } = this.props;
+    const { qtyTarget, qtyCaption, uom, onCloseDialog } = this.props;
     const qtyTargetNorm = qtyTarget > 0 ? qtyTarget : 0;
 
     return (
@@ -37,7 +37,7 @@ class PickQuantityPrompt extends PureComponent {
           <article className="message confirm-box is-dark">
             <div className="message-body">
               <strong>
-                {qtyCaption}: {qtyTargetNorm}
+                {qtyCaption}: {qtyTargetNorm} {uom}
               </strong>
               <div>&nbsp;</div>
               <div className="control">
@@ -67,15 +67,16 @@ class PickQuantityPrompt extends PureComponent {
   }
 }
 
-PickQuantityPrompt.propTypes = {
+GetQuantityDialog.propTypes = {
   // Properties
   qtyInitial: PropTypes.number,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string.isRequired,
+  uom: PropTypes.string.isRequired,
 
   // Callbacks
   onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };
 
-export default PickQuantityPrompt;
+export default GetQuantityDialog;

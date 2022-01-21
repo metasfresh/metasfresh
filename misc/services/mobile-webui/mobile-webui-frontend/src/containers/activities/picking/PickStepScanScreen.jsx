@@ -13,7 +13,7 @@ import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
-import ScanHUAndGetQtyComponent from '../ScanHUAndGetQtyComponent';
+import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 
 class PickStepScanScreen extends PureComponent {
   componentDidMount() {

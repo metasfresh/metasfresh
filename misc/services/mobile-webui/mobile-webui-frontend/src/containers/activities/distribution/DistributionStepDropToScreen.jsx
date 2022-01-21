@@ -8,7 +8,7 @@ import counterpart from 'counterpart';
 import { postDistributionDropTo } from '../../../api/distribution';
 import { updateDistributionDropTo } from '../../../actions/DistributionActions';
 import { toastError } from '../../../utils/toast';
-import ScanHUAndGetQtyComponent from '../ScanHUAndGetQtyComponent';
+import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { distributionStepDropToScreenLocation } from '../../../routes/distribution';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';

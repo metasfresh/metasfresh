@@ -6,7 +6,7 @@ import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceipt, updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
 import { getLineById } from '../../../../reducers/wfProcesses_status';
 
-import CodeScanner from '../../scan/CodeScanner';
+import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
 
 const getQtyReceivedFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
@@ -43,7 +43,7 @@ const ManufacturingReceiptScanScreen = () => {
 
   return (
     <>
-      <CodeScanner onBarcodeScanned={onBarcodeScanned} />
+      <BarcodeScannerComponent onBarcodeScanned={onBarcodeScanned} />
     </>
   );
 };

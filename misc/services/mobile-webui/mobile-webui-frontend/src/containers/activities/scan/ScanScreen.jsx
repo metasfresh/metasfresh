@@ -10,7 +10,7 @@ import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { postScannedBarcode } from '../../../api/scanner';
 
-import CodeScanner from './CodeScanner';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
 class ScanScreen extends Component {
   onBarcodeScanned = ({ scannedBarcode }) => {
@@ -36,7 +36,7 @@ class ScanScreen extends Component {
   render() {
     return (
       <div className="mt-0">
-        <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />
+        <BarcodeScannerComponent onBarcodeScanned={this.onBarcodeScanned} />
       </div>
     );
   }

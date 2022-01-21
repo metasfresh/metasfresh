@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { toastError } from '../../../utils/toast';
 
-import CodeScanner from '../../../containers/activities/scan/CodeScanner';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 import { getHUByBarcode } from '../api';
@@ -50,7 +50,7 @@ class HUManagerScreen extends PureComponent {
         </>
       );
     } else {
-      return <CodeScanner onBarcodeScanned={this.onHUBarcodeScanned} />;
+      return <BarcodeScannerComponent onBarcodeScanned={this.onHUBarcodeScanned} />;
     }
   }
 

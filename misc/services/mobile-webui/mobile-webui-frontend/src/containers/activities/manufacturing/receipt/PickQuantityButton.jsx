@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
 import Button from '../../../../components/buttons/Button';
-import PickQuantityPrompt from '../../PickQuantityPrompt';
+import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 
 import { toastError } from '../../../../utils/toast';
 
@@ -43,15 +43,16 @@ class PickQuantityButton extends PureComponent {
   hideDialog = () => this.setState({ isDialogOpen: false });
 
   render() {
-    const { /*completeStatus,*/ qtyTarget, caption, isDisabled } = this.props;
+    const { qtyTarget, uom, caption, isDisabled } = this.props;
     const { isDialogOpen } = this.state;
 
     return (
       <>
         {isDialogOpen && (
-          <PickQuantityPrompt
-            qtyTarget={qtyTarget}
+          <GetQuantityDialog
             qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
+            qtyTarget={qtyTarget}
+            uom={uom}
             onQtyChange={this.onQtyPickedChanged}
             onCloseDialog={this.hideDialog}
           />
@@ -67,7 +68,6 @@ PickQuantityButton.propTypes = {
   // Props
   onClick: PropTypes.func.isRequired,
   qtyTarget: PropTypes.number.isRequired,
-  // completeStatus: PropTypes.number.isRequired,
   uom: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool,

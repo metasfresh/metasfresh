@@ -11,7 +11,7 @@ import { toastError } from '../../../utils/toast';
 import { getQtyRejectedReasonsFromActivity, selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import ScanHUAndGetQtyComponent from '../ScanHUAndGetQtyComponent';
+import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 
 class DistributionStepPickFromScreen extends PureComponent {
   componentDidMount() {

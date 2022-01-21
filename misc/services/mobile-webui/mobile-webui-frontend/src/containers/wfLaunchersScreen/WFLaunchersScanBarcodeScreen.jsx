@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
-import CodeScanner from '../activities/scan/CodeScanner';
+import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import { startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
 import { toastError } from '../../utils/toast';
@@ -26,7 +26,7 @@ class WFLaunchersScanBarcodeScreen extends PureComponent {
   };
 
   render() {
-    return <CodeScanner onBarcodeScanned={this.onBarcodeScanned} />;
+    return <BarcodeScannerComponent onBarcodeScanned={this.onBarcodeScanned} />;
   }
 }
 

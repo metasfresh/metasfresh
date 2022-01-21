@@ -13,7 +13,7 @@ import {
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 
-import ScanHUAndGetQtyComponent from '../../ScanHUAndGetQtyComponent';
+import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 
 const RawMaterialIssueScanScreen = () => {
   const {
@@ -23,6 +23,8 @@ const RawMaterialIssueScanScreen = () => {
   const { huBarcode, qtyToIssue, uom } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
+
+  console.log('RawMaterialIssueScanScreen: ', { huBarcode, qtyToIssue, uom });
 
   const qtyRejectedReasons = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
@@ -50,6 +52,7 @@ const RawMaterialIssueScanScreen = () => {
 
   const history = useHistory();
   const onResult = ({ qty = 0, reason = null }) => {
+    console.trace('onResult', { qty, reason });
     dispatch(
       updateManufacturingIssueQty({
         wfProcessId,
