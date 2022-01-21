@@ -116,7 +116,7 @@
     color: $brand-super-light-color;
 }
 
-.side-attachment-wrapper {
+.side-attachment-wrapper, .docref-spinner-wrapper {
     >.screen-freeze {
         height: 15%;
     }
