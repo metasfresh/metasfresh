@@ -7,6 +7,7 @@ import { withRouter } from 'react-router';
 import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 import { updateManufacturingReceiptTarget, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
 import { toastError } from '../../../../utils/toast';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 
 class ReceiptNewHUScreen extends PureComponent {
   handleClick = (target) => {
@@ -41,25 +42,13 @@ class ReceiptNewHUScreen extends PureComponent {
         <div className="steps-container">
           <div className="buttons">
             {availableReceivingTargets.values.map((target) => (
-              <button
+              <ButtonWithIndicator
                 key={target.luPIItemId}
-                className="button is-outlined complete-btn"
+                caption={target.caption}
                 onClick={() => this.handleClick(target)}
               >
-                <div className="full-size-btn">
-                  <div className="left-btn-side" />
-                  <div className="caption-btn">
-                    <div className="rows">
-                      <div className="row is-full pl-5">{target.caption}</div>
-                      <div className="row is-full is-size-7">
-                        <div className="picking-row-info">
-                          <div className="picking-to-pick">{target.tuCaption}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </button>
+                <div className="row is-full is-size-7">{target.tuCaption}</div>
+              </ButtonWithIndicator>
             ))}
           </div>
         </div>
