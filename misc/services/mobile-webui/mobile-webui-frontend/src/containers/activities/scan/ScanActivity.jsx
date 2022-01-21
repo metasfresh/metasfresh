@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import { useHistory } from 'react-router-dom';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { scanBarcodeLocation } from '../../../routes/scan';
 
 const ScanActivity = (props) => {

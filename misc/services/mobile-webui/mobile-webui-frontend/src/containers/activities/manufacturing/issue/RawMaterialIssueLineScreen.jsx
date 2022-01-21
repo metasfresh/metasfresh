@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import { getSteps } from '../../../../reducers/wfProcesses_status';
 import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 
-import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 
 const RawMaterialIssueLineScreen = () => {
   const {

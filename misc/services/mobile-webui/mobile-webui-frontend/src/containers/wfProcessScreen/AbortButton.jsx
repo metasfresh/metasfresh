@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 
 import { abortWorkflowRequest } from '../../api/launchers';
-import ConfirmButton from '../activities/confirmButton/ConfirmButton';
+import ConfirmButton from '../../components/buttons/ConfirmButton';
 import { gotoAppLaunchers } from '../../routes/launchers';
 
 class AbortButton extends PureComponent {

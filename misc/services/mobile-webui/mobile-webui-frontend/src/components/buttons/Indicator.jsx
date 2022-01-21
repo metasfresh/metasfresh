@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import * as CompleteStatus from '../constants/CompleteStatus';
+import * as CompleteStatus from '../../constants/CompleteStatus';
 
 class Indicator extends Component {
   getIndicatorColor(completeStatus) {

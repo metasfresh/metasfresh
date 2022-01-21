@@ -6,7 +6,7 @@ import counterpart from 'counterpart';
 import { toastError } from '../../../utils/toast';
 
 import CodeScanner from '../../../containers/activities/scan/CodeScanner';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 import { getHUByBarcode } from '../api';
 import { clearLoadedData, handlingUnitLoaded } from '../actions';

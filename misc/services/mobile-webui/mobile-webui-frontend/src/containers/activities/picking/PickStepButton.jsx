@@ -1,14 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';
 
 import { pickingStepScreenLocation } from '../../../routes/picking';
-import Indicator from '../../../components/Indicator';
-import PickAlternatives from './PickAlternatives';
 import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
+import PickAlternatives from './PickAlternatives';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 
 class PickStepButton extends PureComponent {
   handleClick = () => {
@@ -36,35 +36,19 @@ class PickStepButton extends PureComponent {
 
     return (
       <div className="mt-3">
-        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
-          <div className="full-size-btn">
-            <div className="left-btn-side" />
-            <div className="caption-btn">
-              <div className="rows">
-                <div className="row is-full pl-5">
-                  {isAlternative ? 'ALT:' : ''}
-                  {pickFrom.locatorName}
-                </div>
-                <div className="row is-full is-size-7">
-                  <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.picking.target')}:</div>
-                    <div className="picking-row-qty">
-                      {qtyToPick} {uom}
-                    </div>
-                    <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
-                    <div className="picking-row-picked">
-                      {pickFrom.qtyPicked} {uom}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <ButtonWithIndicator
+          caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
+          completeStatus={completeStatus}
+          onClick={this.handleClick}
+        >
+          <ButtonQuantityProp
+            qtyCurrent={pickFrom.qtyPicked}
+            qtyTarget={qtyToPick}
+            uom={uom}
+            applicationId={applicationId}
+          />
+        </ButtonWithIndicator>
 
-            <div className="right-btn-side pt-4">
-              <Indicator completeStatus={completeStatus} />
-            </div>
-          </div>
-        </button>
         {pickFromAlternatives && !altStepId && (
           <PickAlternatives
             applicationId={applicationId}

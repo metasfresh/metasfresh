@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import Indicator from '../../../components/Indicator';
+import Indicator from '../../../components/buttons/Indicator';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';

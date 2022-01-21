@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import Button from '../../../../components/Button';
+import Button from '../../../../components/buttons/Button';
 import PickQuantityPrompt from '../../PickQuantityPrompt';
 
 import { toastError } from '../../../../utils/toast';

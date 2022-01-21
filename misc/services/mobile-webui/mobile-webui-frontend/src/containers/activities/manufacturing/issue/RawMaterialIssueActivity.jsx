@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 
 //import LineButton from './RawMaterialsIssueLineButton';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
-import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { useHistory } from 'react-router-dom';
 import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
 

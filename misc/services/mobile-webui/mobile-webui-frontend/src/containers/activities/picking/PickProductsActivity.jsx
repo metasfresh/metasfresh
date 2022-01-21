@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import { pickingLineScreenLocation } from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
 

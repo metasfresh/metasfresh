@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import {
   distributionStepDropToScreenLocation,

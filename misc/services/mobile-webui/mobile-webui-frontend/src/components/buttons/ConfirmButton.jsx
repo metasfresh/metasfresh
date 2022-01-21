@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-import Button from '../../../components/Button';
+import Button from './Button';
 
 class ConfirmButton extends Component {
   constructor(props) {

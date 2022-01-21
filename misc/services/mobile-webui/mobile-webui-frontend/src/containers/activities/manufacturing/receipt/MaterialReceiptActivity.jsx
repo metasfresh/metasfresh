@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { manufacturingReceiptScreenLocation } from '../../../../routes/manufacturing_receipt';
-import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../../components/ButtonQuantityProp';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 
 const MaterialReceiptActivity = (props) => {
   const {

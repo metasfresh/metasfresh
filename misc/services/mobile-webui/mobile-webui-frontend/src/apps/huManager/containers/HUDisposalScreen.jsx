@@ -6,7 +6,7 @@ import counterpart from 'counterpart';
 import { toastError } from '../../../utils/toast';
 import { disposeHU, getDisposalReasonsArray } from '../api';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import QtyReasonsRadioGroup from '../../../components/QtyReasonsRadioGroup';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { HUInfoComponent } from '../components/HUInfoComponent';

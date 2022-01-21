@@ -18,8 +18,8 @@ import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ConfirmButton from '../confirmButton/ConfirmButton';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ConfirmButton from '../../../components/buttons/ConfirmButton';
 
 class PickStepScreen extends Component {
   componentDidMount() {

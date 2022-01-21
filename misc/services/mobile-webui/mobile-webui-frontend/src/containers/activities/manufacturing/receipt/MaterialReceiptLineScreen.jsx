@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import PickQuantityButton from './PickQuantityButton';
-import Button from '../../../../components/Button';
+import Button from '../../../../components/buttons/Button';
 
 import { push, go } from 'connected-react-router';
 import counterpart from 'counterpart';

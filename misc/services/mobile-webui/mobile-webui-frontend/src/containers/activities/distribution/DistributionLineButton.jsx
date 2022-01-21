@@ -2,8 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import { distributionLineScreenLocation } from '../../../routes/distribution';
 import { connect } from 'react-redux';
 

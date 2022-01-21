@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { postUserConfirmation } from '../../../api/confirmation';
 import { setActivityUserConfirmed } from '../../../actions/UserConfirmationActions';
-import ConfirmButton from './ConfirmButton';
+import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { history } from '../../../store/store';
 import { toastError } from '../../../utils/toast';
 import { connect } from 'react-redux';

@@ -13,7 +13,7 @@ import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
-import ButtonWithIndicator from '../../../../components/ButtonWithIndicator';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 
 class RawMaterialIssueStepScreen extends PureComponent {
   componentDidMount() {
