@@ -12,9 +12,9 @@ export const initialState = {
 
 const launchersUrlRegExp = /\/\w+\/launchers/gi;
 
-function isLaunchersPathname(pathname) {
-  return launchersUrlRegExp.test(pathname);
-}
+const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
+
+export const getHeaderEntries = (state) => state.headers.entries;
 
 export default function reducer(state = initialState, action) {
   const { payload } = action;
