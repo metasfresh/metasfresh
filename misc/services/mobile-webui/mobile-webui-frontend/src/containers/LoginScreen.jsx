@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
@@ -17,11 +17,16 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const { from } = location.state || { from: { pathname: '/' } };
 
+  const usernameFieldRef = useRef(null);
+
   useEffect(() => {
     const token = Cookies.get('Token');
 
     if (token) {
       auth.localLogin({ token }).then(() => history.replace(from));
+    } else {
+      usernameFieldRef.current.focus();
+      usernameFieldRef.current.select();
     }
   }, []);
 
@@ -51,6 +56,8 @@ const LoginScreen = () => {
                   type="text"
                   name="username"
                   value={username}
+                  autoComplete="username"
+                  ref={usernameFieldRef}
                   onChange={changeUsername}
                 />
                 <span className="icon is-small is-left">
@@ -62,10 +69,11 @@ const LoginScreen = () => {
               <p className="control has-icons-left">
                 <input
                   className="input is-medium"
-                  id="password"
+                  id="current-password"
                   type="password"
                   name="password"
                   value={password}
+                  autoComplete="current-password"
                   onChange={changePassword}
                 />
                 <span className="icon is-small is-left">
