@@ -196,7 +196,7 @@ public class JasperReportFillerTest
 
 			JasperReportFiller.fixParameterTypes(paramsTestReport, params);
 			assertJRParameterType(paramsTestReport, "PARAM_String", String.class);
-			assertThat(params.get("PARAM_StRiNg")).isSameAs(stringValue);
+			assertThat(params.get("PARAM_String")).isSameAs(stringValue);
 		}
 	}
 }
