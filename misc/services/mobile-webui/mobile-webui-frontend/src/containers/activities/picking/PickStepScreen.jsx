@@ -144,7 +144,7 @@ class PickStepScreen extends Component {
     const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
 
     return (
-      <div className="section">
+      <div className="section pt-2">
         <div className="buttons">
           <ButtonWithIndicator
             caption={scanButtonCaption}

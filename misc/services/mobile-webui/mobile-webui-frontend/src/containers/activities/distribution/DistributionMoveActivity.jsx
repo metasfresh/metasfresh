@@ -33,7 +33,7 @@ class DistributionMoveActivity extends Component {
     const { completeStatus, isUserEditable } = dataStored;
 
     return (
-      <div className="pick-products-activity-container mt-5">
+      <div className="mt-5">
         {activityState && lines.length > 0
           ? lines.map((lineItem, lineIndex) => {
               const lineId = '' + lineIndex;

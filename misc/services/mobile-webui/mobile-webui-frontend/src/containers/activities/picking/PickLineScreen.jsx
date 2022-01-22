@@ -38,8 +38,8 @@ class PickLineScreen extends PureComponent {
     const { applicationId, wfProcessId, activityId, lineId, steps } = this.props;
 
     return (
-      <div className="pt-2 section lines-screen-container">
-        <div className="steps-container">
+      <div className="section pt-2">
+        <div className="buttons">
           {steps.length > 0 &&
             steps.map((stepItem, idx) => {
               return (

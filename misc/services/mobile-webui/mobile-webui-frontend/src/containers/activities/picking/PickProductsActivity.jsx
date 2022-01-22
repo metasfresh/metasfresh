@@ -53,7 +53,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   };
 
   return (
-    <div className="pick-products-activity-container mt-5">
+    <div className="mt-5">
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;

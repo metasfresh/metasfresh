@@ -93,7 +93,7 @@ class MaterialReceiptLineScreen extends PureComponent {
     }
 
     return (
-      <div className="pt-2 section lines-screen-container">
+      <div className="section pt-2">
         <div className="steps-container">
           <div className="buttons">
             <Button caption={targetCaption} onClick={this.handleClick} />

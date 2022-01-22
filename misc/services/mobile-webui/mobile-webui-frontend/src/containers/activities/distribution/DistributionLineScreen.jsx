@@ -36,7 +36,7 @@ class DistributionLineScreen extends PureComponent {
     const { wfProcessId, activityId, lineId, steps } = this.props;
 
     return (
-      <div className="pt-2 section lines-screen-container">
+      <div className="section pt-2">
         <div className="steps-container">
           {steps.length > 0 &&
             steps.map((stepItem, idx) => {

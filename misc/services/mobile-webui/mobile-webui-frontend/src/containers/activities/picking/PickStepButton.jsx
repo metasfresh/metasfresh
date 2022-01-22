@@ -29,7 +29,7 @@ const PickStepButton = ({
   const completeStatus = computePickFromStatus(pickFrom);
 
   return (
-    <div className="mt-3">
+    <>
       <ButtonWithIndicator
         caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
         completeStatus={completeStatus}
@@ -42,8 +42,7 @@ const PickStepButton = ({
           applicationId={applicationId}
         />
       </ButtonWithIndicator>
-
-      {pickFromAlternatives && !altStepId && (
+      {pickFromAlternatives && (
         <PickAlternatives
           applicationId={applicationId}
           wfProcessId={wfProcessId}
@@ -54,7 +53,7 @@ const PickStepButton = ({
           uom={uom}
         />
       )}
-    </div>
+    </>
   );
 };
 

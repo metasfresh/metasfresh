@@ -38,7 +38,7 @@ class ReceiptNewHUScreen extends PureComponent {
     const { availableReceivingTargets } = this.props.lineProps;
 
     return (
-      <div className="pt-2 section lines-screen-container">
+      <div className="section pt-2">
         <div className="steps-container">
           <div className="buttons">
             {availableReceivingTargets.values.map((target) => (

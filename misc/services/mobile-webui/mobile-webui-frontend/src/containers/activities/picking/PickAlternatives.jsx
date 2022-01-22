@@ -1,42 +1,34 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import PickStepButton from './PickStepButton';
 
-class PickAlternatives extends Component {
-  renderAlternatives = () => {
-    const { applicationId, wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom } = this.props;
-
-    return (
-      <div>
-        {pickFromAlternatives &&
-          Object.values(pickFromAlternatives)
-            .filter((pickFromAlternative) => pickFromAlternative.isDisplayed)
-            .map((pickFromAlternative) => {
-              return (
-                <PickStepButton
-                  key={pickFromAlternative.alternativeId}
-                  applicationId={applicationId}
-                  wfProcessId={wfProcessId}
-                  activityId={activityId}
-                  lineId={lineId}
-                  stepId={stepId}
-                  altStepId={pickFromAlternative.alternativeId}
-                  //
-                  uom={uom}
-                  qtyToPick={pickFromAlternative.qtyToPick}
-                  pickFrom={pickFromAlternative}
-                />
-              );
-            })}
-      </div>
-    );
-  };
-
-  render() {
-    return <div>{this.renderAlternatives()}</div>;
-  }
-}
+const PickAlternatives = ({ applicationId, wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom }) => {
+  return (
+    <>
+      {pickFromAlternatives &&
+        Object.values(pickFromAlternatives)
+          .filter((pickFromAlternative) => pickFromAlternative.isDisplayed)
+          .map((pickFromAlternative) => {
+            return (
+              <PickStepButton
+                key={pickFromAlternative.alternativeId}
+                applicationId={applicationId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                lineId={lineId}
+                stepId={stepId}
+                altStepId={pickFromAlternative.alternativeId}
+                //
+                uom={uom}
+                qtyToPick={pickFromAlternative.qtyToPick}
+                pickFrom={pickFromAlternative}
+              />
+            );
+          })}
+    </>
+  );
+};
 
 PickAlternatives.propTypes = {
   applicationId: PropTypes.string.isRequired,
