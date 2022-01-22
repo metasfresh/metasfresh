@@ -31,6 +31,7 @@ class PickStepScreen extends Component {
 
     pushHeaderEntry({
       location: pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }),
+      caption: 'Pick HU', // TODO trl
       values: [
         {
           caption: counterpart.translate('general.Locator'),

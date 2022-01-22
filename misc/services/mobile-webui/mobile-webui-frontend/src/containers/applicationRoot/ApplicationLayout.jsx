@@ -5,10 +5,14 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
+import { getCaptionFromHeaders } from '../../reducers/headers';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
-  const applicationInfo = getApplicationInfo(applicationId);
+  const applicationInfo = getApplicationInfo(applicationId) ?? {};
   const history = useHistory();
+
+  const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
+  const caption = captionFromHeaders ?? applicationInfo.caption;
 
   return (
     <div className="app-container">
@@ -20,7 +24,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </span>
           </div>
           <div className="column">
-            <span>{applicationInfo.caption}</span>
+            <span>{caption}</span>
           </div>
         </div>
       </div>

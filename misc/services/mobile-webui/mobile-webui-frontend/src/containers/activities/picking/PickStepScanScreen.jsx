@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import counterpart from 'counterpart';
@@ -10,30 +10,31 @@ import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 const PickStepScanScreen = () => {
   const {
+    url,
     params: { workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
 
-  const { eligibleBarcode, qtyToPick, uom, qtyRejectedReasons } = useSelector((state) => {
-    const activity = getActivityById(state, wfProcessId, activityId);
-    const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+  const { eligibleBarcode, qtyToPick, uom, qtyRejectedReasons } = useSelector(
+    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
+    shallowEqual
+  );
 
-    const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
-    const eligibleBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
-    const qtyToPick = getQtyToPick({ stepProps, altStepId });
-
-    return {
-      eligibleBarcode,
-      qtyToPick,
-      uom: stepProps.uom,
-      qtyRejectedReasons,
-    };
-  }, shallowEqual);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        caption: 'Scan HU', // TODO trl
+        values: [],
+      })
+    );
+  }, []);
 
   const history = useHistory();
-  const dispatch = useDispatch();
   const onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
     const qtyRejected = qtyToPick - qty;
 
@@ -76,6 +77,22 @@ const PickStepScanScreen = () => {
       onResult={onResult}
     />
   );
+};
+
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, altStepId }) => {
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+
+  const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
+  const eligibleBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
+  const qtyToPick = getQtyToPick({ stepProps, altStepId });
+
+  return {
+    eligibleBarcode,
+    qtyToPick,
+    uom: stepProps.uom,
+    qtyRejectedReasons,
+  };
 };
 
 export default PickStepScanScreen;

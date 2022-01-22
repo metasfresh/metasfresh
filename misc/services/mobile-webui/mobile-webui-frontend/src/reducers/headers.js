@@ -16,20 +16,28 @@ const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 
 export const getHeaderEntries = (state) => state.headers.entries;
 
+export const getCaptionFromHeaders = (state) => {
+  // return last known caption
+  return state.headers.entries.reduce((acc, entry) => entry.caption ?? acc, null);
+};
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, values } = payload;
+      const { location, caption, values } = payload;
+
       // if there are no header values, there's no reason to block space
       const hidden = !values.length;
 
+      //
+      // Search by location and update an existing entry if possible
       let existingEntryUpdated = false;
       let newEntries = state.entries.map((entry) => {
         if (entry.location === location) {
           existingEntryUpdated = true;
-          return { ...entry, values, hidden };
+          return { ...entry, caption, values, hidden };
         } else {
           return entry;
         }
@@ -42,7 +50,7 @@ export default function reducer(state = initialState, action) {
           inclusive: false,
         });
       } else {
-        const newEntry = { location, values, hidden };
+        const newEntry = { location, caption, values, hidden };
         newEntries.push(newEntry);
         // console.log('added newEntry: ', newEntry);
       }

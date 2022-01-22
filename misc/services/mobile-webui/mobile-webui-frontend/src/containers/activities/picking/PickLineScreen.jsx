@@ -24,6 +24,7 @@ class PickLineScreen extends PureComponent {
 
     pushHeaderEntry({
       location,
+      caption: 'Pick product', // TODO trl
       values: [
         {
           caption: counterpart.translate('activities.picking.PickingLine'),

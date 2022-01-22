@@ -21,11 +21,6 @@ class ScanHUAndGetQtyComponent extends Component {
       newQuantity: 0,
       qtyRejected: 0,
     };
-
-    console.log('ScanHUAndGetQtyComponent.constructor()', {
-      typeof: typeof this.props.qtyTarget,
-      isNull: this.props.qtyTarget === null,
-    });
   }
 
   onCancelGetQty = () => {
