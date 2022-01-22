@@ -1,4 +1,3 @@
-import { commonRoutes } from './common';
 import { launchersRoutes } from './launchers';
 import { workflowRoutes } from './workflow';
 import { scanRoutes } from './scan';
@@ -10,7 +9,6 @@ import { pickingRoutes } from './picking';
 import { getApplicationRoutes } from '../apps';
 
 export const routesArray = [
-  ...commonRoutes,
   ...launchersRoutes,
   ...workflowRoutes,
   ...scanRoutes,

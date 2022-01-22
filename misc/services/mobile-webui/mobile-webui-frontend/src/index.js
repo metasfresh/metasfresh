@@ -2,18 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ProvideAuth } from './hooks/useAuth';
-import App from './App';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import reportWebVitals from './reportWebVitals';
+import ApplicationRoot from './containers/applicationRoot/ApplicationRoot';
+import * as serviceWorkerRegistration from './services/serviceWorkerRegistration';
+import reportWebVitals from './services/reportWebVitals';
 import { store } from './store/store';
 import { networkStatusOffline, networkStatusOnline } from './actions/NetworkActions';
 import { load } from 'redux-localstorage-simple';
 import { setupCounterpart } from './utils/translations';
 
-import './index.css';
 import './assets/index.scss';
 import '@fortawesome/fontawesome-free/js/all.min';
-//import '@fortawesome/fontawesome-free/css/all.css';
 
 setupCounterpart();
 
@@ -23,7 +21,7 @@ ReactDOM.render(
   <React.StrictMode>
     <Provider store={globalStore}>
       <ProvideAuth>
-        <App />
+        <ApplicationRoot />
       </ProvideAuth>
     </Provider>
   </React.StrictMode>,

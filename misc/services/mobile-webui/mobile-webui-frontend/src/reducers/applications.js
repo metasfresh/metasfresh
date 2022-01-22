@@ -5,6 +5,11 @@ const initialState = {
   activeApplication: null,
 };
 
+export const getAvailableApplicationsArray = (state) => {
+  const availableApplicationsById = state.applications?.availableApplications;
+  return availableApplicationsById ? Object.values(availableApplicationsById) : [];
+};
+
 export const getApplicationCaptionById = ({ state, applicationId, fallbackCaption }) => {
   if (!applicationId) {
     return fallbackCaption;
@@ -18,7 +23,11 @@ export default function applications(state = initialState, action) {
   switch (action.type) {
     case types.POPULATE_APPLICATIONS: {
       const availableApplications = payload.applications.reduce((acc, application) => {
-        acc[application.id] = application;
+        acc[application.id] = {
+          id: application.id,
+          caption: application.caption,
+          iconClassNames: getIconClassNames(application.id),
+        };
         return acc;
       }, {});
 
@@ -31,3 +40,19 @@ export default function applications(state = initialState, action) {
       return state;
   }
 }
+
+// TODO: this shall come from the backend
+const getIconClassNames = (applicationId) => {
+  switch (applicationId) {
+    case 'picking':
+      return 'fas fa-box-open';
+    case 'distribution':
+      return 'fas fa-people-carry';
+    case 'mfg':
+      return 'fas fa-industry';
+    case 'huManager':
+      return 'fas fa-boxes';
+    default:
+      return '';
+  }
+};
