@@ -10,7 +10,7 @@ class ApplicationsScreen extends PureComponent {
     const { availableApplications } = this.props;
 
     return (
-      <div className="application-container columns ml-0">
+      <div className="section">
         {map(availableApplications, (app) => {
           return <AppCard key={app.id} applicationId={app.id} captionKey={app.caption} />;
         })}

@@ -12,6 +12,8 @@ import { setupCounterpart } from './utils/translations';
 
 import './index.css';
 import './assets/index.scss';
+import '@fortawesome/fontawesome-free/js/all.min';
+//import '@fortawesome/fontawesome-free/css/all.css';
 
 setupCounterpart();
 
