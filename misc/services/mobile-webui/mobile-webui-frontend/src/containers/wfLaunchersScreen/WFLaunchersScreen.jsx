@@ -5,7 +5,6 @@ import { withRouter } from 'react-router';
 import { map } from 'lodash';
 
 import { populateLaunchers } from '../../actions/LauncherActions';
-import { setActiveApplication } from '../../actions/ApplicationsActions';
 import { getLaunchers } from '../../api/launchers';
 import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
 import WFLauncherButton from './WFLauncherButton';
@@ -15,11 +14,7 @@ import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
 
 class WFLaunchersScreen extends Component {
   componentDidMount() {
-    const { applicationId, applications, setActiveApplication, populateLaunchers } = this.props;
-
-    if (!applications.activeApplication && Object.keys(applications).length) {
-      setActiveApplication({ id: applicationId, caption: applications[applicationId] });
-    }
+    const { applicationId, populateLaunchers } = this.props;
 
     getLaunchers(applicationId).then((applicationLaunchers) => {
       populateLaunchers({ applicationId, applicationLaunchers });
@@ -89,12 +84,10 @@ WFLaunchersScreen.propTypes = {
   // Props
   userToken: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
-  applications: PropTypes.object,
   applicationLaunchers: PropTypes.object.isRequired,
   //
   // Actions
   populateLaunchers: PropTypes.func.isRequired,
-  setActiveApplication: PropTypes.func.isRequired,
   gotoAppLaunchersBarcodeScanner: PropTypes.func.isRequired,
 };
 
@@ -104,13 +97,10 @@ const mapStateToProps = (state, { match }) => {
   return {
     userToken: state.appHandler.token,
     applicationId,
-    applications: state.applications,
     applicationLaunchers: selectApplicationLaunchersFromState(state, applicationId),
   };
 };
 
 export default withRouter(
-  connect(mapStateToProps, { populateLaunchers, setActiveApplication, gotoAppLaunchersBarcodeScanner })(
-    WFLaunchersScreen
-  )
+  connect(mapStateToProps, { populateLaunchers, gotoAppLaunchersBarcodeScanner })(WFLaunchersScreen)
 );

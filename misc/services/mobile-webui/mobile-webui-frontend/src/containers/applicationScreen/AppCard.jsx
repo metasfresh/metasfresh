@@ -1,16 +1,13 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import { setActiveApplication } from '../../actions/ApplicationsActions';
 import { gotoAppLaunchers } from '../../routes/launchers';
 import { getApplicationStartFunction } from '../../apps';
 import { connect } from 'react-redux';
 
 class AppCard extends PureComponent {
   handleAppClick = () => {
-    const { applicationId, captionKey, dispatch } = this.props;
-
-    dispatch(setActiveApplication({ id: applicationId, caption: captionKey }));
+    const { applicationId, dispatch } = this.props;
 
     const startApplicationFunc = getApplicationStartFunction(applicationId);
     if (startApplicationFunc) {
