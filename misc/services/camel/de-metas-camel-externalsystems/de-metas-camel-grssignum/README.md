@@ -53,7 +53,7 @@ KRED  | ----- | ---- |  JsonRequestProduct.bpartnerProductItem List | see detail
 
 2. `JsonBPartnerProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
 
-* if provided then upserts a `C_BPartner_Product` for the given `M_Product_Id` following the below mappings:
+* if provided, then upserts a `C_BPartner_Product` for the given `M_Product_Id` following the below mappings:
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note | 
 ---- | ---- | ---- | ---- | ---- |
