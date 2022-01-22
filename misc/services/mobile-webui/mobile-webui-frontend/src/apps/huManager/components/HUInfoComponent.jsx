@@ -31,7 +31,6 @@ HUInfoComponent.propTypes = {
 };
 
 const ProductInfoRows = ({ product }) => {
-  console.log('ProductInfoRows', product);
   return (
     <>
       <tr>
