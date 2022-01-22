@@ -1,73 +1,64 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { withRouter } from 'react-router';
 
 import { pickingStepScreenLocation } from '../../../routes/picking';
 import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
 import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
+import { useHistory } from 'react-router-dom';
 
-class PickStepButton extends PureComponent {
-  handleClick = () => {
-    const { push, applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
-    const location = pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
-
-    push(location);
+const PickStepButton = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  altStepId,
+  pickFromAlternatives,
+  uom,
+  qtyToPick,
+  pickFrom,
+}) => {
+  const history = useHistory();
+  const handleClick = () => {
+    history.push(pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }));
   };
 
-  render() {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      altStepId,
-      pickFromAlternatives,
-      uom,
-      qtyToPick,
-      pickFrom,
-    } = this.props;
-    const isAlternative = altStepId;
-    const completeStatus = computePickFromStatus(pickFrom);
+  const isAlternative = !!altStepId;
+  const completeStatus = computePickFromStatus(pickFrom);
 
-    return (
-      <div className="mt-3">
-        <ButtonWithIndicator
-          caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
-          completeStatus={completeStatus}
-          onClick={this.handleClick}
-        >
-          <ButtonQuantityProp
-            qtyCurrent={pickFrom.qtyPicked}
-            qtyTarget={qtyToPick}
-            uom={uom}
-            applicationId={applicationId}
-          />
-        </ButtonWithIndicator>
+  return (
+    <div className="mt-3">
+      <ButtonWithIndicator
+        caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
+        completeStatus={completeStatus}
+        onClick={handleClick}
+      >
+        <ButtonQuantityProp
+          qtyCurrent={pickFrom.qtyPicked}
+          qtyTarget={qtyToPick}
+          uom={uom}
+          applicationId={applicationId}
+        />
+      </ButtonWithIndicator>
 
-        {pickFromAlternatives && !altStepId && (
-          <PickAlternatives
-            applicationId={applicationId}
-            wfProcessId={wfProcessId}
-            activityId={activityId}
-            lineId={lineId}
-            stepId={stepId}
-            pickFromAlternatives={pickFromAlternatives}
-            uom={uom}
-          />
-        )}
-      </div>
-    );
-  }
-}
+      {pickFromAlternatives && !altStepId && (
+        <PickAlternatives
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+          stepId={stepId}
+          pickFromAlternatives={pickFromAlternatives}
+          uom={uom}
+        />
+      )}
+    </div>
+  );
+};
 
 PickStepButton.propTypes = {
-  //
-  // Props
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
@@ -78,9 +69,6 @@ PickStepButton.propTypes = {
   altStepId: PropTypes.string,
   pickFromAlternatives: PropTypes.object,
   uom: PropTypes.string.isRequired,
-  //
-  // Actions/Functions
-  push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(null, { push })(PickStepButton));
+export default PickStepButton;
