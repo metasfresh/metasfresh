@@ -10,7 +10,7 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://cra.link/PWA
 
-import { REGISTER_SERVICE_WORKER } from '../constants';
+import { REGISTER_SERVICE_WORKER } from '../../constants';
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
@@ -20,7 +20,46 @@ const isLocalhost = Boolean(
     window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
-export function register(config) {
+export const setupServiceWorker = () => {
+  //
+  // Unregister previous service workers, and register current one
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then(function (registrations) {
+        for (let registration of registrations) {
+          registration
+            .unregister()
+            .then(function () {
+              if (self.clients) return self.clients.matchAll();
+            })
+            .then(function (clients) {
+              if (clients) clients.forEach((client) => client.navigate(client.url));
+            });
+        }
+        // once all remove register new one
+        // If you want your app to work offline and load faster, you can change
+        // unregister() to register() below. Note this comes with some pitfalls.
+        // Learn more about service workers: https://cra.link/PWA
+        register();
+      })
+      .catch(function (err) {
+        console.log('Service Worker registration failed: ', err);
+      });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('Install event triggered:', e);
+    // e.preventDefault(); - this is going to disable the prompt if uncommented !
+    // See if the app is already installed, in that case, do nothing
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      // Already installed
+      return false;
+    }
+  });
+};
+
+function register(config) {
   console.log('[ServiceWorker] - Call register()');
   if ('serviceWorker' in navigator) {
     console.log('[ServiceWorker] - Found in navigator..');
