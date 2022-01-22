@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 import { getAvailableApplicationsArray } from '../../reducers/applications';
-import LogoHeader from '../../components/screenHeaders/LogoHeader';
+import LogoHeader from '../../components/LogoHeader';
 import ApplicationButton from './ApplicationButton';
 import ScreenToaster from '../../components/ScreenToaster';
 

@@ -7,7 +7,7 @@ import counterpart from 'counterpart';
 import ScreenToaster from '../components/ScreenToaster';
 import { toastError } from '../utils/toast';
 
-import LogoHeader from '../components/screenHeaders/LogoHeader';
+import LogoHeader from '../components/LogoHeader';
 
 const LoginScreen = () => {
   const history = useHistory();

@@ -10,12 +10,16 @@ export const getAvailableApplicationsArray = (state) => {
   return availableApplicationsById ? Object.values(availableApplicationsById) : [];
 };
 
+export const getApplicationInfoById = ({ state, applicationId }) => {
+  return state.applications?.availableApplications?.[applicationId];
+};
+
 export const getApplicationCaptionById = ({ state, applicationId, fallbackCaption }) => {
   if (!applicationId) {
     return fallbackCaption;
   }
 
-  return state.applications?.availableApplications?.[applicationId]?.caption ?? fallbackCaption;
+  return getApplicationInfoById({ state, applicationId })?.caption ?? fallbackCaption;
 };
 
 export default function applications(state = initialState, action) {

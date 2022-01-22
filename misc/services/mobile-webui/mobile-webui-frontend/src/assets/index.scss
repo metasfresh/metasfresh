@@ -2,7 +2,6 @@
 @import './variables.scss';
 @import './application.scss';
 @import './fonts.scss';
-@import './header.scss';
 @import './view-header.scss';
 @import './buttons.scss';
 @import './launchers.scss';
@@ -28,3 +27,6 @@ code {
   monospace;
 }
 
+#root {
+  width: 100%;
+}
