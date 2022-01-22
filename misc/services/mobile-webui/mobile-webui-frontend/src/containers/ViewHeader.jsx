@@ -8,7 +8,7 @@ export const ViewHeader = () => {
     .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
     .reduce((acc, headersEntry) => acc.concat(headersEntry.values), []);
 
-  if (!flatEntries) return null;
+  if (flatEntries.length <= 0) return null;
 
   return (
     <table className="table view-header is-size-6">
