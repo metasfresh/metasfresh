@@ -117,7 +117,7 @@ class DistributionStepScreen extends PureComponent {
     const dropToLocatorStatus = isDroppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
     return (
-      <div className="pt-3 section picking-step-container">
+      <div className="pt-3 section">
         <div className="picking-step-details centered-text is-size-5">
           <div className="columns is-mobile">
             <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
