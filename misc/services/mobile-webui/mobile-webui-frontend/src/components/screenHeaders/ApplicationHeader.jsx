@@ -7,7 +7,7 @@ import BackButton from './BackButton';
 import { getApplicationCaptionById } from '../../reducers/applications';
 import counterpart from 'counterpart';
 
-const Header = (props) => {
+const ApplicationHeader = (props) => {
   const store = useStore();
   const state = store.getState();
   const location = useLocation();
@@ -46,8 +46,8 @@ const Header = (props) => {
   );
 };
 
-Header.propTypes = {
+ApplicationHeader.propTypes = {
   applicationId: PropTypes.string,
 };
 
-export default Header;
+export default ApplicationHeader;

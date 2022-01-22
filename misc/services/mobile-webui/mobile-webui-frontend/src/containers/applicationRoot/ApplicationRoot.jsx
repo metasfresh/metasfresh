@@ -14,7 +14,7 @@ import { getApplications } from '../../api/applications';
 import { populateApplications } from '../../actions/ApplicationsActions';
 import { history } from '../../store/store';
 import { Route, Switch } from 'react-router';
-import Header from '../../components/screenHeaders/Header';
+import ApplicationHeader from '../../components/screenHeaders/ApplicationHeader';
 import LoginScreen from '../LoginScreen';
 import PrivateRoute from '../../routes/PrivateRoute';
 import ViewHeader from '../ViewHeader';
@@ -62,7 +62,7 @@ const ApplicationRoot = () => {
               </Route>
               {routesArray.map(({ path, Component, applicationId }) => (
                 <Route key={path} exact path={path}>
-                  <Header applicationId={applicationId} />
+                  <ApplicationHeader applicationId={applicationId} />
                   <ViewHeader />
                   <Component />
                   <ScreenToaster />
