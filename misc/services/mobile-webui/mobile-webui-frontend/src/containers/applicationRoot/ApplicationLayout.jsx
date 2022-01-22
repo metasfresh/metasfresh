@@ -57,7 +57,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
 
 ApplicationLayout.propTypes = {
   applicationId: PropTypes.string,
-  Component: PropTypes.func.isRequired,
+  Component: PropTypes.any.isRequired,
 };
 
 const getApplicationInfo = (knownApplicationId) => {
