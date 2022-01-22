@@ -4,7 +4,7 @@ import counterpart from 'counterpart';
 import Button from './Button';
 import YesNoDialog from '../dialogs/YesNoDialog';
 
-const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isCancelMode, onUserConfirmed }) => {
+const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isDangerousAction, onUserConfirmed }) => {
   const [isDialogDisplayed, setDialogDisplayed] = useState(false);
 
   const onDialogYes = () => {
@@ -20,13 +20,11 @@ const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isCancelMode, 
 
   return (
     <>
-      {isDialogDisplayed && (
-        <YesNoDialog caption={captionEffective} promptQuestion={promptQuestion} onYes={onDialogYes} onNo={onDialogNo} />
-      )}
+      {isDialogDisplayed && <YesNoDialog promptQuestion={promptQuestion} onYes={onDialogYes} onNo={onDialogNo} />}
       <Button
         caption={captionEffective}
         disabled={!isUserEditable || isDialogDisplayed}
-        isDanger={isCancelMode}
+        isDanger={isDangerousAction}
         onClick={() => setDialogDisplayed(true)}
       />
     </>
@@ -45,7 +43,7 @@ ConfirmButton.propTypes = {
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool,
-  isCancelMode: PropTypes.bool,
+  isDangerousAction: PropTypes.bool,
   //
   onUserConfirmed: PropTypes.func.isRequired,
 };

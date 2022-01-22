@@ -15,14 +15,12 @@ class AbortButton extends PureComponent {
   };
 
   render() {
-    const caption = counterpart.translate('activities.confirmButton.abort');
-
     return (
       <div className="mt-5">
         <ConfirmButton
-          isCancelMode={true}
+          caption={counterpart.translate('activities.confirmButton.abort')}
+          isDangerousAction={true}
           isUserEditable={true}
-          caption={caption}
           onUserConfirmed={this.onUserConfirmed}
         />
       </div>

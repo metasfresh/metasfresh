@@ -159,7 +159,7 @@ class PickStepScreen extends Component {
           />
           <ConfirmButton
             caption={counterpart.translate('activities.confirmButton.notFound')}
-            isCancelMode={true}
+            isDangerousAction={true}
             isUserEditable={nothingPicked}
             onUserConfirmed={this.handleNotFound}
           />

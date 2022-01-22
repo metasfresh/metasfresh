@@ -34,12 +34,11 @@ class GetQuantityDialog extends PureComponent {
     return (
       <div>
         <div className="prompt-dialog-screen">
-          <article className="message confirm-box is-dark">
+          <article className="message is-dark">
             <div className="message-body">
               <strong>
                 {qtyCaption}: {qtyTargetNorm} {uom}
               </strong>
-              <div>&nbsp;</div>
               <div className="control">
                 <input
                   ref={this.qtyInput}
@@ -49,15 +48,13 @@ class GetQuantityDialog extends PureComponent {
                   onChange={this.changeQuantity}
                 />
               </div>
-              <div className="buttons is-centered mt-4">
-                <button className="button is-medium btn-green confirm-button" onClick={this.onDialogYes}>
+              <div className="buttons is-centered">
+                <button className="button is-danger" onClick={this.onDialogYes}>
                   {counterpart.translate('activities.picking.confirmDone')}
                 </button>
-                {onCloseDialog && (
-                  <button className="button is-medium btn-green confirm-button" onClick={onCloseDialog}>
-                    {counterpart.translate('general.cancelText')}
-                  </button>
-                )}
+                <button className="button is-success" onClick={onCloseDialog}>
+                  {counterpart.translate('general.cancelText')}
+                </button>
               </div>
             </div>
           </article>
