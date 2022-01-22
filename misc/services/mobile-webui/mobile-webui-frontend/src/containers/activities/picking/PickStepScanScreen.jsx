@@ -7,43 +7,13 @@ import counterpart from 'counterpart';
 
 import { getQtyRejectedReasonsFromActivity, selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
 import { toastError } from '../../../utils/toast';
-import { pickingStepScanScreenLocation } from '../../../routes/picking';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 
 class PickStepScanScreen extends PureComponent {
-  componentDidMount() {
-    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, eligibleBarcode, qtyToPick, uom } =
-      this.props;
-    const { pushHeaderEntry } = this.props;
-    const location = pickingStepScanScreenLocation({
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      altStepId,
-    });
-
-    pushHeaderEntry({
-      location,
-      values: [
-        {
-          caption: counterpart.translate('general.Barcode'),
-          value: eligibleBarcode,
-        },
-        {
-          caption: counterpart.translate('general.QtyToPick'),
-          value: qtyToPick + ' ' + uom,
-        },
-      ],
-    });
-  }
-
   onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
     const { updatePickingStepQty, wfProcessId, activityId, lineId, stepId, go, altStepId, qtyToPick } = this.props;
     const qtyRejected = qtyToPick - qty;
@@ -130,7 +100,6 @@ PickStepScanScreen.propTypes = {
   // Actions:
   go: PropTypes.func.isRequired,
   updatePickingStepQty: PropTypes.func.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(mapStateToProps, { updatePickingStepQty, go, pushHeaderEntry })(PickStepScanScreen));
+export default withRouter(connect(mapStateToProps, { updatePickingStepQty, go })(PickStepScanScreen));

@@ -23,24 +23,26 @@ import ConfirmButton from '../../../components/buttons/ConfirmButton';
 
 class PickStepScreen extends Component {
   componentDidMount() {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      altStepId,
-      stepProps: { mainPickFrom },
-      pushHeaderEntry,
-    } = this.props;
-    const location = pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
+    const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId, stepProps, pushHeaderEntry } =
+      this.props;
+
+    const qtyToPick = getQtyToPick({ stepProps, altStepId });
+    const pickFrom = getPickFrom({ stepProps, altStepId });
 
     pushHeaderEntry({
-      location,
+      location: pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }),
       values: [
         {
           caption: counterpart.translate('general.Locator'),
-          value: mainPickFrom.locatorName,
+          value: pickFrom.locatorName,
+        },
+        {
+          caption: counterpart.translate('general.QtyToPick'),
+          value: qtyToPick + ' ' + stepProps.uom,
+        },
+        {
+          caption: counterpart.translate('general.Barcode'),
+          value: pickFrom.huBarcode,
         },
       ],
     });
@@ -131,7 +133,6 @@ class PickStepScreen extends Component {
 
   render() {
     const { altStepId, stepProps } = this.props;
-    const qtyToPick = getQtyToPick({ stepProps, altStepId });
     const pickFrom = getPickFrom({ stepProps, altStepId });
     const isPickedFromHU = pickFrom.qtyPicked > 0;
 
@@ -143,41 +144,25 @@ class PickStepScreen extends Component {
     const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
 
     return (
-      <div className="pt-3 section picking-step-container">
-        <div className="picking-step-details centered-text is-size-5">
-          <div>
-            <div className="columns is-mobile">
-              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-                {counterpart.translate('general.Barcode')}
-              </div>
-              <div className="column is-half has-text-left pb-0">{pickFrom.huBarcode}</div>
-            </div>
-            <div className="columns is-mobile">
-              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-                {counterpart.translate('general.QtyToPick')}:
-              </div>
-              <div className="column is-half has-text-left pb-0">{qtyToPick}</div>
-            </div>
-            <div className="buttons">
-              <ButtonWithIndicator
-                caption={scanButtonCaption}
-                completeStatus={scanButtonStatus}
-                disabled={isPickedFromHU}
-                onClick={this.onScanButtonClick}
-              />
-              <ButtonWithIndicator
-                caption={counterpart.translate('activities.picking.unPickBtn')}
-                disabled={nothingPicked}
-                onClick={this.onUnpickButtonClick}
-              />
-              <ConfirmButton
-                caption={counterpart.translate('activities.confirmButton.notFound')}
-                isCancelMode={true}
-                isUserEditable={nothingPicked}
-                onUserConfirmed={this.handleNotFound}
-              />
-            </div>
-          </div>
+      <div className="section">
+        <div className="buttons">
+          <ButtonWithIndicator
+            caption={scanButtonCaption}
+            completeStatus={scanButtonStatus}
+            disabled={isPickedFromHU}
+            onClick={this.onScanButtonClick}
+          />
+          <ButtonWithIndicator
+            caption={counterpart.translate('activities.picking.unPickBtn')}
+            disabled={nothingPicked}
+            onClick={this.onUnpickButtonClick}
+          />
+          <ConfirmButton
+            caption={counterpart.translate('activities.confirmButton.notFound')}
+            isCancelMode={true}
+            isUserEditable={nothingPicked}
+            onUserConfirmed={this.handleNotFound}
+          />
         </div>
       </div>
     );
