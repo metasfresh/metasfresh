@@ -1,106 +1,87 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import React, { useEffect, useRef } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { map } from 'lodash';
-
-import { populateLaunchers } from '../../actions/LauncherActions';
-import { getLaunchers } from '../../api/launchers';
-import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
-import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
+
+import { getLaunchers } from '../../api/launchers';
+import { appLaunchersBarcodeScannerLocation } from '../../routes/launchers';
+import { populateLaunchers } from '../../actions/LauncherActions';
+import { getApplicationLaunchers } from '../../reducers/launchers';
+
+import WFLauncherButton from './WFLauncherButton';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
-import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
 
-class WFLaunchersScreen extends Component {
-  componentDidMount() {
-    const { applicationId, populateLaunchers } = this.props;
+const WFLaunchersScreen = () => {
+  const {
+    params: { applicationId },
+  } = useRouteMatch();
 
+  //
+  // Load application launchers
+  const dispatch = useDispatch();
+  useEffect(() => {
     getLaunchers(applicationId).then((applicationLaunchers) => {
-      populateLaunchers({ applicationId, applicationLaunchers });
+      dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
     });
-  }
+  }, [applicationId]);
 
-  componentDidUpdate() {
-    if (!this.wsClient) {
-      const { userToken, applicationId } = this.props;
-      this.wsClient = ws.connectAndSubscribe({
+  //
+  // Connect to WebSocket topic
+  const userToken = useSelector((state) => state.appHandler.token);
+  const wsClientRef = useRef(null);
+  useEffect(() => {
+    if (!wsClientRef.current) {
+      wsClientRef.current = ws.connectAndSubscribe({
         topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
-        onWebsocketMessage: this.onWebsocketMessage,
+        onWebsocketMessage: (message) => {
+          const applicationLaunchers = JSON.parse(message.body);
+          dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
+        },
       });
     }
-  }
 
-  componentWillUnmount() {
-    ws.disconnectClient(this.wsClient);
-    this.wsClient = null;
-  }
+    return () => {
+      if (wsClientRef.current) {
+        ws.disconnectClient(wsClientRef.current);
+        wsClientRef.current = null;
+      }
+    };
+  }, []);
 
-  onWebsocketMessage = (message) => {
-    const { populateLaunchers, applicationId } = this.props;
-    const applicationLaunchers = JSON.parse(message.body);
-    populateLaunchers({ applicationId, applicationLaunchers });
+  const history = useHistory();
+  const onScanBarcodeButtonClicked = () => {
+    history.push(appLaunchersBarcodeScannerLocation({ applicationId }));
   };
 
-  onScanBarcodeButtonClicked = () => {
-    const { applicationId, gotoAppLaunchersBarcodeScanner } = this.props;
-    gotoAppLaunchersBarcodeScanner(applicationId);
-  };
+  const applicationLaunchers = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
-  render() {
-    const { applicationLaunchers } = this.props;
+  return (
+    <div className="container launchers-container">
+      {applicationLaunchers.scanBarcodeToStartJobSupport && (
+        <>
+          <div className="mt-0">
+            <ButtonWithIndicator caption="Scan barcode" onClick={onScanBarcodeButtonClicked} />
+          </div>
+          <br />
+        </>
+      )}
 
-    return (
-      <div className="container launchers-container">
-        {applicationLaunchers.scanBarcodeToStartJobSupport && (
-          <>
-            <div className="mt-0">
-              <ButtonWithIndicator caption="Scan barcode" onClick={this.onScanBarcodeButtonClicked} />
-            </div>
-            <br />
-          </>
-        )}
-
-        {map(applicationLaunchers.list, (launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-          return (
-            <WFLauncherButton
-              key={key}
-              applicationId={launcher.applicationId}
-              caption={launcher.caption}
-              startedWFProcessId={launcher.startedWFProcessId}
-              wfParameters={launcher.wfParameters}
-              showWarningSign={launcher.showWarningSign}
-            />
-          );
-        })}
-      </div>
-    );
-  }
-}
-
-WFLaunchersScreen.propTypes = {
-  //
-  // Props
-  userToken: PropTypes.string.isRequired,
-  applicationId: PropTypes.string.isRequired,
-  applicationLaunchers: PropTypes.object.isRequired,
-  //
-  // Actions
-  populateLaunchers: PropTypes.func.isRequired,
-  gotoAppLaunchersBarcodeScanner: PropTypes.func.isRequired,
+      {map(applicationLaunchers.list, (launcher, index) => {
+        const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+        return (
+          <WFLauncherButton
+            key={key}
+            applicationId={launcher.applicationId}
+            caption={launcher.caption}
+            startedWFProcessId={launcher.startedWFProcessId}
+            wfParameters={launcher.wfParameters}
+            showWarningSign={launcher.showWarningSign}
+          />
+        );
+      })}
+    </div>
+  );
 };
 
-const mapStateToProps = (state, { match }) => {
-  const { applicationId } = match.params;
-
-  return {
-    userToken: state.appHandler.token,
-    applicationId,
-    applicationLaunchers: selectApplicationLaunchersFromState(state, applicationId),
-  };
-};
-
-export default withRouter(
-  connect(mapStateToProps, { populateLaunchers, gotoAppLaunchersBarcodeScanner })(WFLaunchersScreen)
-);
+export default WFLaunchersScreen;

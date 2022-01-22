@@ -8,14 +8,8 @@ export function gotoAppLaunchers(applicationId) {
   };
 }
 
-export function gotoAppLaunchersBarcodeScanner(applicationId) {
-  return (dispatch) => {
-    dispatch(push(appLaunchersBarcodeScannerLocation({ applicationId })));
-  };
-}
-
 const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;
-const appLaunchersBarcodeScannerLocation = ({ applicationId }) =>
+export const appLaunchersBarcodeScannerLocation = ({ applicationId }) =>
   appLaunchersLocation({ applicationId }) + `/scanBarcode`;
 
 export const launchersRoutes = [
