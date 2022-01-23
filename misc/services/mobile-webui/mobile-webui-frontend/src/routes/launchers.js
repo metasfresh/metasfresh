@@ -8,7 +8,7 @@ export function gotoAppLaunchers(applicationId) {
   };
 }
 
-const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;
+export const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;
 export const appLaunchersBarcodeScannerLocation = ({ applicationId }) =>
   appLaunchersLocation({ applicationId }) + `/scanBarcode`;
 
