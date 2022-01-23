@@ -44,7 +44,14 @@ const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQt
     <div className="field">
       <p className="help is-danger">{qtyInfo.notValidMessage}&nbsp;</p>
       <div className="control has-icons-right">
-        <input ref={qtyInputRef} className="input" type="number" value={qtyInfo.qtyStr} onChange={handleQtyEntered} />
+        <input
+          ref={qtyInputRef}
+          className="input"
+          type="number"
+          value={qtyInfo.qtyStr}
+          onChange={handleQtyEntered}
+          onClick={() => qtyInputRef.current.select()}
+        />
         {!qtyInfo.isQtyValid && (
           <span className="icon is-small is-right">
             <i className="fas fa-exclamation-triangle" />
