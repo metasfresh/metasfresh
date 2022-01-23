@@ -1,35 +1,34 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import counterpart from 'counterpart';
+
+import { toastError } from '../../../../utils/toast';
+import { updateManufacturingReceipt, updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
+import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses_status';
+
 import PickQuantityButton from './PickQuantityButton';
 import Button from '../../../../components/buttons/Button';
 
-import { push, go } from 'connected-react-router';
-import counterpart from 'counterpart';
-import { updateManufacturingReceiptQty, updateManufacturingReceipt } from '../../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { toastError } from '../../../../utils/toast';
-import {
-  manufacturingReceiptScreenLocation,
-  manufacturingReceiptReceiveTargetScreen,
-} from '../../../../routes/manufacturing_receipt';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
-import { selectWFProcessFromState } from '../../../../reducers/wfProcesses_status';
+const MaterialReceiptLineScreen = () => {
+  const {
+    url,
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
 
-class MaterialReceiptLineScreen extends PureComponent {
-  componentDidMount() {
-    const {
-      dispatch,
-      lineProps: { productName },
-      wfProcessId,
-      activityId,
-      lineId,
-    } = this.props;
-    const location = manufacturingReceiptScreenLocation({ wfProcessId, activityId, lineId });
+  const {
+    activityCaption,
+    lineProps: { aggregateToLU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
 
+  const dispatch = useDispatch();
+  useEffect(() => {
     dispatch(
       pushHeaderEntry({
-        location,
+        location: url,
+        caption: activityCaption,
         values: [
           {
             caption: counterpart.translate('activities.mfg.ProductName'),
@@ -39,17 +38,10 @@ class MaterialReceiptLineScreen extends PureComponent {
         ],
       })
     );
-  }
+  }, []);
 
-  handleQuantityChange = (qtyPicked) => {
-    const {
-      dispatch,
-      wfProcessId,
-      activityId,
-      lineId,
-      lineProps: { aggregateToLU, currentReceivingHU },
-    } = this.props;
-
+  const history = useHistory();
+  const handleQuantityChange = (qtyPicked) => {
     // shall not happen
     if (aggregateToLU || currentReceivingHU) {
       console.log('skip receiving qty because there is no target');
@@ -65,77 +57,47 @@ class MaterialReceiptLineScreen extends PureComponent {
       })
     ).catch((axiosError) => toastError({ axiosError }));
 
-    dispatch(go(-1));
+    history.goBack();
   };
 
-  handleClick = () => {
-    const { dispatch, applicationId, wfProcessId, activityId, lineId } = this.props;
-    const location = manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId });
-
-    dispatch(push(location));
+  const handleClick = () => {
+    history.push(manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  render() {
-    const {
-      lineProps: { uom, qtyReceived, qtyToReceive, productName, aggregateToLU, currentReceivingHU },
-    } = this.props;
+  const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
 
-    const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
-
-    let allowReceivingQty = false;
-    let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
-    if (aggregateToLU) {
-      targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
-      allowReceivingQty = true;
-    } else if (currentReceivingHU) {
-      targetCaption = currentReceivingHU.huBarcode;
-      allowReceivingQty = true;
-    }
-
-    return (
-      <div className="section pt-2">
-        <div className="steps-container">
-          <div className="buttons">
-            <Button caption={targetCaption} onClick={this.handleClick} />
-            <PickQuantityButton
-              qtyCurrent={qtyReceived}
-              qtyTarget={qtyToReceive - qtyReceived}
-              isDisabled={!allowReceivingQty}
-              onClick={this.handleQuantityChange}
-              {...{ uom, productName, caption }}
-            />
-          </div>
-        </div>
-      </div>
-    );
+  let allowReceivingQty = false;
+  let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
+  if (aggregateToLU) {
+    targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
+    allowReceivingQty = true;
+  } else if (currentReceivingHU) {
+    targetCaption = currentReceivingHU.huBarcode;
+    allowReceivingQty = true;
   }
-}
 
-const mapStateToProps = (state, ownProps) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
+  return (
+    <div className="section pt-2">
+      <Button caption={targetCaption} onClick={handleClick} />
+      <PickQuantityButton
+        qtyTarget={qtyToReceive - qtyReceived}
+        isDisabled={!allowReceivingQty}
+        onClick={handleQuantityChange}
+        uom={uom}
+        caption={caption}
+      />
+    </div>
+  );
+};
+
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const lineProps = getLineByIdFromActivity(activity, lineId);
 
   return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
+    activityCaption: activity.caption,
     lineProps,
   };
 };
 
-MaterialReceiptLineScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  lineProps: PropTypes.object.isRequired,
-  //
-  dispatch: PropTypes.func.isRequired,
-};
-
-export default withRouter(connect(mapStateToProps)(MaterialReceiptLineScreen));
+export default MaterialReceiptLineScreen;

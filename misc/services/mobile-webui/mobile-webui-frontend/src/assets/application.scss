@@ -18,6 +18,12 @@
         vertical-align: middle;
       }
     }
+
+    .app-caption {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   .app-content {

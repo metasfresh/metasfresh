@@ -57,9 +57,13 @@ export const getActivityById = (state, wfProcessId, activityId) => {
   return getWfProcess(state, wfProcessId)?.activities?.[activityId];
 };
 
+export const getLineByIdFromActivity = (activity, lineId) => {
+  return activity?.dataStored?.lines?.[lineId];
+};
+
 export const getLineById = (state, wfProcessId, activityId, lineId) => {
   const activity = getActivityById(state, wfProcessId, activityId);
-  return activity != null ? activity.dataStored.lines[lineId] : null;
+  return getLineByIdFromActivity(activity, lineId);
 };
 
 export const getStepsArrayFromLine = (line) => {

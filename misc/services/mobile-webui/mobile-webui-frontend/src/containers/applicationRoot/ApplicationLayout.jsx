@@ -23,7 +23,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
               <i className={applicationInfo.iconClassNames} />
             </span>
           </div>
-          <div className="column">
+          <div className="column is-10 app-caption">
             <span>{caption}</span>
           </div>
         </div>
