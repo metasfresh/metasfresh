@@ -33,10 +33,7 @@ const QtyInputField = ({ qtyInitial, validateQtyEntered, onQtyChange, isRequestF
   };
 
   const forwardQtyInfoToParent = (qtyInfoToForward) => {
-    // Forward to parent component only if valid
-    if (qtyInfoToForward.isQtyValid) {
-      onQtyChange(qtyInfoToForward.qty);
-    }
+    onQtyChange(qtyInfoToForward.isQtyValid ? qtyInfoToForward.qty : null);
   };
 
   return (
