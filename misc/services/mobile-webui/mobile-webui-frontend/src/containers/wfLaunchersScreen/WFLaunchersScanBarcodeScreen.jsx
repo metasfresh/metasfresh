@@ -1,16 +1,22 @@
-import React, { PureComponent } from 'react';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
-import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
+import React from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+
+import { toastError } from '../../utils/toast';
+import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import { startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
-import { toastError } from '../../utils/toast';
-import PropTypes from 'prop-types';
-import { gotoWFProcessScreen } from '../../routes/workflow';
 
-class WFLaunchersScanBarcodeScreen extends PureComponent {
-  onBarcodeScanned = ({ scannedBarcode }) => {
-    const { applicationId, updateWFProcess, gotoWFProcessScreen } = this.props;
+import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
+
+const WFLaunchersScanBarcodeScreen = () => {
+  const {
+    params: { applicationId },
+  } = useRouteMatch();
+
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const onBarcodeScanned = ({ scannedBarcode }) => {
     startWorkflowRequest({
       wfParameters: {
         applicationId,
@@ -18,35 +24,13 @@ class WFLaunchersScanBarcodeScreen extends PureComponent {
       },
     })
       .then((wfProcess) => {
-        updateWFProcess({ wfProcess });
-        gotoWFProcessScreen({ wfProcess });
+        dispatch(updateWFProcess({ wfProcess }));
+        history.push(getWFProcessScreenLocation({ applicationId, wfprocessId: wfProcess.id }));
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  render() {
-    return <BarcodeScannerComponent onBarcodeScanned={this.onBarcodeScanned} />;
-  }
-}
-
-WFLaunchersScanBarcodeScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  //
-  // Functions
-  updateWFProcess: PropTypes.func.isRequired,
-  gotoWFProcessScreen: PropTypes.func.isRequired,
+  return <BarcodeScannerComponent onBarcodeScanned={onBarcodeScanned} />;
 };
 
-const mapStateToProps = (state, { match }) => {
-  const { applicationId } = match.params;
-
-  return {
-    applicationId,
-  };
-};
-
-export default withRouter(
-  connect(mapStateToProps, { updateWFProcess, gotoWFProcessScreen })(WFLaunchersScanBarcodeScreen)
-);
+export default WFLaunchersScanBarcodeScreen;
