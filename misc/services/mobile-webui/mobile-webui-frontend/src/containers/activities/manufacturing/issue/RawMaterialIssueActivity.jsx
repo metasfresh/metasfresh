@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useHistory } from 'react-router-dom';
 
-//import LineButton from './RawMaterialsIssueLineButton';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
+import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
+
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
-import { useHistory } from 'react-router-dom';
-import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
 
 const RawMaterialsIssueActivity = (props) => {
   const {
@@ -19,10 +19,8 @@ const RawMaterialsIssueActivity = (props) => {
   } = props;
 
   const history = useHistory();
-
   const onButtonClick = (lineId) => {
-    const location = manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-    history.push(location);
+    history.push(manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
   return (
@@ -58,7 +56,7 @@ RawMaterialsIssueActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  activityState: PropTypes.object,
+  activityState: PropTypes.object.isRequired,
 };
 
 export default RawMaterialsIssueActivity;

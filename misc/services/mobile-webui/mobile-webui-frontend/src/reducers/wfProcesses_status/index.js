@@ -62,19 +62,19 @@ export const getLineById = (state, wfProcessId, activityId, lineId) => {
   return activity != null ? activity.dataStored.lines[lineId] : null;
 };
 
-const getStepsMap = (state, wfProcessId, activityId, lineId) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  return line != null && line.steps ? line.steps : {};
-};
-
-export const getSteps = (state, wfProcessId, activityId, lineId) => {
-  const stepsById = getStepsMap(state, wfProcessId, activityId, lineId);
+export const getStepsArrayFromLine = (line) => {
+  const stepsById = line?.steps ?? {};
   return Object.values(stepsById);
 };
 
+export const getSteps = (state, wfProcessId, activityId, lineId) => {
+  const line = getLineById(state, wfProcessId, activityId, lineId);
+  return getStepsArrayFromLine(line);
+};
+
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
-  const stepsById = getStepsMap(state, wfProcessId, activityId, lineId);
-  return stepsById[stepId];
+  const line = getLineById(state, wfProcessId, activityId, lineId);
+  return line?.steps?.[stepId];
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {

@@ -3,17 +3,14 @@ import { useSelector } from 'react-redux';
 import { getHeaderEntries } from '../reducers/headers';
 
 export const ViewHeader = () => {
-  const headersEntries = useSelector((state) => getHeaderEntries(state));
-  const flatEntries = headersEntries
-    .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
-    .reduce((acc, headersEntry) => acc.concat(headersEntry.values), []);
+  const entryItems = useSelector((state) => getEntryItemsFromState(state));
 
-  if (flatEntries.length <= 0) return null;
+  if (entryItems.length <= 0) return null;
 
   return (
     <table className="table view-header is-size-6">
       <tbody>
-        {flatEntries.map((entry, i) => (
+        {entryItems.map((entry, i) => (
           <tr key={i}>
             <th>{entry.caption}</th>
             <td>{entry.value}</td>
@@ -22,4 +19,12 @@ export const ViewHeader = () => {
       </tbody>
     </table>
   );
+};
+
+const getEntryItemsFromState = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries
+    .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
+    .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
+    .filter((entryItem) => !entryItem.hidden);
 };
