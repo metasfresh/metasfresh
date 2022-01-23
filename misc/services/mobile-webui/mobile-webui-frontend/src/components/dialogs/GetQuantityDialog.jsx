@@ -1,68 +1,60 @@
-import React, { PureComponent, createRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-class GetQuantityDialog extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: props.qtyInitial ? props.qtyInitial : 0,
-    };
+const GetQuantityDialog = ({ qtyInitial, qtyTarget, qtyCaption, uom, onQtyChange, onCloseDialog }) => {
+  const [qty, setQty] = useState(qtyInitial > 0 ? qtyInitial : 0);
+  const qtyInputRef = useRef(null);
 
-    this.qtyInput = createRef();
-  }
+  useEffect(() => {
+    qtyInputRef.current.focus();
+    qtyInputRef.current.select();
+  }, []);
 
-  componentDidMount() {
-    this.qtyInput.current.focus();
-    this.qtyInput.current.select();
-  }
+  const changeQuantity = (e) => {
+    if (!e.target.value) {
+      setQty(0);
+    } else {
+      const qtyEntered = parseFloat(e.target.value);
+      if (isNaN(qtyEntered)) {
+        return;
+      }
 
-  changeQuantity = (e) => {
-    this.setState({ value: e.target.value });
+      setQty(qtyEntered);
+    }
   };
 
-  onDialogYes = () => {
-    const { onQtyChange } = this.props;
-
-    onQtyChange(this.state.value);
+  const onDialogYes = () => {
+    onQtyChange(qty);
   };
 
-  render() {
-    const { qtyTarget, qtyCaption, uom, onCloseDialog } = this.props;
-    const qtyTargetNorm = qtyTarget > 0 ? qtyTarget : 0;
+  const isYesButtonDisabled = !(qty > 0);
 
-    return (
-      <div>
-        <div className="prompt-dialog-screen">
-          <article className="message is-dark">
-            <div className="message-body">
-              <strong>
-                {qtyCaption}: {qtyTargetNorm} {uom}
-              </strong>
-              <div className="control">
-                <input
-                  ref={this.qtyInput}
-                  className="input"
-                  type="number"
-                  value={this.state.value}
-                  onChange={this.changeQuantity}
-                />
-              </div>
-              <div className="buttons is-centered">
-                <button className="button is-danger" onClick={this.onDialogYes}>
-                  {counterpart.translate('activities.picking.confirmDone')}
-                </button>
-                <button className="button is-success" onClick={onCloseDialog}>
-                  {counterpart.translate('general.cancelText')}
-                </button>
-              </div>
+  return (
+    <div>
+      <div className="prompt-dialog-screen">
+        <article className="message is-dark">
+          <div className="message-body">
+            <strong>
+              {qtyCaption}: {qtyTarget > 0 ? qtyTarget : 0} {uom}
+            </strong>
+            <div className="control">
+              <input ref={qtyInputRef} className="input" type="number" value={qty} onChange={changeQuantity} />
             </div>
-          </article>
-        </div>
+            <div className="buttons is-centered">
+              <button className="button is-danger" disabled={isYesButtonDisabled} onClick={onDialogYes}>
+                {counterpart.translate('activities.picking.confirmDone')}
+              </button>
+              <button className="button is-success" onClick={onCloseDialog}>
+                {counterpart.translate('general.cancelText')}
+              </button>
+            </div>
+          </div>
+        </article>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 GetQuantityDialog.propTypes = {
   // Properties
