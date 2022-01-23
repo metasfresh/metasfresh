@@ -24,24 +24,27 @@ function reduceOnSetScannedBarcode(draftState, payload) {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivity = draftWFProcess.activities[activityId];
 
-  draftActivity.dataStored.scannedBarcode = scannedBarcode;
-  // reset the barcode caption. it will be set back when we get it back from server
-  draftActivity.componentProps.barcodeCaption = null;
-
-  draftActivity.dataStored.completeStatus = computeActivityStatus({ draftActivity });
+  const draftActivityDataStored = draftActivity.dataStored;
+  draftActivityDataStored.scannedBarcode = scannedBarcode;
+  draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   updateUserEditable({ draftWFProcess });
 
   return draftState;
 }
 
-const computeActivityStatus = ({ draftActivity }) => {
-  const scannedBarcode = draftActivity.dataStored.scannedBarcode;
-  const barcodeCaption = draftActivity.componentProps.barcodeCaption;
+const computeActivityStatus = ({ draftActivityDataStored }) => {
+  const scannedBarcode = draftActivityDataStored.scannedBarcode;
+  const barcodeCaption = draftActivityDataStored.barcodeCaption;
   const completed = (scannedBarcode && scannedBarcode.length > 0) || (barcodeCaption && barcodeCaption.length > 0);
+  console.log('computeActivityStatus', { scannedBarcode, barcodeCaption, completed });
   return completed ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  computeActivityStatus,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.barcodeCaption = fromActivity.componentProps.barcodeCaption;
+    draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
+  },
 });

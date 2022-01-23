@@ -32,7 +32,7 @@ const ScanActivity = (props) => {
 
 const computeButtonCaption = (activityState) => {
   const scannedBarcode = activityState.dataStored.scannedBarcode;
-  const scannedBarcodeCaption = activityState.componentProps.barcodeCaption;
+  const scannedBarcodeCaption = activityState.dataStored.barcodeCaption;
 
   return (
     scannedBarcodeCaption ||
