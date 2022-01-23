@@ -5,7 +5,7 @@ import counterpart from 'counterpart';
 
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
-import { getStepById } from '../../../../reducers/wfProcesses_status';
+import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';

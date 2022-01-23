@@ -7,7 +7,7 @@ import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { postScannedBarcode } from '../../../api/scanner';
-import { getActivityById } from '../../../reducers/wfProcesses_status';
+import { getActivityById } from '../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 

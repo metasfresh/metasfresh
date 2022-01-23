@@ -6,7 +6,7 @@ import { postDistributionDropTo } from '../../../api/distribution';
 import { updateDistributionDropTo } from '../../../actions/DistributionActions';
 import { toastError } from '../../../utils/toast';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { getStepById } from '../../../reducers/wfProcesses_status';
+import { getStepById } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 

@@ -8,7 +8,7 @@ import {
   getActivityById,
   getQtyRejectedReasonsFromActivity,
   getStepByIdFromActivity,
-} from '../../../reducers/wfProcesses_status';
+} from '../../../reducers/wfProcesses';
 import { postDistributionPickFrom } from '../../../api/distribution';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';

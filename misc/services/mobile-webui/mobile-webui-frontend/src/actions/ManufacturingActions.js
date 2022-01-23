@@ -5,7 +5,7 @@ import {
   UPDATE_MANUFACTURING_RECEIPT,
 } from '../constants/ManufacturingActionTypes';
 
-import { getWfProcess } from '../reducers/wfProcesses_status';
+import { getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 
 export function updateManufacturingIssueQty({

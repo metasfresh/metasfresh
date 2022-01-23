@@ -4,7 +4,7 @@ import { useRouteMatch } from 'react-router-dom';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { getLineById } from '../../../reducers/wfProcesses_status';
+import { getLineById } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
 

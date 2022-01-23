@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses_status';
+import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';

@@ -15,7 +15,7 @@ export const getWfProcess = (state, wfProcessId) => {
     console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
   }
 
-  return state.wfProcesses_status[wfProcessId];
+  return state.wfProcesses[wfProcessId];
 };
 
 export const isWfProcessLoaded = (state, wfProcessId) => {
@@ -24,7 +24,7 @@ export const isWfProcessLoaded = (state, wfProcessId) => {
     return false;
   }
 
-  return !!state.wfProcesses_status[wfProcessId];
+  return !!state.wfProcesses[wfProcessId];
 };
 
 export const getActivitiesInOrder = (wfProcess) => {

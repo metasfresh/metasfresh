@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { getLineById } from '../../../../reducers/wfProcesses_status';
+import { getLineById } from '../../../../reducers/wfProcesses';
 import { toastError } from '../../../../utils/toast';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { useHistory, useRouteMatch } from 'react-router-dom';

@@ -1,5 +1,5 @@
 import * as CompleteStatus from '../../../constants/CompleteStatus';
-import { mergeActivitiesToState, updateUserEditable } from '../../../reducers/wfProcesses_status/utils';
+import { mergeActivitiesToState, updateUserEditable } from '../../../reducers/wfProcesses/utils';
 
 describe('reducers: utils tests', () => {
   describe('mergeActivitiesToState', () => {

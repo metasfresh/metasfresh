@@ -5,11 +5,7 @@ import counterpart from 'counterpart';
 
 import { toastError } from '../../../../utils/toast';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
-import {
-  getActivityById,
-  getQtyRejectedReasonsFromActivity,
-  getStepById,
-} from '../../../../reducers/wfProcesses_status';
+import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 

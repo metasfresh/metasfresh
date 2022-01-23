@@ -3,7 +3,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import counterpart from 'counterpart';
 
-import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses_status';
+import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';

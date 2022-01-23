@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { pickingStepScreenLocation } from '../../../routes/picking';
-import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
+import { computePickFromStatus } from '../../../reducers/wfProcesses/picking';
 import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';

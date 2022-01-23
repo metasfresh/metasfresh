@@ -7,7 +7,7 @@ import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceipt, updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
-import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses_status';
+import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
 import Button from '../../../../components/buttons/Button';

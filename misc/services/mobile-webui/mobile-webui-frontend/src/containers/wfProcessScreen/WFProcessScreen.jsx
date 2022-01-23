@@ -3,7 +3,7 @@ import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { pushHeaderEntry } from '../../actions/HeaderActions';
-import { getActivitiesInOrder, getWfProcess, isWorkflowNotStarted } from '../../reducers/wfProcesses_status';
+import { getActivitiesInOrder, getWfProcess, isWorkflowNotStarted } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
 

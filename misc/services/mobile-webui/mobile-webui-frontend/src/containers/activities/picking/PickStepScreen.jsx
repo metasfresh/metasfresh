@@ -9,7 +9,7 @@ import { postStepPicked, postStepUnPicked } from '../../../api/picking';
 import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { getStepById } from '../../../reducers/wfProcesses_status';
+import { getStepById } from '../../../reducers/wfProcesses';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';

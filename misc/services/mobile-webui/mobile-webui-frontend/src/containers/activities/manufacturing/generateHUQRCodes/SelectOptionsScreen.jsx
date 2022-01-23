@@ -5,7 +5,7 @@ import { confirmOptionLocation } from '../../../../routes/generateHUQRCodes';
 import { getOptionsFromActivity } from './utils';
 import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { getActivityById } from '../../../../reducers/wfProcesses_status';
+import { getActivityById } from '../../../../reducers/wfProcesses';
 
 const SelectOptionsScreen = () => {
   const {

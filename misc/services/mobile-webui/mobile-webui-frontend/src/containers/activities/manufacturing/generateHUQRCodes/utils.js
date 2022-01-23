@@ -1,4 +1,4 @@
-import { getActivityById } from '../../../../reducers/wfProcesses_status';
+import { getActivityById } from '../../../../reducers/wfProcesses';
 
 export const getOptionsFromActivity = (activity) => {
   return activity?.componentProps?.options ?? [];

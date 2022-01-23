@@ -5,7 +5,7 @@ import { toastError } from '../../../../utils/toast';
 
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingReceipt, updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
-import { getLineById } from '../../../../reducers/wfProcesses_status';
+import { getLineById } from '../../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
 

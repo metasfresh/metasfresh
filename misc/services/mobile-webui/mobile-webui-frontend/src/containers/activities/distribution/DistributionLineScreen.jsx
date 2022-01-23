@@ -3,7 +3,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
 import counterpart from 'counterpart';
 
-import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses_status';
+import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import DistributionStepButton from './DistributionStepButton';

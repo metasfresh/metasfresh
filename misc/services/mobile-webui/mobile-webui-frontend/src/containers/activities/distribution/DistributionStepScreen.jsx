@@ -5,7 +5,7 @@ import counterpart from 'counterpart';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { getStepById } from '../../../reducers/wfProcesses_status';
+import { getStepById } from '../../../reducers/wfProcesses';
 import {
   distributionStepDropToScreenLocation,
   distributionStepPickFromScreenLocation,

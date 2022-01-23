@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
 import { getCaptionFromHeaders } from '../../reducers/headers';
-import { isWfProcessLoaded } from '../../reducers/wfProcesses_status';
+import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
