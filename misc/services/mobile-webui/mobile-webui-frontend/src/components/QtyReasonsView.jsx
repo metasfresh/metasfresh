@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-import QtyReasonsRadioGroup from '../../components/QtyReasonsRadioGroup';
-import Button from '../../components/buttons/Button';
+import QtyReasonsRadioGroup from './QtyReasonsRadioGroup';
+import Button from './buttons/Button';
 
 const QtyReasonsView = ({ qtyRejected, uom, qtyRejectedReasons, onHide }) => {
   const [selectedRejectedReason, setSelectedRejectedReason] = useState('');

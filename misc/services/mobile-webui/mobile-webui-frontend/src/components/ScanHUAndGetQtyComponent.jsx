@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
-import QtyReasonsView from '../containers/activities/QtyReasonsView';
+import QtyReasonsView from './QtyReasonsView';
 import Button from './buttons/Button';
 import counterpart from 'counterpart';
 
