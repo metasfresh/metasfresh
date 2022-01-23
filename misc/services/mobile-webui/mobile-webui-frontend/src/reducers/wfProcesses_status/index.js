@@ -81,7 +81,7 @@ export const getStepByIdFromActivity = (activity, lineId, stepId) => {
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {
-  return activity?.componentProps?.qtyRejectedReasons?.reasons ?? [];
+  return activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
 };
 
 const reducer = produce((draftState, action) => {

@@ -281,6 +281,7 @@ export const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDa
   //
   // Copy lines
   draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);
+  draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
 
   //
   // Copy Pick From Alternatives Pool
