@@ -59,16 +59,14 @@ const ApplicationRoot = () => {
             <LoginScreen />
           </Route>
           <PrivateRoute path="/">
-            <>
-              <Route key="/" exact path="/">
-                <ApplicationsListScreen />
+            <Route key="/" exact path="/">
+              <ApplicationsListScreen />
+            </Route>
+            {routesArray.map(({ path, Component, applicationId }) => (
+              <Route key={path} exact path={path}>
+                <ApplicationLayout applicationId={applicationId} Component={Component} />
               </Route>
-              {routesArray.map(({ path, Component, applicationId }) => (
-                <Route key={path} exact path={path}>
-                  <ApplicationLayout applicationId={applicationId} Component={Component} />
-                </Route>
-              ))}
-            </>
+            ))}
           </PrivateRoute>
         </Switch>
       </ConnectedRouter>
