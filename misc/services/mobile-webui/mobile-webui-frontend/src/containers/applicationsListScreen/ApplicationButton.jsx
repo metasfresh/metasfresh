@@ -1,18 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import { gotoAppLaunchers } from '../../routes/launchers';
-import { getApplicationStartFunction } from '../../apps';
+import { useHistory } from 'react-router-dom';
 import { connect, useDispatch } from 'react-redux';
+
+import { appLaunchersLocation } from '../../routes/launchers';
+import { getApplicationStartFunction } from '../../apps';
 
 const ApplicationButton = ({ applicationId, caption, iconClassNames }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const handleAppClick = () => {
     const startApplicationFunc = getApplicationStartFunction(applicationId);
     if (startApplicationFunc) {
       dispatch(startApplicationFunc());
     } else {
-      dispatch(gotoAppLaunchers(applicationId));
+      history.push(appLaunchersLocation({ applicationId }));
     }
   };
 
