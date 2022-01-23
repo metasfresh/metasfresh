@@ -12,7 +12,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
 
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
-  const caption = captionFromHeaders ?? applicationInfo.caption;
+  const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
 
   return (
     <div className="app-container">

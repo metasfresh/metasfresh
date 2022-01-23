@@ -15,8 +15,9 @@ import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyCompone
 
 class DistributionStepPickFromScreen extends PureComponent {
   componentDidMount() {
-    const { wfProcessId, activityId, lineId, stepId, qtyToMove, huBarcode } = this.props;
+    const { applicationId, wfProcessId, activityId, lineId, stepId, qtyToMove, huBarcode } = this.props;
     const location = distributionStepPickFromScreenLocation({
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
@@ -86,6 +87,7 @@ class DistributionStepPickFromScreen extends PureComponent {
 DistributionStepPickFromScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -101,7 +103,7 @@ DistributionStepPickFromScreen.propTypes = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
@@ -110,6 +112,7 @@ const mapStateToProps = (state, ownProps) => {
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,

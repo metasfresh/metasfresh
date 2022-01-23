@@ -124,8 +124,8 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           id={activityItem.activityId}
           applicationId={applicationId}
           wfProcessId={wfProcessId}
+          activityId={activityItem.activityId}
           activityState={activityItem}
-          {...activityItem}
         />
       );
   }

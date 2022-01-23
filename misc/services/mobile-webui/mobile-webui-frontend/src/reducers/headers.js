@@ -18,7 +18,7 @@ export const getHeaderEntries = (state) => state.headers.entries;
 
 export const getCaptionFromHeaders = (state) => {
   // return last known caption
-  return state.headers.entries.reduce((acc, entry) => entry.caption ?? acc, null);
+  return state.headers.entries.reduce((acc, entry) => (entry.caption ? entry.caption : acc), null);
 };
 
 export default function reducer(state = initialState, action) {

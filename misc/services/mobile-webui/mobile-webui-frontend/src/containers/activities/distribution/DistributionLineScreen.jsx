@@ -33,7 +33,7 @@ class DistributionLineScreen extends PureComponent {
   }
 
   render() {
-    const { wfProcessId, activityId, lineId, steps } = this.props;
+    const { applicationId, wfProcessId, activityId, lineId, steps } = this.props;
 
     return (
       <div className="section pt-2">
@@ -43,6 +43,7 @@ class DistributionLineScreen extends PureComponent {
               return (
                 <DistributionStepButton
                   key={idx}
+                  applicationId={applicationId}
                   wfProcessId={wfProcessId}
                   activityId={activityId}
                   lineId={lineId}
@@ -64,7 +65,7 @@ class DistributionLineScreen extends PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
 
@@ -72,6 +73,7 @@ const mapStateToProps = (state, ownProps) => {
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
@@ -84,6 +86,7 @@ const mapStateToProps = (state, ownProps) => {
 DistributionLineScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,

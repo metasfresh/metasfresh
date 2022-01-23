@@ -15,8 +15,19 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 class DistributionStepDropToScreen extends PureComponent {
   componentDidMount() {
-    const { wfProcessId, activityId, lineId, stepId, qtyToMove, caption, locatorBarcode, pushHeaderEntry } = this.props;
+    const {
+      applicationId,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      qtyToMove,
+      caption,
+      locatorBarcode,
+      pushHeaderEntry,
+    } = this.props;
     const location = distributionStepDropToScreenLocation({
+      applicationId,
       wfProcessId,
       activityId,
       lineId,
@@ -78,6 +89,7 @@ class DistributionStepDropToScreen extends PureComponent {
 DistributionStepDropToScreen.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -93,13 +105,14 @@ DistributionStepDropToScreen.propTypes = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
+  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
   const wfProcess = selectWFProcessFromState(state, wfProcessId);
   const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
   const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
   const stepProps = lineProps != null && lineProps.steps ? lineProps.steps[stepId] : {};
 
   return {
+    applicationId,
     wfProcessId,
     activityId,
     lineId,
