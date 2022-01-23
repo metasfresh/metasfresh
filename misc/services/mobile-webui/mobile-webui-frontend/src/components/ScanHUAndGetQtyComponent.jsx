@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { toastError } from '../utils/toast';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import QtyReasonsView from '../containers/activities/QtyReasonsView';
@@ -27,29 +26,23 @@ const ScanHUAndGetQtyComponent = ({
   const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
   const [currentQtys, setCurrentQtys] = useState({ qty: 0, qtyRejected: 0 });
 
-  const isEligibleBarcode = (barcode) => {
-    // in some cases we accept whatever code user scans and we're not constraining it
-    return eligibleBarcode ? barcode === eligibleBarcode : true;
-  };
-
   const validateScannedBarcode = (barcode) => {
-    if (isEligibleBarcode(barcode)) {
-      return true;
-    } else {
-      toastError({ messageKey: invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode' });
-      return false;
+    // If an eligible barcode was provided, make sure scanned barcode is matching it
+    if (eligibleBarcode && barcode !== eligibleBarcode) {
+      return counterpart.translate(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode');
     }
+
+    // OK
+    return null;
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    if (validateScannedBarcode(scannedBarcode)) {
-      const askForQty = qtyTarget != null;
-      if (askForQty) {
-        setCurrentScannedBarcode(scannedBarcode);
-        setProgressStatus(STATUS_READ_QTY);
-      } else {
-        onResult({ qty: 0, reason: null, scannedBarcode });
-      }
+    const askForQty = qtyTarget != null;
+    if (askForQty) {
+      setCurrentScannedBarcode(scannedBarcode);
+      setProgressStatus(STATUS_READ_QTY);
+    } else {
+      onResult({ qty: 0, reason: null, scannedBarcode });
     }
   };
 

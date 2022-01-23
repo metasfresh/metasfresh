@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
+import { toastError } from '../utils/toast';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -18,6 +19,16 @@ const BarcodeScannerComponent = ({ validateScannedBarcode, onBarcodeScanned }) =
   const video = useRef();
   const mountedRef = useRef(true);
 
+  const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
+    const errmsg = validateScannedBarcode ? validateScannedBarcode(scannedBarcode) : null;
+    if (!errmsg) {
+      controls.stop();
+      onBarcodeScanned({ scannedBarcode });
+    } else {
+      toastError({ plainMessage: errmsg });
+    }
+  };
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -26,11 +37,7 @@ const BarcodeScannerComponent = ({ validateScannedBarcode, onBarcodeScanned }) =
       if (mountedRef.current === false) {
         controls.stop();
       } else if (typeof result !== 'undefined') {
-        const scannedBarcode = result.text;
-        if (!validateScannedBarcode || validateScannedBarcode({ scannedBarcode })) {
-          controls.stop();
-          onBarcodeScanned({ scannedBarcode });
-        }
+        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
       }
     });
 
@@ -45,8 +52,8 @@ const BarcodeScannerComponent = ({ validateScannedBarcode, onBarcodeScanned }) =
 BarcodeScannerComponent.propTypes = {
   //
   // Props:
-  onBarcodeScanned: PropTypes.func.isRequired,
   validateScannedBarcode: PropTypes.func,
+  onBarcodeScanned: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;

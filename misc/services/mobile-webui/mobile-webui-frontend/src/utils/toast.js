@@ -2,18 +2,20 @@ import toast from 'react-hot-toast';
 import counterpart from 'counterpart';
 import { unboxAxiosResponse } from './index';
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey }) => {
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage }) => {
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
   } else if (messageKey) {
     message = counterpart.translate(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
   } else {
     console.error('toastError called without any error');
     return;
   }
 
-  console.trace('toast error: ', message, axiosError);
+  console.trace('toast error: ', { message, axiosError });
   toast(message, { type: 'error', style: { color: 'white' } });
 };
 
