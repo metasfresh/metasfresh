@@ -57,7 +57,6 @@ MaterialReceiptActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  componentProps: PropTypes.object,
   activityState: PropTypes.object,
 };
 
