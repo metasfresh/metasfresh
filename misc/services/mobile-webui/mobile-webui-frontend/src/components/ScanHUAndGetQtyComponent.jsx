@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { toastError } from '../utils/toast';
@@ -6,147 +6,124 @@ import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import QtyReasonsView from '../containers/activities/QtyReasonsView';
 import Button from './buttons/Button';
+import counterpart from 'counterpart';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
 const STATUS_READ_QTY_REJECTED_REASON = 'READ_QTY_REJECTED_REASON';
 
-class ScanHUAndGetQtyComponent extends Component {
-  constructor(props) {
-    super(props);
+const ScanHUAndGetQtyComponent = ({
+  eligibleBarcode,
+  uom,
+  qtyCaption,
+  qtyInitial,
+  qtyTarget,
+  qtyRejectedReasons,
+  invalidBarcodeMessageKey,
+  invalidQtyMessageKey,
+  onResult,
+}) => {
+  const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
+  const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
+  const [currentQtys, setCurrentQtys] = useState({ qty: 0, qtyRejected: 0 });
 
-    this.state = {
-      progressStatus: STATUS_READ_BARCODE,
-      scannedBarcode: null,
-      newQuantity: 0,
-      qtyRejected: 0,
-    };
-  }
-
-  onCancelGetQty = () => {
-    this.setState({ progressStatus: STATUS_READ_BARCODE });
-  };
-
-  isEligibleBarcode = (scannedBarcode) => {
-    const { eligibleBarcode } = this.props;
-
-    console.log(`checking eligibleBarcode=${eligibleBarcode} vs scannedBarcode=${scannedBarcode}`);
+  const isEligibleBarcode = (barcode) => {
     // in some cases we accept whatever code user scans and we're not constraining it
-    return eligibleBarcode ? scannedBarcode === eligibleBarcode : true;
+    return eligibleBarcode ? barcode === eligibleBarcode : true;
   };
 
-  validateScannedBarcode = ({ scannedBarcode }) => {
-    if (this.isEligibleBarcode(scannedBarcode)) {
+  const validateScannedBarcode = (barcode) => {
+    if (isEligibleBarcode(barcode)) {
       return true;
     } else {
-      const { invalidBarcodeMessageKey } = this.props;
       toastError({ messageKey: invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode' });
       return false;
     }
   };
 
-  onBarcodeScanned = ({ scannedBarcode }) => {
-    console.log('ScanHUAndGetQtyComponent.onBarcodeScanned()', { scannedBarcode });
-    const { qtyTarget, onResult } = this.props;
-
-    if (this.validateScannedBarcode({ scannedBarcode })) {
+  const onBarcodeScanned = ({ scannedBarcode }) => {
+    if (validateScannedBarcode(scannedBarcode)) {
       const askForQty = qtyTarget != null;
       if (askForQty) {
-        this.setState({ progressStatus: STATUS_READ_QTY, scannedBarcode });
+        setCurrentScannedBarcode(scannedBarcode);
+        setProgressStatus(STATUS_READ_QTY);
       } else {
         onResult({ qty: 0, reason: null, scannedBarcode });
       }
     }
   };
 
-  onQtyEntered = (qty) => {
-    const { qtyTarget, onResult, invalidQtyMessageKey } = this.props;
-
-    const inputQty = parseFloat(qty);
-    if (isNaN(inputQty)) {
-      return;
-    }
-
-    if (this.isQtyEnteredValid(inputQty)) {
-      const qtyRejected = Math.max(qtyTarget - inputQty, 0);
-      if (qtyRejected !== 0) {
-        this.setState({ progressStatus: STATUS_READ_QTY_REJECTED_REASON, newQuantity: inputQty, qtyRejected });
-      } else {
-        onResult({ qty: inputQty, reason: null, scannedBarcode: this.state.scannedBarcode });
-      }
-    } else {
-      toastError({ messageKey: invalidQtyMessageKey || 'activities.picking.invalidQtyPicked' });
-    }
-  };
-
-  onQtyRejectedReasonEntered = (reason) => {
-    const { onResult } = this.props;
-    onResult({ qty: this.state.newQuantity, reason, scannedBarcode: this.state.scannedBarcode });
-  };
-
-  isQtyEnteredValid = (qtyEntered) => {
-    // non-positive qtys are not valid
+  const validateQtyEntered = (qtyEntered) => {
+    // Qty shall be positive
     if (qtyEntered <= 0) {
-      return false;
+      return counterpart.translate(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
     }
 
-    const { qtyTarget } = this.props;
-    return qtyTarget <= 0 || qtyEntered <= qtyTarget;
+    // Qty shall be less than or equal to qtyTarget
+    if (qtyTarget > 0 && qtyEntered > qtyTarget) {
+      return counterpart.translate(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
+    }
+
+    // OK
+    return null;
   };
 
-  render() {
-    const { uom, qtyCaption, qtyInitial, qtyTarget, qtyRejectedReasons } = this.props;
-    const { progressStatus, qtyRejected } = this.state;
+  const onQtyEntered = (qtyEnteredAndValidated) => {
+    const qtyRejected = Math.max(qtyTarget - qtyEnteredAndValidated, 0);
+    setCurrentQtys({ qty: qtyEnteredAndValidated, qtyRejected });
 
-    switch (progressStatus) {
-      case STATUS_READ_BARCODE:
-        return (
-          <>
-            <BarcodeScannerComponent
-              validateScannedBarcode={this.validateScannedBarcode}
-              onBarcodeScanned={this.onBarcodeScanned}
-            />
-            {this.renderDebugScanEligibleBarcodeButton()}
-          </>
-        );
-      case STATUS_READ_QTY:
-        return (
-          <GetQuantityDialog
-            qtyInitial={qtyInitial}
-            qtyTarget={qtyTarget}
-            qtyCaption={qtyCaption}
-            uom={uom}
-            onQtyChange={this.onQtyEntered}
-            onCloseDialog={this.onCancelGetQty}
-          />
-        );
-      case STATUS_READ_QTY_REJECTED_REASON:
-        return (
-          <QtyReasonsView
-            onHide={this.onQtyRejectedReasonEntered}
-            uom={uom}
-            qtyRejected={qtyRejected}
-            qtyRejectedReasons={qtyRejectedReasons}
-          />
-        );
-      default:
-        return null;
+    if (qtyRejected !== 0) {
+      setProgressStatus(STATUS_READ_QTY_REJECTED_REASON);
+    } else {
+      onResult({ qty: qtyEnteredAndValidated, reason: null, scannedBarcode: currentScannedBarcode });
     }
-  }
+  };
 
-  renderDebugScanEligibleBarcodeButton = () => {
-    if (window.metasfresh_debug && this.props.eligibleBarcode) {
+  const onQtyRejectedReasonEntered = (reason) => {
+    onResult({ qty: currentQtys.qty, reason, scannedBarcode: currentScannedBarcode });
+  };
+
+  switch (progressStatus) {
+    case STATUS_READ_BARCODE:
       return (
-        <Button
-          caption={`DEBUG: ${this.props.eligibleBarcode}`}
-          onClick={() => this.onBarcodeScanned({ scannedBarcode: this.props.eligibleBarcode })}
+        <>
+          <BarcodeScannerComponent
+            validateScannedBarcode={validateScannedBarcode}
+            onBarcodeScanned={onBarcodeScanned}
+          />
+          {window.metasfresh_debug && eligibleBarcode && (
+            <Button
+              caption={`DEBUG: ${eligibleBarcode}`}
+              onClick={() => onBarcodeScanned({ scannedBarcode: eligibleBarcode })}
+            />
+          )}
+        </>
+      );
+    case STATUS_READ_QTY:
+      return (
+        <GetQuantityDialog
+          qtyInitial={qtyInitial}
+          qtyTarget={qtyTarget}
+          qtyCaption={qtyCaption}
+          uom={uom}
+          validateQtyEntered={validateQtyEntered}
+          onQtyChange={onQtyEntered}
+          onCloseDialog={() => setProgressStatus(STATUS_READ_BARCODE)}
         />
       );
-    } else {
+    case STATUS_READ_QTY_REJECTED_REASON:
+      return (
+        <QtyReasonsView
+          onHide={onQtyRejectedReasonEntered}
+          uom={uom}
+          qtyRejected={currentQtys.qtyRejected}
+          qtyRejectedReasons={qtyRejectedReasons}
+        />
+      );
+    default:
       return null;
-    }
-  };
-}
+  }
+};
 
 ScanHUAndGetQtyComponent.propTypes = {
   //

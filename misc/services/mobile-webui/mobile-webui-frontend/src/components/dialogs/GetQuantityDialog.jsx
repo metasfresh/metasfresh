@@ -2,8 +2,16 @@ import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-const GetQuantityDialog = ({ qtyInitial, qtyTarget, qtyCaption, uom, onQtyChange, onCloseDialog }) => {
-  const [qty, setQty] = useState(qtyInitial > 0 ? qtyInitial : 0);
+const GetQuantityDialog = ({
+  qtyInitial,
+  qtyTarget,
+  qtyCaption,
+  uom,
+  validateQtyEntered,
+  onQtyChange,
+  onCloseDialog,
+}) => {
+  const [qtyStr, setQtyStr] = useState(qtyInitial > 0 ? `${qtyInitial}` : '0');
   const qtyInputRef = useRef(null);
 
   useEffect(() => {
@@ -13,22 +21,33 @@ const GetQuantityDialog = ({ qtyInitial, qtyTarget, qtyCaption, uom, onQtyChange
 
   const changeQuantity = (e) => {
     if (!e.target.value) {
-      setQty(0);
+      setQtyStr('0');
     } else {
       const qtyEntered = parseFloat(e.target.value);
       if (isNaN(qtyEntered)) {
         return;
       }
 
-      setQty(qtyEntered);
+      setQtyStr(`${qtyEntered}`);
     }
   };
 
-  const onDialogYes = () => {
-    onQtyChange(qty);
-  };
+  const qty = parseFloat(qtyStr);
+  let isQtyValid = true;
+  let notValidMessage = null;
+  if (isNaN(qty)) {
+    isQtyValid = false;
+    // preserve last notValidMessage
+  } else if (validateQtyEntered) {
+    notValidMessage = validateQtyEntered(qty);
+    isQtyValid = !notValidMessage;
+  }
 
-  const isYesButtonDisabled = !(qty > 0);
+  const onDialogYes = () => {
+    if (isQtyValid) {
+      onQtyChange(qty);
+    }
+  };
 
   return (
     <div>
@@ -38,11 +57,17 @@ const GetQuantityDialog = ({ qtyInitial, qtyTarget, qtyCaption, uom, onQtyChange
             <strong>
               {qtyCaption}: {qtyTarget > 0 ? qtyTarget : 0} {uom}
             </strong>
-            <div className="control">
-              <input ref={qtyInputRef} className="input" type="number" value={qty} onChange={changeQuantity} />
+            <p className="help is-danger">{notValidMessage}&nbsp;</p>
+            <div className="control has-icons-right">
+              <input ref={qtyInputRef} className="input" type="number" value={qtyStr} onChange={changeQuantity} />
+              {!isQtyValid && (
+                <span className="icon is-small is-right">
+                  <i className="fas fa-exclamation-triangle" />
+                </span>
+              )}
             </div>
             <div className="buttons is-centered">
-              <button className="button is-danger" disabled={isYesButtonDisabled} onClick={onDialogYes}>
+              <button className="button is-danger" disabled={!isQtyValid} onClick={onDialogYes}>
                 {counterpart.translate('activities.picking.confirmDone')}
               </button>
               <button className="button is-success" onClick={onCloseDialog}>
@@ -64,6 +89,7 @@ GetQuantityDialog.propTypes = {
   uom: PropTypes.string.isRequired,
 
   // Callbacks
+  validateQtyEntered: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };

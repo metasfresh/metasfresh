@@ -5,23 +5,23 @@ import counterpart from 'counterpart';
 import Button from '../../../../components/buttons/Button';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 
-import { toastError } from '../../../../utils/toast';
-
 const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
-  const onQtyPickedChanged = (qty) => {
-    const qtyEntered = parseFloat(qty);
-    if (isNaN(qtyEntered)) {
-      return;
+  const validateQtyEntered = (qtyEntered) => {
+    // Qty shall be positive
+    if (qtyEntered <= 0) {
+      return counterpart.translate('activities.picking.invalidQtyPicked');
     }
 
-    if (qtyEntered >= 0 && qtyEntered <= qtyTarget) {
-      setDialogOpen(false);
-      onClick(qtyEntered);
-    } else {
-      toastError({ messageKey: 'activities.picking.invalidQtyPicked' });
-    }
+    // OK
+    // NOTE: receiving over the target shall fine
+    return null;
+  };
+
+  const onQtyPickedChanged = (qtyEnteredAndValidated) => {
+    setDialogOpen(false);
+    onClick(qtyEnteredAndValidated);
   };
 
   return (
@@ -30,7 +30,9 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
         <GetQuantityDialog
           qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
           qtyTarget={qtyTarget}
+          qtyInitial={qtyTarget}
           uom={uom}
+          validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyPickedChanged}
           onCloseDialog={() => setDialogOpen(false)}
         />
