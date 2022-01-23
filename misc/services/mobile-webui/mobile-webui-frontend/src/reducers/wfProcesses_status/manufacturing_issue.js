@@ -165,14 +165,9 @@ const normalizeLines = (lines) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  normalizeComponentProps: ({ componentProps }) => {
-    return {
-      ...componentProps,
-      lines: normalizeLines(componentProps.lines),
-    };
-  },
-  computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    return { lines: componentProps.lines };
-  },
+  normalizeComponentProps: () => {}, // don't add componentProps to state
   computeActivityStatus,
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
+  },
 });

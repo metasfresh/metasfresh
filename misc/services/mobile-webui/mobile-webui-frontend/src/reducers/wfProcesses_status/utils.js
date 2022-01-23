@@ -161,7 +161,7 @@ const mergeActivityToState = ({ draftActivity, fromActivity }) => {
     componentType: fromActivity.componentType,
     componentProps: fromActivity.componentProps,
   });
-  draftActivity.componentProps = componentPropsNormalized;
+  draftActivity.componentProps = componentPropsNormalized || {};
 
   if (!draftActivity.dataStored) {
     draftActivity.dataStored = {
