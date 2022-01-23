@@ -6,6 +6,7 @@ import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
 import { toastError } from '../../../../utils/toast';
 import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import QtyInputField from '../../../../components/dialogs/QtyInputField';
 
 const ConfirmOptionScreen = () => {
   const {
@@ -34,7 +35,20 @@ const ConfirmOptionScreen = () => {
     );
   }, [qtyTUs]);
 
-  const onCountChanged = (event) => setQtyTUs(Math.floor(event.target.value));
+  const validateQtyEntered = (qtyTUsEntered) => {
+    if (qtyTUsEntered <= 0) {
+      return 'QtyTUs shall be greater than 0';
+    }
+
+    return null; // OK
+  };
+
+  const onCountChanged = (qtyTUsEntered) => {
+    const newQtyTUs = qtyTUsEntered != null ? Math.floor(qtyTUsEntered) : null;
+    setQtyTUs(newQtyTUs);
+
+    console.log(`onCountChanged: qtyTUsEntered=${qtyTUsEntered} => newQtyTUs=${newQtyTUs}`);
+  };
 
   const history = useHistory();
   const onPrintClick = () => {
@@ -47,11 +61,20 @@ const ConfirmOptionScreen = () => {
       .catch((axiosError) => toastError({ axiosError }));
   };
 
+  const isValidQtyTUs = qtyTUs != null && qtyTUs > 0;
+  const printButtonCaption = isValidQtyTUs ? `Print ${qtyTUs}` : 'Print';
+
   return (
     <div className="section pt-2">
       <pre>{JSON.stringify(optionInfo, null, 2)}</pre>
-      <input className="input" type="number" value={qtyTUs} onChange={onCountChanged} />
-      <Button caption={`Print ${qtyTUs}`} onClick={onPrintClick} />
+      <QtyInputField
+        qtyInitial={qtyTUs}
+        integerValuesOnly
+        validateQtyEntered={validateQtyEntered}
+        onQtyChange={(qty) => onCountChanged(qty)}
+        isRequestFocus={true}
+      />
+      <Button caption={printButtonCaption} disabled={!isValidQtyTUs} onClick={onPrintClick} />
     </div>
   );
 };

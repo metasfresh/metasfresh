@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-const QtyInputField = ({ qtyInitial, validateQtyEntered, onQtyChange, isRequestFocus }) => {
+const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQtyChange, isRequestFocus }) => {
   const [qtyInfo, setQtyInfo] = useState(
     computeQtyInfoFromString({
       qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+      integerValuesOnly,
       prevQtyInfo: null,
       validateQtyEntered,
     })
@@ -25,9 +26,11 @@ const QtyInputField = ({ qtyInitial, validateQtyEntered, onQtyChange, isRequestF
     const qtyInputString = e.target.value ? e.target.value : '0';
     const newQtyInfo = computeQtyInfoFromString({
       qtyInputString,
+      integerValuesOnly,
       prevQtyInfo: qtyInfo,
       validateQtyEntered,
     });
+    console.log(`For e.target.value="${e.target.value}" computed: `, { qtyInputString, newQtyInfo });
     setQtyInfo(newQtyInfo);
     forwardQtyInfoToParent(newQtyInfo);
   };
@@ -53,13 +56,14 @@ const QtyInputField = ({ qtyInitial, validateQtyEntered, onQtyChange, isRequestF
 
 QtyInputField.propTypes = {
   qtyInitial: PropTypes.number,
+  integerValuesOnly: PropTypes.bool,
   validateQtyEntered: PropTypes.func,
   isRequestFocus: PropTypes.bool,
   onQtyChange: PropTypes.func.isRequired,
 };
 
-const computeQtyInfoFromString = ({ qtyInputString, prevQtyInfo, validateQtyEntered }) => {
-  const qty = parseFloat(qtyInputString);
+const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyInfo, validateQtyEntered }) => {
+  let qty = parseFloat(qtyInputString);
 
   if (isNaN(qty)) {
     return {
@@ -69,9 +73,13 @@ const computeQtyInfoFromString = ({ qtyInputString, prevQtyInfo, validateQtyEnte
       notValidMessage: prevQtyInfo?.notValidMessage ?? null, // preserve last notValidMessage
     };
   } else {
+    if (integerValuesOnly) {
+      qty = Math.floor(qty);
+    }
+
     const notValidMessage = validateQtyEntered ? validateQtyEntered(qty) : null;
     return {
-      qtyStr: qtyInputString,
+      qtyStr: `${qty}`,
       qty,
       isQtyValid: !notValidMessage,
       notValidMessage,
