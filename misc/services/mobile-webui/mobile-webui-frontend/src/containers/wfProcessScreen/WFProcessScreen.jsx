@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { updateWFProcess } from '../../actions/WorkflowActions';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
-import { activitiesNotStarted, selectWFProcessFromState } from '../../reducers/wfProcesses_status';
+import { activitiesNotStarted, getWfProcess } from '../../reducers/wfProcesses_status';
 
 import ScanActivity from '../activities/scan/ScanActivity';
 import PickProductsActivity from '../activities/picking/PickProductsActivity';
@@ -129,7 +129,7 @@ class WFProcessScreen extends PureComponent {
 
 function mapStateToProps(state, { match }) {
   const { applicationId, workflowId: wfProcessId } = match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
+  const wfProcess = getWfProcess(state, wfProcessId);
   const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
   const activitiesById = wfProcess.activities ?? {};
   const activities = activityIdsInOrder.map((activityId) => activitiesById[activityId]);

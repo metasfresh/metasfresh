@@ -12,7 +12,7 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 
-const getWfProcess = (state, wfProcessId) => {
+export const getWfProcess = (state, wfProcessId) => {
   if (!wfProcessId) {
     console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
   }
