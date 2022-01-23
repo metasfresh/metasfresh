@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { confirmOptionLocation } from '../../../../routes/generateHUQRCodes';
-import { getOptions } from './utils';
+import { getOptionsFromActivity } from './utils';
 import Button from '../../../../components/buttons/Button';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { getActivityById } from '../../../../reducers/wfProcesses_status';
 
 const SelectOptionsScreen = () => {
   const {
+    url,
     params: { applicationId, wfProcessId, activityId },
   } = useRouteMatch();
-  const options = useSelector((state) => getOptions({ state, wfProcessId, activityId }));
+
+  const { activityCaption, options } = useSelector((state) => {
+    const activity = getActivityById(state, wfProcessId, activityId);
+    return {
+      activityCaption: activity.caption,
+      options: getOptionsFromActivity(activity),
+    };
+  });
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
+  }, []);
 
   const history = useHistory();
   const onOptionButtonClicked = (optionIndex) => {
@@ -17,7 +32,7 @@ const SelectOptionsScreen = () => {
   };
 
   return (
-    <div className="pt-2 section">
+    <div className="section pt-2">
       {options.map((optionItem, optionIndex) => (
         <Button key={optionIndex} caption={optionItem.caption} onClick={() => onOptionButtonClicked(optionIndex)} />
       ))}

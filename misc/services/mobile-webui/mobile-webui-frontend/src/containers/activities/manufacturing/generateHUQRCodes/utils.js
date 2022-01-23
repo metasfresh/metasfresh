@@ -1,9 +1,16 @@
 import { getActivityById } from '../../../../reducers/wfProcesses_status';
 
+export const getOptionsFromActivity = (activity) => {
+  return activity?.componentProps?.options ?? [];
+};
+
 export const getOptions = ({ state, wfProcessId, activityId }) => {
-  return getActivityById(state, wfProcessId, activityId)?.componentProps?.options ?? [];
+  const activity = getActivityById(state, wfProcessId, activityId);
+  return activity?.componentProps?.options ?? [];
 };
 
 export const getOptionByIndex = ({ state, wfProcessId, activityId, optionIndex }) => {
-  return getOptions({ state, wfProcessId, activityId })[optionIndex];
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const options = getOptionsFromActivity(activity);
+  return options[optionIndex];
 };
