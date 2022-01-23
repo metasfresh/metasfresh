@@ -1,99 +1,75 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import React, { useEffect } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 import counterpart from 'counterpart';
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { pickingLineScreenLocation } from '../../../routes/picking';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { getLineById } from '../../../reducers/wfProcesses_status';
 
 import PickStepButton from './PickStepButton';
 
-class PickLineScreen extends PureComponent {
-  componentDidMount() {
-    const {
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      lineProps: { caption },
-      pushHeaderEntry,
-    } = this.props;
-    const location = pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId });
+const PickLineScreen = () => {
+  const {
+    url,
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
 
-    pushHeaderEntry({
-      location,
-      caption: 'Pick product', // TODO trl
-      values: [
-        {
-          caption: counterpart.translate('activities.picking.PickingLine'),
-          value: caption,
-          bold: true,
-        },
-      ],
-    });
-  }
+  const { caption, steps } = useSelector(
+    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
+    shallowEqual
+  );
 
-  render() {
-    const { applicationId, wfProcessId, activityId, lineId, steps } = this.props;
-
-    return (
-      <div className="section pt-2">
-        <div className="buttons">
-          {steps.length > 0 &&
-            steps.map((stepItem, idx) => {
-              return (
-                <PickStepButton
-                  key={idx}
-                  applicationId={applicationId}
-                  wfProcessId={wfProcessId}
-                  activityId={activityId}
-                  lineId={lineId}
-                  stepId={stepItem.pickingStepId}
-                  pickFromAlternatives={stepItem.pickFromAlternatives}
-                  //
-                  uom={stepItem.uom}
-                  qtyToPick={stepItem.qtyToPick}
-                  pickFrom={stepItem.mainPickFrom}
-                />
-              );
-            })}
-        </div>
-      </div>
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        caption: 'Pick product', // TODO trl
+        values: [
+          {
+            caption: counterpart.translate('activities.picking.PickingLine'),
+            value: caption,
+            bold: true,
+          },
+        ],
+      })
     );
-  }
-}
+  }, []);
 
-const mapStateToProps = (state, ownProps) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+  return (
+    <div className="section pt-2">
+      <div className="buttons">
+        {steps.length > 0 &&
+          steps.map((stepItem, idx) => {
+            return (
+              <PickStepButton
+                key={idx}
+                applicationId={applicationId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                lineId={lineId}
+                stepId={stepItem.pickingStepId}
+                pickFromAlternatives={stepItem.pickFromAlternatives}
+                //
+                uom={stepItem.uom}
+                qtyToPick={stepItem.qtyToPick}
+                pickFrom={stepItem.mainPickFrom}
+              />
+            );
+          })}
+      </div>
+    </div>
+  );
+};
 
-  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
+  const lineProps = getLineById(state, wfProcessId, activityId, lineId);
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
+    caption: lineProps.caption,
     steps: Object.values(stepsById),
-    componentType: activity.componentType,
-    lineProps,
   };
 };
 
-PickLineScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  steps: PropTypes.array.isRequired,
-  lineProps: PropTypes.object.isRequired,
-  pushHeaderEntry: PropTypes.func.isRequired,
-};
-
-export default withRouter(connect(mapStateToProps, { pushHeaderEntry })(PickLineScreen));
+export default PickLineScreen;
