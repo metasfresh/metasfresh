@@ -1,6 +1,9 @@
 import * as networkTypes from '../constants/NetworkActionTypes';
 import * as tokenTypes from '../constants/TokenActionTypes';
 
+export const getTokenFromState = (state) => state.appHandler.token;
+export const getIsLoggedInFromState = (state) => !!getTokenFromState(state);
+
 export const initialState = {
   network: true,
   token: null,

@@ -2,7 +2,6 @@ import * as types from '../constants/ApplicationsActionTypes';
 
 const initialState = {
   availableApplications: {},
-  activeApplication: null,
 };
 
 export const getAvailableApplicationsArray = (state) => {

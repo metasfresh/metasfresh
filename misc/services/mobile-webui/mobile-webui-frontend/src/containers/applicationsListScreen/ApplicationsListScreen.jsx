@@ -2,9 +2,10 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 import { getAvailableApplicationsArray } from '../../reducers/applications';
-import LogoHeader from '../../components/LogoHeader';
-import ApplicationButton from './ApplicationButton';
+
 import ScreenToaster from '../../components/ScreenToaster';
+import ApplicationButton from './ApplicationButton';
+import LogoHeader from '../../components/LogoHeader';
 
 const ApplicationsListScreen = () => {
   const applications = useSelector((state) => getAvailableApplicationsArray(state));

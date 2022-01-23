@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
 
 import { useAuth } from '../hooks/useAuth';
 import counterpart from 'counterpart';
@@ -21,11 +20,9 @@ const LoginScreen = () => {
   const { from } = location.state || { from: { pathname: '/' } };
   const usernameFieldRef = useRef(null);
   useEffect(() => {
-    const token = Cookies.get('Token');
-    console.log('useEffect: token', token);
-
-    if (token) {
-      auth.localLogin({ token }).then(() => history.replace(from));
+    if (auth.isLoggedIn()) {
+      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
+      history.replace(from);
     } else {
       usernameFieldRef.current.focus();
       usernameFieldRef.current.select();
@@ -45,6 +42,12 @@ const LoginScreen = () => {
       });
     // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
   };
+
+  // Already logged in, no point to render this screen
+  if (auth.isLoggedIn()) {
+    console.log(`Already logged in, no point to render this screen`);
+    return null;
+  }
 
   return (
     <div className="login-view">

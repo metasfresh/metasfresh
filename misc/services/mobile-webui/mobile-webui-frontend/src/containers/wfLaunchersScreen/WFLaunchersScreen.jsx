@@ -11,6 +11,7 @@ import { getApplicationLaunchers } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
+import { getTokenFromState } from '../../reducers/appHandler';
 
 const WFLaunchersScreen = () => {
   const {
@@ -28,7 +29,7 @@ const WFLaunchersScreen = () => {
 
   //
   // Connect to WebSocket topic
-  const userToken = useSelector((state) => state.appHandler.token);
+  const userToken = useSelector((state) => getTokenFromState(state));
   const wsClientRef = useRef(null);
   useEffect(() => {
     if (!wsClientRef.current) {

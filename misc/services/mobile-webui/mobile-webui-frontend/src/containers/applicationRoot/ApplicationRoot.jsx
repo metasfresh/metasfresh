@@ -10,19 +10,20 @@ import { routesArray } from '../../routes';
 import './ApplicationRoot.css';
 import VersionChecker from '../../components/VersionChecker';
 import { REGISTER_SERVICE_WORKER, VERSION_CHECK_INTERVAL_MILLIS } from '../../constants';
-import { getApplications } from '../../api/applications';
-import { populateApplications } from '../../actions/ApplicationsActions';
 import { history } from '../../store/store';
 import { Route, Switch } from 'react-router';
-import LoginScreen from '../LoginScreen';
 import PrivateRoute from '../../routes/PrivateRoute';
+import LoginScreen from '../LoginScreen';
 import ApplicationsListScreen from '../applicationsListScreen/ApplicationsListScreen';
 import { ApplicationLayout } from './ApplicationLayout';
+import * as api from '../../api/applications';
+import { populateApplications } from '../../actions/ApplicationsActions';
+import { toastError } from '../../utils/toast';
+import { getIsLoggedInFromState } from '../../reducers/appHandler';
 
 const ApplicationRoot = () => {
   const auth = useAuth();
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.appHandler.token);
 
   // If endpoint call returned 401 - Authentication error
   // then redirect user to login page
@@ -38,13 +39,17 @@ const ApplicationRoot = () => {
     });
   });
 
+  const isLoggedIn = useSelector((state) => getIsLoggedInFromState(state));
   useEffect(() => {
-    if (token) {
-      getApplications().then(({ applications }) => {
-        dispatch(populateApplications({ applications }));
-      });
+    if (isLoggedIn) {
+      api
+        .getApplications()
+        .then(({ applications }) => {
+          dispatch(populateApplications({ applications }));
+        })
+        .catch((axiosError) => toastError({ axiosError }));
     }
-  }, [token]);
+  }, [isLoggedIn]);
 
   return (
     <>
