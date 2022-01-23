@@ -25,7 +25,7 @@ const MaterialReceiptActivity = (props) => {
   };
 
   return (
-    <div className="mfg-materialReceipt-activity-container mt-5">
+    <div className="mt-5">
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;

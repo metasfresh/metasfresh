@@ -42,29 +42,26 @@ const RawMaterialIssueLineScreen = () => {
   };
 
   return (
-    <div className="pt-2 section">
-      <div className="steps-container">
-        {steps.length > 0 &&
-          steps.map((stepItem) => {
-            return (
-              <div className="mt-3" key={stepItem.id}>
-                <ButtonWithIndicator
-                  caption={stepItem.locatorName}
-                  completeStatus={stepItem.completeStatus}
-                  onClick={() => onButtonClick({ stepId: stepItem.id })}
-                >
-                  <ButtonQuantityProp
-                    qtyCurrent={stepItem.qtyIssued ?? 0}
-                    qtyTarget={stepItem.qtyToIssue}
-                    uom={stepItem.uom}
-                    applicationId={applicationId}
-                    subtypeId="issues"
-                  />
-                </ButtonWithIndicator>
-              </div>
-            );
-          })}
-      </div>
+    <div className="section pt-2">
+      {steps.length > 0 &&
+        steps.map((stepItem) => {
+          return (
+            <ButtonWithIndicator
+              key={stepItem.id}
+              caption={stepItem.locatorName}
+              completeStatus={stepItem.completeStatus}
+              onClick={() => onButtonClick({ stepId: stepItem.id })}
+            >
+              <ButtonQuantityProp
+                qtyCurrent={stepItem.qtyIssued ?? 0}
+                qtyTarget={stepItem.qtyToIssue}
+                uom={stepItem.uom}
+                applicationId={applicationId}
+                subtypeId="issues"
+              />
+            </ButtonWithIndicator>
+          );
+        })}
     </div>
   );
 };

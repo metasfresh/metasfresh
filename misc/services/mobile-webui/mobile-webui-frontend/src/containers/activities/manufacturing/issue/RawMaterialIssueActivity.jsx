@@ -24,7 +24,7 @@ const RawMaterialsIssueActivity = (props) => {
   };
 
   return (
-    <div className="mfg-rawMaterialsIssue-activity-container mt-5">
+    <div className="mt-5">
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;

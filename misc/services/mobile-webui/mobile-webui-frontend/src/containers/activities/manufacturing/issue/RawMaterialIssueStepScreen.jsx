@@ -64,20 +64,14 @@ const RawMaterialIssueStepScreen = () => {
   const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
   return (
-    <div className="pt-3 section">
-      <div className="picking-step-details centered-text is-size-5">
-        <div>
-          <div className="mt-0">
-            <ButtonWithIndicator
-              caption={scanButtonCaption}
-              completeStatus={scanButtonStatus}
-              disabled={isIssued}
-              onClick={onScanButtonClick}
-            />
-            {/* Unpick button */}
-          </div>
-        </div>
-      </div>
+    <div className="section pt-3">
+      <ButtonWithIndicator
+        caption={scanButtonCaption}
+        completeStatus={scanButtonStatus}
+        disabled={isIssued}
+        onClick={onScanButtonClick}
+      />
+      {/* Unpick button */}
     </div>
   );
 };

@@ -16,11 +16,13 @@ const GenerateHUQRCodesActivity = ({
   const history = useHistory();
 
   return (
-    <Button
-      caption={caption}
-      disabled={!isUserEditable}
-      onClick={() => history.push(selectOptionsLocation({ applicationId, wfProcessId, activityId }))}
-    />
+    <div className="mt-5">
+      <Button
+        caption={caption}
+        disabled={!isUserEditable}
+        onClick={() => history.push(selectOptionsLocation({ applicationId, wfProcessId, activityId }))}
+      />
+    </div>
   );
 };
 
