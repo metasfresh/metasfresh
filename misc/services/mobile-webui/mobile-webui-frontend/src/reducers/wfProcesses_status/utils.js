@@ -137,7 +137,7 @@ export const mergeActivitiesToState = ({ targetWFProcess, fromActivities }) => {
   //
   // Add activities which exist in source but not yet in target
   Object.values(fromActivitiesById).forEach((activityToAdd) => {
-    targetActivitiesById[activityToAdd.activityId] = { ...activityToAdd };
+    targetActivitiesById[activityToAdd.activityId] = {};
     mergeActivityToState({
       draftActivity: targetActivitiesById[activityToAdd.activityId],
       fromActivity: activityToAdd,
@@ -153,6 +153,7 @@ export const mergeActivitiesToState = ({ targetWFProcess, fromActivities }) => {
 };
 
 const mergeActivityToState = ({ draftActivity, fromActivity }) => {
+  draftActivity.activityId = fromActivity.activityId; // for new activities
   draftActivity.caption = fromActivity.caption;
   draftActivity.componentType = fromActivity.componentType;
 

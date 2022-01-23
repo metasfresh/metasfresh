@@ -1,5 +1,4 @@
 import { produce } from 'immer';
-import { createSelector } from 'reselect';
 
 import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
@@ -18,20 +17,6 @@ export const getWfProcess = (state, wfProcessId) => {
 
   return state.wfProcesses_status[wfProcessId] || null;
 };
-
-export const selectWFProcessFromState = createSelector(
-  (state, wfProcessId) => getWfProcess(state, wfProcessId),
-  (wfProcess) =>
-    wfProcess
-      ? wfProcess
-      : {
-          headerProperties: {
-            entries: [],
-          },
-          activities: {},
-          isSentToBackend: false,
-        }
-);
 
 export const getActivitiesInOrder = (wfProcess) => {
   const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
