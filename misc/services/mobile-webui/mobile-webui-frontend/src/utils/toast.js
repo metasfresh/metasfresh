@@ -19,7 +19,7 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   toast(message, { type: 'error', style: { color: 'white' } });
 };
 
-export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey }) => {
+export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   if (axiosError && axiosError.response && axiosError.response.data) {
     const data = axiosError.response && unboxAxiosResponse(axiosError.response);
     if (data && data.errors && data.errors[0] && data.errors[0].message) {
