@@ -36,7 +36,6 @@ const computeActivityStatus = ({ draftActivityDataStored }) => {
   const scannedBarcode = draftActivityDataStored.scannedBarcode;
   const barcodeCaption = draftActivityDataStored.barcodeCaption;
   const completed = (scannedBarcode && scannedBarcode.length > 0) || (barcodeCaption && barcodeCaption.length > 0);
-  console.log('computeActivityStatus', { scannedBarcode, barcodeCaption, completed });
   return completed ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
