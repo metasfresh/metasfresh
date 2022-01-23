@@ -43,13 +43,6 @@ const ConfirmOptionScreen = () => {
     return null; // OK
   };
 
-  const onCountChanged = (qtyTUsEntered) => {
-    const newQtyTUs = qtyTUsEntered != null ? Math.floor(qtyTUsEntered) : null;
-    setQtyTUs(newQtyTUs);
-
-    console.log(`onCountChanged: qtyTUsEntered=${qtyTUsEntered} => newQtyTUs=${newQtyTUs}`);
-  };
-
   const history = useHistory();
   const onPrintClick = () => {
     postGenerateHUQRCodes({
@@ -71,7 +64,7 @@ const ConfirmOptionScreen = () => {
         qtyInitial={qtyTUs}
         integerValuesOnly
         validateQtyEntered={validateQtyEntered}
-        onQtyChange={(qty) => onCountChanged(qty)}
+        onQtyChange={setQtyTUs}
         isRequestFocus={true}
       />
       <Button caption={printButtonCaption} disabled={!isValidQtyTUs} onClick={onPrintClick} />

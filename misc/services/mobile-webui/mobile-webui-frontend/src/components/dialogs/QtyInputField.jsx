@@ -30,7 +30,8 @@ const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQt
       prevQtyInfo: qtyInfo,
       validateQtyEntered,
     });
-    console.log(`For e.target.value="${e.target.value}" computed: `, { qtyInputString, newQtyInfo });
+
+    //console.log(`For e.target.value="${e.target.value}" computed: `, { qtyInputString, newQtyInfo });
     setQtyInfo(newQtyInfo);
     forwardQtyInfoToParent(newQtyInfo);
   };
