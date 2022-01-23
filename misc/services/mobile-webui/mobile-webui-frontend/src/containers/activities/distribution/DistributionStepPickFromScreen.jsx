@@ -1,48 +1,51 @@
-import React, { PureComponent } from 'react';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
-import { go } from 'connected-react-router';
+import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import counterpart from 'counterpart';
-import PropTypes from 'prop-types';
 
-import { postDistributionPickFrom } from '../../../api/distribution';
-import { distributionStepPickFromScreenLocation } from '../../../routes/distribution';
 import { toastError } from '../../../utils/toast';
-import { getQtyRejectedReasonsFromActivity, selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import {
+  getActivityById,
+  getQtyRejectedReasonsFromActivity,
+  getStepByIdFromActivity,
+} from '../../../reducers/wfProcesses_status';
+import { postDistributionPickFrom } from '../../../api/distribution';
 import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 
-class DistributionStepPickFromScreen extends PureComponent {
-  componentDidMount() {
-    const { applicationId, wfProcessId, activityId, lineId, stepId, qtyToMove, huBarcode } = this.props;
-    const location = distributionStepPickFromScreenLocation({
-      applicationId,
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-    });
+const DistributionStepPickFromScreen = () => {
+  const {
+    url,
+    params: { workflowId: wfProcessId, activityId, lineId, stepId },
+  } = useRouteMatch();
 
-    pushHeaderEntry({
-      location,
-      values: [
-        {
-          caption: counterpart.translate('activities.distribution.scanHU'),
-          value: huBarcode,
-        },
-        {
-          caption: counterpart.translate('general.QtyToMove'),
-          value: qtyToMove,
-        },
-      ],
-    });
-  }
+  const { huBarcode, qtyToMove, uom, qtyRejectedReasons } = useSelector((state) =>
+    getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
+  );
 
-  onResult = ({ qty = 0, reason = null }) => {
-    const { wfProcessId, activityId, lineId, stepId } = this.props;
-    const { updateDistributionPickFrom, go } = this.props;
+  const history = useHistory();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        values: [
+          {
+            caption: counterpart.translate('activities.distribution.scanHU'),
+            value: huBarcode,
+          },
+          {
+            caption: counterpart.translate('general.QtyToMove'),
+            value: qtyToMove,
+          },
+        ],
+      })
+    );
+  }, []);
 
+  const onResult = ({ qty = 0, reason = null }) => {
     postDistributionPickFrom({
       wfProcessId,
       activityId,
@@ -53,77 +56,46 @@ class DistributionStepPickFromScreen extends PureComponent {
       },
     })
       .then(() => {
-        updateDistributionPickFrom({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          qtyPicked: qty,
-          qtyRejectedReasonCode: reason,
-        });
+        dispatch(
+          updateDistributionPickFrom({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            qtyPicked: qty,
+            qtyRejectedReasonCode: reason,
+          })
+        );
 
-        go(-2);
+        history.go(-2);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  render() {
-    const { huBarcode, qtyToMove, uom, qtyRejectedReasons } = this.props;
-    return (
-      <ScanHUAndGetQtyComponent
-        eligibleBarcode={huBarcode}
-        qtyCaption={counterpart.translate('general.QtyToMove')}
-        qtyInitial={qtyToMove}
-        qtyTarget={qtyToMove}
-        uom={uom}
-        qtyRejectedReasons={qtyRejectedReasons}
-        invalidQtyMessageKey={'activities.distribution.invalidQtyToMove'}
-        onResult={this.onResult}
-      />
-    );
-  }
-}
-
-DistributionStepPickFromScreen.propTypes = {
-  //
-  // Props
-  applicationId: PropTypes.string.isRequired,
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  stepId: PropTypes.string.isRequired,
-  uom: PropTypes.string.isRequired,
-  qtyToMove: PropTypes.number.isRequired,
-  huBarcode: PropTypes.string.isRequired,
-  qtyRejectedReasons: PropTypes.array.isRequired,
-  //
-  // Actions
-  go: PropTypes.func.isRequired,
-  updateDistributionPickFrom: PropTypes.func.isRequired,
+  return (
+    <ScanHUAndGetQtyComponent
+      eligibleBarcode={huBarcode}
+      qtyCaption={counterpart.translate('general.QtyToMove')}
+      qtyInitial={qtyToMove}
+      qtyTarget={qtyToMove}
+      uom={uom}
+      qtyRejectedReasons={qtyRejectedReasons}
+      invalidQtyMessageKey={'activities.distribution.invalidQtyToMove'}
+      onResult={onResult}
+    />
+  );
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { applicationId, workflowId: wfProcessId, activityId, lineId, stepId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-  const lineProps = activity != null ? activity.dataStored.lines[lineId] : null;
-  const stepProps = lineProps != null && lineProps.steps ? lineProps.steps[stepId] : {};
-
-  const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const step = getStepByIdFromActivity(activity, lineId, stepId);
 
   return {
-    applicationId,
-    wfProcessId,
-    activityId,
-    lineId,
-    stepId,
-    qtyToMove: stepProps.qtyToMove,
-    uom: stepProps.uom,
-    huBarcode: stepProps.pickFromHU.barcode,
-    qtyRejectedReasons,
+    huBarcode: step.pickFromHU.barcode,
+    qtyToMove: step.qtyToMove,
+    uom: step.uom,
+    qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),
   };
 };
 
-export default withRouter(
-  connect(mapStateToProps, { go, updateDistributionPickFrom, pushHeaderEntry })(DistributionStepPickFromScreen)
-);
+export default DistributionStepPickFromScreen;

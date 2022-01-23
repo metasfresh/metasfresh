@@ -81,6 +81,11 @@ export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   return line?.steps?.[stepId];
 };
 
+export const getStepByIdFromActivity = (activity, lineId, stepId) => {
+  const line = getLineByIdFromActivity(activity, lineId);
+  return line?.steps?.[stepId];
+};
+
 export const getQtyRejectedReasonsFromActivity = (activity) => {
   return activity?.componentProps?.qtyRejectedReasons?.reasons ?? [];
 };
