@@ -96,7 +96,6 @@ const isWFProcessRequiredButNotLoaded = () => {
   if (!wfProcessId) {
     return false;
   }
-  console.log('loadWFProcessIfNeeded: wfProcessId=', wfProcessId);
 
   const isWFProcessLoaded = useSelector((state) => isWfProcessLoaded(state, wfProcessId));
   return !isWFProcessLoaded;
