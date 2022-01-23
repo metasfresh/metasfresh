@@ -328,13 +328,7 @@ export const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDa
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  normalizeComponentProps: ({ componentProps }) => {
-    return {
-      ...componentProps,
-      lines: normalizePickingLines(componentProps.lines),
-    };
-  },
-
+  normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     mergeActivityDataStoredAndAllocateAlternatives({ draftActivityDataStored, fromActivity });
   },

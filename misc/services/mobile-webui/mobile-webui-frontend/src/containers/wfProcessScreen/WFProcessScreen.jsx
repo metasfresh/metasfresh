@@ -135,7 +135,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
-    headerProperties: wfProcess.headerProperties.entries,
+    headerProperties: wfProcess.headerProperties?.entries || [],
     activities: getActivitiesInOrder(wfProcess),
     isWorkflowNotStarted: isWorkflowNotStarted(wfProcess),
   };
