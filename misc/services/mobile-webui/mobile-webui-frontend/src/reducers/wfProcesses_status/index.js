@@ -15,7 +15,16 @@ export const getWfProcess = (state, wfProcessId) => {
     console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
   }
 
-  return state.wfProcesses_status[wfProcessId] || null;
+  return state.wfProcesses_status[wfProcessId];
+};
+
+export const isWfProcessLoaded = (state, wfProcessId) => {
+  if (!wfProcessId) {
+    console.trace(`isWfProcessLoaded called with wfProcessId=${wfProcessId}`);
+    return false;
+  }
+
+  return !!state.wfProcesses_status[wfProcessId];
 };
 
 export const getActivitiesInOrder = (wfProcess) => {

@@ -1,15 +1,31 @@
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
 import { getCaptionFromHeaders } from '../../reducers/headers';
+import { isWfProcessLoaded } from '../../reducers/wfProcesses_status';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
-  const applicationInfo = getApplicationInfo(applicationId) ?? {};
   const history = useHistory();
+
+  //
+  // If the required process was not loaded,
+  // then redirect to home
+  const redirectToHome = isWFProcessRequiredButNotLoaded();
+  if (redirectToHome) {
+    useEffect(() => {
+      if (redirectToHome) {
+        history.push('/');
+      }
+    }, [redirectToHome]);
+
+    return null;
+  }
+
+  const applicationInfo = getApplicationInfo(applicationId) ?? {};
 
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
   const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
@@ -72,4 +88,16 @@ const getApplicationInfo = (knownApplicationId) => {
   }
 
   return useSelector((state) => getApplicationInfoById({ state, applicationId }));
+};
+
+const isWFProcessRequiredButNotLoaded = () => {
+  const { params } = useRouteMatch();
+  const wfProcessId = params.wfProcessId || params.workflowId;
+  if (!wfProcessId) {
+    return false;
+  }
+  console.log('loadWFProcessIfNeeded: wfProcessId=', wfProcessId);
+
+  const isWFProcessLoaded = useSelector((state) => isWfProcessLoaded(state, wfProcessId));
+  return !isWFProcessLoaded;
 };

@@ -34,7 +34,7 @@ const WFProcessScreen = () => {
         values: headerProperties,
       })
     );
-  }, []);
+  }, [url, headerProperties]);
 
   return (
     <div className="section pt-2">
@@ -135,9 +135,9 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
-    headerProperties: wfProcess.headerProperties?.entries || [],
-    activities: getActivitiesInOrder(wfProcess),
-    isWorkflowNotStarted: isWorkflowNotStarted(wfProcess),
+    headerProperties: wfProcess?.headerProperties?.entries || [],
+    activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
+    isWorkflowNotStarted: wfProcess ? isWorkflowNotStarted(wfProcess) : false,
   };
 };
 

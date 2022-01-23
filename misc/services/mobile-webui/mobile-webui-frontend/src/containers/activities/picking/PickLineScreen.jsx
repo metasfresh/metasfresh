@@ -34,7 +34,7 @@ const PickLineScreen = () => {
         ],
       })
     );
-  }, []);
+  }, [url, caption]);
 
   return (
     <div className="section pt-2">
@@ -67,7 +67,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
-    caption: lineProps.caption,
+    caption: lineProps?.caption,
     steps: Object.values(stepsById),
   };
 };
