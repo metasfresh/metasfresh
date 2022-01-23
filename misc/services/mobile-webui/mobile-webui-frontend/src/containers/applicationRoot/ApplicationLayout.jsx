@@ -34,24 +34,22 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
         <ScreenToaster />
       </div>
       <div className="app-footer">
-        <div className="app-footer">
-          <div className="columns is-mobile">
-            <div className="column is-half">
-              <button className="button is-fullwidth" onClick={() => history.goBack()}>
-                <span className="icon">
-                  <i className="fas fa-chevron-left" />
-                </span>
-                <span>Back</span>
-              </button>
-            </div>
-            <div className="column is-half">
-              <button className="button is-fullwidth" onClick={() => history.push('/')}>
-                <span className="icon">
-                  <i className="fas fa-home" />
-                </span>
-                <span>Home</span>
-              </button>
-            </div>
+        <div className="columns is-mobile">
+          <div className="column is-half">
+            <button className="button is-fullwidth is-size-4" onClick={() => history.goBack()}>
+              <span className="icon">
+                <i className="fas fa-chevron-left" />
+              </span>
+              <span>Back</span>
+            </button>
+          </div>
+          <div className="column is-half">
+            <button className="button is-fullwidth is-size-4" onClick={() => history.push('/')}>
+              <span className="icon">
+                <i className="fas fa-home" />
+              </span>
+              <span>Home</span>
+            </button>
           </div>
         </div>
       </div>
