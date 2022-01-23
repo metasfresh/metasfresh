@@ -6,7 +6,7 @@ import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
 import { toastError } from '../../../../utils/toast';
 import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import QtyInputField from '../../../../components/dialogs/QtyInputField';
+import QtyInputField from '../../../../components/QtyInputField';
 
 const ConfirmOptionScreen = () => {
   const {

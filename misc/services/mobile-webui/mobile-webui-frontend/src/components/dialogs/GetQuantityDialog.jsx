@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 
-import QtyInputField from './QtyInputField';
+import QtyInputField from '../QtyInputField';
 
 const GetQuantityDialog = ({
   qtyInitial,
