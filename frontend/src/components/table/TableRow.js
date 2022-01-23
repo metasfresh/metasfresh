@@ -15,7 +15,6 @@ import {
   nestedSelect,
   getTooltipWidget,
 } from '../../utils/tableHelpers';
-
 import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 
@@ -560,7 +559,7 @@ class TableRow extends PureComponent {
                 colIndex={idx}
                 hasComments={!!(hasComments && idx === 0)}
                 cellExtended={cellsExtended}
-                key={`${rowId}-${property}`}
+                key={`${property}-${idx}`}
                 isRowSelected={isSelected}
                 handleDoubleClick={this.handleEditProperty}
                 handleFocusAction={handleFocusAction}
