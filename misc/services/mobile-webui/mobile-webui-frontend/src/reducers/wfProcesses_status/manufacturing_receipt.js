@@ -93,10 +93,11 @@ const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
 };
 
-const computeLineStatus = ({ qtyToReceive, qtyReceived, aggregateToLU, currentReceivingHU }) => {
-  if (qtyToReceive === qtyReceived && aggregateToLU) {
+const computeLineStatus = ({ qtyToReceive, qtyReceived }) => {
+  const qtyToReceiveRemaining = qtyToReceive - qtyReceived;
+  if (qtyToReceiveRemaining <= 0) {
     return CompleteStatus.COMPLETED;
-  } else if (qtyToReceive === qtyReceived || aggregateToLU || currentReceivingHU) {
+  } else if (qtyReceived > 0) {
     return CompleteStatus.IN_PROGRESS;
   } else {
     return CompleteStatus.NOT_STARTED;
@@ -156,4 +157,8 @@ registerHandler({
     return { lines: componentProps.lines };
   },
   computeActivityStatus,
+  mergeActivityDataStored: ({ draftActivityDataStored }) => {
+    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    return draftActivityDataStored;
+  },
 });

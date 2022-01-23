@@ -35,7 +35,7 @@ const MaterialReceiptActivity = (props) => {
                 key={lineId}
                 caption={lineItem.productName}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                disabled={!isUserEditable && false}
+                disabled={!isUserEditable}
                 onClick={() => onButtonClick({ lineId })}
               >
                 <ButtonQuantityProp
