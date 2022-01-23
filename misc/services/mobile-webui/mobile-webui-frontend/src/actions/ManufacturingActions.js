@@ -5,7 +5,7 @@ import {
   UPDATE_MANUFACTURING_RECEIPT,
 } from '../constants/ManufacturingActionTypes';
 
-import { selectWFProcessFromState } from '../reducers/wfProcesses_status';
+import { getWfProcess } from '../reducers/wfProcesses_status';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 
 export function updateManufacturingIssueQty({
@@ -33,7 +33,7 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
   return (dispatch, getState) => {
     const state = getState();
 
-    const wfProcess = selectWFProcessFromState(state, wfProcessId);
+    const wfProcess = getWfProcess(state, wfProcessId);
     const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
     const line = activity != null ? activity.dataStored.lines[lineId] : null;
 
@@ -76,7 +76,7 @@ export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) 
   return (dispatch, getState) => {
     const state = getState();
 
-    const wfProcess = selectWFProcessFromState(state, wfProcessId);
+    const wfProcess = getWfProcess(state, wfProcessId);
     const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
     const line = activity != null ? activity.dataStored.lines[lineId] : null;
 

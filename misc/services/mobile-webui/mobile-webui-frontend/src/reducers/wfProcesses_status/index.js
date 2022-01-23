@@ -1,6 +1,5 @@
 import { produce } from 'immer';
 import { createSelector } from 'reselect';
-import { forEach } from 'lodash';
 
 import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
@@ -34,40 +33,25 @@ export const selectWFProcessFromState = createSelector(
         }
 );
 
-const selectActivities = createSelector(
-  (state, wfProcessId) => getWfProcess(state, wfProcessId),
-  (wfProcess) => (wfProcess ? wfProcess.activities : {})
-);
+export const getActivitiesInOrder = (wfProcess) => {
+  const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
+  const activitiesById = wfProcess.activities ?? {};
+  return activityIdsInOrder.map((activityId) => activitiesById[activityId]);
+};
 
-const selectActivitiesStatuses = createSelector(
-  (state, wfProcessId) => selectActivities(state, wfProcessId),
-  (activities) => {
-    const statuses = [];
+export const isWorkflowNotStarted = (wfProcess) => {
+  const activitiesById = wfProcess?.activities ?? {};
+  const activities = Object.values(activitiesById);
 
-    forEach(activities, (activity) => {
-      statuses.push(activity.dataStored.completeStatus);
-    });
-
-    return statuses;
-  }
-);
-
-export const activitiesNotStarted = createSelector(
-  (state, wfProcessId) => selectActivitiesStatuses(state, wfProcessId),
-  (activitiesStatuses) => {
-    let notStarted = true;
-
-    for (let i = 0; i < activitiesStatuses.length; i += 1) {
-      if (activitiesStatuses[i] !== NOT_STARTED) {
-        notStarted = false;
-
-        break;
-      }
+  for (let i = 0; i < activities.length; i += 1) {
+    const activityStatus = activities[i].dataStored.completeStatus;
+    if (activityStatus !== NOT_STARTED) {
+      return false;
     }
-
-    return notStarted;
   }
-);
+
+  return true;
+};
 
 export const getActivityById = (state, wfProcessId, activityId) => {
   return getWfProcess(state, wfProcessId)?.activities?.[activityId];
