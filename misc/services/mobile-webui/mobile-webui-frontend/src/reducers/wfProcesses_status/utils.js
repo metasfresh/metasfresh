@@ -41,8 +41,10 @@ export const updateUserEditable = ({ draftWFProcess }) => {
 };
 
 const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) => {
+  // IMPORTANT: we assume that currentActivity nor previousActivity have the isAlwaysAvailableToUser flag set.
+  // Those activities shall be filtered out by the caller.
+
   const currentActivityCompleteStatus = currentActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
-  const activityId = currentActivity.activityId; // needed for loggging
 
   let isUserEditable;
   let makePreviousActivityReadOnly = false;
@@ -51,27 +53,33 @@ const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) =>
   // First activity is always editable
   if (previousActivity == null) {
     isUserEditable = true;
-    console.log(
-      `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (first currentActivity)`
-    );
-  } else {
+    // prettier-ignore
+    console.log(`[ ${currentActivity.caption} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (first currentActivity)`);
+  }
+  //
+  // Second and next activity
+  else {
     const previousActivityCompleteStatus = previousActivity.dataStored.completeStatus || CompleteStatus.NOT_STARTED;
 
     //
-    // Current activity is editable only if previous activity was completed
-    isUserEditable = previousActivityCompleteStatus === CompleteStatus.COMPLETED;
-    console.log(
-      `[ ${activityId} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (checked if prev currentActivity was completed)`
-    );
+    // Current activity is editable if previous activity was completed
+    // or if the activity was already started (we need to allow the user to complete it somehow).
+    isUserEditable =
+      previousActivityCompleteStatus === CompleteStatus.COMPLETED ||
+      currentActivityCompleteStatus === CompleteStatus.IN_PROGRESS;
+    // prettier-ignore
+    console.log(`[ ${currentActivity.caption} ${currentActivityCompleteStatus} ]: => isUserEditable=${isUserEditable} (previous activity status: ${previousActivityCompleteStatus})`);
 
     //
-    // If current currentActivity was started
+    // If the previous activity was completed and the current one is in progress/completed
     // => previous currentActivity is no longer editable
-    if (currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED) {
+    if (
+      previousActivityCompleteStatus === CompleteStatus.COMPLETED &&
+      currentActivityCompleteStatus !== CompleteStatus.NOT_STARTED
+    ) {
       makePreviousActivityReadOnly = true;
-      console.log(
-        `[ ${activityId} ${currentActivityCompleteStatus} ]: => Update [ ${previousActivity.activityId} ${previousActivityCompleteStatus} ] => isUserEditable=${previousActivity.dataStored.isUserEditable} because current activity is started/completed`
-      );
+      // prettier-ignore
+      console.log(`[ ${currentActivity.caption} ${currentActivityCompleteStatus} ]: => Update [ ${previousActivity.caption} ${previousActivityCompleteStatus} ] => isUserEditable=${previousActivity.dataStored.isUserEditable} because current activity is started/completed`);
     }
   }
 

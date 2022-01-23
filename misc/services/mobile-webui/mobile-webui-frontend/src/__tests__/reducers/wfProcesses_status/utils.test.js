@@ -1,4 +1,5 @@
-import { mergeActivitiesToState } from '../../../reducers/wfProcesses_status/utils';
+import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { mergeActivitiesToState, updateUserEditable } from '../../../reducers/wfProcesses_status/utils';
 
 describe('reducers: utils tests', () => {
   describe('mergeActivitiesToState', () => {
@@ -72,6 +73,134 @@ describe('reducers: utils tests', () => {
                     "A3",
                     "A2",
                   ],
+                }
+            `);
+    });
+  });
+
+  describe('updateUserEditable', () => {
+    it('no activities started', () => {
+      const draftWFProcess = {
+        activityIdsInOrder: ['A1', 'A2', 'A3'],
+        activities: {
+          A1: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+          A2: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+          A3: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+        },
+      };
+      updateUserEditable({ draftWFProcess });
+
+      expect(draftWFProcess.activities).toMatchInlineSnapshot(`
+                Object {
+                  "A1": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": true,
+                    },
+                  },
+                  "A2": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": false,
+                    },
+                  },
+                  "A3": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": false,
+                    },
+                  },
+                }
+            `);
+    });
+
+    it('1st activity completed, 2nd one not started', () => {
+      let draftWFProcess = {
+        activityIdsInOrder: ['A1', 'A2'],
+        activities: {
+          A1: { dataStored: { completeStatus: CompleteStatus.COMPLETED } },
+          A2: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+        },
+      };
+      updateUserEditable({ draftWFProcess });
+
+      expect(draftWFProcess.activities).toMatchInlineSnapshot(`
+                Object {
+                  "A1": Object {
+                    "dataStored": Object {
+                      "completeStatus": "COMPLETED",
+                      "isUserEditable": true,
+                    },
+                  },
+                  "A2": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": true,
+                    },
+                  },
+                }
+            `);
+    });
+
+    it('1st activity completed, 2nd one in progress', () => {
+      let draftWFProcess = {
+        activityIdsInOrder: ['A1', 'A2'],
+        activities: {
+          A1: { dataStored: { completeStatus: CompleteStatus.COMPLETED } },
+          A2: { dataStored: { completeStatus: CompleteStatus.IN_PROGRESS } },
+        },
+      };
+      updateUserEditable({ draftWFProcess });
+
+      expect(draftWFProcess.activities).toMatchInlineSnapshot(`
+                Object {
+                  "A1": Object {
+                    "dataStored": Object {
+                      "completeStatus": "COMPLETED",
+                      "isUserEditable": false,
+                    },
+                  },
+                  "A2": Object {
+                    "dataStored": Object {
+                      "completeStatus": "IN_PROGRESS",
+                      "isUserEditable": true,
+                    },
+                  },
+                }
+            `);
+    });
+
+    it('1st activity not started, 2nd one in progress, 3rd not started', () => {
+      let draftWFProcess = {
+        activityIdsInOrder: ['A1', 'A2', 'A3'],
+        activities: {
+          A1: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+          A2: { dataStored: { completeStatus: CompleteStatus.IN_PROGRESS } },
+          A3: { dataStored: { completeStatus: CompleteStatus.NOT_STARTED } },
+        },
+      };
+      updateUserEditable({ draftWFProcess });
+
+      expect(draftWFProcess.activities).toMatchInlineSnapshot(`
+                Object {
+                  "A1": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": true,
+                    },
+                  },
+                  "A2": Object {
+                    "dataStored": Object {
+                      "completeStatus": "IN_PROGRESS",
+                      "isUserEditable": true,
+                    },
+                  },
+                  "A3": Object {
+                    "dataStored": Object {
+                      "completeStatus": "NOT_STARTED",
+                      "isUserEditable": false,
+                    },
+                  },
                 }
             `);
     });
