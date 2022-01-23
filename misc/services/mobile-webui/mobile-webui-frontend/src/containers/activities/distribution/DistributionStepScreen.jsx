@@ -70,6 +70,7 @@ const DistributionStepScreen = () => {
   const onScanPickFromHU = () => {
     history.push(
       distributionStepPickFromScreenLocation({
+        applicationId,
         wfProcessId,
         activityId,
         lineId,
