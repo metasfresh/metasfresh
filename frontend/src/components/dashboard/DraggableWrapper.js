@@ -2,8 +2,8 @@ import update from 'immutability-helper';
 import produce from 'immer';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { DragDropContext } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -513,14 +513,16 @@ export class DraggableWrapper extends Component {
     const { editmode } = this.props;
 
     return (
-      <div className="dashboard-cards-wrapper">
-        {this.renderOptionModal()}
-        <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
-          {this.renderIndicators()}
-          {this.renderKpis()}
+      <DndProvider backend={HTML5Backend}>
+        <div className="dashboard-cards-wrapper">
+          {this.renderOptionModal()}
+          <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
+            {this.renderIndicators()}
+            {this.renderKpis()}
+          </div>
+          {editmode && <Sidenav addCard={this.addCard} />}
         </div>
-        {editmode && <Sidenav addCard={this.addCard} />}
-      </div>
+      </DndProvider>
     );
   }
 }
@@ -529,4 +531,4 @@ DraggableWrapper.propTypes = {
   editmode: PropTypes.bool,
 };
 
-export default DragDropContext(HTML5Backend)(DraggableWrapper);
+export default DraggableWrapper;
