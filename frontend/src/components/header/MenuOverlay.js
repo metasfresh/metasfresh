@@ -689,7 +689,7 @@ class MenuOverlay extends Component {
                     </span>
                   )}
 
-                {pendingQuery && queriedResults.length === 0 && (
+                {pendingQuery && (
                   <div className="menu-overlay-spinner">
                     <SpinnerOverlay iconSize={50} />
                   </div>
