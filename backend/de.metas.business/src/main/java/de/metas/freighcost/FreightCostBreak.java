@@ -58,6 +58,24 @@ public class FreightCostBreak
 	@NonNull
 	Money freightRate;
 
+	@Nullable
+	Integer seqNo;
+
+	public FreightCostBreak(final @NonNull FreightCostShipperId freightCostShipperId,
+			@Nullable final CountryId countryId,
+			@Nullable final CountryAreaId countryAreaId,
+			final @NonNull Money shipmentValueAmtMax,
+			final @NonNull Money freightRate,
+			@Nullable final Integer seqNo)
+	{
+		this.freightCostShipperId = freightCostShipperId;
+		this.countryId = countryId;
+		this.countryAreaId = countryAreaId;
+		this.shipmentValueAmtMax = shipmentValueAmtMax;
+		this.freightRate = freightRate;
+		this.seqNo = seqNo != null && seqNo > 0 ? seqNo : null;
+	}
+
 	public boolean isMatching(@NonNull final CountryId countryId, @NonNull final Money shipmentValueAmt)
 	{
 		return isCountryMatching(countryId)

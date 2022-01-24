@@ -264,6 +264,31 @@ public interface I_M_FreightCostDetail
 	String COLUMNNAME_M_FreightCostShipper_ID = "M_FreightCostShipper_ID";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_SeqNo = new ModelColumn<>(I_M_FreightCostDetail.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set Lieferwert.
 	 *
 	 * <br>Type: Amount

@@ -217,6 +217,7 @@ public class FreightCostRepository
 				.countryAreaId(countryAreaId)
 				.shipmentValueAmtMax(Money.of(record.getShipmentValueAmt(), currencyId))
 				.freightRate(Money.of(record.getFreightAmt(), currencyId))
+				.seqNo(record.getSeqNo())
 				.build();
 	}
 

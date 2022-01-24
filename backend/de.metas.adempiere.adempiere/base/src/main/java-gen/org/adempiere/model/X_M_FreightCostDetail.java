@@ -29,13 +29,13 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_FreightCostDetail
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_FreightCostDetail, org.compiere.model.I_Persistent 
+public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_FreightCostDetail, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -1821907241L;
+	private static final long serialVersionUID = 1629601490L;
 
     /** Standard Constructor */
     public X_M_FreightCostDetail (final Properties ctx, final int M_FreightCostDetail_ID, @Nullable final String trxName)
@@ -72,14 +72,14 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setC_CountryArea_ID (final int C_CountryArea_ID)
 	{
-		if (C_CountryArea_ID < 1) 
+		if (C_CountryArea_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_CountryArea_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_CountryArea_ID, C_CountryArea_ID);
 	}
 
 	@Override
-	public int getC_CountryArea_ID() 
+	public int getC_CountryArea_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_CountryArea_ID);
 	}
@@ -99,14 +99,14 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setC_Country_ID (final int C_Country_ID)
 	{
-		if (C_Country_ID < 1) 
+		if (C_Country_ID < 1)
 			set_Value (COLUMNNAME_C_Country_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Country_ID, C_Country_ID);
 	}
 
 	@Override
-	public int getC_Country_ID() 
+	public int getC_Country_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
 	}
@@ -114,14 +114,14 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setC_Currency_ID (final int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
@@ -133,7 +133,7 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public BigDecimal getFreightAmt() 
+	public BigDecimal getFreightAmt()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FreightAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -142,14 +142,14 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setM_FreightCostDetail_ID (final int M_FreightCostDetail_ID)
 	{
-		if (M_FreightCostDetail_ID < 1) 
+		if (M_FreightCostDetail_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_FreightCostDetail_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_FreightCostDetail_ID, M_FreightCostDetail_ID);
 	}
 
 	@Override
-	public int getM_FreightCostDetail_ID() 
+	public int getM_FreightCostDetail_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_FreightCostDetail_ID);
 	}
@@ -169,16 +169,28 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setM_FreightCostShipper_ID (final int M_FreightCostShipper_ID)
 	{
-		if (M_FreightCostShipper_ID < 1) 
+		if (M_FreightCostShipper_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_FreightCostShipper_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_FreightCostShipper_ID, M_FreightCostShipper_ID);
 	}
 
 	@Override
-	public int getM_FreightCostShipper_ID() 
+	public int getM_FreightCostShipper_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_FreightCostShipper_ID);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override
@@ -188,7 +200,7 @@ public class X_M_FreightCostDetail extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public BigDecimal getShipmentValueAmt() 
+	public BigDecimal getShipmentValueAmt()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShipmentValueAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
