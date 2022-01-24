@@ -51,7 +51,7 @@ public class AttachmentEntryCreateRequest
 			@NonNull final URI uri)
 	{
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
-				.type(AttachmentEntry.Type.URL)
+				.type(AttachmentEntryType.URL)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
@@ -72,7 +72,7 @@ public class AttachmentEntryCreateRequest
 			@NonNull final byte[] data)
 	{
 		return AttachmentEntryCreateRequest.builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(AttachmentEntryType.Data)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.data(data);
@@ -93,7 +93,7 @@ public class AttachmentEntryCreateRequest
 		}
 
 		return builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(AttachmentEntryType.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
@@ -123,7 +123,7 @@ public class AttachmentEntryCreateRequest
 		}
 
 		return builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(AttachmentEntryType.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
@@ -145,7 +145,7 @@ public class AttachmentEntryCreateRequest
 		final byte[] data = Util.readBytes(file);
 
 		return builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(AttachmentEntryType.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
@@ -153,7 +153,7 @@ public class AttachmentEntryCreateRequest
 	}
 
 	@NonNull
-	AttachmentEntry.Type type;
+	AttachmentEntryType type;
 
 	String filename;
 	String contentType;

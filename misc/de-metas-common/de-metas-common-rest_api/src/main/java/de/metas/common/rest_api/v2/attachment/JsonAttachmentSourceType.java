@@ -22,7 +22,7 @@ package de.metas.common.rest_api.v2.attachment;
  * #L%
  */
 
-public enum JsonAttachmentType
+public enum JsonAttachmentSourceType
 {
-	Data, URL
+	Data, URL, LocalFileURL
 }

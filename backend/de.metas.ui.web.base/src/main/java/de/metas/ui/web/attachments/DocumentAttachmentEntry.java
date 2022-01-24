@@ -1,5 +1,6 @@
 package de.metas.ui.web.attachments;
 
+import de.metas.attachments.AttachmentEntryType;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -65,7 +66,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
-	public AttachmentEntry.Type getType()
+	public AttachmentEntryType getType()
 	{
 		return entry.getType();
 	}
