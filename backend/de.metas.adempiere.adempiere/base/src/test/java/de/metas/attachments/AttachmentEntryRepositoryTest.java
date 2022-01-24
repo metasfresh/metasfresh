@@ -30,6 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.IOUtils;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class AttachmentEntryRepositoryTest
 	}
 
 	@Test
-	public void givenURLTypeAttachment_whenRetrieveAttachmentEntryData_thenReturnEmptyData() throws IOException
+	public void givenURLTypeAttachment_whenRetrieveAttachmentEntryData_thenReturnEmptyData()
 	{
 		//given
 		final AttachmentEntryId attachmentEntryId = newAttachmentEntryRecord()
@@ -74,7 +75,6 @@ public class AttachmentEntryRepositoryTest
 		//then
 		assertThat(data).isNull();
 	}
-
 
 	@Test
 	public void givenLocalFileURLTypeAttachment_whenRetrieveAttachmentEntryData_thenReturnReferencedData() throws IOException
@@ -98,7 +98,6 @@ public class AttachmentEntryRepositoryTest
 		assertThat(data).isEqualTo(fileData.getBytes());
 	}
 
-
 	@Test
 	public void givenDataTypeAttachment_whenRetrieveAttachmentEntryData_thenReturnData() throws IOException
 	{
@@ -119,6 +118,30 @@ public class AttachmentEntryRepositoryTest
 
 		//then
 		assertThat(data).isEqualTo(fileData.getBytes());
+	}
+
+	@Test
+	public void givenLocalFileURLTypeAttachment_whenRetrieveAttachmentEntryDataResource_thenReturnResource() throws IOException
+	{
+		//given
+		final String fileName = "localFile.txt";
+		final String fileData = "localFile data";
+
+		final  File localFile = createFile(fileName, fileData);
+
+		final AttachmentEntryId attachmentEntryId = newAttachmentEntryRecord()
+				.type(AttachmentEntryType.LocalFileURL)
+				.filename(localFile.getName())
+				.url(normalizePath(localFile.getAbsolutePath()).toUri())
+				.build();
+
+		//when
+		final AttachmentEntryDataResource attachmentEntryDataResource = attachmentEntryRepository.retrieveAttachmentEntryDataResource(attachmentEntryId);
+
+		//then
+		assertThat(attachmentEntryDataResource.getFilename()).isEqualTo(fileName);
+		assertThat(attachmentEntryDataResource.getDescription()).isNull();
+		assertThat(IOUtils.toByteArray(attachmentEntryDataResource.getInputStream())).isEqualTo(fileData.getBytes());
 	}
 
 	@Builder(builderMethodName = "newAttachmentEntryRecord")
@@ -149,7 +172,7 @@ public class AttachmentEntryRepositoryTest
 	}
 
 	@NonNull
-	private File createFile(@NonNull final String filename, @NonNull final String fileData) throws IOException
+	private static File createFile(@NonNull final String filename, @NonNull final String fileData) throws IOException
 	{
 		final File testFile = new File(filename);
 
@@ -161,7 +184,7 @@ public class AttachmentEntryRepositoryTest
 	}
 
 	@NonNull
-	private Path normalizePath(@NonNull final String path) throws MalformedURLException
+	private static Path normalizePath(@NonNull final String path) throws MalformedURLException
 	{
 		final String normalizedPath = path.replaceAll("\\\\","/");
 

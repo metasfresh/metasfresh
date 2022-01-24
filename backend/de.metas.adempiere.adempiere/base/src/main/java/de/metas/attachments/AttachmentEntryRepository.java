@@ -134,24 +134,15 @@ public class AttachmentEntryRepository
 	public byte[] retrieveAttachmentEntryData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
-		final String type = record.getType();
-
-		if (AttachmentEntryType.LocalFileURL.getCode().equals(type))
-		{
-			Check.assumeNotNull(record.getURL(), "AD_AttachmentEntry.URL cannot be null for type = {}, AD_AttachmentEntry_ID = {}",
-								AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
-
-			return getBinaryDataFromLocalFileURL(URI.create(record.getURL()));
-		}
-
-		return record.getBinaryData();
+		return getBinaryData(record);
 	}
 
 	public AttachmentEntryDataResource retrieveAttachmentEntryDataResource(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
+
 		return AttachmentEntryDataResource.builder()
-				.source(record.getBinaryData())
+				.source(getBinaryData(record))
 				.filename(record.getFileName())
 				.description(record.getDescription())
 				.build();
@@ -307,23 +298,33 @@ public class AttachmentEntryRepository
 				.delete();
 	}
 
-	private byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri){
+	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri){
 		try
 		{
 			final URL url = uri.toURL();
 
 			final Path filePath = FileUtil.getFilePath(url);
 
-			if (filePath == null)
-			{
-				throw new AdempiereException("Cannot parse file path from url: " + url.toString());
-			}
-
 			return Files.readAllBytes(filePath);
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Could not get binary data from url " + uri);
+			throw new AdempiereException("Could not get binary data from url " + uri, e);
 		}
+	}
+
+	private static byte[] getBinaryData(@NonNull final I_AD_AttachmentEntry record)
+	{
+		final AttachmentEntryType type = AttachmentEntryType.ofCode(record.getType());
+
+		if (AttachmentEntryType.LocalFileURL.equals(type))
+		{
+			Check.assumeNotNull(record.getURL(), "AD_AttachmentEntry.URL cannot be null for type = {}, AD_AttachmentEntry_ID = {}",
+								AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
+
+			return getBinaryDataFromLocalFileURL(URI.create(record.getURL()));
+		}
+
+		return record.getBinaryData();
 	}
 }

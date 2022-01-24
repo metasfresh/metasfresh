@@ -67,4 +67,22 @@ public class JsonConverters
 						.setParameter("type", type);
 		}
 	}
+
+	@NonNull
+	public AttachmentEntryType toAttachmentType(@NonNull final JsonAttachmentSourceType type)
+	{
+		switch (type)
+		{
+			case Data:
+				return AttachmentEntryType.Data;
+			case URL:
+				return AttachmentEntryType.URL;
+			case LocalFileURL:
+				return AttachmentEntryType.LocalFileURL;
+			default:
+				throw new AdempiereException("Unknown JsonAttachmentSourceType")
+						.appendParametersToMessage()
+						.setParameter("type", type);
+		}
+	}
 }

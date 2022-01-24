@@ -41,6 +41,7 @@ import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -95,7 +96,7 @@ public class AttachmentRestService
 
 		final JsonAttachmentSourceType jsonType = attachment.getType();
 
-		final AttachmentEntryType type = AttachmentEntryType.valueOf(jsonType.name());
+		final AttachmentEntryType type = JsonConverters.toAttachmentType(jsonType);
 		byte[] data = null;
 		URI url = null;
 		switch (type)
@@ -201,7 +202,7 @@ public class AttachmentRestService
 		return AttachmentTags.ofMap(tagName2Value);
 	}
 
-	private void validateLocalFileURL(@NonNull final URL url) throws IOException
+	private static void validateLocalFileURL(@NonNull final URL url)
 	{
 		if (!url.getProtocol().equals("file"))
 		{

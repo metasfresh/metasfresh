@@ -26,7 +26,6 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,7 +73,7 @@ public class FileUtil
 	}
 
 	@NonNull
-	public Path getFilePath(@NonNull final URL url) throws MalformedURLException
+	public Path getFilePath(@NonNull final URL url)
 	{
 		final boolean isWindowsLocalPath = Check.isEmpty(url.getHost())
 				? url.getPath().contains(":")
@@ -82,7 +81,7 @@ public class FileUtil
 
 		final Path path = isWindowsLocalPath
 				? parseWindowsLocalPath(url)
-				: parseFileURL(url);
+				: parseNonLocalWindowsFileURL(url);
 
 		if (path == null)
 		{
@@ -110,7 +109,7 @@ public class FileUtil
 	}
 
 	@Nullable
-	private Path parseFileURL(@NonNull final URL url)
+	private Path parseNonLocalWindowsFileURL(@NonNull final URL url)
 	{
 		try
 		{

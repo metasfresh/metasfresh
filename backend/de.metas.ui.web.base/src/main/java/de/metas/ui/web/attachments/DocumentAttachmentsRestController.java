@@ -7,7 +7,6 @@ import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
 import de.metas.ui.web.attachments.json.JSONAttachment;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -18,9 +17,6 @@ import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -199,41 +195,6 @@ public class DocumentAttachmentsRestController
 						.setParameter("type", type)
 						.setParameter("entry", entry);
 		}
-	}
-
-	private static ResponseEntity<StreamingResponseBody> extractResponseEntryFromData(@NonNull final IDocumentAttachmentEntry entry)
-	{
-		if (entry.getData() == null)
-		{
-			throw new EntityNotFoundException("No attachment found")
-					.setParameter("entry", entry)
-					.setParameter("reason", "data is null or empty");
-		}
-
-		final String entryFilename = entry.getFilename();
-		final String entryContentType = entry.getContentType();
-
-		final StreamingResponseBody entryData = outputStream -> {
-			outputStream.write(entry.getData());
-		};
-
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(entryContentType));
-		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + entryFilename + "\"");
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-		return new ResponseEntity<>(entryData, headers, HttpStatus.OK);
-	}
-
-	private static ResponseEntity<StreamingResponseBody> extractResponseEntryFromURL(@NonNull final IDocumentAttachmentEntry entry)
-	{
-		final StreamingResponseBody responseBody = outputStream -> {
-			outputStream.write(new byte[] {});
-		};
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(entry.getUrl()); // forward to attachment entry's URL
-		final ResponseEntity<StreamingResponseBody> response = new ResponseEntity<>(responseBody, headers, HttpStatus.FOUND);
-		return response;
 	}
 
 	@DeleteMapping("/{id}")
