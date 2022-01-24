@@ -414,7 +414,7 @@ export function updateTabTable({ tableId, tableResponse, pending }) {
     if (state.tables) {
       const tableExists = state.tables[tableId];
       const tableData = createTableData({
-        ...tableResponse,
+        ...(tableResponse ? tableResponse : {}),
         keyProperty: 'rowId',
         pending,
       });

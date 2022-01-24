@@ -399,7 +399,7 @@ export function indicatorState(state) {
 export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
     const tableId = getTableId({ windowId, tabId, docId });
-    dispatch(updateTabTable({ tableId, tableResponse: {}, pending: true }));
+    dispatch(updateTabTable({ tableId, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
         const tableData = { result: response };
