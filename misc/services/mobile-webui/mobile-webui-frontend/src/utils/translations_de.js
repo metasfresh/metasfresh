@@ -8,6 +8,7 @@ const translations = {
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
+    QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
     cancelText: 'Abbrechen',

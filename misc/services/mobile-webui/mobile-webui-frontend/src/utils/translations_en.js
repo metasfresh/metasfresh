@@ -8,6 +8,7 @@ const translations = {
     QtyPicked: 'Qty picked',
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
+    QtyRejected: 'Qty Rejected',
     DropToLocator: 'Drop to locator',
     PleaseTryAgain: 'Please try again',
     cancelText: 'Cancel',

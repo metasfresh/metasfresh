@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 
-const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQtyChange, isRequestFocus }) => {
+const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered, onQtyChange, isRequestFocus }) => {
   const [qtyInfo, setQtyInfo] = useState(
     computeQtyInfoFromString({
       qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
@@ -42,8 +43,7 @@ const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQt
 
   return (
     <div className="field">
-      <p className="help is-danger">{qtyInfo.notValidMessage}&nbsp;</p>
-      <div className="control has-icons-right">
+      <div className={cx('control', { 'has-icons-right': !!uom })}>
         <input
           ref={qtyInputRef}
           className="input"
@@ -52,21 +52,20 @@ const QtyInputField = ({ qtyInitial, integerValuesOnly, validateQtyEntered, onQt
           onChange={handleQtyEntered}
           onClick={() => qtyInputRef.current.select()}
         />
-        {!qtyInfo.isQtyValid && (
-          <span className="icon is-small is-right">
-            <i className="fas fa-exclamation-triangle" />
-          </span>
-        )}
+        {uom && <span className="icon is-small is-right">{uom}</span>}
       </div>
+      <p className="help is-danger">{qtyInfo.notValidMessage}&nbsp;</p>
     </div>
   );
 };
 
 QtyInputField.propTypes = {
   qtyInitial: PropTypes.number,
+  uom: PropTypes.string,
   integerValuesOnly: PropTypes.bool,
-  validateQtyEntered: PropTypes.func,
   isRequestFocus: PropTypes.bool,
+  //
+  validateQtyEntered: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
 };
 

@@ -19,7 +19,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
     return null;
   };
 
-  const onQtyPickedChanged = (qtyEnteredAndValidated) => {
+  const onQtyPickedChanged = ({ qtyEnteredAndValidated }) => {
     setDialogOpen(false);
     onClick(qtyEnteredAndValidated);
   };

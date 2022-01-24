@@ -3,13 +3,11 @@ import PropTypes from 'prop-types';
 
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
-import QtyReasonsView from './QtyReasonsView';
 import Button from './buttons/Button';
 import counterpart from 'counterpart';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
-const STATUS_READ_QTY_REJECTED_REASON = 'READ_QTY_REJECTED_REASON';
 
 const ScanHUAndGetQtyComponent = ({
   eligibleBarcode,
@@ -24,7 +22,6 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
-  const [currentQtys, setCurrentQtys] = useState({ qty: 0, qtyRejected: 0 });
 
   const validateScannedBarcode = (barcode) => {
     // If an eligible barcode was provided, make sure scanned barcode is matching it
@@ -61,19 +58,8 @@ const ScanHUAndGetQtyComponent = ({
     return null;
   };
 
-  const onQtyEntered = (qtyEnteredAndValidated) => {
-    const qtyRejected = Math.max(qtyTarget - qtyEnteredAndValidated, 0);
-    setCurrentQtys({ qty: qtyEnteredAndValidated, qtyRejected });
-
-    if (qtyRejected !== 0) {
-      setProgressStatus(STATUS_READ_QTY_REJECTED_REASON);
-    } else {
-      onResult({ qty: qtyEnteredAndValidated, reason: null, scannedBarcode: currentScannedBarcode });
-    }
-  };
-
-  const onQtyRejectedReasonEntered = (reason) => {
-    onResult({ qty: currentQtys.qty, reason, scannedBarcode: currentScannedBarcode });
+  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejectedReason }) => {
+    onResult({ qty: qtyEnteredAndValidated, reason: qtyRejectedReason, scannedBarcode: currentScannedBarcode });
   };
 
   switch (progressStatus) {
@@ -99,18 +85,10 @@ const ScanHUAndGetQtyComponent = ({
           qtyTarget={qtyTarget}
           qtyCaption={qtyCaption}
           uom={uom}
+          qtyRejectedReasons={qtyRejectedReasons}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={() => setProgressStatus(STATUS_READ_BARCODE)}
-        />
-      );
-    case STATUS_READ_QTY_REJECTED_REASON:
-      return (
-        <QtyReasonsView
-          onHide={onQtyRejectedReasonEntered}
-          uom={uom}
-          qtyRejected={currentQtys.qtyRejected}
-          qtyRejectedReasons={qtyRejectedReasons}
         />
       );
     default:
