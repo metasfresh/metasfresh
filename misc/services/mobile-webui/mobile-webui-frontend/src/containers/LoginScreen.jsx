@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import { trl } from '../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../utils/toast';
 import { useAuth } from '../hooks/useAuth';
 
