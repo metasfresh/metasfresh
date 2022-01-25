@@ -24,6 +24,7 @@ package de.metas.error;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.util.net.NetUtils;
@@ -52,12 +53,8 @@ public class AdIssueFactory
 		issue.setSystemStatus(system.getSystemStatus());
 		issue.setReleaseNo(system.getReleaseNo());	// DB
 
-		String dateVersion = Adempiere.getDateVersion();
-		if (Check.isEmpty(dateVersion, true))
-		{
-			dateVersion = "?";
-		}
-		issue.setVersion(dateVersion);		// Code
+		final String version = StringUtils.trimBlankToOptional(Adempiere.getDateVersion()).orElse("?");
+		issue.setVersion(version);
 
 		issue.setDatabaseInfo(DB.getDatabaseInfo());
 		issue.setOperatingSystemInfo(Adempiere.getOSInfo());
