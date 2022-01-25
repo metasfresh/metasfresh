@@ -334,6 +334,7 @@ class TableWrapper extends PureComponent {
       onHandleAdvancedEdit,
       onOpenTableModal,
       supportOpenRecord,
+      pending,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -396,6 +397,7 @@ class TableWrapper extends PureComponent {
                 isBatchEntry,
                 quickInputSupport,
                 newRecordInputMode,
+                pending,
               }}
               docType={windowId}
               tabId={tabId}
