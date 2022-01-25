@@ -693,7 +693,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		final ExternalSystemParentConfig updatedParentConfig = parentConfig.toBuilder()
-				.isActive(true)
+				.active(true)
 				.childConfig(childConfig)
 				.build();
 		// when
@@ -704,7 +704,7 @@ class ExternalSystemConfigRepoTest
 		assertThat(updatedChildConfig).isNotNull();
 		expect(updatedChildConfig).toMatchSnapshot();
 
-		assertThat(updatedChildConfig.getIsActive()).isTrue();
+		assertThat(updatedChildConfig.isActive()).isTrue();
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(updatedChildConfig.getChildConfig());
 		assertThat(shopware6Config.getBaseUrl()).isEqualTo(baseURL);

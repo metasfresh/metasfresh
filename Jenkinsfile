@@ -119,7 +119,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
                     nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
                     stage('Build parent-pom & commons') { // for display purposes
-                    
+
                                 dir('misc/parent-pom') {
                                             def buildFile = load('buildfile.groovy')
                                             buildFile.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
