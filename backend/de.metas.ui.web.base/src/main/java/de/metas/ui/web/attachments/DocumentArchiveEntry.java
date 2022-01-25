@@ -2,6 +2,7 @@ package de.metas.ui.web.attachments;
 
 import java.net.URI;
 
+import de.metas.attachments.AttachmentEntryType;
 import org.adempiere.archive.api.IArchiveBL;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.MimeType;
@@ -56,9 +57,9 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
-	public AttachmentEntry.Type getType()
+	public AttachmentEntryType getType()
 	{
-		return AttachmentEntry.Type.Data;
+		return AttachmentEntryType.Data;
 	}
 
 	@Override
