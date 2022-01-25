@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+
 import { getZoomIntoWindow, deleteRequest } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -269,7 +270,6 @@ const mapStateToProps = (state, props) => {
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,
     isGerman: isGermanLanguage(state.appHandler.me.language),
-    pending: table.pending,
   };
 };
 
