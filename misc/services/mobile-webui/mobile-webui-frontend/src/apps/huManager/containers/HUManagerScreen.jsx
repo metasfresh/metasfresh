@@ -1,17 +1,17 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
+
+import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
 import { getHUByBarcode } from '../api';
 import { clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { huManagerDisposeLocation } from '../routes';
+
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import { useHistory } from 'react-router-dom';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
@@ -40,14 +40,8 @@ const HUManagerScreen = () => {
       <>
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
         <div className="pt-3 section">
-          <ButtonWithIndicator
-            caption={counterpart.translate('huManager.action.dispose.buttonCaption')}
-            onClick={onDisposeClick}
-          />
-          <ButtonWithIndicator
-            caption={counterpart.translate('huManager.action.scanAgain.buttonCaption')}
-            onClick={onScanAgainClick}
-          />
+          <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
+          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
     );

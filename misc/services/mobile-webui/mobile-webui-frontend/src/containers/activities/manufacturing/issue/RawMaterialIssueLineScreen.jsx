@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
-import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 
+import { trl } from '../../../../utils/translations';
+import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
+
+import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import counterpart from 'counterpart';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -28,7 +29,7 @@ const RawMaterialIssueLineScreen = () => {
         caption: 'Issue', // TODO: trl
         values: [
           {
-            caption: counterpart.translate('general.Product'),
+            caption: trl('general.Product'),
             value: productName,
           },
         ],

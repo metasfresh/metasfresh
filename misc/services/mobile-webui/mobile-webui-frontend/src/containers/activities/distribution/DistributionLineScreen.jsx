@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
 import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
@@ -26,7 +26,7 @@ const DistributionLineScreen = () => {
         location: url,
         values: [
           {
-            caption: counterpart.translate('activities.distribution.DistributionLine'),
+            caption: trl('activities.distribution.DistributionLine'),
             value: lineCaption,
             bold: true,
           },

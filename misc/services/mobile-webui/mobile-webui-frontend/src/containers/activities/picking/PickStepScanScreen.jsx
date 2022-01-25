@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
 import { getPickFrom, getQtyToPick } from '../../../utils/picking';
@@ -10,7 +11,6 @@ import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 const PickStepScanScreen = () => {
   const {
@@ -68,7 +68,7 @@ const PickStepScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
-      qtyCaption={counterpart.translate('general.QtyToPick')}
+      qtyCaption={trl('general.QtyToPick')}
       qtyTarget={qtyToPick}
       qtyInitial={qtyToPick}
       uom={uom}

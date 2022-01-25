@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 import { useHistory } from 'react-router-dom';
 
-import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { trl } from '../../../utils/translations';
 import { scanBarcodeLocation } from '../../../routes/scan';
+
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 const ScanActivity = (props) => {
   const history = useHistory();
@@ -35,10 +36,7 @@ const computeButtonCaption = (activityState) => {
   const scannedBarcodeCaption = activityState.dataStored.barcodeCaption;
 
   return (
-    scannedBarcodeCaption ||
-    scannedBarcode ||
-    activityState.caption ||
-    counterpart.translate('activities.scanBarcode.defaultCaption')
+    scannedBarcodeCaption || scannedBarcode || activityState.caption || trl('activities.scanBarcode.defaultCaption')
   );
 };
 

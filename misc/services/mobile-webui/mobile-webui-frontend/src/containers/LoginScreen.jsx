@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth';
-import counterpart from 'counterpart';
-import ScreenToaster from '../components/ScreenToaster';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../utils/toast';
+import { useAuth } from '../hooks/useAuth';
 
+import ScreenToaster from '../components/ScreenToaster';
 import LogoHeader from '../components/LogoHeader';
 
 const LoginScreen = () => {
@@ -99,7 +98,8 @@ const LoginScreen = () => {
                   disabled={loginPending}
                   onClick={submitForm}
                 >
-                  {counterpart.translate('login.submitButton')}
+                  {/* eslint-disable-next-line no-undef */}
+                  {trl('login.submitButton')}
                 </button>
               </div>
             </div>

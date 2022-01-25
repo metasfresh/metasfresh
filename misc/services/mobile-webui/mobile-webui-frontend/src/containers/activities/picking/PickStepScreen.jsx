@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
 import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
@@ -34,15 +34,15 @@ const PickStepScreen = () => {
         caption: 'Pick HU', // TODO trl
         values: [
           {
-            caption: counterpart.translate('general.Locator'),
+            caption: trl('general.Locator'),
             value: pickFrom.locatorName,
           },
           {
-            caption: counterpart.translate('general.QtyToPick'),
+            caption: trl('general.QtyToPick'),
             value: qtyToPick + ' ' + uom,
           },
           {
-            caption: counterpart.translate('general.Barcode'),
+            caption: trl('general.Barcode'),
             value: pickFrom.huBarcode,
           },
         ],
@@ -118,9 +118,7 @@ const PickStepScreen = () => {
 
   const isPickedFromHU = pickFrom.qtyPicked > 0;
 
-  const scanButtonCaption = isPickedFromHU
-    ? `${pickFrom.huBarcode}`
-    : counterpart.translate('activities.picking.scanHUBarcode');
+  const scanButtonCaption = isPickedFromHU ? `${pickFrom.huBarcode}` : trl('activities.picking.scanHUBarcode');
 
   const scanButtonStatus = isPickedFromHU ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
   const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;
@@ -135,12 +133,12 @@ const PickStepScreen = () => {
           onClick={onScanButtonClick}
         />
         <ButtonWithIndicator
-          caption={counterpart.translate('activities.picking.unPickBtn')}
+          caption={trl('activities.picking.unPickBtn')}
           disabled={nothingPicked}
           onClick={onUnpickButtonClick}
         />
         <ConfirmButton
-          caption={counterpart.translate('activities.confirmButton.notFound')}
+          caption={trl('activities.confirmButton.notFound')}
           isDangerousAction={true}
           isUserEditable={nothingPicked}
           onUserConfirmed={handleNotFound}

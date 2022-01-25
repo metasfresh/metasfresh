@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+
+import { trl } from '../../utils/translations';
+
 import Button from './Button';
 import YesNoDialog from '../dialogs/YesNoDialog';
 
@@ -16,7 +18,7 @@ const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isDangerousAct
     setDialogDisplayed(false);
   };
 
-  const captionEffective = caption ? caption : counterpart.translate('activities.confirmButton.default.caption');
+  const captionEffective = caption ? caption : trl('activities.confirmButton.default.caption');
 
   return (
     <>

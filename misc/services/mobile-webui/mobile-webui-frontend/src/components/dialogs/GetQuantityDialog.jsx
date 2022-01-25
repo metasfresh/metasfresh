@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+
+import { trl } from '../../utils/translations';
 
 import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
@@ -67,7 +68,7 @@ const GetQuantityDialog = ({
                 </tr>
                 {requiredQtyRejectedReason && (
                   <tr>
-                    <th>{counterpart.translate('general.QtyRejected')}</th>
+                    <th>{trl('general.QtyRejected')}</th>
                     <td>
                       {qtyRejected} {uom}
                     </td>
@@ -90,10 +91,10 @@ const GetQuantityDialog = ({
 
             <div className="buttons is-centered">
               <button className="button is-danger" disabled={!allValid} onClick={onDialogYes}>
-                {counterpart.translate('activities.picking.confirmDone')}
+                {trl('activities.picking.confirmDone')}
               </button>
               <button className="button is-success" onClick={onCloseDialog}>
-                {counterpart.translate('general.cancelText')}
+                {trl('general.cancelText')}
               </button>
             </div>
           </div>

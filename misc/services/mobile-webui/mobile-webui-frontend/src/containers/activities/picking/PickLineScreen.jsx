@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getLineById } from '../../../reducers/wfProcesses';
 
@@ -27,7 +27,7 @@ const PickLineScreen = () => {
         caption: 'Pick product', // TODO trl
         values: [
           {
-            caption: counterpart.translate('activities.picking.PickingLine'),
+            caption: trl('activities.picking.PickingLine'),
             value: caption,
             bold: true,
           },

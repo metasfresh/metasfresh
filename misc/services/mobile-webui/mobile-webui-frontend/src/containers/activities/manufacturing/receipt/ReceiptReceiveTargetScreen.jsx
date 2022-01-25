@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../../utils/translations';
 import {
   manufacturingReceiptScanScreenLocation,
   manufacturingReceiptNewHUScreen,
@@ -38,8 +38,8 @@ const ReceiptReceiveTargetScreen = () => {
 
   return (
     <div className="pt-2 section">
-      <Button caption={counterpart.translate('activities.mfg.receipts.newHU')} onClick={handleNewHUClick} />
-      <Button caption={counterpart.translate('activities.mfg.receipts.existingLU')} onClick={handleScanClick} />
+      <Button caption={trl('activities.mfg.receipts.newHU')} onClick={handleNewHUClick} />
+      <Button caption={trl('activities.mfg.receipts.existingLU')} onClick={handleScanClick} />
     </div>
   );
 };

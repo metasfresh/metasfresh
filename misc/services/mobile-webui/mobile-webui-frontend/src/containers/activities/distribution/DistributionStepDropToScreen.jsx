@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
+import { toastError } from '../../../utils/toast';
 import { postDistributionDropTo } from '../../../api/distribution';
 import { updateDistributionDropTo } from '../../../actions/DistributionActions';
-import { toastError } from '../../../utils/toast';
-import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+
+import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 
 const DistributionStepDropToScreen = () => {
   const {
@@ -28,11 +29,11 @@ const DistributionStepDropToScreen = () => {
         location: url,
         values: [
           {
-            caption: counterpart.translate('general.DropToLocator'),
+            caption: trl('general.DropToLocator'),
             value: `${caption}( ${locatorBarcode} )`,
           },
           {
-            caption: counterpart.translate('general.QtyToMove'),
+            caption: trl('general.QtyToMove'),
             value: qtyToMove,
           },
         ],

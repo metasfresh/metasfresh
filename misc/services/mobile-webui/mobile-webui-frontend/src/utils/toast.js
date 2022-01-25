@@ -1,13 +1,13 @@
 import toast from 'react-hot-toast';
-import counterpart from 'counterpart';
 import { unboxAxiosResponse } from './index';
+import { trl } from './translations';
 
 export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage }) => {
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
   } else if (messageKey) {
-    message = counterpart.translate(messageKey);
+    message = trl(messageKey);
   } else if (plainMessage) {
     message = plainMessage;
   } else {
@@ -28,7 +28,7 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
         return error.message;
       } else {
         // don't scare the user with weird errors. Better show him some generic error.
-        return counterpart.translate('general.PleaseTryAgain');
+        return trl('general.PleaseTryAgain');
       }
     } else if (axiosError.response.data.error) {
       // usually that the login error case when we get something like { error: "bla bla"}
@@ -37,8 +37,8 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   }
 
   if (fallbackMessageKey) {
-    return counterpart.translate(fallbackMessageKey);
+    return trl(fallbackMessageKey);
   }
 
-  return counterpart.translate('general.PleaseTryAgain');
+  return trl('general.PleaseTryAgain');
 };

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+
+import { trl } from '../utils/translations';
+
 import QtyReasonsRadioGroup from './QtyReasonsRadioGroup';
 import Button from './buttons/Button';
 
@@ -9,12 +11,12 @@ const QtyReasonsView = ({ qtyRejected, uom, qtyRejectedReasons, onHide }) => {
 
   return (
     <div className="section pt-3">
-      <h5>{`${counterpart.translate('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
+      <h5>{`${trl('activities.picking.rejectedPrompt', { qtyRejected, uom })}`}</h5>
       <div className="centered-text is-size-5">
         <QtyReasonsRadioGroup reasons={qtyRejectedReasons} onReasonSelected={setSelectedRejectedReason} />
       </div>
       <Button
-        caption={counterpart.translate('activities.picking.confirmDone')}
+        caption={trl('activities.picking.confirmDone')}
         disabled={!selectedRejectedReason}
         onClick={() => onHide(selectedRejectedReason)}
       />

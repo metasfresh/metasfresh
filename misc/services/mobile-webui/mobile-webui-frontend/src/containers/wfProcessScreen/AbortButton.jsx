@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useHistory } from 'react-router-dom';
-import counterpart from 'counterpart';
 
+import { trl } from '../../utils/translations';
 import { abortWorkflowRequest } from '../../api/launchers';
 import { appLaunchersLocation } from '../../routes/launchers';
 
@@ -17,7 +17,7 @@ const AbortButton = ({ applicationId, wfProcessId }) => {
   return (
     <div className="mt-5">
       <ConfirmButton
-        caption={counterpart.translate('activities.confirmButton.abort')}
+        caption={trl('activities.confirmButton.abort')}
         isDangerousAction={true}
         isUserEditable={true}
         onUserConfirmed={onUserConfirmed}

@@ -1,21 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+import { trl } from '../../../utils/translations';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
   return (
     <table className="table view-header is-size-6">
       <tbody>
         <tr>
-          <th>{counterpart.translate('huManager.HU')}</th>
+          <th>{trl('huManager.HU')}</th>
           <td>{handlingUnitInfo.displayName}</td>
         </tr>
         <tr>
-          <th>{counterpart.translate('huManager.barcode')}</th>
+          <th>{trl('huManager.barcode')}</th>
           <td>{handlingUnitInfo.barcode}</td>
         </tr>
         <tr>
-          <th>{counterpart.translate('huManager.locator')}</th>
+          <th>{trl('huManager.locator')}</th>
           <td>{handlingUnitInfo.locatorValue}</td>
         </tr>
         {handlingUnitInfo.products.map((product) => (
@@ -34,13 +34,13 @@ const ProductInfoRows = ({ product }) => {
   return (
     <>
       <tr>
-        <th>{counterpart.translate('huManager.product')}</th>
+        <th>{trl('huManager.product')}</th>
         <td>
           {product.productName} ({product.productValue})
         </td>
       </tr>
       <tr>
-        <th>{counterpart.translate('huManager.qty')}</th>
+        <th>{trl('huManager.qty')}</th>
         <td>
           {product.qty} {product.uom}
         </td>

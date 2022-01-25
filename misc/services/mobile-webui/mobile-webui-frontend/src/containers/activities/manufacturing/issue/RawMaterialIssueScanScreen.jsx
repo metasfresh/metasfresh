@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../../utils/translations';
 import { toastError } from '../../../../utils/toast';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../../reducers/wfProcesses';
@@ -32,11 +32,11 @@ const RawMaterialIssueScanScreen = () => {
         location: manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }),
         values: [
           {
-            caption: counterpart.translate('general.Barcode'),
+            caption: trl('general.Barcode'),
             value: huBarcode,
           },
           {
-            caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
+            caption: trl('activities.mfg.issues.qtyToIssue'),
             value: qtyToIssue + ' ' + uom,
           },
         ],
@@ -64,7 +64,7 @@ const RawMaterialIssueScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={huBarcode}
-      qtyCaption={counterpart.translate('general.QtyToPick')}
+      qtyCaption={trl('general.QtyToPick')}
       qtyTarget={qtyToIssue}
       qtyInitial={qtyToIssue}
       uom={uom}

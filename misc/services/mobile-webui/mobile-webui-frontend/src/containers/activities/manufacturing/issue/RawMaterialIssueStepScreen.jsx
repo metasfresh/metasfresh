@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../../utils/translations';
 import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { getStepById } from '../../../../reducers/wfProcesses';
@@ -28,24 +28,24 @@ const RawMaterialIssueStepScreen = () => {
         caption: 'Issue HU', // TODO trl
         values: [
           {
-            caption: counterpart.translate('general.Locator'),
+            caption: trl('general.Locator'),
             value: locatorName,
           },
           {
-            caption: counterpart.translate('activities.mfg.issues.qtyToIssue'),
+            caption: trl('activities.mfg.issues.qtyToIssue'),
             value: qtyToIssue + ' ' + uom,
           },
           {
-            caption: counterpart.translate('activities.mfg.issues.qtyIssued'),
+            caption: trl('activities.mfg.issues.qtyIssued'),
             value: (qtyIssued || 0) + ' ' + uom,
           },
           {
-            caption: counterpart.translate('activities.mfg.issues.qtyRejected'),
+            caption: trl('activities.mfg.issues.qtyRejected'),
             value: qtyRejected + ' ' + uom,
             hidden: !qtyRejected,
           },
           {
-            caption: counterpart.translate('general.Barcode'),
+            caption: trl('general.Barcode'),
             value: huBarcode,
           },
         ],
@@ -59,7 +59,7 @@ const RawMaterialIssueStepScreen = () => {
   };
 
   const isIssued = qtyIssued > 0 || qtyRejected > 0;
-  const scanButtonCaption = isIssued ? `${huBarcode}` : counterpart.translate('activities.picking.scanHUBarcode');
+  const scanButtonCaption = isIssued ? `${huBarcode}` : trl('activities.picking.scanHUBarcode');
 
   const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 

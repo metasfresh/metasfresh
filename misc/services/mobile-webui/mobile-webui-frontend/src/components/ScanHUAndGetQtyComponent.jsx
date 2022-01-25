@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
+import { trl } from '../utils/translations';
+
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import counterpart from 'counterpart';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -26,7 +27,7 @@ const ScanHUAndGetQtyComponent = ({
   const validateScannedBarcode = (barcode) => {
     // If an eligible barcode was provided, make sure scanned barcode is matching it
     if (eligibleBarcode && barcode !== eligibleBarcode) {
-      return counterpart.translate(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode');
+      return trl(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode');
     }
 
     // OK
@@ -46,12 +47,12 @@ const ScanHUAndGetQtyComponent = ({
   const validateQtyEntered = (qtyEntered) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
-      return counterpart.translate(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
+      return trl(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
     }
 
     // Qty shall be less than or equal to qtyTarget
     if (qtyTarget > 0 && qtyEntered > qtyTarget) {
-      return counterpart.translate(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
+      return trl(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
     }
 
     // OK

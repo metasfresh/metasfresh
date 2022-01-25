@@ -1,11 +1,12 @@
-import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React from 'react';
+
+import { trl } from '../../utils/translations';
 
 const YesNoDialog = ({ promptQuestion, onYes, onNo }) => {
   const promptQuestionEffective = promptQuestion
     ? promptQuestion
-    : counterpart.translate('activities.confirmButton.default.promptQuestion');
+    : trl('activities.confirmButton.default.promptQuestion');
 
   return (
     <div className="prompt-dialog-screen">
@@ -15,10 +16,10 @@ const YesNoDialog = ({ promptQuestion, onYes, onNo }) => {
 
           <div className="buttons is-centered">
             <button className="button is-danger" onClick={onYes}>
-              {counterpart.translate('activities.confirmButton.default.yes')}
+              {trl('activities.confirmButton.default.yes')}
             </button>
             <button className="button is-success" onClick={onNo}>
-              {counterpart.translate('activities.confirmButton.default.no')}
+              {trl('activities.confirmButton.default.no')}
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
+import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceipt, updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
@@ -31,7 +31,7 @@ const MaterialReceiptLineScreen = () => {
         caption: activityCaption,
         values: [
           {
-            caption: counterpart.translate('activities.mfg.ProductName'),
+            caption: trl('activities.mfg.ProductName'),
             value: productName,
             bold: true,
           },
@@ -64,10 +64,10 @@ const MaterialReceiptLineScreen = () => {
     history.push(manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  const caption = counterpart.translate('activities.mfg.receipts.receiveQty');
+  const caption = trl('activities.mfg.receipts.receiveQty');
 
   let allowReceivingQty = false;
-  let targetCaption = counterpart.translate('activities.mfg.receipts.receiveTarget');
+  let targetCaption = trl('activities.mfg.receipts.receiveTarget');
   if (aggregateToLU) {
     targetCaption = aggregateToLU.newLU ? aggregateToLU.newLU.caption : aggregateToLU.existingLU.huBarcode;
     allowReceivingQty = true;

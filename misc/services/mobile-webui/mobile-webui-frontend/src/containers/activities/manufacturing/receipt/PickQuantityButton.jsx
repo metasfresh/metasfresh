@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+
+import { trl } from '../../../../utils/translations';
 
 import Button from '../../../../components/buttons/Button';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
@@ -11,7 +12,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
   const validateQtyEntered = (qtyEntered) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
-      return counterpart.translate('activities.picking.invalidQtyPicked');
+      return trl('activities.picking.invalidQtyPicked');
     }
 
     // OK
@@ -28,7 +29,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
     <>
       {isDialogOpen && (
         <GetQuantityDialog
-          qtyCaption={counterpart.translate('activities.mfg.receipts.pickPromptTitle')}
+          qtyCaption={trl('activities.mfg.receipts.pickPromptTitle')}
           qtyTarget={qtyTarget}
           qtyInitial={qtyTarget}
           uom={uom}

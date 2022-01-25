@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import {
   getActivityById,
@@ -33,11 +33,12 @@ const DistributionStepPickFromScreen = () => {
         location: url,
         values: [
           {
-            caption: counterpart.translate('activities.distribution.scanHU'),
+            // eslint-disable-next-line no-undef
+            caption: trl('activities.distribution.scanHU'),
             value: huBarcode,
           },
           {
-            caption: counterpart.translate('general.QtyToMove'),
+            caption: trl('general.QtyToMove'),
             value: qtyToMove,
           },
         ],
@@ -75,7 +76,7 @@ const DistributionStepPickFromScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={huBarcode}
-      qtyCaption={counterpart.translate('general.QtyToMove')}
+      qtyCaption={trl('general.QtyToMove')}
       qtyInitial={qtyToMove}
       qtyTarget={qtyToMove}
       uom={uom}

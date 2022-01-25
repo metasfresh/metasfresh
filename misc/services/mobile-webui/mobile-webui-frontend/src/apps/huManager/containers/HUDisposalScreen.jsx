@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { disposeHU, getDisposalReasonsArray } from '../api';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
@@ -57,7 +57,7 @@ const HUDisposalScreen = () => {
         </div>
 
         <ButtonWithIndicator
-          caption={counterpart.translate('huManager.action.dispose.buttonCaption')}
+          caption={trl('huManager.action.dispose.buttonCaption')}
           disabled={!selectedDisposalReasonKey}
           onClick={onDisposeClick}
         />

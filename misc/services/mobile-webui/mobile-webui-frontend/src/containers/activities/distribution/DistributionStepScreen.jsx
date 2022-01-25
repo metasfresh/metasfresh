@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import counterpart from 'counterpart';
 
+import { trl } from '../../../utils/translations';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
@@ -42,23 +42,23 @@ const DistributionStepScreen = () => {
         location: url,
         values: [
           {
-            caption: counterpart.translate('general.Locator'),
+            caption: trl('general.Locator'),
             value: pickFromLocator.caption,
           },
           {
-            caption: counterpart.translate('activities.distribution.scanHU'),
+            caption: trl('activities.distribution.scanHU'),
             value: pickFromHU.barcode,
           },
           {
-            caption: counterpart.translate('general.QtyToMove'),
+            caption: trl('general.QtyToMove'),
             value: qtyToMove,
           },
           {
-            caption: counterpart.translate('general.QtyPicked'),
+            caption: trl('general.QtyPicked'),
             value: qtyPicked,
           },
           {
-            caption: counterpart.translate('general.DropToLocator'),
+            caption: trl('general.DropToLocator'),
             value: dropToLocator.caption,
           },
         ],
@@ -93,11 +93,11 @@ const DistributionStepScreen = () => {
         location,
         values: [
           {
-            caption: counterpart.translate('general.DropToLocator'),
+            caption: trl('general.DropToLocator'),
             value: dropToLocator.caption + ' (' + dropToLocator.barcode + ')',
           },
           {
-            caption: counterpart.translate('general.QtyToMove'),
+            caption: trl('general.QtyToMove'),
             value: qtyToMove,
           },
         ],
@@ -105,12 +105,10 @@ const DistributionStepScreen = () => {
     );
   };
 
-  const pickFromHUCaption = isPickedFrom ? pickFromHU.caption : counterpart.translate('activities.distribution.scanHU');
+  const pickFromHUCaption = isPickedFrom ? pickFromHU.caption : trl('activities.distribution.scanHU');
   const pickFromHUStatus = isPickedFrom ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
-  const dropToLocatorCaption = isDroppedToLocator
-    ? dropToLocator.caption
-    : counterpart.translate('activities.distribution.scanLocator');
+  const dropToLocatorCaption = isDroppedToLocator ? dropToLocator.caption : trl('activities.distribution.scanLocator');
   const dropToLocatorStatus = isDroppedToLocator ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
   return (
@@ -124,7 +122,7 @@ const DistributionStepScreen = () => {
 
       {!HIDE_UNDO_BUTTONS && (
         <ButtonWithIndicator
-          caption={counterpart.translate('activities.picking.unPickBtn')}
+          caption={trl('activities.picking.unPickBtn')}
           disabled={!(isPickedFrom && !isDroppedToLocator)}
           onClick={() => console.warn('TODO: not implemented')} // TODO: implement
         />
@@ -139,7 +137,7 @@ const DistributionStepScreen = () => {
 
       {!HIDE_UNDO_BUTTONS && (
         <ButtonWithIndicator
-          caption={counterpart.translate('activities.picking.unPickBtn')}
+          caption={trl('activities.picking.unPickBtn')}
           disabled={!isDroppedToLocator}
           onClick={() => console.warn('TODO: not implemented')} // TODO: implement
         />
