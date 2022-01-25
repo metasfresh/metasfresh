@@ -1,150 +1,175 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.model;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_FreightCostDetail
- *  @author Adempiere (generated)
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
-public interface I_M_FreightCostDetail
+@SuppressWarnings("unused")
+public interface I_M_FreightCostDetail 
 {
 
-    /** TableName=M_FreightCostDetail */
-    public static final String Table_Name = "M_FreightCostDetail";
+	String Table_Name = "M_FreightCostDetail";
 
-    /** AD_Table_ID=540005 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540005 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Land.
-	 * Land
+	 * Set Country Area.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Country_ID (int C_Country_ID);
+	void setC_CountryArea_ID (int C_CountryArea_ID);
 
 	/**
-	 * Get Land.
-	 * Land
+	 * Get Country Area.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Country_ID();
+	int getC_CountryArea_ID();
 
-	public org.compiere.model.I_C_Country getC_Country();
+	@Nullable org.compiere.model.I_C_CountryArea getC_CountryArea();
 
-	public void setC_Country(org.compiere.model.I_C_Country C_Country);
+	void setC_CountryArea(@Nullable org.compiere.model.I_C_CountryArea C_CountryArea);
 
-    /** Column definition for C_Country_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
-    /** Column name C_Country_ID */
-    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
+	ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_C_CountryArea> COLUMN_C_CountryArea_ID = new ModelColumn<>(I_M_FreightCostDetail.class, "C_CountryArea_ID", org.compiere.model.I_C_CountryArea.class);
+	String COLUMNNAME_C_CountryArea_ID = "C_CountryArea_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Country.
+	 * Country
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Country_ID (int C_Country_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Country.
+	 * Country
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Country_ID();
 
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	@Nullable org.compiere.model.I_C_Country getC_Country();
+
+	void setC_Country(@Nullable org.compiere.model.I_C_Country C_Country);
+
+	ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new ModelColumn<>(I_M_FreightCostDetail.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_Created = new ModelColumn<>(I_M_FreightCostDetail.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Frachtbetrag.
@@ -154,7 +179,7 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFreightAmt (java.math.BigDecimal FreightAmt);
+	void setFreightAmt (BigDecimal FreightAmt);
 
 	/**
 	 * Get Frachtbetrag.
@@ -164,37 +189,33 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFreightAmt();
+	BigDecimal getFreightAmt();
 
-    /** Column definition for FreightAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_FreightAmt = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "FreightAmt", null);
-    /** Column name FreightAmt */
-    public static final String COLUMNNAME_FreightAmt = "FreightAmt";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_FreightAmt = new ModelColumn<>(I_M_FreightCostDetail.class, "FreightAmt", null);
+	String COLUMNNAME_FreightAmt = "FreightAmt";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_IsActive = new ModelColumn<>(I_M_FreightCostDetail.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Frachtkostendetail.
@@ -203,7 +224,7 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_FreightCostDetail_ID (int M_FreightCostDetail_ID);
+	void setM_FreightCostDetail_ID (int M_FreightCostDetail_ID);
 
 	/**
 	 * Get Frachtkostendetail.
@@ -212,39 +233,60 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_FreightCostDetail_ID();
+	int getM_FreightCostDetail_ID();
 
-    /** Column definition for M_FreightCostDetail_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_M_FreightCostDetail_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "M_FreightCostDetail_ID", null);
-    /** Column name M_FreightCostDetail_ID */
-    public static final String COLUMNNAME_M_FreightCostDetail_ID = "M_FreightCostDetail_ID";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_M_FreightCostDetail_ID = new ModelColumn<>(I_M_FreightCostDetail.class, "M_FreightCostDetail_ID", null);
+	String COLUMNNAME_M_FreightCostDetail_ID = "M_FreightCostDetail_ID";
 
 	/**
-	 * Set Lieferweg-Versandkosten.
+	 * Set Freight Cost Shipper.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_FreightCostShipper_ID (int M_FreightCostShipper_ID);
+	void setM_FreightCostShipper_ID (int M_FreightCostShipper_ID);
 
 	/**
-	 * Get Lieferweg-Versandkosten.
+	 * Get Freight Cost Shipper.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_FreightCostShipper_ID();
+	int getM_FreightCostShipper_ID();
 
-	public org.adempiere.model.I_M_FreightCostShipper getM_FreightCostShipper();
+	org.adempiere.model.I_M_FreightCostShipper getM_FreightCostShipper();
 
-	public void setM_FreightCostShipper(org.adempiere.model.I_M_FreightCostShipper M_FreightCostShipper);
+	void setM_FreightCostShipper(org.adempiere.model.I_M_FreightCostShipper M_FreightCostShipper);
 
-    /** Column definition for M_FreightCostShipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.adempiere.model.I_M_FreightCostShipper> COLUMN_M_FreightCostShipper_ID = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "M_FreightCostShipper_ID", org.adempiere.model.I_M_FreightCostShipper.class);
-    /** Column name M_FreightCostShipper_ID */
-    public static final String COLUMNNAME_M_FreightCostShipper_ID = "M_FreightCostShipper_ID";
+	ModelColumn<I_M_FreightCostDetail, org.adempiere.model.I_M_FreightCostShipper> COLUMN_M_FreightCostShipper_ID = new ModelColumn<>(I_M_FreightCostDetail.class, "M_FreightCostShipper_ID", org.adempiere.model.I_M_FreightCostShipper.class);
+	String COLUMNNAME_M_FreightCostShipper_ID = "M_FreightCostShipper_ID";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_SeqNo = new ModelColumn<>(I_M_FreightCostDetail.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Lieferwert.
@@ -253,7 +295,7 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setShipmentValueAmt (java.math.BigDecimal ShipmentValueAmt);
+	void setShipmentValueAmt (BigDecimal ShipmentValueAmt);
 
 	/**
 	 * Get Lieferwert.
@@ -262,40 +304,33 @@ public interface I_M_FreightCostDetail
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getShipmentValueAmt();
+	BigDecimal getShipmentValueAmt();
 
-    /** Column definition for ShipmentValueAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_ShipmentValueAmt = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "ShipmentValueAmt", null);
-    /** Column name ShipmentValueAmt */
-    public static final String COLUMNNAME_ShipmentValueAmt = "ShipmentValueAmt";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_ShipmentValueAmt = new ModelColumn<>(I_M_FreightCostDetail.class, "ShipmentValueAmt", null);
+	String COLUMNNAME_ShipmentValueAmt = "ShipmentValueAmt";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_FreightCostDetail, Object> COLUMN_Updated = new ModelColumn<>(I_M_FreightCostDetail.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_FreightCostDetail, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_M_FreightCostDetail.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
