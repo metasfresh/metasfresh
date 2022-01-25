@@ -28,11 +28,13 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -51,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Builder(toBuilder = true)
 public class BOMExploderCommand
@@ -86,6 +89,12 @@ public class BOMExploderCommand
 	@NonNull
 	public List<OrderLineCandidate> execute()
 	{
+		final List<OrderLineCandidate> result = execute0();
+		return reduceCandidates(result);
+	}
+
+	private List<OrderLineCandidate> execute0()
+	{
 
 		final ProductId bomProductId = initialCandidate.getProductId();
 		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
@@ -113,7 +122,7 @@ public class BOMExploderCommand
 			}
 			final ProductBOMLineId bomLineId = ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID());
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty());
+			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty().toBigDecimal());
 			final UomId bomUomId = UomId.ofRepoId(bomLine.getC_UOM_ID());
 
 			final AttributeSetInstanceId bomLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
@@ -130,17 +139,59 @@ public class BOMExploderCommand
 			final OrderLineCandidate lineCandidate = initialCandidate.toBuilder()
 					.productId(bomLineProductId)
 					.attributes(attributes)
-					.qty(bomLineQty)
+					.qty(Quantitys.create(bomLineQty, bomUomId))
 					.compensationGroupId(compensationGroupId)
-					.uomId(bomUomId)
 					.explodedFromBOMLineId(bomLineId)
 					.build();
 			result.addAll(this.toBuilder()
 					.initialCandidate(lineCandidate)
 					.build()
-					.execute());  // recurse
+					.execute0());  // recurse
 		}
 
 		return result;
+	}
+
+	private List<OrderLineCandidate> reduceCandidates(final List<OrderLineCandidate> result)
+	{
+		final ArrayList<OrderLineCandidate> reduced = new ArrayList<>();
+		for (final OrderLineCandidate candidate : result)
+		{
+			if (candidate.getQty().signum() == 0)
+			{
+				continue;
+			}
+			if (candidate.getQty().signum() < 0)
+			{
+				throw new AdempiereException("Invalid qty: " + candidate.getQty());
+			}
+			if (candidate.getQty().toBigDecimal().compareTo(BigDecimal.ZERO) == 0)
+			{
+				continue;
+			}
+
+			final Optional<OrderLineCandidate> orderLineCandidate = reduced.stream()
+					.filter(cand -> cand.getProductId().equals(candidate.getProductId()))
+					.findFirst();
+			if (orderLineCandidate.isPresent())
+			{
+				final OrderLineCandidate olCandidate = orderLineCandidate.get();
+				if (!olCandidate.getAttributes().equals(candidate.getAttributes()))
+				{
+					throw new AdempiereException("Cannot explode BOM because attributes are different: " + olCandidate.getAttributes() + " and " + candidate.getAttributes());
+				}
+				reduced.remove(olCandidate);
+
+				reduced.add(olCandidate.toBuilder()
+						.qty(olCandidate.getQty()
+								.add(candidate.getQty()))
+						.build());
+			}
+			else
+			{
+				reduced.add(candidate);
+			}
+		}
+		return reduced;
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantitys;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -219,9 +220,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.orderId(orderId)
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
-				.uomId(uomId)
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
-				.qty(quickInputQty)
+				.qty(Quantitys.create(quickInputQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
@@ -275,12 +275,12 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setBpartnerId(candidate.getBpartnerId());
 		huPackingAware.setInDispute(false);
 		huPackingAware.setProductId(candidate.getProductId());
-		huPackingAware.setUomId(candidate.getUomId());
+		huPackingAware.setUomId(candidate.getQty().getUomId());
 		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
 
 		//
-		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty());
+		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty().toBigDecimal());
 
 		//
 		// Validate:

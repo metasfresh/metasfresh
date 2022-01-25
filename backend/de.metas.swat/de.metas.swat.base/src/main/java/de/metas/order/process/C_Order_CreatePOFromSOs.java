@@ -20,6 +20,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantitys;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.uom.UomId;
@@ -205,8 +206,7 @@ public class C_Order_CreatePOFromSOs
 				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.attributes(attributeSet)
-				.uomId(UomId.ofRepoId(ol.getC_UOM_ID()))
-				.qty(ol.getQtyEntered())
+				.qty(Quantitys.create(ol.getQtyEntered(), UomId.ofRepoId(ol.getC_UOM_ID())))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(ol.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(BPartnerId.ofRepoId(ol.getC_BPartner_ID()))
 				.soTrx(SOTrx.SALES)
@@ -230,9 +230,9 @@ public class C_Order_CreatePOFromSOs
 		PO.copyValues((X_C_OrderLine)bomSalesOrderLine, (X_C_OrderLine)newOrderLine);
 
 		newOrderLine.setM_Product_ID(candidate.getProductId().getRepoId());
-		newOrderLine.setC_UOM_ID(candidate.getUomId().getRepoId());
-		newOrderLine.setQtyOrdered(candidate.getQty());
-		newOrderLine.setQtyReserved(candidate.getQty());
+		newOrderLine.setC_UOM_ID(candidate.getQty().getUomId().getRepoId());
+		newOrderLine.setQtyOrdered(candidate.getQty().toBigDecimal());
+		newOrderLine.setQtyReserved(candidate.getQty().toBigDecimal());
 		if (candidate.getBestBeforePolicy() != null)
 		{
 			newOrderLine.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
