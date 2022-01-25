@@ -451,16 +451,13 @@ export default class Table extends PureComponent {
 
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
-    if (pending) {
-      return false;
-    }
 
     if (!rows.length) {
       return (
         <div className="empty-info-text">
           <div>
-            <h5>{emptyText}</h5>
-            <p>{emptyHint}</p>
+            <h5>{!pending ? emptyText : ''}</h5>
+            <p>{!pending ? emptyHint : ''}</p>
           </div>
         </div>
       );
