@@ -147,6 +147,7 @@ export function createTableData(rawData) {
     docId: rawData.id,
     tabId: rawData.tabId,
     keyProperty: rawData.keyProperty,
+    pending: rawData.pending,
     emptyText: rawData.emptyResultText,
     emptyHint: rawData.emptyResultHint,
     size: rawData.size,
@@ -406,15 +407,16 @@ export function createTabTable(tableId, tableResponse) {
  * @method updateTabTable
  * @summary Update table entry for the details view with layout and data rows
  */
-export function updateTabTable(tableId, tableResponse) {
+export function updateTabTable({ tableId, tableResponse, pending }) {
   return (dispatch, getState) => {
     const state = getState();
 
     if (state.tables) {
       const tableExists = state.tables[tableId];
       const tableData = createTableData({
-        ...tableResponse,
+        ...(tableResponse ? tableResponse : {}),
         keyProperty: 'rowId',
+        pending,
       });
 
       if (tableData.rows && tableData.rows.length) {
