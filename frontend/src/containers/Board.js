@@ -116,8 +116,6 @@ class Board extends Component {
     const { board } = this.state;
     this.clearTargetIndicator();
 
-    console.log('handleDrop')
-
     if (card.initLaneId === 0) {
       // Adding card
       addCard(board.boardId, targetLaneId, card.id, card.index);
@@ -155,7 +153,6 @@ class Board extends Component {
    * @param {*} targetIndex
    */
   handleHover = (card, targetLaneId, targetIndex) => {
-    console.log('handleHover');
     this.setState({
       targetIndicator: {
         laneId: targetLaneId,
