@@ -56,11 +56,11 @@ public class JsonBPartnerTest
 				+ "    \"LANDESCODE\": \"test country code\",\n"
 				+ "    \"GLN\": \"test gln\",\n"
 				+ "    \"INAKTIV\": 0,\n"
-				+"     \"METASFRESHID\":\"102\",\n"
+				+"     \"METASFRESHID\":\"12345\",\n"
 				+"     \"METASFRESHURL\": \"metasfreshUrl\",\n"
 				+ "    \"KONTAKTE\":[\n "
 				+ "        {\n"
-				+ "   				 \"METASFRESHID\": 100,\n"
+				+ "   				 \"METASFRESHID\": 12345,\n"
 				+ "   				 \"NACHNAME\": \"LASTNAME\",\n"
 				+ "   				 \"DUMMYVALUE\": \"TEST\",\n"
 				+ "    				 \"VORNAME\": \"FIRSTNAME\",\n"
@@ -101,7 +101,7 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
-				.metasfreshId("102")
+				.metasfreshId("12345")
 				.metasfreshURL("metasfreshUrl")
 				.build();
 
@@ -115,7 +115,7 @@ public class JsonBPartnerTest
 		final List<String> roles = ImmutableList.of("ROLE1", "ROLE2");
 
 		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
+				.metasfreshId(JsonMetasfreshId.of(12345))
 				.lastName("LASTNAME")
 				.firstName("FIRSTNAME")
 				.greeting("GREETING")
@@ -144,7 +144,7 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
-				.metasfreshId("102")
+				.metasfreshId("12345")
 				.metasfreshURL("metasfreshUrl")
 				.build();
 

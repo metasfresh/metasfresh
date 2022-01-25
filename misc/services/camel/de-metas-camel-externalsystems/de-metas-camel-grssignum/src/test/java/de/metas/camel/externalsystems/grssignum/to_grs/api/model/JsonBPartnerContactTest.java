@@ -41,7 +41,7 @@ public class JsonBPartnerContactTest
 	{
 		//given
 		final String candidate = "{\n"
-				+ "    \"METASFRESHID\": 100,\n"
+				+ "    \"METASFRESHID\": 12345,\n"
 				+ "    \"NACHNAME\": \"LASTNAME\",\n"
 				+ "    \"DUMMYVALUE\": \"TEST\",\n"
 				+ "    \"VORNAME\": \"FIRSTNAME\",\n"
@@ -50,7 +50,6 @@ public class JsonBPartnerContactTest
 				+ "    \"POSITION\": \"POSITION\",\n"
 				+ "    \"EMAIL\": \"EMAIL\",\n"
 				+ "    \"TELEFON\": \"TELEFON\",\n"
-				+ "    \"METASFRESHID\": 12345,\n"
 				+ "    \"MOBIL\": \"TELEFON2\",\n"
 				+ "    \"FAX\": \"FAX\",\n"
 				+ "    	\"ROLLEN\":[\n "
@@ -88,7 +87,6 @@ public class JsonBPartnerContactTest
 	public static JsonBPartnerContact createJsonBPartnerContact()
 	{
 		return JsonBPartnerContact.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
 				.lastName("LASTNAME")
 				.firstName("FIRSTNAME")
 				.greeting("GREETING")
