@@ -6,6 +6,7 @@ import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
 import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
+import Spinner from '../app/SpinnerOverlay';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
@@ -496,6 +497,7 @@ export default class Table extends PureComponent {
       onDeselectAll,
       tableRefreshToggle,
       setActiveSort,
+      pending,
     } = this.props;
 
     return (
@@ -510,6 +512,13 @@ export default class Table extends PureComponent {
           }
         )}
       >
+        {pending && !hasIncluded && (
+          <div className="spinner-wrapper-in-tab">
+            <div>
+              <Spinner iconSize={50} spinnerType="modal" />
+            </div>
+          </div>
+        )}
         <table
           className={classnames(
             'table table-bordered-vertically',

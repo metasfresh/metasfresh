@@ -622,6 +622,8 @@
     align-items: center;
 }
 .spinner-wrapper-in-tab {
+  position: absolute;
+  width: 99%;
   display: flex;
   justify-content: center;
   align-items: center;
