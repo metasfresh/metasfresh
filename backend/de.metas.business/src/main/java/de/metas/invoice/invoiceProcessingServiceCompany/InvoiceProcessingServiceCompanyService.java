@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -57,6 +58,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
 @Service
 public class InvoiceProcessingServiceCompanyService
@@ -88,9 +91,13 @@ public class InvoiceProcessingServiceCompanyService
 		final InvoiceId invoiceId = request.getInvoiceId();
 		final Amount feeAmountIncludingTax = request.getFeeAmountIncludingTax();
 
-		if (isServiceInvoiceAlreadyGenerated(invoiceId))
+		final ImmutableSet<InvoiceId> invoiceIdsWithGeneratedFees = retainIfServiceInvoiceWasAlreadyGenerated(ImmutableSet.of(invoiceId));
+
+		if (invoiceIdsWithGeneratedFees.size() > 0)
 		{
-			return Optional.empty();
+			throw new AdempiereException("Service Invoice already generated")
+					.setParameter("invoiceId", invoiceId)
+					.appendParametersToMessage();
 		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
@@ -163,7 +170,7 @@ public class InvoiceProcessingServiceCompanyService
 		}
 		else
 		{
-			return isServiceInvoiceAlreadyGenerated(request.getInvoiceId());
+			return retainIfServiceInvoiceWasAlreadyGenerated(ImmutableSet.of(request.getInvoiceId())).size() > 0;
 		}
 	}
 
@@ -241,13 +248,11 @@ public class InvoiceProcessingServiceCompanyService
 		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 	}
 
-	private boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceId invoiceId)
-	{
-		return invoiceDAO.hasCompletedInvoicesReferencing(invoiceId);
-	}
-
+	@NonNull
 	public ImmutableSet<InvoiceId> retainIfServiceInvoiceWasAlreadyGenerated(final @NonNull Collection<InvoiceId> invoiceIds)
 	{
-		return invoiceDAO.retainIfHasCompletedInvoicesReferencing(invoiceIds);
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(DOCBASETYPE_APInvoice, DOCSUBTYPE_PaymentServiceProviderInvoice);
+
+		return invoiceDAO.retainReferencingCompletedInvoices(invoiceIds, docBaseAndSubType);
 	}
 }
