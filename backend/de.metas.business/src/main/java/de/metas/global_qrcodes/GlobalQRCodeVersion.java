@@ -1,5 +1,6 @@
 package de.metas.global_qrcodes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -23,6 +24,7 @@ public final class GlobalQRCodeVersion
 		return interner.intern(new GlobalQRCodeVersion(value));
 	}
 
+	@JsonCreator
 	public static GlobalQRCodeVersion ofString(final String string)
 	{
 		try
