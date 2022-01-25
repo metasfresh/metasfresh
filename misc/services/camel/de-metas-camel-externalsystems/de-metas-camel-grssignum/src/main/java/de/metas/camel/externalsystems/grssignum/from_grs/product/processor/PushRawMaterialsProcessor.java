@@ -101,7 +101,8 @@ public class PushRawMaterialsProcessor implements Processor
 	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct grsBPartnerProductItem)
 	{
 		final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
-		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsBPartnerProductItem.getBpartnerId()));
+
+		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(computeBPartnerIdentifier(grsBPartnerProductItem));
 		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
 		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
 		jsonRequestBPartnerProductUpsert.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase());
@@ -124,5 +125,21 @@ public class PushRawMaterialsProcessor implements Processor
 		}
 
 		return name;
+	}
+
+	@NonNull
+	private static String computeBPartnerIdentifier(@NonNull final JsonBPartnerProduct jsonBPartnerProduct)
+	{
+		if (jsonBPartnerProduct.getBPartnerMetasfreshId() != null && Check.isNotBlank(jsonBPartnerProduct.getBPartnerMetasfreshId()))
+		{
+			return jsonBPartnerProduct.getBPartnerMetasfreshId();
+		}
+
+		if (jsonBPartnerProduct.getBpartnerId() != null && Check.isNotBlank(jsonBPartnerProduct.getBpartnerId()))
+		{
+			return ExternalIdentifierFormat.asExternalIdentifier(jsonBPartnerProduct.getBpartnerId());
+		}
+
+		throw new RuntimeException("BPartner can not be identified!");
 	}
 }

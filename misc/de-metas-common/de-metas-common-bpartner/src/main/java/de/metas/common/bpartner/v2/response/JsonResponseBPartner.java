@@ -65,6 +65,7 @@ public class JsonResponseBPartner
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
+	public static final String METASFRESH_URL = "metasfreshUrl";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -185,6 +186,10 @@ public class JsonResponseBPartner
 	@JsonProperty(VAT_ID)
 	String vatId;
 
+	@ApiModelProperty(required = false, value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
+	@JsonProperty(METASFRESH_URL)
+	String metasfreshUrl;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -216,6 +221,8 @@ public class JsonResponseBPartner
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
+			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
+
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 	{
@@ -250,6 +257,8 @@ public class JsonResponseBPartner
 		this.company = company;
 
 		this.vatId = vatId;
+
+		this.metasfreshUrl = metasfreshUrl;
 
 		this.changeInfo = changeInfo;
 	}

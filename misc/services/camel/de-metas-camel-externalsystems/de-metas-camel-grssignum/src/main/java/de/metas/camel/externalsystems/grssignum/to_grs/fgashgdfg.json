@@ -1,0 +1,19 @@
+{
+  "FLAG": 100,
+  "MKREDID": "1000007",
+  "KURZBEZEICHNUNG": "BP",
+  "INAKTIV": 0,
+  "MID": "tenant",
+  "NAMENSZUSATZ": null,
+  "ADRESSE 1": null,
+  "ADRESSE 2": null,
+  "ADRESSE 3": null,
+  "ADRESSE 4": null,
+  "PLZ": null,
+  "ORT": null,
+  "LANDESCODE": null,
+  "GLN": null,
+  "METASFRESHID": "2156433",
+  "METASFRESHURL": "http://localhost:3000/window/123/2156433",
+  "KONTAKTE": []
+}

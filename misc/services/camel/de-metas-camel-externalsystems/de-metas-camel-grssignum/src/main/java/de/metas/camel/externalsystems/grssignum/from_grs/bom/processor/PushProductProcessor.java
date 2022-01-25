@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.bom.processor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
@@ -29,10 +30,12 @@ import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
+import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -62,6 +65,15 @@ public class PushProductProcessor implements Processor
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
 		final JsonRequestProduct requestProduct = new JsonRequestProduct();
+
+		final JsonRequestBPartnerProductUpsert requestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
+		if(Check.isNotBlank(jsonBOM.getBPartnerMetasfreshId()))
+		{
+			requestBPartnerProductUpsert.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
+			requestBPartnerProductUpsert.setActive(true);
+
+			requestProduct.setBpartnerProductItems(ImmutableList.of(requestBPartnerProductUpsert));
+		}
 
 		requestProduct.setCode(jsonBOM.getProductValue());
 		requestProduct.setActive(jsonBOM.isActive());

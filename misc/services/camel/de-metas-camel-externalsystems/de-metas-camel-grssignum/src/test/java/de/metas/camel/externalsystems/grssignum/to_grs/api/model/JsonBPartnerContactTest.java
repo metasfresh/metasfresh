@@ -50,6 +50,7 @@ public class JsonBPartnerContactTest
 				+ "    \"POSITION\": \"POSITION\",\n"
 				+ "    \"EMAIL\": \"EMAIL\",\n"
 				+ "    \"TELEFON\": \"TELEFON\",\n"
+				+ "    \"METASFRESHID\": 12345,\n"
 				+ "    \"MOBIL\": \"TELEFON2\",\n"
 				+ "    \"FAX\": \"FAX\",\n"
 				+ "    	\"ROLLEN\":[\n "
@@ -98,6 +99,7 @@ public class JsonBPartnerContactTest
 				.fax("FAX")
 				.phone2("TELEFON2")
 				.contactRoles(ImmutableList.of("ROLE1", "ROLE2"))
+				.metasfreshId(JsonMetasfreshId.of(12345))
 				.build();
 	}
 }

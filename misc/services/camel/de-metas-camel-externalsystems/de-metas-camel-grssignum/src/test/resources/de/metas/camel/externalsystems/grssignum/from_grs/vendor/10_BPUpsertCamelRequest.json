@@ -3,14 +3,14 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-GRSSignum-101",
+        "bpartnerIdentifier": "101",
         "externalVersion": null,
         "externalReferenceUrl": null,
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
-            "code": null,
-            "codeSet": false,
+            "code": "BPartnerValue",
+            "codeSet": true,
             "active": true,
             "activeSet": true,
             "name": "BPartnerName",

@@ -85,12 +85,14 @@ public class ExportBPartnerProcessor implements Processor
 				.orElseGet(JsonBPartner::builder);
 
 		return bPartnerBuilder
-				.id(bpartnerMetasfreshId)
+				.bpartnerValue(jsonResponseBPartner.getCode())
 				.name(bPartnerName)
 				.inactive(inactive)
 				.flag(Endpoint.BPARTNER.getFlag())
 				.tenantId(tenantId)
 				.name2(jsonResponseBPartner.getName2())
+				.metasfreshId(bpartnerMetasfreshId)
+				.metasfreshURL(jsonResponseBPartner.getMetasfreshUrl())
 				.contacts(toJsonBPartnerContact(jsonResponseComposite.getContacts()))
 				.build();
 	}

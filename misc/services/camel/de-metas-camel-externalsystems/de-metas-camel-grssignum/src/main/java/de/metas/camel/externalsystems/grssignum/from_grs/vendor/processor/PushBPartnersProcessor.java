@@ -31,6 +31,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -58,6 +59,7 @@ public class PushBPartnersProcessor implements Processor
 		jsonRequestBPartner.setCompanyName(jsonBPartner.getName());
 		jsonRequestBPartner.setActive(jsonBPartner.isActive());
 		jsonRequestBPartner.setVendor(true);
+		jsonRequestBPartner.setCode(jsonBPartner.getBpartnerValue());
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.orgCode(credentials.getOrgCode())
@@ -65,7 +67,7 @@ public class PushBPartnersProcessor implements Processor
 				.build();
 
 		final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBPartner.getId()))
+				.bpartnerIdentifier(computeBPartnerIdentifier(jsonBPartner))
 				.bpartnerComposite(jsonRequestComposite)
 				.build();
 
@@ -78,5 +80,15 @@ public class PushBPartnersProcessor implements Processor
 				.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
 				.orgCode(credentials.getOrgCode())
 				.build();
+	}
+
+	@NonNull
+	private static String computeBPartnerIdentifier(@NonNull final JsonBPartner jsonBPartner)
+	{
+		if (jsonBPartner.getMetasfreshId() != null && Check.isNotBlank(jsonBPartner.getMetasfreshId()))
+		{
+			return jsonBPartner.getMetasfreshId();
+		}
+		return ExternalIdentifierFormat.asExternalIdentifier(jsonBPartner.getBpartnerValue());
 	}
 }

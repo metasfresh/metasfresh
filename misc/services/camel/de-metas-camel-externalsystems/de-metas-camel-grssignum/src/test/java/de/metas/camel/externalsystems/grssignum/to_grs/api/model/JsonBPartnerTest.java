@@ -44,7 +44,7 @@ public class JsonBPartnerTest
 				+ "    \"FLAG\": 100,\n"
 				+ "    \"MID\": \"HOM\",\n"
 				+ "    \"DUMMYVALUE\": \"TEST\",\n"
-				+ "    \"MKREDID\": \"102\",\n"
+				+ "    \"MKREDID\": \"value\",\n"
 				+ "    \"KURZBEZEICHNUNG\": \"test company name\",\n"
 				+ "    \"NAMENSZUSATZ\": \"test name2\",\n"
 				+ "    \"ADRESSE 1\": \"test address1\",\n"
@@ -56,6 +56,8 @@ public class JsonBPartnerTest
 				+ "    \"LANDESCODE\": \"test country code\",\n"
 				+ "    \"GLN\": \"test gln\",\n"
 				+ "    \"INAKTIV\": 0,\n"
+				+"     \"METASFRESHID\":\"102\",\n"
+				+"     \"METASFRESHURL\": \"metasfreshUrl\",\n"
 				+ "    \"KONTAKTE\":[\n "
 				+ "        {\n"
 				+ "   				 \"METASFRESHID\": 100,\n"
@@ -85,7 +87,7 @@ public class JsonBPartnerTest
 
 		final JsonBPartner expectedBPartner = JsonBPartner.builder()
 				.flag(100)
-				.id("102")
+				.bpartnerValue("value")
 				.name("test company name")
 				.name2("test name2")
 				.address1("test address1")
@@ -99,6 +101,8 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
+				.metasfreshId("102")
+				.metasfreshURL("metasfreshUrl")
 				.build();
 
 		assertThat(partner).isEqualTo(expectedBPartner);
@@ -126,7 +130,7 @@ public class JsonBPartnerTest
 
 		final JsonBPartner bPartner = JsonBPartner.builder()
 				.flag(100)
-				.id("102")
+				.bpartnerValue("value")
 				.name("test company name")
 				.name2("test name2")
 				.address1("test address1")
@@ -140,6 +144,8 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
+				.metasfreshId("102")
+				.metasfreshURL("metasfreshUrl")
 				.build();
 
 		//when

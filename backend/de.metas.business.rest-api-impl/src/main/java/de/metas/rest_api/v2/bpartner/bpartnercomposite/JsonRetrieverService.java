@@ -96,6 +96,8 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.TableRecordUtil;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -304,6 +306,8 @@ public class JsonRetrieverService
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
 
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getId());
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -332,6 +336,7 @@ public class JsonRetrieverService
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
+				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.build();
 	}
 
