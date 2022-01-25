@@ -5,7 +5,7 @@ import {
   UPDATE_MANUFACTURING_RECEIPT,
 } from '../constants/ManufacturingActionTypes';
 
-import { getWfProcess } from '../reducers/wfProcesses';
+import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 
 export function updateManufacturingIssueQty({
@@ -75,10 +75,7 @@ export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId,
 export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) {
   return (dispatch, getState) => {
     const state = getState();
-
-    const wfProcess = getWfProcess(state, wfProcessId);
-    const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
-    const line = activity != null ? activity.dataStored.lines[lineId] : null;
+    const line = getLineById(state, wfProcessId, activityId, lineId);
 
     if (line) {
       dispatch({ type: UPDATE_MANUFACTURING_RECEIPT, payload: { ...line } });
