@@ -64,8 +64,6 @@ const MaterialReceiptLineScreen = () => {
     history.push(manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  const caption = trl('activities.mfg.receipts.receiveQty');
-
   let allowReceivingQty = false;
   let targetCaption = trl('activities.mfg.receipts.receiveTarget');
   if (aggregateToLU) {
@@ -84,7 +82,7 @@ const MaterialReceiptLineScreen = () => {
         isDisabled={!allowReceivingQty}
         onClick={handleQuantityChange}
         uom={uom}
-        caption={caption}
+        caption={trl('activities.mfg.receipts.receiveQty')}
       />
     </div>
   );
