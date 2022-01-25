@@ -3,10 +3,6 @@ import PropTypes from 'prop-types';
 import Card from './Card';
 
 class Lane extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const {
       caption,
