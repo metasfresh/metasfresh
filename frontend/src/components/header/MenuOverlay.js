@@ -102,10 +102,12 @@ class MenuOverlay extends Component {
 
       queryPathsRequest(e.target.value, 9)
         .then((response) => {
-          this.setState({
-            queriedResults: flattenLastElem(response.data),
-            pendingQuery: false,
-          });
+          if (e.target.value === this.queryString) {
+            this.setState({
+              queriedResults: flattenLastElem(response.data),
+              pendingQuery: false,
+            });
+          }
         })
         .catch((err) => {
           if (err.response && err.response.status === 404) {
@@ -580,6 +582,8 @@ class MenuOverlay extends Component {
     }
   }
 
+  setLastQuery = (e) => (this.queryString = e.target.value);
+
   /**
    * @method handleGroupUp
    * @summary ToDo: Describe the method.
@@ -651,6 +655,7 @@ class MenuOverlay extends Component {
                       this.handleKeyDown,
                       DEBOUNCE_TIME_SEARCH
                     )}
+                    onKeyUp={this.setLastQuery}
                   />
 
                   {query && (
@@ -661,7 +666,8 @@ class MenuOverlay extends Component {
                   )}
                 </div>
 
-                {queriedResults &&
+                {!pendingQuery &&
+                  queriedResults &&
                   queriedResults.map((result, index) => (
                     <MenuOverlayItem
                       ref={(overlayItem) => {
