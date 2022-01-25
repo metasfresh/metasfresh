@@ -1,6 +1,6 @@
 import 'jest-localstorage-mock';
 import Enzyme, { shallow, render, mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import { JSDOM } from 'jsdom';
 import EventSource from 'eventsourcemock';
 import React from "react" 
