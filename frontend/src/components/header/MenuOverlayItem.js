@@ -234,6 +234,7 @@ class MenuOverlayItem extends Component {
                 : (e) => this.clickedItem(e, elementId, nodeId, type)
             }
           >
+            {this.iconByType(type)}
             {children
               ? children.map((item, id) => (
                   <span key={id} className="query-results">
