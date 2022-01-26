@@ -6,7 +6,11 @@ export function huManagerReducer(applicationState = {}, action) {
       return { ...applicationState, handlingUnitInfo: null };
     }
     case HANDLING_UNIT_LOADED: {
-      return { ...applicationState, handlingUnitInfo: action.payload };
+      const handlingUnitInfo = action.payload;
+      return {
+        ...applicationState,
+        handlingUnitInfo,
+      };
     }
     default:
       return applicationState;

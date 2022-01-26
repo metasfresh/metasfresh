@@ -21,12 +21,12 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
   const mountedRef = useRef(true);
 
   const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
-    console.log('Resolving scanned barcode', scannedBarcode);
+    //console.log('Resolving scanned barcode', scannedBarcode);
     if (resolveScannedBarcode) {
       let resolvedResultPromise;
       try {
         resolvedResultPromise = resolveScannedBarcode({ scannedBarcode });
-        console.log('Got resolvedResultPromise', resolvedResultPromise);
+        //console.log('Got resolvedResultPromise', resolvedResultPromise);
       } catch (error) {
         console.error('Got unhandled error while trying to resolve the scanned barcode', error);
         handleResolvedResult({ error: trl('general.PleaseTryAgain') }, controls);
@@ -42,7 +42,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
   };
 
   const handleResolvedResult = (resolvedResult, controls) => {
-    console.log('Got resolvedResult', resolvedResult);
+    // console.log('Got resolvedResult', resolvedResult);
     if (resolvedResult.error) {
       toastError({ plainMessage: resolvedResult.error });
     } else {

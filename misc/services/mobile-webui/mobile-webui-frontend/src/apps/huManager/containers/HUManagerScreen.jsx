@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
-import { getHUByBarcode } from '../api';
+import * as api from '../api';
 import { clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { huManagerDisposeLocation } from '../routes';
@@ -17,7 +17,8 @@ const HUManagerScreen = () => {
   const dispatch = useDispatch();
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
-    return getHUByBarcode(scannedBarcode)
+    return api
+      .getHUByQRCode(scannedBarcode)
       .then((handlingUnitInfo) => ({ handlingUnitInfo }))
       .catch((axiosError) => ({
         error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
@@ -25,7 +26,6 @@ const HUManagerScreen = () => {
   };
 
   const onResolvedResult = (result) => {
-    console.log('onResolvedResult', result);
     const { handlingUnitInfo } = result;
     dispatch(handlingUnitLoaded({ handlingUnitInfo }));
   };
