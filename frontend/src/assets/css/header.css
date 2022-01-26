@@ -658,6 +658,6 @@
         text-decoration: underline;
     }
     span.query-menu-item:hover {
-      text-decoration: none;
+        text-decoration: none;
     }
 }
