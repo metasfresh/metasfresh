@@ -23,12 +23,17 @@
 package de.metas.ui.web.order;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.order.compensationGroup.GroupCreateRequest;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -48,7 +53,6 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,11 +62,14 @@ import java.util.Optional;
 @Builder(toBuilder = true)
 public class BOMExploderCommand
 {
+	private static final AdMessageKey MSG_ATTRIBUTES_NOT_MATCHING= AdMessageKey.of("de.metas.ui.web.order.BOMExploderCommand.attributesNotMatching");
+
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Nullable
 	private final BOMUse bomToUse;
@@ -115,15 +122,16 @@ public class BOMExploderCommand
 		final List<I_PP_Product_BOMLine> bomLines = bomsRepo.retrieveLines(bom);
 		for (final I_PP_Product_BOMLine bomLine : bomLines)
 		{
-			final BOMComponentType bomLineComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
-			if (!explodeOnlyComponentTypes.contains(bomLineComponentType))
+			final Optional<BOMComponentType> bomLineComponentType = BOMComponentType.optionalOfNullableCode(bomLine.getComponentType());
+			if (bomLineComponentType.isPresent() && !explodeOnlyComponentTypes.contains(bomLineComponentType.get()))
 			{
 				continue;
 			}
 			final ProductBOMLineId bomLineId = ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID());
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty().toBigDecimal());
+
 			final UomId bomUomId = UomId.ofRepoId(bomLine.getC_UOM_ID());
+			final Quantity bomLineQtys = Quantitys.create(bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty().toBigDecimal()), bomUomId);
 
 			final AttributeSetInstanceId bomLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
 			final ImmutableAttributeSet attributes = asiBL.getImmutableAttributeSetById(bomLineAsiId);
@@ -139,7 +147,7 @@ public class BOMExploderCommand
 			final OrderLineCandidate lineCandidate = initialCandidate.toBuilder()
 					.productId(bomLineProductId)
 					.attributes(attributes)
-					.qty(Quantitys.create(bomLineQty, bomUomId))
+					.qty(bomLineQtys)
 					.compensationGroupId(compensationGroupId)
 					.explodedFromBOMLineId(bomLineId)
 					.build();
@@ -154,44 +162,45 @@ public class BOMExploderCommand
 
 	private List<OrderLineCandidate> reduceCandidates(final List<OrderLineCandidate> result)
 	{
-		final ArrayList<OrderLineCandidate> reduced = new ArrayList<>();
-		for (final OrderLineCandidate candidate : result)
+		return result.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						OrderLineCandidate::getProductId,
+						candidate -> candidate,
+						this::combine))
+				.values()
+				.asList();
+	}
+
+	private OrderLineCandidate combine(final OrderLineCandidate olCand1, final OrderLineCandidate olCand2)
+	{
+		final Quantity olCand1Qty = olCand1.getQty();
+		final Quantity olCand2Qty = olCand2.getQty();
+
+		if (olCand1Qty.signum() == 0)
 		{
-			if (candidate.getQty().signum() == 0)
-			{
-				continue;
-			}
-			if (candidate.getQty().signum() < 0)
-			{
-				throw new AdempiereException("Invalid qty: " + candidate.getQty());
-			}
-			if (candidate.getQty().toBigDecimal().compareTo(BigDecimal.ZERO) == 0)
-			{
-				continue;
-			}
-
-			final Optional<OrderLineCandidate> orderLineCandidate = reduced.stream()
-					.filter(cand -> cand.getProductId().equals(candidate.getProductId()))
-					.findFirst();
-			if (orderLineCandidate.isPresent())
-			{
-				final OrderLineCandidate olCandidate = orderLineCandidate.get();
-				if (!olCandidate.getAttributes().equals(candidate.getAttributes()))
-				{
-					throw new AdempiereException("Cannot explode BOM because attributes are different: " + olCandidate.getAttributes() + " and " + candidate.getAttributes());
-				}
-				reduced.remove(olCandidate);
-
-				reduced.add(olCandidate.toBuilder()
-						.qty(olCandidate.getQty()
-								.add(candidate.getQty()))
-						.build());
-			}
-			else
-			{
-				reduced.add(candidate);
-			}
+			return olCand2;
 		}
-		return reduced;
+		if (olCand1Qty.signum() < 0)
+		{
+			throw new AdempiereException("Invalid qty: " + olCand1Qty);
+		}
+
+		if (olCand2Qty.signum() == 0)
+		{
+			return olCand1;
+		}
+		if (olCand2Qty.signum() < 0)
+		{
+			throw new AdempiereException("Invalid qty: " + olCand2Qty);
+		}
+
+		if (!olCand1.getAttributes().equals(olCand2.getAttributes()))
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ATTRIBUTES_NOT_MATCHING, olCand1.getProductId(), olCand2.getProductId()));
+		}
+		final Quantity additionResult = Quantitys.add(UOMConversionContext.of(olCand1.getProductId()), olCand1Qty, olCand2Qty);
+		return olCand1.toBuilder()
+				.qty(additionResult)
+				.build();
 	}
 }
