@@ -109,33 +109,24 @@ class NavigationTree extends Component {
   queryRequest = async (value) => {
     this.setState({ pendingQuery: true, query: value });
     const { query } = this.state;
-    try {
-      const response = await queryPathsRequest(value, '', true);
-
-      await new Promise((resolve) =>
-        this.setState(
-          {
-            queriedResults: query === value ? response.data.children : [],
+    await queryPathsRequest(value, '', true)
+      .then((res) => {
+        this.setState({
+          queriedResults: query === value ? res.data.children : [],
+          pendingQuery: false,
+          query,
+        });
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          this.setState({
+            queriedResults: [],
+            rootResults: {},
             pendingQuery: false,
             query,
-          },
-          resolve
-        )
-      );
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        await new Promise((resolve) =>
-          this.setState(
-            {
-              queriedResults: [],
-              rootResults: {},
-              pendingQuery: false,
-            },
-            resolve
-          )
-        );
-      }
-    }
+          });
+        }
+      });
   };
 
   clearValue = () => {
