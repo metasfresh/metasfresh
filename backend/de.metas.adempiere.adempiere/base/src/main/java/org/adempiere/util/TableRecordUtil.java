@@ -25,25 +25,27 @@ package org.adempiere.util;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-@Service
+import static de.metas.ui.web.WebuiURLs.SYSCONFIG_FRONTEND_URL;
+
+@UtilityClass
 public class TableRecordUtil
 {
-	private static final String FRONTEND_URL = "webui.frontend.url";
 	private static final String WINDOW = "window";
 
 	@Nullable
 	public static String getMetasfreshUrl(@NonNull final TableRecordReference recordReference)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final String webUIFrontendUrl = sysConfigBL.getValue(FRONTEND_URL);
+
+		final String webUIFrontendUrl = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL);
 
 		final Optional<AdWindowId> windowId = RecordWindowFinder.findAdWindowId(recordReference);
 

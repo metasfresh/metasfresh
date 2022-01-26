@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.grssignum.from_grs.vendor.processor;
 
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -89,6 +88,7 @@ public class PushBPartnersProcessor implements Processor
 		{
 			return jsonBPartner.getMetasfreshId();
 		}
-		return ExternalIdentifierFormat.asExternalIdentifier(jsonBPartner.getBpartnerValue());
+
+		throw new RuntimeException("Missing mandatory METASFRESHID! JsonBPartner.MKREDID: " + jsonBPartner.getBpartnerValue());
 	}
 }

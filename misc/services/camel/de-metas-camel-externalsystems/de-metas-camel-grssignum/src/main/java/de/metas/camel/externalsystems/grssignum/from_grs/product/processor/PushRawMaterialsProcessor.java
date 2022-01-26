@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,7 +48,7 @@ import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUS
 public class PushRawMaterialsProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
 
@@ -135,11 +135,6 @@ public class PushRawMaterialsProcessor implements Processor
 			return jsonBPartnerProduct.getBPartnerMetasfreshId();
 		}
 
-		if (jsonBPartnerProduct.getBpartnerId() != null && Check.isNotBlank(jsonBPartnerProduct.getBpartnerId()))
-		{
-			return ExternalIdentifierFormat.asExternalIdentifier(jsonBPartnerProduct.getBpartnerId());
-		}
-
-		throw new RuntimeException("BPartner can not be identified!");
+		throw new RuntimeException("Missing mandatory METASFRESHID! see JsonBPartnerProduct: " + jsonBPartnerProduct);
 	}
 }
