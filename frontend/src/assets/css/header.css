@@ -656,3 +656,15 @@
     text-decoration: underline;
     text-underline-position: under;
 }
+
+.menu-overlay-spinner {
+  >.spinner {
+      background-color: transparent;
+  }
+  >.screen-freeze {
+      top: 0px;
+      left: 280px;
+      width: 43%;
+      height: 40%;
+  }
+}
