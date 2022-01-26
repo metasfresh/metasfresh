@@ -98,7 +98,7 @@ export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) 
         activityId,
         receiveFrom: {
           lineId: line.id,
-          qtyReceived: line.userQtyReceived,
+          qtyReceived: line.userQtyReceived || 0,
           aggregateToLU,
         },
       }).then((response) => {
