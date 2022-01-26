@@ -86,7 +86,6 @@ class NavigationTree extends Component {
   };
 
   handleQuery = async (event) => {
-    this.lastQuery = event.target.value;
     event.preventDefault();
 
     if (event.target.value) {
@@ -108,15 +107,15 @@ class NavigationTree extends Component {
   };
 
   queryRequest = async (value) => {
-    this.setState({ pendingQuery: true });
+    this.setState({ pendingQuery: true, query: value });
+    const { query } = this.state;
     try {
       const response = await queryPathsRequest(value, '', true);
 
       await new Promise((resolve) =>
         this.setState(
           {
-            queriedResults:
-              this.lastQuery === value ? response.data.children : [],
+            queriedResults: query === value ? response.data.children : [],
             pendingQuery: false,
           },
           resolve
