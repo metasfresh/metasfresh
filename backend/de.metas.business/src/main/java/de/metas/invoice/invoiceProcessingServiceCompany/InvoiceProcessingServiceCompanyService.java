@@ -34,8 +34,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -76,7 +74,6 @@ public class InvoiceProcessingServiceCompanyService
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public InvoiceProcessingServiceCompanyService(
 			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
@@ -103,8 +100,7 @@ public class InvoiceProcessingServiceCompanyService
 		{
 			final String documentNo = invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
 
-			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_INVOICE_HAS_SERVICE_INVOICE, documentNo);
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException(MSG_INVOICE_HAS_SERVICE_INVOICE, documentNo);
 		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
