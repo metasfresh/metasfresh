@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
 import PropTypes from 'prop-types';
 import ItemTypes from '../../constants/ItemTypes';
@@ -67,7 +67,7 @@ TargetIndicator.propTypes = {
   parentLaneId: PropTypes.number,
 };
 
-class Card extends Component {
+class Card extends PureComponent {
   constructor(props) {
     super(props);
 
