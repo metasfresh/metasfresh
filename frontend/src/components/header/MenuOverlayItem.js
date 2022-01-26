@@ -235,33 +235,35 @@ class MenuOverlayItem extends Component {
             }
           >
             {this.iconByType(type)}
-            {children
-              ? children.map((item, id) => (
-                  <span key={id} className="query-results">
-                    <span className="query-caption">
-                      {id === 0 ? caption + ' / ' : '/'}
+            <span className="query-menu-item">
+              {children
+                ? children.map((item, id) => (
+                    <span key={id} className="query-results">
+                      <span className="query-caption">
+                        {id === 0 ? caption + ' / ' : '/'}
+                      </span>
+                      <span
+                        title={item.caption}
+                        className={
+                          type === 'group'
+                            ? 'query-clickable-group'
+                            : 'query-clickable-link'
+                        }
+                        onClick={(e) =>
+                          this.clickedItem(
+                            e,
+                            item.elementId,
+                            item.nodeId,
+                            item.type
+                          )
+                        }
+                      >
+                        {item.caption}
+                      </span>
                     </span>
-                    <span
-                      title={item.caption}
-                      className={
-                        type === 'group'
-                          ? 'query-clickable-group'
-                          : 'query-clickable-link'
-                      }
-                      onClick={(e) =>
-                        this.clickedItem(
-                          e,
-                          item.elementId,
-                          item.nodeId,
-                          item.type
-                        )
-                      }
-                    >
-                      {item.caption}
-                    </span>
-                  </span>
-                ))
-              : caption}
+                  ))
+                : caption}
+            </span>
           </span>
         )}
       </span>
