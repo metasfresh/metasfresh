@@ -119,7 +119,7 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
       let selectionValid = false;
 
-      if (data.rows && data.rows.length) {
+      if (!pending && data.rows && data.rows.length) {
         const currentSelected = original(prevTableStruct.selected);
 
         if (currentSelected.length) {
@@ -138,13 +138,11 @@ const reducer = produce((draftState, action) => {
         }
       }
 
-      draftState[id] = pending
-        ? { ...draftState[id], pending }
-        : {
-            ...prevTableStruct,
-            ...data,
-            ...updatedSelected,
-          };
+      draftState[id] = {
+        ...prevTableStruct,
+        ...data,
+        ...updatedSelected,
+      };
 
       return;
     }
