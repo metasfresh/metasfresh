@@ -452,6 +452,8 @@ export default class Table extends PureComponent {
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
 
+    // Note: for the case of pending this div has to pe present otherwise it will mess up
+    // the rendering of the spinner within the table when there are no rows.
     if (!rows.length) {
       return (
         <div className="empty-info-text">
