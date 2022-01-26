@@ -33,6 +33,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -64,6 +67,8 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderIn
 @Service
 public class InvoiceProcessingServiceCompanyService
 {
+	private static final AdMessageKey MSG_INVOICE_HAS_SERVICE_INVOICE = AdMessageKey.of("AlreadyGeneratedServiceInvoice");
+
 	private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
 	private final MoneyService moneyService;
 
@@ -71,6 +76,7 @@ public class InvoiceProcessingServiceCompanyService
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public InvoiceProcessingServiceCompanyService(
 			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
@@ -93,11 +99,12 @@ public class InvoiceProcessingServiceCompanyService
 
 		final ImmutableSet<InvoiceId> invoiceIdsWithGeneratedFees = retainIfServiceInvoiceWasAlreadyGenerated(ImmutableSet.of(invoiceId));
 
-		if (invoiceIdsWithGeneratedFees.size() > 0)
+		if (!invoiceIdsWithGeneratedFees.isEmpty())
 		{
-			throw new AdempiereException("Service Invoice already generated")
-					.setParameter("invoiceId", invoiceId)
-					.appendParametersToMessage();
+			final String documentNo = invoiceDAO.getDocumentNosByInvoiceIds(ImmutableSet.of(invoiceId)).get(invoiceId);
+
+			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_INVOICE_HAS_SERVICE_INVOICE, documentNo);
+			throw new AdempiereException(errorMsg);
 		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
@@ -170,7 +177,7 @@ public class InvoiceProcessingServiceCompanyService
 		}
 		else
 		{
-			return retainIfServiceInvoiceWasAlreadyGenerated(ImmutableSet.of(request.getInvoiceId())).size() > 0;
+			return !retainIfServiceInvoiceWasAlreadyGenerated(ImmutableSet.of(request.getInvoiceId())).isEmpty();
 		}
 	}
 

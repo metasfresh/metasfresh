@@ -604,8 +604,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		final I_C_DocType docTypeRecord = docTypeDAO.getById(docTypeId);
 
-		return docTypeRecord.getDocBaseType().equals(targetDocType.getDocBaseType())
-				&& docTypeRecord.getDocSubType() != null
-				&& docTypeRecord.getDocSubType().equals(targetDocType.getDocSubType());
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+
+		return docBaseAndSubType.equals(targetDocType);
 	}
 }
