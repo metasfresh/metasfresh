@@ -117,6 +117,7 @@ class NavigationTree extends Component {
           {
             queriedResults: query === value ? response.data.children : [],
             pendingQuery: false,
+            query,
           },
           resolve
         )
