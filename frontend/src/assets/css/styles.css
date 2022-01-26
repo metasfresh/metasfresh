@@ -1168,7 +1168,7 @@ body{
 }
 
 .dashboard-cards {
-    height: 100%;
+    height: auto;
 }
 
 .dashboard-logo-wrapper {
