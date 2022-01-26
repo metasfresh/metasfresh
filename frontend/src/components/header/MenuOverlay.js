@@ -92,11 +92,11 @@ class MenuOverlay extends Component {
   handleQuery = (e) => {
     e.preventDefault();
 
-    const targetValue = leftTrim(e.target.value);
+    const query = leftTrim(e.target.value);
 
-    if (targetValue) {
+    if (query) {
       this.setState({
-        query: e.target.value,
+        query,
         pendingQuery: e.target.value ? true : false,
       });
 
