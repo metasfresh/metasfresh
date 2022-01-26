@@ -139,6 +139,7 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -671,40 +672,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
-		final List<I_C_BPartner_Location> locations = bpartnerDAO.retrieveBPartnerLocations(bp);
-
-		// Set Locations
-		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
-		boolean foundLoc = false;
-		for (final I_C_BPartner_Location loc : locations)
-		{
-			if (loc.isShipTo() && loc.isActive())
-			{
-				shipLocations.add(loc);
-			}
-
-			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
-			if (bpLoc.isShipToDefault())
-			{
-				setBPartnerLocation(order, bpLoc);
-				foundLoc = true;
-			}
-		}
-
-		// set first ship location if is not set
-		if (!foundLoc)
-		{
-			if (!shipLocations.isEmpty())
-			{
-				setBPartnerLocation(order, shipLocations.get(0));
-			}
-			//No longer setting any location when no shipping location exists for the bpartner
-		}
-
-		if (!foundLoc)
-		{
-			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
-		}
+		final I_C_BPartner_Location bpLoc = partnerBL.extractShipToLocation(bp);
+		setBPartnerLocation(order, bpLoc);
 	}
 
 	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final I_C_BPartner_Location bpartnerLocation)

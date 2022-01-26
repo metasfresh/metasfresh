@@ -157,7 +157,16 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			purchaseOrderLine.setC_BPartner_ID(salesOrderLine.getC_BPartner_ID());
+		}
+		else
+		{
+			OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		}
+
+
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 

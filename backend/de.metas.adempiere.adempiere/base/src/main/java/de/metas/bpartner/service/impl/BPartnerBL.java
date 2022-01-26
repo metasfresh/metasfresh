@@ -1,7 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -28,6 +26,7 @@ import de.metas.location.ILocationBL;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -38,7 +37,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -47,11 +45,12 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -64,17 +63,27 @@ public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
+	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
 
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
+
+	public BPartnerBL()
+	{
+		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
+		this.userRepository = new UserRepository();
+		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
+	}
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
 		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
+		this.locationDAO = Services.get(ILocationDAO.class);
 	}
 
 	@Override
@@ -686,5 +695,48 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setName(nameAndGreeting.getName());
 		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 		bpartnersRepo.save(bpartner);
+	}
+
+	@Override
+	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
+	{
+		I_C_BPartner_Location bPartnerLocation = null;
+
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(bp);
+
+		// Set Locations
+		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
+		boolean foundLoc = false;
+		for (final I_C_BPartner_Location loc : locations)
+		{
+			if (loc.isShipTo() && loc.isActive())
+			{
+				shipLocations.add(loc);
+			}
+
+			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
+			if (bpLoc.isShipToDefault())
+			{
+				bPartnerLocation = bpLoc;
+				foundLoc = true;
+			}
+		}
+
+		// set first ship location if is not set
+		if (!foundLoc)
+		{
+			if (!shipLocations.isEmpty())
+			{
+				bPartnerLocation = shipLocations.get(0);
+			}
+			//No longer setting any location when no shipping location exists for the bpartner
+		}
+
+		if (!foundLoc)
+		{
+			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
+		}
+
+		return bPartnerLocation;
 	}
 }

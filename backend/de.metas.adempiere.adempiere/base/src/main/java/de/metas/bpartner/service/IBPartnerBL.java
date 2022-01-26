@@ -237,4 +237,6 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
+
+	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 }
