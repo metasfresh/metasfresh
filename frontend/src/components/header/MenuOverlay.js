@@ -106,6 +106,7 @@ class MenuOverlay extends Component {
             this.setState({
               queriedResults: flattenLastElem(response.data),
               pendingQuery: false,
+              query,
             });
           }
         })
