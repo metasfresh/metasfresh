@@ -115,6 +115,7 @@ class MenuOverlay extends Component {
             this.setState({
               queriedResults: [],
               pendingQuery: false,
+              query,
             });
           }
         });
