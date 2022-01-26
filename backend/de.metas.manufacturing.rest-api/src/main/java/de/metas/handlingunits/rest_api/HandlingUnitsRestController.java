@@ -28,9 +28,8 @@ import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
-import de.metas.handlingunits.HUBarcode;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -40,7 +39,6 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -48,12 +46,8 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
@@ -70,8 +64,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -84,7 +76,6 @@ public class HandlingUnitsRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu";
 
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final InventoryCandidateService inventoryCandidateService;
@@ -129,20 +120,20 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	@GetMapping("/byBarcode/{barcode}")
-	public ResponseEntity<JsonGetSingleHUResponse> getByBarcode(
-			@PathVariable("barcode") @NonNull final String barcodeStr)
+	@PostMapping("/byQRCode")
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
+			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final HuId huId = HUBarcode.ofBarcodeString(barcodeStr).toHuId();
-
-		return toSingleHUResponseEntity(() -> {
-			final I_M_HU hu = handlingUnitsBL.getById(huId);
-			if (hu == null)
+		return getByIdSupplier(() -> {
+			if (request.getQrCode().contains(GlobalQRCode.SEPARATOR))
 			{
-				throw new AdempiereException("No HU found for barcode: " + barcodeStr);
+				final HUQRCode huQRCode = GlobalQRCode.ofString(request.getQrCode()).getPayloadAs(HUQRCode.class);
+				return huQRCodesService.getHUIdByQRCode(huQRCode).orElse(null);
 			}
-			return hu;
-
+			else
+			{
+				return HuId.ofHUValue(request.getQrCode());
+			}
 		});
 	}
 
@@ -151,21 +142,30 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
+		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
+	}
+
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
+	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final HuId huId = HuId.ofRepoId(huRepoId);
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.getFullHU(huId, adLanguage))
-											 .build());
+					.result(handlingUnitsService.getFullHU(huId, adLanguage))
+					.build());
 		}
 		catch (final Exception e)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(e, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(e, adLanguage))
+					.build());
 		}
 	}
 
@@ -182,14 +182,14 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(hu, adLanguage))
-											 .build());
+					.result(handlingUnitsService.toJson(hu, adLanguage))
+					.build());
 		}
 		catch (final Exception ex)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(ex, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(ex, adLanguage))
+					.build());
 		}
 	}
 
@@ -241,12 +241,19 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/qrCodes/generate")
-	public ResponseEntity<?> generateQRCodes(@RequestBody @NonNull final JsonQRCodesGenerateRequest request)
+	public ResponseEntity<?> generateQRCodes(@RequestBody @NonNull final JsonQRCodesGenerateRequest jsonRequest)
 	{
-		final List<HUQRCode> qrCodes = huQRCodesService.generate(toHUQRCodeGenerateRequest(request));
-		final Resource pdf = huQRCodesService.createPDF(qrCodes, request.isOnlyPrint());
+		final int count = jsonRequest.getCount();
+		if (count >= 100)
+		{
+			throw new AdempiereException("Maximum allowed count is 100");
+		}
 
-		if (request.isOnlyPrint())
+		final HUQRCodeGenerateRequest request = JsonQRCodesGenerateRequestConverters.toHUQRCodeGenerateRequest(jsonRequest, attributeDAO);
+		final List<HUQRCode> qrCodes = huQRCodesService.generate(request);
+		final Resource pdf = huQRCodesService.createPDF(qrCodes, jsonRequest.isOnlyPrint());
+
+		if (jsonRequest.isOnlyPrint())
 		{
 			return ResponseEntity.ok().body(null);
 		}
@@ -260,76 +267,5 @@ public class HandlingUnitsRestController
 			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
 		}
 
-	}
-
-	private HUQRCodeGenerateRequest toHUQRCodeGenerateRequest(final JsonQRCodesGenerateRequest json)
-	{
-		final int count = json.getCount();
-		if (count >= 100)
-		{
-			throw new AdempiereException("Maximum allowed count is 100");
-		}
-
-		return HUQRCodeGenerateRequest.builder()
-				.count(count)
-				.huUnitType(json.getHuUnitType())
-				.productId(json.getProductId())
-				.attributes(json.getAttributes()
-						.stream()
-						.map(this::toHUQRCodeGenerateRequestAttribute)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	private HUQRCodeGenerateRequest.Attribute toHUQRCodeGenerateRequestAttribute(final JsonQRCodesGenerateRequest.Attribute json)
-	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(json.getAttributeCode());
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-
-		final HUQRCodeGenerateRequest.Attribute.AttributeBuilder resultBuilder = HUQRCodeGenerateRequest.Attribute.builder()
-				.attributeId(attributeId);
-
-		return AttributeValueType.ofCode(attribute.getAttributeValueType())
-				.map(new AttributeValueType.CaseMapper<HUQRCodeGenerateRequest.Attribute>()
-				{
-					@Override
-					public HUQRCodeGenerateRequest.Attribute string()
-					{
-						return resultBuilder.valueString(json.getValue()).build();
-					}
-
-					@Override
-					public HUQRCodeGenerateRequest.Attribute number()
-					{
-						final BigDecimal valueNumber = NumberUtils.asBigDecimal(json.getValue());
-						return resultBuilder.valueNumber(valueNumber).build();
-					}
-
-					@Override
-					public HUQRCodeGenerateRequest.Attribute date()
-					{
-						final LocalDate valueDate = StringUtils.trimBlankToOptional(json.getValue()).map(LocalDate::parse).orElse(null);
-						return resultBuilder.valueDate(valueDate).build();
-					}
-
-					@Override
-					public HUQRCodeGenerateRequest.Attribute list()
-					{
-						final String listItemCode = json.getValue();
-						if (listItemCode != null)
-						{
-							final AttributeListValue listItem = attributeDAO.retrieveAttributeValueOrNull(attributeId, listItemCode);
-							if (listItem == null)
-							{
-								throw new AdempiereException("No M_AttributeValue_ID found for " + attributeId + " and `" + listItemCode + "`");
-							}
-							return resultBuilder.valueListId(listItem.getId()).build();
-						}
-						else
-						{
-							return resultBuilder.valueListId(null).build();
-						}
-					}
-				});
 	}
 }

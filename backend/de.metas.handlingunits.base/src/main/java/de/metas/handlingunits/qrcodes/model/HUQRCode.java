@@ -6,6 +6,9 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+/**
+ * @implNote See {@link de.metas.handlingunits.qrcodes.model.json.JsonConverter} for tools to convert from/to JSON, {@link de.metas.global_qrcodes.GlobalQRCode} etc.
+ */
 @Value
 @Builder
 @Jacksonized

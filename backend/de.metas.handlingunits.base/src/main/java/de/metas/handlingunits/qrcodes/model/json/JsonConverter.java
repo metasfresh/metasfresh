@@ -20,11 +20,15 @@ public class JsonConverter
 
 	public static HUQRCode fromQRCodeString(final String qrCodeString)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(qrCodeString); // make sure it's valid
+		return fromGlobalQRCode(GlobalQRCode.ofString(qrCodeString));
+	}
+
+	public static HUQRCode fromGlobalQRCode(final GlobalQRCode globalQRCode)
+	{
 		if (!GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType()))
 		{
 			throw new AdempiereException("Invalid HU QR Code")
-					.setParameter("qrCodeString", qrCodeString); // avoid adding it to error message, it might be quite long
+					.setParameter("globalQRCode", globalQRCode); // avoid adding it to error message, it might be quite long
 		}
 
 		final GlobalQRCodeVersion version = globalQRCode.getVersion();

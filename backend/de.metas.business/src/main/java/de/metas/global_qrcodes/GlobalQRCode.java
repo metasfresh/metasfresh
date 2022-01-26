@@ -20,6 +20,8 @@ public class GlobalQRCode
 
 	@NonNull String payloadAsJson;
 
+	public static final String SEPARATOR = "#";
+
 	public static GlobalQRCode of(
 			@NonNull final GlobalQRCodeType type,
 			@NonNull final GlobalQRCodeVersion version,
@@ -53,7 +55,7 @@ public class GlobalQRCode
 		// Extract type
 		final GlobalQRCodeType type;
 		{
-			int idx = remainingString.indexOf("#");
+			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
 				throw new AdempiereException("Invalid global QR code(1): " + string);

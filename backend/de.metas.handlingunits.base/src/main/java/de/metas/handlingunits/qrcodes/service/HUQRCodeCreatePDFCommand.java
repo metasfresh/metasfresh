@@ -15,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HUQRCodeCreatePDFCommand
 {
@@ -39,6 +40,10 @@ public class HUQRCodeCreatePDFCommand
 		// 1. generate labels for those printableQRCodes
 		// 2. If sendToPrinter is true then also send the PDF to mass printing
 		System.out.println("printableQRCodesJSON: " + printableQRCodesJSON);
+		System.out.println("QR Code: " + qrCodes.stream()
+				.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
+				.map(PrintableQRCode::getQrCode)
+				.collect(Collectors.joining("\n\t")));
 		System.out.println("sendToPrinter: " + sendToPrinter);
 		throw new UnsupportedOperationException("not implemented yet");
 	}
