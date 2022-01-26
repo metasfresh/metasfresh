@@ -97,12 +97,12 @@ class MenuOverlay extends Component {
     if (query) {
       this.setState({
         query,
-        pendingQuery: e.target.value ? true : false,
+        pendingQuery: query ? true : false,
       });
 
-      queryPathsRequest(e.target.value, 9)
+      queryPathsRequest(query, 9)
         .then((response) => {
-          if (e.target.value === this.state.query) {
+          if (query === this.state.query) {
             this.setState({
               queriedResults: flattenLastElem(response.data),
               pendingQuery: false,
