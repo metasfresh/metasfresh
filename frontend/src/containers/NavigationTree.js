@@ -145,7 +145,7 @@ class NavigationTree extends Component {
     const input = document.getElementById('search-input');
     const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     let prevParentSibling = document.activeElement.previousSibling;
-
+    const elementToEnter = document.activeElement.childNodes[0];
     switch (e.key) {
       case 'ArrowDown':
         if (document.activeElement === input) {
@@ -175,7 +175,7 @@ class NavigationTree extends Component {
         break;
       case 'Enter':
         e.preventDefault();
-        document.activeElement.childNodes[0].childNodes[0].click();
+        elementToEnter.childNodes[0] && elementToEnter.childNodes[0].click();
         break;
     }
   };
