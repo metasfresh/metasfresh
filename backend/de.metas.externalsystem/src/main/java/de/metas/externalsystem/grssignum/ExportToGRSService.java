@@ -110,10 +110,9 @@ public class ExportToGRSService extends ExportToExternalSystemService
 			return ImmutableSet.of();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getAllByType(ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
 
 		return grsParentConfigs.stream()
-				.filter(ExternalSystemParentConfig::getIsActive)
 				.map(ExternalSystemParentConfig::getChildConfig)
 				.map(ExternalSystemGRSSignumConfig::cast)
 				.filter(grsConfig -> (grsConfig.isAutoSendVendors() && isVendor) || (grsConfig.isAutoSendCustomers() && isCustomer))
