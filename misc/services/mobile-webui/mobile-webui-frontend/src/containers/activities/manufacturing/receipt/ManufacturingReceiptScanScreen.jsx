@@ -53,7 +53,7 @@ const ManufacturingReceiptScanScreen = () => {
 
   return (
     <>
-      <BarcodeScannerComponent onBarcodeScanned={onBarcodeScanned} />
+      <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />
     </>
   );
 };

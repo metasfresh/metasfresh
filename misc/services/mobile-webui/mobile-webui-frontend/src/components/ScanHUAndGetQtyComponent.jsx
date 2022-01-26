@@ -24,14 +24,15 @@ const ScanHUAndGetQtyComponent = ({
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
 
-  const validateScannedBarcode = (barcode) => {
+  const resolveScannedBarcode = ({ scannedBarcode }) => {
     // If an eligible barcode was provided, make sure scanned barcode is matching it
-    if (eligibleBarcode && barcode !== eligibleBarcode) {
-      return trl(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode');
+    if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
+      return {
+        error: trl(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode'),
+      };
+    } else {
+      return { scannedBarcode };
     }
-
-    // OK
-    return null;
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
@@ -67,10 +68,7 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_BARCODE:
       return (
         <>
-          <BarcodeScannerComponent
-            validateScannedBarcode={validateScannedBarcode}
-            onBarcodeScanned={onBarcodeScanned}
-          />
+          <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onBarcodeScanned} />
           {window.metasfresh_debug && eligibleBarcode && (
             <Button
               caption={`DEBUG: ${eligibleBarcode}`}

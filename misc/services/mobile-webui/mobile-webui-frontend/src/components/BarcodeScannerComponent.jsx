@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError } from '../utils/toast';
+import { trl } from '../utils/translations';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -15,17 +16,38 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const BarcodeScannerComponent = ({ validateScannedBarcode, onBarcodeScanned }) => {
+const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
   const video = useRef();
   const mountedRef = useRef(true);
 
   const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
-    const errmsg = validateScannedBarcode ? validateScannedBarcode(scannedBarcode) : null;
-    if (!errmsg) {
-      controls.stop();
-      onBarcodeScanned({ scannedBarcode });
+    console.log('Resolving scanned barcode', scannedBarcode);
+    if (resolveScannedBarcode) {
+      let resolvedResultPromise;
+      try {
+        resolvedResultPromise = resolveScannedBarcode({ scannedBarcode });
+        console.log('Got resolvedResultPromise', resolvedResultPromise);
+      } catch (error) {
+        console.error('Got unhandled error while trying to resolve the scanned barcode', error);
+        handleResolvedResult({ error: trl('general.PleaseTryAgain') }, controls);
+        return;
+      }
+
+      if (resolvedResultPromise) {
+        Promise.resolve(resolvedResultPromise).then((result) => handleResolvedResult(result, controls));
+      }
     } else {
-      toastError({ plainMessage: errmsg });
+      handleResolvedResult({ scannedBarcode, error: null }, controls);
+    }
+  };
+
+  const handleResolvedResult = (resolvedResult, controls) => {
+    console.log('Got resolvedResult', resolvedResult);
+    if (resolvedResult.error) {
+      toastError({ plainMessage: resolvedResult.error });
+    } else {
+      controls.stop();
+      onResolvedResult(resolvedResult);
     }
   };
 
@@ -52,8 +74,8 @@ const BarcodeScannerComponent = ({ validateScannedBarcode, onBarcodeScanned }) =
 BarcodeScannerComponent.propTypes = {
   //
   // Props:
-  validateScannedBarcode: PropTypes.func,
-  onBarcodeScanned: PropTypes.func.isRequired,
+  resolveScannedBarcode: PropTypes.func,
+  onResolvedResult: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;

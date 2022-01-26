@@ -43,7 +43,7 @@ const ScanScreen = () => {
       });
   };
 
-  return <BarcodeScannerComponent onBarcodeScanned={onBarcodeScanned} />;
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
 };
 
 export default ScanScreen;

@@ -30,7 +30,7 @@ const WFLaunchersScanBarcodeScreen = () => {
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  return <BarcodeScannerComponent onBarcodeScanned={onBarcodeScanned} />;
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
 };
 
 export default WFLaunchersScanBarcodeScreen;
