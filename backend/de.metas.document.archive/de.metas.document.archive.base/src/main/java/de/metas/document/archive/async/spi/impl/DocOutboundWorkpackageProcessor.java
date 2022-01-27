@@ -34,6 +34,10 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegist
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letters.api.impl.TextTemplateBL;
+import de.metas.letters.model.I_C_Letter;
+import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -72,7 +76,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(final @NonNull I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
@@ -101,8 +105,11 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		final boolean isInvoiceEmailEnabledEffective = computeInvoiceEmailEnabledFromRecord(record);
 
-		final ArchiveResult archiveResult = DefaultModelArchiver.of(record)
+		final ArchiveResult archiveResult = DefaultModelArchiver.builder()
+				.record(record)
 				.flavor(isInvoiceEmailEnabledEffective ? DocumentReportFlavor.EMAIL : DocumentReportFlavor.PRINT)
+				.reportProcessId(getReportProcessIdToUse(record))
+				.build()
 				.archive();
 		if (archiveResult.isNoArchive())
 		{
@@ -113,6 +120,23 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
 			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
 		}
+	}
+
+	@Nullable
+	private AdProcessId getReportProcessIdToUse(final Object record)
+	{
+		if (InterfaceWrapperHelper.isInstanceOf(record, I_C_Letter.class))
+		{
+			final I_C_Letter letter = InterfaceWrapperHelper.create(record, I_C_Letter.class);
+			final BoilerPlateId boilderPlateId = BoilerPlateId.ofRepoIdOrNull(letter.getAD_BoilerPlate_ID());
+			if (boilderPlateId != null)
+			{
+				return TextTemplateBL.getJasperProcessId(boilderPlateId).orElse(null);
+			}
+		}
+
+		// fallback
+		return null;
 	}
 
 	private boolean computeInvoiceEmailEnabledFromRecord(@NonNull final Object record)
