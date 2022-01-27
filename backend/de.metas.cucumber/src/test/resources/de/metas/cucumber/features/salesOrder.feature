@@ -58,9 +58,10 @@ Feature: sales order
       | pp_2       | plv_2                             | p_2                     | 10.0     | PCE               | Normal                        |
       | pp_3       | plv_3                             | p_2                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_2 | Endcustomer_72 | N            | Y              | ps_2                          |
-      | vendor_2      | vendor_72      | Y            | Y              | ps_2                          |
+      | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2   | Endcustomer_72  | N            | Y              | ps_2                          |
+      | vendor_2        | vendor_72       | Y            | Y              | ps_2                          |
+      | shiptopartner_2 | Shiptopartner_2 | Y            | Y              | ps_2                          |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_2                 | p_2                     |
@@ -68,8 +69,8 @@ Feature: sales order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_2        | true    | endcustomer_2            | 2021-04-17  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_2       | o_2                   | p_2                     | 10         |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |C_BPartner_ID.Identifier |
+      | ol_2       | o_2                   | p_2                     | 10         |shiptopartner_2          |
     And the order identified by o_2 is completed
     And after not more than 10s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -81,7 +82,7 @@ Feature: sales order
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.DocStatus |
       | o_2                      | false   | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_2' has lines:
-      | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
-      | 10         | 100        | p_2                     |
+      | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |C_BPartner_ID.Identifier |
+      | 10         | 100        | p_2                     |shiptopartner_2          |
     And the sales order identified by 'o_2' is closed
     And the shipment schedule identified by s_ol_2 is processed after not more than 10 seconds

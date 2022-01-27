@@ -280,7 +280,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 
 		// FW dropship ad
-		if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase)
+				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
 		{
 			purchaseOrder.setIsDropShip(true);
 			OrderDocumentLocationAdapterFactory
