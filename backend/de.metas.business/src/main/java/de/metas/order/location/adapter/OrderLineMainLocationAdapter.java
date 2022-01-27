@@ -124,14 +124,4 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
 		setBPartnerAddress(null);
 	}
-
-	public void setBPartnerAndLocation(@NonNull final BPartnerId from)
-	{
-		final I_C_BPartner bpRecord = partnerBL.getById(from);
-		final I_C_BPartner_Location bpLoc = partnerBL.extractShipToLocation(bpRecord);
-		setC_BPartner_ID(from.getRepoId());
-		setC_BPartner_Location_ID(bpLoc != null ? bpLoc.getC_BPartner_Location_ID() : -1);
-		setC_BPartner_Location_Value_ID(bpLoc != null ? bpLoc.getC_Location_ID() : -1);
-		setBPartnerAddress(null);
-	}
 }

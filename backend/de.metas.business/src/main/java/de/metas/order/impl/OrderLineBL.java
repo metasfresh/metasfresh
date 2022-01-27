@@ -969,7 +969,13 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void setBPLocation(final I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_BPartner bp = partnerBL.getById(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()));
+		final int c_bPartner_id = orderLine.getC_BPartner_ID();
+		if (c_bPartner_id <=0)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_BPartner bp = partnerBL.getById(BPartnerId.ofRepoId(c_bPartner_id));
 		final I_C_BPartner_Location bpLoc = partnerBL.extractShipToLocation(bp);
 		setBPartnerLocation(orderLine, bpLoc);
 	}
