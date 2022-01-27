@@ -4,6 +4,7 @@
 }
 
 .kpis-wrapper {
+    clear: both;
     height: 100%;
     margin: -.5rem;
     display: flex;
@@ -38,6 +39,9 @@
     border-radius: 5px;
     box-shadow: 0 2px 7px 0 rgba(0,0,0,0.2);
     margin-right: 10px;
+    max-width: 380px;
+    min-width: 230px;
+    margin-bottom: 10px;
 }
 
 .indicator-draggable {
