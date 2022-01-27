@@ -264,6 +264,7 @@ public class AdempiereTestHelper
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final I_AD_System system = InterfaceWrapperHelper.newInstance(I_AD_System.class);
+		system.setAD_System_ID(1234); // don't use the "normal" unit test counter or every ID in every snapshot file with need to be +1ed
 		system.setName("AdempiereTestHelper");
 		InterfaceWrapperHelper.saveRecord(system);
 
