@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
 import de.metas.report.PrintFormatId;
@@ -69,7 +70,7 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 	@Override
 	public @NonNull DocumentReportInfo getDocumentReportInfo(
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId adPrintFormatToUseId)
+			@Nullable final PrintFormatId adPrintFormatToUseId, final AdProcessId reportProcessIdToUse)
 	{
 		final int ddOrderId = recordRef.getRecordIdAssumingTableName(I_DD_Order.Table_Name);
 		final I_DD_Order ddOrder = ddOrderBL.getById(ddOrderId);
@@ -95,7 +96,6 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_DD_Order.Table_Name, ddOrderId))
-				.printFormatId(printFormatId)
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
 				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(ddOrder.getDocumentNo())
