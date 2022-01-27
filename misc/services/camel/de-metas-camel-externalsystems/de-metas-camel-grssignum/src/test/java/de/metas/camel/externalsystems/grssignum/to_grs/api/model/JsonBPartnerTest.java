@@ -56,8 +56,10 @@ public class JsonBPartnerTest
 				+ "    \"LANDESCODE\": \"test country code\",\n"
 				+ "    \"GLN\": \"test gln\",\n"
 				+ "    \"INAKTIV\": 0,\n"
-				+"     \"METASFRESHID\":\"12345\",\n"
-				+"     \"METASFRESHURL\": \"metasfreshUrl\",\n"
+				+ "    \"METASFRESHID\":\"12345\",\n"
+				+ "    \"METASFRESHURL\": \"metasfreshUrl\",\n"
+				+ "    \"KREDITORENNR\":1,\n"
+				+ "    \"DEBITORRENNR\":2,\n"
 				+ "    \"KONTAKTE\":[\n "
 				+ "        {\n"
 				+ "   				 \"METASFRESHID\": 12345,\n"
@@ -103,6 +105,8 @@ public class JsonBPartnerTest
 				.contact(contact)
 				.metasfreshId("12345")
 				.metasfreshURL("metasfreshUrl")
+				.creditorId(1)
+				.debtorId(2)
 				.build();
 
 		assertThat(partner).isEqualTo(expectedBPartner);
@@ -146,6 +150,8 @@ public class JsonBPartnerTest
 				.contact(contact)
 				.metasfreshId("12345")
 				.metasfreshURL("metasfreshUrl")
+				.creditorId(1)
+				.debtorId(2)
 				.build();
 
 		//when

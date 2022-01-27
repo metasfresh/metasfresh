@@ -94,6 +94,8 @@ public class ExportBPartnerProcessor implements Processor
 				.metasfreshId(bpartnerMetasfreshId)
 				.metasfreshURL(jsonResponseBPartner.getMetasfreshUrl())
 				.contacts(toJsonBPartnerContact(jsonResponseComposite.getContacts()))
+				.creditorId(jsonResponseBPartner.getCreditorId())
+				.debtorId(jsonResponseBPartner.getDebtorId())
 				.build();
 	}
 

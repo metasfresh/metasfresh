@@ -15,6 +15,8 @@
     "company": true,
     "vatId": null,
     "metasfreshUrl": "metasfreshUrl",
+    "debtorId": 2,
+    "creditorId": 1,
     "changeInfo": {
       "createdMillis": 1436877414000,
       "createdBy": 100,

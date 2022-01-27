@@ -90,6 +90,12 @@ public class JsonBPartner
 	@JsonProperty("METASFRESHURL")
 	String metasfreshURL;
 
+	@JsonProperty("KREDITORENNR")
+	Integer creditorId;
+
+	@JsonProperty("DEBITORRENNR")
+	Integer debtorId;
+
 	@JsonProperty("KONTAKTE")
 	List<JsonBPartnerContact> contacts;
 
@@ -111,8 +117,9 @@ public class JsonBPartner
 			@JsonProperty("GLN") final @Nullable String gln,
 			@JsonProperty("METASFRESHID") final @Nullable String metasfreshId,
 			@JsonProperty("METASFRESHURL") final @Nullable String metasfreshURL,
-			@JsonProperty("KONTAKTE") final @Nullable @Singular List<JsonBPartnerContact> contacts
-			)
+			@JsonProperty("KREDITORENNR") final @Nullable Integer creditorId,
+			@JsonProperty("DEBITORRENNR") final @Nullable Integer debtorId,
+			@JsonProperty("KONTAKTE") final @Nullable @Singular List<JsonBPartnerContact> contacts)
 	{
 		this.flag = flag;
 		this.bpartnerValue = bpartnerValue;
@@ -131,6 +138,9 @@ public class JsonBPartner
 		this.metasfreshId = metasfreshId;
 		this.metasfreshURL = metasfreshURL;
 		this.contacts = contacts;
+
+		this.creditorId = creditorId;
+		this.debtorId = debtorId;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

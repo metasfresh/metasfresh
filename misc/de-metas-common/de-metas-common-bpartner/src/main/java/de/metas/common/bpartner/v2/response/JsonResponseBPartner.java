@@ -66,6 +66,8 @@ public class JsonResponseBPartner
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 	public static final String METASFRESH_URL = "metasfreshUrl";
+	public static final String CREDITOR_ID = "creditorId";
+	public static final String DEBTOR_ID = "debtorId";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -190,6 +192,16 @@ public class JsonResponseBPartner
 	@JsonProperty(METASFRESH_URL)
 	String metasfreshUrl;
 
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.CreditorId` ")
+	@JsonProperty(CREDITOR_ID)
+	@JsonInclude(Include.NON_NULL)
+	Integer creditorId;
+
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.DebtorId` ")
+	@JsonProperty(DEBTOR_ID)
+	@JsonInclude(Include.NON_NULL)
+	Integer debtorId;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -222,6 +234,8 @@ public class JsonResponseBPartner
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
+			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
+			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
 
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
@@ -259,6 +273,9 @@ public class JsonResponseBPartner
 		this.vatId = vatId;
 
 		this.metasfreshUrl = metasfreshUrl;
+
+		this.creditorId = creditorId;
+		this.debtorId = debtorId;
 
 		this.changeInfo = changeInfo;
 	}
