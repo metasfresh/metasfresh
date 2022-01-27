@@ -29,7 +29,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
     <>
       {isDialogOpen && (
         <GetQuantityDialog
-          qtyCaption={trl('activities.mfg.receipts.pickPromptTitle')}
+          qtyCaption={trl('activities.mfg.receipts.qtyToReceive')}
           qtyTarget={qtyTarget}
           qtyInitial={qtyTarget}
           uom={uom}

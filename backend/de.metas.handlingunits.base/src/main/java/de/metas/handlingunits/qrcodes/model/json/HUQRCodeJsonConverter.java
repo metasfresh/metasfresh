@@ -5,13 +5,19 @@ import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 @UtilityClass
-public class JsonConverter
+public class HUQRCodeJsonConverter
 {
 	public static GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
+
+	public static String toJsonString(final HUQRCode qrCode)
+	{
+		return toGlobalQRCode(qrCode).getAsString();
+	}
 
 	public static GlobalQRCode toGlobalQRCode(final HUQRCode qrCode)
 	{
@@ -40,5 +46,13 @@ public class JsonConverter
 		{
 			throw new AdempiereException("Invalid HU QR Code version: " + version);
 		}
+	}
+
+	public static JsonRenderedHUQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
+	{
+		return JsonRenderedHUQRCode.builder()
+				.code(toJsonString(huQRCode))
+				.displayable(huQRCode.getId().getDisplayableSuffix())
+				.build();
 	}
 }

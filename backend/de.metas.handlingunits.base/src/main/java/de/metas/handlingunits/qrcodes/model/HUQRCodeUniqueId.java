@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.UUID;
 
 @EqualsAndHashCode
@@ -26,14 +28,44 @@ public final class HUQRCodeUniqueId
 
 	public static HUQRCodeUniqueId ofUUID(@NonNull final UUID uuid)
 	{
-		final String uuidStr = uuid.toString().replace("-", "");
-		final String uuidFirstPart = uuidStr.substring(0, uuidStr.length() - 4);
-		final String uuidLastPart = uuidStr.substring(uuidStr.length() - 4);
+
+		final String uuidStr = uuid.toString().replace("-", ""); // expect 32 chars
+
+		final StringBuilder uuidFirstPart = new StringBuilder(32);
+		final StringBuilder uuidLastPart = new StringBuilder();
+
+		// TO reduce the change of having duplicate displayable suffix,
+		// we cannot just take the last 4 chars but we will pick some of them from the middle
+		// See https://www.ietf.org/rfc/rfc4122.txt section 3, to understand the UUID v4 format.
+		for (int i = 0; i < uuidStr.length(); i++)
+		{
+			final char ch = uuidStr.charAt(i);
+
+			if (// from time_low (0-7):
+					i == 5
+							// from: time_mid (8-11):
+							|| i == 8
+							|| i == 11
+							// from: time_hi_and_version (12-15)
+							|| i == 13
+				// from: clock_seq_hi_and_reserved (16-17)
+				// from: clock_seq_low (18-19)
+				// from: node (20-31)
+			)
+			{
+				uuidLastPart.append(ch);
+			}
+			else
+			{
+				uuidFirstPart.append(ch);
+			}
+		}
+
 		final String uuidLastPartNorm = Strings.padStart(
-				String.valueOf(Integer.parseInt(uuidLastPart, 16)),
+				String.valueOf(Integer.parseInt(uuidLastPart.toString(), 16)),
 				5, // because 4 hex digits can lead to 5 decimal digits (i.e. FFFF -> 65535)
 				'0');
-		return new HUQRCodeUniqueId(uuidFirstPart, uuidLastPartNorm);
+		return new HUQRCodeUniqueId(uuidFirstPart.toString(), uuidLastPartNorm);
 	}
 
 	@JsonCreator
@@ -62,4 +94,10 @@ public final class HUQRCodeUniqueId
 	{
 		return idBase + "-" + displayableSuffix;
 	}
+
+	public static boolean equals(@Nullable final HUQRCodeUniqueId id1, @Nullable final HUQRCodeUniqueId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
 }

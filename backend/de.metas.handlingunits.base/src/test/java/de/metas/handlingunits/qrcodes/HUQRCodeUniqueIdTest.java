@@ -1,50 +1,31 @@
 package de.metas.handlingunits.qrcodes;
 
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
-import org.assertj.core.api.AbstractStringAssert;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import lombok.NonNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class HUQRCodeUniqueIdTest
 {
-	@Nested
-	class ofUUID
+	@Disabled("Disabled because this test fails anyways but the aim is how far it gets")
+	// usually i got a duplicate after 300 iterations but in some cases i got duplicates after 85 iterations
+	@RepeatedTest(50)
+	void poorRandomnessTestOfDisplayableSuffix()
 	{
-		AbstractStringAssert<?> assertFromUUIDToString(String uuidString)
+		final HashMap<String, HUQRCodeUniqueId> generatedIds = new HashMap<>();
+		for (int i = 1; i <= 10000; i++)
 		{
-			return assertThat(HUQRCodeUniqueId.ofUUID(UUID.fromString(uuidString)).getAsString());
-		}
-
-		@Test
-		void suffix_76b2()
-		{
-			assertFromUUIDToString("53c5f490-f46d-4aae-a357-fefc2c0d76b2")
-					.isEqualTo("53c5f490f46d4aaea357fefc2c0d-30386");
-		}
-
-		@Test
-		void suffix_0000()
-		{
-			assertFromUUIDToString("53c5f490-f46d-4aae-a357-fefc2c0d0000")
-					.isEqualTo("53c5f490f46d4aaea357fefc2c0d-00000");
-		}
-
-		@Test
-		void suffix_0010()
-		{
-			assertFromUUIDToString("53c5f490-f46d-4aae-a357-fefc2c0d0010")
-					.isEqualTo("53c5f490f46d4aaea357fefc2c0d-00016");
-		}
-
-		@Test
-		void suffix_FFFF()
-		{
-			assertFromUUIDToString("53c5f490-f46d-4aae-a357-fefc2c0dffff")
-					.isEqualTo("53c5f490f46d4aaea357fefc2c0d-65535");
+			final HUQRCodeUniqueId uniqueId = HUQRCodeUniqueId.ofUUID(UUID.randomUUID());
+			@NonNull final String suffix = uniqueId.getDisplayableSuffix();
+			final HUQRCodeUniqueId existingId = generatedIds.put(suffix, uniqueId);
+			assertThat(existingId)
+					.withFailMessage("Got duplicate suffix `" + suffix + "` after " + generatedIds.size() + " iterations: " + existingId + ", " + uniqueId)
+					.isNull();
 		}
 	}
 }

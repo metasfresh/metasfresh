@@ -14,6 +14,10 @@ const LoginScreen = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loginPending, setLoginPending] = useState(false);
 
+  useEffect(() => {
+    document.title = 'mobile UI';
+  }, []);
+
   const history = useHistory();
   const auth = useAuth();
   const location = useLocation();

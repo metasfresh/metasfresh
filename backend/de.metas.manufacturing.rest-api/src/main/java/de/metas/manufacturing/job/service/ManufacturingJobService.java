@@ -1,10 +1,8 @@
 package de.metas.manufacturing.job.service;
 
 import de.metas.dao.ValueRestriction;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -15,6 +13,8 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
@@ -74,8 +74,9 @@ public class ManufacturingJobService
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	public ManufacturingJobService(
-			final PPOrderIssueScheduleService ppOrderIssueScheduleService,
-			final HUReservationService huReservationService)
+			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
+			final @NonNull HUReservationService huReservationService,
+			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
@@ -89,6 +90,7 @@ public class ManufacturingJobService
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
+				.huQRCodeService(huQRCodeService)
 				.build();
 	}
 
@@ -346,7 +348,9 @@ public class ManufacturingJobService
 		I_M_HU_PI_Item luPIItem = null;
 		if (aggregateToLU.getExistingLU() != null)
 		{
-			lu = handlingUnitsDAO.getById(HUBarcode.ofBarcodeString(aggregateToLU.getExistingLU().getHuBarcode()).toHuId());
+			final JsonRenderedHUQRCode qrCode = aggregateToLU.getExistingLU().getHuQRCode();
+			final HuId luId = loadingAndSavingSupportServices.getHuIdByQRCode(qrCode);
+			lu = handlingUnitsDAO.getById(luId);
 		}
 		else
 		{
@@ -354,7 +358,7 @@ public class ManufacturingJobService
 			{
 				throw new AdempiereException("LU packing materials spec needs to be provided when no actual LU is specified.");
 			}
-			luPIItem = handlingUnitsDAO.getPackingInstructionItemById(HuPackingInstructionsItemId.ofRepoId(aggregateToLU.getNewLU().getLuPIItemId()));
+			luPIItem = handlingUnitsDAO.getPackingInstructionItemById(aggregateToLU.getNewLU().getLuPIItemId());
 		}
 
 		for (final I_M_HU tu : tusOrVhus)

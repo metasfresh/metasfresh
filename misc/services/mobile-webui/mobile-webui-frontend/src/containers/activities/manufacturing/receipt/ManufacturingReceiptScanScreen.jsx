@@ -1,26 +1,18 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { toastError } from '../../../../utils/toast';
+import { useDispatch } from 'react-redux';
 
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { updateManufacturingReceipt, updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
-import { getLineById } from '../../../../reducers/wfProcesses';
+import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
-
-const getQtyReceivedFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  return line?.qtyReceived ?? 0;
-};
+import { parseQRCodeString } from '../../../../utils/huQRCodes';
 
 const ManufacturingReceiptScanScreen = () => {
   const {
     url,
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
-
-  const qtyReceived = useSelector((state) => getQtyReceivedFromState({ state, wfProcessId, activityId, lineId }));
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -32,28 +24,29 @@ const ManufacturingReceiptScanScreen = () => {
     );
   }, []);
 
+  const resolveScannedBarcode = ({ scannedBarcode }) => {
+    return {
+      huQRCode: parseQRCodeString(scannedBarcode),
+    };
+  };
+
   const history = useHistory();
-  const onBarcodeScanned = ({ scannedBarcode }) => {
+  const onBarcodeScanned = ({ huQRCode }) => {
     dispatch(
-      updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { huBarcode: scannedBarcode } })
+      updateManufacturingReceiptTarget({
+        wfProcessId,
+        activityId,
+        lineId,
+        target: { huQRCode },
+      })
     );
 
-    // TODO: If quantity is already picked, update on the backend
-    if (qtyReceived) {
-      dispatch(
-        updateManufacturingReceipt({
-          wfProcessId,
-          activityId,
-          lineId,
-        })
-      ).catch((axiosError) => toastError({ axiosError }));
-    }
     history.go(-2);
   };
 
   return (
     <>
-      <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />
+      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onBarcodeScanned} />
     </>
   );
 };

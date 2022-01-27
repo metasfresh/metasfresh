@@ -1,6 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -20,6 +21,7 @@ public class HUQRCodeGenerateRequest
 {
 	int count;
 	@NonNull HUQRCodeUnitType huUnitType;
+	@NonNull HuPackingInstructionsId huPackingInstructionsId;
 	@NonNull ProductId productId;
 	@NonNull ImmutableList<Attribute> attributes;
 
@@ -27,6 +29,7 @@ public class HUQRCodeGenerateRequest
 	private HUQRCodeGenerateRequest(
 			final int count,
 			@NonNull final HUQRCodeUnitType huUnitType,
+			@NonNull final HuPackingInstructionsId huPackingInstructionsId,
 			@NonNull final ProductId productId,
 			@NonNull final List<Attribute> attributes)
 	{
@@ -34,6 +37,7 @@ public class HUQRCodeGenerateRequest
 
 		this.count = count;
 		this.huUnitType = huUnitType;
+		this.huPackingInstructionsId = huPackingInstructionsId;
 		this.productId = productId;
 		this.attributes = ImmutableList.copyOf(attributes);
 	}

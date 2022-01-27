@@ -1,6 +1,8 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
@@ -69,9 +71,20 @@ class HUQRCodeGenerateCommandTest
 		return AttributeValueId.ofRepoId(record.getM_AttributeValue_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
+	private HuPackingInstructionsId packingInstructions(final int id, final String name)
+	{
+		final I_M_HU_PI pi = InterfaceWrapperHelper.newInstance(I_M_HU_PI.class);
+		pi.setM_HU_PI_ID(id);
+		pi.setName(name);
+		InterfaceWrapperHelper.save(pi);
+		return HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
+	}
+
 	@Test
 	void standardTest()
 	{
+		final HuPackingInstructionsId piId = packingInstructions(70003, "Some TU");
 		final ProductId productId = product(60001, "P1", "Product 1");
 		final AttributeId attributeId1 = attribute("A1", "Attribute 1", AttributeValueType.STRING);
 		final AttributeId attributeId2 = attribute("A2", "Attribute 2", AttributeValueType.NUMBER);
@@ -87,6 +100,7 @@ class HUQRCodeGenerateCommandTest
 				.request(HUQRCodeGenerateRequest.builder()
 						.count(2)
 						.huUnitType(HUQRCodeUnitType.TU)
+						.huPackingInstructionsId(piId)
 						.productId(productId)
 						.attributes(ImmutableList.of(
 								HUQRCodeGenerateRequest.Attribute.builder()

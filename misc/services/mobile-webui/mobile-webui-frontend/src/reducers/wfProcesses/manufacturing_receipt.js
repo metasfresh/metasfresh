@@ -3,16 +3,18 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
 import { current, isDraft } from 'immer';
+import { getLineByIdFromWFProcess } from './index';
+import { toQRCodeObject } from '../../utils/huQRCodes';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
-      return reduceOnUpdateQtyPicked(draftState, action.payload);
-    }
     case types.UPDATE_MANUFACTURING_RECEIPT_TARGET: {
-      return updateTarget(draftState, action.payload);
+      return reduceOnUpdateReceiptTarget(draftState, action.payload);
+    }
+    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
+      return reduceOnUpdateQtyReceived(draftState, action.payload);
     }
     default: {
       return draftState;
@@ -20,18 +22,16 @@ export const manufacturingReducer = ({ draftState, action }) => {
   }
 };
 
-const updateTarget = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, target } = payload;
-
+const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
   const draftWFProcess = draftState[wfProcessId];
-  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
+  const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-  if (target.huBarcode) {
-    const productId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+  if (target.huQRCode) {
+    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
     draftActivityLine.aggregateToLU = {
       existingLU: {
-        huBarcode: target.huBarcode,
-        tuPIItemProductId: productId,
+        huQRCode: toQRCodeObject(target.huQRCode),
+        tuPIItemProductId,
       },
     };
   } else {
@@ -40,7 +40,7 @@ const updateTarget = (draftState, payload) => {
     };
   }
 
-  updateLineStatus({
+  updateLineStatusAndRollup({
     draftWFProcess,
     activityId,
     lineId,
@@ -49,27 +49,24 @@ const updateTarget = (draftState, payload) => {
   return draftState;
 };
 
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, qtyPicked } = payload;
+const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {
+  if (qtyReceived > 0) {
+    const draftWFProcess = draftState[wfProcessId];
+    const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-  const draftWFProcess = draftState[wfProcessId];
-  const draftActivityLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
+    draftActivityLine.qtyReceived += qtyReceived;
 
-  if (qtyPicked) {
-    draftActivityLine.userQtyReceived = qtyPicked;
-    draftActivityLine.qtyReceived += qtyPicked;
+    updateLineStatusAndRollup({
+      draftWFProcess,
+      activityId,
+      lineId,
+    });
   }
 
-  updateLineStatus({
-    draftWFProcess,
-    activityId,
-    lineId,
-  });
-
   return draftState;
 };
 
-const updateLineStatus = ({ draftWFProcess, activityId, lineId }) => {
+const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftLine.completeStatus = computeLineStatus(draftLine);
@@ -107,7 +104,9 @@ const computeLineStatus = ({ qtyToReceive, qtyReceived }) => {
 const computeActivityStatus = ({ draftActivity }) => {
   const draftActivityDataStored = draftActivity.dataStored;
   if (draftActivityDataStored.lines) {
-    draftActivityDataStored.lines.forEach((line) => {
+    const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
+    lineIds.forEach((lineId) => {
+      const line = draftActivityDataStored.lines[lineId];
       line.completeStatus = computeLineStatus(line);
     });
   }
@@ -134,13 +133,14 @@ const extractDraftMapKeys = (draftMap) => {
 };
 
 const normalizeLines = (lines) => {
-  return lines.map((line) => {
+  return lines.reduce((accum, line) => {
     const aggregateToLU = line.aggregateToLU || null;
-    return {
+    accum[line.id] = {
       ...line,
       aggregateToLU,
     };
-  });
+    return accum;
+  }, {});
 };
 
 registerHandler({

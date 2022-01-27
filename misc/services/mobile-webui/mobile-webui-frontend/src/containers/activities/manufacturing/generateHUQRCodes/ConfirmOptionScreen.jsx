@@ -48,6 +48,7 @@ const ConfirmOptionScreen = () => {
     postGenerateHUQRCodes({
       wfProcessId,
       finishedGoodsReceiveLineId: optionInfo.finishedGoodsReceiveLineId,
+      tuPackingInstructionsId: optionInfo.tuPackingInstructionsId,
       qtyTUs,
     })
       .then(() => history.go(-2)) // back to wfProcess screen

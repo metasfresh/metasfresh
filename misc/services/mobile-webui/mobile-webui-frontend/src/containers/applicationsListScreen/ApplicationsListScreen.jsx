@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import { getAvailableApplicationsArray } from '../../reducers/applications';
@@ -9,6 +9,10 @@ import LogoHeader from '../../components/LogoHeader';
 
 const ApplicationsListScreen = () => {
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
+
+  useEffect(() => {
+    document.title = 'mobile UI';
+  }, []);
 
   return (
     <div>

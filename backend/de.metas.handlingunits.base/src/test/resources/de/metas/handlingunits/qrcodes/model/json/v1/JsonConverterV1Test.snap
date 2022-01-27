@@ -9,8 +9,12 @@ de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1Test.checkJsonFormat
     "value" : "value",
     "valueRendered" : "rendered value"
   } ],
-  "huUnitType" : "TU",
-  "id" : "53c5f490f46d4aaea357fefc2c0d-30386",
+  "id" : "53c5f90464aea357fefc2c0d76b2-20442",
+  "packingInfo" : {
+    "caption" : "Some TU",
+    "huUnitType" : "TU",
+    "packingInstructionsId" : 123
+  },
   "product" : {
     "code" : "productCode",
     "id" : 111,

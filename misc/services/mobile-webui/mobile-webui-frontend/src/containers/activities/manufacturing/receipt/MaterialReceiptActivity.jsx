@@ -26,9 +26,9 @@ const MaterialReceiptActivity = (props) => {
 
   return (
     <div className="mt-5">
-      {lines && lines.length > 0
-        ? lines.map((lineItem, lineIndex) => {
-            const lineId = '' + lineIndex;
+      {lines
+        ? Object.values(lines).map((lineItem) => {
+            const lineId = lineItem.id;
 
             return (
               <ButtonWithIndicator

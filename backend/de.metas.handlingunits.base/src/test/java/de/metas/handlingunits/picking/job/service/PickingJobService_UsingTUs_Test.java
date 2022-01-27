@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -31,6 +30,7 @@ import java.time.Instant;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class PickingJobService_UsingTUs_Test
 {
 	private PickingJobTestHelper helper;
@@ -68,9 +68,11 @@ public class PickingJobService_UsingTUs_Test
 		// Masterdata: HUs
 		{
 			lu1 = helper.createLU(luPackingInstructions, "75");
+			helper.createQRCode(lu1, "QR-LU1");
 			helper.dumpHU("LU1", lu1);
 
 			lu2 = helper.createLU(luPackingInstructions, "250");
+			helper.createQRCode(lu2, "QR-LU2");
 			helper.dumpHU("LU2", lu2);
 		}
 
@@ -133,7 +135,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickingStepId(steps.get(0).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
-						.huBarcode(HUBarcode.ofHuId(lu1))
+						.huQRCode(helper.huQRCodesRepository.getQRCodeByHuId(lu1).get())
 						.qtyPicked(new BigDecimal("75"))
 						.build());
 		results.reportStepWithAllHUs("HUs after Picked 1");
@@ -144,7 +146,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickingStepId(steps.get(1).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
-						.huBarcode(HUBarcode.ofHuId(lu2))
+						.huQRCode(helper.huQRCodesRepository.getQRCodeByHuId(lu2).get())
 						.qtyPicked(new BigDecimal("25"))
 						.build());
 		results.reportStepWithAllHUs("HUs after Picked 2");

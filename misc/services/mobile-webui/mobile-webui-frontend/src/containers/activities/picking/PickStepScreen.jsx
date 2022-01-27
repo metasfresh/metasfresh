@@ -14,6 +14,7 @@ import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
+import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
 
 const PickStepScreen = () => {
   const {
@@ -43,7 +44,7 @@ const PickStepScreen = () => {
           },
           {
             caption: trl('general.Barcode'),
-            value: pickFrom.huBarcode,
+            value: toQRCodeDisplayable(pickFrom?.huQRCode),
           },
         ],
       })
@@ -58,7 +59,7 @@ const PickStepScreen = () => {
       wfProcessId,
       activityId,
       stepId,
-      huBarcode: pickFrom.huBarcode,
+      huQRCode: toQRCodeString(pickFrom.huQRCode),
     })
       .then(() => {
         dispatch(
@@ -87,7 +88,7 @@ const PickStepScreen = () => {
       qtyPicked: 0,
       qtyRejected,
       qtyRejectedReasonCode: 'N',
-      huBarcode: pickFrom.huBarcode,
+      huQRCode: toQRCodeString(pickFrom.huQRCode),
     }).then(() => {
       dispatch(
         updatePickingStepQty({
@@ -118,7 +119,9 @@ const PickStepScreen = () => {
 
   const isPickedFromHU = pickFrom.qtyPicked > 0;
 
-  const scanButtonCaption = isPickedFromHU ? `${pickFrom.huBarcode}` : trl('activities.picking.scanHUBarcode');
+  const scanButtonCaption = isPickedFromHU
+    ? `${toQRCodeDisplayable(pickFrom.huQRCode)}`
+    : trl('activities.picking.scanQRCode');
 
   const scanButtonStatus = isPickedFromHU ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
   const nothingPicked = !isPickedFromHU && !pickFrom.qtyRejectedReasonCode;

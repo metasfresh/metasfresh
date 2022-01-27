@@ -2,20 +2,19 @@ import {
   UPDATE_MANUFACTURING_ISSUE_QTY,
   UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_RECEIPT_TARGET,
-  UPDATE_MANUFACTURING_RECEIPT,
 } from '../constants/ManufacturingActionTypes';
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 
-export function updateManufacturingIssueQty({
+export const updateManufacturingIssueQty = ({
   wfProcessId,
   activityId,
   lineId,
   stepId,
   qtyPicked,
   qtyRejectedReasonCode,
-}) {
+}) => {
   return {
     type: UPDATE_MANUFACTURING_ISSUE_QTY,
     payload: {
@@ -27,9 +26,9 @@ export function updateManufacturingIssueQty({
       qtyRejectedReasonCode,
     },
   };
-}
+};
 
-export function updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId }) {
+export const updateManufacturingIssue = ({ wfProcessId, activityId, lineId, stepId }) => {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -56,60 +55,44 @@ export function updateManufacturingIssue({ wfProcessId, activityId, lineId, step
       return Promise.reject('No line found');
     }
   };
-}
+};
 
-export function updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target }) {
+export const updateManufacturingReceiptTarget = ({ wfProcessId, activityId, lineId, target }) => {
   return {
     type: UPDATE_MANUFACTURING_RECEIPT_TARGET,
     payload: { wfProcessId, activityId, lineId, target },
   };
-}
+};
 
-export function updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyPicked }) {
-  return {
-    type: UPDATE_MANUFACTURING_RECEIPT_QTY,
-    payload: { wfProcessId, activityId, lineId, qtyPicked },
-  };
-}
-
-export function updateManufacturingReceipt({ wfProcessId, activityId, lineId }) {
+export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived }) => {
+  console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived });
   return (dispatch, getState) => {
-    const state = getState();
-    const line = getLineById(state, wfProcessId, activityId, lineId);
+    const aggregateToLU = getAggregateToLUTarget({ globalState: getState(), wfProcessId, activityId, lineId });
+    return postManufacturingReceiveEvent({
+      wfProcessId,
+      activityId,
+      receiveFrom: { lineId, aggregateToLU, qtyReceived },
+    }) //
+      .then((response) => {
+        dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });
 
-    if (line) {
-      dispatch({ type: UPDATE_MANUFACTURING_RECEIPT, payload: { ...line } });
-
-      let aggregateToLU = null;
-      if (line.aggregateToLU != null) {
-        aggregateToLU = line.aggregateToLU;
-      } else if (line.currentReceivingHU) {
-        aggregateToLU = {
-          existingLU: line.currentReceivingHU,
-        };
-      } else {
-        // shall not happen
-        console.log('No target found', line);
-        return;
-      }
-
-      return postManufacturingReceiveEvent({
-        wfProcessId,
-        activityId,
-        receiveFrom: {
-          lineId: line.id,
-          qtyReceived: line.userQtyReceived || 0,
-          aggregateToLU,
-        },
-      }).then((response) => {
         if (response.existingLU) {
-          dispatch(
-            updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: { ...response.existingLU } })
-          );
+          dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
         }
       });
-    } else {
-      return Promise.reject('No line found');
-    }
   };
-}
+};
+
+const getAggregateToLUTarget = ({ globalState, wfProcessId, activityId, lineId }) => {
+  const line = getLineById(globalState, wfProcessId, activityId, lineId);
+  if (line.aggregateToLU != null) {
+    return line.aggregateToLU;
+  } else if (line.currentReceivingHU) {
+    return {
+      existingLU: line.currentReceivingHU,
+    };
+  } else {
+    // shall not happen
+    throw 'No target found';
+  }
+};

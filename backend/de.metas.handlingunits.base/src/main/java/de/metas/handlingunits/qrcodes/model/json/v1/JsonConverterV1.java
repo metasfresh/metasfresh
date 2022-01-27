@@ -5,8 +5,9 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
-import de.metas.handlingunits.qrcodes.model.json.JsonConverter;
+import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -18,12 +19,12 @@ public class JsonConverterV1
 {
 	public static final GlobalQRCodeVersion GLOBAL_QRCODE_VERSION = GlobalQRCodeVersion.ofInt(1);
 
-	public static GlobalQRCode toGlobalQRCode(final HUQRCode qrCode)
+	public static GlobalQRCode toGlobalQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return GlobalQRCode.of(JsonConverter.GLOBAL_QRCODE_TYPE, GLOBAL_QRCODE_VERSION, toJson(qrCode));
+		return GlobalQRCode.of(HUQRCodeJsonConverter.GLOBAL_QRCODE_TYPE, GLOBAL_QRCODE_VERSION, toJson(qrCode));
 	}
 
-	public static HUQRCode fromGlobalQRCode(final GlobalQRCode globalQRCode)
+	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
 		Check.assumeEquals(globalQRCode.getVersion(), JsonConverterV1.GLOBAL_QRCODE_VERSION, "HU QR Code version");
 
@@ -31,11 +32,11 @@ public class JsonConverterV1
 		return fromJson(json);
 	}
 
-	public static JsonHUQRCodeV1 toJson(final HUQRCode qrCode)
+	public static JsonHUQRCodeV1 toJson(@NonNull final HUQRCode qrCode)
 	{
 		return JsonHUQRCodeV1.builder()
-				.huUnitType(qrCode.getHuUnitType())
 				.id(qrCode.getId())
+				.packingInfo(toJson(qrCode.getPackingInfo()))
 				.product(toJson(qrCode.getProduct()))
 				.attributes(qrCode.getAttributes()
 						.stream()
@@ -44,11 +45,20 @@ public class JsonConverterV1
 				.build();
 	}
 
+	private static JsonHUQRCodePackingInfoV1 toJson(@NonNull final HUQRCodePackingInfo packingInfo)
+	{
+		return JsonHUQRCodePackingInfoV1.builder()
+				.huUnitType(packingInfo.getHuUnitType())
+				.packingInstructionsId(packingInfo.getPackingInstructionsId())
+				.caption(packingInfo.getCaption())
+				.build();
+	}
+
 	public static HUQRCode fromJson(@NonNull final JsonHUQRCodeV1 json)
 	{
 		return HUQRCode.builder()
-				.huUnitType(json.getHuUnitType())
 				.id(json.getId())
+				.packingInfo(fromJson(json.getPackingInfo()))
 				.product(fromJson(json.getProduct()))
 				.attributes(json.getAttributes()
 						.stream()
@@ -57,7 +67,16 @@ public class JsonConverterV1
 				.build();
 	}
 
-	private static JsonHUQRCodeProductInfoV1 toJson(final HUQRCodeProductInfo product)
+	private static HUQRCodePackingInfo fromJson(@NonNull final JsonHUQRCodePackingInfoV1 json)
+	{
+		return HUQRCodePackingInfo.builder()
+				.huUnitType(json.getHuUnitType())
+				.packingInstructionsId(json.getPackingInstructionsId())
+				.caption(json.getCaption())
+				.build();
+	}
+
+	private static JsonHUQRCodeProductInfoV1 toJson(@NonNull final HUQRCodeProductInfo product)
 	{
 		return JsonHUQRCodeProductInfoV1.builder()
 				.id(product.getId())
@@ -66,7 +85,7 @@ public class JsonConverterV1
 				.build();
 	}
 
-	private static HUQRCodeProductInfo fromJson(final JsonHUQRCodeProductInfoV1 json)
+	private static HUQRCodeProductInfo fromJson(@NonNull final JsonHUQRCodeProductInfoV1 json)
 	{
 		return HUQRCodeProductInfo.builder()
 				.id(json.getId())
@@ -75,7 +94,7 @@ public class JsonConverterV1
 				.build();
 	}
 
-	private static JsonHUQRCodeAttributeV1 toJson(final HUQRCodeAttribute attribute)
+	private static JsonHUQRCodeAttributeV1 toJson(@NonNull final HUQRCodeAttribute attribute)
 	{
 		return JsonHUQRCodeAttributeV1.builder()
 				.code(attribute.getCode())
@@ -90,7 +109,7 @@ public class JsonConverterV1
 				.build();
 	}
 
-	private static HUQRCodeAttribute fromJson(final JsonHUQRCodeAttributeV1 json)
+	private static HUQRCodeAttribute fromJson(@NonNull final JsonHUQRCodeAttributeV1 json)
 	{
 		return HUQRCodeAttribute.builder()
 				.code(json.getCode())

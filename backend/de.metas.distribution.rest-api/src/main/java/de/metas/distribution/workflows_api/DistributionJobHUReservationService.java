@@ -28,7 +28,7 @@ public class DistributionJobHUReservationService
 								.documentRef(HUReservationDocRef.ofDDOrderLineId(line.getDdOrderLineId()))
 								.productId(line.getProduct().getProductId())
 								.customerId(job.getCustomerId())
-								.huId(step.getPickFromHUId())
+								.huId(step.getPickFromHU().getId())
 								.build())
 						.orElseThrow(() -> new AdempiereException("Failed reserving HUs for " + step));
 			}

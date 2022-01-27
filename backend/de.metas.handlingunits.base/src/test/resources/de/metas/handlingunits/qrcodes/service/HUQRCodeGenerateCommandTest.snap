@@ -20,8 +20,12 @@ de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateCommandTest.standardTest=
     "value" : "60002",
     "valueRendered" : "A4_Item1"
   } ],
-  "huUnitType" : "TU",
-  "id" : "53c5f490f46d4aaea357fefc2c0d-30386",
+  "id" : "53c5f90464aea357fefc2c0d76b2-20442",
+  "packingInfo" : {
+    "caption" : "Some TU",
+    "huUnitType" : "TU",
+    "packingInstructionsId" : 70003
+  },
   "product" : {
     "code" : "P1",
     "id" : 60001,
@@ -49,8 +53,12 @@ de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateCommandTest.standardTest=
     "value" : "60002",
     "valueRendered" : "A4_Item1"
   } ],
-  "huUnitType" : "TU",
-  "id" : "64ad6577fd954e478e65f4648d74-29465",
+  "id" : "64ad677d94478e65f4648d747319-24414",
+  "packingInfo" : {
+    "caption" : "Some TU",
+    "huUnitType" : "TU",
+    "packingInstructionsId" : 70003
+  },
   "product" : {
     "code" : "P1",
     "id" : 60001,

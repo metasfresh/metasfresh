@@ -28,8 +28,21 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "map" : {
           "1000000" : {
             "pickFromHU" : {
-              "barcode" : "1001",
-              "id" : 1001
+              "id" : 1001,
+              "qrCode" : {
+                "attributes" : [ ],
+                "id" : "f18c5be34403b0f4fb25fb33a5fa-12562",
+                "packingInfo" : {
+                  "caption" : "Some TU",
+                  "huUnitType" : "TU",
+                  "packingInstructionsId" : 12340
+                },
+                "product" : {
+                  "code" : "product value",
+                  "id" : 12341,
+                  "name" : "product name"
+                }
+              }
             },
             "pickFromKey" : "1000000",
             "pickFromLocator" : {
@@ -40,8 +53,21 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           },
           "MAIN" : {
             "pickFromHU" : {
-              "barcode" : "11",
-              "id" : 11
+              "id" : 11,
+              "qrCode" : {
+                "attributes" : [ ],
+                "id" : "7a71c087f45da0b8814896b31659-20155",
+                "packingInfo" : {
+                  "caption" : "Some TU",
+                  "huUnitType" : "TU",
+                  "packingInstructionsId" : 12340
+                },
+                "product" : {
+                  "code" : "product value",
+                  "id" : 12341,
+                  "name" : "product name"
+                }
+              }
             },
             "pickFromKey" : "MAIN",
             "pickFromLocator" : {
@@ -72,8 +98,21 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "id" : "21_22"
     },
     "pickFromHU" : {
-      "barcode" : "1001",
-      "id" : 1001
+      "id" : 1001,
+      "qrCode" : {
+        "attributes" : [ ],
+        "id" : "f18c5be34403b0f4fb25fb33a5fa-12562",
+        "packingInfo" : {
+          "caption" : "Some TU",
+          "huUnitType" : "TU",
+          "packingInstructionsId" : 12340
+        },
+        "product" : {
+          "code" : "product value",
+          "id" : 12341,
+          "name" : "product name"
+        }
+      }
     },
     "productId" : 6,
     "qtyAvailable" : "999 Ea"

@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
@@ -206,7 +205,7 @@ public class ManufacturingJobLoaderAndSaver
 						.build())
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
-						.barcode(HUBarcode.ofHuId(schedule.getIssueFromHUId()))
+						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
 						.build())
 				.issued(schedule.getIssued())
 				.build();

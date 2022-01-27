@@ -59,7 +59,7 @@ const RawMaterialIssueStepScreen = () => {
   };
 
   const isIssued = qtyIssued > 0 || qtyRejected > 0;
-  const scanButtonCaption = isIssued ? `${huBarcode}` : trl('activities.picking.scanHUBarcode');
+  const scanButtonCaption = isIssued ? `${huBarcode}` : trl('activities.picking.scanQRCode');
 
   const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 

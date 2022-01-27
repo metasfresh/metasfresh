@@ -68,7 +68,7 @@ public class GlobalQRCode
 		// Extract version
 		final GlobalQRCodeVersion version;
 		{
-			int idx = remainingString.indexOf("#");
+			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
 				throw new AdempiereException("Invalid global QR code(2): " + string);
@@ -113,6 +113,6 @@ public class GlobalQRCode
 	@JsonValue
 	public String getAsString()
 	{
-		return type.toJson() + "#" + version + "#" + payloadAsJson;
+		return type.toJson() + SEPARATOR + version + SEPARATOR + payloadAsJson;
 	}
 }

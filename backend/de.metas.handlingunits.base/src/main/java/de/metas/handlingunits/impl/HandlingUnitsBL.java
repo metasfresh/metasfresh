@@ -805,13 +805,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return piVersion != null ? getPI(piVersion) : null;
 	}
 
-	private I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Version piVersion)
+	@Override
+	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Version piVersion)
 	{
 		return piVersion.getM_HU_PI();
 	}
 
 	@Override
 	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsRepo.getPackingInstructionById(id);}
+
+	@Override
+	public String getPIName(@NonNull final HuPackingInstructionsId id)
+	{
+		return getPI(id).getName();
+	}
 
 	@Override
 	public I_M_HU_PI getPI(@NonNull final HUPIItemProductId huPIItemProductId)

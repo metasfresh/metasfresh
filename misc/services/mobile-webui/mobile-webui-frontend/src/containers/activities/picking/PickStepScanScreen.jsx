@@ -11,6 +11,7 @@ import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { toQRCodeString } from '../../../utils/huQRCodes';
 
 const PickStepScanScreen = () => {
   const {
@@ -18,7 +19,7 @@ const PickStepScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
 
-  const { eligibleBarcode, qtyToPick, uom, qtyRejectedReasons } = useSelector(
+  const { eligibleQRCode, qtyToPick, uom, qtyRejectedReasons } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual
   );
@@ -42,7 +43,7 @@ const PickStepScanScreen = () => {
       wfProcessId,
       activityId,
       stepId,
-      huBarcode: scannedBarcode,
+      huQRCode: scannedBarcode,
       qtyPicked: qty,
       qtyRejectedReasonCode: reason,
       qtyRejected,
@@ -67,7 +68,7 @@ const PickStepScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      eligibleBarcode={eligibleBarcode}
+      eligibleBarcode={eligibleQRCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyTarget={qtyToPick}
       qtyInitial={qtyToPick}
@@ -84,11 +85,11 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, alt
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
-  const eligibleBarcode = getPickFrom({ stepProps, altStepId }).huBarcode;
+  const eligibleQRCode = toQRCodeString(getPickFrom({ stepProps, altStepId }).huQRCode);
   const qtyToPick = getQtyToPick({ stepProps, altStepId });
 
   return {
-    eligibleBarcode,
+    eligibleQRCode,
     qtyToPick,
     uom: stepProps.uom,
     qtyRejectedReasons,

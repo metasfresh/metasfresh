@@ -6,7 +6,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
-import de.metas.handlingunits.qrcodes.model.json.JsonConverter;
+import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -69,7 +69,7 @@ public class HUQRCodeCreatePDFCommand
 		return PrintableQRCode.builder()
 				.topText(extractPrintableTopText(qrCode))
 				.bottomText(extractPrintableBottomText(qrCode))
-				.qrCode(JsonConverter.toGlobalQRCode(qrCode).getAsString())
+				.qrCode(HUQRCodeJsonConverter.toGlobalQRCode(qrCode).getAsString())
 				.build();
 	}
 
@@ -94,7 +94,7 @@ public class HUQRCodeCreatePDFCommand
 
 	private static String extractPrintableBottomText(final HUQRCode qrCode)
 	{
-		return qrCode.getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
+		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
 }

@@ -1,8 +1,10 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.product.IProductBL;
@@ -51,9 +53,13 @@ class HUQRCodeGenerateCommand
 			throw new AdempiereException("Invalid count: " + count);
 		}
 
-		final HUQRCode.HUQRCodeBuilder qrCodeBuilder = HUQRCode.builder()
-				.huUnitType(request.getHuUnitType())
+		final HUQRCode.HUQRCodeBuilder template = HUQRCode.builder()
 				//.id(...) // will be set later
+				.packingInfo(HUQRCodePackingInfo.builder()
+						.huUnitType(request.getHuUnitType())
+						.packingInstructionsId(request.getHuPackingInstructionsId())
+						.caption(Services.get(IHandlingUnitsBL.class).getPIName(request.getHuPackingInstructionsId()))
+						.build())
 				.product(getHUQRCodeProductInfo(request.getProductId()))
 				.attributes(request.getAttributes()
 						.stream()
@@ -64,7 +70,7 @@ class HUQRCodeGenerateCommand
 		for (int i = 1; i <= count; i++)
 		{
 			final HUQRCodeUniqueId id = HUQRCodeUniqueId.ofUUID(randomUUIDGenerator.get());
-			result.add(qrCodeBuilder.id(id).build());
+			result.add(template.id(id).build());
 		}
 
 		return result;

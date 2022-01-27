@@ -10,12 +10,12 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 
-export const getWfProcess = (state, wfProcessId) => {
+export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
     console.trace(`getWfProcess called with wfProcessId=${wfProcessId}`);
   }
 
-  return state.wfProcesses[wfProcessId];
+  return globalState.wfProcesses[wfProcessId];
 };
 
 export const isWfProcessLoaded = (state, wfProcessId) => {
@@ -53,6 +53,11 @@ export const getActivityById = (state, wfProcessId, activityId) => {
 
 export const getLineByIdFromActivity = (activity, lineId) => {
   return activity?.dataStored?.lines?.[lineId];
+};
+
+export const getLineByIdFromWFProcess = (wfProcess, activityId, lineId) => {
+  const activity = wfProcess?.activities?.[activityId];
+  return getLineByIdFromActivity(activity, lineId);
 };
 
 export const getLineById = (state, wfProcessId, activityId, lineId) => {

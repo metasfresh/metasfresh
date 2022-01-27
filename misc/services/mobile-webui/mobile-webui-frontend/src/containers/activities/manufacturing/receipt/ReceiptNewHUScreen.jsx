@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
 
 import { getLineById } from '../../../../reducers/wfProcesses';
-import { toastError } from '../../../../utils/toast';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { updateManufacturingReceipt, updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
+import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
@@ -14,11 +13,10 @@ const ReceiptNewHUScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { availableReceivingTargets, userQtyReceived } = useSelector((state) => {
+  const { availableReceivingTargets } = useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
     return {
       availableReceivingTargets: line.availableReceivingTargets,
-      userQtyReceived: line.userQtyReceived,
     };
   }, shallowEqual);
 
@@ -35,17 +33,6 @@ const ReceiptNewHUScreen = () => {
   const history = useHistory();
   const handleClick = (target) => {
     dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target }));
-
-    if (userQtyReceived) {
-      dispatch(
-        updateManufacturingReceipt({
-          wfProcessId,
-          activityId,
-          lineId,
-        })
-      ).catch((axiosError) => toastError({ axiosError }));
-    }
-
     history.go(-2);
   };
 

@@ -30,6 +30,10 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
   const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
 
+  useEffect(() => {
+    document.title = caption;
+  }, [caption]);
+
   return (
     <div className="app-container">
       <div className="app-header">
