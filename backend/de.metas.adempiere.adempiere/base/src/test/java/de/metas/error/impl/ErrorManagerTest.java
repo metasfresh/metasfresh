@@ -47,9 +47,6 @@ class ErrorManagerTest
 	@Test
 	void createIssue()
 	{
-		final I_AD_System system = InterfaceWrapperHelper.newInstance(I_AD_System.class);
-		InterfaceWrapperHelper.saveRecord(system);
-
 		final AdIssueId issueId = new ErrorManager().createIssue(new NullPointerException());
 		assertThat(issueId).isNotNull();
 	}

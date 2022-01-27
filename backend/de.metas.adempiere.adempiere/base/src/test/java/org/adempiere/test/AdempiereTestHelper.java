@@ -46,6 +46,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -261,6 +262,10 @@ public class AdempiereTestHelper
 	private static void createSystemRecords()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		final I_AD_System system = InterfaceWrapperHelper.newInstance(I_AD_System.class);
+		system.setName("AdempiereTestHelper");
+		InterfaceWrapperHelper.saveRecord(system);
 
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
