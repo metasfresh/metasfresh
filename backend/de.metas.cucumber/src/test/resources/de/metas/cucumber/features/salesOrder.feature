@@ -135,5 +135,5 @@ Feature: sales order
     And the mediated purchase order linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier  |C_BPartner_ID.Identifier |
       | 10         | 100        | p_26                     |shiptopartner_26          |
-    And the sales order identified by 'o_2' is closed
-    And the shipment schedule identified by s_ol_2 is processed after not more than 10 seconds
+    And the sales order identified by 'o_26' is closed
+    And the shipment schedule identified by s_ol_26 is processed after not more than 10 seconds
