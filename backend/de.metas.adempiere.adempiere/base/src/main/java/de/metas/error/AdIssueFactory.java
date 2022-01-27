@@ -22,9 +22,9 @@
 
 package de.metas.error;
 
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.util.net.NetUtils;
@@ -35,15 +35,20 @@ import org.compiere.util.DB;
 
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @UtilityClass
 public class AdIssueFactory
 {
-	public I_AD_Issue createNewIssueRecord(final Properties ctx)
+	public I_AD_Issue prepareNewIssueRecord(@NonNull final Properties ctx)
 	{
 		final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+		return prepareNewIssueRecord(ctx, issue);
+	}
 
+	public I_AD_Issue prepareNewIssueRecord(@NonNull final Properties ctx, @NonNull final I_AD_Issue issue)
+	{
 		final ISystemBL systemBL = Services.get(ISystemBL.class);
 		final I_AD_System system = systemBL.get(ctx);
 
@@ -51,7 +56,7 @@ public class AdIssueFactory
 		issue.setUserName(system.getUserName());
 		issue.setDBAddress(system.getDBAddress());
 		issue.setSystemStatus(system.getSystemStatus());
-		issue.setReleaseNo(system.getReleaseNo());	// DB
+		issue.setReleaseNo(system.getReleaseNo());    // DB
 
 		final String version = StringUtils.trimBlankToOptional(Adempiere.getDateVersion()).orElse("?");
 		issue.setVersion(version);

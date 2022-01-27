@@ -80,7 +80,7 @@ public class ErrorManager implements IErrorManager
 	@NonNull
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
-		final I_AD_Issue issue = AdIssueFactory.createNewIssueRecord(Env.getCtx());
+		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
 		issue.setIssueCategory(issueCategory.getCode());
@@ -111,7 +111,7 @@ public class ErrorManager implements IErrorManager
 		// Create AD_Issue
 		final AdIssueId adIssueId;
 		{
-			final I_AD_Issue issue = AdIssueFactory.createNewIssueRecord(Env.getCtx());
+			final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 			final IssueCategory issueCategory = extractIssueCategory(throwable);
 			issue.setIssueCategory(issueCategory.getCode());

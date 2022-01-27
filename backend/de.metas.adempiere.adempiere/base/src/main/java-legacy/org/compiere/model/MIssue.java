@@ -22,7 +22,7 @@ import java.util.Properties;
 import de.metas.error.AdIssueFactory;
 
 /**
- * Issue Report Model
+ * TODO remove this whole class. Move the required code to {@link de.metas.error.AdIssueFactory}. Or {@link de.metas.error.impl.ErrorManager}.
  */
 @SuppressWarnings("serial")
 public class MIssue extends X_AD_Issue
@@ -53,7 +53,7 @@ public class MIssue extends X_AD_Issue
 
 	private void init(final Properties ctx)
 	{
-		AdIssueFactory.createNewIssueRecord(ctx);
+		AdIssueFactory.prepareNewIssueRecord(ctx, this);
 	}
 
 	@Override
