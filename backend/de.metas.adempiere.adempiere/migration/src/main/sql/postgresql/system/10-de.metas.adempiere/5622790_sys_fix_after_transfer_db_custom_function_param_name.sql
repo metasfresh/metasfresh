@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS ops.after_transfer_db_custom_begin(text,
+                                                           text)
+;
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db_custom_begin(p_source_instance text,
                                                               p_target_instance text) RETURNS void
@@ -16,6 +19,10 @@ COMMENT ON FUNCTION ops.after_transfer_db_custom_begin(p_source_instance text, p
 For example, it can delete unneeded data to speed up scrambling and spare disk space.'
 ;
 
+
+DROP FUNCTION IF EXISTS ops.after_transfer_db_custom_end(text,
+                                                         text)
+;
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db_custom_end(p_source_instance text,
                                                             p_target_instance text) RETURNS void
