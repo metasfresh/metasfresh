@@ -89,8 +89,11 @@ public class C_OrderLine_StepDef
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." +I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
-			final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
-			orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
+			if (partnerIdentifier !=null)
+			{
+				final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
+				orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
+			}
 
 			saveRecord(orderLine);
 
