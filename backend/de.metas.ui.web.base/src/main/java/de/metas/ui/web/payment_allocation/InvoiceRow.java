@@ -61,7 +61,7 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final String documentNo;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "POReference")
+	@ViewColumn(seqNo = 25, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "POReference")
 	@Getter
 	private final String poReference;
 
