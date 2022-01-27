@@ -1,5 +1,6 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -159,7 +160,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
 		{
-			purchaseOrderLine.setC_BPartner_ID(salesOrderLine.getC_BPartner_ID());
+			OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setBPartnerAndLocation(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()));
 		}
 		else
 		{
