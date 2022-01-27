@@ -7,6 +7,7 @@
   "INAKTIV": 0,
   "VERLUST": 10.5,
   "GTIN": 12345678,
+  "METASFRESHID": "100",
   "DETAIL": [
     {
       "ARTNR": "ProductValue1",

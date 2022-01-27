@@ -41,7 +41,7 @@ public class JsonBPartnerContactTest
 	{
 		//given
 		final String candidate = "{\n"
-				+ "    \"METASFRESHID\": 100,\n"
+				+ "    \"METASFRESHID\": 12345,\n"
 				+ "    \"NACHNAME\": \"LASTNAME\",\n"
 				+ "    \"DUMMYVALUE\": \"TEST\",\n"
 				+ "    \"VORNAME\": \"FIRSTNAME\",\n"
@@ -87,7 +87,6 @@ public class JsonBPartnerContactTest
 	public static JsonBPartnerContact createJsonBPartnerContact()
 	{
 		return JsonBPartnerContact.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
 				.lastName("LASTNAME")
 				.firstName("FIRSTNAME")
 				.greeting("GREETING")
@@ -98,6 +97,7 @@ public class JsonBPartnerContactTest
 				.fax("FAX")
 				.phone2("TELEFON2")
 				.contactRoles(ImmutableList.of("ROLE1", "ROLE2"))
+				.metasfreshId(JsonMetasfreshId.of(12345))
 				.build();
 	}
 }

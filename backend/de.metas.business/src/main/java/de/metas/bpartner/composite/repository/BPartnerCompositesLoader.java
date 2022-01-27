@@ -46,6 +46,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -331,6 +332,9 @@ final class BPartnerCompositesLoader
 				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
 				//
 				.changeLog(recordChangeLog)
+				//
+				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
+				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
 				//
 				.build();
 	}

@@ -27,6 +27,7 @@ import de.metas.util.lang.RepoIdAware;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 /**
  * Number Utils
@@ -257,5 +258,13 @@ public final class NumberUtils
 				.add(random.multiply(range))
 				.setScale(scale, RoundingMode.DOWN);
 
+	}
+
+	@Nullable
+	public static Integer graterThanZeroOrNull(@Nullable final Integer value)
+	{
+		return Optional.ofNullable(value)
+				.filter(v1 -> v1 > 0)
+				.orElse(null);
 	}
 }

@@ -10,13 +10,15 @@
       "MKREDID": "vendorId",
       "STDKRED": 1,
       "LIEFERANTENFREIGABE": 1,
-      "INAKTIV": 1
+      "INAKTIV": 1,
+      "METASFRESHID": "1"
     },
     {
       "MKREDID": "vendorId2",
       "STDKRED": 1,
       "LIEFERANTENFREIGABE": 0,
-      "INAKTIV": 0
+      "INAKTIV": 0,
+      "METASFRESHID": "2"
     }
   ]
 }

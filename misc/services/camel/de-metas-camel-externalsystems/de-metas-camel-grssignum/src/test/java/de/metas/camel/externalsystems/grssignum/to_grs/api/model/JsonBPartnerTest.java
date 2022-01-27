@@ -44,7 +44,7 @@ public class JsonBPartnerTest
 				+ "    \"FLAG\": 100,\n"
 				+ "    \"MID\": \"HOM\",\n"
 				+ "    \"DUMMYVALUE\": \"TEST\",\n"
-				+ "    \"MKREDID\": \"102\",\n"
+				+ "    \"MKREDID\": \"value\",\n"
 				+ "    \"KURZBEZEICHNUNG\": \"test company name\",\n"
 				+ "    \"NAMENSZUSATZ\": \"test name2\",\n"
 				+ "    \"ADRESSE 1\": \"test address1\",\n"
@@ -56,9 +56,13 @@ public class JsonBPartnerTest
 				+ "    \"LANDESCODE\": \"test country code\",\n"
 				+ "    \"GLN\": \"test gln\",\n"
 				+ "    \"INAKTIV\": 0,\n"
+				+ "    \"METASFRESHID\":\"12345\",\n"
+				+ "    \"METASFRESHURL\": \"metasfreshUrl\",\n"
+				+ "    \"KREDITORENNR\":1,\n"
+				+ "    \"DEBITORRENNR\":2,\n"
 				+ "    \"KONTAKTE\":[\n "
 				+ "        {\n"
-				+ "   				 \"METASFRESHID\": 100,\n"
+				+ "   				 \"METASFRESHID\": 12345,\n"
 				+ "   				 \"NACHNAME\": \"LASTNAME\",\n"
 				+ "   				 \"DUMMYVALUE\": \"TEST\",\n"
 				+ "    				 \"VORNAME\": \"FIRSTNAME\",\n"
@@ -85,7 +89,7 @@ public class JsonBPartnerTest
 
 		final JsonBPartner expectedBPartner = JsonBPartner.builder()
 				.flag(100)
-				.id("102")
+				.bpartnerValue("value")
 				.name("test company name")
 				.name2("test name2")
 				.address1("test address1")
@@ -99,6 +103,10 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
+				.metasfreshId("12345")
+				.metasfreshURL("metasfreshUrl")
+				.creditorId(1)
+				.debtorId(2)
 				.build();
 
 		assertThat(partner).isEqualTo(expectedBPartner);
@@ -111,7 +119,7 @@ public class JsonBPartnerTest
 		final List<String> roles = ImmutableList.of("ROLE1", "ROLE2");
 
 		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
+				.metasfreshId(JsonMetasfreshId.of(12345))
 				.lastName("LASTNAME")
 				.firstName("FIRSTNAME")
 				.greeting("GREETING")
@@ -126,7 +134,7 @@ public class JsonBPartnerTest
 
 		final JsonBPartner bPartner = JsonBPartner.builder()
 				.flag(100)
-				.id("102")
+				.bpartnerValue("value")
 				.name("test company name")
 				.name2("test name2")
 				.address1("test address1")
@@ -140,6 +148,10 @@ public class JsonBPartnerTest
 				.inactive(0)
 				.tenantId("HOM")
 				.contact(contact)
+				.metasfreshId("12345")
+				.metasfreshURL("metasfreshUrl")
+				.creditorId(1)
+				.debtorId(2)
 				.build();
 
 		//when

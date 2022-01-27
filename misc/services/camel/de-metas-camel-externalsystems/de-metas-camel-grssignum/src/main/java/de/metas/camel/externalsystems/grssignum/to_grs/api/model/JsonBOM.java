@@ -69,6 +69,10 @@ public class JsonBOM
 	@JsonProperty("GTIN")
 	String gtin;
 
+	@Nullable
+	@JsonProperty("METASFRESHID")
+	String bPartnerMetasfreshId;
+
 	@NonNull
 	@JsonProperty("DETAIL")
 	List<JsonBOMLine> bomLines;
@@ -83,6 +87,7 @@ public class JsonBOM
 			@JsonProperty("INAKTIV") final int inactive,
 			@JsonProperty("VERLUST") final @Nullable BigDecimal scrap,
 			@JsonProperty("GTIN") final @Nullable String gtin,
+			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
 			@JsonProperty("DETAIL") final @NonNull List<JsonBOMLine> bomLines)
 	{
 		this.flag = flag;
@@ -93,6 +98,7 @@ public class JsonBOM
 		this.isActive = inactive != 1;
 		this.scrap = scrap;
 		this.gtin = gtin;
+		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
 		this.bomLines = bomLines;
 	}
 
