@@ -122,7 +122,7 @@ Feature: sales order
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier  | M_Product_ID.Identifier  | QtyEntered |C_BPartner_ID.Identifier |
       | ol_26       | o_26                   | p_26                     | 10         |shiptopartner_26          |
-    And the order identified by o_2 is completed
+    And the order identified by o_26 is completed
     And after not more than 10s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_26     | ol_26                      | N             |
@@ -132,7 +132,7 @@ Feature: sales order
     Then the order is created:
       | Link_Order_ID.Identifier  | IsSOTrx | DropShip_BPartner_ID.Identifier | IsDropShip | DocBaseType | DocSubType | OPT.DocStatus |
       | o_26                      | false   | shiptopartner_26                 | true       | POO         | MED        | DR            |
-    And the mediated purchase order linked to order 'o_2' has lines:
+    And the mediated purchase order linked to order 'o_26' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier  |C_BPartner_ID.Identifier |
       | 10         | 100        | p_26                     |shiptopartner_26          |
     And the sales order identified by 'o_26' is closed
