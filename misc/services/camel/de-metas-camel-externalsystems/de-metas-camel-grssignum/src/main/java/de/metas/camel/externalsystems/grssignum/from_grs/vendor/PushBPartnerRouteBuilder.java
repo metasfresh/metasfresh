@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.grssignum.from_grs.vendor;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartner;
 import de.metas.camel.externalsystems.grssignum.from_grs.vendor.processor.PushBPartnersProcessor;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartner;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +40,7 @@ public class PushBPartnerRouteBuilder extends RouteBuilder
 	public static final String PUSH_BPARTNERS_PROCESSOR_ID = "GRSSignum-PushBPartnersProcessorID";
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
