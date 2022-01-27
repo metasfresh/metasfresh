@@ -27,9 +27,12 @@
 
     <dependencies>
         <dependency>
+            <!-- we include lombok in the actual build, as a curtesty to 3rd-parties who want to compile against this build's image -->
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <!-- we include lombok in the actual build, as a curtesty to 3rd-parties who want to compile against this build's image -->
+            <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
+            <!-- <version>1.18.18</version> -->
+            <version>1.18.22</version>
         </dependency>
     </dependencies>
     
