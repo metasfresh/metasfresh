@@ -238,5 +238,10 @@ public interface IBPartnerBL extends ISingletonService
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 
+	/**
+	 * extracted logic from legacy code
+	 * @param bp
+	 * @return
+	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 }
