@@ -268,6 +268,7 @@ export class DraggableWrapper extends Component {
             removeCard={this.removeCard}
             entity={'indicators'}
             transparent={!editmode}
+            className="indicator-card"
           >
             <RawChart
               id={indicator.id}
