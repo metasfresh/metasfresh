@@ -70,7 +70,7 @@ public class IBANValidationBLTest
 		prepareCountry("DE", "n", "8", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
 		prepareCountry("CH", "n", "5", "10", null, null, null, "n", "12", "20", null, null, null, null, null, null);
 		prepareCountry("FR", "n", "5", "10", "n", "5", "20", "n", "12", "30", null, null, null, "c", "11", "40");
-		prepareCountry("CZ", "n", "4", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
+		prepareCountry("CZ", "n", "4", "10", null, null, null, "n", "16", "20", null, null, null, null, null, null);
 		prepareCountry("HR", "n", "7", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
 		prepareCountry("CY", "n", "3", "10", "n", "5", "20", "c", "16", "30", null, null, null, null, null, null);
 		prepareCountry("DK", "n", "4", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
@@ -96,30 +96,13 @@ public class IBANValidationBLTest
 
 	/**
 	 * create country
-	 * 
-	 * @param countryCode
-	 * @param bankCodeCharType
-	 * @param bankCodeLength
-	 * @param bankCodeSeqNo
-	 * @param branchCodeCharType
-	 * @param branchCodeLength
-	 * @param branchCodeSeqNo
-	 * @param accountNumberCharType
-	 * @param accountNumberLength
-	 * @param accountNumberSeqNo
-	 * @param accountTypeCharTyoe
-	 * @param accountTypeLength
-	 * @param accountTypeSeqNo
-	 * @param nationalCheckDigitCharType
-	 * @param nationalCheckDigitLength
-	 * @param nationalCheckDigiSeqNo
 	 */
 	private void prepareCountry(final String countryCode,
-			String bankCodeCharType, String bankCodeLength, String bankCodeSeqNo,
-			String branchCodeCharType, String branchCodeLength, String branchCodeSeqNo,
-			String accountNumberCharType, String accountNumberLength, String accountNumberSeqNo,
-			String accountTypeCharTyoe, String accountTypeLength, String accountTypeSeqNo,
-			String nationalCheckDigitCharType, String nationalCheckDigitLength, String nationalCheckDigiSeqNo)
+			final String bankCodeCharType, final String bankCodeLength, final String bankCodeSeqNo,
+			final String branchCodeCharType, final String branchCodeLength, final String branchCodeSeqNo,
+			final String accountNumberCharType, final String accountNumberLength, final String accountNumberSeqNo,
+			final String accountTypeCharType, final String accountTypeLength, final String accountTypeSeqNo,
+			final String nationalCheckDigitCharType, final String nationalCheckDigitLength, final String nationalCheckDigiSeqNo)
 	{
 		final I_C_Country country = InterfaceWrapperHelper.create(ctx, I_C_Country.class, ITrx.TRXNAME_None);
 		country.setCountryCode(countryCode);
@@ -136,7 +119,7 @@ public class IBANValidationBLTest
 		country.setAccountNumberLength(accountNumberLength);
 		country.setAccountNumberSeqNo(accountNumberSeqNo);
 
-		country.setAccountTypeCharType(accountTypeCharTyoe);
+		country.setAccountTypeCharType(accountTypeCharType);
 		country.setAccountTypeLength(accountTypeLength);
 		country.setAccountTypeSeqNo(accountTypeSeqNo);
 
@@ -263,6 +246,39 @@ public class IBANValidationBLTest
 		assertThat(checkDigitMT).isNotEqualTo(1);
 		assertThat(checkDigitSK).isNotEqualTo(1);
 		assertThat(checkDigitRO).isNotEqualTo(1);
+	}
+
+	@Test
+	public void test_BBAN()
+	{
+		final IBANValidationBL ibanValidationBL = new IBANValidationBL();
+
+		ibanValidationBL.validate("CZ6508000000192000145399");
+		ibanValidationBL.validate("AD1200012030200359100099");
+		ibanValidationBL.validate("AT611904300234573200");
+		ibanValidationBL.validate("DE45500105170041262311");
+		ibanValidationBL.validate("CH9300762011623852956");
+		ibanValidationBL.validate("FR1420041010050500013M02605");
+		ibanValidationBL.validate("CZ6508000000192000145398");
+		ibanValidationBL.validate("HR1210010051863000159");
+		ibanValidationBL.validate("CY17002001280000001200527601");
+		ibanValidationBL.validate("DK5000400440116242");
+		ibanValidationBL.validate("EE382200221020145684");
+		ibanValidationBL.validate("HU42117730161111101800000001");
+		ibanValidationBL.validate("LT121000011101001001");
+		ibanValidationBL.validate("LU120010001234567890");
+		ibanValidationBL.validate("PL10105000997603123456789122");
+		ibanValidationBL.validate("PT50002700000001234567832");
+		ibanValidationBL.validate("SI56192001234567891");
+		ibanValidationBL.validate("ES7921000813610123456788");
+		ibanValidationBL.validate("SE7280000810340009783241");
+		ibanValidationBL.validate("GR9608100010000001234567891");
+		ibanValidationBL.validate("MC5811222000010123456789031");
+		ibanValidationBL.validate("BG18RZBB91550123456788");
+		ibanValidationBL.validate("LV97HABA0012345678911");
+		ibanValidationBL.validate("MT31MALT01100000000000000000122");
+		ibanValidationBL.validate("SK8975000000000012345670");
+		ibanValidationBL.validate("RO09BCYP0000001234567891");
 	}
 
 }

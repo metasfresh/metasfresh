@@ -15,7 +15,7 @@ where countrycode  =  'AD'
 
 -- CZ
 update c_country  set   bankcodelength  = 4		 	, bankcodechartype ='n'					, bankcodeseqno  = 10
-                      , accountnumberlength = 10 	, accountnumberchartype ='n' 			, accountnumberseqno =20                       
+                      , accountnumberlength = 16 	, accountnumberchartype ='n' 			, accountnumberseqno =20
                       , branchcodelength = null	 	, branchcodechartype = null				, branchcodeseqno  = null
                       , nationalcheckdigitlength = null, nationalcheckdigitchartype = null	, nationalcheckdigitseqno = null
 where countrycode  =  'CZ'
