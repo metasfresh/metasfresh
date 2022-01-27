@@ -25,15 +25,15 @@ package de.metas.camel.externalsystems.core.to_mf;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
+import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonError;
-import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -47,7 +47,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
@@ -141,45 +140,9 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			throw new RuntimeException("No PInstanceId available!");
 		}
 
-		final JsonErrorItem errorItem = getErrorItem(exchange);
+		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
 		exchange.getIn().setBody(JsonError.ofSingleItem(errorItem));
-	}
-
-	@NonNull
-	private JsonErrorItem getErrorItem(@NonNull final Exchange exchange)
-	{
-
-		final JsonErrorItem.JsonErrorItemBuilder errorBuilder = JsonErrorItem
-				.builder()
-				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
-
-		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
-														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));
-		if (exception == null)
-		{
-			errorBuilder.message("No error message available!");
-	}
-		else
-		{
-			final StringWriter sw = new StringWriter();
-			final PrintWriter pw = new PrintWriter(sw);
-			exception.printStackTrace(pw);
-
-			errorBuilder.message(exception.getLocalizedMessage());
-			errorBuilder.stackTrace(sw.toString());
-
-			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null && exception.getStackTrace().length > 0
-					? Optional.ofNullable(exception.getStackTrace()[0])
-					: Optional.empty();
-
-			sourceStackTraceElem.ifPresent(stackTraceElement -> {
-				errorBuilder.sourceClassName(sourceStackTraceElem.get().getClassName());
-				errorBuilder.sourceMethodName(sourceStackTraceElem.get().getMethodName());
-			});
-		}
-
-		return errorBuilder.build();
 	}
 
 	@NonNull
@@ -219,7 +182,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			throw new RuntimeException("No PInstanceId available!");
 		}
 
-		final JsonErrorItem errorItem = getErrorItem(exchange);
+		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
 		final StringBuilder logMessageBuilder = new StringBuilder();
 
