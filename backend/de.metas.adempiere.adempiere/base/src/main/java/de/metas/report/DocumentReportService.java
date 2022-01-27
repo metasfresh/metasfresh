@@ -141,10 +141,8 @@ public class DocumentReportService
 
 			advisor = getAdvisorByTableName(requestEffective.getDocumentRef().getTableName());
 		}
-
 		else
 		{
-
 			final org.compiere.model.I_AD_Archive lastArchiveRecord = archiveBL
 					.getLastArchive(requestEffective.getDocumentRef())
 					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
