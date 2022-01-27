@@ -130,7 +130,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
 		if (docType == null)
 		{
-			logger.debug("The given invoice's DocSubType=null is not related to this export client implementation; -> return false");
+			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocSubType());
 			return false;
 		}
 		if (HealthCareInvoiceDocSubType.EA.equals(docType))
@@ -177,8 +177,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				final XmlRequest xRequest = importConverter.toCrossVersionRequest(attachment.getDataAsInputStream());
 				final XmlRequest xAugmentedRequest = augmentRequest(xRequest, invoice);
 
+				final XmlRequest xRequestAugmentedByConverter = exportConverter.augmentRequest(xAugmentedRequest, invoice.getBiller().getId());
 				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-				exportConverter.fromCrossVersionRequest(xAugmentedRequest, outputStream);
+				exportConverter.fromCrossVersionRequest(xRequestAugmentedByConverter, outputStream);
 
 				final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 

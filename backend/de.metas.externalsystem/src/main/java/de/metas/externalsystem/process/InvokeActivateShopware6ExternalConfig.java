@@ -62,7 +62,7 @@ public class InvokeActivateShopware6ExternalConfig extends InvokeActivateExterna
 				.build();
 
 		final ExternalSystemParentConfig recordUpdated = parentConfig.toBuilder()
-				.isActive(true)
+				.active(true)
 				.childConfig(childConfig)
 				.build();
 
