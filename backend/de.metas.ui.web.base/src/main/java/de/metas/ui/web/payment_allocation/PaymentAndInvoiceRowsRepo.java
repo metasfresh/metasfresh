@@ -233,6 +233,7 @@ public class PaymentAndInvoiceRowsRepo
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.docTypeName(docTypeBL.getNameById(invoiceToAllocate.getDocTypeId()))
 				.documentNo(invoiceToAllocate.getDocumentNo())
+				.poReference(invoiceToAllocate.getPoReference())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
 				.docBaseType(invoiceToAllocate.getDocBaseType())
