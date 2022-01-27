@@ -28,8 +28,9 @@ KURZBEZEICHNUNG | `Name` | Y | JsonRequestBPartner.name | ---- |
 KURZBEZEICHNUNG | `CompanyName ` | Y | JsonRequestBPartner.companyName | ---- |
 INAKTIV | `IsActive` | Y |  JsonRequestBPartner.isActive | `INAKTIV` == `1` => `isActive` == `false`; `INAKTIV` == `0` => `isActive` == `true`|
 ---- | `IsVendor` | Y |  JsonRequestBPartner.vendor | manually set `true` for this flow |
+MKREDID | `Value` | Y | JsonRequestBPartner.code | ---- |
 ---- | `AD_Org_ID` | Y |  JsonRequestComposite.orgCode | `AD_Org_ID` computed from `login` orgCode |
-MKREDID | `S_ExternalReference`.`externalReference` -> `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | `MKREDID` -> in format: `ext-GRSSignum-[MKREDID]`|
+METASFRESHID | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier| |
 ---- | ---- | ---- | syncAdvice | manually set as `CREATE_OR_MERGE` | 
 
 **GRSSignum => metasfresh RawMaterials**
@@ -57,7 +58,8 @@ KRED  | ----- | ---- |  JsonRequestProduct.bpartnerProductItem List | see detail
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note | 
 ---- | ---- | ---- | ---- | ---- |
-KRED.MKREDID | `C_BPartner_ID` | Y | JsonRequestBPartnerProductUpsert.bpartnerIdentifier | `MKREDID` -> in format: `ext-GRSSignum-[MKREDID]` |
+KRED.MKREDID | `C_BPartner.Value` | N | - | |
+KRED.METASFRESHID | `C_BPartner_ID` | Y | JsonRequestBPartnerProductUpsert.bpartnerIdentifier | |
 ---- | `UsedForVendor` | Y | JsonRequestBPartnerProductUpsert.usedForVendor | manually set to `true` |
 KRED.STDKRED | `IsCurrentVendor` | Y | JsonRequestBPartnerProductUpsert.currentVendor | `KRED.STDKRED` == `1` => `true`; `KRED.STDKRED` == `0` => `false` | 
 KRED.LIEFERANTENFREIGABE | `IsExcludedFromPurchase` | N | JsonRequestBPartnerProductUpsert.excludedFromPurchase | `KRED.LIEFERANTENFREIGABE` == `1` => `excludedFromPurchase = false`; `KRED.LIEFERANTENFREIGABE` == `0` => `excludedFromPurchase = true`, default value `KRED.LIEFERANTENFREIGABE` == `0`| 
@@ -73,7 +75,7 @@ KRED.INAKTIV | `IsActive` | N | JsonRequestBPartnerProductUpsert.active | `KRED.
     * first the process will invoke `api/v2/products/orgCode` with `JsonRequestProductUpsert` as payload to upsert the product ( making sure the latest version of that product is present in metasfresh)
     * then it invokes the endpoint `api/v2/bom/version/{orgCode}` with `JsonBOMCreateRequest` as payload to push the actual bom formula
 
-1.`JsonBOM` - all `metasfresh-column` values refer to `M_Product` columns
+1.`JsonBOM` - all `metasfresh-column` values refer to `M_Product` columns except the last one that refers to `C_BPartner_Product`
 
 * metasfresh-json => `JsonRequestProductUpsert`
 
@@ -88,6 +90,7 @@ INAKTIV  | `IsActive` | Y |  JsonRequestProduct.isActive | `INAKTIV` == `1` => `
 ARTNRID  | `S_ExternalReference`.`externalReference`  -> `M_Product_ID` | Y |  JsonRequestProductUpsertItem.productIdentifier | `ARTNRID` -> in format: `ext-GRSSignum-[ARTNRID]` |
 GTIN | `gtin` | N | `gtin` |  | 
 ---- | ---- | ---- | syncAdvise | manually set as `CREATE_OR_MERGE` | 
+METASFRESHID | `C_BPartner_Product.C_BPartner_ID` | Y | JsonRequestBPartnerProductUpsert.bpartnerIdentifier | ---- |
 
 2.If there is no `PP_Product_BOMVersions` for the given `M_Product_Id`, the process will create one (metasfresh side)
 
@@ -170,11 +173,15 @@ ATTRIBUTES.value | `M_HU_Attribute.Value` | Y | JsonHUAttributes.value  | attrib
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
    ---- | ---- | ---- | ---- | ---- |
 FLAG | ---- | Y | ---- | GRSSignum route flag |
-MKREDID | `S_ExternalReference`.`externalReference` -> `C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId.value | `C_BPartner_ID` record from metasfresh  |
+MKREDID | `C_Bpartner.Value` | Y | JsonResponseBPartner.code | ---- |
 KURZBEZEICHNUNG | `C_Bpartner.Name ` | Y | JsonResponseBPartner.name + JsonResponseBPartner.name2 + JsonResponseBPartner.name3 | ---- |
 INAKTIV | `C_Bpartner.IsActive` | Y |  JsonRequestBPartner.isActive | `isActive` == `false` => `INAKTIV` == `1`; `isActive` == `true` => `INAKTIV` == `0`|
 MID | `ExternalSystem_Config_GRSSignum.TenantId` | N |  JsonExternalSystemRequest.parameters.TenantId | ---- |
 NAMENSZUSATZ | `C_Bpartner.Name2` | N |  JsonRequestBPartner.name2 | ---- |
+METASFRESHID | `C_Bpartner.C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId | ---- |
+KREDITORENNR | `C_Bpartner.CreditorID` | N | JsonResponseBPartner.creditorId | ---- |
+DEBITORRENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
+METASFRESHURL | ---- | N | JsonResponseBPartner.metasfreshUrl | `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}` |
 ADRESSE 1 | `C_BPartner_Location.C_Location.Address1` | N |  JsonResponseLocation.address1 | ---- |
 ADRESSE 2 | `C_BPartner_Location.C_Location.Address2` | N |  JsonResponseLocation.address2 | ---- |
 ADRESSE 3 | `C_BPartner_Location.C_Location.Address3` | N |  JsonResponseLocation.address3 | ---- |

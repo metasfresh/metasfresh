@@ -30,11 +30,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @JsonDeserialize(builder = JsonBPartnerProduct.JsonBPartnerProductBuilder.class)
 public class JsonBPartnerProduct
 {
-	@NonNull
+	@Nullable
 	@JsonProperty("MKREDID")
 	String bpartnerId;
 
@@ -47,17 +49,23 @@ public class JsonBPartnerProduct
 	@JsonProperty("INAKTIV")
 	boolean isActive;
 
+	@Nullable
+	@JsonProperty("METASFRESHID")
+	String bPartnerMetasfreshId;
+
 	@Builder
 	public JsonBPartnerProduct(
-			@JsonProperty("MKREDID") final @NonNull String bpartnerId,
+			@JsonProperty("MKREDID") final @Nullable String bpartnerId,
 			@JsonProperty("STDKRED") final @NonNull Integer currentVendor,
 			@JsonProperty("LIEFERANTENFREIGABE") final int approvedForPurchase,
-			@JsonProperty("INAKTIV") final int inactive)
+			@JsonProperty("INAKTIV") final int inactive,
+			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId)
 	{
 		this.bpartnerId = bpartnerId;
 		this.currentVendor = currentVendor == 1;
 		this.isExcludedFromPurchase = approvedForPurchase != 1;
 		this.isActive = inactive != 1;
+		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

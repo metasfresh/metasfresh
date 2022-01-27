@@ -29,7 +29,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +37,6 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.eevolution.api.ProductBOMLineId;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -52,14 +51,11 @@ public class OrderLineCandidate
 	@NonNull
 	ImmutableAttributeSet attributes;
 
-	@NonNull
-	UomId uomId;
-
 	@Nullable
 	HUPIItemProductId piItemProductId;
 
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
 
 	@Nullable
 	ShipmentAllocationBestBeforePolicy bestBeforePolicy;

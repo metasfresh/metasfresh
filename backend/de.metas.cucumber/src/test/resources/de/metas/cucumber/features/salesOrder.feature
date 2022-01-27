@@ -126,6 +126,7 @@ Feature: sales order
       | ppbl_67_1  | ppb_67                       | p_31                    | 3      | PCE               | CO            | 2021-04-01 | 100  |
       | ppbl_67_2  | ppb_67                       | p_32                    | 4      | PCE               | CO            | 2021-04-01 | 200  |
       | ppbl_67_3  | ppb_67_1                     | p_31_1                  | 5      | PCE               | CO            | 2021-04-01 | 100  |
+      | ppbl_67_4  | ppb_67_1                     | p_32                    | 2      | PCE               | CO            | 2021-04-01 | 200  |
     And metasfresh contains C_BPartners:
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |
@@ -154,6 +155,6 @@ Feature: sales order
       | o_3                      | false   | POO         |            |
     And the purchase order with document subtype '' linked to order 'o_3' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
-      | 150         | 0          | p_31_1                  |
-      | 40         | 0          | p_32                    |
+      | 150        | 0          | p_31_1                  |
+      | 100        | 0          | p_32                    |
     And the sales order identified by 'o_3' is not closed

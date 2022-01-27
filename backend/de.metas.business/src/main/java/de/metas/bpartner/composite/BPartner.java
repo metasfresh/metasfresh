@@ -80,6 +80,8 @@ public class BPartner
 	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
 	public static final String REFERRER = "referrer";
 	public static final String CAMPAIGN_ID = "campaignId";
+	public static final String CREDITOR_ID = "creditorId";
+	public static final String DEBTOR_ID = "debtorId";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -160,6 +162,9 @@ public class BPartner
 	private final String referrer;
 	@Nullable private final CampaignId campaignId;
 
+	private final Integer creditorId;
+	private final Integer debtorId;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
@@ -202,7 +207,9 @@ public class BPartner
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
 			@Nullable final String referrer,
-			@Nullable final CampaignId campaignId)
+			@Nullable final CampaignId campaignId,
+			@Nullable final Integer creditorId,
+			@Nullable final Integer debtorId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -245,6 +252,9 @@ public class BPartner
 		this.excludeFromPromotions = excludeFromPromotions;
 		this.referrer = referrer;
 		this.campaignId = campaignId;
+
+		this.creditorId = creditorId;
+		this.debtorId = debtorId;
 	}
 
 	/**

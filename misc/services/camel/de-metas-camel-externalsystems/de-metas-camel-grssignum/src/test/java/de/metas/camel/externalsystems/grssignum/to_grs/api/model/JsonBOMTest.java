@@ -48,6 +48,7 @@ public class JsonBOMTest
 				+ "    	\"INAKTIV\": 0,\n"
 				+ " 	\"VERLUST\":15,\n"
 				+ "		\"GTIN\":\"gtin\",\n"
+				+ "     \"METASFRESHID\":\"12345\",\n"
 				+ "		\"DETAIL\": [\n "
 				+ "        {\n"
 				+ "				\"ARTNR\": \"productValue1\",\n"
@@ -80,6 +81,7 @@ public class JsonBOMTest
 				.inactive(0)
 				.scrap(BigDecimal.valueOf(15))
 				.gtin("gtin")
+				.bPartnerMetasfreshId("12345")
 				.bomLines(ImmutableList.of(expectedBOMLine))
 				.build();
 

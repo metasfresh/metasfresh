@@ -32,7 +32,7 @@
           "syncAdvise": null,
           "bpartnerProductItems": [
             {
-              "bpartnerIdentifier": "ext-GRSSignum-vendorId",
+              "bpartnerIdentifier": "1",
               "bpartnerSet": true,
               "active": false,
               "activeSet": true,
@@ -66,7 +66,7 @@
               "usedForVendorSet": true
             },
             {
-              "bpartnerIdentifier": "ext-GRSSignum-vendorId2",
+              "bpartnerIdentifier": "2",
               "bpartnerSet": true,
               "active": true,
               "activeSet": true,
