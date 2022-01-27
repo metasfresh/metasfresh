@@ -71,7 +71,7 @@ public class C_OrderLine_StepDef
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -88,7 +88,7 @@ public class C_OrderLine_StepDef
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
-			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." +I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
 			final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
 			orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
 

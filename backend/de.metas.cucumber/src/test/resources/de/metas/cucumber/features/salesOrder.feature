@@ -70,7 +70,7 @@ Feature: sales order
       | o_2        | true    | endcustomer_2            | 2021-04-17  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |OPT.C_BPartner_ID.Identifier |
-      | ol_2       | o_2                   | p_2                     | 10         |shiptopartner_2          |
+      | ol_2       | o_2                   | p_2                     | 10         |shiptopartner_2              |
     And the order identified by o_2 is completed
     And after not more than 10s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -83,7 +83,7 @@ Feature: sales order
       | o_2                      | false   | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |OPT.C_BPartner_ID.Identifier |
-      | 10         | 100        | p_2                     |shiptopartner_2          |
+      | 10         | 100        | p_2                     |shiptopartner_2              |
     And the sales order identified by 'o_2' is closed
     And the shipment schedule identified by s_ol_2 is processed after not more than 10 seconds
 
@@ -109,29 +109,29 @@ Feature: sales order
       | pp_36       | plv_36                           | p_26                    | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier       | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_26   | Endcustomer_726  | N            | Y              | ps_26                          |
-      | endcustomer_36   | Endcustomer_36   | N            | Y              | ps_26                          |
-      | vendor_26        | vendor_726       | Y            | Y              | ps_26                          |
-      | shiptopartner_26 | Shiptopartner_26 | Y            | Y              | ps_26                          |
+      | endcustomer_26   | Endcustomer_726  | N            | Y              | ps_26                         |
+      | endcustomer_36   | Endcustomer_36   | N            | Y              | ps_26                         |
+      | vendor_26        | vendor_726       | Y            | Y              | ps_26                         |
+      | shiptopartner_26 | Shiptopartner_26 | Y            | Y              | ps_26                         |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_26                 | p_26                     |
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
-      | o_26        | true    | endcustomer_26            | 2021-04-17  | true       | endcustomer_36                   |
+      | o_26        | true    | endcustomer_26           | 2021-04-17  | true       | endcustomer_36                      |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier  | M_Product_ID.Identifier  | QtyEntered |OPT.C_BPartner_ID.Identifier |
-      | ol_26       | o_26                   | p_26                     | 10         |shiptopartner_26          |
+      | ol_26       | o_26                   | p_26                     | 10         |shiptopartner_26             |
     And the order identified by o_26 is completed
     And after not more than 10s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_ol_26     | ol_26                      | N             |
+      | s_ol_26     | ol_26                     | N             |
     When generate PO from SO is invoked with parameters:
       | C_BPartner_ID.Identifier  | C_Order_ID.Identifier | PurchaseType |
-      | vendor_26                 | o_26                   | Mediated     |
+      | vendor_26                 | o_26                  | Mediated     |
     Then the order is created:
       | Link_Order_ID.Identifier  | IsSOTrx | OPT.DropShip_BPartner_ID.Identifier | OPT.IsDropShip | DocBaseType | DocSubType | OPT.DocStatus |
-      | o_26                      | false   | shiptopartner_26                 | true       | POO         | MED        | DR            |
+      | o_26                      | false   | shiptopartner_26                    | true       | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_26' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier  |OPT.C_BPartner_ID.Identifier |
       | 10         | 100        | p_26                     |shiptopartner_26          |

@@ -180,10 +180,10 @@ public class C_Order_StepDef
 				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
 			}
 
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsDropShip);
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnName(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 
-			final int partnerId = DataTableUtil.extractIntForColumnName(tableRow, I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
+			final int partnerId = DataTableUtil.extractIntForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
 			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
 		}
 	}
