@@ -46,6 +46,11 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return of(ImmutableRowsIndex.of(rows));
 	}
 
+	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final List<T> rows, @NonNull final Predicate<T> filter)
+	{
+		return of(ImmutableRowsIndex.of(rows, filter));
+	}
+
 	public static <T extends IViewRow> SynchronizedRowsIndexHolder<T> of(@NonNull final ImmutableRowsIndex<T> initialRowIndex)
 	{
 		return new SynchronizedRowsIndexHolder<>(initialRowIndex);

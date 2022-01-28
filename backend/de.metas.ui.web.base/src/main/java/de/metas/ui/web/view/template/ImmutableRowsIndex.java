@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -45,33 +46,64 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 {
 	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows)
 	{
+		return of(rows, row -> true);
+	}
+
+	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows, @NonNull final Predicate<T> filter)
+	{
 		final ImmutableList<DocumentId> initialRowIds = rows.stream()
 				.map(IViewRow::getId)
 				.collect(ImmutableList.toImmutableList());
 
-		return new ImmutableRowsIndex<>(initialRowIds, rows);
+		return new ImmutableRowsIndex<>(initialRowIds, rows, filter);
 	}
 
 	private final ImmutableList<DocumentId> initialRowIds;
-	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
-	private final ImmutableMap<DocumentId, T> rowsById;
+	private final ImmutableList<DocumentId> allRowIdsInOrder;
+	private final ImmutableMap<DocumentId, T> allRowsById;
+	private final Predicate<T> filter;
+	private final ImmutableList<DocumentId> filteredRowIdsInOrder;
 
 	private ImmutableRowsIndex(
 			@NonNull final ImmutableList<DocumentId> initialRowIds,
-			@NonNull final List<T> rows)
+			@NonNull final List<T> rowsInOrder,
+			@NonNull final Predicate<T> filter)
 	{
 		this.initialRowIds = initialRowIds;
 
-		rowIds = rows.stream()
+		this.allRowIdsInOrder = rowsInOrder.stream()
+				.map(IViewRow::getId)
+				.collect(ImmutableList.toImmutableList());
+		this.allRowsById = Maps.uniqueIndex(rowsInOrder, IViewRow::getId);
+
+		this.filter = filter;
+		this.filteredRowIdsInOrder = rowsInOrder.stream()
+				.filter(filter)
 				.map(IViewRow::getId)
 				.collect(ImmutableList.toImmutableList());
 
-		rowsById = Maps.uniqueIndex(rows, IViewRow::getId);
+	}
+
+	private ImmutableRowsIndex(
+			@NonNull final ImmutableRowsIndex<T> from,
+			@NonNull final Predicate<T> filter)
+	{
+		this.initialRowIds = from.initialRowIds;
+
+		this.allRowIdsInOrder = from.allRowIdsInOrder;
+		this.allRowsById = from.allRowsById;
+
+		this.filter = filter;
+		this.filteredRowIdsInOrder = allRowIdsInOrder.stream()
+				.map(allRowsById::get)
+				.filter(filter)
+				.map(IViewRow::getId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Stream<T> streamAllRows()
 	{
-		return rowIds.stream().map(rowsById::get);
+		return filteredRowIdsInOrder.stream().map(allRowsById::get);
 	}
 
 	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows()
@@ -82,7 +114,7 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 
 	public boolean isRelevantForRefreshing(final DocumentId rowId)
 	{
-		return rowIds.contains(rowId)
+		return filteredRowIdsInOrder.contains(rowId)
 				|| initialRowIds.contains(rowId);
 	}
 
@@ -93,8 +125,8 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		final LinkedHashMap<DocumentId, T> newRowsToAdd = newRows.stream()
 				.collect(GuavaCollectors.toMapByKey(LinkedHashMap::new, IViewRow::getId));
 
-		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
-		for (final DocumentId rowId : this.rowIds)
+		final ArrayList<T> resultRows = new ArrayList<>(filteredRowIdsInOrder.size());
+		for (final DocumentId rowId : this.filteredRowIdsInOrder)
 		{
 			if (oldRowIds.contains(rowId))
 			{
@@ -106,18 +138,18 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			}
 			else
 			{
-				resultRows.add(rowsById.get(rowId));
+				resultRows.add(allRowsById.get(rowId));
 			}
 		}
 
 		resultRows.addAll(newRowsToAdd.values());
 
-		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows, filter);
 	}
 
 	public ImmutableRowsIndex<T> addingRowIfEmpty(@NonNull final T rowToAdd)
 	{
-		if (rowsById.isEmpty())
+		if (allRowsById.isEmpty())
 		{
 			return addingRow(rowToAdd);
 		}
@@ -129,9 +161,9 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 
 	public ImmutableRowsIndex<T> addingRow(@NonNull final T rowToAdd)
 	{
-		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		final ArrayList<T> resultRows = new ArrayList<>(filteredRowIdsInOrder.size());
 		boolean added = false;
-		for (final DocumentId rowId : this.rowIds)
+		for (final DocumentId rowId : this.filteredRowIdsInOrder)
 		{
 			if (rowId.equals(rowToAdd.getId()))
 			{
@@ -140,7 +172,7 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			}
 			else
 			{
-				resultRows.add(rowsById.get(rowId));
+				resultRows.add(allRowsById.get(rowId));
 			}
 		}
 
@@ -149,7 +181,7 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			resultRows.add(rowToAdd);
 		}
 
-		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows, filter);
 	}
 
 	public ImmutableRowsIndex<T> changingRows(
@@ -162,10 +194,10 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		}
 
 		boolean changed = false;
-		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
-		for (final DocumentId rowId : this.rowIds)
+		final ArrayList<T> resultRows = new ArrayList<>(filteredRowIdsInOrder.size());
+		for (final DocumentId rowId : this.filteredRowIdsInOrder)
 		{
-			final T row = rowsById.get(rowId);
+			final T row = allRowsById.get(rowId);
 			if (rowIdsToChange.contains(rowId))
 			{
 				final T rowChanged = rowMapper.apply(row);
@@ -186,7 +218,7 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		}
 
 		return changed
-				? new ImmutableRowsIndex<>(this.initialRowIds, resultRows)
+				? new ImmutableRowsIndex<>(this.initialRowIds, resultRows, filter)
 				: this;
 	}
 
@@ -194,13 +226,13 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			@NonNull final DocumentId rowIdToChange,
 			@NonNull final UnaryOperator<T> rowMapper)
 	{
-		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		final ArrayList<T> resultRows = new ArrayList<>(filteredRowIdsInOrder.size());
 		boolean changed = false;
-		for (final DocumentId rowId : this.rowIds)
+		for (final DocumentId rowId : this.filteredRowIdsInOrder)
 		{
 			if (rowId.equals(rowIdToChange))
 			{
-				final T row = rowsById.get(rowId);
+				final T row = allRowsById.get(rowId);
 				final T rowChanged = rowMapper.apply(row);
 				if (Objects.equals(row, rowChanged))
 				{
@@ -213,7 +245,7 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			}
 			else
 			{
-				resultRows.add(rowsById.get(rowId));
+				resultRows.add(allRowsById.get(rowId));
 			}
 		}
 
@@ -222,26 +254,26 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 			return this;
 		}
 
-		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows, filter);
 	}
 
 	public ImmutableRowsIndex<T> removingRowId(@NonNull final DocumentId rowIdToRemove)
 	{
-		if (!rowsById.containsKey(rowIdToRemove))
+		if (!allRowsById.containsKey(rowIdToRemove))
 		{
 			return this;
 		}
 
-		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
-		for (final DocumentId rowId : this.rowIds)
+		final ArrayList<T> resultRows = new ArrayList<>(filteredRowIdsInOrder.size());
+		for (final DocumentId rowId : this.filteredRowIdsInOrder)
 		{
 			if (!rowId.equals(rowIdToRemove))
 			{
-				resultRows.add(rowsById.get(rowId));
+				resultRows.add(allRowsById.get(rowId));
 			}
 		}
 
-		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows, filter);
 	}
 
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
@@ -254,7 +286,8 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		}
 		else if (rowIds.isAll())
 		{
-			return Stream.concat(this.rowIds.stream(), this.initialRowIds.stream())
+			return Stream.concat(this.filteredRowIdsInOrder.stream(), this.initialRowIds.stream())
+					.distinct()
 					.map(idMapper)
 					.collect(ImmutableSet.toImmutableSet());
 		}
@@ -265,5 +298,12 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 					.map(idMapper)
 					.collect(ImmutableSet.toImmutableSet());
 		}
+	}
+
+	public ImmutableRowsIndex<T> withFilter(@NonNull final Predicate<T> filter)
+	{
+		return Objects.equals(this.filter, filter)
+				? this
+				: new ImmutableRowsIndex<>(this, filter);
 	}
 }
