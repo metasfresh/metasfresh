@@ -74,8 +74,8 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 				+ "<EDI_Message>"
 				+ "   <EDI_Imp_C_OLCands>"
-				+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
-				+ "      <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
+				+ "      <EDI_Imp_C_OLCand><POReference>PORef</POReference><QtyEntered>10</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
+				+ "      <EDI_Imp_C_OLCand><POReference>PORef</POReference><QtyEntered>20</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
 				+ "   </EDI_Imp_C_OLCands>"
 				+ "</EDI_Message>";
 
@@ -89,7 +89,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		final var string1 = metasfreshOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(string1).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"PORef_filename\">"
 						+ "    <AD_DataDestination_ID>"
 						+ "        <InternalName>ecosio-dest-internalname</InternalName>"
 						+ "    </AD_DataDestination_ID>"
@@ -98,13 +98,14 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <DeliveryRule>F</DeliveryRule>"
 						+ "    <DeliveryViaRule>S</DeliveryViaRule>"
 						+ "    <QtyEntered>10</QtyEntered>"
+						+ "    <POReference>PORef</POReference>"
 						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
 
 		final var string2 = metasfreshOutputEndpoint.getExchanges().get(1).getIn().getBody(String.class);
 		assertThat(string2).isEqualToIgnoringWhitespace(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"filename\">"
+						+ "<EDI_Imp_C_OLCand AD_Client_Value=\"AD_Client.Value\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\" TrxName=\"PORef_filename\">"
 						+ "    <AD_DataDestination_ID>"
 						+ "        <InternalName>ecosio-dest-internalname</InternalName>"
 						+ "    </AD_DataDestination_ID>"
@@ -113,6 +114,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <DeliveryRule>F</DeliveryRule>"
 						+ "    <DeliveryViaRule>S</DeliveryViaRule>"
 						+ "    <QtyEntered>20</QtyEntered>"
+						+ "    <POReference>PORef</POReference>"
 						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
 	}
