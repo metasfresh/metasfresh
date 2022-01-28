@@ -29,7 +29,11 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
 	public static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
+	public static final String SYSCONFIG_Fallback_PreparationDate_Offset = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset";
+
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -112,7 +116,10 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		}
 		else if (isUseFallback)
 		{
-			order.setPreparationDate(order.getDatePromised());
+			int offset = sysConfigBL.getIntValue(
+					SYSCONFIG_Fallback_PreparationDate_Offset,
+					0);
+			order.setPreparationDate(TimeUtil.addDays(order.getDatePromised(), offset));
 			order.setM_Tour_ID(-1);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
