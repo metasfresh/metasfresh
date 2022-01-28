@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.common.util.StringUtils;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -88,22 +87,16 @@ public class C_Order_StepDef
 	}
 
 	@Given("metasfresh contains C_Orders:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
-			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+			final int warehouseId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT.Warehouse_ID");
 
-			final String dropShipPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT."+COLUMNNAME_DropShip_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			I_C_BPartner dropShipPartner = null;
-			if (dropShipPartnerIdentifier!=null)
-			{
-				dropShipPartner = bpartnerTable.get(dropShipPartnerIdentifier);
-			}
-
+			final int dropShipPartnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT."+COLUMNNAME_DropShip_BPartner_ID);
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
@@ -112,7 +105,7 @@ public class C_Order_StepDef
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
-			order.setDropShip_BPartner_ID( dropShipPartner !=null ? dropShipPartner.getC_BPartner_ID() : -1 );
+			order.setDropShip_BPartner_ID(dropShipPartnerId);
 			order.setIsDropShip(isDropShip);
 
 			saveRecord(order);
@@ -195,7 +188,7 @@ public class C_Order_StepDef
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 
-			final int partnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
+			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
 			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
 		}
 	}

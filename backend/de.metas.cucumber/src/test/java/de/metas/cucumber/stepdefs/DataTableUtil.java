@@ -83,14 +83,14 @@ public class DataTableUtil
 		}
 	}
 
-	public int extractIntOrMinusOneForColumnName(
+	public int extractIntOrZeroForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		if (EmptyUtil.isBlank(string))
 		{
-			return -1;
+			return 0;
 		}
 		return extractIntForColumnName(dataTableRow, columnName);
 	}
