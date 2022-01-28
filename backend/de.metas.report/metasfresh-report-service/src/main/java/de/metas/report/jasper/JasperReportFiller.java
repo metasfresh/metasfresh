@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -54,7 +53,7 @@ final class JasperReportFiller
 	private static final transient Logger logger = LogManager.getLogger(JasperReportFiller.class);
 
 	private static final JasperReportFiller instance = new JasperReportFiller();
-	
+
 	private static final String SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_ACTIVE = "de.metas.report.jasper.JRSwapFileVirtualizer.active";
 	private static final String SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_MAX_SIZE = "de.metas.report.jasper.JRSwapFileVirtualizer.maxSize";
 	private static final String SYSCONFIG_JRSWAP_FILE_BLOCK_SIZE = "de.metas.report.jasper.JRSwapFile.blockSize";
@@ -65,7 +64,7 @@ final class JasperReportFiller
 	{
 		return instance;
 	}
-	
+
 	private JasperReportFiller()
 	{
 	}
@@ -74,7 +73,7 @@ final class JasperReportFiller
 			@NonNull final JasperReport jasperReport,
 			@NonNull final Map<String, Object> parameters,
 			@Nullable final Connection connection,
-			@NonNull final ClassLoader jasperLoader) throws JRException
+			@NonNull final ClassLoader jasperLoader)
 	{
 		final Thread currentThread = Thread.currentThread();
 		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
@@ -100,11 +99,12 @@ final class JasperReportFiller
 				return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
 			}
 		}
-		catch (final RuntimeException e)
+		catch (final Exception ex)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
+			throw AdempiereException.wrapIfNeeded(ex)
 					.appendParametersToMessage()
-					.setParameter("jasperReport.name", jasperReport.getName());
+					.setParameter("jasperReport.name", jasperReport.getName())
+					.setParameters(parameters);
 		}
 		finally
 		{
@@ -117,7 +117,7 @@ final class JasperReportFiller
 	private void setupAndPutVirtualizer(@NonNull final HashMap<String, Object> paramsFixed)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		
+
 		final boolean useSwap = sysConfigBL.getBooleanValue(SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_ACTIVE, true);
 		if (!useSwap)
 		{

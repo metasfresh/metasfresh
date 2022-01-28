@@ -120,8 +120,9 @@ public class RemoteServletInvoker implements IReportServer
 		{
 			final JsonReportError error = extractJsonReportError(ex);
 			throw new AdempiereException(error.getMessage(), ex)
-					.appendParametersToMessage()
-					.setParameter("URL", reportsUrl);
+					//.appendParametersToMessage()
+					.setParameters(error.getParameters())
+					.setParameter("reportsUrl", reportsUrl);
 		}
 		catch (final Exception ex)
 		{
