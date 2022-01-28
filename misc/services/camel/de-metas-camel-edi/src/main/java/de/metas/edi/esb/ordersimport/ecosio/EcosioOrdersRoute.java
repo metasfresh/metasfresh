@@ -27,6 +27,7 @@ import com.sun.istack.Nullable;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
@@ -93,6 +94,8 @@ public class EcosioOrdersRoute
 
 					olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 					olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
+
+					olCandXML.setDeliveryRule(COrderDeliveryRuleEnum.Force); // TODO: let metasfresh decide
 
 					rewriteDatePromised(olCandXML.getDatePromised());
 
