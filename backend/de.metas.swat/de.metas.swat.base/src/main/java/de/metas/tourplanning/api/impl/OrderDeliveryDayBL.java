@@ -33,6 +33,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
 	{
@@ -114,10 +116,9 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		}
 		else if (isUseFallback)
 		{
-			int offset = Services.get(ISysConfigBL.class)
-					.getIntValue(
-							SYSCONFIG_Fallback_PreparationDate_Offset, 0
-					);
+			int offset = sysConfigBL.getIntValue(
+					SYSCONFIG_Fallback_PreparationDate_Offset,
+					0);
 			order.setPreparationDate(TimeUtil.addDays(order.getDatePromised(), offset));
 			order.setM_Tour_ID(-1);
 			logger.debug(
