@@ -210,13 +210,15 @@ class TableWrapper extends PureComponent {
       parentView,
       deselectTableRows,
     } = this.props;
+
     const parentNode = event.target.parentNode;
     const closeIncluded =
       // is modal
       limitOnClickOutside
         ? // user is clicking within the document list component
-          parentNode.className.includes('document-list-wrapper') ||
-          event.target.className.includes('document-list-wrapper')
+          (parentNode.className.includes('document-list-wrapper') ||
+            event.target.className.includes('document-list-wrapper')) &&
+          !event.target.className.includes('document-list-is-included')
         : true;
 
     if (
