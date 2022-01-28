@@ -18,8 +18,11 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -45,6 +48,7 @@ import java.util.Map;
 
 public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 {
+
 	public static InvoiceRows cast(final IRowsData<InvoiceRow> rows)
 	{
 		return (InvoiceRows)rows;
@@ -62,7 +66,7 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 	{
 		this.repository = repository;
 		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedRowsIndexHolder.of(initialRows);
+		rowsHolder = SynchronizedRowsIndexHolder.of(initialRows, InvoiceRowFilter.ANY);
 	}
 
 	@Override
@@ -149,4 +153,10 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 	{
 		rowsHolder.compute(rows -> rows.changingRows(rowIds, InvoiceRow::withPreparedForAllocationUnset));
 	}
+
+	public void filter(@NonNull final InvoiceRowFilter filter)
+	{
+		rowsHolder.compute(rows -> rows.withFilter(filter));
+	}
+
 }

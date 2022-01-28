@@ -33,6 +33,7 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -40,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @ViewFactory(windowId = InvoicesViewFactory.WINDOW_ID_String)
@@ -52,6 +54,7 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PaymentsViewFactory paymentsViewFactory;
+	private final InvoicesViewFilters filtersFactory = new InvoicesViewFilters();
 
 	public InvoicesViewFactory(@NonNull final PaymentsViewFactory paymentsViewFactory)
 	{
@@ -77,6 +80,7 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 				.setWindowId(WINDOW_ID)
 				.setCaption(msgBL.translatable("InvoicesToAllocate"))
 				.setAllowOpeningRowDetails(false)
+				.setFilters(filtersFactory.getDescriptors())
 				.addElementsFromViewRowClass(InvoiceRow.class, viewDataType);
 
 		if (!isEnablePreparedForAllocationFlag())
@@ -91,6 +95,20 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	public InvoicesView createView(final @NonNull CreateViewRequest request)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public InvoicesView filterView(
+			final @NonNull IView view,
+			final @NonNull JSONFilterViewRequest filterViewRequest,
+			final @NonNull Supplier<IViewsRepository> viewsRepo)
+	{
+		final InvoicesView invoicesView = InvoicesView.cast(view);
+		final InvoiceRowFilter filter = filtersFactory.extractFilter(filterViewRequest);
+
+		invoicesView.filter(filter);
+
+		return invoicesView;
 	}
 
 	@Override

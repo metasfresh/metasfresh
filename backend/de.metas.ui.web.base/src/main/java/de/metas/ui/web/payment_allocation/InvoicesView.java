@@ -111,4 +111,9 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 		getRowsData().unmarkPreparedForAllocation(rowIds);
 		invalidateAll();
 	}
+
+	public void filter(@NonNull final InvoiceRowFilter filter)
+	{
+		getRowsData().filter(filter);
+	}
 }
