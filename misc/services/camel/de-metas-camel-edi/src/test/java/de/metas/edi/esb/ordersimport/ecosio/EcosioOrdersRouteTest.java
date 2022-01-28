@@ -96,6 +96,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <DeliveryRule>F</DeliveryRule>"
+						+ "    <DeliveryViaRule>S</DeliveryViaRule>"
 						+ "    <QtyEntered>10</QtyEntered>"
 						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
@@ -110,6 +111,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <DeliveryRule>F</DeliveryRule>"
+						+ "    <DeliveryViaRule>S</DeliveryViaRule>"
 						+ "    <QtyEntered>20</QtyEntered>"
 						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
