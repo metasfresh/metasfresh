@@ -102,8 +102,8 @@ public class EcosioOrdersRoute
 					olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 					olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
 
-					olCandXML.setDeliveryRule(COrderDeliveryRuleEnum.valueOf(defaultDeliveryRule)); // TODO: let metasfresh decide
-					olCandXML.setDeliveryViaRule(COrderDeliveryViaRuleEnum.valueOf(defaultDeliveryViaRule));
+					olCandXML.setDeliveryRule(COrderDeliveryRuleEnum.fromValue(defaultDeliveryRule)); // TODO: let metasfresh decide
+					olCandXML.setDeliveryViaRule(COrderDeliveryViaRuleEnum.fromValue(defaultDeliveryViaRule));
 
 					rewriteDatePromised(olCandXML.getDatePromised());
 
