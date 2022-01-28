@@ -118,4 +118,6 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(ShipmentScheduleId shipmentScheduleId);
 
 	ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> retrieveOnShipmentLineRecordsByScheduleIds(Set<ShipmentScheduleId> scheduleIds);
+
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedOnTheFlyAndNotDelivered(ShipmentScheduleId shipmentScheduleId, Class<T> modelClass);
 }

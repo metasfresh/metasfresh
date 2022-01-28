@@ -23,6 +23,7 @@
 package de.metas.async.asyncbatchmilestone;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
@@ -37,7 +38,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AsyncBatchMilestoneService
@@ -77,27 +80,34 @@ public class AsyncBatchMilestoneService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
-		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+		final List<I_C_Queue_WorkPackage> allLinkedWorkPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
 
-		final int workPackagesProcessedCount = (int)workPackages.stream()
-				.filter(I_C_Queue_WorkPackage::isProcessed)
-				.count();
-
-		final int workPackagesWithErrorCount = (int)workPackages.stream()
-				.filter(I_C_Queue_WorkPackage::isError)
-				.count();
-
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
-
-		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
-							" allWPSize: " + workPackages.size() +
-							" processedWPSize: " + workPackagesProcessedCount +
-							" erroredWPSize: " + workPackagesWithErrorCount +
-							" milestoneIdsToProcess:" + milestones.stream().map(AsyncBatchMilestone::getIdNotNull).collect(ImmutableSet.toImmutableSet()));
-
-		if (workPackagesFinalized >= workPackages.size())
+		for (final AsyncBatchMilestone milestone : milestones)
 		{
-			for (final AsyncBatchMilestone milestone : milestones)
+			final List<I_C_Queue_WorkPackage> currentWorkPackages = getWorkPackagesFromCurrentRun(allLinkedWorkPackages, milestone.getIdNotNull());
+
+			if (currentWorkPackages.isEmpty())
+			{
+				continue;
+			}
+
+			final int workPackagesProcessedCount = (int)currentWorkPackages.stream()
+					.filter(I_C_Queue_WorkPackage::isProcessed)
+					.count();
+
+			final int workPackagesWithErrorCount = (int)currentWorkPackages.stream()
+					.filter(I_C_Queue_WorkPackage::isError)
+					.count();
+
+			final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
+
+			Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatchMilestone for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
+									" allCurrentWPSize: " + currentWorkPackages.size() +
+									" processedWPSize: " + workPackagesProcessedCount +
+									" erroredWPSize: " + workPackagesWithErrorCount +
+									" milestoneIdsToProcess:" + milestones.stream().map(AsyncBatchMilestone::getIdNotNull).collect(ImmutableSet.toImmutableSet()));
+
+			if (workPackagesFinalized >= currentWorkPackages.size())
 			{
 				final AsyncBatchMilestone finalizedAsyncBatchMilestone = milestone.toBuilder().processed(true).build();
 
@@ -106,5 +116,31 @@ public class AsyncBatchMilestoneService
 				asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestone.getIdNotNull(), workPackagesWithErrorCount <= 0);
 			}
 		}
+	}
+
+	@NonNull
+	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(
+			@NonNull final List<I_C_Queue_WorkPackage> workPackages,
+			@NonNull final AsyncBatchMilestoneId asyncBatchMilestoneId)
+	{
+		final Optional<Instant> startMonitoringFrom = asyncBatchMilestoneObserver.getStartMonitoringTimestamp(asyncBatchMilestoneId);
+
+		if (!startMonitoringFrom.isPresent())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchMilestoneId: {} not monitored! Return empty list!", asyncBatchMilestoneId);
+			return ImmutableList.of();
+		}
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchMilestoneId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}!",
+														asyncBatchMilestoneId, startMonitoringFrom.get(), workPackages.size());
+
+		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
+				.filter(workPackage -> workPackage.getCreated().toInstant().getEpochSecond() >= startMonitoringFrom.get().getEpochSecond())
+				.collect(ImmutableList.toImmutableList());
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchMilestoneId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
+														asyncBatchMilestoneId, startMonitoringFrom.get(), filteredWPs.size());
+
+		return filteredWPs;
 	}
 }

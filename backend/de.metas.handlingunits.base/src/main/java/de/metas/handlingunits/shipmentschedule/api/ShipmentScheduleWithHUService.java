@@ -113,6 +113,7 @@ public class ShipmentScheduleWithHUService
 
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	@Value
 	@Builder
@@ -192,7 +193,7 @@ public class ShipmentScheduleWithHUService
 		{
 			final Quantity quantityToDeliverOverride = extractQuantityToDeliverOverrideOrNull(scheduleId2QtyToDeliverOverride, shipmentSchedule);
 			requestBuilder.quantityToDeliverOverride(quantityToDeliverOverride);
-			
+
 			final ImmutableList<ShipmentScheduleWithHU> candidatesForSched = createCandidatesForSched(requestBuilder, shipmentSchedule);
 			candidates.addAll(candidatesForSched);
 		}
@@ -212,7 +213,7 @@ public class ShipmentScheduleWithHUService
 		if (qtyToDeliverOverride != null)
 		{
 			quantityToDeliverOverride = Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-			
+
 		}
 		else
 		{
@@ -335,7 +336,17 @@ public class ShipmentScheduleWithHUService
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
-		Quantity remainingQtyToAllocate = qtyToDeliver;
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID());
+		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, huContext);
+
+		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
+
+		Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
+
+		if (remainingQtyToAllocate.signum() <= 0)
+		{
+			return result.build();
+		}
 
 		boolean firstHU = true;
 
@@ -445,8 +456,6 @@ public class ShipmentScheduleWithHUService
 
 		if (Check.isEmpty(candidatesForPick))
 		{
-			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-
 			// the parameter insists that we use qtyPicked records, but there aren't any
 			// => nothing to do, basically
 
@@ -521,8 +530,6 @@ public class ShipmentScheduleWithHUService
 	 */
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-
 		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.filter(this::isPickedOrShippedOrNoHU)
@@ -562,7 +569,6 @@ public class ShipmentScheduleWithHUService
 			return;
 		}
 
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		//
@@ -783,5 +789,22 @@ public class ShipmentScheduleWithHUService
 
 			return createShipmentSchedulesWithHU(request);
 		}
+	}
+
+	@NonNull
+	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final IHUContext huContext)
+	{
+		return shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class)
+				.stream()
+				.map(pickedLine -> ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(pickedLine, huContext))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Quantity getQtyToAllocate(@NonNull final List<ShipmentScheduleWithHU> alreadyAllocatedHUs, @NonNull final Quantity qtyToDeliver)
+	{
+		return alreadyAllocatedHUs.stream()
+				.map(ShipmentScheduleWithHU::getQtyPicked)
+				.reduce(qtyToDeliver, Quantity::subtract);
 	}
 }
