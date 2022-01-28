@@ -64,6 +64,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 
 public class C_Order_StepDef
@@ -96,12 +97,23 @@ public class C_Order_StepDef
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 
+			final String dropShipPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT."+COLUMNNAME_DropShip_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			I_C_BPartner dropShipPartner = null;
+			if (dropShipPartnerIdentifier!=null)
+			{
+				dropShipPartner = bpartnerTable.get(dropShipPartnerIdentifier);
+			}
+
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
+
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
+			order.setDropShip_BPartner_ID( dropShipPartner !=null ? dropShipPartner.getC_BPartner_ID() : -1 );
+			order.setIsDropShip(isDropShip);
 
 			saveRecord(order);
 
@@ -183,7 +195,7 @@ public class C_Order_StepDef
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 
-			final int partnerId = DataTableUtil.extractIntForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
+			final int partnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
 			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
 		}
 	}

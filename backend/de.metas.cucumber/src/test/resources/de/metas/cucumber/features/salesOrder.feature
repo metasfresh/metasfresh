@@ -117,8 +117,8 @@ Feature: sales order
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_26                 | p_26                     |
     And metasfresh contains C_Orders:
-      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
-      | o_26        | true    | endcustomer_26           | 2021-04-17  | true       | endcustomer_36                      |
+      | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
+      | o_26        | true    | endcustomer_26           | 2021-04-17  | true           | endcustomer_36                      |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier  | M_Product_ID.Identifier  | QtyEntered |OPT.C_BPartner_ID.Identifier |
       | ol_26       | o_26                   | p_26                     | 10         |shiptopartner_26             |
@@ -131,7 +131,7 @@ Feature: sales order
       | vendor_26                 | o_26                  | Mediated     |
     Then the order is created:
       | Link_Order_ID.Identifier  | IsSOTrx | OPT.DropShip_BPartner_ID.Identifier | OPT.IsDropShip | DocBaseType | DocSubType | OPT.DocStatus |
-      | o_26                      | false   | shiptopartner_26                    | true       | POO         | MED        | DR            |
+      | o_26                      | false   | shiptopartner_26                    | true           | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_26' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier  |OPT.C_BPartner_ID.Identifier |
       | 10         | 100        | p_26                     |shiptopartner_26          |
