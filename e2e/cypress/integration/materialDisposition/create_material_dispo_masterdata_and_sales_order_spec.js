@@ -1,5 +1,6 @@
 import { Product } from '../../support/utils/product';
-import { BillOfMaterial, BillOfMaterialLine } from '../../support/utils/billOfMaterial';
+import { BillOfMaterial } from '../../support/utils/billOfMaterial';
+import { BillOfMaterialVersion, BillOfMaterialVersionLine } from '../../support/utils/billOfMaterialVersion';
 import { appendHumanReadableNow, getLanguageSpecific } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { BPartner } from '../../support/utils/bpartner';
@@ -30,6 +31,9 @@ let poReference;
 let firstBomMainProductId;
 let secondBomMainProductId;
 
+let bomName1;
+let bomName2;
+
 it('Read the fixture', function() {
   cy.fixture('materialDisposition/create_material_dispo_masterdata_and_sales_order_spec.json').then(f => {
     const dateOverride = null;
@@ -52,8 +56,8 @@ it('Read the fixture', function() {
   });
 });
 
-describe('Create plant and warehouse', function() {
-  it('Create plant', function() {
+describe('Create plant and warehouse', function () {
+  it('Create plant', function () {
     cy.visitWindow('53004', 'NEW');
     cy.writeIntoStringField('Name', plantName);
     cy.selectInListField('S_ResourceType_ID', 'Produktionsressource');
@@ -64,7 +68,7 @@ describe('Create plant and warehouse', function() {
     cy.writeIntoStringField('PlanningHorizon', 1);
   });
 
-  it('Create warehouse', function() {
+  it('Create warehouse', function () {
     cy.fixture('misc/warehouse.json').then(warehouseJson => {
       Object.assign(new Warehouse(), warehouseJson)
         .setName(warehouseName)
@@ -75,8 +79,8 @@ describe('Create plant and warehouse', function() {
   });
 });
 
-describe('Create customer, main product and price', function() {
-  it('Create main product and price', function() {
+describe('Create customer, main product and price', function () {
+  it('Create main product and price', function () {
     Builder.createBasicPriceEntities(priceSystemName, null, priceListName, true);
     Builder.createBasicProductEntities(productCategoryName, productCategoryName, priceListName, mainProductName, /*productValue=*/ mainProductName, /*productType=*/ 'Item');
     cy.getCurrentWindowRecordId().then(id => {
@@ -84,7 +88,7 @@ describe('Create customer, main product and price', function() {
     });
   });
 
-  it('Create customer', function() {
+  it('Create customer', function () {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: customerName });
       bpartner.setCustomerPricingSystem(priceSystemName);
@@ -93,8 +97,8 @@ describe('Create customer, main product and price', function() {
   });
 });
 
-describe('Create products, BOMs and planning data', function() {
-  it("Create 1st BOM's component product which is 2nd BOM's main product", function() {
+describe('Create products, BOMs and planning data', function () {
+  it("Create 1st BOM's component product which is 2nd BOM's main product", function () {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(componentProductName)
@@ -110,15 +114,37 @@ describe('Create products, BOMs and planning data', function() {
     });
   });
 
-  describe('Create products, BOMs and planning data', function() {
-    describe('Create and verify 1st BOM', function() {
-      it('Create 1st BOM', function() {
+  it("Create 2nd BOM's component product", function () {
+    cy.fixture('product/simple_product.json').then((productJson) => {
+      Object.assign(new Product(), productJson)
+        .setName(secondComponentProductName)
+        .setProductCategory(productCategoryName)
+        .setStocked(true)
+        .setPurchased(false)
+        .setSold(false)
+        .setDescription(`Component of ${secondBomName}`)
+        .apply();
+    });
+  });
+
+  it('Create BOMs and set their products', function () {
+    bomName1 = appendHumanReadableNow(`${mainProductName}_BOM`, null);
+    bomName2 = appendHumanReadableNow(`${secondComponentProductName}_BOM`, null);
+
+    Object.assign(new BillOfMaterial(), {}).setName(bomName1).setProduct(mainProductName).apply();
+    Object.assign(new BillOfMaterial(), {}).setName(bomName2).setProduct(secondComponentProductName).apply();
+  });
+
+  describe('Create products, BOMs and planning data', function () {
+    describe('Create and verify 1st BOM', function () {
+      it('Create 1st BOM', function () {
         cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
-          Object.assign(new BillOfMaterial(), billMaterialJson)
+          Object.assign(new BillOfMaterialVersion(), billMaterialJson)
             .setName(firstBomName)
-            .setProduct(mainProductName)
+            .setBOM(bomName1)
+            // .setProduct(mainProductName)
             // eslint-disable-next-line prettier/prettier
-            .addLine(new BillOfMaterialLine().setProduct(componentProductName).setQuantity(10))
+            .addLine(new BillOfMaterialVersionLine().setProduct(componentProductName).setQuantity(10))
             .apply();
         });
       });
@@ -138,27 +164,15 @@ describe('Create products, BOMs and planning data', function() {
   });
 
   describe('Create and verify 2nd BOM', function() {
-    it("Create 2nd BOM's component product", function() {
-      cy.fixture('product/simple_product.json').then(productJson => {
-        Object.assign(new Product(), productJson)
-          .setName(secondComponentProductName)
-          .setProductCategory(productCategoryName)
-          .setStocked(true)
-          .setPurchased(false)
-          .setSold(false)
-          .setDescription(`Component of ${secondBomName}`)
-          .apply();
-      });
-    });
-
     // create 2nd BOM
     it('Create 2nd BOM', function() {
       cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
         Object.assign(new BillOfMaterial(), billMaterialJson)
           .setName(secondBomName)
-          .setProduct(componentProductName)
+          .setBOM(bomName2)
+          // .setProduct(componentProductName)
           // eslint-disable-next-line prettier/prettier
-          .addLine(new BillOfMaterialLine().setProduct(secondComponentProductName).setQuantity(10))
+          .addLine(new BillOfMaterialVersionLine().setProduct(secondComponentProductName).setQuantity(10))
           .apply();
       });
     });
