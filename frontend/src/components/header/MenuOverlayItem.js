@@ -220,47 +220,52 @@ class MenuOverlayItem extends Component {
         )}
 
         {query && (
-          <span
-            className={
-              children
-                ? ''
-                : type === 'group'
-                ? 'query-clickable-group'
-                : 'query-clickable-link'
-            }
-            onClick={
-              children
-                ? ''
-                : (e) => this.clickedItem(e, elementId, nodeId, type)
-            }
-          >
-            {children
-              ? children.map((item, id) => (
-                  <span key={id} className="query-results">
-                    <span className="query-caption">
-                      {id === 0 ? caption + ' / ' : '/'}
-                    </span>
-                    <span
-                      title={item.caption}
-                      className={
-                        type === 'group'
-                          ? 'query-clickable-group'
-                          : 'query-clickable-link'
-                      }
-                      onClick={(e) =>
-                        this.clickedItem(
-                          e,
-                          item.elementId,
-                          item.nodeId,
-                          item.type
-                        )
-                      }
-                    >
-                      {item.caption}
-                    </span>
-                  </span>
-                ))
-              : caption}
+          <span>
+            {this.iconByType(type)}
+            <span
+              className={
+                children
+                  ? ''
+                  : type === 'group'
+                  ? 'query-clickable-group'
+                  : 'query-clickable-link'
+              }
+              onClick={
+                children
+                  ? ''
+                  : (e) => this.clickedItem(e, elementId, nodeId, type)
+              }
+            >
+              <span className="query-menu-item">
+                {children
+                  ? children.map((item, id) => (
+                      <span key={id} className="query-results">
+                        <span className="query-caption">
+                          {id === 0 ? caption + ' / ' : '/'}
+                        </span>
+                        <span
+                          title={item.caption}
+                          className={
+                            type === 'group'
+                              ? 'query-clickable-group'
+                              : 'query-clickable-link'
+                          }
+                          onClick={(e) =>
+                            this.clickedItem(
+                              e,
+                              item.elementId,
+                              item.nodeId,
+                              item.type
+                            )
+                          }
+                        >
+                          {item.caption}
+                        </span>
+                      </span>
+                    ))
+                  : caption}
+              </span>
+            </span>
           </span>
         )}
       </span>

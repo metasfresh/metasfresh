@@ -119,5 +119,7 @@
 .side-attachment-wrapper, .docref-spinner-wrapper {
     >.screen-freeze {
         height: 15%;
+        justify-content: normal;
+        margin-top: 1em;
     }
 }

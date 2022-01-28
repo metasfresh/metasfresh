@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.printing.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,20 @@
  * #L%
  */
 
-package de.metas.report;
+package de.metas.printing.model.validator;
 
-import de.metas.process.AdProcessId;
+import de.metas.printing.model.I_C_Printing_Queue;
+import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.Value;
+import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
-
-public interface DocumentReportAdvisor
+@Builder
+@Value
+class PrintingQueueQueryRequest
 {
 	@NonNull
-	String getHandledTableName();
-
-	StandardDocumentReportType getStandardDocumentReportType();
-
+	final String queryName;
 	@NonNull
-	DocumentReportInfo getDocumentReportInfo(
-			@NonNull TableRecordReference recordRef,
-			@Nullable PrintFormatId adPrintFormatToUseId,
-			@Nullable final AdProcessId reportProcessIdToUse);
-
+	final IQuery<I_C_Printing_Queue> query;
 }

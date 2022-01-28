@@ -4,9 +4,9 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
 import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
-
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
+import Spinner from '../app/SpinnerOverlay';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
@@ -452,16 +452,14 @@ export default class Table extends PureComponent {
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
 
-    if (pending) {
-      return false;
-    }
-
+    // Note: for the case of pending this div has to pe present otherwise it will mess up
+    // the rendering of the spinner within the table when there are no rows.
     if (!rows.length) {
       return (
         <div className="empty-info-text">
           <div>
-            <h5>{emptyText}</h5>
-            <p>{emptyHint}</p>
+            <h5>{!pending ? emptyText : ''}</h5>
+            <p>{!pending ? emptyHint : ''}</p>
           </div>
         </div>
       );
@@ -498,6 +496,7 @@ export default class Table extends PureComponent {
       onDeselectAll,
       tableRefreshToggle,
       setActiveSort,
+      pending,
     } = this.props;
 
     return (
@@ -512,6 +511,13 @@ export default class Table extends PureComponent {
           }
         )}
       >
+        {pending && !hasIncluded && (
+          <div className="spinner-wrapper-in-tab">
+            <div>
+              <Spinner iconSize={50} spinnerType="modal" />
+            </div>
+          </div>
+        )}
         <table
           className={classnames(
             'table table-bordered-vertically',
