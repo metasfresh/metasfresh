@@ -122,7 +122,8 @@ public class RemoteServletInvoker implements IReportServer
 			throw new AdempiereException(error.getMessage(), ex)
 					//.appendParametersToMessage()
 					.setParameters(error.getParameters())
-					.setParameter("reportsUrl", reportsUrl);
+					.setParameter("reportsUrl", reportsUrl)
+					.setParameter("reportsServer.stacktrace", error.getStackTrace());
 		}
 		catch (final Exception ex)
 		{
