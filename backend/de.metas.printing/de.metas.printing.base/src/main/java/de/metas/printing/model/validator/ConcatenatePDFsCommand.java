@@ -29,6 +29,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.printing.async.spi.impl.PrintingQueuePDFConcatenateWorkpackageProcessor;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Loggables;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
@@ -73,35 +75,39 @@ class ConcatenatePDFsCommand
 
 	public void execute()
 	{
-		final List<IQuery<I_C_Printing_Queue>> queries = getPrintingQueueQueryBuilders();
-		if (queries.isEmpty())
+		final List<PrintingQueueQueryRequest> queryRequests = getPrintingQueueQueryBuilders();
+		if (queryRequests.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("*** No queries / sysconfigs defined. Create sysconfigs prefixed with `{}`", QUERY_PREFIX);
 			return;
 		}
 
-		for (final IQuery<I_C_Printing_Queue> query : queries)
+		for (final PrintingQueueQueryRequest queryRequest : queryRequests)
 		{
-			enqueuePrintQueues(query);
+			enqueuePrintQueues(queryRequest);
 		}
 	}
 
-	private void enqueuePrintQueues(@NonNull final IQuery<I_C_Printing_Queue> query)
+	private void enqueuePrintQueues(@NonNull final PrintingQueueQueryRequest queryRequest)
 	{
-		final List<I_C_Printing_Queue> printingQueues = query.list();
+		final List<I_C_Printing_Queue> printingQueues = queryRequest.getQuery().list();
 		if (printingQueues.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("*** There is nothing to enqueue. Skipping it: {}", query);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** There is nothing to enqueue. Skipping it: {}", queryRequest);
 			return;
 		}
 
 		final Properties ctx = Env.getCtx();
 
+		final I_C_Async_Batch parentAsyncBatchRecord = asyncBatchBL.getAsyncBatchById(printingQueueItemsGeneratedAsyncBatchId);
+
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
 				.setContext(ctx)
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
 				.setName(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
+				.setDescription(queryRequest.getQueryName())
 				.setParentAsyncBatchId(printingQueueItemsGeneratedAsyncBatchId)
+				.setOrgId(OrgId.ofRepoId(parentAsyncBatchRecord.getAD_Org_ID()))
 				.build();
 
 		workPackageQueueFactory
@@ -114,14 +120,22 @@ class ConcatenatePDFsCommand
 				.build();
 	}
 
-	private List<IQuery<I_C_Printing_Queue>> getPrintingQueueQueryBuilders()
+	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
-		final Collection<String> whereClauses = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId).values();
-		final ArrayList<IQuery<I_C_Printing_Queue>> queries = new ArrayList<>();
-		for (final String whereClause : whereClauses)
+		Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+		final Collection<String> keys = filtersMap.keySet();
+
+		final ArrayList<PrintingQueueQueryRequest> queries = new ArrayList<>();
+
+		for (final String key : keys)
 		{
+			final String whereClause = filtersMap.get(key);
 			final IQuery<I_C_Printing_Queue> query = createPrintingQueueQuery(whereClause);
-			queries.add(query);
+			final PrintingQueueQueryRequest request = PrintingQueueQueryRequest.builder()
+					.queryName(key)
+					.query(query)
+					.build();
+			queries.add(request);
 		}
 
 		return queries;
@@ -137,4 +151,5 @@ class ConcatenatePDFsCommand
 				.filter(TypedSqlQueryFilter.of(whereClause))
 				.create();
 	}
+
 }
