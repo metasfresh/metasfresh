@@ -169,7 +169,7 @@ import lombok.experimental.UtilityClass;
 	}
 
 	@Value
-	private static class Address
+	public static class Address
 	{
 		int counrytId;
 		@Nullable String city;

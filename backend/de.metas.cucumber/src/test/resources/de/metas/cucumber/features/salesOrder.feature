@@ -38,7 +38,7 @@ Feature: sales order
       | s_ol_1     | ol_1                      | N             |
 
   @from:cucumber
-  Scenario: we can generate a purchase order from a sales order
+  Scenario: we can generate a mediated purchase order from a sales order
     And metasfresh contains M_Products:
       | Identifier | Name            |
       | p_2        | salesProduct_72 |
@@ -78,8 +78,8 @@ Feature: sales order
       | C_BPartner_ID.Identifier | C_Order_ID.Identifier | PurchaseType |
       | vendor_2                 | o_2                   | Mediated     |
     Then the order is created:
-      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType |
-      | o_2                      | false   | POO         | MED        |
+      | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.DocStatus |
+      | o_2                      | false   | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
       | 10         | 100        | p_2                     |

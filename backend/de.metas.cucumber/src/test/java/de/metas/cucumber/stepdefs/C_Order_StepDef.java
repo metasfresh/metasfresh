@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -205,11 +206,18 @@ public class C_Order_StepDef
 
 			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+
+			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
+			if (docStatus != null)
+			{
+				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
+			}
 		}
 	}
 
 	@Then("the sales order identified by {string} is closed")
-	public void salesOrderIsClosed(@NonNull final String orderIdentifier)
+	public void salesOrderIsClosed(
+			@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -218,7 +226,8 @@ public class C_Order_StepDef
 	}
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
-	public void verifyOrder(final String externalId, final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void verifyOrder(final String externalId, final int timeoutSec,
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -253,7 +262,8 @@ public class C_Order_StepDef
 	}
 
 	@And("validate the created orders")
-	public void validate_created_order(@NonNull final DataTable table)
+	public void validate_created_order(
+			@NonNull final DataTable table)
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 		validateOrder(row);
@@ -299,7 +309,8 @@ public class C_Order_StepDef
 		}
 	}
 
-	private void validateOrder(@NonNull final Map<String, String> row)
+	private void validateOrder(
+			@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 
@@ -344,7 +355,8 @@ public class C_Order_StepDef
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
-	public void verifyOrderLines(final String externalHeaderId, @NonNull final DataTable dataTable)
+	public void verifyOrderLines(final String externalHeaderId,
+			@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

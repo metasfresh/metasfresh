@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
+import com.google.common.base.Joiner;
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
@@ -36,6 +38,8 @@ import io.swagger.client.model.OrderDeliveryAddress;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+
+import java.util.StringJoiner;
 
 public class DeliveryAddressUpsertProcessor implements Processor
 {
@@ -75,8 +79,12 @@ public class DeliveryAddressUpsertProcessor implements Processor
 	{
 		final String bPartnerLocationIdentifier = ExternalIdentifierFormat.formatDeliveryAddressExternalId(patientId);
 
+		final String addressName = Joiner.on(", ").skipNulls()
+				.join(orderDeliveryAddress.getAddress(), orderDeliveryAddress.getAdditionalAddress(), orderDeliveryAddress.getAdditionalAddress2());
+
 		final JsonRequestLocation deliveryAddressRequest = new JsonRequestLocation();
 		deliveryAddressRequest.setBpartnerName(orderDeliveryAddress.getName());
+		deliveryAddressRequest.setName(addressName);
 		deliveryAddressRequest.setAddress1(orderDeliveryAddress.getAddress());
 		deliveryAddressRequest.setAddress2(orderDeliveryAddress.getAdditionalAddress());
 		deliveryAddressRequest.setAddress3(orderDeliveryAddress.getAdditionalAddress2());
