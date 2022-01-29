@@ -36,33 +36,32 @@ import java.util.Objects;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class CountryId implements RepoIdAware
+public class CountryAreaId implements RepoIdAware
 {
-	public static final CountryId SWITZERLAND = new CountryId(107);
 
 	@JsonCreator
 	@NonNull
-	public static CountryId ofRepoId(final int repoId)
+	public static CountryAreaId ofRepoId(final int repoId)
 	{
-		return new CountryId(repoId);
+		return new CountryAreaId(repoId);
 	}
 
 	@Nullable
-	public static CountryId ofRepoIdOrNull(final int repoId)
+	public static CountryAreaId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new CountryId(repoId) : null;
+		return repoId > 0 ? new CountryAreaId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final CountryId id)
+	public static int toRepoId(@Nullable final CountryAreaId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
 	int repoId;
 
-	private CountryId(final int repoId)
+	private CountryAreaId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Country_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CountryArea_ID");
 	}
 
 	@Override
@@ -72,9 +71,9 @@ public class CountryId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable final CountryId countryId1, @Nullable final CountryId countryId2)
+	public static boolean equals(@Nullable final CountryAreaId countryAreaId1, @Nullable final CountryAreaId countryAreaId2)
 	{
-		return Objects.equals(countryId1, countryId2);
+		return Objects.equals(countryAreaId1, countryAreaId2);
 	}
 
 	public boolean equalsToRepoId(final int repoId)
