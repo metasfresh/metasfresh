@@ -1,5 +1,6 @@
 package de.metas.banking.api;
 
+import de.metas.impexp.config.DataImportConfigId;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchemaId;
@@ -12,6 +13,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -92,5 +95,14 @@ public class BankAccountService
 			return bank.getBankName() + "_" + currencyCode.toThreeLetterCode();
 		}
 		return currencyCode.toThreeLetterCode();
+	}
+
+
+
+	public DataImportConfigId getDataImportConfigIdForBankAccount(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
+
+		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
 	}
 }

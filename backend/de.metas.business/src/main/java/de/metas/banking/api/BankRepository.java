@@ -22,39 +22,40 @@
 
 package de.metas.banking.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Optional;
-
+import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
+import de.metas.cache.CCache;
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.location.LocationId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Bank;
 import org.springframework.stereotype.Repository;
 
-import de.metas.banking.Bank;
-import de.metas.banking.BankCreateRequest;
-import de.metas.banking.BankId;
-import de.metas.cache.CCache;
-import de.metas.location.LocationId;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class BankRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<BankId, Bank> banksById = CCache.<BankId, Bank> builder()
+	private final CCache<BankId, Bank> banksById = CCache.<BankId, Bank>builder()
 			.tableName(I_C_Bank.Table_Name)
 			.build();
 
-	private final CCache<String, Optional<BankId>> bankIdsBySwiftCode = CCache.<String, Optional<BankId>> builder()
+	private final CCache<String, Optional<BankId>> bankIdsBySwiftCode = CCache.<String, Optional<BankId>>builder()
 			.tableName(I_C_Bank.Table_Name)
 			.build();
+
+	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
 
 	public Bank getById(final BankId bankId)
 	{
@@ -81,6 +82,7 @@ public class BankRepository
 				.bankName(StringUtils.trimBlankToNull(record.getName()))
 				.swiftCode(StringUtils.trimBlankToNull(record.getSwiftCode()))
 				.routingNo(StringUtils.trimBlankToNull(record.getRoutingNo()))
+				.dataImportConfigId(DataImportConfigId.ofRepoIdOrNull(record.getC_DataImport_ID()))
 				.cashBank(record.isCashBank())
 				.locationId(LocationId.ofRepoIdOrNull(record.getC_Location_ID()))
 				//
@@ -127,5 +129,19 @@ public class BankRepository
 		saveRecord(record);
 
 		return toBank(record);
+	}
+
+	public DataImportConfigId retrieveDataImportConfigIdForBank(@Nullable final BankId bankId)
+	{
+		if (bankId == null)
+		{
+			return HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID;
+		}
+
+		final Bank bank = getById(bankId);
+
+		final DataImportConfigId dataImportConfigId = bank.getDataImportConfigId();
+
+		return dataImportConfigId != null ? dataImportConfigId : HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID;
 	}
 }
