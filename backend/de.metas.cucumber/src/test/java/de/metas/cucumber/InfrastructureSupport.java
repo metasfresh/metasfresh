@@ -64,7 +64,7 @@ public class InfrastructureSupport
 	 * </pre>
 	 */
 	@Getter
-	private final boolean runAgainstDockerizedDatabase = true;
+	private final boolean runAgainstDockerizedDatabase = false;
 
 	@Getter
 	private String dbHost;

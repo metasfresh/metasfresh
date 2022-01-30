@@ -527,6 +527,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
 
 	/**
+	 * Set Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNameReadWrite (boolean IsNameReadWrite);
+
+	/**
+	 * Get Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNameReadWrite();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsNameReadWrite = new ModelColumn<>(I_C_BPartner_Location.class, "IsNameReadWrite", null);
+	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
+
+	/**
 	 * Set Zahlungs-Adresse.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *

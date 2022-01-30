@@ -314,6 +314,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsNameReadWrite (final boolean IsNameReadWrite)
+	{
+		set_Value (COLUMNNAME_IsNameReadWrite, IsNameReadWrite);
+	}
+
+	@Override
+	public boolean isNameReadWrite() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
+	}
+
+	@Override
 	public void setIsPayFrom (final boolean IsPayFrom)
 	{
 		set_Value (COLUMNNAME_IsPayFrom, IsPayFrom);

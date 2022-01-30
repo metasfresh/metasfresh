@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
@@ -172,6 +173,7 @@ public class PatientToBPartnerMapper
 	private static JsonRequestLocationUpsertItem getBillingAddress(@NonNull final String patientId, @NonNull final PatientBillingAddress patientBillingAddress)
 	{
 		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setName(patientBillingAddress.getAddress());
 		location.setAddress1(patientBillingAddress.getAddress());
 		location.setPostal(patientBillingAddress.getPostalCode());
 		location.setCity(patientBillingAddress.getCity());
@@ -190,6 +192,7 @@ public class PatientToBPartnerMapper
 	private static JsonRequestLocationUpsertItem getShippingAddress(@NonNull final String patientId, @NonNull final PatientDeliveryAddress patientDeliveryAddress)
 	{
 		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setName(patientDeliveryAddress.getAddress());
 		location.setAddress1(patientDeliveryAddress.getAddress());
 		location.setPostal(patientDeliveryAddress.getPostalCode());
 		location.setCity(patientDeliveryAddress.getCity());
