@@ -161,7 +161,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.id(BPartnerBankAccountId.ofRepoId(record.getC_BPartner_ID(), record.getC_BP_BankAccount_ID()))
 				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.active(record.isActive())
-				.orgMappingId(OrgMappingId.ofRepoId(record.getAD_Org_Mapping_ID()))
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(record.getAD_Org_Mapping_ID()))
 				.iban(record.getIBAN())
 				.qrIban(record.getQR_IBAN())
 				//.changeLog()
