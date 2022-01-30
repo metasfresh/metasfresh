@@ -10,6 +10,7 @@ import {
 } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../api';
 import RawList from './RawList';
+import orderValue from '../../../utils/sort'
 
 class ListWidget extends Component {
   previousValue = '';
@@ -141,7 +142,9 @@ class ListWidget extends Component {
               listHash: uuidv4(),
               loading: false,
             });
-
+            
+            this.order()
+            
             let firstListValue = values[0];
             if (firstListValue) {
               this.handleSelect(firstListValue);
@@ -290,7 +293,12 @@ class ListWidget extends Component {
       }
     }
   };
-
+  
+  order() {
+    const {list} = this.state
+    if(list) orderValue(this, list,'asc');
+  }
+  
   render() {
     const { selected, lookupList } = this.props;
     const {
