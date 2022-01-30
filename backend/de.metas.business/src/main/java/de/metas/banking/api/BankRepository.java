@@ -54,7 +54,12 @@ public class BankRepository
 	private final CCache<String, Optional<BankId>> bankIdsBySwiftCode = CCache.<String, Optional<BankId>>builder()
 			.tableName(I_C_Bank.Table_Name)
 			.build();
-
+	/**
+	 * #12372: Javadoc and constant copy-pasted from de.metas.banking.process.C_BankStatement_ImportAttachment
+	 * Having DataImportConfigId hardcoded is fine.
+	 * We could use a sysconfig, but what shall we store there? the ID? the InternalName? (internal name is editable by user). That won't change/fix anything.
+	 * If you have a better suggestion, please <strike>ping me</strike> create a followup.
+	 */
 	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
 
 	public Bank getById(final BankId bankId)
