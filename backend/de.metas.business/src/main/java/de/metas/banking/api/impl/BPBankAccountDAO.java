@@ -1,7 +1,6 @@
 package de.metas.banking.api.impl;
 
 import com.google.common.collect.ImmutableListMultimap;
-import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
@@ -10,7 +9,6 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
-import de.metas.impexp.config.DataImportConfigId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
