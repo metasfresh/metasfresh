@@ -1,0 +1,13 @@
+function orderValue(this , value = [], sorted = "asc") {
+  const valueSort = value.sort((currentValue, nextValue) => {
+    if (currentValue > nextValue) return sorted === "asc" ? 1 : -1;
+    if (currentValue < nextValue) return sorted === "asc" ? -1 : 1;
+    return 0;
+  });
+
+  this.setState({
+    [`${value}`]: valueSort,
+  });
+}
+
+export default orderValue;
