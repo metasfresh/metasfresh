@@ -871,3 +871,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=678375
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,678375,0,507,542669,600357,'F',TO_TIMESTAMP('2022-01-31 23:12:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Bankgebühren',600,0,0,TO_TIMESTAMP('2022-01-31 23:12:32','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+
+
+
+
+-- 2022-01-31T21:25:32.998Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=110,Updated=TO_TIMESTAMP('2022-01-31 23:25:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=677981
+;
+
+-- 2022-01-31T21:27:25.729Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,677981,0,227,540313,600358,'F',TO_TIMESTAMP('2022-01-31 23:27:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Daten Import',85,0,0,TO_TIMESTAMP('2022-01-31 23:27:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
