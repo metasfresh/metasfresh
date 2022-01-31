@@ -22,15 +22,20 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.CreateExportDirectoriesProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
@@ -39,6 +44,10 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -47,10 +56,19 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
 	static final String EXPORT_BPARTNER_ROUTE_ID = "GRSSignum-exportBPartner";
+	static final String CREATE_EXPORT_DIRECTORIES_ROUTE_ID = "GRSSignum-createExportDir";
+
+	final ProcessLogger processLogger;
+
+	public GRSSignumExportBPartnerRouteBuilder(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
 
 	@Override
 	public void configure() throws Exception
 	{
+		//@formatter:off
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
@@ -66,8 +84,19 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
 
+				.to(direct(CREATE_EXPORT_DIRECTORIES_ROUTE_ID))
+
 				.process(new ExportBPartnerProcessor())
 				.to(direct(GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID));
+
+		from(direct(CREATE_EXPORT_DIRECTORIES_ROUTE_ID))
+				.routeId(CREATE_EXPORT_DIRECTORIES_ROUTE_ID)
+				.doTry()
+					.process(new CreateExportDirectoriesProcessor(processLogger))
+				.doCatch(Exception.class)
+				   .to(direct(ERROR_WRITE_TO_ADISSUE))
+				.endDoTry();
+		//@formatter:on
 	}
 
 	private void buildAndAttachContext(@NonNull final Exchange exchange)
@@ -90,10 +119,16 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 
 		final String authToken = request.getParameters().get(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN);
 
+		final Integer pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class);
+
+		final JsonExportDirectorySettings jsonExportDirectorySettings = getJsonExportDirSettings(request);
+
 		final ExportBPartnerRouteContext context = ExportBPartnerRouteContext.builder()
 				.remoteUrl(remoteUrl)
 				.authToken(authToken)
 				.tenantId(tenantId)
+				.jsonExportDirectorySettings(jsonExportDirectorySettings)
+				.pinstanceId(pInstanceId)
 				.build();
 
 		exchange.setProperty(GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, context);
@@ -120,5 +155,28 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.getIn().setBody(retrieveCamelRequest);
+	}
+
+	@Nullable
+	private static JsonExportDirectorySettings getJsonExportDirSettings(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		final String exportDirSettings = externalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXPORT_DIRECTORY_SETTINGS);
+
+		if (Check.isBlank(exportDirSettings))
+		{
+			return null;
+		}
+
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.readValue(exportDirSettings, JsonExportDirectorySettings.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("Could not read value of type JsonExportDirectorySettings!"
+											   + "ExternalSystemConfigId=" + externalSystemRequest.getExternalSystemConfigId() + ";"
+											   + " PInstance=" + externalSystemRequest.getAdPInstanceId());
+		}
 	}
 }

@@ -56,9 +56,11 @@ public class ExportBPartnerProcessor implements Processor
 	{
 		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
 
-		final JsonResponseComposite jsonResponseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
+		final JsonResponseComposite jsonResponseComposite = routeContext.getJsonResponseComposite();
 
-		final JsonBPartner jsonBPartnerToExport = toJsonBPartner(jsonResponseComposite, routeContext.getTenantId());
+		Check.assumeNotNull(jsonResponseComposite, "JsonResponseComposite cannot be null at this point!");
+
+		final JsonBPartner jsonBPartnerToExport = toJsonBPartner(jsonResponseComposite, routeContext.getTenantId(), routeContext.getBPartnerBasePath());
 
 		final DispatchRequest dispatchRequest = DispatchRequest.builder()
 				.url(routeContext.getRemoteUrl())
@@ -70,7 +72,10 @@ public class ExportBPartnerProcessor implements Processor
 	}
 
 	@NonNull
-	private JsonBPartner toJsonBPartner(@NonNull final JsonResponseComposite jsonResponseComposite, @NonNull final String tenantId)
+	private JsonBPartner toJsonBPartner(
+			@NonNull final JsonResponseComposite jsonResponseComposite,
+			@NonNull final String tenantId,
+			@Nullable final String bPartnerBasePath)
 	{
 		final JsonResponseBPartner jsonResponseBPartner = jsonResponseComposite.getBpartner();
 
@@ -83,6 +88,11 @@ public class ExportBPartnerProcessor implements Processor
 		final JsonBPartner.JsonBPartnerBuilder bPartnerBuilder = getBPartnerLocationToExport(jsonResponseComposite.getLocations())
 				.map(ExportBPartnerProcessor::initBPartnerWithLocationFields)
 				.orElseGet(JsonBPartner::builder);
+
+		if (Check.isNotBlank(bPartnerBasePath))
+		{
+			bPartnerBuilder.bpartnerDirPath(bPartnerBasePath);
+		}
 
 		return bPartnerBuilder
 				.bpartnerValue(jsonResponseBPartner.getCode())
