@@ -134,7 +134,9 @@ public class C_OrderLine_StepDef
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
-			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+
+			final int partnerId = partnerTable.get(partnerIdentifier).getC_BPartner_ID();
 
 			boolean linePresent = false;
 
@@ -143,7 +145,7 @@ public class C_OrderLine_StepDef
 				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
 						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
 						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID()
-						&& orderLine.getC_BPartner_ID() == partnerTable.get(partnerIdentifier).getC_BPartner_ID();
+						&& orderLine.getC_BPartner_ID() == partnerId;
 
 				if (linePresent)
 				{

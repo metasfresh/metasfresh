@@ -82,8 +82,8 @@ Feature: sales order
       | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | DocSubType | OPT.DocStatus |
       | o_2                      | false   | POO         | MED        | DR            |
     And the mediated purchase order linked to order 'o_2' has lines:
-      | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | 10         | 100        | p_2                     |shiptopartner_2              | shiptopartner_2              |
+      | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |OPT.C_BPartner_ID.Identifier |
+      | 10         | 100        | p_2                     |shiptopartner_2              |
     And the sales order identified by 'o_2' is closed
     And the shipment schedule identified by s_ol_2 is processed after not more than 10 seconds
 
@@ -116,9 +116,6 @@ Feature: sales order
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier  | M_Product_ID.Identifier |
       | vendor_26                 | p_26                    |
-    And metasfresh contains C_Locations:
-      | C_Location_ID.Identifier | City |
-      | l_26                     | city |
     And metasfresh contains C_BPartner_Locations:
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | endcustomer_36           | bpl_26                            | l_26                     |
