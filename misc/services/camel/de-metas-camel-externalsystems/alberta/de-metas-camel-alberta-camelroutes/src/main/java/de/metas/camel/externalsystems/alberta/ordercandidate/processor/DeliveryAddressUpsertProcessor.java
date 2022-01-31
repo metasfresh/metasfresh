@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.base.Joiner;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
@@ -38,8 +37,6 @@ import io.swagger.client.model.OrderDeliveryAddress;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-
-import java.util.StringJoiner;
 
 public class DeliveryAddressUpsertProcessor implements Processor
 {
