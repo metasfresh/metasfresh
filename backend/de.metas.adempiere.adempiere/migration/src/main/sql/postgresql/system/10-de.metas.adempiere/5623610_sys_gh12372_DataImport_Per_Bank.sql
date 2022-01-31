@@ -467,3 +467,407 @@ UPDATE AD_Val_Rule SET Type='S',Updated=TO_TIMESTAMP('2022-01-30 18:10:00','YYYY
 
 
 UPDATE c_bank SET c_dataimport_id = 540009 WHERE c_dataimport_id IS NULL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2022-01-31T18:48:16.444Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,579178,577746,0,12,600,'BankFeeAmt',TO_TIMESTAMP('2022-01-31 20:48:15','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N',0,'Bankgebühren',0,0,TO_TIMESTAMP('2022-01-31 20:48:15','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-01-31T18:48:16.482Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=579178 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-01-31T18:48:16.570Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(577746) 
+;
+
+-- 2022-01-31T18:49:50.306Z
+-- URL zum Konzept
+UPDATE AD_Column SET DefaultValue='0',Updated=TO_TIMESTAMP('2022-01-31 20:49:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579178
+;
+
+-- 2022-01-31T18:49:55.038Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('I_BankStatement','ALTER TABLE public.I_BankStatement ADD COLUMN BankFeeAmt NUMERIC DEFAULT 0 NOT NULL')
+;
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2022-01-31T21:11:34.900Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568329,678362,0,507,TO_TIMESTAMP('2022-01-31 23:11:34','YYYY-MM-DD HH24:MI:SS'),100,'Cashbook/Bank account To',10,'D','Y','N','N','N','N','N','N','N','Cashbook/Bank account To',TO_TIMESTAMP('2022-01-31 23:11:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:34.946Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678362 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:34.978Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542687) 
+;
+
+-- 2022-01-31T21:11:35.025Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678362
+;
+
+-- 2022-01-31T21:11:35.054Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678362)
+;
+
+-- 2022-01-31T21:11:35.493Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568844,678363,0,507,TO_TIMESTAMP('2022-01-31 23:11:35','YYYY-MM-DD HH24:MI:SS'),100,'',10,'D','','Y','N','N','N','N','N','N','N','Probleme',TO_TIMESTAMP('2022-01-31 23:11:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:35.523Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678363 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:35.553Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2887) 
+;
+
+-- 2022-01-31T21:11:35.585Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678363
+;
+
+-- 2022-01-31T21:11:35.614Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678363)
+;
+
+-- 2022-01-31T21:11:36.087Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568845,678364,0,507,TO_TIMESTAMP('2022-01-31 23:11:35','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Daten Import',TO_TIMESTAMP('2022-01-31 23:11:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:36.118Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678364 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:36.150Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(543913) 
+;
+
+-- 2022-01-31T21:11:36.181Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678364
+;
+
+-- 2022-01-31T21:11:36.210Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678364)
+;
+
+-- 2022-01-31T21:11:36.702Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568846,678365,0,507,TO_TIMESTAMP('2022-01-31 23:11:36','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Data Import Run',TO_TIMESTAMP('2022-01-31 23:11:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:36.733Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678365 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:36.765Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(577114) 
+;
+
+-- 2022-01-31T21:11:36.806Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678365
+;
+
+-- 2022-01-31T21:11:36.838Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678365)
+;
+
+-- 2022-01-31T21:11:37.328Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568847,678366,0,507,TO_TIMESTAMP('2022-01-31 23:11:36','YYYY-MM-DD HH24:MI:SS'),100,4000,'D','Y','N','N','N','N','N','N','N','Import Line Content',TO_TIMESTAMP('2022-01-31 23:11:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:37.365Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678366 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:37.398Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(577115) 
+;
+
+-- 2022-01-31T21:11:37.436Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678366
+;
+
+-- 2022-01-31T21:11:37.466Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678366)
+;
+
+-- 2022-01-31T21:11:37.916Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568848,678367,0,507,TO_TIMESTAMP('2022-01-31 23:11:37','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Import Line No',TO_TIMESTAMP('2022-01-31 23:11:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:37.946Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678367 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:37.978Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(577116) 
+;
+
+-- 2022-01-31T21:11:38.013Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678367
+;
+
+-- 2022-01-31T21:11:38.045Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678367)
+;
+
+-- 2022-01-31T21:11:38.537Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572182,678368,0,507,TO_TIMESTAMP('2022-01-31 23:11:38','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','DebitOrCreditAmt',TO_TIMESTAMP('2022-01-31 23:11:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:38.571Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678368 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:38.605Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578556) 
+;
+
+-- 2022-01-31T21:11:38.641Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678368
+;
+
+-- 2022-01-31T21:11:38.672Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678368)
+;
+
+-- 2022-01-31T21:11:39.190Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572183,678369,0,507,TO_TIMESTAMP('2022-01-31 23:11:38','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','DebitOrCreditIndicator',TO_TIMESTAMP('2022-01-31 23:11:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:39.219Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678369 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:39.248Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578557) 
+;
+
+-- 2022-01-31T21:11:39.278Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678369
+;
+
+-- 2022-01-31T21:11:39.307Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678369)
+;
+
+-- 2022-01-31T21:11:39.813Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572184,678370,0,507,TO_TIMESTAMP('2022-01-31 23:11:39','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','AmtFormat',TO_TIMESTAMP('2022-01-31 23:11:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:39.843Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678370 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:39.875Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578558) 
+;
+
+-- 2022-01-31T21:11:39.903Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678370
+;
+
+-- 2022-01-31T21:11:39.933Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678370)
+;
+
+-- 2022-01-31T21:11:40.392Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572185,678371,0,507,TO_TIMESTAMP('2022-01-31 23:11:39','YYYY-MM-DD HH24:MI:SS'),100,4000,'D','Y','N','N','N','N','N','N','N','LineDescriptionExtra_1',TO_TIMESTAMP('2022-01-31 23:11:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:40.426Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678371 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:40.457Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578559) 
+;
+
+-- 2022-01-31T21:11:40.487Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678371
+;
+
+-- 2022-01-31T21:11:40.516Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678371)
+;
+
+-- 2022-01-31T21:11:40.968Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572186,678372,0,507,TO_TIMESTAMP('2022-01-31 23:11:40','YYYY-MM-DD HH24:MI:SS'),100,4000,'D','Y','N','N','N','N','N','N','N','LineDescriptionExtra_2',TO_TIMESTAMP('2022-01-31 23:11:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:41.001Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678372 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:41.034Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578560) 
+;
+
+-- 2022-01-31T21:11:41.064Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678372
+;
+
+-- 2022-01-31T21:11:41.095Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678372)
+;
+
+-- 2022-01-31T21:11:41.546Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572187,678373,0,507,TO_TIMESTAMP('2022-01-31 23:11:41','YYYY-MM-DD HH24:MI:SS'),100,4000,'D','Y','N','N','N','N','N','N','N','LineDescriptionExtra_3',TO_TIMESTAMP('2022-01-31 23:11:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:41.577Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678373 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:41.609Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578561) 
+;
+
+-- 2022-01-31T21:11:41.639Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678373
+;
+
+-- 2022-01-31T21:11:41.668Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678373)
+;
+
+-- 2022-01-31T21:11:42.160Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572188,678374,0,507,TO_TIMESTAMP('2022-01-31 23:11:41','YYYY-MM-DD HH24:MI:SS'),100,4000,'D','Y','N','N','N','N','N','N','N','LineDescriptionExtra_4',TO_TIMESTAMP('2022-01-31 23:11:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:42.190Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678374 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:42.222Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578562) 
+;
+
+-- 2022-01-31T21:11:42.254Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678374
+;
+
+-- 2022-01-31T21:11:42.283Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678374)
+;
+
+-- 2022-01-31T21:11:42.722Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,579178,678375,0,507,TO_TIMESTAMP('2022-01-31 23:11:42','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Bankgebühren',TO_TIMESTAMP('2022-01-31 23:11:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-01-31T21:11:42.753Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=678375 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-01-31T21:11:42.785Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(577746) 
+;
+
+-- 2022-01-31T21:11:42.819Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=678375
+;
+
+-- 2022-01-31T21:11:42.849Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(678375)
+;
+
+-- 2022-01-31T21:12:33.051Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,678375,0,507,542669,600357,'F',TO_TIMESTAMP('2022-01-31 23:12:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Bankgebühren',600,0,0,TO_TIMESTAMP('2022-01-31 23:12:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
