@@ -263,10 +263,7 @@ INSERT INTO t_alter_column values('c_dataimport','DataImport_ConfigType','VARCHA
 -- UPDATE C_DataImport SET DataImport_ConfigType='Standard' WHERE DataImport_ConfigType IS NULL
 -- ;
 
--- 2022-01-30T15:28:10.829Z
--- URL zum Konzept
-INSERT INTO t_alter_column values('c_dataimport','DataImport_ConfigType',null,'NOT NULL',null)
-;
+
 
 -- 2022-01-30T15:30:11.539Z
 -- URL zum Konzept
@@ -293,6 +290,11 @@ INSERT INTO t_alter_column values('c_dataimport','DataImport_ConfigType','VARCHA
 UPDATE C_DataImport SET DataImport_ConfigType='S' WHERE DataImport_ConfigType IS NULL
 ;
 
+
+-- 2022-01-30T15:28:10.829Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_dataimport','DataImport_ConfigType',null,'NOT NULL',null)
+;
 
 
 
