@@ -466,3 +466,4 @@ UPDATE AD_Val_Rule SET Type='S',Updated=TO_TIMESTAMP('2022-01-30 18:10:00','YYYY
 
 
 
+UPDATE c_bank SET c_dataimport_id = 540009 WHERE c_dataimport_id IS NULL;
