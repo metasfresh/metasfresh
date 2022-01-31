@@ -119,7 +119,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			int offset = sysConfigBL.getIntValue(
 					SYSCONFIG_Fallback_PreparationDate_Offset,
 					0);
-			order.setPreparationDate(TimeUtil.addDays(order.getDatePromised(), offset));
+			order.setPreparationDate(TimeUtil.addHours(order.getDatePromised(), offset * 24));
 			order.setM_Tour_ID(-1);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
