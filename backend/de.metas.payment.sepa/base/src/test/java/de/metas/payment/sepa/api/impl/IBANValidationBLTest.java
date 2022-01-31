@@ -65,8 +65,8 @@ public class IBANValidationBLTest
 
 		// prepare countries: EU
 		prepareCountry("AD", "n", "4", "10", "n", "4", "20", "c", "12", "30", null, null, null, null, null, null);
-		prepareCountry("AT", "n", "5", "10", null, null, null, "n", "11", "18", null, null, null, null, null, null);
-		prepareCountry("BE", "n", "3", "10", null, null, null, "n", "11", "18", null, null, null, null, null, null);
+		prepareCountry("AT", "n", "5", "10", null, null, null, "n", "11", "20", null, null, null, null, null, null);
+		prepareCountry("BE", "n", "3", "10", null, null, null, "n", "7", "20", null, null, null, null, null, null);
 		prepareCountry("DE", "n", "8", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
 		prepareCountry("CH", "n", "5", "10", null, null, null, "n", "12", "20", null, null, null, null, null, null);
 		prepareCountry("FR", "n", "5", "10", "n", "5", "20", "c", "11", "30", null, null, null, "n", "2", "40");
@@ -91,6 +91,9 @@ public class IBANValidationBLTest
 		prepareCountry("MT", "a", "4", "10", "n", "5", "20", "c", "18", "30", null, null, null, null, null, null);
 		prepareCountry("SK", "n", "4", "10", null, null, null, "c", "16", "20", null, null, null, null, null, null);
 		prepareCountry("RO", "a", "4", "10", null, null, null, "c", "16", "20", null, null, null, null, null, null);
+		prepareCountry("NL", "a", "4", "10", null, null, null, "c", "10", "20", null, null, null, null, null, null);
+		prepareCountry("IT", "n", "5", "20", "n", "5", "30", "c", "12", "40", null, null, null, "a", "1", "10");
+		prepareCountry("SP", "n", "4", "10", "n", "4", "20", "n", "10", "40", null, null, null, "n", "2", "30");
 	}
 
 	/**
@@ -160,6 +163,9 @@ public class IBANValidationBLTest
 		final int checkDigitSK = ibanValidationBL.ISO7064Mod97_10("SK8975000000000012345671");
 		final int checkDigitRO = ibanValidationBL.ISO7064Mod97_10("RO09BCYP0000001234567890");
 		final int checkDigitFI = ibanValidationBL.ISO7064Mod97_10("FI2112345600000785");
+		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123456");
+		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051332");
+		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164300");
 
 		assertThat(checkDigitAD).isEqualTo(1);
 		assertThat(checkDigitAT).isEqualTo(1);
@@ -187,6 +193,9 @@ public class IBANValidationBLTest
 		assertThat(checkDigitSK).isEqualTo(1);
 		assertThat(checkDigitRO).isEqualTo(1);
 		assertThat(checkDigitFI).isEqualTo(1);
+		assertThat(checkDigitIT).isEqualTo(1);
+		assertThat(checkDigitSP).isEqualTo(1);
+		assertThat(checkDigitNL).isEqualTo(1);
 	}
 
 	@Test
@@ -220,6 +229,9 @@ public class IBANValidationBLTest
 		final int checkDigitSK = ibanValidationBL.ISO7064Mod97_10("SK8975000000000012345670");
 		final int checkDigitRO = ibanValidationBL.ISO7064Mod97_10("RO09BCYP0000001234567891");
 		final int checkDigitFI = ibanValidationBL.ISO7064Mod97_10("FI2112345600000787");
+		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123455");
+		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051331");
+		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164301");
 
 		assertThat(checkDigitAD).isNotEqualTo(1);
 		assertThat(checkDigitAT).isNotEqualTo(1);
@@ -247,6 +259,9 @@ public class IBANValidationBLTest
 		assertThat(checkDigitSK).isNotEqualTo(1);
 		assertThat(checkDigitRO).isNotEqualTo(1);
 		assertThat(checkDigitFI).isNotEqualTo(1);
+		assertThat(checkDigitIT).isNotEqualTo(1);
+		assertThat(checkDigitSP).isNotEqualTo(1);
+		assertThat(checkDigitNL).isNotEqualTo(1);
 	}
 
 	@Test
@@ -280,6 +295,9 @@ public class IBANValidationBLTest
 		ibanValidationBL.validate("SK8975000000000012345671");
 		ibanValidationBL.validate("RO09BCYP0000001234567890");
 		ibanValidationBL.validate("FI2112345600000785");
+		ibanValidationBL.validate("IT60X0542811101000000123456");
+		ibanValidationBL.validate("ES9121000418450200051332");
+		ibanValidationBL.validate("NL91ABNA0417164300");
 
 	}
 
