@@ -202,6 +202,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.valutaDate(TimeUtil.asLocalDate(importRecord.getValutaDate()))
 						//
 						.statementAmt(Money.of(importRecord.getStmtAmt(), currencyId))
+						.bankFeeAmt(Money.of(importRecord.getBankFeeAmt(),currencyId))
 						.trxAmt(Money.of(importRecord.getTrxAmt(), currencyId))
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
