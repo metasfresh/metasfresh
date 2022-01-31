@@ -30,7 +30,7 @@ public interface IPPOrderReceiptHUProducer
 	 * Creates planning HUs to be received.
 	 * It also creates draft manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	void createDraftReceiptCandidatesAndPlanningHUs();
+	List<I_M_HU> createDraftReceiptCandidatesAndPlanningHUs();
 
 	I_M_HU receiveVHU(Quantity qtyToReceive);
 

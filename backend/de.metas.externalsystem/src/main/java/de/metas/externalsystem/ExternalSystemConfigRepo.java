@@ -715,6 +715,8 @@ public class ExternalSystemConfigRepo
 				.syncBPartnersToRestEndpoint(config.isSyncBPartnersToRestEndpoint())
 				.autoSendVendors(config.isAutoSendVendors())
 				.autoSendCustomers(config.isAutoSendCustomers())
+				.syncHUsOnMaterialReceipt(config.isSyncHUsOnMaterialReceipt())
+				.syncHUsOnProductionReceipt(config.isSyncHUsOnProductionReceipt())
 				.build();
 	}
 

@@ -1,3 +1,4 @@
+import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { getZoomIntoWindow, deleteRequest } from '../api';
@@ -136,7 +137,7 @@ class TableContainer extends PureComponent {
 
     if (docId) {
       openModal({
-        title: 'Advanced edit',
+        title: counterpart.translate('window.advancedEdit.caption'),
         windowId,
         modalType: 'window',
         tabId,

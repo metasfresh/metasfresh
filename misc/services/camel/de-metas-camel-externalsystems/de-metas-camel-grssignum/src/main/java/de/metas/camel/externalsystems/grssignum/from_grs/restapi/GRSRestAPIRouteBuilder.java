@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +34,7 @@ import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -47,6 +48,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.spi.RouteController;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -99,6 +101,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 	@Override
 	public void configure()
 	{
+		//@formatter:off
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
@@ -131,18 +134,23 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
 				.doTry()
-				.process(this::restAPIProcessor)
-				.process(this::prepareSuccessResponse)
+					.process(this::restAPIProcessor)
+					.process(this::prepareSuccessResponse)
 				.doCatch(JsonProcessingException.class)
-				.to(direct(ERROR_WRITE_TO_ADISSUE))
-				.process(this::prepareErrorResponse)
-				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+					.to(direct(ERROR_WRITE_TO_ADISSUE))
+					.process(this::prepareErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.doCatch(HttpOperationFailedException.class)
+					.to(direct(MF_ERROR_ROUTE_ID))
+					.process(this::prepareHttpErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.doCatch(Exception.class)
-				.to(direct(MF_ERROR_ROUTE_ID))
-				.process(this::prepareErrorResponse)
-				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+					.to(direct(MF_ERROR_ROUTE_ID))
+					.process(this::prepareErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.endDoTry()
 				.end();
+		//@formatter:on
 	}
 
 	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
@@ -276,6 +284,12 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.build();
 
 		exchange.getIn().setBody(camelRequest, JsonExternalSystemRequest.class);
+	}
+
+	private void prepareHttpErrorResponse(@NonNull final Exchange exchange)
+	{
+		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(exchange);
+		exchange.getIn().setBody(jsonError);
 	}
 
 	@Override

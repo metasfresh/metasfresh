@@ -364,14 +364,18 @@ public class ProductRestService
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
+		else if (effectiveSyncAdvise.isFailIfNotExists())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("C_BPartner_Product")
+					.resourceIdentifier("{c_bpartner_identifier:" + jsonRequestBPartnerProductUpsert.getBpartnerIdentifier() + ", m_product_id: " + productId.getRepoId())
+					.build()
+					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+		}
 		else
 		{
-			validateCreateSyncAdvise(jsonRequestBPartnerProductUpsert, jsonRequestBPartnerProductUpsert.getBpartnerIdentifier(),
-									 effectiveSyncAdvise, "BPartnerProduct");
-
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
-
 		}
 	}
 

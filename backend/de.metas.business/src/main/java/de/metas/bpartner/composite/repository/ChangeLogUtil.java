@@ -96,6 +96,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_ExcludeFromPromotions, BPartner.EXCLUDE_FROM_PROMOTIONS)
 			.put(I_C_BPartner.COLUMNNAME_Referrer, BPartner.REFERRER)
 			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
+			.put(I_C_BPartner.COLUMNNAME_DebtorId, BPartner.DEBTOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_CreditorId, BPartner.CREDITOR_ID)
 			.build();
 
 	@VisibleForTesting

@@ -30,6 +30,7 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -50,7 +51,7 @@ import java.util.Iterator;
 public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final AdMessageKey MSG_RABBIT_MQ_SENT = AdMessageKey.of("RabbitMQ_Sent");
-	
+
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	private final DataExportAuditRepository dataExportAuditRepository = SpringContextHolder.instance.getBean(DataExportAuditRepository.class);
 
@@ -109,9 +110,9 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 
 		while (bPartnerIterator.hasNext())
 		{
-			final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerIterator.next().getC_BPartner_ID());
+			final TableRecordReference bPartnerRecordRef = TableRecordReference.of(bPartnerIterator.next());
 
-			exportBPartner(externalSystemChildConfigId, bPartnerId, getPinstanceId());
+			getExportToBPartnerExternalSystem().exportToExternalSystem(externalSystemChildConfigId, bPartnerRecordRef, getPinstanceId());
 		}
 
 		return JavaProcess.MSG_OK;
@@ -127,14 +128,11 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 				.iterate(I_C_BPartner.class);
 	}
 
-	protected abstract void exportBPartner(
-			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
-			@NonNull final BPartnerId bpartnerId,
-			@Nullable final PInstanceId pInstanceId);
-
 	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
 
 	protected abstract String getExternalSystemParam();
+
+	protected abstract ExportToExternalSystemService getExportToBPartnerExternalSystem();
 }

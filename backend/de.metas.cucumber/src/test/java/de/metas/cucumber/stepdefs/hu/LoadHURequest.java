@@ -1,10 +1,8 @@
-package de.metas.common.rest_api.v2.attachment;
-
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,16 +11,37 @@ package de.metas.common.rest_api.v2.attachment;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum JsonAttachmentType
+package de.metas.cucumber.stepdefs.hu;
+
+import de.metas.handlingunits.HuId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class LoadHURequest
 {
-	Data, URL
+	@NonNull
+	HuId huId;
+
+	@NonNull
+	String huIdentifier;
+
+	@Nullable
+	String huStatus;
+
+	@Nullable
+	HuId piItemProductId;
 }

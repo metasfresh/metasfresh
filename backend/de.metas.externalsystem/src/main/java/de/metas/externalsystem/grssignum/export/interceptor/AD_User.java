@@ -23,7 +23,7 @@
 package de.metas.externalsystem.grssignum.export.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.grssignum.ExportToGRSService;
+import de.metas.externalsystem.grssignum.ExportBPartnerToGRSService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -39,11 +39,11 @@ public class AD_User
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ExportToGRSService exportToGRSService;
+	private final ExportBPartnerToGRSService exportBPartnerToGRSService;
 
-	public AD_User(@NonNull final ExportToGRSService exportToGRSService)
+	public AD_User(@NonNull final ExportBPartnerToGRSService exportBPartnerToGRSService)
 	{
-		this.exportToGRSService = exportToGRSService;
+		this.exportBPartnerToGRSService = exportBPartnerToGRSService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
@@ -52,7 +52,7 @@ public class AD_User
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(adUser.getC_BPartner_ID());
 		if(bpartnerId != null)
 		{
-			trxManager.runAfterCommit(() -> exportToGRSService.enqueueBPartnerSync(bpartnerId));
+			trxManager.runAfterCommit(() -> exportBPartnerToGRSService.enqueueBPartnerSync(bpartnerId));
 		}
 	}
 }

@@ -107,18 +107,17 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 
 		return Optional.of(skippedSalesOrderLinesByOrder.entrySet()
-								   .stream()
-								   .map(entry -> {
-									   final I_C_Order salesOrder = entry.getKey();
-									   final List<I_C_OrderLine> salesOrderLines = entry.getValue();
+				.stream()
+				.map(entry -> {
+					final I_C_Order salesOrder = entry.getKey();
+					final List<I_C_OrderLine> salesOrderLines = entry.getValue();
 
-									   return salesOrderLines.stream()
-											   .map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
-											   .collect(Collectors.joining(", "));
-								   })
-								   .collect(Collectors.joining(", ")));
+					return salesOrderLines.stream()
+							.map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
+							.collect(Collectors.joining(", "));
+				})
+				.collect(Collectors.joining(", ")));
 	}
-
 
 	@Override
 	public String toString()
@@ -336,6 +335,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	{
 		final List<I_C_OrderLine> skippedOrderLinesFromCurrentOrder = new ArrayList<>();
 		skippedOrderLinesFromCurrentOrder.add(salesOrderLine);
-		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {oldList.addAll(newList); return oldList;});
+		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {
+			oldList.addAll(newList);
+			return oldList;
+		});
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * metas
+ * de-metas-camel-grssignum
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -24,13 +24,12 @@ package de.metas.camel.externalsystems.grssignum.to_grs.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.Builder;
-import lombok.NonNull;
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class JsonBPartnerContactRoleTest
+public class JsonHUUpdateTest
 {
 	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -39,42 +38,43 @@ public class JsonBPartnerContactRoleTest
 	{
 		//given
 		final String candidate = "{\n"
-				+ "    		\"ROLLE\": \"ROLE1\"\n"
-				+ "			}";
-
+				+ "    \"FLAG\": 999,\n"
+				+ "    \"ID\": \"huId\",\n"
+				+ "    \"dummyValue\": \"TEST\",\n"
+				+ "    \"ATTRIBUTES\": \n"
+				+ "	    {\n"
+				+ "			\"key\": \"value\" \n"
+				+ "		}\n"
+				+ "}";
 		//when
-		final JsonBPartnerContactRole partnerContactRole = objectMapper.readValue(candidate, JsonBPartnerContactRole.class);
+		final JsonHUUpdate jsonHUUpdate = objectMapper.readValue(candidate, JsonHUUpdate.class);
 
 		//then
-		final JsonBPartnerContactRole expectedBPartnerContactRole = JsonBPartnerContactRole.builder()
-				.role("ROLE1")
+		final JsonHUUpdate expectedJsonHuUpdate = JsonHUUpdate.builder()
+				.id("huId")
+				.flag(999)
+				.attributes(ImmutableMap.of("key", "value"))
 				.build();
 
-		assertThat(partnerContactRole).isEqualTo(expectedBPartnerContactRole);
+		assertThat(jsonHUUpdate).isEqualTo(expectedJsonHuUpdate);
 	}
 
 	@Test
 	public void serialize_deserialize_test() throws Exception
 	{
 		//given
-		final JsonBPartnerContactRole bPartnerContactRole = createJsonBPartnerContactRole("ROLE1");
+		final JsonHUUpdate jsonHUUpdate = JsonHUUpdate.builder()
+				.flag(999)
+				.id("huId")
+				.attributes(ImmutableMap.of("key", "value"))
+				.build();
 
 		//when
-		final String serialized = objectMapper.writeValueAsString(bPartnerContactRole);
+		final String serialized = objectMapper.writeValueAsString(jsonHUUpdate);
 
-		final JsonBPartnerContactRole deserialized = objectMapper.readValue(serialized, JsonBPartnerContactRole.class);
+		final JsonHUUpdate deserialized = objectMapper.readValue(serialized, JsonHUUpdate.class);
 
 		//then
-		assertThat(deserialized).isEqualTo(bPartnerContactRole);
-	}
-
-	@NonNull
-	@Builder(builderMethodName = "createJsonBPartnerContactRoleBuilder", builderClassName = "JsonBPartnerContactRoleBuilder")
-	public static JsonBPartnerContactRole createJsonBPartnerContactRole(
-			@NonNull final String roleName)
-	{
-		return JsonBPartnerContactRole.builder()
-				.role(roleName)
-				.build();
+		assertThat(deserialized).isEqualTo(jsonHUUpdate);
 	}
 }

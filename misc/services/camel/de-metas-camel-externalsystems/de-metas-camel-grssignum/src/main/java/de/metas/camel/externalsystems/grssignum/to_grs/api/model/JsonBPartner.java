@@ -45,7 +45,7 @@ public class JsonBPartner
 
 	@NonNull
 	@JsonProperty("MKREDID")
-	String id;
+	String bpartnerValue;
 
 	@NonNull
 	@JsonProperty("KURZBEZEICHNUNG")
@@ -84,13 +84,25 @@ public class JsonBPartner
 	@JsonProperty("GLN")
 	String gln;
 
+	@JsonProperty("METASFRESHID")
+	String metasfreshId;
+
+	@JsonProperty("METASFRESHURL")
+	String metasfreshURL;
+
+	@JsonProperty("KREDITORENNR")
+	Integer creditorId;
+
+	@JsonProperty("DEBITORRENNR")
+	Integer debtorId;
+
 	@JsonProperty("KONTAKTE")
 	List<JsonBPartnerContact> contacts;
 
 	@Builder
 	public JsonBPartner(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
-			@JsonProperty("MKREDID") final @NonNull String id,
+			@JsonProperty("MKREDID") final @NonNull String bpartnerValue,
 			@JsonProperty("KURZBEZEICHNUNG") final @NonNull String name,
 			@JsonProperty("INAKTIV") final int inactive,
 			@JsonProperty("MID") final @Nullable String tenantId,
@@ -103,10 +115,14 @@ public class JsonBPartner
 			@JsonProperty("ORT") final @Nullable String city,
 			@JsonProperty("LANDESCODE") final @Nullable String countryCode,
 			@JsonProperty("GLN") final @Nullable String gln,
+			@JsonProperty("METASFRESHID") final @Nullable String metasfreshId,
+			@JsonProperty("METASFRESHURL") final @Nullable String metasfreshURL,
+			@JsonProperty("KREDITORENNR") final @Nullable Integer creditorId,
+			@JsonProperty("DEBITORRENNR") final @Nullable Integer debtorId,
 			@JsonProperty("KONTAKTE") final @Nullable @Singular List<JsonBPartnerContact> contacts)
 	{
 		this.flag = flag;
-		this.id = id;
+		this.bpartnerValue = bpartnerValue;
 		this.name = name;
 		this.inactiveBit = inactive;
 		this.tenantId = tenantId;
@@ -119,7 +135,12 @@ public class JsonBPartner
 		this.city = city;
 		this.countryCode = countryCode;
 		this.gln = gln;
+		this.metasfreshId = metasfreshId;
+		this.metasfreshURL = metasfreshURL;
 		this.contacts = contacts;
+
+		this.creditorId = creditorId;
+		this.debtorId = debtorId;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

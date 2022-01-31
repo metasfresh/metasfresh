@@ -91,7 +91,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "authToken" : "authToken",
       "syncBPartnersToRestEndpoint" : true,
       "autoSendVendors" : false,
-      "autoSendCustomers" : false
+      "autoSendCustomers" : false,
+      "syncHUsOnMaterialReceipt" : false,
+      "syncHUsOnProductionReceipt" : false
     },
     "writeAudit" : false
   }
@@ -109,7 +111,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "authToken" : "authToken",
     "syncBPartnersToRestEndpoint" : false,
     "autoSendVendors" : false,
-    "autoSendCustomers" : false
+    "autoSendCustomers" : false,
+    "syncHUsOnMaterialReceipt" : false,
+    "syncHUsOnProductionReceipt" : false
   }
 ]
 
@@ -131,7 +135,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "authToken" : "authToken",
       "syncBPartnersToRestEndpoint" : true,
       "autoSendVendors" : false,
-      "autoSendCustomers" : false
+      "autoSendCustomers" : false,
+      "syncHUsOnMaterialReceipt" : false,
+      "syncHUsOnProductionReceipt" : false
     },
     "writeAudit" : false
   }

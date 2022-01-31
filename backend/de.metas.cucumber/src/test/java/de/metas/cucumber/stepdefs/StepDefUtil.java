@@ -29,7 +29,9 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -43,9 +45,9 @@ public class StepDefUtil
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
 	public void tryAndWait(
-			final long maxWaitSeconds, 
-			final long checkingIntervalMs, 
-			@NonNull final Supplier<Boolean> worker, 
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
@@ -82,8 +84,8 @@ public class StepDefUtil
 	}
 
 	public void tryAndWait(
-			final long maxWaitSeconds, 
-			final long checkingIntervalMs, 
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
 			@NonNull final Supplier<Boolean> worker) throws InterruptedException
 	{
 		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
@@ -95,5 +97,11 @@ public class StepDefUtil
 		return Arrays.stream(identifier.split(","))
 				.map(StringUtils::trim)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 }

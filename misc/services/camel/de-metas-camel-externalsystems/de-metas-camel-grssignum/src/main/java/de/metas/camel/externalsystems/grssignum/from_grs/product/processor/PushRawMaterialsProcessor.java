@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,7 +48,7 @@ import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUS
 public class PushRawMaterialsProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
 
@@ -101,7 +101,8 @@ public class PushRawMaterialsProcessor implements Processor
 	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct grsBPartnerProductItem)
 	{
 		final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
-		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsBPartnerProductItem.getBpartnerId()));
+
+		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(computeBPartnerIdentifier(grsBPartnerProductItem));
 		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
 		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
 		jsonRequestBPartnerProductUpsert.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase());
@@ -124,5 +125,16 @@ public class PushRawMaterialsProcessor implements Processor
 		}
 
 		return name;
+	}
+
+	@NonNull
+	private static String computeBPartnerIdentifier(@NonNull final JsonBPartnerProduct jsonBPartnerProduct)
+	{
+		if (jsonBPartnerProduct.getBPartnerMetasfreshId() != null && Check.isNotBlank(jsonBPartnerProduct.getBPartnerMetasfreshId()))
+		{
+			return jsonBPartnerProduct.getBPartnerMetasfreshId();
+		}
+
+		throw new RuntimeException("Missing mandatory METASFRESHID! see JsonBPartnerProduct: " + jsonBPartnerProduct);
 	}
 }

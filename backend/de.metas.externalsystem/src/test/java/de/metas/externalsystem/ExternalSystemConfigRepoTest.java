@@ -22,7 +22,6 @@
 
 package de.metas.externalsystem;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -42,8 +41,6 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
-import lombok.Builder;
-import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.AfterAll;
@@ -51,7 +48,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
@@ -91,7 +87,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Alberta_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Alberta)
 				.build();
 
@@ -116,7 +112,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Shopware6)
 				.build();
 
@@ -155,7 +151,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI)
 				.build();
 
@@ -181,7 +177,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Shopware6)
 				.build();
 
@@ -222,7 +218,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Alberta_getByTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Alberta)
 				.build();
 
@@ -249,7 +245,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getByTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI)
 				.build();
 
@@ -277,7 +273,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Alberta_getByTypeAndValue_wrongType()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Alberta)
 				.build();
 
@@ -301,7 +297,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Alberta_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Alberta)
 				.build();
 
@@ -330,7 +326,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Shopware6)
 				.build();
 
@@ -391,7 +387,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI)
 				.build();
 
@@ -419,7 +415,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Other_Config_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Other)
 				.build();
 
@@ -442,7 +438,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Woocommerce_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
 				.build();
 
@@ -465,7 +461,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Woocommerce_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
 				.build();
 
@@ -489,7 +485,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Woocommerce_getByTypeAndValue_wrongType()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
 				.build();
 
@@ -517,9 +513,10 @@ class ExternalSystemConfigRepoTest
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
 		saveRecord(parentRecord);
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum childRecord = ExternalSystemTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testGRSSignumValue")
+				.syncBPartnersToRestEndpoint(true)
 				.build();
 
 		// when
@@ -540,10 +537,9 @@ class ExternalSystemConfigRepoTest
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
 		saveRecord(parentRecord);
 
-		createGrsConfigBuilder()
+		ExternalSystemTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testGRSSignumValue")
-				.syncBPartners(false)
 				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
@@ -569,9 +565,10 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testGRSSignumValue";
 
-		createGrsConfigBuilder()
+		ExternalSystemTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
+				.syncBPartnersToRestEndpoint(true)
 				.build();
 
 		// when
@@ -594,7 +591,7 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testGRSSignumValue";
 
-		createGrsConfigBuilder()
+		ExternalSystemTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
 				.build();
@@ -610,7 +607,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_getByQuery()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Shopware6)
 				.active(false)
 				.build();
@@ -656,7 +653,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_store()
 	{
 		// given
-		final I_ExternalSystem_Config initialParentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config initialParentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Shopware6)
 				.active(false)
 				.build();
@@ -713,44 +710,5 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getIsActive()).isTrue();
 		assertThat(shopware6Config.getPriceListId()).isEqualTo(newPriceListId);
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
-	}
-
-	@NonNull
-	@Builder(builderMethodName = "createI_ExternalSystem_ConfigBuilder", builderClassName = "I_ExternalSystem_ConfigBuilder")
-	private I_ExternalSystem_Config createI_ExternalSystem_Config(
-			@NonNull final String type,
-			@Nullable final Boolean active)
-	{
-		final Boolean isActive = CoalesceUtil.coalesceNotNull(active, Boolean.TRUE);
-
-		final I_ExternalSystem_Config record = newInstance(I_ExternalSystem_Config.class);
-		record.setName("name");
-		record.setType(type);
-		record.setIsActive(isActive);
-		record.setWriteAudit(true);
-		record.setAuditFileFolder("auditFileFolder");
-		saveRecord(record);
-
-		return record;
-	}
-
-	@NonNull
-	@Builder(builderMethodName = "createGrsConfigBuilder", builderClassName = "grsConfigBuilder")
-	private I_ExternalSystem_Config_GRSSignum createGrsConfig(
-			final int externalSystemConfigId,
-			@NonNull final String value,
-			@Nullable final Boolean syncBPartners)
-	{
-		final I_ExternalSystem_Config_GRSSignum childRecord = newInstance(I_ExternalSystem_Config_GRSSignum.class);
-		childRecord.setBaseURL("baseUrl");
-		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
-		childRecord.setExternalSystemValue(value);
-		childRecord.setCamelHttpResourceAuthKey("authKey");
-		childRecord.setTenantId("tenantId");
-		childRecord.setAuthToken("authToken");
-		childRecord.setIsSyncBPartnersToRestEndpoint(CoalesceUtil.coalesceNotNull(syncBPartners, true));
-		saveRecord(childRecord);
-
-		return childRecord;
 	}
 }

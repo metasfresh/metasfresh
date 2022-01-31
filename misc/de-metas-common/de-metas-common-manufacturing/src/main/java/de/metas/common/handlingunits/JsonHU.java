@@ -47,13 +47,18 @@ public class JsonHU
 	@NonNull String displayName;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable String barcode;
+	@Nullable
+	String barcode;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable String warehouseValue;
+	@Nullable
+	String warehouseValue;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable String locatorValue;
+	@Nullable
+	String locatorValue;
+
+	int numberOfAggregatedHUs;
 
 	@NonNull
 	@Singular
@@ -62,6 +67,14 @@ public class JsonHU
 	@NonNull
 	JsonHUAttributes attributes;
 
+	@Nullable
+	JsonHUType jsonHUType;
+
+	@Nullable
+	List<JsonHU> includedHUs;
+
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonHUBuilder {}
+	public static class JsonHUBuilder
+	{
+	}
 }

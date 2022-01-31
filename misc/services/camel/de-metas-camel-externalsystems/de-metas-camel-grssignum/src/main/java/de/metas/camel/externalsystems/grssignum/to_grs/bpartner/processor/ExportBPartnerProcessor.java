@@ -30,7 +30,6 @@ import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.from_grs.restapi.Endpoint;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartner;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerContact;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerContactRole;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.ExportBPartnerRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
@@ -86,13 +85,17 @@ public class ExportBPartnerProcessor implements Processor
 				.orElseGet(JsonBPartner::builder);
 
 		return bPartnerBuilder
-				.id(bpartnerMetasfreshId)
+				.bpartnerValue(jsonResponseBPartner.getCode())
 				.name(bPartnerName)
 				.inactive(inactive)
 				.flag(Endpoint.BPARTNER.getFlag())
 				.tenantId(tenantId)
 				.name2(jsonResponseBPartner.getName2())
+				.metasfreshId(bpartnerMetasfreshId)
+				.metasfreshURL(jsonResponseBPartner.getMetasfreshUrl())
 				.contacts(toJsonBPartnerContact(jsonResponseComposite.getContacts()))
+				.creditorId(jsonResponseBPartner.getCreditorId())
+				.debtorId(jsonResponseBPartner.getDebtorId())
 				.build();
 	}
 
@@ -127,7 +130,7 @@ public class ExportBPartnerProcessor implements Processor
 						.title(contact.getTitle())
 						.phone(contact.getPhone())
 						.phone2(contact.getPhone2())
-						.contactRoles(toJsonBPartnerContactRole(contact.getRoles()))
+						.contactRoles(toContactRoles(contact.getRoles()))
 						.position(contact.getPosition() == null ? null : contact.getPosition().getName())
 						.build())
 				.collect(ImmutableList.toImmutableList());
@@ -151,7 +154,7 @@ public class ExportBPartnerProcessor implements Processor
 	}
 
 	@Nullable
-	private static List<JsonBPartnerContactRole> toJsonBPartnerContactRole(@Nullable final List<JsonResponseContactRole> roles)
+	private static List<String> toContactRoles(@Nullable final List<JsonResponseContactRole> roles)
 	{
 		if (Check.isEmpty(roles))
 		{
@@ -159,10 +162,8 @@ public class ExportBPartnerProcessor implements Processor
 		}
 
 		return roles.stream()
-				.map(role -> JsonBPartnerContactRole.builder()
-						.role(role.getName())
-						.build())
-				.collect(Collectors.toList());
+				.map(JsonResponseContactRole::getName)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull

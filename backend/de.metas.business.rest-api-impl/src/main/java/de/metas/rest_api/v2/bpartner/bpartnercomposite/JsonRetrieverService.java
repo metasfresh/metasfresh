@@ -85,6 +85,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -96,6 +97,8 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.TableRecordUtil;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -140,6 +143,8 @@ public class JsonRetrieverService
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
+			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
+			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
 			.build();
 
 	/**
@@ -309,6 +314,8 @@ public class JsonRetrieverService
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
 
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getId());
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -337,6 +344,9 @@ public class JsonRetrieverService
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
+				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
+				.creditorId(bpartner.getCreditorId())
+				.debtorId(bpartner.getDebtorId())
 				.build();
 	}
 

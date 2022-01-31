@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +22,20 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.bom.processor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
+import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -41,7 +44,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class PushProductProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonBOM jsonBOM = exchange.getIn().getBody(JsonBOM.class);
 
@@ -70,6 +73,8 @@ public class PushProductProcessor implements Processor
 		requestProduct.setUomCode(GRSSignumConstants.DEFAULT_UOM_CODE);
 		requestProduct.setGtin(jsonBOM.getGtin());
 
+		requestProduct.setBpartnerProductItems(ImmutableList.of(getBPartnerProductUpsertRequest(jsonBOM)));
+
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))
 				.requestProduct(requestProduct)
@@ -84,5 +89,21 @@ public class PushProductProcessor implements Processor
 				.orgCode(credentials.getOrgCode())
 				.jsonRequestProductUpsert(productUpsert)
 				.build();
+	}
+
+	@NonNull
+	private JsonRequestBPartnerProductUpsert getBPartnerProductUpsertRequest(@NonNull final JsonBOM jsonBOM)
+	{
+		if(Check.isBlank(jsonBOM.getBPartnerMetasfreshId()))
+		{
+			throw new RuntimeException("Missing mandatory METASFRESHID! JsonBOM.ARTNRID=" + jsonBOM.getProductId());
+		}
+
+		final JsonRequestBPartnerProductUpsert requestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
+
+		requestBPartnerProductUpsert.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
+		requestBPartnerProductUpsert.setActive(true);
+
+		return requestBPartnerProductUpsert;
 	}
 }
