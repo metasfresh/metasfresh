@@ -64,12 +64,12 @@ public class IBANValidationBLTest
 		Env.setContext(ctx, "#AD_User_ID", 1);
 
 		// prepare countries: EU
-		prepareCountry("AD", "n", "4", "10", "n", "4", "20", "n", "12", "30", null, null, null, null, null, null);
+		prepareCountry("AD", "n", "4", "10", "n", "4", "20", "c", "12", "30", null, null, null, null, null, null);
 		prepareCountry("AT", "n", "5", "10", null, null, null, "n", "11", "18", null, null, null, null, null, null);
 		prepareCountry("BE", "n", "3", "10", null, null, null, "n", "11", "18", null, null, null, null, null, null);
 		prepareCountry("DE", "n", "8", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
 		prepareCountry("CH", "n", "5", "10", null, null, null, "n", "12", "20", null, null, null, null, null, null);
-		prepareCountry("FR", "n", "5", "10", "n", "5", "20", "n", "12", "30", null, null, null, "c", "11", "40");
+		prepareCountry("FR", "n", "5", "10", "n", "5", "20", "c", "11", "30", null, null, null, "n", "2", "40");
 		prepareCountry("CZ", "n", "4", "10", null, null, null, "n", "16", "20", null, null, null, null, null, null);
 		prepareCountry("HR", "n", "7", "10", null, null, null, "n", "10", "20", null, null, null, null, null, null);
 		prepareCountry("CY", "n", "3", "10", "n", "5", "20", "c", "16", "30", null, null, null, null, null, null);
@@ -89,7 +89,6 @@ public class IBANValidationBLTest
 		prepareCountry("BG", "a", "4", "10", "n", "4", "20", "c", "8", "40", "n", "2", "30", null, null, null);
 		prepareCountry("LV", "a", "4", "10", null, null, null, "c", "13", "20", null, null, null, null, null, null);
 		prepareCountry("MT", "a", "4", "10", "n", "5", "20", "c", "18", "30", null, null, null, null, null, null);
-		prepareCountry("SI", "n", "2", "10", "n", "2", "20", "n", "8", "30", null, null, null, "n", "2", "40");
 		prepareCountry("SK", "n", "4", "10", null, null, null, "c", "16", "20", null, null, null, null, null, null);
 		prepareCountry("RO", "a", "4", "10", null, null, null, "c", "16", "20", null, null, null, null, null, null);
 	}
@@ -145,7 +144,6 @@ public class IBANValidationBLTest
 		final int checkDigitCY = ibanValidationBL.ISO7064Mod97_10("CY17002001280000001200527600");
 		final int checkDigitDK = ibanValidationBL.ISO7064Mod97_10("DK5000400440116243");
 		final int checkDigitEE = ibanValidationBL.ISO7064Mod97_10("EE382200221020145685");
-		final int checkDigitFI = ibanValidationBL.ISO7064Mod97_10("EE382200221020145685");
 		final int checkDigitHU = ibanValidationBL.ISO7064Mod97_10("HU42117730161111101800000000");
 		final int checkDigitLT = ibanValidationBL.ISO7064Mod97_10("LT121000011101001000");
 		final int checkDigitLU = ibanValidationBL.ISO7064Mod97_10("LU120010001234567891");
@@ -153,7 +151,7 @@ public class IBANValidationBLTest
 		final int checkDigitPT = ibanValidationBL.ISO7064Mod97_10("PT50002700000001234567833");
 		final int checkDigitSI = ibanValidationBL.ISO7064Mod97_10("SI56192001234567892");
 		final int checkDigitES = ibanValidationBL.ISO7064Mod97_10("ES7921000813610123456789");
-		final int checkDigitSE = ibanValidationBL.ISO7064Mod97_10("SE7280000810340009783242");
+		final int checkDigitSE = ibanValidationBL.ISO7064Mod97_10("SE4550000000058398257466");
 		final int checkDigitGR = ibanValidationBL.ISO7064Mod97_10("GR9608100010000001234567890");
 		final int checkDigitMC = ibanValidationBL.ISO7064Mod97_10("MC5811222000010123456789030");
 		final int checkDigitBG = ibanValidationBL.ISO7064Mod97_10("BG18RZBB91550123456789");
@@ -161,6 +159,7 @@ public class IBANValidationBLTest
 		final int checkDigitMT = ibanValidationBL.ISO7064Mod97_10("MT31MALT01100000000000000000123");
 		final int checkDigitSK = ibanValidationBL.ISO7064Mod97_10("SK8975000000000012345671");
 		final int checkDigitRO = ibanValidationBL.ISO7064Mod97_10("RO09BCYP0000001234567890");
+		final int checkDigitFI = ibanValidationBL.ISO7064Mod97_10("FI2112345600000785");
 
 		assertThat(checkDigitAD).isEqualTo(1);
 		assertThat(checkDigitAT).isEqualTo(1);
@@ -172,7 +171,6 @@ public class IBANValidationBLTest
 		assertThat(checkDigitCY).isEqualTo(1);
 		assertThat(checkDigitDK).isEqualTo(1);
 		assertThat(checkDigitEE).isEqualTo(1);
-		assertThat(checkDigitFI).isEqualTo(1);
 		assertThat(checkDigitHU).isEqualTo(1);
 		assertThat(checkDigitLT).isEqualTo(1);
 		assertThat(checkDigitLU).isEqualTo(1);
@@ -188,6 +186,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitMT).isEqualTo(1);
 		assertThat(checkDigitSK).isEqualTo(1);
 		assertThat(checkDigitRO).isEqualTo(1);
+		assertThat(checkDigitFI).isEqualTo(1);
 	}
 
 	@Test
@@ -212,7 +211,7 @@ public class IBANValidationBLTest
 		final int checkDigitPT = ibanValidationBL.ISO7064Mod97_10("PT50002700000001234567832");
 		final int checkDigitSI = ibanValidationBL.ISO7064Mod97_10("SI56192001234567891");
 		final int checkDigitES = ibanValidationBL.ISO7064Mod97_10("ES7921000813610123456788");
-		final int checkDigitSE = ibanValidationBL.ISO7064Mod97_10("SE7280000810340009783241");
+		final int checkDigitSE = ibanValidationBL.ISO7064Mod97_10("SE4550000000058398257456");
 		final int checkDigitGR = ibanValidationBL.ISO7064Mod97_10("GR9608100010000001234567891");
 		final int checkDigitMC = ibanValidationBL.ISO7064Mod97_10("MC5811222000010123456789031");
 		final int checkDigitBG = ibanValidationBL.ISO7064Mod97_10("BG18RZBB91550123456788");
@@ -220,6 +219,7 @@ public class IBANValidationBLTest
 		final int checkDigitMT = ibanValidationBL.ISO7064Mod97_10("MT31MALT01100000000000000000122");
 		final int checkDigitSK = ibanValidationBL.ISO7064Mod97_10("SK8975000000000012345670");
 		final int checkDigitRO = ibanValidationBL.ISO7064Mod97_10("RO09BCYP0000001234567891");
+		final int checkDigitFI = ibanValidationBL.ISO7064Mod97_10("FI2112345600000787");
 
 		assertThat(checkDigitAD).isNotEqualTo(1);
 		assertThat(checkDigitAT).isNotEqualTo(1);
@@ -246,6 +246,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitMT).isNotEqualTo(1);
 		assertThat(checkDigitSK).isNotEqualTo(1);
 		assertThat(checkDigitRO).isNotEqualTo(1);
+		assertThat(checkDigitFI).isNotEqualTo(1);
 	}
 
 	@Test
@@ -254,31 +255,32 @@ public class IBANValidationBLTest
 		final IBANValidationBL ibanValidationBL = new IBANValidationBL();
 
 		ibanValidationBL.validate("CZ6508000000192000145399");
-		ibanValidationBL.validate("AD1200012030200359100099");
-		ibanValidationBL.validate("AT611904300234573200");
-		ibanValidationBL.validate("DE45500105170041262311");
-		ibanValidationBL.validate("CH9300762011623852956");
-		ibanValidationBL.validate("FR1420041010050500013M02605");
-		ibanValidationBL.validate("CZ6508000000192000145398");
-		ibanValidationBL.validate("HR1210010051863000159");
-		ibanValidationBL.validate("CY17002001280000001200527601");
-		ibanValidationBL.validate("DK5000400440116242");
-		ibanValidationBL.validate("EE382200221020145684");
-		ibanValidationBL.validate("HU42117730161111101800000001");
-		ibanValidationBL.validate("LT121000011101001001");
-		ibanValidationBL.validate("LU120010001234567890");
-		ibanValidationBL.validate("PL10105000997603123456789122");
-		ibanValidationBL.validate("PT50002700000001234567832");
-		ibanValidationBL.validate("SI56192001234567891");
-		ibanValidationBL.validate("ES7921000813610123456788");
-		ibanValidationBL.validate("SE7280000810340009783241");
-		ibanValidationBL.validate("GR9608100010000001234567891");
-		ibanValidationBL.validate("MC5811222000010123456789031");
-		ibanValidationBL.validate("BG18RZBB91550123456788");
-		ibanValidationBL.validate("LV97HABA0012345678911");
-		ibanValidationBL.validate("MT31MALT01100000000000000000122");
-		ibanValidationBL.validate("SK8975000000000012345670");
-		ibanValidationBL.validate("RO09BCYP0000001234567891");
+		ibanValidationBL.validate("AD1200012030200359100100");
+		ibanValidationBL.validate("AT611904300234573201");
+		ibanValidationBL.validate("DE45500105170041262312");
+		ibanValidationBL.validate("CH9300762011623852957");
+		ibanValidationBL.validate("FR1420041010050500013M02606");
+		ibanValidationBL.validate("HR1210010051863000160");
+		ibanValidationBL.validate("CY17002001280000001200527600");
+		ibanValidationBL.validate("DK5000400440116243");
+		ibanValidationBL.validate("EE382200221020145685");
+		ibanValidationBL.validate("HU42117730161111101800000000");
+		ibanValidationBL.validate("LT121000011101001000");
+		ibanValidationBL.validate("LU120010001234567891");
+		ibanValidationBL.validate("PL10105000997603123456789123");
+		ibanValidationBL.validate("PT50002700000001234567833");
+		ibanValidationBL.validate("SI56191000000123438");
+		ibanValidationBL.validate("ES7921000813610123456789");
+		ibanValidationBL.validate("SE4550000000058398257466");
+		ibanValidationBL.validate("GR9608100010000001234567890");
+		ibanValidationBL.validate("MC5811222000010123456789030");
+		ibanValidationBL.validate("BG18RZBB91550123456789");
+		ibanValidationBL.validate("LV97HABA0012345678910");
+		ibanValidationBL.validate("MT31MALT01100000000000000000123");
+		ibanValidationBL.validate("SK8975000000000012345671");
+		ibanValidationBL.validate("RO09BCYP0000001234567890");
+		ibanValidationBL.validate("FI2112345600000785");
+
 	}
 
 }
