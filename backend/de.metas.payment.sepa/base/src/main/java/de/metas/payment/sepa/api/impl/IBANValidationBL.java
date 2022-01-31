@@ -95,9 +95,6 @@ public class IBANValidationBL implements IIBANValidationBL
 	
 	/**
 	 * Other implementation of modulo 97
-	 * 
-	 * @param iban
-	 * @return
 	 */
 	/* package */ int ISO7064Mod97_10(final String iban)
 	{
