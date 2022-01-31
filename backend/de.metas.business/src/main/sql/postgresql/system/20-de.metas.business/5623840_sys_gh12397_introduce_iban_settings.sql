@@ -1,4 +1,6 @@
 -- Creata a backup of c_country
+DROP TABLE IF EXISTS backup.c_country_gh12397;
+
 create table backup.c_country_gh12397 AS
 select * from c_country;
 
