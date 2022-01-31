@@ -62,6 +62,11 @@ public class BankRepository
 	 */
 	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
 
+	public DataImportConfigId retrieveDefaultBankDataImportConfigId()
+	{
+		return HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID;
+	}
+
 	public Bank getById(final BankId bankId)
 	{
 		return banksById.getOrLoad(bankId, this::retrieveBankById);
@@ -131,6 +136,8 @@ public class BankRepository
 		// ESR:
 		record.setESR_PostBank(request.isEsrPostBank());
 
+		record.setC_DataImport_ID(DataImportConfigId.toRepoId(request.getDataImportConfigId()));
+
 		saveRecord(record);
 
 		return toBank(record);
@@ -140,13 +147,14 @@ public class BankRepository
 	{
 		if (bankId == null)
 		{
-			return HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID;
+			return retrieveDefaultBankDataImportConfigId();
 		}
 
 		final Bank bank = getById(bankId);
 
 		final DataImportConfigId dataImportConfigId = bank.getDataImportConfigId();
 
-		return dataImportConfigId != null ? dataImportConfigId : HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID;
+		return dataImportConfigId != null ? dataImportConfigId : retrieveDefaultBankDataImportConfigId();
 	}
+
 }
