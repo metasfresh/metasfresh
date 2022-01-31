@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Deprecated
-@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bom" })
+@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bom/version" })
 @RestController
 public class DeprecatedProductBOMRestController extends ProductBOMRestController
 {
