@@ -4,13 +4,14 @@
   "private": true,
   "license": "GPL 2",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
     "@redux-offline/redux-offline": "^2.6.0",
     "@reduxjs/toolkit": "^1.6.1",
     "@stomp/stompjs": "^6.1.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@zxing/browser": "^0.0.9",
+    "@zxing/browser": "^0.0.10",
     "@zxing/library": "^0.18.6",
     "axios": "^0.21.4",
     "bulma": "^0.9.3",
@@ -57,7 +58,11 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "env": {
+      "browser": true,
+      "node": true
+    }
   },
   "browserslist": {
     "production": [

@@ -1,7 +1,6 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -19,7 +18,7 @@ public class DistributionJobStep
 
 	//
 	// Pick From
-	@NonNull HuId pickFromHUId;
+	@NonNull HUInfo pickFromHU;
 	@NonNull Quantity qtyPicked;
 	@Nullable QtyRejectedReasonCode qtyNotPickedReasonCode;
 	boolean isPickedFromLocator;
@@ -35,7 +34,7 @@ public class DistributionJobStep
 			@NonNull final DDOrderMoveScheduleId id,
 			@NonNull final Quantity qtyToMoveTarget,
 			//
-			@NonNull final HuId pickFromHUId,
+			@NonNull final HUInfo pickFromHU,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReasonCode,
 			final boolean isPickedFromLocator,
@@ -46,7 +45,7 @@ public class DistributionJobStep
 
 		this.id = id;
 		this.qtyToMoveTarget = qtyToMoveTarget;
-		this.pickFromHUId = pickFromHUId;
+		this.pickFromHU = pickFromHU;
 		this.qtyPicked = qtyPicked;
 		this.qtyNotPickedReasonCode = qtyNotPickedReasonCode;
 		this.isPickedFromLocator = isPickedFromLocator;

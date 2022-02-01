@@ -5,7 +5,7 @@ export function postStepPicked({
   wfProcessId,
   activityId,
   stepId,
-  huBarcode,
+  huQRCode,
   qtyPicked,
   qtyRejected,
   qtyRejectedReasonCode,
@@ -17,16 +17,16 @@ export function postStepPicked({
         wfActivityId: activityId,
         pickingStepId: stepId,
         type: 'PICK',
-        huBarcode: huBarcode,
-        qtyPicked: qtyPicked,
-        qtyRejectedReasonCode: qtyRejectedReasonCode,
+        huQRCode,
+        qtyPicked,
+        qtyRejectedReasonCode,
         qtyRejected,
       },
     ],
   });
 }
 
-export function postStepUnPicked({ wfProcessId, activityId, stepId, huBarcode }) {
+export function postStepUnPicked({ wfProcessId, activityId, stepId, huQRCode }) {
   return axios.post(`${apiBasePath}/picking/events`, {
     events: [
       {
@@ -34,7 +34,7 @@ export function postStepUnPicked({ wfProcessId, activityId, stepId, huBarcode })
         wfActivityId: activityId,
         pickingStepId: stepId,
         type: 'UNPICK',
-        huBarcode: huBarcode,
+        huQRCode,
       },
     ],
   });

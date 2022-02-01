@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -12,8 +13,12 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToExistingLU;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToNewLU;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToNewLUList;
 import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonFinishedGoodsReceiveLine;
@@ -47,11 +52,14 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerBL bpartnerBL;
+	private final HUQRCodesService huQRCodeService;
 
 	public MaterialReceiptActivityHandler(
-			@NonNull final IBPartnerBL bpartnerBL)
+			final @NonNull IBPartnerBL bpartnerBL,
+			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.bpartnerBL = bpartnerBL;
+		this.huQRCodeService = huQRCodeService;
 	}
 
 	@Override
@@ -81,8 +89,37 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final JsonAggregateToNewLUList availablePackingMaterials = getAvailablePackingMaterials(line.getProductId(), customerId);
+		final String adLanguage = jsonOpts.getAdLanguage();
 
-		return JsonFinishedGoodsReceiveLine.of(line, availablePackingMaterials, jsonOpts);
+		return JsonFinishedGoodsReceiveLine.builder()
+				.id(line.getId().toJson())
+				.productName(line.getProductName().translate(adLanguage))
+				.uom(line.getQtyToReceive().getUOMSymbol())
+				.qtyToReceive(line.getQtyToReceive().toBigDecimal())
+				.qtyReceived(line.getQtyReceived().toBigDecimal())
+				.currentReceivingHU(
+						line.getCurrentReceivingHU() != null
+								? toJsonAggregateToExistingLU(line.getCurrentReceivingHU(), huQRCodeService)
+								: null)
+				.availableReceivingTargets(availablePackingMaterials)
+				.build();
+	}
+
+	public static JsonAggregateToExistingLU toJsonAggregateToExistingLU(
+			final CurrentReceivingHU currentReceivingHU,
+			@NonNull final HUQRCodesService huQRCodeService)
+	{
+		return JsonAggregateToExistingLU.builder()
+				.huQRCode(toJsonRenderedHUQRCode(currentReceivingHU.getAggregateToLUId(), huQRCodeService))
+				.tuPIItemProductId(currentReceivingHU.getTuPIItemProductId())
+				.build();
+	}
+
+	private static JsonRenderedHUQRCode toJsonRenderedHUQRCode(
+			@NonNull final HuId huId,
+			@NonNull final HUQRCodesService huQRCodeService)
+	{
+		return huQRCodeService.getQRCodeByHuId(huId).toRenderedJson();
 	}
 
 	@NonNull
@@ -117,8 +154,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 							JsonAggregateToNewLU.builder()
 									.caption(luPackingInstructions.getName())
 									.tuCaption(tuPIItemProduct.getName())
-									.luPIItemId(HuPackingInstructionsId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()).getRepoId())
-									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()).getRepoId())
+									.luPIItemId(HuPackingInstructionsItemId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()))
+									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
 									.build());
 				}
 			}

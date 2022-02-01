@@ -1,8 +1,8 @@
 import { HEADER_PUSH_ENTRY } from '../constants/HeaderActionTypes';
 
-export function pushHeaderEntry({ location, values }) {
+export function pushHeaderEntry({ location, caption, values = [] }) {
   return {
     type: HEADER_PUSH_ENTRY,
-    payload: { location, values },
+    payload: { location, caption, values },
   };
 }

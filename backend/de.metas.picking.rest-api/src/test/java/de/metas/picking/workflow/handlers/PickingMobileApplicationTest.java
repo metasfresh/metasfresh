@@ -2,7 +2,6 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -11,6 +10,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotId;
@@ -115,9 +115,11 @@ class PickingMobileApplicationTest
 		// Masterdata: HUs
 		{
 			lu1 = helper.createLU(luPackingInstructions, "75");
+			helper.createQRCode(lu1, "QR-LU1");
 			helper.dumpHU("LU1", lu1);
 
 			lu2 = helper.createLU(luPackingInstructions, "250");
+			helper.createQRCode(lu2, "QR-LU2");
 			helper.dumpHU("LU2", lu2);
 		}
 
@@ -182,6 +184,12 @@ class PickingMobileApplicationTest
 		recorder.reportStepWithAllHUs(when + " - HUs");
 	}
 
+	private String toQRCodeString(@NonNull final HuId huId)
+	{
+		final HUQRCode qrCode = helper.getQRCode(huId);
+		return qrCode.toRenderedJson().getCode();
+	}
+
 	@Test
 	void createJobAndGet()
 	{
@@ -239,7 +247,7 @@ class PickingMobileApplicationTest
 												.wfActivityId(pickingActivity.getActivityId())
 												.pickingStepId(steps.get(0).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
-												.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+												.huQRCode(toQRCodeString(lu1))
 												.qtyPicked(new BigDecimal("75"))
 												.build()))
 								.build());
@@ -260,7 +268,7 @@ class PickingMobileApplicationTest
 												.wfActivityId(pickingActivity.getActivityId())
 												.pickingStepId(steps.get(1).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
-												.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+												.huQRCode(toQRCodeString(lu2))
 												.qtyPicked(new BigDecimal("25"))
 												.build()
 								))
@@ -307,7 +315,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+										.huQRCode(toQRCodeString(lu1))
 										.qtyPicked(new BigDecimal("25"))
 										.qtyRejected(new BigDecimal("50"))
 										.qtyRejectedReasonCode("damaged")
@@ -317,7 +325,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+										.huQRCode(toQRCodeString(lu2))
 										.qtyPicked(new BigDecimal("25"))
 										.qtyRejected(new BigDecimal("25"))
 										.qtyRejectedReasonCode("damaged")
@@ -329,7 +337,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(1).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+										.huQRCode(toQRCodeString(lu2))
 										.qtyPicked(new BigDecimal("25"))
 										.build()
 						))
@@ -380,7 +388,7 @@ class PickingMobileApplicationTest
 											.wfActivityId(pickingActivity.getActivityId())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.PICK)
-											.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+											.huQRCode(toQRCodeString(lu1))
 											.qtyPicked(new BigDecimal("75"))
 											.build()))
 							.build());
@@ -397,7 +405,7 @@ class PickingMobileApplicationTest
 											.wfActivityId(pickingActivity.getActivityId())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.UNPICK)
-											.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+											.huQRCode(toQRCodeString(lu1))
 											.build()))
 							.build());
 			wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());

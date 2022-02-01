@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HuId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -80,19 +81,21 @@ class DistributionJobLoader
 				.dropToLocator(loadingSupportServices.getLocatorInfoByRepoId(ddOrderLine.getM_LocatorTo_ID()))
 				.steps(getSchedules(ddOrderId, ddOrderLineId)
 						.stream()
-						.map(DistributionJobLoader::toDistributionJobStep)
+						.map(schedule -> toDistributionJobStep(schedule, loadingSupportServices))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	public static DistributionJobStep toDistributionJobStep(final DDOrderMoveSchedule schedule)
+	public static DistributionJobStep toDistributionJobStep(
+			@NonNull final DDOrderMoveSchedule schedule,
+			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices)
 	{
 		return DistributionJobStep.builder()
 				.id(schedule.getId())
 				.qtyToMoveTarget(schedule.getQtyToPick())
 				//
 				// Pick From
-				.pickFromHUId(schedule.getPickFromHUId())
+				.pickFromHU(toHUInfo(schedule.getPickFromHUId(), loadingSupportServices))
 				.qtyPicked(schedule.getQtyPicked())
 				.qtyNotPickedReasonCode(schedule.getQtyNotPickedReason())
 				.isPickedFromLocator(schedule.isPickedFrom())
@@ -102,6 +105,16 @@ class DistributionJobLoader
 				//
 				.build();
 
+	}
+
+	private static HUInfo toHUInfo(
+			@NonNull HuId huId,
+			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices)
+	{
+		return HUInfo.builder()
+				.id(huId)
+				.qrCode(loadingSupportServices.getQRCodeByHuId(huId))
+				.build();
 	}
 
 	private void addToCache(@NonNull final I_DD_Order ddOrder)

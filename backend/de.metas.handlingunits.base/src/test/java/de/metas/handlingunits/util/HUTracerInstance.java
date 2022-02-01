@@ -43,6 +43,8 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationEntry;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -83,6 +85,7 @@ public class HUTracerInstance
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final HUQRCodesRepository huQRCodeRepository = new HUQRCodesRepository();
 	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -272,11 +275,19 @@ public class HUTracerInstance
 			out.append(toStringName(hu));
 			out.append(" [").append(toHUStorageString(hu)).append("]");
 
+			//
+			// HU Reservations
 			final String huReservations = toHUReservationsString(hu);
 			if (Check.isNotBlank(huReservations))
 			{
 				out.append(" [").append(huReservations).append("]");
 			}
+
+			//
+			// QR Code
+			huQRCodeRepository.getQRCodeByHuId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.map(HUQRCode::toRenderedJson)
+					.ifPresent(qrCode -> out.append(" [QR ...").append(qrCode.getDisplayable()).append("]"));
 
 			out.append("\n");
 		}
@@ -447,7 +458,6 @@ public class HUTracerInstance
 	public void dumpTransactions()
 	{
 		final PrintStream out = System.out;
-		final String linePrefix = "";
 
 		final List<I_M_HU_Trx_Hdr> trxHdrs = retrieveAllTrxHdr();
 		if (trxHdrs.isEmpty())
@@ -458,7 +468,7 @@ public class HUTracerInstance
 		out.println("\nTransactions: ");
 		for (final I_M_HU_Trx_Hdr trxHdr : trxHdrs)
 		{
-			dump(out, linePrefix, trxHdr);
+			dump(out, trxHdr);
 		}
 	}
 
@@ -472,15 +482,14 @@ public class HUTracerInstance
 				.list(I_M_HU_Trx_Hdr.class);
 	}
 
-	private void dump(final PrintStream out, final String linePrefix, final I_M_HU_Trx_Hdr trxHdr)
+	private void dump(final PrintStream out, final I_M_HU_Trx_Hdr trxHdr)
 	{
-		out.println(linePrefix
-				+ "Hdr_ID=" + trxHdr.getM_HU_Trx_Hdr_ID());
+		out.println("Hdr_ID=" + trxHdr.getM_HU_Trx_Hdr_ID());
 
 		final List<I_M_HU_Trx_Line> trxLines = huTrxDAO.retrieveTrxLines(trxHdr);
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
 		{
-			dump(out, linePrefix + linePrefixIncrement, trxLine);
+			dump(out, linePrefixIncrement, trxLine);
 		}
 	}
 
@@ -497,6 +506,7 @@ public class HUTracerInstance
 				+ ", Table/Record_ID=" + trxLine.getAD_Table_ID() + "/" + trxLine.getRecord_ID();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void dump(final PrintStream out, final String linePrefix, final I_M_HU_Trx_Line trxLine)
 	{
 		out.println(linePrefix + toString(trxLine)); // NOPMD no need for toString warnings to fire up, due to it being a custom toString

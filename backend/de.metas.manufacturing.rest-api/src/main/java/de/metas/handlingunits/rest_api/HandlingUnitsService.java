@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUProduct;
+import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -35,6 +35,9 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
@@ -62,6 +65,13 @@ public class HandlingUnitsService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final HUQRCodesService huQRCodeService;
+
+	public HandlingUnitsService(
+			final @NonNull HUQRCodesService huQRCodeService)
+	{
+		this.huQRCodeService = huQRCodeService;
+	}
 
 	@NonNull
 	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage)
@@ -86,7 +96,7 @@ public class HandlingUnitsService
 				.huStatus(hu.getHUStatus())
 				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus()).translate(adLanguage))
 				.displayName(handlingUnitsBL.getDisplayName(hu))
-				.barcode(HUBarcode.ofHuId(huId).getAsString())
+				.qrCode(toJsonHUQRCode(huId))
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
 				.attributes(getAttributes(huContext, hu));
@@ -104,6 +114,23 @@ public class HandlingUnitsService
 		}
 
 		return jsonHUBuilder.includedHUs(getIncludedHUs(hu, adLanguage))
+				.build();
+	}
+
+	@Nullable
+	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
+	{
+		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
+				.map(HandlingUnitsService::toJsonHUQRCode)
+				.orElse(null);
+	}
+
+	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
+	{
+		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
+		return JsonHUQRCode.builder()
+				.code(rendered.getCode())
+				.displayable(rendered.getDisplayable())
 				.build();
 	}
 

@@ -12,6 +12,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -40,9 +41,10 @@ public class DistributionRestService
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	public DistributionRestService(
-			@NonNull final DDOrderService ddOrderService,
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
-			@NonNull final DistributionJobHUReservationService distributionJobHUReservationService)
+			final @NonNull DDOrderService ddOrderService,
+			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
+			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
@@ -51,6 +53,7 @@ public class DistributionRestService
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+				.huQRCodeService(huQRCodeService)
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -132,7 +135,7 @@ public class DistributionRestService
 					.qtyNotPickedReason(QtyRejectedReasonCode.ofNullableCode(event.getPickFrom().getQtyRejectedReasonCode()).orElse(null))
 					.build());
 
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
 			return job.withChangedStep(scheduleId, ignored -> changedStep);
 		}
 		else if (event.getDropTo() != null)
@@ -141,7 +144,7 @@ public class DistributionRestService
 					.scheduleId(scheduleId)
 					.build());
 
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
 			return job.withChangedStep(scheduleId, ignored -> changedStep);
 		}
 		else

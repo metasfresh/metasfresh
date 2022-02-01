@@ -367,6 +367,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU_PI pi);
 
+	@NonNull
+	String getHU_UnitType(@NonNull HuPackingInstructionsId piId);
+
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>hu</code>'s.
 	 *
@@ -415,7 +418,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
+	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Version piVersion);
+
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
+
+	String getPIName(@NonNull HuPackingInstructionsId id);
 
 	I_M_HU_PI getPI(@NonNull HUPIItemProductId huPIItemProductId);
 
