@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,12 @@
  * #L%
  */
 
-package de.metas.rest_api.v1.product;
+package de.metas.rest_api.v2.product;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.v1.product.command.GetProductsCommand;
-import de.metas.rest_api.v1.product.response.JsonGetProductsResponse;
+import de.metas.rest_api.v2.product.command.GetProductCategoriesCommand;
+import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.compiere.util.Env;
@@ -37,33 +37,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @deprecated please consider migrating to version 2 of this API.
- */
-@Deprecated
+import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+
 @RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/products",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/products"})
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/productCategories" })
 @RestController
 @Profile(Profiles.PROFILE_App)
-public class ProductsRestController
+public class ProductCategoriesRestController
 {
-	private static final Logger logger = LogManager.getLogger(ProductsRestController.class);
+	private static final Logger logger = LogManager.getLogger(ProductCategoriesRestController.class);
 	private final ProductsServicesFacade productsServicesFacade;
 
-	public ProductsRestController(@NonNull final ProductsServicesFacade productsServicesFacade)
+	public ProductCategoriesRestController(@NonNull final ProductsServicesFacade productsServicesFacade)
 	{
 		this.productsServicesFacade = productsServicesFacade;
 	}
 
 	@GetMapping
-	public ResponseEntity<JsonGetProductsResponse> getProducts()
+	public ResponseEntity<JsonGetProductCategoriesResponse> getProductCategories()
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final JsonGetProductsResponse response = GetProductsCommand.builder()
+			final JsonGetProductCategoriesResponse response = GetProductCategoriesCommand.builder()
 					.servicesFacade(productsServicesFacade)
 					.adLanguage(adLanguage)
 					.execute();
@@ -76,7 +73,7 @@ public class ProductsRestController
 
 			return ResponseEntity
 					.status(HttpStatus.NOT_FOUND)
-					.body(JsonGetProductsResponse.error(ex, adLanguage));
+					.body(JsonGetProductCategoriesResponse.error(ex, adLanguage));
 		}
 	}
 }

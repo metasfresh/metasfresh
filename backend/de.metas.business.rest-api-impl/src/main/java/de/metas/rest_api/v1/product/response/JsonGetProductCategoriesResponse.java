@@ -1,18 +1,15 @@
-package de.metas.rest_api.product.response;
+package de.metas.rest_api.v1.product.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import de.metas.product.ProductId;
-import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -40,43 +37,20 @@ import java.util.List;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonProduct
+public class JsonGetProductCategoriesResponse
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product.M_Product_ID`.")
-	@NonNull
-	ProductId id;
-
-	@ApiModelProperty("This translates to `M_Product.Value`.")
-	@NonNull
-	String productNo;
-
-	@NonNull
-	String name;
-
-	@Nullable
-	String description;
-
-	@ApiModelProperty(value = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
-	@Nullable
-	@JsonInclude(Include.NON_EMPTY)
-	String ean;
-
-	@ApiModelProperty("This translates to `M_Product.ExternalId`.")
-	@Nullable
-	@JsonInclude(Include.NON_EMPTY)
-	String externalId;
-
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
-	@NonNull
-	String uom;
-
-	@NonNull
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Singular
-	List<JsonProductBPartner> bpartners;
+	List<JsonProductCategory> productCategories;
 
-	@NonNull
-	JsonCreatedUpdatedInfo createdUpdatedInfo;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Singular
+	List<JsonErrorItem> errors;
+
+	public static JsonGetProductCategoriesResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	{
+		return builder()
+				.error(JsonErrors.ofThrowable(throwable, adLanguage))
+				.build();
+	}
 }
