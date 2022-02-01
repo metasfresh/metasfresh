@@ -441,6 +441,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return piVersion.getHU_UnitType();
 	}
 
+	@Override
+	@NonNull
+	public String getHU_UnitType(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId).getHU_UnitType();
+	}
+
+
 	@Nullable
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU hu)

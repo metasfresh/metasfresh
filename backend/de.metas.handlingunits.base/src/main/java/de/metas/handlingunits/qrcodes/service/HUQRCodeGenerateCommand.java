@@ -1,12 +1,14 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -32,6 +34,7 @@ class HUQRCodeGenerateCommand
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final Supplier<UUID> randomUUIDGenerator;
 
 	private final HUQRCodeGenerateRequest request;
@@ -55,11 +58,7 @@ class HUQRCodeGenerateCommand
 
 		final HUQRCode.HUQRCodeBuilder template = HUQRCode.builder()
 				//.id(...) // will be set later
-				.packingInfo(HUQRCodePackingInfo.builder()
-						.huUnitType(request.getHuUnitType())
-						.packingInstructionsId(request.getHuPackingInstructionsId())
-						.caption(Services.get(IHandlingUnitsBL.class).getPIName(request.getHuPackingInstructionsId()))
-						.build())
+				.packingInfo(getHUQRCodePackingInfo(request.getHuPackingInstructionsId()))
 				.product(getHUQRCodeProductInfo(request.getProductId()))
 				.attributes(request.getAttributes()
 						.stream()
@@ -74,6 +73,15 @@ class HUQRCodeGenerateCommand
 		}
 
 		return result;
+	}
+
+	private HUQRCodePackingInfo getHUQRCodePackingInfo(final HuPackingInstructionsId huPackingInstructionsId)
+	{
+		return HUQRCodePackingInfo.builder()
+				.huUnitType(HUQRCodeUnitType.ofCode(handlingUnitsBL.getHU_UnitType(huPackingInstructionsId)))
+				.packingInstructionsId(huPackingInstructionsId)
+				.caption(handlingUnitsBL.getPIName(huPackingInstructionsId))
+				.build();
 	}
 
 	private HUQRCodeProductInfo getHUQRCodeProductInfo(final ProductId productId)

@@ -25,7 +25,7 @@ public class JsonQRCodesGenerateRequestConverters
 	{
 		return HUQRCodeGenerateRequest.builder()
 				.count(json.getCount())
-				.huUnitType(json.getHuUnitType())
+				.huPackingInstructionsId(json.getHuPackingInstructionsId())
 				.productId(json.getProductId())
 				.attributes(json.getAttributes()
 						.stream()

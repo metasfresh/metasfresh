@@ -367,6 +367,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU_PI pi);
 
+	@NonNull
+	String getHU_UnitType(@NonNull HuPackingInstructionsId piId);
+
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>hu</code>'s.
 	 *

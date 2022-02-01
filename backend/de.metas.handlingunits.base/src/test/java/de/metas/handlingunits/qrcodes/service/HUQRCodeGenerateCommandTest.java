@@ -3,8 +3,9 @@ package de.metas.handlingunits.qrcodes.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.mm.attributes.AttributeId;
@@ -72,19 +73,26 @@ class HUQRCodeGenerateCommandTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private HuPackingInstructionsId packingInstructions(final int id, final String name)
+	private HuPackingInstructionsId packingInstructions(final int id, final String name, final String unitType)
 	{
 		final I_M_HU_PI pi = InterfaceWrapperHelper.newInstance(I_M_HU_PI.class);
 		pi.setM_HU_PI_ID(id);
 		pi.setName(name);
 		InterfaceWrapperHelper.save(pi);
+
+		final I_M_HU_PI_Version piVersion = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Version.class);
+		piVersion.setM_HU_PI_ID(pi.getM_HU_PI_ID());
+		piVersion.setIsCurrent(true);
+		piVersion.setHU_UnitType(unitType);
+		InterfaceWrapperHelper.save(piVersion);
+
 		return HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
 	}
 
 	@Test
 	void standardTest()
 	{
-		final HuPackingInstructionsId piId = packingInstructions(70003, "Some TU");
+		final HuPackingInstructionsId piId = packingInstructions(70003, "Some TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final ProductId productId = product(60001, "P1", "Product 1");
 		final AttributeId attributeId1 = attribute("A1", "Attribute 1", AttributeValueType.STRING);
 		final AttributeId attributeId2 = attribute("A2", "Attribute 2", AttributeValueType.NUMBER);
@@ -99,7 +107,6 @@ class HUQRCodeGenerateCommandTest
 				))
 				.request(HUQRCodeGenerateRequest.builder()
 						.count(2)
-						.huUnitType(HUQRCodeUnitType.TU)
 						.huPackingInstructionsId(piId)
 						.productId(productId)
 						.attributes(ImmutableList.of(

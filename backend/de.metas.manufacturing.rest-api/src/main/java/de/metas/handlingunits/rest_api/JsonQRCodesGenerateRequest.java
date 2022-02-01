@@ -1,7 +1,7 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import java.util.List;
 public class JsonQRCodesGenerateRequest
 {
 	int count;
-	@NonNull HUQRCodeUnitType huUnitType;
+	@NonNull HuPackingInstructionsId huPackingInstructionsId;
 	@NonNull ProductId productId;
 	@NonNull List<Attribute> attributes;
 
@@ -27,7 +27,7 @@ public class JsonQRCodesGenerateRequest
 	@Jacksonized
 	private JsonQRCodesGenerateRequest(
 			final int count,
-			@NonNull final HUQRCodeUnitType huUnitType,
+			@NonNull final HuPackingInstructionsId huPackingInstructionsId,
 			@NonNull final ProductId productId,
 			@Nullable final List<Attribute> attributes,
 			final boolean onlyPrint)
@@ -35,7 +35,7 @@ public class JsonQRCodesGenerateRequest
 		Check.assumeGreaterThanZero(count, "count");
 
 		this.count = count;
-		this.huUnitType = huUnitType;
+		this.huPackingInstructionsId = huPackingInstructionsId;
 		this.productId = productId;
 		this.attributes = attributes != null ? ImmutableList.copyOf(attributes) : ImmutableList.of();
 		this.onlyPrint = onlyPrint;

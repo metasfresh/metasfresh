@@ -2,7 +2,6 @@ package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
@@ -195,7 +194,6 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		final List<HUQRCode> qrCodes = huQRCodesService.generate(
 				HUQRCodeGenerateRequest.builder()
 						.count(request.getQtyTUs().toInt())
-						.huUnitType(HUQRCodeUnitType.TU)
 						.huPackingInstructionsId(request.getTuPackingInstructionsId())
 						.productId(finishedGoodsReceiveLine.getProductId())
 						.attributes(toHUQRCodeGenerateRequestAttributesList(finishedGoodsReceiveLine.getAttributes()))

@@ -597,6 +597,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
+		if (piVersion == null)
+		{
+			throw new HUException("No current version found for " + piId);
+		}
+		return piVersion;
+	}
+
+
+	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
