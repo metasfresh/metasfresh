@@ -124,6 +124,12 @@ public class M_HU_StepDef
 		this.testContext = testContext;
 	}
 
+	@And("all the hu data is reset")
+	public void reset_data()
+	{
+		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+	}
+
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{

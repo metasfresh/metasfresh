@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -55,12 +56,12 @@ public class M_HU_PI_Item_Product_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_HU_PI_Item> huPiItemTable;
 	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
 
 	public M_HU_PI_Item_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_M_HU_PI_Item> huPiItemTable,
 			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable)
 	{

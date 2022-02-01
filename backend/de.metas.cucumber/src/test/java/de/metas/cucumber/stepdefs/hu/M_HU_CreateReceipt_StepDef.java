@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.hu;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -53,12 +54,12 @@ public class M_HU_CreateReceipt_StepDef
 
 	private final StepDefData<I_M_HU> huTable;
 	private final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable;
-	private final StepDefData<I_M_InOut> inOutTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final StepDefData<I_M_HU> huTable,
 			@NonNull final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable,
-			@NonNull final StepDefData<I_M_InOut> inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable)
 	{
 		this.huTable = huTable;
 		this.receiptScheduleTable = receiptScheduleTable;

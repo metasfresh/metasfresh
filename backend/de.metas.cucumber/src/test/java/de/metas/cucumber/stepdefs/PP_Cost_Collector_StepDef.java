@@ -48,12 +48,12 @@ public class PP_Cost_Collector_StepDef
 
 	private final StepDefData<I_PP_Order> ppOrderTable;
 	private final StepDefData<I_PP_Cost_Collector> ppCostCollectorTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
 	public PP_Cost_Collector_StepDef(
 			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
 			@NonNull final StepDefData<I_PP_Cost_Collector> ppCostCollectorTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.ppOrderTable = ppOrderTable;
 		this.ppCostCollectorTable = ppCostCollectorTable;
