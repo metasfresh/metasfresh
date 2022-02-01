@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
-import de.metas.util.Check;
+import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;

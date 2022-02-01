@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.grssignum.to_grs.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
 
@@ -101,9 +102,9 @@ public class JsonCustomerTest
 				.creditorId(1)
 				.debtorId(2)
 				.inactive(0)
-				.location(location)
-				.contact(contact)
-				.bpartnerProductExternalReference("someExternalRef")
+				.locations(ImmutableList.of(location))
+				.contacts(ImmutableList.of(contact))
+				.bpartnerProductExternalReferences(ImmutableList.of("someExternalRef"))
 				.build();
 
 		assertThat(partner).isEqualTo(expectedCustomer);
@@ -154,9 +155,9 @@ public class JsonCustomerTest
 				.creditorId(1)
 				.debtorId(2)
 				.inactive(0)
-				.contact(contact)
-				.location(location)
-				.bpartnerProductExternalReference("someExternalReference")
+				.contacts(ImmutableList.of(contact))
+				.locations(ImmutableList.of(location))
+				.bpartnerProductExternalReferences(ImmutableList.of("someExternalReference"))
 				.build();
 
 		//when

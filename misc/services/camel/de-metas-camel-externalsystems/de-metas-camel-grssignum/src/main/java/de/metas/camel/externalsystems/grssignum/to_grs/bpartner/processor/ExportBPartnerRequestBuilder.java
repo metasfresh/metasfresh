@@ -35,7 +35,7 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.util.Check;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;

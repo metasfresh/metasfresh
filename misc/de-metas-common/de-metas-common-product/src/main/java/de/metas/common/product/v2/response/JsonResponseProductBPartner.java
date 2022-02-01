@@ -36,7 +36,7 @@ import java.util.List;
 @JsonDeserialize(builder = JsonResponseProductBPartner.JsonResponseProductBPartnerBuilder.class)
 public class JsonResponseProductBPartner
 {
-	@JsonProperty("bPartnerProducts")
+	@JsonProperty("bpartnerProducts")
 	@Singular
 	List<JsonProductBPartner> bPartnerProducts;
 

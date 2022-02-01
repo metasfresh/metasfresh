@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -91,9 +90,9 @@ public class JsonCustomer
 			@JsonProperty("KREDITORENNR") final @Nullable Integer creditorId,
 			@JsonProperty("DEBITORENNR") final @Nullable Integer debtorId,
 			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("KDDATA") final @Nullable @Singular List<JsonCustomerLocation> locations,
-			@JsonProperty("PERSDATA") final @Nullable @Singular List<JsonCustomerContact> contacts,
-			@JsonProperty("REZDET") final @Nullable @Singular List<String> bpartnerProductExternalReferences)
+			@JsonProperty("KDDATA") final @Nullable List<JsonCustomerLocation> locations,
+			@JsonProperty("PERSDATA") final @Nullable List<JsonCustomerContact> contacts,
+			@JsonProperty("REZDET") final @Nullable List<String> bpartnerProductExternalReferences)
 	{
 		this.flag = flag;
 		this.id = id;

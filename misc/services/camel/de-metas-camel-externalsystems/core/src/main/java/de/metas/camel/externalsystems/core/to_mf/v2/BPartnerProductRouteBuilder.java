@@ -67,7 +67,7 @@ public class BPartnerProductRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
-				.toD("{{metasfresh.products.v2.api.uri}}/${header." + HEADER_ORG_CODE + "}/${header." + HEADER_BPARTNER_IDENTIFIER + "}/products")
+				.toD("{{metasfresh.upsert-bpartner-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}/${header." + HEADER_BPARTNER_IDENTIFIER + "}/products")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

@@ -38,13 +38,14 @@ import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.util.Check;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.CUSTOMER_FLAG;
 
@@ -160,6 +161,7 @@ public class ExportCustomerProcessor implements Processor
 				.getItems()
 				.stream()
 				.map(JsonExternalReferenceItem::getExternalReference)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 }
