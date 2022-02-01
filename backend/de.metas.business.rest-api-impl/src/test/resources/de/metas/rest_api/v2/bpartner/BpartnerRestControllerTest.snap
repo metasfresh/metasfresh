@@ -63,8 +63,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "leftToRight" : true,
-        "baseLanguage" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -1778,7 +1778,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
 
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersProducts=[
   {
-    "bPartnerProducts" : [
+    "bpartnerProducts" : [
       {
         "bPartnerId" : 21,
         "vendor" : false,
