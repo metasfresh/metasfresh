@@ -38,6 +38,7 @@ Feature: sales order
       | s_ol_1     | ol_1                      | N             |
 
   @from:cucumber
+  @ignore
   Scenario: we can generate a mediated purchase order from a sales order
     And metasfresh contains M_Products:
       | Identifier | Name            |
@@ -88,6 +89,7 @@ Feature: sales order
     And the shipment schedule identified by s_ol_2 is processed after not more than 10 seconds
 
   @from:cucumber
+  @ignore
   Scenario: we can generate a mediated purchase order from a sales order with dropship address
     And metasfresh contains M_Products:
       | Identifier  | Name            |
