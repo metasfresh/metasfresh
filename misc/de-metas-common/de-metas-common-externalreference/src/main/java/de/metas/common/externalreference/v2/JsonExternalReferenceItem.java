@@ -51,7 +51,8 @@ public class JsonExternalReferenceItem
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
-	@NonNull
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
 	@Nullable
@@ -71,7 +72,7 @@ public class JsonExternalReferenceItem
 	private JsonExternalReferenceItem(
 			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
-			@JsonProperty("externalReference") @NonNull final String externalReference,
+			@JsonProperty("externalReference") @Nullable final String externalReference,
 			@JsonProperty("version") @Nullable final String version,
 			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl)
 	{

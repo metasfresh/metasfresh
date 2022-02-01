@@ -42,7 +42,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
  * It expects to have a {@link ExternalReferenceLookupCamelRequest} as exchange body.
  */
 @Component
-public class ExternalReferenceRouteBuilder extends RouteBuilder
+public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 {
 	@Override
 	public void configure() throws Exception
