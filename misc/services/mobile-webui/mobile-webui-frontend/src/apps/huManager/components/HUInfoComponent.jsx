@@ -1,56 +1,59 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
+import { trl } from '../../../utils/translations';
 
-export function HUInfoComponent(props) {
-  const { handlingUnitInfo } = props;
-
+export const HUInfoComponent = ({ handlingUnitInfo }) => {
   return (
-    <div className="pt-3 section">
-      <div className="centered-text is-size-5">
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('huManager.HU')}
-          </div>
-          <div className="column is-half has-text-left pb-0">{handlingUnitInfo.displayName}</div>
-        </div>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('huManager.barcode')}
-          </div>
-          <div className="column is-half has-text-left pb-0">{handlingUnitInfo.barcode}</div>
-        </div>
-        <div className="columns is-mobile">
-          <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-            {counterpart.translate('huManager.locator')}
-          </div>
-          <div className="column is-half has-text-left pb-0">{handlingUnitInfo.locatorValue}</div>
-        </div>
+    <table className="table view-header is-size-6">
+      <tbody>
+        <tr>
+          <th>{trl('huManager.HU')}</th>
+          <td>{handlingUnitInfo.displayName}</td>
+        </tr>
+        <tr>
+          <th>{trl('huManager.barcode')}</th>
+          <td>{handlingUnitInfo.barcode}</td>
+        </tr>
+        <tr>
+          <th>{trl('huManager.locator')}</th>
+          <td>{handlingUnitInfo.locatorValue}</td>
+        </tr>
         {handlingUnitInfo.products.map((product) => (
-          <div key={product.productValue}>
-            <div className="columns is-mobile">
-              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-                {counterpart.translate('huManager.product')}
-              </div>
-              <div className="column is-half has-text-left pb-0">
-                {product.productName} ({product.productValue})
-              </div>
-            </div>
-            <div className="columns is-mobile">
-              <div className="column is-half has-text-right has-text-weight-bold pb-0 pl-0 pr-0">
-                {counterpart.translate('huManager.qty')}
-              </div>
-              <div className="column is-half has-text-left pb-0">
-                {product.qty} {product.uom}
-              </div>
-            </div>
-          </div>
+          <ProductInfoRows key={product.productValue} product={product} />
         ))}
-      </div>
-    </div>
+      </tbody>
+    </table>
   );
-}
+};
 
 HUInfoComponent.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
+};
+
+const ProductInfoRows = ({ product }) => {
+  return (
+    <>
+      <tr>
+        <th>{trl('huManager.product')}</th>
+        <td>
+          {product.productName} ({product.productValue})
+        </td>
+      </tr>
+      <tr>
+        <th>{trl('huManager.qty')}</th>
+        <td>
+          {product.qty} {product.uom}
+        </td>
+      </tr>
+    </>
+  );
+};
+
+ProductInfoRows.propTypes = {
+  product: PropTypes.shape({
+    productValue: PropTypes.string.isRequired,
+    productName: PropTypes.string.isRequired,
+    qty: PropTypes.string.isRequired, // it's string instead of number because it comes preformatted from the backend
+    uom: PropTypes.string.isRequired,
+  }).isRequired,
 };

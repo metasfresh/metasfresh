@@ -2,6 +2,8 @@ package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -32,4 +34,6 @@ public interface PickingJobLoaderSupportingServices
 	ITranslatableString getProductName(@NonNull ProductId productId);
 
 	String getLocatorName(@NonNull LocatorId locatorId);
+
+	HUQRCode getQRCodeByHUId(HuId huId);
 }

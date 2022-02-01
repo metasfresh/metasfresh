@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -34,6 +33,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -272,15 +273,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
-		final HUBarcode huBarcode = HUBarcode.ofBarcodeString(json.getHuBarcode());
-		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUBarcode(huBarcode).getPickFromKey();
+		final HUQRCode qrCode = HUQRCodeJsonConverter.fromQRCodeString(json.getHuQRCode());
+		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
 
 		return PickingJobStepEvent.builder()
 				.timestamp(SystemTime.asInstant())
 				.pickingStepId(pickingStepId)
 				.pickFromKey(pickFromKey)
 				.eventType(fromJson(json.getType()))
-				.huBarcode(huBarcode)
+				.huQRCode(qrCode)
 				.qtyPicked(json.getQtyPicked())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))

@@ -1,15 +1,8 @@
-import { createSelector } from 'reselect';
-
 import * as types from '../constants/LaunchersActionTypes';
 
 export const initialState = {};
 
-const getApplicationLaunchers = (state, appId) => state.launchers[appId] || {};
-
-export const selectApplicationLaunchersFromState = createSelector(
-  (state, appId) => getApplicationLaunchers(state, appId),
-  (applicationLaunchers) => applicationLaunchers
-);
+export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
 
 export default function launchers(state = initialState, action) {
   const { payload } = action;

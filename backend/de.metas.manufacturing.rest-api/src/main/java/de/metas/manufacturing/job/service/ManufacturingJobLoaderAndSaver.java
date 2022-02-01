@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
@@ -29,6 +28,7 @@ import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -132,6 +132,7 @@ public class ManufacturingJobLoaderAndSaver
 						.build();
 			case WorkReport:
 			case ActivityConfirmation:
+			case GenerateHUQRCodes:
 				return prepareJobActivity(from)
 						.build();
 			default:
@@ -204,7 +205,7 @@ public class ManufacturingJobLoaderAndSaver
 						.build())
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
-						.barcode(HUBarcode.ofHuId(schedule.getIssueFromHUId()))
+						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
 						.build())
 				.issued(schedule.getIssued())
 				.build();
@@ -235,6 +236,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
@@ -274,6 +276,7 @@ public class ManufacturingJobLoaderAndSaver
 		return FinishedGoodsReceiveLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
+				.attributes(supportingServices.getImmutableAttributeSet(AttributeSetInstanceId.ofRepoId(orderBOMLine.getM_AttributeSetInstance_ID())))
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))

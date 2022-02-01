@@ -1,23 +1,25 @@
 import toast from 'react-hot-toast';
-import counterpart from 'counterpart';
 import { unboxAxiosResponse } from './index';
+import { trl } from './translations';
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey }) => {
+export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage }) => {
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
   } else if (messageKey) {
-    message = counterpart.translate(messageKey);
+    message = trl(messageKey);
+  } else if (plainMessage) {
+    message = plainMessage;
   } else {
     console.error('toastError called without any error');
     return;
   }
 
-  console.trace('toast error: ', message, axiosError);
+  console.trace('toast error: ', { message, axiosError });
   toast(message, { type: 'error', style: { color: 'white' } });
 };
 
-export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey }) => {
+export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fallbackMessageKey = null }) => {
   if (axiosError && axiosError.response && axiosError.response.data) {
     const data = axiosError.response && unboxAxiosResponse(axiosError.response);
     if (data && data.errors && data.errors[0] && data.errors[0].message) {
@@ -26,7 +28,7 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
         return error.message;
       } else {
         // don't scare the user with weird errors. Better show him some generic error.
-        return counterpart.translate('general.PleaseTryAgain');
+        return trl('general.PleaseTryAgain');
       }
     } else if (axiosError.response.data.error) {
       // usually that the login error case when we get something like { error: "bla bla"}
@@ -35,8 +37,8 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   }
 
   if (fallbackMessageKey) {
-    return counterpart.translate(fallbackMessageKey);
+    return trl(fallbackMessageKey);
   }
 
-  return counterpart.translate('general.PleaseTryAgain');
+  return trl('general.PleaseTryAgain');
 };

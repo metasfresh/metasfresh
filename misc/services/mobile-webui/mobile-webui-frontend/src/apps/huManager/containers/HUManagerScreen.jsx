@@ -1,86 +1,61 @@
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
-import { toastError } from '../../../utils/toast';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
-import CodeScanner from '../../../containers/activities/scan/CodeScanner';
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-
-import { getHUByBarcode } from '../api';
+import { trl } from '../../../utils/translations';
+import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
+import * as api from '../api';
 import { clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { huManagerDisposeLocation } from '../routes';
+
 import { HUInfoComponent } from '../components/HUInfoComponent';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
-class HUManagerScreen extends PureComponent {
-  constructor(props) {
-    super(props);
-  }
+const HUManagerScreen = () => {
+  const dispatch = useDispatch();
 
-  onHUBarcodeScanned = ({ scannedBarcode }) => {
-    const { dispatch } = this.props;
-
-    getHUByBarcode(scannedBarcode)
-      .then((handlingUnitInfo) => {
-        dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+  const resolveScannedBarcode = ({ scannedBarcode }) => {
+    return api
+      .getHUByQRCode(scannedBarcode)
+      .then((handlingUnitInfo) => ({ handlingUnitInfo }))
+      .catch((axiosError) => ({
+        error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
+      }));
   };
 
-  onDisposeClick = () => {
-    const { dispatch } = this.props;
-    dispatch(push(huManagerDisposeLocation()));
+  const onResolvedResult = (result) => {
+    const { handlingUnitInfo } = result;
+    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
   };
 
-  onScanAgainClick = () => {
-    const { dispatch } = this.props;
+  const history = useHistory();
+  const onDisposeClick = () => {
+    history.push(huManagerDisposeLocation());
+  };
+
+  const onScanAgainClick = () => {
     dispatch(clearLoadedData());
   };
 
-  render() {
-    const { handlingUnitInfo } = this.props;
+  const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
-    if (handlingUnitInfo && handlingUnitInfo.id) {
-      return (
-        <>
-          <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
-          {this.renderHandlingUnitActions()}
-        </>
-      );
-    } else {
-      return <CodeScanner onBarcodeScanned={this.onHUBarcodeScanned} />;
-    }
-  }
-
-  renderHandlingUnitActions = () => {
+  if (handlingUnitInfo && handlingUnitInfo.id) {
     return (
-      <div className="pt-3 section">
-        <div className="centered-text is-size-5">
-          <div className="mt-0">
-            <button className="button is-outlined complete-btn" onClick={this.onDisposeClick}>
-              <ButtonWithIndicator caption={counterpart.translate('huManager.action.dispose.buttonCaption')} />
-            </button>
-            <button className="button is-outlined complete-btn" onClick={this.onScanAgainClick}>
-              <ButtonWithIndicator caption={counterpart.translate('huManager.action.scanAgain.buttonCaption')} />
-            </button>
-          </div>
+      <>
+        <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
+        <div className="pt-3 section">
+          <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
+          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
-      </div>
+      </>
     );
-  };
-}
-
-const mapStateToProps = (globalState) => {
-  return {
-    handlingUnitInfo: getHandlingUnitInfoFromGlobalState(globalState),
-  };
+  } else {
+    return (
+      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onResolvedResult} />
+    );
+  }
 };
 
-HUManagerScreen.propTypes = {
-  handlingUnitInfo: PropTypes.object,
-  dispatch: PropTypes.func.isRequired,
-};
-
-export default connect(mapStateToProps)(HUManagerScreen);
+export default HUManagerScreen;

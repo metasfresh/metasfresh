@@ -109,4 +109,15 @@ public class ManufacturingJob
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, mapper));
 		return withActivities(activitiesNew);
 	}
+
+	public FinishedGoodsReceiveLine getFinishedGoodsReceiveLineById(@NonNull final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId)
+	{
+		return activities.stream()
+				.map(ManufacturingJobActivity::getFinishedGoodsReceive)
+				.filter(Objects::nonNull)
+				.map(finishedGoodsReceive -> finishedGoodsReceive.getLineByIdOrNull(finishedGoodsReceiveLineId))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No finished goods receive line found for " + finishedGoodsReceiveLineId));
+	}
 }

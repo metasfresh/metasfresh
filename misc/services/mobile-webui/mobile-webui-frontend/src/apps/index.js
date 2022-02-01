@@ -20,9 +20,20 @@ export const getApplicationStartFunction = (applicationId) => {
 };
 
 export const getApplicationRoutes = () => {
-  return Object.values(registeredApplications).reduce((result, applicationDescriptor) => {
-    return Array.isArray(applicationDescriptor.routes) ? result.concat(applicationDescriptor.routes) : result;
-  }, []);
+  const result = [];
+
+  Object.values(registeredApplications).forEach((applicationDescriptor) => {
+    if (Array.isArray(applicationDescriptor.routes)) {
+      applicationDescriptor.routes.forEach((route) => {
+        result.push({
+          applicationId: applicationDescriptor.applicationId,
+          ...route,
+        });
+      });
+    }
+  });
+
+  return result;
 };
 
 export const getApplicationMessages = () => {

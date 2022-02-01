@@ -48,7 +48,7 @@ public class JsonDistributionJobStep
 				//
 				// Pick From
 				.pickFromLocator(JsonLocatorInfo.of(line.getPickFromLocator()))
-				.pickFromHU(JsonHUInfo.of(step.getPickFromHUId()))
+				.pickFromHU(JsonHUInfo.of(step.getPickFromHU().getQrCode().toRenderedJson()))
 				.qtyPicked(step.getQtyPicked().toBigDecimal())
 				//
 				// Drop To
