@@ -26,6 +26,7 @@ import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
@@ -143,6 +144,7 @@ public class BankRepository
 		return toBank(record);
 	}
 
+	@NonNull
 	public DataImportConfigId retrieveDataImportConfigIdForBank(@Nullable final BankId bankId)
 	{
 		if (bankId == null)
@@ -152,9 +154,9 @@ public class BankRepository
 
 		final Bank bank = getById(bankId);
 
-		final DataImportConfigId dataImportConfigId = bank.getDataImportConfigId();
-
-		return dataImportConfigId != null ? dataImportConfigId : retrieveDefaultBankDataImportConfigId();
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				bank::getDataImportConfigId,
+				this::retrieveDefaultBankDataImportConfigId);
 	}
 
 }
