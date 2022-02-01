@@ -48,7 +48,7 @@ Feature: Handling unit data export audit
       | inventory_line                | createdCU          |
 
   Scenario: The request is good and HU data export audit is created
-    Given store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    Given store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -71,7 +71,7 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -97,7 +97,7 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
