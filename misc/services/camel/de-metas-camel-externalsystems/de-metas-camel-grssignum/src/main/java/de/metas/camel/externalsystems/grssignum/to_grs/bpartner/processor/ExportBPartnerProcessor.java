@@ -58,8 +58,6 @@ public class ExportBPartnerProcessor implements Processor
 
 		final JsonResponseComposite jsonResponseComposite = routeContext.getJsonResponseComposite();
 
-		Check.assumeNotNull(jsonResponseComposite, "JsonResponseComposite cannot be null at this point!");
-
 		final JsonBPartner jsonBPartnerToExport = toJsonBPartner(jsonResponseComposite, routeContext.getTenantId(), routeContext.getBPartnerBasePath());
 
 		final DispatchRequest dispatchRequest = DispatchRequest.builder()

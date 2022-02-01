@@ -48,16 +48,13 @@ public class CreateExportDirectoriesProcessor implements Processor
 	{
 		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
 
-		final JsonResponseComposite responseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
-
-		routeContext.setJsonResponseComposite(responseComposite);
-
-		createBPartnerExportDirectories(responseComposite.getBpartner().getCode(), routeContext);
+		createBPartnerExportDirectories(routeContext);
 	}
 
-	private void createBPartnerExportDirectories(@NonNull final String bpartnerCode, @NonNull final ExportBPartnerRouteContext routeContext)
+	private void createBPartnerExportDirectories(@NonNull final ExportBPartnerRouteContext routeContext)
 	{
 		final JsonExportDirectorySettings jsonExportDirectorySettings = routeContext.getJsonExportDirectorySettings();
+		final String bpartnerCode = routeContext.getJsonResponseComposite().getBpartner().getCode();
 
 		if (jsonExportDirectorySettings == null)
 		{

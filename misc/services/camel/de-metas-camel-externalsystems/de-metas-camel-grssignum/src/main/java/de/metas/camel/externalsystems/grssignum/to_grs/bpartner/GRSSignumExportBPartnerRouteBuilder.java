@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.CreateExportDirectoriesProcessor;
@@ -58,6 +59,8 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 	static final String EXPORT_BPARTNER_ROUTE_ID = "GRSSignum-exportBPartner";
 	static final String CREATE_EXPORT_DIRECTORIES_ROUTE_ID = "GRSSignum-createExportDir";
 
+	static final String CREATE_EXPORT_DIRECTORIES_PROCESSOR_ID = "GRSSignum-createExportDirProcessorId";
+
 	final ProcessLogger processLogger;
 
 	public GRSSignumExportBPartnerRouteBuilder(final ProcessLogger processLogger)
@@ -84,6 +87,8 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
 
+				.process(this::getAndAttachBPartnerResponse)
+
 				.to(direct(CREATE_EXPORT_DIRECTORIES_ROUTE_ID))
 
 				.process(new ExportBPartnerProcessor())
@@ -92,7 +97,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 		from(direct(CREATE_EXPORT_DIRECTORIES_ROUTE_ID))
 				.routeId(CREATE_EXPORT_DIRECTORIES_ROUTE_ID)
 				.doTry()
-					.process(new CreateExportDirectoriesProcessor(processLogger))
+					.process(new CreateExportDirectoriesProcessor(processLogger)).id(CREATE_EXPORT_DIRECTORIES_PROCESSOR_ID)
 				.doCatch(Exception.class)
 				   .to(direct(ERROR_WRITE_TO_ADISSUE))
 				.endDoTry();
@@ -155,6 +160,15 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.getIn().setBody(retrieveCamelRequest);
+	}
+
+	private void getAndAttachBPartnerResponse(@NonNull final Exchange exchange)
+	{
+		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
+
+		final JsonResponseComposite responseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
+
+		routeContext.setJsonResponseComposite(responseComposite);
 	}
 
 	@Nullable

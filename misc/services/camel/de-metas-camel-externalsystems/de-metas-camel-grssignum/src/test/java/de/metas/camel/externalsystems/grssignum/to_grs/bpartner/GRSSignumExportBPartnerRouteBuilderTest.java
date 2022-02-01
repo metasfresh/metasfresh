@@ -48,7 +48,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
-import static de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder.CREATE_EXPORT_DIRECTORIES_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder.CREATE_EXPORT_DIRECTORIES_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder.EXPORT_BPARTNER_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -204,10 +204,16 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 										  .to(MOCK_GRSSIGNUM_DISPATCHER_ENDPOINT);
 							  });
 
-		AdviceWith.adviceWith(context, CREATE_EXPORT_DIRECTORIES_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ERROR_WRITE_TO_ADISSUE)
-									  .skipSendToOriginalEndpoint()
-									  .process(mockWriteToAdIssueProcessor));
+		AdviceWith.adviceWith(context, CREATE_EXPORT_DIRECTORIES_PROCESSOR_ID,
+							  advice -> {
+								  advice.interceptSendToEndpoint("direct:" + ERROR_WRITE_TO_ADISSUE)
+										  .skipSendToOriginalEndpoint()
+										  .process(mockWriteToAdIssueProcessor);
+
+								  advice.weaveById(CREATE_EXPORT_DIRECTORIES_PROCESSOR_ID)
+										  .replace()
+										  .process(exchange -> {throw new RuntimeException("Fail!");});
+							  });
 	}
 
 	private static class MockRetrieveBPartnerProcessor implements Processor
