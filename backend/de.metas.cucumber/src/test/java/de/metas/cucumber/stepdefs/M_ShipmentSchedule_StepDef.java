@@ -138,7 +138,7 @@ public class M_ShipmentSchedule_StepDef
 			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 
-			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+			final int warehouseId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT.Warehouse_ID");
 
 			if (warehouseId > 0)
 			{

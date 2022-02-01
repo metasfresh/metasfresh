@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -130,6 +131,7 @@ public class OrderLineBL implements IOrderLineBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
@@ -962,5 +964,25 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(olRecord.getC_Currency_ID());
 		return currencyDAO.getStdPrecision(currencyId);
+	}
+
+	@Override
+	public void setBPLocation(final I_C_OrderLine orderLine)
+	{
+		final int c_bPartner_id = orderLine.getC_BPartner_ID();
+		if (c_bPartner_id <=0)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_BPartner bp = partnerBL.getById(BPartnerId.ofRepoId(c_bPartner_id));
+		final I_C_BPartner_Location bpLoc = partnerBL.extractShipToLocation(bp);
+		setBPartnerLocation(orderLine, bpLoc);
+	}
+
+	private void setBPartnerLocation(@NonNull final I_C_OrderLine orderLine, @Nullable final I_C_BPartner_Location bpartnerLocation)
+	{
+		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 }

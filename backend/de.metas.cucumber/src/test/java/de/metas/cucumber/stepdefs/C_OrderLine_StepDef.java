@@ -32,6 +32,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -53,21 +54,24 @@ public class C_OrderLine_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_C_BPartner> partnerTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_C_BPartner> partnerTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
 	{
 		this.productTable = productTable;
+		this.partnerTable = partnerTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -83,6 +87,13 @@ public class C_OrderLine_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
+
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." +I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			if (partnerIdentifier !=null)
+			{
+				final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
+				orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
+			}
 
 			saveRecord(orderLine);
 
@@ -123,6 +134,9 @@ public class C_OrderLine_StepDef
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+
+			final int partnerId = partnerTable.get(partnerIdentifier).getC_BPartner_ID();
 
 			boolean linePresent = false;
 
@@ -130,7 +144,8 @@ public class C_OrderLine_StepDef
 			{
 				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
 						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
-						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID();
+						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID()
+						&& orderLine.getC_BPartner_ID() == partnerId;
 
 				if (linePresent)
 				{
