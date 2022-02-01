@@ -7,8 +7,18 @@
       "dataSource": "int-Alberta",
       "dataDest": null,
       "bpartner": {
-        "bpartnerIdentifier": "ext-ALBERTA-patientId",
+        "bpartnerIdentifier": "1",
         "bpartnerLocationIdentifier": "1",
+        "contactIdentifier": null
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": null
+      },
+      "dropShipBPartner": {
+        "bpartnerIdentifier": "ext-ALBERTA-pharmacyId",
+        "bpartnerLocationIdentifier": "ext-ALBERTA-pharmacyId",
         "contactIdentifier": null
       },
       "dateRequired": "2021-03-06",
