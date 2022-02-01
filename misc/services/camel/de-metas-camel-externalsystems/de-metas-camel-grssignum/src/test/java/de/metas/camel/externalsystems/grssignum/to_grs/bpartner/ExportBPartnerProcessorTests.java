@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportVendorProcessor;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ public class ExportBPartnerProcessorTests
 						.build()
 		);
 		//when
-		final Optional<JsonResponseLocation> responseLocation = ExportBPartnerProcessor.getBPartnerLocationToExport(jsonResponseLocations);
+		final Optional<JsonResponseLocation> responseLocation = ExportVendorProcessor.getVendorLocationToExport(jsonResponseLocations);
 
 		//then
 		assertThat(responseLocation).isPresent();

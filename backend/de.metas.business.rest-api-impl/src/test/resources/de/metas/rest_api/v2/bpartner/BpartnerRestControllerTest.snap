@@ -1776,6 +1776,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
 ]
 
 
+de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersProducts=[
+  {
+    "bPartnerProducts" : [
+      {
+        "bPartnerId" : 21,
+        "vendor" : false,
+        "currentVendor" : false,
+        "customer" : false,
+        "leadTimeInDays" : 0,
+        "excludedFromSale" : false,
+        "excludedFromPurchase" : false,
+        "productId" : 10
+      }
+    ]
+  }
+]
+
+
 de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=[
   {
     "resultTimestamp" : 1561014385,

@@ -25,32 +25,43 @@ package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerRequestBuilder;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportCustomerProcessor;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportVendorProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BPARTNER_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
-	static final String EXPORT_BPARTNER_ROUTE_ID = "GRSSignum-exportBPartner";
+	public static final String EXPORT_BPARTNER_ROUTE_ID = "GRSSignum-exportBPartner";
+	public static final String PROCESS_VENDOR_ROUTE_ID = "GRSSignum-processVendor";
+	public static final String PROCESS_CUSTOMER_ROUTE_ID = "GRSSignum-processCustomer";
 
 	@Override
 	public void configure() throws Exception
 	{
+		//@formatter:off
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
@@ -61,13 +72,43 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.process(this::buildAndAttachContext)
 
 				.process(this::buildBPRetrieveCamelRequest)
-
 				.to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
-
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
 
-				.process(new ExportBPartnerProcessor())
-				.to(direct(GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID));
+				.process(this::processRetrieveBPartnerResponse)
+				.multicast()
+					.to(direct(PROCESS_VENDOR_ROUTE_ID), direct(PROCESS_CUSTOMER_ROUTE_ID))
+				.end();
+
+		from(direct(PROCESS_VENDOR_ROUTE_ID))
+				.routeId(PROCESS_VENDOR_ROUTE_ID)
+				.choice()
+					.when(simple("${body.bpartner.vendor} == true"))
+						.process(new ExportVendorProcessor())
+						.to(direct(GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID))
+				.end();
+
+		from(direct(PROCESS_CUSTOMER_ROUTE_ID))
+				.routeId(PROCESS_CUSTOMER_ROUTE_ID)
+				.choice()
+					.when(simple("${body.bpartner.customer} == true"))
+						.process(ExportBPartnerRequestBuilder::prepareRetrieveBPartnerProductRequest)
+						.to(direct(MF_GET_BPARTNER_PRODUCTS_ROUTE_ID))
+						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseProductBPartner.class))
+
+						.process(ExportBPartnerRequestBuilder::prepareExternalReferenceLookupRequest)
+						.choice()
+							.when(body().isNull())
+								.log(LoggingLevel.INFO, "Nothing to do! No bpartner products found!")
+							.otherwise()
+								.to(direct(MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID))
+								.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupResponse.class))
+								.process(ExportCustomerProcessor::collectProductExternalReferences)
+							.end()
+						.process(new ExportCustomerProcessor())
+						.to(direct(GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID))
+				.end();
+		//@formatter:on
 	}
 
 	private void buildAndAttachContext(@NonNull final Exchange exchange)
@@ -94,6 +135,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.remoteUrl(remoteUrl)
 				.authToken(authToken)
 				.tenantId(tenantId)
+				.orgCode(request.getOrgCode())
 				.build();
 
 		exchange.setProperty(GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, context);
@@ -120,5 +162,14 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.getIn().setBody(retrieveCamelRequest);
+	}
+
+	private void processRetrieveBPartnerResponse(@NonNull final Exchange exchange)
+	{
+		final JsonResponseComposite jsonResponseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
+
+		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
+
+		routeContext.setJsonResponseComposite(jsonResponseComposite);
 	}
 }

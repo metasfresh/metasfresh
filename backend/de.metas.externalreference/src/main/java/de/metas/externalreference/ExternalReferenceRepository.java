@@ -22,8 +22,8 @@
 
 package de.metas.externalreference;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
@@ -36,11 +36,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 public class ExternalReferenceRepository
@@ -72,7 +72,8 @@ public class ExternalReferenceRepository
 					.setParameter("AD_Org_ID,", query.getOrgId().getRepoId())
 					.setParameter("ExternalSystem", query.getExternalSystem().getCode())
 					.setParameter("ExternalReferenceType", query.getExternalReferenceType())
-					.setParameter("ExternalReference", query.getExternalReference());
+					.setParameter("ExternalReference", query.getExternalReference())
+					.setParameter("MetasfreshId", query.getMetasfreshId());
 		}
 
 		return externalReferenceEntity.get().getRecordId();
@@ -126,9 +127,10 @@ public class ExternalReferenceRepository
 	/**
 	 * @return a map with one entry for each given {@link ExternalReferenceQuery}.
 	 */
-	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final Set<ExternalReferenceQuery> queries)
+	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final Collection<ExternalReferenceQuery> queries)
 	{
-		final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class).setJoinOr()
+		final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
 
 		for (final ExternalReferenceQuery query : queries)
@@ -136,21 +138,23 @@ public class ExternalReferenceRepository
 			queryBuilder.filter(createFilterFor(query));
 		}
 
-		final Map<ExternalReferenceQuery, ExternalReference> query2reference =
-				queryBuilder.create().stream()
-						.collect(Collectors.toMap(
-								this::buildExternalReferenceQuery, // key
-								this::buildExternalReference // value
-						));
+		final ImmutableList<ExternalReference> externalReferences = queryBuilder.create()
+				.stream()
+				.map(this::buildExternalReference)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableMap.Builder<ExternalReferenceQuery, ExternalReference> result = ImmutableMap.builder();
-		for (final ExternalReferenceQuery query : queries)
-		{
-			final ExternalReference externalReference = query2reference.get(query);
-			result.put(query, CoalesceUtil.coalesce(externalReference, ExternalReference.NULL));
-		}
+		final Map<ExternalReferenceQuery, ExternalReference> result = new HashMap<>();
 
-		return result.build();
+		externalReferences.forEach(externalReference -> queries.forEach(query -> {
+			if (query.matches(externalReference))
+			{
+				result.put(query, externalReference);
+			}
+		}));
+
+		queries.forEach(query -> result.putIfAbsent(query, ExternalReference.NULL));
+
+		return ImmutableMap.copyOf(result);
 	}
 
 	@NonNull
@@ -166,48 +170,48 @@ public class ExternalReferenceRepository
 				.map(this::buildExternalReference);
 	}
 
-	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
-	{
-		final IExternalReferenceType type = extractType(record);
-		final IExternalSystem externalSystem = extractSystem(record);
-
-		return ExternalReferenceQuery.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.externalReferenceType(type)
-				.externalSystem(externalSystem)
-				.externalReference(record.getExternalReference())
-				.build();
-	}
-
 	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final ExternalReferenceQuery query)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
-						query.getOrgId())
+								 query.getOrgId())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
-						query.getExternalSystem().getCode())
+								 query.getExternalSystem().getCode())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type,
-						query.getExternalReferenceType().getCode())
+								 query.getExternalReferenceType().getCode())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference,
-						query.getExternalReference())
+								 query.getExternalReference())
 				.create()
 				.setRequiredAccess(Access.READ)
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
 	}
 
+	@NonNull
 	private ICompositeQueryFilter<I_S_ExternalReference> createFilterFor(@NonNull final ExternalReferenceQuery query)
 	{
-		return queryBL.createCompositeQueryFilter(I_S_ExternalReference.class)
+		final ICompositeQueryFilter<I_S_ExternalReference> queryFilter = queryBL.createCompositeQueryFilter(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, query.getExternalSystem().getCode())
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, query.getExternalReferenceType().getCode())
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, query.getExternalReference());
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, query.getOrgId());
+
+		if (query.getExternalReference() != null)
+		{
+			queryFilter.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, query.getExternalReference());
+		}
+
+		if (query.getMetasfreshId() != null)
+		{
+			queryFilter.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, query.getMetasfreshId().getValue());
+		}
+
+		return queryFilter;
 	}
 
 	private List<I_S_ExternalReference> listIncludingInactiveBy(final int recordId, @NonNull final IExternalReferenceType type)

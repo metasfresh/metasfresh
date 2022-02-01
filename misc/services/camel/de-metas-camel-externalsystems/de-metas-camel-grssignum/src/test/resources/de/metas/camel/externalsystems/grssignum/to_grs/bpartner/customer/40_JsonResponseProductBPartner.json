@@ -1,0 +1,12 @@
+{
+  "bPartnerProducts": [
+    {
+      "bPartnerId": 2156425,
+      "productNo": "productNo",
+      "productName": "productName",
+      "productCategory": "productCategory",
+      "customer": true,
+      "productId": 1
+    }
+  ]
+}

@@ -180,7 +180,7 @@ MID | `ExternalSystem_Config_GRSSignum.TenantId` | N |  JsonExternalSystemReques
 NAMENSZUSATZ | `C_Bpartner.Name2` | N |  JsonRequestBPartner.name2 | ---- |
 METASFRESHID | `C_Bpartner.C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId | ---- |
 KREDITORENNR | `C_Bpartner.CreditorID` | N | JsonResponseBPartner.creditorId | ---- |
-DEBITORRENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
+DEBITORENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
 METASFRESHURL | ---- | N | JsonResponseBPartner.metasfreshUrl | `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}` |
 ADRESSE 1 | `C_BPartner_Location.C_Location.Address1` | N |  JsonResponseLocation.address1 | ---- |
 ADRESSE 2 | `C_BPartner_Location.C_Location.Address2` | N |  JsonResponseLocation.address2 | ---- |

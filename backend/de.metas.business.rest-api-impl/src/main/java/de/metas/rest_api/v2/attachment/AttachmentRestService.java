@@ -39,7 +39,7 @@ import de.metas.common.util.FileUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
