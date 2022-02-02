@@ -120,6 +120,7 @@ public class ExportCustomerProcessor implements Processor
 						.greeting(contact.getGreeting())
 						.title(contact.getTitle())
 						.position(contact.getPosition() == null ? null : contact.getPosition().getName())
+						.email(contact.getEmail())
 						.phone(contact.getPhone())
 						.phone2(contact.getPhone2())
 						.fax(contact.getFax())

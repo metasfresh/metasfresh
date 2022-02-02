@@ -60,6 +60,9 @@ public class JsonCustomerContact
 	@JsonProperty("POSITION")
 	String position;
 
+	@JsonProperty("EMAIL")
+	String email;
+
 	@JsonProperty("TELEFON")
 	String phone;
 
@@ -81,6 +84,7 @@ public class JsonCustomerContact
 			@JsonProperty("ANREDE") @Nullable final String greeting,
 			@JsonProperty("TITEL") @Nullable final String title,
 			@JsonProperty("POSITION") @Nullable final String position,
+			@JsonProperty("EMAIL") @Nullable final String email,
 			@JsonProperty("TELEFON") @Nullable final String phone,
 			@JsonProperty("MOBIL") @Nullable final String phone2,
 			@JsonProperty("FAX") @Nullable final String fax,
@@ -93,6 +97,7 @@ public class JsonCustomerContact
 		this.greeting = greeting;
 		this.title = title;
 		this.position = position;
+		this.email = email;
 		this.phone = phone;
 		this.phone2 = phone2;
 		this.fax = fax;

@@ -74,6 +74,7 @@ public class JsonCustomerTest
 				+ "    				\"ANREDE\": \"test\",\n"
 				+ "    				\"TITEL\": \"title\",\n"
 				+ "    				\"POSITION\": \"position\",\n"
+				+ "    				\"EMAIL\": \"email\",\n"
 				+ "    				\"TELEFON\": \"phone\",\n"
 				+ "    				\"MOBIL\": \"phone2\",\n"
 				+ "    				\"FAX\": \"fax\",\n"

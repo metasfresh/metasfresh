@@ -47,6 +47,7 @@ public class JsonCustomerContactTest
 				+ "    		\"ANREDE\": \"test\",\n"
 				+ "    		\"TITEL\": \"title\",\n"
 				+ "    		\"POSITION\": \"position\",\n"
+				+ "    		\"EMAIL\": \"email\",\n"
 				+ "    		\"TELEFON\": \"phone\",\n"
 				+ "    		\"MOBIL\": \"phone2\",\n"
 				+ "    		\"FAX\": \"fax\",\n"
@@ -89,6 +90,7 @@ public class JsonCustomerContactTest
 				.greeting("test")
 				.title("title")
 				.position("position")
+				.email("email")
 				.phone("phone")
 				.phone2("phone2")
 				.fax("fax")
