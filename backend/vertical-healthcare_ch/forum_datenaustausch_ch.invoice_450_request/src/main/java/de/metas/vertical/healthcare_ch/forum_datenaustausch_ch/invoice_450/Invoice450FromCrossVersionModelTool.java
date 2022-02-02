@@ -1542,7 +1542,7 @@ public class Invoice450FromCrossVersionModelTool
 
 	private boolean isValidEsrQRCandidate(final XmlRequest xAugmentedRequest)
 	{
-		return hasEsr9(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
+		return hasValidEsr9ConversionCandidate(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
 	}
 
 	/**
@@ -1584,9 +1584,22 @@ public class Invoice450FromCrossVersionModelTool
 		return xEsrQR.build();
 	}
 
-	private boolean hasEsr9(final XmlRequest xAugmentedRequest)
+	/**
+	 * This is needed because the only valid candidates that can be converted to EsrQR are:
+	 * <ol>
+	 *     <li>those of type Esr9</li>
+	 *     <li>those that contain an {@code XmlBank} definition</li> (because Bank is mandatory for EsrQR)
+	 *
+	 * @param xAugmentedRequest the request to check
+	 * @return true if the request
+	 * <ul>
+	 *   <li>has an XmlEsr that is of type Esr9</li>
+	 *   <li>this Esr9 has a {@code XmlBank} defined</li>
+	 */
+	private boolean hasValidEsr9ConversionCandidate(final XmlRequest xAugmentedRequest)
 	{
-		return xAugmentedRequest.getPayload().getBody().getEsr() instanceof XmlEsr9;
+		final XmlEsr esr = xAugmentedRequest.getPayload().getBody().getEsr();
+		return esr instanceof XmlEsr9 && ((XmlEsr9)esr).getBank() != null;
 	}
 
 	@Nullable
