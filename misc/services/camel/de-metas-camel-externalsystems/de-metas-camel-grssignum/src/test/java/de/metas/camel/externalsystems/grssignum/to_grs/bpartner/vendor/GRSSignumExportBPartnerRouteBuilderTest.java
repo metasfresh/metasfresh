@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;

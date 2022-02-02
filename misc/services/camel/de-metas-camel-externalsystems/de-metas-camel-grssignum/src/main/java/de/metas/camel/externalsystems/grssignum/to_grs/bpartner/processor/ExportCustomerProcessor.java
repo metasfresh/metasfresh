@@ -101,6 +101,7 @@ public class ExportCustomerProcessor implements Processor
 				.name(jsonResponseBPartner.getName())
 				.creditorId(jsonResponseBPartner.getCreditorId())
 				.debtorId(jsonResponseBPartner.getDebtorId())
+				.bpartnerDirPath(routeContext.getBPartnerBasePath())
 				.inactive(inactive)
 				.locations(toJsonCustomerLocations(jsonResponseComposite.getLocations()))
 				.contacts(toJsonCustomerContacts(jsonResponseComposite.getContacts()))

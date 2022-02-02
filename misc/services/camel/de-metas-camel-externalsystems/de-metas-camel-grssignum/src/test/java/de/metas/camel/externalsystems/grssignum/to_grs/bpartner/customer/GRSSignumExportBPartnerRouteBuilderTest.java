@@ -25,11 +25,15 @@ package de.metas.camel.externalsystems.grssignum.to_grs.bpartner.customer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPProductCamelRequest;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ExternalReferenceLookupCamelRequest;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -39,6 +43,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +53,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder.EXPORT_BPARTNER_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 {
@@ -75,7 +80,8 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GRSSignumExportBPartnerRouteBuilder();
+		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+		return new GRSSignumExportBPartnerRouteBuilder(processLogger);
 	}
 
 	@Override
@@ -138,6 +144,15 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 		assertThat(mockRetrieveBPartnerProductProcessor.called).isEqualTo(1);
 		assertThat(mockLookupExternalReferenceProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
+
+		final String directorySettingsString = invokeExternalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXPORT_DIRECTORY_SETTINGS);
+		final JsonExportDirectorySettings directorySettings = objectMapper.readValue(directorySettingsString, JsonExportDirectorySettings.class);
+
+		final InputStream jsonResponseComposite = GRSSignumExportBPartnerRouteBuilderTest.class.getResourceAsStream(JSON_RETRIEVE_BPARTNER_RESPONSE);
+		final JsonResponseComposite jsonResponseComposite1 = objectMapper.readValue(jsonResponseComposite, JsonResponseComposite.class);
+
+		directorySettings.getDirectoriesPath(jsonResponseComposite1.getBpartner().getCode())
+				.forEach(path -> assertThat(path.toFile().exists()).isTrue());
 	}
 
 	private void prepareRouteForTesting(

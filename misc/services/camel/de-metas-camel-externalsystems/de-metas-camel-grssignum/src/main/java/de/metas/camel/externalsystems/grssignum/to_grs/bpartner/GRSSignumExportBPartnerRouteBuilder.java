@@ -23,41 +23,29 @@
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.CreateExportDirectoriesProcessor;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerProcessor;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerRequestBuilder;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportCustomerProcessor;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportVendorProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportBPartnerRequestBuilder;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportCustomerProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportVendorProcessor;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
@@ -66,12 +54,7 @@ import javax.annotation.Nullable;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import javax.annotation.Nullable;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BPARTNER_PRODUCTS_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BPARTNER_PRODUCTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -95,7 +78,6 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 		this.processLogger = processLogger;
 	}
 
-
 	@Override
 	public void configure() throws Exception
 	{
@@ -115,7 +97,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 
 				.process(this::processRetrieveBPartnerResponse)
 				.to(direct(CREATE_EXPORT_DIRECTORIES_ROUTE_ID))
-				//TODO DM: IA JsonBPartnerResponse de pe context si pune-l in body -> .process(this::setResponseComposite)
+				.process(this::setResponseComposite)
 				.multicast()
 					.to(direct(PROCESS_VENDOR_ROUTE_ID), direct(PROCESS_CUSTOMER_ROUTE_ID))
 				.end();
@@ -225,6 +207,13 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
 
 		routeContext.setJsonResponseComposite(jsonResponseComposite);
+	}
+
+	private void setResponseComposite(@NonNull final Exchange exchange)
+	{
+		final ExportBPartnerRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GRSSignumConstants.ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, ExportBPartnerRouteContext.class);
+
+		exchange.getIn().setBody(routeContext.getJsonResponseComposite());
 	}
 
 	@Nullable

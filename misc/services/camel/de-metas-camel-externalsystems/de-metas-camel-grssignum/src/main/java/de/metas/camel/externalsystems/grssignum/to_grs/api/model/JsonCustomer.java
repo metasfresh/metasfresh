@@ -67,6 +67,9 @@ public class JsonCustomer
 	@JsonProperty("DEBITORENNR")
 	Integer debtorId;
 
+	@JsonProperty("ANHANGORDNER")
+	String bpartnerDirPath;
+
 	@JsonProperty("INAKTIV")
 	Integer inactiveBit;
 
@@ -89,6 +92,7 @@ public class JsonCustomer
 			@JsonProperty("MID") final @Nullable String tenantId,
 			@JsonProperty("KREDITORENNR") final @Nullable Integer creditorId,
 			@JsonProperty("DEBITORENNR") final @Nullable Integer debtorId,
+			@JsonProperty("ANHANGORDNER") final @Nullable String bpartnerDirPath,
 			@JsonProperty("INAKTIV") final int inactive,
 			@JsonProperty("KDDATA") final @Nullable List<JsonCustomerLocation> locations,
 			@JsonProperty("PERSDATA") final @Nullable List<JsonCustomerContact> contacts,
@@ -103,6 +107,7 @@ public class JsonCustomer
 		this.tenantId = tenantId;
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+		this.bpartnerDirPath = bpartnerDirPath;
 		this.locations = locations;
 		this.contacts = contacts;
 		this.bpartnerProductExternalReferences = bpartnerProductExternalReferences;
