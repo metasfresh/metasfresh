@@ -405,20 +405,10 @@ public class PickingCandidateRepository
 		}
 
 		//
-		// Picking slot Barcode filter
-		final String pickingSlotBarcode = pickingCandidatesQuery.getPickingSlotBarcode();
-		if (!Check.isEmpty(pickingSlotBarcode, true))
+		// Only Picking Slots
+		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
 		{
-			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.barcode(pickingSlotBarcode)
-					.build());
-			if (pickingSlotIds.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotIds);
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
 		}
 
 		//
@@ -533,7 +523,7 @@ public class PickingCandidateRepository
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()),
-						record -> toPickingCandidateIssueToBOMLine(record)));
+						this::toPickingCandidateIssueToBOMLine));
 	}
 
 	private PickingCandidateIssueToBOMLine toPickingCandidateIssueToBOMLine(final I_M_Picking_Candidate_IssueToOrder record)
