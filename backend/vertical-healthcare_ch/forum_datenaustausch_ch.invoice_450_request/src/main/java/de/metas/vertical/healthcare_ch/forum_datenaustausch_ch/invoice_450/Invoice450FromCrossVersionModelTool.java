@@ -1607,7 +1607,7 @@ public class Invoice450FromCrossVersionModelTool
 		final boolean result = esr instanceof XmlEsr9 && ((XmlEsr9)esr).getBank() != null;
 		if (!result && esr instanceof XmlEsr9)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ESR9 -> EsrQR conversion not possible because bank record not defined in Esr9, but is mandatory in EsrQR: ");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ESR9 -> EsrQR conversion not possible because bank record not defined in Esr9, but is mandatory in EsrQR");
 		}
 		return result;
 	}
