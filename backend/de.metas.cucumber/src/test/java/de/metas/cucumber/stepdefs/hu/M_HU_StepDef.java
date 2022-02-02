@@ -95,6 +95,7 @@ public class M_HU_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_HU> huTable;
 	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
 	private final StepDefData<I_M_HU_PI_Item> huPiItemTable;
@@ -105,6 +106,7 @@ public class M_HU_StepDef
 	private final TestContext testContext;
 
 	public M_HU_StepDef(
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_M_HU> huTable,
 			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable,
 			@NonNull final StepDefData<I_M_HU_PI_Item> huPiItemTable,
@@ -114,6 +116,7 @@ public class M_HU_StepDef
 			@NonNull final StepDefData<I_M_Warehouse> warehouseTable,
 			@NonNull final TestContext testContext)
 	{
+		this.productTable = productTable;
 		this.huTable = huTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.huPiItemTable = huPiItemTable;
@@ -382,6 +385,102 @@ public class M_HU_StepDef
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
+	}
+
+	@And("^after not more than (.*)s, M_HU are found:$")
+	public void is_HU_found(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			findHU(row, timeoutSec);
+		}
+	}
+
+	@And("M_HU_Storage are validated")
+	public void validate_HU_Storage(@NonNull final DataTable table)
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			validateHUStorage(row);
+		}
+	}
+
+	@And("M_HU are validated:")
+	public void validate_HU(@NonNull final DataTable table)
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			validateHU(row);
+		}
+	}
+
+	private void validateHU(@NonNull final Map<String, String> row)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huTable.get(huIdentifier).getM_HU_ID(), I_M_HU.class);
+
+		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
+
+		assertThat(huRecord).isNotNull();
+		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
+		assertThat(huRecord.isActive()).isEqualTo(isActive);
+	}
+
+	private void validateHUStorage(@NonNull final Map<String, String> row)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_HU huRecord = huTable.get(huIdentifier);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		final Optional<I_M_HU_Storage> huStorageRecord = getHuStorageRecord(huRecord);
+
+		final String qty = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Qty);
+
+		assertThat(huStorageRecord).isPresent();
+		assertThat(huStorageRecord.get().getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(huStorageRecord.get().getQty()).isEqualTo(qty);
+	}
+
+	private void findHU(@NonNull final Map<String, String> row, @NonNull final Integer timeoutSec) throws InterruptedException
+	{
+		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, this::isHUFound);
+
+		final Optional<I_M_HU> huOptional = getHuRecord();
+
+		assertThat(huOptional).isPresent();
+		assertThat(huOptional.get().getHUStatus()).isEqualTo(huStatus);
+		assertThat(huOptional.get().isActive()).isEqualTo(isActive);
+
+		huTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_M_HU.COLUMNNAME_M_HU_ID), huOptional.get());
+	}
+
+	private Optional<I_M_HU> getHuRecord()
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnlyOptional(I_M_HU.class);
+	}
+
+	private boolean isHUFound()
+	{
+		return getHuRecord().isPresent();
+	}
+
+	private Optional<I_M_HU_Storage> getHuStorageRecord(@NonNull final I_M_HU huRecord)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huRecord.getM_HU_ID())
+				.create()
+				.firstOnlyOptional(I_M_HU_Storage.class);
 	}
 
 	private void validateHU(

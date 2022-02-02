@@ -5,7 +5,6 @@ Feature: Handling unit export from purchase order
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 
-  @ignore
   Scenario: HU export from purchase order
     Given add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue | OPT.IsSyncHUsOnMaterialReceipt | OPT.IsSyncHUsOnProductionReceipt |

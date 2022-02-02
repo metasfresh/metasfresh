@@ -190,6 +190,7 @@ public class JsonResponseBPartner
 
 	@ApiModelProperty(required = false, value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
 	@JsonProperty(METASFRESH_URL)
+	@JsonInclude(Include.NON_NULL)
 	String metasfreshUrl;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.CreditorId` ")

@@ -5,7 +5,6 @@ Feature: reversed shipment
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the hu data is reset
 
-    @ignore
   @from:cucumber
   Scenario: we can create and complete a shipment, then reserve/correct it and check the hu's status
     Given metasfresh has date and time 2021-12-16T13:30:13+01:00[Europe/Berlin]
