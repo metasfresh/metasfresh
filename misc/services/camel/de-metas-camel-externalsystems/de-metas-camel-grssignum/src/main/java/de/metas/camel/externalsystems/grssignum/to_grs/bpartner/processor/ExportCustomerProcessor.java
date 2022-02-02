@@ -117,6 +117,7 @@ public class ExportCustomerProcessor implements Processor
 						.fullName(contact.getFirstName() + " " + contact.getLastName())
 						.lastName(contact.getLastName())
 						.firstName(contact.getFirstName())
+						.greeting(contact.getGreeting())
 						.title(contact.getTitle())
 						.position(contact.getPosition() == null ? null : contact.getPosition().getName())
 						.phone(contact.getPhone())
