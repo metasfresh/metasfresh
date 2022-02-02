@@ -23,6 +23,7 @@
 package de.metas.common.externalreference.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
@@ -36,12 +37,14 @@ import javax.annotation.Nullable;
 public class JsonExternalReferenceLookupItem
 {
 	@ApiModelProperty(value = "JsonMetasfreshId of the referenced resource")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
 	@ApiModelProperty(required = true, value = "Type of the externally referenced resource. E.g. user, issue, timebooking")
 	String type;
 
 	@ApiModelProperty(value = "External identifier of the referenced resource")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String id;
 
 	@JsonCreator
