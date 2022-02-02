@@ -54,7 +54,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -81,13 +80,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -103,7 +102,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -599,6 +597,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
+		if (piVersion == null)
+		{
+			throw new HUException("No current version found for " + piId);
+		}
+		return piVersion;
+	}
+
+
+	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
@@ -875,25 +885,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// Get those PI Items which are about Default LUs
 			final List<I_M_HU_PI_Item> defaultLUPIItems = parentPIItems
 					.stream()
-					.filter(parentPIItem -> parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU())
+					.sorted(Comparator.<I_M_HU_PI_Item, Integer>comparing(item -> isDefaultLU(item) ? 0 : 1) // defaults first
+							.thenComparing(item -> item.getQty().signum() > 0 ? 0 : 1) // those who have a finite Qty TUs/LU first
+							.thenComparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // by ID just to have a deterministic order
 					.collect(Collectors.toList());
 
-			// If we found only one default, we can return it directly
-			if (defaultLUPIItems.size() == 1)
-			{
-				return defaultLUPIItems.get(0);
-			}
-
-			logger.warn("More then one parent PI Item found. Returing the first one."
-							+ "\n huPI={}"
-							+ "\n huUnitType={}"
-							+ "\n bpartner={}"
-							+ "\n HU PI Items with DefaultLU={}"
-							+ "\n => parent HU PI Items={}",
-					huPI, huUnitType, bpartnerId, defaultLUPIItems, parentPIItems);
-
-			return parentPIItems.get(0);
+			return defaultLUPIItems.get(0);
 		}
+	}
+
+	private boolean isDefaultLU(final I_M_HU_PI_Item parentPIItem)
+	{
+		return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
 	}
 
 	@Override

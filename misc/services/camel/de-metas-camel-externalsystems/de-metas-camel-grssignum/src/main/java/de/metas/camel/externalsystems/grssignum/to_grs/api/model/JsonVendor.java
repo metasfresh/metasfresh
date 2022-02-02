@@ -99,6 +99,9 @@ public class JsonVendor
 	@JsonProperty("KONTAKTE")
 	List<JsonVendorContact> contacts;
 
+	@JsonProperty("ANHANGORDNER")
+	String bpartnerDirPath;
+
 	@Builder
 	public JsonVendor(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
@@ -119,6 +122,7 @@ public class JsonVendor
 			@JsonProperty("METASFRESHURL") final @Nullable String metasfreshURL,
 			@JsonProperty("KREDITORENNR") final @Nullable Integer creditorId,
 			@JsonProperty("DEBITORENNR") final @Nullable Integer debtorId,
+			@JsonProperty("ANHANGORDNER") final @Nullable String bpartnerDirPath,
 			@JsonProperty("KONTAKTE") final @Nullable @Singular List<JsonVendorContact> contacts)
 	{
 		this.flag = flag;
@@ -137,6 +141,7 @@ public class JsonVendor
 		this.gln = gln;
 		this.metasfreshId = metasfreshId;
 		this.metasfreshURL = metasfreshURL;
+		this.bpartnerDirPath = bpartnerDirPath;
 		this.contacts = contacts;
 
 		this.creditorId = creditorId;

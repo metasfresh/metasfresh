@@ -3,9 +3,13 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
@@ -16,6 +20,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
@@ -33,10 +40,12 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull IOrgDAO orgDAO;
 	@NonNull IWarehouseBL warehouseBL;
 	@NonNull IProductBL productBL;
+	@NonNull IAttributeDAO attributeDAO;
 	@NonNull IHUPPOrderBL ppOrderBL;
 	@NonNull IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
 	@NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService;
+	@NonNull HUQRCodesService huQRCodeService;
 
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
@@ -60,4 +69,20 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	{
 		return Multimaps.index(ppOrderIssueScheduleService.getByOrderId(ppOrderId), PPOrderIssueSchedule::getPpOrderBOMLineId);
 	}
+
+	public ImmutableAttributeSet getImmutableAttributeSet(final AttributeSetInstanceId asiId)
+	{
+		return attributeDAO.getImmutableAttributeSetById(asiId);
+	}
+
+	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
+	{
+		return huQRCodeService.getQRCodeByHuId(huId);
+	}
+
+	public HuId getHuIdByQRCode(@NonNull final JsonRenderedHUQRCode qrCode)
+	{
+		return huQRCodeService.getHuIdByQRCode(qrCode.getCode());
+	}
+
 }

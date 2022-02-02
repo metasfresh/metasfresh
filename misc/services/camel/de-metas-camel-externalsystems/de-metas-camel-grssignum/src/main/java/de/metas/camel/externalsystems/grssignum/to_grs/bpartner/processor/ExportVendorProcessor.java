@@ -63,7 +63,7 @@ public class ExportVendorProcessor implements Processor
 			throw new RuntimeException("JsonResponseComposite must be a Vendor! C_BPartner_Id=" + jsonResponseComposite.getBpartner().getMetasfreshId());
 		}
 
-		final JsonVendor jsonBPartnerToExport = toJsonVendor(jsonResponseComposite, routeContext.getTenantId());
+		final JsonVendor jsonBPartnerToExport = toJsonVendor(jsonResponseComposite, routeContext.getTenantId(), routeContext.getBPartnerBasePath());
 
 		final DispatchRequest dispatchRequest = DispatchRequest.builder()
 				.url(routeContext.getRemoteUrl())
@@ -75,7 +75,10 @@ public class ExportVendorProcessor implements Processor
 	}
 
 	@NonNull
-	private JsonVendor toJsonVendor(@NonNull final JsonResponseComposite jsonResponseComposite, @NonNull final String tenantId)
+	private JsonVendor toJsonVendor(
+			@NonNull final JsonResponseComposite jsonResponseComposite,
+			@NonNull final String tenantId,
+			@Nullable final String bPartnerBasePath)
 	{
 		final JsonResponseBPartner jsonResponseBPartner = jsonResponseComposite.getBpartner();
 
@@ -88,6 +91,11 @@ public class ExportVendorProcessor implements Processor
 		final JsonVendor.JsonVendorBuilder vendorBuilder = getVendorLocationToExport(jsonResponseComposite.getLocations())
 				.map(ExportVendorProcessor::initVendorWithLocationFields)
 				.orElseGet(JsonVendor::builder);
+
+		if (Check.isNotBlank(bPartnerBasePath))
+		{
+			vendorBuilder.bpartnerDirPath(bPartnerBasePath);
+		}
 
 		return vendorBuilder
 				.bpartnerValue(jsonResponseBPartner.getCode())

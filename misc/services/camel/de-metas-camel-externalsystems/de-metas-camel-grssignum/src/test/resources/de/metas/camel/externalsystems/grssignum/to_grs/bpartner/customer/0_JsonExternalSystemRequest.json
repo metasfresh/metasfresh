@@ -12,6 +12,7 @@
     "BPartnerId": "bpIdentifier",
     "AuthToken": "authToken",
     "ChildConfigValue": "grsValue",
-    "TenantId": "myTenant"
+    "TenantId": "myTenant",
+    "JsonExportDirectorySettings": "{\"basePath\":\"basePath/directories\",\"directories\":[\"dir1\",\"dir2\",\"/dir3 21\"]}"
   }
 }

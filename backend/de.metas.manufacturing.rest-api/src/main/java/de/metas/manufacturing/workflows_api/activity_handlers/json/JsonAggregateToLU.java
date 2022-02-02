@@ -36,10 +36,8 @@ public class JsonAggregateToLU
 
 	public Optional<HUPIItemProductId> getTUPIItemProductId()
 	{
-		final HUPIItemProductId tuPIItemProductId = CoalesceUtil.coalesceSuppliers(
-				() -> newLU != null ? HUPIItemProductId.ofRepoId(newLU.getTuPIItemProductId()) : null,
-				() -> existingLU != null ? HUPIItemProductId.ofRepoIdOrNull(existingLU.getTuPIItemProductId()) : null);
-
-		return Optional.ofNullable(tuPIItemProductId);
+		return CoalesceUtil.optionalOfFirstNonNullSupplied(
+				() -> newLU != null ? newLU.getTuPIItemProductId() : null,
+				() -> existingLU != null ? existingLU.getTuPIItemProductId() : null);
 	}
 }

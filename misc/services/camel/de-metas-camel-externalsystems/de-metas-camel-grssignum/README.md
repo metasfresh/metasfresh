@@ -185,6 +185,7 @@ NAMENSZUSATZ | `C_Bpartner.Name2` | N |  JsonRequestBPartner.name2 | ---- |
 METASFRESHID | `C_Bpartner.C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId | ---- |
 KREDITORENNR | `C_Bpartner.CreditorID` | N | JsonResponseBPartner.creditorId | ---- |
 DEBITORENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
+ANHANGORDNER | ---- | N | ---- | `basePath` for `C_BPartner` directory, computed from `externalsystem_config_grssignum.basepathforexportdirectories` + `c_bpartner.value` |
 METASFRESHURL | ---- | N | JsonResponseBPartner.metasfreshUrl | `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}` |
 ADRESSE 1 | `C_BPartner_Location.C_Location.Address1` | N |  JsonResponseLocation.address1 | ---- |
 ADRESSE 2 | `C_BPartner_Location.C_Location.Address2` | N |  JsonResponseLocation.address2 | ---- |
@@ -246,7 +247,7 @@ GLN | `C_BPartner_Location.gln` | N |  JsonResponseLocation.gln | ---- |
 INAKTIV | `C_BPartner_Location.IsActive` | Y |  JsonResponseLocation.active | `active` == `false` => `INAKTIV` == `1`; `active` == `true` => `INAKTIV` == `0`|
 LIEFERADRESSE | `C_BPartner_Location.IsShipTo` | Y |  JsonResponseLocation.shipTo | ---- |
 RECHNUNGSADDRESSE | `C_BPartner_Location.IsBillTo` | Y |  JsonResponseLocation.billTo | ---- |
-
+#todo dm: add ANHANGORDNER | ---- | N | ---- | `basePath` for `C_BPartner` directory, computed from `externalsystem_config_grssignum.basepathforexportdirectories` + `c_bpartner.value` |
 * `PERSDATA` - metasfresh json `JsonResponseContact` to `JsonCustomerContact`
   - all the `metasfresh-column` are from `Ad_User` table
 

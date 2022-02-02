@@ -27,7 +27,7 @@ public class JsonManufacturingOrderEvent
 	public static class IssueTo
 	{
 		@NonNull String issueStepId;
-		@NonNull String huBarcode;
+		@NonNull String huQRCode;
 		@NonNull BigDecimal qtyIssued;
 		@Nullable BigDecimal qtyRejected;
 		@Nullable String qtyRejectedReasonCode;

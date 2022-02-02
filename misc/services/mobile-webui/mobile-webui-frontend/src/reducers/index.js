@@ -5,7 +5,7 @@ import headers from './headers';
 import launchers from './launchers';
 import applications from './applications';
 import update from './update';
-import wfProcesses_status from './wfProcesses_status/index';
+import wfProcesses from './wfProcesses/index';
 
 import { getApplicationReduxReducers } from '../apps/index';
 
@@ -20,7 +20,7 @@ const createRootReducer = (history) => {
     headers,
     applications,
     launchers,
-    wfProcesses_status,
+    wfProcesses,
   };
 
   console.log('Registered app reducers', appsReducers);

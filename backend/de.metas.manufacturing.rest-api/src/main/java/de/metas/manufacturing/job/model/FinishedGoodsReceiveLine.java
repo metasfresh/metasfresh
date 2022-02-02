@@ -7,6 +7,7 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ public class FinishedGoodsReceiveLine
 	@NonNull FinishedGoodsReceiveLineId id;
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@NonNull ImmutableAttributeSet attributes;
 	@NonNull Quantity qtyToReceive;
 	@NonNull Quantity qtyReceived;
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
@@ -30,6 +32,7 @@ public class FinishedGoodsReceiveLine
 	private FinishedGoodsReceiveLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			@NonNull final ImmutableAttributeSet attributes,
 			@NonNull final Quantity qtyToReceive,
 			@NonNull final Quantity qtyReceived,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
@@ -37,6 +40,7 @@ public class FinishedGoodsReceiveLine
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.attributes = attributes;
 		this.qtyToReceive = qtyToReceive;
 		this.qtyReceived = qtyReceived;
 		this.coProductBOMLineId = coProductBOMLineId;
