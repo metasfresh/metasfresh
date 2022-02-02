@@ -65,7 +65,7 @@ public class CreateExportDirectoriesProcessor implements Processor
 		jsonExportDirectorySettings.getDirectoriesPath(bpartnerCode)
 				.forEach(CreateExportDirectoriesProcessor::createDirectory);
 
-		routeContext.setBPartnerBasePath(jsonExportDirectorySettings.getBasePath(bpartnerCode).toString());
+		routeContext.setBPartnerBasePath(bpartnerCode);
 	}
 
 	private static void createDirectory(@NonNull final Path directoryPath)
