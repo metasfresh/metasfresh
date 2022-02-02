@@ -145,12 +145,16 @@ public class ExternalReferenceRepository
 
 		final Map<ExternalReferenceQuery, ExternalReference> result = new HashMap<>();
 
-		externalReferences.forEach(externalReference -> queries.forEach(query -> {
-			if (query.matches(externalReference))
+		for (final ExternalReference externalReference : externalReferences)
+		{
+			for (final ExternalReferenceQuery query : queries)
 			{
-				result.put(query, externalReference);
+				if (query.matches(externalReference))
+				{
+					result.put(query, externalReference);
+				}
 			}
-		}));
+		}
 
 		queries.forEach(query -> result.putIfAbsent(query, ExternalReference.NULL));
 

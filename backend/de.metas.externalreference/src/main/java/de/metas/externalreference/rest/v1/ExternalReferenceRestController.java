@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/externalRef" })
 @RestController
 @Profile(Profiles.PROFILE_App)
+@Deprecated
 public class ExternalReferenceRestController
 {
 
