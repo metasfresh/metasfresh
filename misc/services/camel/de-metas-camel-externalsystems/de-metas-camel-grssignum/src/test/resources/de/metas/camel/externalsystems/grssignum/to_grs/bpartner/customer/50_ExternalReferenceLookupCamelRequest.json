@@ -1,0 +1,12 @@
+{
+  "orgCode": "orgCode",
+  "externalReferenceLookupRequest": {
+    "systemName": "GRSSignum",
+    "items": [
+      {
+        "metasfreshId": 1,
+        "type": "Product"
+      }
+    ]
+  }
+}

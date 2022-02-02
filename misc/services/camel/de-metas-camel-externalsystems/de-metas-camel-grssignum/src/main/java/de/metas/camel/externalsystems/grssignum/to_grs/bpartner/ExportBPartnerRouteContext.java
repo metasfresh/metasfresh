@@ -23,10 +23,13 @@
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -44,6 +47,16 @@ public class ExportBPartnerRouteContext
 	@NonNull
 	private final String tenantId;
 
+	@NonNull
+	private final String orgCode;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonResponseComposite jsonResponseComposite;
+
+	@Nullable
+	private JsonExternalReferenceLookupResponse jsonExternalReferenceLookupResponse;
+
 	@Nullable
 	private final JsonExportDirectorySettings jsonExportDirectorySettings;
 
@@ -53,13 +66,10 @@ public class ExportBPartnerRouteContext
 	@Nullable
 	private String bPartnerBasePath;
 
-	@Nullable
-	private JsonResponseComposite jsonResponseComposite;
-
 	@NonNull
 	public JsonResponseComposite getJsonResponseComposite()
 	{
-		Check.assumeNotNull(jsonResponseComposite, "jsonResponseComposite cannot be null at this point!");
+		Check.assumeNotNull(jsonResponseComposite, "jsonResponseComposite must not be null when this is called!");
 
 		return jsonResponseComposite;
 	}

@@ -14,13 +14,13 @@
   * `FLAG`= `300` translates to `PushBOMs` route;
   * `FLAG`= `999` translates to `UpdateHU` route;
 
-**GRSSignum JsonBPartner => metasfresh C_Bpartner**
+**GRSSignum JsonVendor => metasfresh C_Bpartner**
 ---
 
-* `JsonBPartner` - payload sent to the camel rest endpoint
-  * see: `de.metas.camel.externalsystems.grssignum.api.model.JsonBPartner`
+* `JsonVendor` - payload sent to the camel rest endpoint
+  * see: `de.metas.camel.externalsystems.grssignum.api.model.JsonVendor`
 
-1. `JsonBPartner` - all `metasfresh-column` values refer to `C_BPartner` columns
+1. `JsonVendor` - all `metasfresh-column` values refer to `C_BPartner` columns
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
    ---- | ---- | ---- | ---- | ---- |
@@ -52,7 +52,7 @@ ARTNRID  | `S_ExternalReference`.`externalReference` -> `M_Product_ID` | Y |  Js
 KRED  | ----- | ---- |  JsonRequestProduct.bpartnerProductItem List | see details below |
 ---- | ---- | ---- | syncAdvise | manually set as `CREATE_OR_MERGE` | 
 
-2. `JsonBPartnerProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
+2. `JsonVendorProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
 
 * if provided, then upserts a `C_BPartner_Product` for the given `M_Product_Id` following the below mappings:
 
@@ -163,16 +163,20 @@ ATTRIBUTES.value | `M_HU_Attribute.Value` | Y | JsonHUAttributes.value  | attrib
   * `GRSSignum-exportBPartner`;
   * `GRSSignum-exportHU`;
 
-**metasfresh C_Bpartner => GRSSignum JsonBPartner**
+**metasfresh C_Bpartner => GRSSignum JsonVendor and/or JsonCustomer**
 ---
+---
+### `C_Bpartner` -> exported either: <br /> 
+- as `JsonVendor` if `C_BPartner.IsVendor` is `true` and `C_BPartner.IsCustomer` is `false` <br />
+- as `JsonCustomer` if `C_BPartner.IsCustomer` is `true` and `C_BPartner.IsVendor` is `false` <br />
+- as both `JsonVendor` and `JsonCustomer` if both `C_BPartner.IsVendor` and `C_BPartner.IsCustomer` are `true` <br />
+<br />
 
-1. `C_Bpartner` -> exported as `JsonBPartner`
-
-- metasfresh json `JsonResponseComposite` to `JsonBPartner`
+#### 1. metasfresh json `JsonResponseComposite` to `JsonVendor`
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
    ---- | ---- | ---- | ---- | ---- |
-FLAG | ---- | Y | ---- | GRSSignum route flag |
+FLAG | ---- | Y | ---- | 100 |
 MKREDID | `C_Bpartner.Value` | Y | JsonResponseBPartner.code | ---- |
 KURZBEZEICHNUNG | `C_Bpartner.Name ` | Y | JsonResponseBPartner.name + JsonResponseBPartner.name2 + JsonResponseBPartner.name3 | ---- |
 INAKTIV | `C_Bpartner.IsActive` | Y |  JsonRequestBPartner.isActive | `isActive` == `false` => `INAKTIV` == `1`; `isActive` == `true` => `INAKTIV` == `0`|
@@ -180,8 +184,8 @@ MID | `ExternalSystem_Config_GRSSignum.TenantId` | N |  JsonExternalSystemReques
 NAMENSZUSATZ | `C_Bpartner.Name2` | N |  JsonRequestBPartner.name2 | ---- |
 METASFRESHID | `C_Bpartner.C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId | ---- |
 KREDITORENNR | `C_Bpartner.CreditorID` | N | JsonResponseBPartner.creditorId | ---- |
-DEBITORRENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
-ANHANGORDNER | ---- | N | ---- | `basePath` for `C_BPartner` directory, computed from `externalsystem_config_grssignum.basepathforexportdirectories` + `c_bpartner.value` |
+DEBITORENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
+ANHANGORDNER | ---- | N | ---- | `basePath` for `C_BPartner` directory, currently set to `c_bpartner.value` |
 METASFRESHURL | ---- | N | JsonResponseBPartner.metasfreshUrl | `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}` |
 ADRESSE 1 | `C_BPartner_Location.C_Location.Address1` | N |  JsonResponseLocation.address1 | ---- |
 ADRESSE 2 | `C_BPartner_Location.C_Location.Address2` | N |  JsonResponseLocation.address2 | ---- |
@@ -208,6 +212,60 @@ TELEFON | `Phone` | N | JsonResponseContact.phone |---- |
 MOBIL | `Phone2` | N | JsonResponseContact.phone2 |---- |
 FAX | `Fax` | N | JsonResponseContact.fax |---- |
 ROLLEN | `C_User_Assigned_Role.C_User_Role.Name` | N | JsonResponseContact.JsonResponseContactRole.name |array of all the user rolles assigned |
+
+#### 2. metasfresh json `JsonResponseComposite` to `JsonCustomer`
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+   ---- | ---- | ---- | ---- | ---- |
+FLAG | ---- | Y | ---- | 500 |
+METASFRESHID | `C_Bpartner.C_BPartner_ID` | Y | JsonResponseBPartner.JsonMetasfreshId | ---- |
+MKDID | `C_Bpartner.Value` | Y | JsonResponseBPartner.code | ---- |
+MATCHCODE | `C_Bpartner.Name ` | Y | JsonResponseBPartner.name | ---- |
+METASFRESHURL | ---- | N | JsonResponseBPartner.metasfreshUrl | `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}` |
+MID | `ExternalSystem_Config_GRSSignum.TenantId` | N |  JsonExternalSystemRequest.parameters.TenantId | ---- |
+KREDITORENNR | `C_Bpartner.CreditorID` | N | JsonResponseBPartner.creditorId | ---- |
+DEBITORENNR | `C_Bpartner.DebtorID` | N | JsonResponseBPartner.debtorId | ---- |
+ANHANGORDNER | ---- | N | ---- | `basePath` for `C_BPartner` directory, currently set to `c_bpartner.value` |
+INAKTIV | `C_Bpartner.IsActive` | Y |  JsonRequestBPartner.isActive | `isActive` == `false` => `INAKTIV` == `1`; `isActive` == `true` => `INAKTIV` == `0`|
+KDDATA | `C_BPartner_Location` | N | JsonResponseLocation | details below |
+PERSDATA | `Ad_User` | N | JsonResponseContact | details below |
+REZDET | `S_ExternalReference.ExternalReference` | N | ---- | list of all the `C_BPartner_Product.M_Product_ID` external references in GRS |
+
+* `KDDATA` - metasfresh json `JsonResponseLocation` to `JsonCustomerLocation`
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+  ---- | ---- | ---- | ---- | ---- |
+METASFRESHID | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonResponseLocation.metasfreshId | ---- |
+NAME | `C_BPartner_Location.Name` | Y | JsonResponseLocation.name | ---- |
+ADRESSE 1 | `C_BPartner_Location.C_Location.Address1` | N |  JsonResponseLocation.address1 | ---- |
+ADRESSE 2 | `C_BPartner_Location.C_Location.Address2` | N |  JsonResponseLocation.address2 | ---- |
+ADRESSE 3 | `C_BPartner_Location.C_Location.Address3` | N |  JsonResponseLocation.address3 | ---- |
+ADRESSE 4 | `C_BPartner_Location.C_Location.Address4` | N |  JsonResponseLocation.address4 | ---- |
+PLZ | `C_BPartner_Location.C_Location.postal` | N |  JsonResponseLocation.postal | ---- |
+ORT | `C_BPartner_Location.C_Location.City` | N |  JsonResponseLocation.city | ---- |
+LANDESCODE | `C_BPartner_Location.C_Location.C_Country.CountryCode` | N |  JsonResponseLocation.countryCode | ---- |
+GLN | `C_BPartner_Location.gln` | N |  JsonResponseLocation.gln | ---- |
+INAKTIV | `C_BPartner_Location.IsActive` | Y |  JsonResponseLocation.active | `active` == `false` => `INAKTIV` == `1`; `active` == `true` => `INAKTIV` == `0`|
+LIEFERADRESSE | `C_BPartner_Location.IsShipTo` | Y |  JsonResponseLocation.shipTo | ---- |
+RECHNUNGSADDRESSE | `C_BPartner_Location.IsBillTo` | Y |  JsonResponseLocation.billTo | ---- |
+
+* `PERSDATA` - metasfresh json `JsonResponseContact` to `JsonCustomerContact`
+  - all the `metasfresh-column` are from `Ad_User` table
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+  ---- | ---- | ---- | ---- | ---- |
+METASFRESHID | `AD_User_ID` | Y | JsonResponseContact.metasfreshId | `AD_User_ID` record id from metasfresh|
+FULLNAME | `Fullname` | N | JsonResponseContact.firstName + JsonResponseContact.lastName  |---- |
+NACHNAME | `Lastname` | N | JsonResponseContact.lastName |---- |
+VORNAME | `FirstName` | N | JsonResponseContact.firstName |---- |
+ANREDE | `C_Greeting.Greeting` | N | JsonResponseContact.greeting |---- |
+TITEL | `Title` | N | JsonResponseContact.title |---- |
+POSITION | `C_Job.Name` | N | JsonResponseContact.JsonResponseContactPosition.name |---- |
+EMAIL | `Email` | N | JsonResponseContact.email |---- |
+TELEFON | `Phone` | N | JsonResponseContact.phone |---- |
+MOBIL | `Phone2` | N | JsonResponseContact.phone2 |---- |
+FAX | `Fax` | N | JsonResponseContact.fax |---- |
+INAKTIV | `IsActive` | Y |  JsonResponseContact.active | `active` == `false` => `INAKTIV` == `1`; `active` == `true` => `INAKTIV` == `0`|
 
 **metasfresh M_HU => GRSSignum**
 ---
