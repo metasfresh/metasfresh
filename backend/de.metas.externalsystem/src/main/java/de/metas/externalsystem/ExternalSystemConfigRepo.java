@@ -688,6 +688,9 @@ public class ExternalSystemConfigRepo
 				.autoSendCustomers(config.isAutoSendCustomers())
 				.syncHUsOnMaterialReceipt(config.isSyncHUsOnMaterialReceipt())
 				.syncHUsOnProductionReceipt(config.isSyncHUsOnProductionReceipt())
+				.basePathForExportDirectories(config.getBasePathForExportDirectories())
+				.createBPartnerFolders(config.isCreateBPartnerFolders())
+				.bPartnerExportDirectories(config.getBPartnerExportDirectories())
 				.build();
 	}
 

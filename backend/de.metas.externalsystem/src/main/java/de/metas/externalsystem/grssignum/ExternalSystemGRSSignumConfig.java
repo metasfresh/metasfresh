@@ -55,6 +55,12 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 	@Nullable
 	String authToken;
 
+	@Nullable
+	String basePathForExportDirectories;
+
+	@Nullable
+	String bPartnerExportDirectories;
+
 	boolean syncBPartnersToRestEndpoint;
 
 	boolean autoSendVendors;
@@ -65,6 +71,8 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 
 	boolean syncHUsOnProductionReceipt;
 
+	boolean createBPartnerFolders;
+
 	@Builder
 	ExternalSystemGRSSignumConfig(
 			@NonNull final ExternalSystemGRSSignumConfigId id,
@@ -74,11 +82,14 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 			@NonNull final String tenantId,
 			@Nullable final String camelHttpResourceAuthKey,
 			@Nullable final String authToken,
+			@Nullable final String basePathForExportDirectories,
+			@Nullable final String bPartnerExportDirectories,
 			final boolean syncBPartnersToRestEndpoint,
 			final boolean autoSendVendors,
 			final boolean autoSendCustomers,
 			final boolean syncHUsOnMaterialReceipt,
-			final boolean syncHUsOnProductionReceipt)
+			final boolean syncHUsOnProductionReceipt,
+			final boolean createBPartnerFolders)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -87,11 +98,14 @@ public class ExternalSystemGRSSignumConfig implements IExternalSystemChildConfig
 		this.tenantId = tenantId;
 		this.camelHttpResourceAuthKey = camelHttpResourceAuthKey;
 		this.authToken = authToken;
+		this.bPartnerExportDirectories = bPartnerExportDirectories;
+		this.basePathForExportDirectories = basePathForExportDirectories;
 		this.syncBPartnersToRestEndpoint = syncBPartnersToRestEndpoint;
 		this.autoSendVendors = autoSendVendors;
 		this.autoSendCustomers = autoSendCustomers;
 		this.syncHUsOnMaterialReceipt = syncHUsOnMaterialReceipt;
 		this.syncHUsOnProductionReceipt = syncHUsOnProductionReceipt;
+		this.createBPartnerFolders = createBPartnerFolders;
 	}
 
 	public static ExternalSystemGRSSignumConfig cast(@NonNull final IExternalSystemChildConfig childConfig)

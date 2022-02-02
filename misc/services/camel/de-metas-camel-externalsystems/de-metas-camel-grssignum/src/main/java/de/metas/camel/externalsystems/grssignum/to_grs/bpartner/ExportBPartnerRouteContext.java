@@ -22,22 +22,45 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.externalsystem.JsonExportDirectorySettings;
+import de.metas.common.util.Check;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
+@Data
 @Builder
 public class ExportBPartnerRouteContext
 {
 	@NonNull
-	String remoteUrl;
+	private final String remoteUrl;
 
 	@Nullable
-	String authToken;
+	private final String authToken;
 
 	@NonNull
-	String tenantId;
+	private final String tenantId;
+
+	@Nullable
+	private final JsonExportDirectorySettings jsonExportDirectorySettings;
+
+	@Nullable
+	private final Integer pinstanceId;
+
+	@Nullable
+	private String bPartnerBasePath;
+
+	@Nullable
+	private JsonResponseComposite jsonResponseComposite;
+
+	@NonNull
+	public JsonResponseComposite getJsonResponseComposite()
+	{
+		Check.assumeNotNull(jsonResponseComposite, "jsonResponseComposite cannot be null at this point!");
+
+		return jsonResponseComposite;
+	}
 }
