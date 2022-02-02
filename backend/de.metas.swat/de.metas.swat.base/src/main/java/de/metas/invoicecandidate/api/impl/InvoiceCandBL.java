@@ -61,6 +61,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
@@ -180,8 +181,10 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -193,6 +196,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer.OnMissingCandidate.I_VETO;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -265,6 +269,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -1682,12 +1688,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public boolean isCreatedByInvoicingJustNow(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		if (!DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
-				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice))
-		{
-			return true; // nothing to do for us
-		}
-		return false;
+		return !DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
+				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice); // nothing to do for us
 	}
 
 	@Override
@@ -1811,14 +1813,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			askForRegeneration = true;
 		}
-		else if (e instanceof de.metas.pricing.exceptions.ProductNotOnPriceListException)
-		{
-			askForRegeneration = true;
-		}
 		else
-		{
-			askForRegeneration = false;
-		}
+			askForRegeneration = e instanceof ProductNotOnPriceListException;
 
 		String errorMsg = e.getLocalizedMessage();
 		if (Check.isEmpty(errorMsg) || errorMsg.length() < 4)
@@ -2522,5 +2518,33 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.getBPartnerLocationAndCaptureId();
+	}
+
+	@Override
+	public void registerVetoer(final ModelWithoutInvoiceCandidateVetoer vetoer, final String tableName)
+	{
+		final Collection<ModelWithoutInvoiceCandidateVetoer> listeners = tableName2Listeners.computeIfAbsent(tableName, k -> new ArrayList<>());
+		listeners.add(vetoer);
+	}
+
+	@Override
+	public boolean isAllowedToCreateInvoiceCandidateFor(final Object model)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		final Collection<ModelWithoutInvoiceCandidateVetoer> listeners = tableName2Listeners.get(tableName);
+		if (listeners == null)
+		{
+			return true;
+		}
+
+		for (final ModelWithoutInvoiceCandidateVetoer listener : listeners)
+		{
+			if (I_VETO.equals(listener.foundModelWithoutInvoiceCandidate(model)))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
