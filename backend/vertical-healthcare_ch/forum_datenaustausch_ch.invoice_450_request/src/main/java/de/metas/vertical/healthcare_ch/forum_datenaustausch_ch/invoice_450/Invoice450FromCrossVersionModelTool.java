@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -30,7 +31,9 @@ import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
@@ -164,6 +167,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.XmlVia;
 import lombok.NonNull;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
@@ -187,6 +191,7 @@ public class Invoice450FromCrossVersionModelTool
 	private final Map<String, String> zsrToEanPartyMap = new HashMap<>();
 
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final static transient Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -1542,7 +1547,7 @@ public class Invoice450FromCrossVersionModelTool
 
 	private boolean isValidEsrQRCandidate(final XmlRequest xAugmentedRequest)
 	{
-		return hasEsr9(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
+		return hasValidEsr9ConversionCandidate(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
 	}
 
 	/**
@@ -1584,9 +1589,27 @@ public class Invoice450FromCrossVersionModelTool
 		return xEsrQR.build();
 	}
 
-	private boolean hasEsr9(final XmlRequest xAugmentedRequest)
+	/**
+	 * This is needed because the only valid candidates that can be converted to EsrQR are:
+	 * <ol>
+	 *     <li>those of type Esr9</li>
+	 *     <li>those that contain an {@code XmlBank} definition</li> (because Bank is mandatory for EsrQR)
+	 *
+	 * @param xAugmentedRequest the request to check
+	 * @return true if the request
+	 * <ul>
+	 *   <li>has an XmlEsr that is of type Esr9</li>
+	 *   <li>this Esr9 has a {@code XmlBank} defined</li>
+	 */
+	private boolean hasValidEsr9ConversionCandidate(final XmlRequest xAugmentedRequest)
 	{
-		return xAugmentedRequest.getPayload().getBody().getEsr() instanceof XmlEsr9;
+		final XmlEsr esr = xAugmentedRequest.getPayload().getBody().getEsr();
+		final boolean result = esr instanceof XmlEsr9 && ((XmlEsr9)esr).getBank() != null;
+		if (!result && esr instanceof XmlEsr9)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ESR9 -> EsrQR conversion not possible because bank record not defined in Esr9, but is mandatory in EsrQR");
+		}
+		return result;
 	}
 
 	@Nullable
