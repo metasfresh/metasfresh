@@ -7,11 +7,23 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.report.client.ReportsClient;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -21,6 +33,9 @@ public class HUQRCodeCreatePDFCommand
 {
 	private final ImmutableList<HUQRCode> qrCodes;
 	private final boolean sendToPrinter;
+
+	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	final private HUReportService huReportService = HUReportService.get();
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -97,4 +112,22 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
+	private ReportResult printLabel()
+	{
+		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
+		if (adProcessId == null)
+		{
+			throw new AdempiereException("HU json label process does not exist");
+		}
+
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_Process_ID(adProcessId)
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
+
+		final ReportsClient reportsClient = ReportsClient.get();
+
+		return reportsClient.report(jasperProcessInfo);
+	}
 }
