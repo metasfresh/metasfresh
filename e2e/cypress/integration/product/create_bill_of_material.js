@@ -1,4 +1,6 @@
 import { Product, ProductCategory } from '../../support/utils/product';
+// import { BillOfMaterialVersion, BillOfMaterialVersionLine } from '../../support/utils/billOfMaterialVersion';
+import { BillOfMaterial } from '../../support/utils/billOfMaterial';
 import { BillOfMaterialVersion, BillOfMaterialVersionLine } from '../../support/utils/billOfMaterialVersion';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 
@@ -9,6 +11,8 @@ describe('Create Product and BOM', function() {
 
   // test
   let mainProductId;
+  let bomName1;
+  const firstBomName = appendHumanReadableNow('BOM1', null);
 
   it('Read the fixture', function() {
     cy.fixture('product/create_bill_of_material.json').then(f => {
@@ -47,10 +51,21 @@ describe('Create Product and BOM', function() {
     });
   });
 
+  it('Create BOMs and set their products', function () {
+    bomName1 = `${productName}_BOM`;
+    // bomName2 = `${componentProductName}_BOM`;
+
+    Object.assign(new BillOfMaterial(), {}).setName(bomName1).setProduct(productName).apply();
+    // Object.assign(new BillOfMaterial(), {}).setName(bomName2).setProduct(componentProductName).apply();
+  });
+
   it('Create a new Bill of Material and add a component', function() {
     cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
       Object.assign(new BillOfMaterialVersion(), billMaterialJson)
+        .setName(firstBomName)
+        .setBOM(bomName1)
         .setProduct(productName)
+        // .setProduct(productName)
         // eslint-disable-next-line
         .addLine(new BillOfMaterialVersionLine().setProduct(productComponentName).setQuantity(555).setScrap(3333))
         .setIsVerified(true)

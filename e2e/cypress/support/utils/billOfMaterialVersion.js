@@ -54,7 +54,6 @@ function applyBillOfMaterialVersion(billOfMaterialVersion) {
 
   cy.writeIntoTextField('Name', billOfMaterialVersion.name);
   cy.selectInListField('PP_Product_BOMVersions_ID', billOfMaterialVersion.bom, false);
-  // cy.writeIntoLookupListField('M_Product_ID', billOfMaterialVersion.product, billOfMaterialVersion.product);
   cy.writeIntoStringField('DocumentNo', billOfMaterialVersion.documentNo);
 
   billOfMaterialVersion.lines.forEach(line => {
