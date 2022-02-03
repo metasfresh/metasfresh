@@ -68,6 +68,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -97,6 +98,8 @@ import java.util.Set;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceProcessingServiceCompanyServiceTest
@@ -198,9 +201,15 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.docTypeId(DocTypeId.ofRepoId(4))
 					.build();
 
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setDocBaseType(DOCBASETYPE_APInvoice);
+			docType.setDocSubType(DOCSUBTYPE_PaymentServiceProviderInvoice);
+			saveRecord(docType);
+
 			final I_C_Invoice serviceFeeInvoice = newInstance(I_C_Invoice.class);
 			serviceFeeInvoice.setRef_Invoice_ID(3);
 			serviceFeeInvoice.setDocStatus(DocStatus.Completed.getCode());
+			serviceFeeInvoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 			saveRecord(serviceFeeInvoice);
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -208,7 +217,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
-					.docTypeId(DocTypeId.ofRepoId(4))
+					.docTypeId(DocTypeId.ofRepoId(docType.getC_DocType_ID()))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					.build());
 
