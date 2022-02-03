@@ -99,7 +99,9 @@ public class PickingHURowsRepository
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
-				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
+				// BIG optimization: attributes are not needed for picking
+				// known side effect: HUEditorRow.serialNo won't be set... but we don't needed neither
+				//.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
 				.build();
