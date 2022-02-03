@@ -27,6 +27,8 @@ import com.sun.istack.Nullable;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
@@ -67,6 +69,9 @@ public class EcosioOrdersRoute
 		final String userEnteredById = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADUserEnteredByID);
 		final String dataDestinationInternalName = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADInputDataDestination_InternalName);
 
+		final String defaultDeliveryRule = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_DELIVERY_RULE);
+		final String defaultDeliveryViaRule = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_DELIVERY_VIA_RULE);
+
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_ORDERS_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
 		{
@@ -89,15 +94,22 @@ public class EcosioOrdersRoute
 					olCandXML.setReplicationModeAttr(ReplicationModeEnum.Table);
 					olCandXML.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
 					olCandXML.setVersionAttr("*");
-					olCandXML.setTrxNameAttr(exchange.getIn().getHeader(Exchange.FILE_NAME, String.class));
+
+					// there might be multiple orders in one file. so we compose the replication-name like this to make sure one order is one replication-trx
+					final String trxNameAttr = olCandXML.getPOReference() + "_" + exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
+					olCandXML.setTrxNameAttr(trxNameAttr);
 
 					olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 					olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
 
+					olCandXML.setDeliveryRule(COrderDeliveryRuleEnum.fromValue(defaultDeliveryRule)); // TODO: let metasfresh decide
+					olCandXML.setDeliveryViaRule(COrderDeliveryViaRuleEnum.fromValue(defaultDeliveryViaRule));
+
 					rewriteDatePromised(olCandXML.getDatePromised());
 
-					final EDIImpADInputDataSourceLookupINType dataDestinationLookup = Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
-							Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
+					final EDIImpADInputDataSourceLookupINType dataDestinationLookup =
+							Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
+													  Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
 					olCandXML.setADDataDestinationID(dataDestinationLookup);
 				})
 				.marshal(dataFormat)
