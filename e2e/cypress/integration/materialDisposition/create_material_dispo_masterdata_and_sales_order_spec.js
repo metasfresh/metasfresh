@@ -26,13 +26,14 @@ let secondComponentProductName;
 let firstBomName;
 let secondBomName;
 
+let bomName1;
+let bomName2;
+
 let poReference;
 
 let firstBomMainProductId;
 let secondBomMainProductId;
 
-let bomName1;
-let bomName2;
 
 it('Read the fixture', function() {
   cy.fixture('materialDisposition/create_material_dispo_masterdata_and_sales_order_spec.json').then(f => {
