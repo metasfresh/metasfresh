@@ -1,5 +1,5 @@
 import { Product, ProductCategory } from '../../support/utils/product';
-import { BillOfMaterial, BillOfMaterialLine } from '../../support/utils/billOfMaterial';
+import { BillOfMaterialVersion, BillOfMaterialVersionLine } from '../../support/utils/billOfMaterialVersion';
 import { appendHumanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product and BOM', function() {
@@ -49,10 +49,10 @@ describe('Create Product and BOM', function() {
 
   it('Create a new Bill of Material and add a component', function() {
     cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
-      Object.assign(new BillOfMaterial(), billMaterialJson)
+      Object.assign(new BillOfMaterialVersion(), billMaterialJson)
         .setProduct(productName)
         // eslint-disable-next-line
-        .addLine(new BillOfMaterialLine().setProduct(productComponentName).setQuantity(555).setScrap(3333))
+        .addLine(new BillOfMaterialVersionLine().setProduct(productComponentName).setQuantity(555).setScrap(3333))
         .setIsVerified(true)
         .apply();
     });

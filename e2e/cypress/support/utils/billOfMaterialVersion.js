@@ -53,8 +53,8 @@ function applyBillOfMaterialVersion(billOfMaterialVersion) {
   cy.visitWindow('53006', 'NEW');
 
   cy.writeIntoTextField('Name', billOfMaterialVersion.name);
-  cy.writeIntoLookupListField('PP_Product_BOMVersions_ID', billOfMaterialVersion.bom, billOfMaterialVersion.bom);
-  cy.writeIntoLookupListField('M_Product_ID', billOfMaterialVersion.product, billOfMaterialVersion.product);
+  cy.selectInListField('PP_Product_BOMVersions_ID', billOfMaterialVersion.bom, false);
+  // cy.writeIntoLookupListField('M_Product_ID', billOfMaterialVersion.product, billOfMaterialVersion.product);
   cy.writeIntoStringField('DocumentNo', billOfMaterialVersion.documentNo);
 
   billOfMaterialVersion.lines.forEach(line => {

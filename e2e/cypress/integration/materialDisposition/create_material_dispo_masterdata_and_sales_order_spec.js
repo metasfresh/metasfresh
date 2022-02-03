@@ -128,21 +128,22 @@ describe('Create products, BOMs and planning data', function () {
   });
 
   it('Create BOMs and set their products', function () {
-    bomName1 = appendHumanReadableNow(`${mainProductName}_BOM`, null);
-    bomName2 = appendHumanReadableNow(`${secondComponentProductName}_BOM`, null);
+    bomName1 = `${mainProductName}_BOM`;
+    bomName2 = `${componentProductName}_BOM`;
 
     Object.assign(new BillOfMaterial(), {}).setName(bomName1).setProduct(mainProductName).apply();
-    Object.assign(new BillOfMaterial(), {}).setName(bomName2).setProduct(secondComponentProductName).apply();
+    Object.assign(new BillOfMaterial(), {}).setName(bomName2).setProduct(componentProductName).apply();
   });
 
   describe('Create products, BOMs and planning data', function () {
     describe('Create and verify 1st BOM', function () {
       it('Create 1st BOM', function () {
         cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
+
           Object.assign(new BillOfMaterialVersion(), billMaterialJson)
             .setName(firstBomName)
             .setBOM(bomName1)
-            // .setProduct(mainProductName)
+            .setProduct(mainProductName)
             // eslint-disable-next-line prettier/prettier
             .addLine(new BillOfMaterialVersionLine().setProduct(componentProductName).setQuantity(10))
             .apply();
@@ -167,10 +168,10 @@ describe('Create products, BOMs and planning data', function () {
     // create 2nd BOM
     it('Create 2nd BOM', function() {
       cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
-        Object.assign(new BillOfMaterial(), billMaterialJson)
+        Object.assign(new BillOfMaterialVersion(), billMaterialJson)
           .setName(secondBomName)
           .setBOM(bomName2)
-          // .setProduct(componentProductName)
+          .setProduct(componentProductName)
           // eslint-disable-next-line prettier/prettier
           .addLine(new BillOfMaterialVersionLine().setProduct(secondComponentProductName).setQuantity(10))
           .apply();
@@ -197,7 +198,7 @@ describe('Create products, BOMs and planning data', function () {
       cy.writeIntoLookupListField('M_Product_ID', mainProductName, mainProductName);
       cy.selectInListField('M_Warehouse_ID', warehouseName);
 
-      cy.selectInListField('PP_Product_BOM_ID', mainProductName);
+      // cy.selectInListField('PP_Product_BOM_ID', mainProductName);
       // cy.selectInListField('AD_Workflow_ID', ); // todo what is a workflow? do we need one for the test?
       cy.writeIntoLookupListField('S_Resource_ID', plantName, plantName);
       cy.selectInListField('IsManufactured', 'Yes');
@@ -212,7 +213,7 @@ describe('Create products, BOMs and planning data', function () {
       cy.writeIntoLookupListField('M_Product_ID', componentProductName, componentProductName);
       cy.selectInListField('M_Warehouse_ID', warehouseName);
 
-      cy.selectInListField('PP_Product_BOM_ID', componentProductName);
+      // cy.selectInListField('PP_Product_BOM_ID', componentProductName);
       // cy.selectInListField('AD_Workflow_ID', ); // todo what is a workflow? do we need one for the test?
       cy.writeIntoLookupListField('S_Resource_ID', plantName, plantName);
       cy.selectInListField('IsManufactured', 'Yes');
