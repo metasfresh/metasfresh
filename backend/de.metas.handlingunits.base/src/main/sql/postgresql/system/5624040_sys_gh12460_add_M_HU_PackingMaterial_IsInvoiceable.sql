@@ -1,6 +1,6 @@
 -- 2022-02-01T17:44:08.943Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580536,0,'IsInvoiceable',TO_TIMESTAMP('2022-02-01 19:44:08','YYYY-MM-DD HH24:MI:SS'),100,'If checked, when this packing material is used for a shipment it will also be included in the invoice','D','Y','Include in Invoice','Include in Invoice',TO_TIMESTAMP('2022-02-01 19:44:08','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580536,0,'IsInvoiceable',TO_TIMESTAMP('2022-02-01 19:44:08','YYYY-MM-DD HH24:MI:SS'),100,'If ticked, this packing material will also be invoiced when used for a shipment','D','Y','Include in Invoice','Include in Invoice',TO_TIMESTAMP('2022-02-01 19:44:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-02-01T17:44:08.948Z
@@ -10,7 +10,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2022-02-01T17:45:13.893Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,579181,580536,0,20,540519,'IsInvoiceable',TO_TIMESTAMP('2022-02-01 19:45:13','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','If checked, when this packing material is used for a shipment it will also be included in the invoice','de.metas.handlingunits',0,1,'E','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','Y','N','N','N','N','N','Y','N',0,'Include in Invoice',0,0,TO_TIMESTAMP('2022-02-01 19:45:13','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,579181,580536,0,20,540519,'IsInvoiceable',TO_TIMESTAMP('2022-02-01 19:45:13','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','If ticked, this packing material will also be invoiced when used for a shipment','de.metas.handlingunits',0,1,'E','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','Y','N','N','N','N','N','Y','N',0,'Include in Invoice',0,0,TO_TIMESTAMP('2022-02-01 19:45:13','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-02-01T17:45:13.894Z
@@ -30,7 +30,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-02-01T17:47:02.827Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,579181,678378,0,540521,0,TO_TIMESTAMP('2022-02-01 19:47:02','YYYY-MM-DD HH24:MI:SS'),100,'If checked, when this packing material is used for a shipment it will also be included in the invoice',0,'D',0,'Y','Y','Y','N','N','N','N','N','Include in Invoice',0,200,0,1,1,TO_TIMESTAMP('2022-02-01 19:47:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,579181,678378,0,540521,0,TO_TIMESTAMP('2022-02-01 19:47:02','YYYY-MM-DD HH24:MI:SS'),100,'If ticked, this packing material will also be invoiced when used for a shipment',0,'D',0,'Y','Y','Y','N','N','N','N','N','Include in Invoice',0,200,0,1,1,TO_TIMESTAMP('2022-02-01 19:47:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-02-01T17:47:02.828Z
@@ -55,7 +55,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=678378
 
 -- 2022-02-01T17:47:52.671Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,678378,0,540521,540535,600360,'F',TO_TIMESTAMP('2022-02-01 19:47:52','YYYY-MM-DD HH24:MI:SS'),100,'If checked, when this packing material is used for a shipment it will also be included in the invoice','Y','N','N','Y','N','N','N',0,'Include in Invoice',30,0,0,TO_TIMESTAMP('2022-02-01 19:47:52','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,678378,0,540521,540535,600360,'F',TO_TIMESTAMP('2022-02-01 19:47:52','YYYY-MM-DD HH24:MI:SS'),100,'If ticked, this packing material will also be invoiced when used for a shipment','Y','N','N','Y','N','N','N',0,'Include in Invoice',30,0,0,TO_TIMESTAMP('2022-02-01 19:47:52','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-02-02T14:51:17.879Z
@@ -85,22 +85,22 @@ UPDATE AD_Element_Trl SET Name='In Rechnung stellen', PrintName='In Rechnung ste
 
 -- 2022-02-02T14:51:22.577Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL WHERE AD_Element_ID=580536
+UPDATE AD_Column SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL WHERE AD_Element_ID=580536
 ;
 
 -- 2022-02-02T14:51:22.579Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL, AD_Element_ID=580536 WHERE UPPER(ColumnName)='ISINVOICEABLE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL, AD_Element_ID=580536 WHERE UPPER(ColumnName)='ISINVOICEABLE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2022-02-02T14:51:22.586Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL WHERE AD_Element_ID=580536 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='IsInvoiceable', Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL WHERE AD_Element_ID=580536 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2022-02-02T14:51:22.586Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580536) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580536)
+UPDATE AD_Field SET Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580536) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580536)
 ;
 
 -- 2022-02-02T14:51:22.605Z
@@ -110,17 +110,17 @@ UPDATE AD_PrintFormatItem pi SET PrintName='In Rechnung stellen', Name='In Rechn
 
 -- 2022-02-02T14:51:22.606Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Tab SET Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580536
+UPDATE AD_Tab SET Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580536
 ;
 
 -- 2022-02-02T14:51:22.607Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_WINDOW SET Name='In Rechnung stellen', Description='If checked, when this packing material is used for a shipment it will also be included in the invoice', Help=NULL WHERE AD_Element_ID = 580536
+UPDATE AD_WINDOW SET Name='In Rechnung stellen', Description='If ticked, this packing material will also be invoiced when used for a shipment', Help=NULL WHERE AD_Element_ID = 580536
 ;
 
 -- 2022-02-02T14:51:22.608Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'In Rechnung stellen', Description = 'If checked, when this packing material is used for a shipment it will also be included in the invoice', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580536
+UPDATE AD_Menu SET   Name = 'In Rechnung stellen', Description = 'If ticked, this packing material will also be invoiced when used for a shipment', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580536
 ;
 
 -- 2022-02-02T14:51:24.104Z

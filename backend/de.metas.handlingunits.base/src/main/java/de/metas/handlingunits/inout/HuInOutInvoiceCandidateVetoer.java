@@ -44,19 +44,16 @@ public class HuInOutInvoiceCandidateVetoer implements ModelWithoutInvoiceCandida
 	{
 		final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
 
-		if (!inOutLine.isPackagingMaterial())
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+		final HuPackingMaterial packingMaterial = packingMaterialDAO.retrieveBy(HuPackingMaterialQuery.builder()
+						.productId(productId)
+						.build())
+				.stream()
+				.findFirst()
+				.orElse(null);
+		if (packingMaterial != null && !packingMaterial.isInvoiceable())
 		{
-			final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
-			final HuPackingMaterial packingMaterial = packingMaterialDAO.retrieveBy(HuPackingMaterialQuery.builder()
-							.productId(productId)
-							.build())
-					.stream()
-					.findFirst()
-					.orElse(null);
-			if (packingMaterial != null && !packingMaterial.isInvoiceable())
-			{
-				return OnMissingCandidate.I_VETO;
-			}
+			return OnMissingCandidate.I_VETO;
 		}
 		return OnMissingCandidate.I_DONT_CARE;
 	}
