@@ -2,21 +2,27 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 
 @Repository
@@ -36,38 +42,57 @@ public class HUQRCodesRepository
 
 	private static Optional<HUQRCodeAssignment> toHUQRCodeAssignment(final I_M_HU_QRCode record)
 	{
-		final HuId huId = HuId.ofRepoIdOrNull(record.getM_HU_ID());
-		final HuItemId aggregateHUItemId = HuItemId.ofRepoIdOrNull(record.getAggregate_HU_Item_ID());
-		if (huId == null && aggregateHUItemId == null)
+		final HUOrAggregatedTUItemId huOrAggregatedTUItemId = extractHUOrAggregatedTUItemIdOrNull(record);
+		if (huOrAggregatedTUItemId == null)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(HUQRCodeAssignment.builder()
-				.id(HUQRCodeUniqueId.ofJson(record.getUniqueId()))
-				.huId(huId)
-				.aggregateHUItemId(aggregateHUItemId)
-				.build());
+		final HUQRCodeUniqueId id = HUQRCodeUniqueId.ofJson(record.getUniqueId());
+		return Optional.of(HUQRCodeAssignment.of(id, huOrAggregatedTUItemId));
 	}
 
-	public void createNew(@NonNull HUQRCode qrCode, @Nullable HUQRCodeAssignment assignment)
+	@Nullable
+	private static HUOrAggregatedTUItemId extractHUOrAggregatedTUItemIdOrNull(final I_M_HU_QRCode record)
 	{
-		if (assignment != null && !HUQRCodeUniqueId.equals(qrCode.getId(), assignment.getId()))
+		final HuId huId = HuId.ofRepoIdOrNull(record.getM_HU_ID());
+		final HuItemId aggregatedTUItemId = HuItemId.ofRepoIdOrNull(record.getAggregate_HU_Item_ID());
+		if (huId != null && aggregatedTUItemId != null)
 		{
-			throw new AdempiereException("QR Code and Assignment IDs shall match");
+			throw new AdempiereException("HU_ID and Aggregate_HU_Item_ID shall not be set at the same time: " + record);
 		}
+		else if (huId != null)
+		{
+			return HUOrAggregatedTUItemId.ofHuId(huId);
+		}
+		else if (aggregatedTUItemId != null)
+		{
+			return HUOrAggregatedTUItemId.ofAggregatedTUItemId(aggregatedTUItemId);
+		}
+		else // both null
+		{
+			return null;
+		}
+	}
 
+	public void createNew(@NonNull HUQRCode qrCode, @Nullable HUOrAggregatedTUItemId huOrAggregatedTUItemId)
+	{
 		final I_M_HU_QRCode record = InterfaceWrapperHelper.newInstance(I_M_HU_QRCode.class);
 		record.setUniqueId(qrCode.getId().getAsString());
 		record.setattributes(toJsonString(qrCode));
-
-		if (assignment != null)
-		{
-			record.setM_HU_ID(HuId.toRepoId(assignment.getHuId()));
-			record.setAggregate_HU_Item_ID(HuItemId.toRepoId(assignment.getAggregateHUItemId()));
-		}
-
+		updateRecordAssignment(record, huOrAggregatedTUItemId);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	private void updateRecordAssignment(
+			final @NonNull I_M_HU_QRCode record,
+			final @Nullable HUOrAggregatedTUItemId huOrAggregatedTUItemId)
+	{
+		final HuId huId = huOrAggregatedTUItemId != null ? huOrAggregatedTUItemId.getHuIdOrNull() : null;
+		record.setM_HU_ID(HuId.toRepoId(huId));
+
+		final HuItemId aggregatedTUItemId = huOrAggregatedTUItemId != null ? huOrAggregatedTUItemId.getAggregateTUItemIdOrNull() : null;
+		record.setAggregate_HU_Item_ID(HuItemId.toRepoId(aggregatedTUItemId));
 	}
 
 	private String toJsonString(final @NonNull HUQRCode qrCode)
@@ -90,6 +115,47 @@ public class HUQRCodesRepository
 				.create()
 				.firstOnlyOptional(I_M_HU_QRCode.class)
 				.map(this::toHUQRCode);
+	}
+
+	public ImmutableSetMultimap<HUOrAggregatedTUItemId, HUQRCode> getQRCodeByHuOrAggregatedTUItemIds(@NonNull final Collection<HUOrAggregatedTUItemId> huOrAggregatedTUItemIds)
+	{
+		if (huOrAggregatedTUItemIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final IQueryBuilder<I_M_HU_QRCode> queryBuilder = queryBL.createQueryBuilder(I_M_HU_QRCode.class);
+
+		final HashSet<HuId> huIds = new HashSet<>();
+		final HashSet<HuItemId> aggregatedTUItemIds = new HashSet<>();
+		for (HUOrAggregatedTUItemId huOrAggregatedTUItemId : huOrAggregatedTUItemIds)
+		{
+			if (huOrAggregatedTUItemId.isHuId())
+			{
+				huIds.add(huOrAggregatedTUItemId.getHuId());
+			}
+			if (huOrAggregatedTUItemId.isAggregatedTU())
+			{
+				aggregatedTUItemIds.add(huOrAggregatedTUItemId.getAggregatedTUItemId());
+			}
+		}
+
+		final ICompositeQueryFilter<I_M_HU_QRCode> huOrAggregatedTUItemsFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+		if (!huIds.isEmpty())
+		{
+			huOrAggregatedTUItemsFilter.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huIds);
+		}
+		if (!aggregatedTUItemIds.isEmpty())
+		{
+			huOrAggregatedTUItemsFilter.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_Aggregate_HU_Item_ID, aggregatedTUItemIds);
+		}
+
+		return queryBuilder
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						HUQRCodesRepository::extractHUOrAggregatedTUItemIdOrNull,
+						this::toHUQRCode));
 	}
 
 	private HUQRCode toHUQRCode(final I_M_HU_QRCode record)

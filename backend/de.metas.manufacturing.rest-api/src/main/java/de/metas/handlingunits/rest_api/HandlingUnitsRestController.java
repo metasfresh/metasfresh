@@ -34,6 +34,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
@@ -130,7 +131,8 @@ public class HandlingUnitsRestController
 			{
 				final HUQRCode huQRCode = GlobalQRCode.ofString(request.getQrCode()).getPayloadAs(HUQRCode.class);
 				return huQRCodesService.getHUAssignmentByQRCode(huQRCode)
-						.map(HUQRCodeAssignment::getHuId)
+						.map(HUQRCodeAssignment::getHuOrAggregatedTUItemId)
+						.map(HUOrAggregatedTUItemId::getHuIdOrNull)
 						.orElse(null);
 			}
 			else
