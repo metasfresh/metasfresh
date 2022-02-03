@@ -29,6 +29,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -63,6 +64,10 @@ import java.util.Set;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
+	void registerVetoer(ModelWithoutInvoiceCandidateVetoer vetoer, String tableName);
+
+	boolean isAllowedToCreateInvoiceCandidateFor(Object model);
+
 	interface IInvoiceGenerateResult
 	{
 		int getInvoiceCount();
