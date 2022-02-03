@@ -9,7 +9,6 @@ import { Warehouse } from '../../support/utils/warehouse';
 import { DocumentStatusKey } from '../../support/utils/constants';
 
 let plantName;
-
 let warehouseName;
 
 let priceSystemName;
