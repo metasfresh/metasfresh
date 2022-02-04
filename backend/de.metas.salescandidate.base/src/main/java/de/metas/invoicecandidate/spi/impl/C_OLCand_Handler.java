@@ -177,8 +177,15 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsSOTrx(true);
 
 		ic.setPresetDateInvoiced(olcRecord.getPresetDateInvoiced());
-		ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
-
+		if (olcRecord.getC_DocTypeInvoice_ID() > 0)
+		{
+			ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
+		}
+		else
+		{
+			setDefaultInvoiceDocType(ic);
+		}
+		
 		// 07442 activity and tax
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
