@@ -1,7 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
+import de.metas.handlingunits.HuId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -12,12 +12,12 @@ import java.util.Set;
 @Value
 public class HUQRCodeGenerateForExistingHUsRequest
 {
-	@NonNull ImmutableSet<HUOrAggregatedTUItemId> huOrAggregatedTUItemIds;
+	@NonNull ImmutableSet<HuId> huIds;
 
 	@Builder
-	private HUQRCodeGenerateForExistingHUsRequest(@NonNull final Set<HUOrAggregatedTUItemId> huOrAggregatedTUItemIds)
+	private HUQRCodeGenerateForExistingHUsRequest(@NonNull final Set<HuId> huIds)
 	{
-		Check.assumeNotEmpty(huOrAggregatedTUItemIds, "huOrAggregatedTUItemIds is not empty");
-		this.huOrAggregatedTUItemIds = ImmutableSet.copyOf(huOrAggregatedTUItemIds);
+		Check.assumeNotEmpty(huIds, "huIds is not empty");
+		this.huIds = ImmutableSet.copyOf(huIds);
 	}
 }

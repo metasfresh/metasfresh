@@ -38,7 +38,6 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
-import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
@@ -389,7 +388,7 @@ public class PickingJobTestHelper
 				.attributes(ImmutableList.of())
 				.build();
 
-		huQRCodesRepository.createNew(huQRCode, HUOrAggregatedTUItemId.ofHuId(huId));
+		huQRCodesRepository.createNew(huQRCode, huId);
 
 		return huQRCode;
 	}

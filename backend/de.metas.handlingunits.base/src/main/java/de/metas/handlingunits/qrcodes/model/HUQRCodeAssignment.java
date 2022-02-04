@@ -8,11 +8,5 @@ import lombok.Value;
 public class HUQRCodeAssignment
 {
 	@NonNull HUQRCodeUniqueId id;
-	@NonNull HUOrAggregatedTUItemId huOrAggregatedTUItemId;
-
-
-	public static HUQRCodeAssignment ofHuId(@NonNull final HuId huId, @NonNull final HUQRCodeUniqueId id)
-	{
-		return new HUQRCodeAssignment(id, HUOrAggregatedTUItemId.ofHuId(huId));
-	}
+	@NonNull HuId huId;
 }

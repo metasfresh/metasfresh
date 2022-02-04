@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -15,19 +14,18 @@ import org.adempiere.exceptions.AdempiereException;
 @ToString
 public class HUQRCodeGenerateForExistingHUsResult
 {
-	private final ImmutableSetMultimap<HUOrAggregatedTUItemId, HUQRCode> huQRCodes;
+	private final ImmutableSetMultimap<HuId, HUQRCode> huQRCodes;
 
-	HUQRCodeGenerateForExistingHUsResult(@NonNull final SetMultimap<HUOrAggregatedTUItemId, HUQRCode> huQRCodes)
+	HUQRCodeGenerateForExistingHUsResult(@NonNull final SetMultimap<HuId, HUQRCode> huQRCodes)
 	{
 		this.huQRCodes = ImmutableSetMultimap.copyOf(huQRCodes);
 	}
 
-	public ImmutableSetMultimap<HUOrAggregatedTUItemId, HUQRCode> toSetMultimap() {return huQRCodes;}
+	public ImmutableSetMultimap<HuId, HUQRCode> toSetMultimap() {return huQRCodes;}
 
 	public HUQRCode getSingleQRCode(@NonNull final HuId huId)
 	{
-		final HUOrAggregatedTUItemId huOrAggregatedTUItemId = HUOrAggregatedTUItemId.ofHuId(huId);
-		final ImmutableSet<HUQRCode> qrCodes = huQRCodes.get(huOrAggregatedTUItemId);
+		final ImmutableSet<HUQRCode> qrCodes = huQRCodes.get(huId);
 		if (qrCodes.size() != 1)
 		{
 			throw new AdempiereException("Expected only one QR code to be generated for " + huId + " but found " + qrCodes);

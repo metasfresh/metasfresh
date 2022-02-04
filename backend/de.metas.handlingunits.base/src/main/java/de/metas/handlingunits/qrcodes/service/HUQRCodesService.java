@@ -2,7 +2,6 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.HUOrAggregatedTUItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
@@ -72,8 +71,7 @@ public class HUQRCodesService
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
 	{
 		return getHUAssignmentByQRCode(qrCode)
-				.map(HUQRCodeAssignment::getHuOrAggregatedTUItemId)
-				.map(HUOrAggregatedTUItemId::getHuIdOrNull);
+				.map(HUQRCodeAssignment::getHuId);
 	}
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
@@ -92,7 +90,7 @@ public class HUQRCodesService
 		{
 			return generateForExistingHUs(
 					HUQRCodeGenerateForExistingHUsRequest.builder()
-							.huOrAggregatedTUItemIds(ImmutableSet.of(HUOrAggregatedTUItemId.ofHuId(huId)))
+							.huIds(ImmutableSet.of(huId))
 							.build())
 					.getSingleQRCode(huId);
 		}
