@@ -11,6 +11,8 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.core.io.Resource;
 
@@ -50,9 +52,11 @@ public class HUQRCodeCreatePDFCommand
 
 	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
 	{
-		final ImmutableList<PrintableQRCode> printableQRCodes = qrCodes.stream()
-				.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
-				.collect(ImmutableList.toImmutableList());
+		final JsonPrintableQRCodesList printableQRCodes = JsonPrintableQRCodesList.builder()
+				.qrCodes(qrCodes.stream()
+						.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 
 		try
 		{
@@ -97,4 +101,15 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
+	/**
+	 * The structure of this class it's important for the jasper report, so pls don't change it!
+	 */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class JsonPrintableQRCodesList
+	{
+		@NonNull
+		List<PrintableQRCode> qrCodes;
+	}
 }
