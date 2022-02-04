@@ -48,7 +48,7 @@ public class JsonHU
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable
-	String barcode;
+	JsonHUQRCode qrCode;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable

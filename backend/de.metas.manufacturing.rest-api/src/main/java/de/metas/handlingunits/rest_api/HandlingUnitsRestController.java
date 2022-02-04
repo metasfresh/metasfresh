@@ -28,24 +28,34 @@ import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
-import de.metas.handlingunits.HUBarcode;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,18 +79,22 @@ public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
 
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu";
 
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final InventoryCandidateService inventoryCandidateService;
 	private final HandlingUnitsService handlingUnitsService;
+	private final HUQRCodesService huQRCodesService;
 
 	public HandlingUnitsRestController(
 			@NonNull final InventoryCandidateService inventoryCandidateService,
-			@NonNull final HandlingUnitsService handlingUnitsService)
+			@NonNull final HandlingUnitsService handlingUnitsService,
+			@NonNull final HUQRCodesService huQRCodesService)
 	{
 		this.inventoryCandidateService = inventoryCandidateService;
 		this.handlingUnitsService = handlingUnitsService;
+		this.huQRCodesService = huQRCodesService;
 	}
 
 	@GetMapping("/bySerialNo/{serialNo}")
@@ -111,20 +125,22 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	@GetMapping("/byBarcode/{barcode}")
-	public ResponseEntity<JsonGetSingleHUResponse> getByBarcode(
-			@PathVariable("barcode") @NonNull final String barcodeStr)
+	@PostMapping("/byQRCode")
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
+			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final HuId huId = HUBarcode.ofBarcodeString(barcodeStr).toHuId();
-
-		return toSingleHUResponseEntity(() -> {
-			final I_M_HU hu = handlingUnitsBL.getById(huId);
-			if (hu == null)
+		return getByIdSupplier(() -> {
+			if (request.getQrCode().contains(GlobalQRCode.SEPARATOR))
 			{
-				throw new AdempiereException("No HU found for barcode: " + barcodeStr);
+				final HUQRCode huQRCode = GlobalQRCode.ofString(request.getQrCode()).getPayloadAs(HUQRCode.class);
+				return huQRCodesService.getHUAssignmentByQRCode(huQRCode)
+						.map(HUQRCodeAssignment::getHuId)
+						.orElse(null);
 			}
-			return hu;
-
+			else
+			{
+				return HuId.ofHUValue(request.getQrCode());
+			}
 		});
 	}
 
@@ -133,21 +149,30 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
+		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
+	}
+
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
+	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final HuId huId = HuId.ofRepoId(huRepoId);
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.getFullHU(huId, adLanguage))
-											 .build());
+					.result(handlingUnitsService.getFullHU(huId, adLanguage))
+					.build());
 		}
 		catch (final Exception e)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(e, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(e, adLanguage))
+					.build());
 		}
 	}
 
@@ -164,14 +189,14 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-											 .result(handlingUnitsService.toJson(hu, adLanguage))
-											 .build());
+					.result(handlingUnitsService.toJson(hu, adLanguage))
+					.build());
 		}
 		catch (final Exception ex)
 		{
 			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-															.error(JsonErrors.ofThrowable(ex, adLanguage))
-															.build());
+					.error(JsonErrors.ofThrowable(ex, adLanguage))
+					.build());
 		}
 	}
 
@@ -189,7 +214,7 @@ public class HandlingUnitsRestController
 	public JsonDisposalReasonsList getDisposalReasons()
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return toJson(inventoryCandidateService.getDisposalReasons(), adLanguage);
+		return toJsonDisposalReasonsList(inventoryCandidateService.getDisposalReasons(), adLanguage);
 	}
 
 	@PutMapping
@@ -209,7 +234,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJson(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
+	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
@@ -220,5 +245,34 @@ public class HandlingUnitsRestController
 										 .build())
 								 .collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@PostMapping("/qrCodes/generate")
+	public ResponseEntity<?> generateQRCodes(@RequestBody @NonNull final JsonQRCodesGenerateRequest jsonRequest)
+	{
+		final int count = jsonRequest.getCount();
+		if (count >= 100)
+		{
+			throw new AdempiereException("Maximum allowed count is 100");
+		}
+
+		final HUQRCodeGenerateRequest request = JsonQRCodesGenerateRequestConverters.toHUQRCodeGenerateRequest(jsonRequest, attributeDAO);
+		final List<HUQRCode> qrCodes = huQRCodesService.generate(request);
+		final Resource pdf = huQRCodesService.createPDF(qrCodes, jsonRequest.isOnlyPrint());
+
+		if (jsonRequest.isOnlyPrint())
+		{
+			return ResponseEntity.ok().body(null);
+		}
+		else
+		{
+			final String filename = StringUtils.trimBlankToOptional(pdf.getFilename()).orElse("qrCodes.pdf");
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MimeType.getMediaType(filename));
+			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+		}
+
 	}
 }

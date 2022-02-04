@@ -17,10 +17,11 @@ public enum PPRoutingActivityType implements ReferenceListAwareEnum
 	RawMaterialsIssue(X_AD_WF_Node.PP_ACTIVITY_TYPE_RawMaterialsIssue),
 	MaterialReceipt(X_AD_WF_Node.PP_ACTIVITY_TYPE_MaterialReceipt),
 	ActivityConfirmation(X_AD_WF_Node.PP_ACTIVITY_TYPE_ActivityConfirmation),
+	GenerateHUQRCodes(X_AD_WF_Node.PP_ACTIVITY_TYPE_GenerateHUQRCodes),
 	;
 
 	@Getter
-	String code;
+	private final String code;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PPRoutingActivityType> index = ReferenceListAwareEnums.index(values());
 

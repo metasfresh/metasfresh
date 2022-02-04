@@ -127,6 +127,18 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_BPartner_Product> retrieveByBPartnerId(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.create()
+				.listImmutable(I_C_BPartner_Product.class);
+	}
+
+	@Override
 	public I_C_BPartner_Product retrieveByVendorId(
 			@NonNull final BPartnerId vendorId,
 			@NonNull final ProductId productId,

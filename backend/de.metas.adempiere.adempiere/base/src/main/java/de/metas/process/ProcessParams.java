@@ -22,6 +22,17 @@ package de.metas.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.ImmutableReference;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -30,19 +41,6 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.ImmutableReference;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * {@link IParams} implementation for {@link ProcessInfoParameter}.
@@ -68,6 +66,11 @@ public class ProcessParams implements IRangeAwareParams
 	{
 		final ProcessInfoParameter parameter = ProcessInfoParameter.ofValueObject(parameterName, parameterValue);
 		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
+	public static ProcessParams of(final List<ProcessInfoParameter> parameters)
+	{
+		return new ProcessParams(parameters);
 	}
 
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;

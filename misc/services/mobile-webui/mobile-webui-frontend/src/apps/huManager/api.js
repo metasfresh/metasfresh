@@ -2,9 +2,9 @@ import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
 
-export function getHUByBarcode(huBarcode) {
+export function getHUByQRCode(qrCode) {
   return axios
-    .get(`${apiBasePath}/hu/byBarcode/${huBarcode}`)
+    .post(`${apiBasePath}/hu/byQRCode`, { qrCode })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 }

@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.json;
 
-import de.metas.util.Check;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,20 +15,17 @@ public class JsonAggregateToNewLU
 	@NonNull String caption;
 	@Nullable String tuCaption;
 
-	int luPIItemId;
-	int tuPIItemProductId;
+	@NonNull HuPackingInstructionsItemId luPIItemId;
+	@NonNull HUPIItemProductId tuPIItemProductId;
 
 	@Builder
 	@Jacksonized
 	private JsonAggregateToNewLU(
 			@NonNull final String caption,
 			@Nullable final String tuCaption,
-			final int luPIItemId,
-			final int tuPIItemProductId)
+			@NonNull final HuPackingInstructionsItemId luPIItemId,
+			@NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		Check.assumeGreaterThanZero(luPIItemId, "luPIItemId");
-		Check.assumeGreaterThanZero(tuPIItemProductId, "tuPIItemProductId");
-
 		this.caption = caption;
 		this.tuCaption = tuCaption;
 		this.luPIItemId = luPIItemId;

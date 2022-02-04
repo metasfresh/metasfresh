@@ -4,7 +4,6 @@
     "huStatus": "A",
     "huStatusCaption": "Aktiv",
     "displayName": "huIdentifier",
-    "barcode": "huIdentifier",
     "warehouseValue": "StdWarehouse",
     "locatorValue": "Hauptlager",
     "numberOfAggregatedHUs": 0,

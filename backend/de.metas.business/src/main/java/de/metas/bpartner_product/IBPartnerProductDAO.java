@@ -92,4 +92,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	Optional<ProductId> getProductIdByCustomerProductNo(BPartnerId customerId, String customerProductNo);
 
 	Optional<ProductId> getProductIdByCustomerProductName(BPartnerId customerId, String customerProductName);
+
+	List<I_C_BPartner_Product> retrieveByBPartnerId(BPartnerId bPartnerId);
 }
