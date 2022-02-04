@@ -23,6 +23,7 @@
 package de.metas.handlingunits.rest_api;
 
 import de.metas.Profiles;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
@@ -40,8 +41,9 @@ public class DeprecatedHandlingUnitsRestController extends HandlingUnitsRestCont
 
 	public DeprecatedHandlingUnitsRestController(
 			final @NonNull InventoryCandidateService inventoryCandidateService,
-			final @NonNull HandlingUnitsService handlingUnitsService)
+			final @NonNull HandlingUnitsService handlingUnitsService,
+			@NonNull final HUQRCodesService huQRCodesService)
 	{
-		super(inventoryCandidateService, handlingUnitsService);
+		super(inventoryCandidateService, handlingUnitsService, huQRCodesService);
 	}
 }
