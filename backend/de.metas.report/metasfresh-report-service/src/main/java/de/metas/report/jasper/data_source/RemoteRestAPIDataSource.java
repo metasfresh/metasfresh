@@ -8,11 +8,13 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessParams;
+import de.metas.report.server.ReportConstants;
 import de.metas.report.server.ReportContext;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.user.UserId;
+import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -32,11 +34,13 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,12 +101,14 @@ public class RemoteRestAPIDataSource implements ReportDataSource
 			jrParameters.put(PARAM_SQL_VALUE, sql_value);
 		}
 
+		final String json = callRemoteAPIAndGetJsonString(reportContext);
+
 		//
 		// We must provide the json as parameter input stream
 		// See https://stackoverflow.com/questions/33300592/how-to-fill-report-using-json-datasource-without-getting-null-values/33301039
 		// See http://jasperreports.sourceforge.net/sample.reference/jsondatasource/
-		final InputStream json = callRemoteAPI(reportContext);
-		jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, json);
+		jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+		jrParameters.put("debug." + ReportConstants.REPORT_PARAM_JSON_DATA, json); // putting it only for debug reasons
 
 		return jrParameters;
 	}
@@ -112,7 +118,7 @@ public class RemoteRestAPIDataSource implements ReportDataSource
 		return userAuthTokenRepo.retrieveByUserId(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
 	}
 
-	private InputStream callRemoteAPI(@NonNull final ReportContext reportContext)
+	private String callRemoteAPIAndGetJsonString(@NonNull final ReportContext reportContext)
 	{
 		final URL apiUrl = getAPIUrl(reportContext);
 		final UserAuthToken token = getUserAuthToken();
@@ -121,13 +127,20 @@ public class RemoteRestAPIDataSource implements ReportDataSource
 		{
 			final HttpURLConnection conn = (HttpURLConnection)apiUrl.openConnection();
 			conn.setRequestProperty("Authorization", token.getAuthToken());
+			conn.setRequestProperty("Accept", "application/json");
 			conn.setRequestMethod("GET");
-			return conn.getInputStream();
+
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			FileUtil.copy(conn.getInputStream(), baos);
+			final byte[] data = baos.toByteArray();
+			return new String(data, StandardCharsets.UTF_8);
 		}
 		catch (final IOException e)
 		{
 			final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(MSG_URLNotValid);
-			throw new AdempiereException(errorMsg, e);
+			throw new AdempiereException(errorMsg, e)
+					.setParameter("apiUrl", apiUrl)
+					.setParameter("token", token);
 		}
 	}
 
