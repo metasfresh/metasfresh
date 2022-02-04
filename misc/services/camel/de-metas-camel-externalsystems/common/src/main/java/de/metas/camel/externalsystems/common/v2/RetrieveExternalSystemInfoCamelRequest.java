@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-grssignum
+ * de-metas-camel-externalsystems-common
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.from_grs.bom;
+package de.metas.camel.externalsystems.common.v2;
 
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Data
+@Value
 @Builder
-public class PushBOMsRouteContext
+@JsonDeserialize(builder = RetrieveExternalSystemInfoCamelRequest.RetrieveExternalSystemInfoCamelRequestBuilder.class)
+public class RetrieveExternalSystemInfoCamelRequest
 {
 	@NonNull
-	private final JsonBOM jsonBOM;
+	@JsonProperty("externalSystemChildValue")
+	String externalSystemChildValue;
 
-	@Nullable
-	private String exportDirectoriesBasePath;
+	@NonNull
+	@JsonProperty("externalSystemConfigType")
+	String externalSystemConfigType;
 }

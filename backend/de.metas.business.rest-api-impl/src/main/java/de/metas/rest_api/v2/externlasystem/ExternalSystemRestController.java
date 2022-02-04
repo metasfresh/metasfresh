@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.status.JsonExternalStatusResponse;
 import de.metas.common.externalsystem.status.JsonStatusRequest;
@@ -200,6 +201,21 @@ public class ExternalSystemRestController
 
 		final JsonExternalStatusResponse statusInfo = externalSystemService.getStatusInfo(externalSystemType);
 		return ResponseEntity.ok().body(statusInfo);
+	}
+
+	@GetMapping(path = "/{externalSystemConfigType}/{externalSystemChildConfigValue}/info")
+	public ResponseEntity<?> getExternalSystemInfo(
+			@PathVariable @NonNull final String externalSystemConfigType,
+			@PathVariable @NonNull final String externalSystemChildConfigValue)
+	{
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		if (externalSystemType == null)
+		{
+			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
+		}
+
+		final JsonExternalSystemInfo systemInfo = externalSystemService.getExternalSystemInfo(externalSystemType, externalSystemChildConfigValue);
+		return ResponseEntity.ok().body(systemInfo);
 	}
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)

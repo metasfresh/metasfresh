@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.from_grs.product;
+package de.metas.camel.externalsystems.grssignum.from_grs.attachment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
-import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetrieveExternalSystemInfoCamelRequest;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -54,20 +53,17 @@ import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
+public class BPartnerAttachmentsRouteBuilderTest extends CamelTestSupport
 {
-	private static final String MOCK_UPSERT_PRODUCTS = "mock:upsertProductsRoute";
 	private static final String MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO = "mock:retrieveExternalSysInfo";
 	private static final String MOCK_ATTACH_FILE = "mock:attachFile";
 
-	private static final String JSON_PRODUCT = "1_JsonProduct.json";
-	private static final String JSON_UPSERT_CAMEL_PRODUCT_REQ = "10_ProductUpsertCamelRequest.json";
-	private static final String JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ = "20_RetrieveExternalSystemInfoCamelRequest.json";
-	private static final String JSON_EXTERNAL_SYSTEM_INFO_RES = "20_JsonExternalSystemInfo.json";
-	private static final String JSON_ATTACHMENT_REQ = "30_JsonAttachmentRequest.json";
+	private static final String JSON_BPARTNER_ATTACHMENT = "0_JsonBPartnerAttachment.json";
+	private static final String JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ = "10_RetrieveExternalSystemInfoCamelRequest.json";
+	private static final String JSON_EXTERNAL_SYSTEM_INFO_RES = "10_JsonExternalSystemInfo.json";
+	private static final String JSON_ATTACHMENT_REQ = "20_JsonAttachmentRequest.json";
 
 	private Authentication authentication;
 	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -78,7 +74,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 		final Properties properties = new Properties();
 		try
 		{
-			properties.load(PushRawMaterialsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(BPartnerAttachmentsRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -90,7 +86,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new PushRawMaterialsRouteBuilder();
+		return new BPartnerAttachmentsRouteBuilder();
 	}
 
 	@Override
@@ -111,7 +107,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	void upsertRawMaterials() throws Exception
+	void attachFileToBPartner() throws Exception
 	{
 		//given
 		final TokenCredentials tokenCredentials = TokenCredentials.builder()
@@ -122,53 +118,36 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 
 		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
 
-		final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP();
 		final MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP = new MockRetrieveExternalSysInfoEP();
 		final MockAttachFileEP mockAttachFileEP = new MockAttachFileEP();
-		preparePushRouteForTesting(mockUpsertProductsEP, mockRetrieveExternalSysInfoEP, mockAttachFileEP);
+		preparePushRouteForTesting(mockRetrieveExternalSysInfoEP, mockAttachFileEP);
 
 		context.start();
 
-		final MockEndpoint pushProductsMockEP = getMockEndpoint(MOCK_UPSERT_PRODUCTS);
-		final InputStream upsertCamelProductsReq = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
-		pushProductsMockEP.expectedBodiesReceived(objectMapper.readValue(upsertCamelProductsReq, ProductUpsertCamelRequest.class));
-
 		final MockEndpoint retrieveExternalSysInfoMockEP = getMockEndpoint(MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO);
-		final InputStream retrieveExternalSysInfoCamelReq = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ);
+		final InputStream retrieveExternalSysInfoCamelReq = BPartnerAttachmentsRouteBuilderTest.class.getResourceAsStream(JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ);
 		retrieveExternalSysInfoMockEP.expectedBodiesReceived(objectMapper.readValue(retrieveExternalSysInfoCamelReq, RetrieveExternalSystemInfoCamelRequest.class));
 
 		final MockEndpoint attachFileMockEP = getMockEndpoint(MOCK_ATTACH_FILE);
-		final InputStream jsonAttachmentReq = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_ATTACHMENT_REQ);
+		final InputStream jsonAttachmentReq = BPartnerAttachmentsRouteBuilderTest.class.getResourceAsStream(JSON_ATTACHMENT_REQ);
 		attachFileMockEP.expectedBodiesReceived(objectMapper.readValue(jsonAttachmentReq, JsonAttachmentRequest.class));
 
-		final String requestBodyAsString = loadAsString(JSON_PRODUCT);
+		final String requestBodyAsString = loadAsString(JSON_BPARTNER_ATTACHMENT);
 
 		//when
-		template.sendBody("direct:" + PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID, requestBodyAsString);
+		template.sendBody("direct:" + BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID, requestBodyAsString);
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
 		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(1);
 		assertThat(mockAttachFileEP.called).isEqualTo(1);
 	}
 
 	private void preparePushRouteForTesting(
-			@NonNull final PushRawMaterialsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP,
-			@NonNull final MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP,
-			@NonNull final MockAttachFileEP mockAttachFileEP) throws Exception
+			@NonNull final BPartnerAttachmentsRouteBuilderTest.MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP,
+			@NonNull final BPartnerAttachmentsRouteBuilderTest.MockAttachFileEP mockAttachFileEP) throws Exception
 	{
-		AdviceWith.adviceWith(context, PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPSERT_PRODUCTS);
-
-								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_PRODUCT_V2_CAMEL_URI)
-										  .skipSendToOriginalEndpoint()
-										  .process(mockUpsertProductsEP);
-							  });
-		AdviceWith.adviceWith(context, PushRawMaterialsRouteBuilder.ATTACH_FILE_TO_RAW_MATERIALS_ROUTE_ID,
+		AdviceWith.adviceWith(context, BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID,
 							  advice -> {
 								  advice.interceptSendToEndpoint("{{" + MF_GET_EXTERNAL_SYSTEM_INFO + "}}")
 										  .skipSendToOriginalEndpoint()
@@ -182,17 +161,6 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 							  });
 	}
 
-	private static class MockUpsertProductsEP implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-		}
-	}
-
 	private static class MockRetrieveExternalSysInfoEP implements Processor
 	{
 		private int called = 0;
@@ -200,7 +168,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange)
 		{
-			final InputStream jsonExternalSystemInfo = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(JSON_EXTERNAL_SYSTEM_INFO_RES);
+			final InputStream jsonExternalSystemInfo = BPartnerAttachmentsRouteBuilderTest.class.getResourceAsStream(JSON_EXTERNAL_SYSTEM_INFO_RES);
 			exchange.getIn().setBody(jsonExternalSystemInfo, JsonExternalSystemInfo.class);
 			called++;
 		}
@@ -219,11 +187,10 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 
 	private static String loadAsString(@NonNull final String name)
 	{
-		final InputStream inputStream = PushRawMaterialsRouteBuilderTest.class.getResourceAsStream(name);
+		final InputStream inputStream = BPartnerAttachmentsRouteBuilderTest.class.getResourceAsStream(name);
 		return new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 				.lines()
 				.collect(Collectors.joining("\n"));
 	}
-
 }

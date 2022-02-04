@@ -42,6 +42,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -101,7 +102,11 @@ public class ProductsRestControllerTest
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo(), new RuntimeParametersRepository(), externalServices);
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+																					  new ExternalSystemExportAuditRepo(),
+																					  new RuntimeParametersRepository(),
+																					  externalServices,
+																					  new JsonExternalSystemRetriever());
 		final ProductRepository productRepository = new ProductRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 

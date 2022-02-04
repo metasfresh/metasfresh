@@ -22,9 +22,11 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.from_grs.product.PushRawMaterialsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
@@ -44,13 +46,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT;
 
 public class PushRawMaterialsProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange)
 	{
-		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
+		final PushRawMaterialsRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																							 ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT,
+																							 PushRawMaterialsRouteContext.class);
+
+		final JsonProduct jsonProduct = context.getJsonProduct();
 
 		final ProductUpsertCamelRequest productUpsertCamelRequest = getProductUpsertCamelRequest(jsonProduct);
 
