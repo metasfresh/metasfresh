@@ -127,6 +127,7 @@ public class RemoteRestAPIDataSource implements ReportDataSource
 		{
 			final HttpURLConnection conn = (HttpURLConnection)apiUrl.openConnection();
 			conn.setRequestProperty("Authorization", token.getAuthToken());
+			conn.setRequestProperty("Accept", "application/json");
 			conn.setRequestMethod("GET");
 
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
