@@ -204,6 +204,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private List<I_C_Invoice_Candidate> createCandidatesBasedOnReferencingInOutLines(
 			@NonNull final I_M_InOutLine inOutLine)
 	{
+		if (!invoiceCandBL.isAllowedToCreateInvoiceCandidateFor(inOutLine))
+		{
+			return ImmutableList.of();
+		}
 		final List<I_M_InOutLine> referencingLines = retrieveActiveReferencingInoutLines(inOutLine);
 
 		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
@@ -287,10 +291,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
-		if (!invoiceCandBL.isAllowedToCreateInvoiceCandidateFor(inOutLineRecord))
-		{
-			return null;
-		}
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
