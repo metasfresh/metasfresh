@@ -47,6 +47,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
@@ -60,7 +61,6 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 	public final static String ERROR_WRITE_TO_FILE = "Error-Route-writeToFile";
 	public final static String ERROR_SEND_LOG_MESSAGE = "Error-Route-sendLogMessage";
-	public final static String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
 
 	@Override
 	public void configure()

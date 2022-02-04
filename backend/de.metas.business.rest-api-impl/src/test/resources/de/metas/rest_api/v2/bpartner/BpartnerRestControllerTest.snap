@@ -63,8 +63,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "leftToRight" : true,
-        "baseLanguage" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -1770,6 +1770,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
           "lastUpdatedMillis" : 1561133544,
           "lastUpdatedBy" : 30
         }
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersProducts=[
+  {
+    "bpartnerProducts" : [
+      {
+        "bPartnerId" : 21,
+        "vendor" : false,
+        "currentVendor" : false,
+        "customer" : false,
+        "leadTimeInDays" : 0,
+        "excludedFromSale" : false,
+        "excludedFromPurchase" : false,
+        "productId" : 10
       }
     ]
   }

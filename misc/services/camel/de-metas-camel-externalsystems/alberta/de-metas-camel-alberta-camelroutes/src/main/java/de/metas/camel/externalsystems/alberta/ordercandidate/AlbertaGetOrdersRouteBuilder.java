@@ -30,7 +30,7 @@ import de.metas.camel.externalsystems.alberta.ordercandidate.processor.OrderCand
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.RetrieveOrdersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
