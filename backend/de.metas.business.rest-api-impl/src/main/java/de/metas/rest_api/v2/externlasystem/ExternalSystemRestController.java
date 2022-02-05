@@ -203,6 +203,14 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok().body(statusInfo);
 	}
 
+
+	@ApiOperation("Get external system info.\n Note, only externalSystemConfigType=GRSSignum is supported at the moment.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved external system info"),
+			@ApiResponse(code = 401, message = "You are not authorized to retrieve external system info"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request could not be processed")
+	})
 	@GetMapping(path = "/{externalSystemConfigType}/{externalSystemChildConfigValue}/info")
 	public ResponseEntity<?> getExternalSystemInfo(
 			@PathVariable @NonNull final String externalSystemConfigType,
