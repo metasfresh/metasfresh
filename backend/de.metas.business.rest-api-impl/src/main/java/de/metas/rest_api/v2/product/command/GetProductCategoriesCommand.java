@@ -1,37 +1,37 @@
-package de.metas.rest_api.v1.product.command;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.product.ProductCategoryId;
-import de.metas.rest_api.v1.product.ProductsServicesFacade;
-import de.metas.rest_api.v1.product.response.JsonGetProductCategoriesResponse;
-import de.metas.rest_api.v1.product.response.JsonProductCategory;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product_Category;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v2.product.command;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.product.ProductCategoryId;
+import de.metas.rest_api.v2.product.ProductsServicesFacade;
+import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
+import de.metas.rest_api.v2.product.response.JsonProductCategory;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product_Category;
 
 public class GetProductCategoriesCommand
 {
@@ -55,6 +55,7 @@ public class GetProductCategoriesCommand
 		}
 	}
 
+	@NonNull
 	public JsonGetProductCategoriesResponse execute()
 	{
 		final ImmutableList<JsonProductCategory> productCategories = servicesFacade.streamAllProductCategories()
@@ -66,6 +67,7 @@ public class GetProductCategoriesCommand
 				.build();
 	}
 
+	@NonNull
 	private JsonProductCategory toJsonProductCategory(final I_M_Product_Category record)
 	{
 		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);

@@ -30,6 +30,7 @@ import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -68,13 +69,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 
-@RequestMapping(HandlingUnitsRestController.ENDPOINT)
+@RequestMapping(value = {HandlingUnitsRestController.HU_REST_CONTROLLER_PATH})
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
 {
+	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
+
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -234,12 +238,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-						.stream()
-						.map(item -> JsonDisposalReason.builder()
-								.key(item.getValue())
-								.caption(item.getName().translate(adLanguage))
-								.build())
-						.collect(ImmutableList.toImmutableList()))
+								 .stream()
+								 .map(item -> JsonDisposalReason.builder()
+										 .key(item.getValue())
+										 .caption(item.getName().translate(adLanguage))
+										 .build())
+								 .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

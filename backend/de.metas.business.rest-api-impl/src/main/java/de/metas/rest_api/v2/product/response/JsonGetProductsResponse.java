@@ -1,23 +1,8 @@
-package de.metas.rest_api.product.response;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.rest_api.utils.JsonErrors;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,20 +20,33 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.rest_api.v2.product.response;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.rest_api.utils.JsonErrors;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
+import java.util.List;
+
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonGetProductCategoriesResponse
+public class JsonGetProductsResponse
 {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Singular
-	List<JsonProductCategory> productCategories;
+	List<JsonProduct> products;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Singular
-	List<JsonErrorItem> errors;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonErrorItem error;
 
-	public static JsonGetProductCategoriesResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	public static JsonGetProductsResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{
 		return builder()
 				.error(JsonErrors.ofThrowable(throwable, adLanguage))

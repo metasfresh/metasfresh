@@ -1,12 +1,16 @@
-package de.metas.rest_api.product.response;
+package de.metas.rest_api.v1.product.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import de.metas.bpartner.BPartnerId;
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -33,25 +37,19 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonProductBPartner
+public class JsonGetProductsResponse
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BPartner_ID`.")
-	@NonNull
-	BPartnerId bpartnerId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Singular
+	List<JsonProduct> products;
 
-	String productNo;
-	String productName;
-	String productDescription;
-	String productCategory;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonErrorItem error;
 
-	String ean;
-
-	boolean vendor;
-	boolean currentVendor;
-	boolean customer;
-
-	int leadTimeInDays;
+	public static JsonGetProductsResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	{
+		return builder()
+				.error(JsonErrors.ofThrowable(throwable, adLanguage))
+				.build();
+	}
 }

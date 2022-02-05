@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,18 @@
  * #L%
  */
 
-package de.metas.rest_api.v1.product;
+package de.metas.rest_api.v2.product;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-
-import de.metas.rest_api.v1.product.ProductCategoriesRestController;
-import de.metas.rest_api.v1.product.ProductsServicesFacade;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductCategoryId;
+import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
+import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
+import de.metas.rest_api.v2.product.response.JsonProductCategory;
+import de.metas.user.UserId;
+import io.github.jsonSnapshot.SnapshotMatcher;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.AfterAll;
@@ -41,16 +41,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductCategoryId;
-import de.metas.rest_api.product.response.JsonGetProductCategoriesResponse;
-import de.metas.rest_api.product.response.JsonProductCategory;
-import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
-import de.metas.user.UserId;
-import io.github.jsonSnapshot.SnapshotMatcher;
-import lombok.Builder;
-import lombok.NonNull;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class ProductCategoriesRestControllerTest
 {
