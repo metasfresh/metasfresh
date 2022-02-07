@@ -159,4 +159,13 @@ update c_country  set   bankcodelength      = 4 	   , bankcodechartype      = 'a
                       , accountnumberlength = 16 	   , accountnumberchartype = 'c' 			, accountnumberseqno = 20                                             
                       , nationalcheckdigitlength=null  , nationalcheckdigitchartype = null	    , nationalcheckdigitseqno  = null
 where countrycode  =  'RO'
-; 
+;
+
+-- IE : https://bank.codes/iban/structure/ireland/
+update c_country  set   bankcodelength 		= 4		, bankcodechartype      ='a'			, bankcodeseqno      = 10
+                    , accountnumberlength = 8 	, accountnumberchartype ='n' 			, accountnumberseqno = 30
+                    , branchcodelength    = 6	 	, branchcodechartype    = 'n'			, branchcodeseqno    = 20
+                    , nationalcheckdigitlength = null, nationalcheckdigitchartype = null	, nationalcheckdigitseqno = null
+where countrycode  =  'IE'
+;
+
