@@ -94,6 +94,7 @@ public class IBANValidationBLTest
 		prepareCountry("NL", "a", "4", "10", null, null, null, "c", "10", "20", null, null, null, null, null, null);
 		prepareCountry("IT", "n", "5", "20", "n", "5", "30", "c", "12", "40", null, null, null, "a", "1", "10");
 		prepareCountry("SP", "n", "4", "10", "n", "4", "20", "n", "10", "40", null, null, null, "n", "2", "30");
+		prepareCountry("IE", "a", "4", "10", "n", "6", "20", "n", "8", "30", null, null, null, null, null, null);
 	}
 
 	/**
@@ -166,6 +167,7 @@ public class IBANValidationBLTest
 		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123456");
 		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051332");
 		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164300");
+		final int checkDigitIE = ibanValidationBL.ISO7064Mod97_10("IE29AIBK93115212345678");
 
 		assertThat(checkDigitAD).isEqualTo(1);
 		assertThat(checkDigitAT).isEqualTo(1);
@@ -196,6 +198,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitIT).isEqualTo(1);
 		assertThat(checkDigitSP).isEqualTo(1);
 		assertThat(checkDigitNL).isEqualTo(1);
+		assertThat(checkDigitIE).isEqualTo(1);
 	}
 
 	@Test
@@ -232,6 +235,7 @@ public class IBANValidationBLTest
 		final int checkDigitIT = ibanValidationBL.ISO7064Mod97_10("IT60X0542811101000000123455");
 		final int checkDigitSP = ibanValidationBL.ISO7064Mod97_10("ES9121000418450200051331");
 		final int checkDigitNL = ibanValidationBL.ISO7064Mod97_10("NL91ABNA0417164301");
+		final int checkDigitIE = ibanValidationBL.ISO7064Mod97_10("IE29AIBK93115212345677");
 
 		assertThat(checkDigitAD).isNotEqualTo(1);
 		assertThat(checkDigitAT).isNotEqualTo(1);
@@ -262,6 +266,7 @@ public class IBANValidationBLTest
 		assertThat(checkDigitIT).isNotEqualTo(1);
 		assertThat(checkDigitSP).isNotEqualTo(1);
 		assertThat(checkDigitNL).isNotEqualTo(1);
+		assertThat(checkDigitIE).isNotEqualTo(1);
 	}
 
 	@Test
@@ -298,6 +303,7 @@ public class IBANValidationBLTest
 		ibanValidationBL.validate("IT60X0542811101000000123456");
 		ibanValidationBL.validate("ES9121000418450200051332");
 		ibanValidationBL.validate("NL91ABNA0417164300");
+		ibanValidationBL.validate("IE29AIBK93115212345678");
 
 	}
 
