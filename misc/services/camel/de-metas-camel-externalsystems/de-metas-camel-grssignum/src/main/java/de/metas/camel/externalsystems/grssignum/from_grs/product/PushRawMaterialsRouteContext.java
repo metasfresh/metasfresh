@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.from_grs.bom;
+package de.metas.camel.externalsystems.grssignum.from_grs.product;
 
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -31,11 +32,19 @@ import javax.annotation.Nullable;
 
 @Data
 @Builder
-public class PushBOMsRouteContext
+public class PushRawMaterialsRouteContext
 {
 	@NonNull
-	private final JsonBOM jsonBOM;
+	private final JsonProduct jsonProduct;
 
 	@Nullable
-	private String exportDirectoriesBasePath;
+	private String basePathForExportDirectories;
+
+	@NonNull
+	public String getBasePathForExportDirectoriesNotNull()
+	{
+		Check.assumeNotNull(basePathForExportDirectories,"basePathForExportDirectories is not null!");
+
+		return basePathForExportDirectories;
+	}
 }

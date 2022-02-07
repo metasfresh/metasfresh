@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,53 +30,36 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-@JsonDeserialize(builder = JsonBPartnerProduct.JsonBPartnerProductBuilder.class)
-public class JsonBPartnerProduct
+@JsonDeserialize(builder = JsonBPartnerAttachment.JsonBPartnerAttachmentBuilder.class)
+public class JsonBPartnerAttachment
 {
-	@Nullable
-	@JsonProperty("MKREDID")
-	String bpartnerId;
+	@NonNull
+	@JsonProperty("FLAG")
+	Integer flag;
 
-	@JsonProperty("STDKRED")
-	boolean currentVendor;
-
-	@JsonProperty("LIEFERANTENFREIGABE")
-	boolean isExcludedFromPurchase;
-
-	@JsonProperty("INAKTIV")
-	boolean isActive;
-
-	@Nullable
+	@NonNull
 	@JsonProperty("METASFRESHID")
-	String bPartnerMetasfreshId;
+	String metasfreshId;
 
-	@Nullable
+	@NonNull
 	@JsonProperty("ANHANGDATEI")
 	String attachmentFilePath;
 
 	@Builder
-	public JsonBPartnerProduct(
-			@JsonProperty("MKREDID") final @Nullable String bpartnerId,
-			@JsonProperty("STDKRED") final @NonNull Integer currentVendor,
-			@JsonProperty("LIEFERANTENFREIGABE") final int approvedForPurchase,
-			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
-			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath)
+	public JsonBPartnerAttachment(
+			@JsonProperty("FLAG") final @NonNull Integer flag,
+			@JsonProperty("METASFRESHID") final @NonNull String metasfreshId,
+			@JsonProperty("ANHANGDATEI") final @NonNull String attachmentFilePath)
 	{
-		this.bpartnerId = bpartnerId;
-		this.currentVendor = currentVendor == 1;
-		this.isExcludedFromPurchase = approvedForPurchase != 1;
-		this.isActive = inactive != 1;
-		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
+		this.flag = flag;
+		this.metasfreshId = metasfreshId;
 		this.attachmentFilePath = attachmentFilePath;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonBPartnerProductBuilder
+	public static class JsonBPartnerAttachmentBuilder
 	{
 	}
 }

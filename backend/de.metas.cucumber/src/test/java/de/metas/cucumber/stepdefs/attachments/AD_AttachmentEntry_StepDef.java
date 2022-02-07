@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs.attachments;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
@@ -35,7 +35,6 @@ import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -51,6 +50,7 @@ import org.compiere.model.I_AD_Table;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -87,7 +87,7 @@ public class AD_AttachmentEntry_StepDef
 	}
 
 	@And("validate the created attachment entry")
-	public void validate_created_attachment_entry(@NonNull final DataTable table) throws IOException
+	public void validate_created_attachment_entry(@NonNull final DataTable table)
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 
@@ -124,34 +124,17 @@ public class AD_AttachmentEntry_StepDef
 		{
 			final File file = fileTable.get(fileIdentifier);
 
-			assertThat("file://" + file.getAbsolutePath().replaceAll("\\\\","/"))
-					.isEqualTo(attachmentEntry.getURL());
+			assertThat(file.toPath().toUri().toString()).isEqualTo(attachmentEntry.getURL());
 		}
 	}
 
 	@And("validate the created attachment multiref")
 	public void validate_created_attachment_multiref(@NonNull final DataTable table) throws IOException
 	{
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String attachmentEntryIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID + ".Identifier");
-		final int recordId = DataTableUtil.extractIntForColumnName(row, I_AD_Attachment_MultiRef.COLUMNNAME_Record_ID);
-		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
-
-		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(attachmentEntryTable.get(attachmentEntryIdentifier).getAD_AttachmentEntry_ID());
-
-		final I_AD_Attachment_MultiRef attachmentMultiRef = queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
-				.addInArrayFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_AttachmentEntry_ID, attachmentEntryId)
-				.create()
-				.firstOnly(I_AD_Attachment_MultiRef.class);
-
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-
-		assertThat(attachmentMultiRef).isNotNull();
-
-		assertThat(attachmentMultiRef.getAD_AttachmentEntry_ID()).isEqualTo(attachmentEntryId.getRepoId());
-		assertThat(attachmentMultiRef.getRecord_ID()).isEqualTo(recordId);
-		assertThat(attachmentMultiRef.getAD_Table_ID()).isEqualTo(tableId);
+		for (final Map<String, String> row : table.asMaps())
+		{
+			validateAttachmentEntry_MultiRef(row);
+		}
 	}
 
 	private void processAttachmentResponse(
@@ -189,22 +172,20 @@ public class AD_AttachmentEntry_StepDef
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 		final String orgCode = DataTableUtil.extractStringForColumnName(row, "orgCode");
-		final String externalReferenceType = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_Type);
-		final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_Record_ID);
 		final String type = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.Table_Name + "." + I_AD_AttachmentEntry.COLUMNNAME_Type);
 		final String fileIdentifier = DataTableUtil.extractStringForColumnName(row, "File.Identifier");
+
+		final String targets = DataTableUtil.extractStringForColumnName(row, "targets");
+
+		final List<JsonExternalReferenceTarget> targetList = JsonObjectMapperHolder.newJsonObjectMapper()
+				.readValue(targets, new TypeReference<List<JsonExternalReferenceTarget>>() {});
 
 		final File file = fileTable.get(fileIdentifier);
 		assertThat(file).isNotNull();
 
 		final String fileName = file.getName();
 
-		final String filePath = "file://" + file.getAbsolutePath().replaceAll("\\\\","/");
-
-		final JsonExternalReferenceTarget target = JsonExternalReferenceTarget.builder()
-				.externalReferenceType(externalReferenceType)
-				.externalReferenceIdentifier(externalReferenceIdentifier)
-				.build();
+		final String filePath = file.toPath().toUri().toString();
 
 		final JsonAttachmentSourceType jsonAttachmentSourceType = JsonAttachmentSourceType.valueOf(type);
 
@@ -217,11 +198,33 @@ public class AD_AttachmentEntry_StepDef
 		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
 				.attachment(jsonAttachment)
 				.orgCode(orgCode)
-				.targets(ImmutableList.of(target))
+				.targets(targetList)
 				.build();
 
 		final String payload = mapper.writeValueAsString(jsonAttachmentRequest);
 
 		testContext.setRequestPayload(payload);
 	}
+
+	private void validateAttachmentEntry_MultiRef(final Map<String, String> row)
+	{
+		final String attachmentEntryIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID + ".Identifier");
+
+		final int recordId = DataTableUtil.extractIntForColumnName(row, I_AD_Attachment_MultiRef.COLUMNNAME_Record_ID);
+
+		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
+		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(attachmentEntryTable.get(attachmentEntryIdentifier).getAD_AttachmentEntry_ID());
+
+		final I_AD_Attachment_MultiRef attachmentMultiRef = queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_AttachmentEntry_ID, attachmentEntryId)
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, recordId)
+				.create()
+				.firstOnly(I_AD_Attachment_MultiRef.class);
+
+		assertThat(attachmentMultiRef).isNotNull();
+	}
 }
+ 

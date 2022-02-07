@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-grssignum
+ * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,9 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.from_grs.bom;
+package de.metas.common.externalsystem.parameters;
 
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
-@Data
-@Builder
-public class PushBOMsRouteContext
+public interface GRSSignumParameters
 {
-	@NonNull
-	private final JsonBOM jsonBOM;
-
-	@Nullable
-	private String exportDirectoriesBasePath;
+	String PARAM_BasePathForExportDirectories = "BasePathForExportDirectories";
 }
