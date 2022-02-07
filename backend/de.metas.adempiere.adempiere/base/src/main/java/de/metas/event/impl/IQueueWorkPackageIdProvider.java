@@ -24,11 +24,14 @@ package de.metas.event.impl;
 
 import de.metas.async.QueueWorkPackageId;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface to be implemented by classes that want to provide a {@link QueueWorkPackageId}.
  */
 @FunctionalInterface
 public interface IQueueWorkPackageIdProvider
 {
+	@Nullable
 	QueueWorkPackageId getQueueWorkPackageId();
 }
