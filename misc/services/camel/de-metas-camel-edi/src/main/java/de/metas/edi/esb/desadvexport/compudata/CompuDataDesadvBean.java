@@ -141,8 +141,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h100.setRampeID(voidString);
 		h100.setReferenceCode(voidString);
 
-		h100.setStoreName(Util.normalize(xmlDesadv.getCBPartnerID().getName()));
-		h100.setStoreNumber(extractDropShipLocation(xmlDesadv));
+		h100.setStoreName(Util.normalize(extractDropShipLocationName(xmlDesadv)));
+		h100.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 
 		h100.setSupplierNo(voidString);
 		h100.setTransportCode(voidString);
@@ -197,13 +197,22 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		return p050;
 	}
 
-	private String extractDropShipLocation(@NonNull final EDIExpDesadvType xmlDesadv)
+	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
 		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
 				? xmlDesadv.getDropShipLocationID() : 
 				buyrLocation;
 		return dropShipLocation.getGLN();
+	}
+
+	private String extractDropShipLocationName(@NonNull final EDIExpDesadvType xmlDesadv)
+	{
+		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getName())
+				? xmlDesadv.getDropShipLocationID() :
+				buyrLocation;
+		return dropShipLocation.getName();
 	}
 	
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
@@ -323,7 +332,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p100.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p100.setProductionDate(EDIDesadvBean.voidDate);
-		p100.setStoreNumber(extractDropShipLocation(xmlDesadv));
+		p100.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 		p100.setSupplierArtNo(voidString);
 
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
@@ -378,7 +387,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p102.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p102.setProductionDate(EDIDesadvBean.voidDate);
-		p102.setStoreNumber(extractDropShipLocation(xmlDesadv));
+		p102.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 		p102.setSupplierArtNo(voidString);
 
 		p102.setEanArtNo(xmlDesadvLine.getEANCU());
