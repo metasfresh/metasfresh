@@ -68,11 +68,6 @@ public class WEBUI_M_HU_PrintJSONLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
-		if (adProcessId == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_HU_JSON_LABEL_PROCESS_ID);
-		}
 		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -84,8 +79,8 @@ public class WEBUI_M_HU_PrintJSONLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
 		}
 
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
-		if (husToProcess.isEmpty())
+		final List<HUToReport> hUsToProcess = getHuToReportList();
+		if (hUsToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("current HU's type does not match the receipt label process");
 		}
@@ -97,12 +92,7 @@ public class WEBUI_M_HU_PrintJSONLabel
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final AdProcessId adProcessId = huReportService.retrieveHUJsontLabelProcessIdOrNull();
-		final HUToReport huToReport = getSingleSelectedRow().getAsHUToReport();
-
-		final List<HUToReport> hUsToProcess = huToReport.streamRecursively()
-				.filter(currentHU -> currentHU.isTopLevel() )
-				.collect(ImmutableList.toImmutableList());
+		final List<HUToReport> hUsToProcess = getHuToReportList();
 
 		final List<HuId> huIds = hUsToProcess
 				.stream()
@@ -121,6 +111,16 @@ public class WEBUI_M_HU_PrintJSONLabel
 		getResult().setReportData(pdf, buildFilename(pdf), OutputType.PDF.getContentType());
 
 		return MSG_OK;
+	}
+
+	private List<HUToReport> getHuToReportList()
+	{
+		final HUToReport huToReport = getSingleSelectedRow().getAsHUToReport();
+
+		final List<HUToReport> hUsToProcess = huToReport.streamRecursively()
+				.filter(currentHU -> currentHU.isTopLevel() )
+				.collect(ImmutableList.toImmutableList());
+		return hUsToProcess;
 	}
 
 	private String buildFilename(@NonNull final Resource pdf)

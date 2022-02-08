@@ -43,10 +43,13 @@ public class HUQRCodeCreatePDFCommand
 {
 	private final ImmutableList<HUQRCode> qrCodes;
 	private final boolean sendToPrinter;
+	private final AdProcessId qrcodeProcessId = AdProcessId.ofRepoIdOrNull(584977); // hard coded process id
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final HUReportService huReportService = HUReportService.get();
+
+
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -124,23 +127,18 @@ public class HUQRCodeCreatePDFCommand
 
 	public ReportResult createPDF(@NonNull final String printableQRCodesJSON)
 	{
-		final AdProcessId adProcessId = huReportService.retrieveHUJsontLabelProcessIdOrNull();
-		if (adProcessId == null)
-		{
-			throw new AdempiereException("HU json label process does not exist");
-		}
-
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
 				PInstanceRequest.builder()
-						.processId(adProcessId)
+						.processId(qrcodeProcessId)
 						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
 						.build());
 
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
-				.setAD_Process_ID(adProcessId)
+				.setAD_Process_ID(qrcodeProcessId)
 				.setPInstanceId(pinstanceId)
 				.setJRDesiredOutputType(OutputType.PDF)
+				.setPrintPreview(false)
 				.build();
 
 		return ReportsClient.get().report(reportProcessInfo);

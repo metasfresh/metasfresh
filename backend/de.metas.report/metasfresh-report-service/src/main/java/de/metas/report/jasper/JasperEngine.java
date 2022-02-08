@@ -297,6 +297,7 @@ public class JasperEngine extends AbstractReportEngine
 			return ReportResult.builder()
 					.outputType(outputType)
 					.reportContentBase64(Util.encodeBase64(data))
+					.reportFilename(jasperPrint.getName())
 					.build();
 		}
 		else if (OutputType.HTML == outputType)
@@ -345,6 +346,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.JasperPrint)
+				.reportFilename(jasperPrint.getName())
 				.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 				.build();
 	}
