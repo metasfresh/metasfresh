@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.DesadvSettings;
@@ -140,8 +141,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h100.setRampeID(voidString);
 		h100.setReferenceCode(voidString);
 
-		h100.setStoreName(Util.normalize(partner.getName()));
-		h100.setStoreNumber(xmlDesadv.getCBPartnerLocationID().getGLN());
+		h100.setStoreName(Util.normalize(xmlDesadv.getCBPartnerID().getName()));
+		h100.setStoreNumber(extractDropShipLocation(xmlDesadv));
 
 		h100.setSupplierNo(voidString);
 		h100.setTransportCode(voidString);
@@ -196,6 +197,15 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		return p050;
 	}
 
+	private String extractDropShipLocation(@NonNull final EDIExpDesadvType xmlDesadv)
+	{
+		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
+				? xmlDesadv.getDropShipLocationID() : 
+				buyrLocation;
+		return dropShipLocation.getGLN();
+	}
+	
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
