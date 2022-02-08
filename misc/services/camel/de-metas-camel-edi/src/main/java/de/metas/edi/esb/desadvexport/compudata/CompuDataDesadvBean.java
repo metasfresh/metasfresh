@@ -323,7 +323,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p100.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p100.setProductionDate(EDIDesadvBean.voidDate);
-		p100.setStoreNumber(voidString);
+		p100.setStoreNumber(extractDropShipLocation(xmlDesadv));
 		p100.setSupplierArtNo(voidString);
 
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
@@ -378,7 +378,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p102.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p102.setProductionDate(EDIDesadvBean.voidDate);
-		p102.setStoreNumber(voidString);
+		p102.setStoreNumber(extractDropShipLocation(xmlDesadv));
 		p102.setSupplierArtNo(voidString);
 
 		p102.setEanArtNo(xmlDesadvLine.getEANCU());
