@@ -7,7 +7,6 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -41,15 +40,13 @@ import java.util.List;
 
 public class HUQRCodeCreatePDFCommand
 {
-	private final ImmutableList<HUQRCode> qrCodes;
-	private final boolean sendToPrinter;
-	private final AdProcessId qrcodeProcessId = AdProcessId.ofRepoIdOrNull(584977); // hard coded process id
-
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final HUReportService huReportService = HUReportService.get();
 
+	private final ImmutableList<HUQRCode> qrCodes;
+	private final boolean sendToPrinter;
 
+	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -129,16 +126,15 @@ public class HUQRCodeCreatePDFCommand
 	{
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
 				PInstanceRequest.builder()
-						.processId(qrcodeProcessId)
+						.processId(qrCodeProcessId)
 						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
 						.build());
 
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
-				.setAD_Process_ID(qrcodeProcessId)
+				.setAD_Process_ID(qrCodeProcessId)
 				.setPInstanceId(pinstanceId)
 				.setJRDesiredOutputType(OutputType.PDF)
-				.setPrintPreview(false)
 				.build();
 
 		return ReportsClient.get().report(reportProcessInfo);
