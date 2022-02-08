@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -12,8 +13,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
+import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import java.util.Optional;
@@ -43,11 +47,17 @@ import java.util.Optional;
 @Interceptor(I_PP_Product_Planning.class)
 public class PP_Product_Planning
 {
-	private final ProductBOMVersionsDAO bomVersionsDAO;
+	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 
-	public PP_Product_Planning(final ProductBOMVersionsDAO bomVersionsDAO)
+	private final ProductBOMVersionsDAO bomVersionsDAO;
+	private final ProductBOMService productBOMService;
+
+	public PP_Product_Planning(
+			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
+			@NonNull final ProductBOMService productBOMService)
 	{
 		this.bomVersionsDAO = bomVersionsDAO;
+		this.productBOMService = productBOMService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -89,5 +99,29 @@ public class PP_Product_Planning
 								.markAsUserValidationError();
 					}
 				});
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID,  I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant})
+	public void validateProductBOMASI(@NonNull final I_PP_Product_Planning productPlanning)
+	{
+		if (!productPlanning.isAttributeDependant())
+		{
+			return;
+		}
+
+		if (productPlanning.getPP_Product_BOMVersions_ID() <= 0)
+		{
+			return;
+		}
+
+		final Optional<I_PP_Product_BOM> bom = bomDAO.getLatestBOMRecordByVersionId(ProductBOMVersionsId.ofRepoId(productPlanning.getPP_Product_BOMVersions_ID()));
+
+		if (!bom.isPresent())
+		{
+			return;
+		}
+
+		productBOMService.verifyBOMAssignment(productPlanning, bom.get());
 	}
 }

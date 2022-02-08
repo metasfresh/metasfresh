@@ -39,6 +39,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -49,6 +50,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -58,9 +60,12 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class M_Inventory_StepDef
 {
@@ -71,6 +76,7 @@ public class M_Inventory_StepDef
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_M_HU> huTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
@@ -79,13 +85,15 @@ public class M_Inventory_StepDef
 			final StepDefData<I_M_InventoryLine> inventoryLineTable,
 			final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
 			final StepDefData<I_M_Product> productTable,
-			final StepDefData<I_M_HU> huTable)
+			final StepDefData<I_M_HU> huTable,
+			final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.productTable = productTable;
 		this.huTable = huTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@And("metasfresh initially has M_Inventory data")
@@ -209,6 +217,15 @@ public class M_Inventory_StepDef
 			productTable.put(productIdentifier, productById);
 
 			inventoryLineRecord.setM_Product_ID(productById.getM_Product_ID());
+		}
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(attributeSetInstance).isNotNull();
+
+			inventoryLineRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
 		}
 
 		save(inventoryLineRecord);
