@@ -24,7 +24,7 @@ SELECT
     REGEXP_REPLACE(pp.UPC, '\s+$', '') AS UPC_CU,
     REGEXP_REPLACE(pp.EAN_CU, '\s+$', '') AS EAN_CU,
     REGEXP_REPLACE(p.value, '\s+$', '') AS Value,
-    REGEXP_REPLACE(pp.productno, '\s+$', '') AS vendorproductno,
+    REGEXP_REPLACE(pp.productno, '\s+$', '') AS CustomerProductNo,
     substr(p.name, 1, 35) AS name,
     substr(p.name, 36, 70) AS name2,
     t.rate,
