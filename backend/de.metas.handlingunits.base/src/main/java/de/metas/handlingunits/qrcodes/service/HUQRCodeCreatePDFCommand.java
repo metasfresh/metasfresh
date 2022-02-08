@@ -1,18 +1,28 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.async.AsyncBatchId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.handlingunits.IHUAndItemsDAO;
+import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -21,11 +31,19 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class HUQRCodeCreatePDFCommand
@@ -35,6 +53,7 @@ public class HUQRCodeCreatePDFCommand
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	final private HUReportService huReportService = HUReportService.get();
+	private final IHUAndItemsDAO huDao = HUAndItemsDAO.instance;
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -49,17 +68,9 @@ public class HUQRCodeCreatePDFCommand
 	public Resource execute()
 	{
 		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
+		final ReportResult label =  printLabel(printableQRCodesJSON, sendToPrinter);
 
-		// TODO:
-		// 1. generate labels for those printableQRCodes
-		// 2. If sendToPrinter is true then also send the PDF to mass printing
-		System.out.println("printableQRCodesJSON: " + printableQRCodesJSON);
-		System.out.println("QR Code: " + qrCodes.stream()
-				.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
-				.map(PrintableQRCode::getQrCode)
-				.collect(Collectors.joining("\n\t")));
-		System.out.println("sendToPrinter: " + sendToPrinter);
-		throw new UnsupportedOperationException("not implemented yet");
+		return new ByteArrayResource(label.getReportContent());
 	}
 
 	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
@@ -113,23 +124,71 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
-	private ReportResult printLabel()
+	private ReportResult printLabel(@NonNull final String printableQRCodesJSON, final boolean sendToPrinter)
 	{
-		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
+		final AdProcessId adProcessId = huReportService.retrieveHUJsontLabelProcessIdOrNull();
 		if (adProcessId == null)
 		{
 			throw new AdempiereException("HU json label process does not exist");
 		}
 
+		final PInstanceRequest pinstanceRequest = createPInstanceRequest(adProcessId, printableQRCodesJSON);
+		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
+
+
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(adProcessId)
+				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
 
 		final ReportsClient reportsClient = ReportsClient.get();
+		final ReportResult label = reportsClient.report(jasperProcessInfo);
 
-		return reportsClient.report(jasperProcessInfo);
+		if (sendToPrinter)
+		{
+			archive(jasperProcessInfo, label);
+		}
+
+		return label;
+	}
+
+	private String buildFilename(@NonNull final ProcessInfo processInfo)
+	{
+		final String instance = String.valueOf(processInfo.getAdProcessId().getRepoId());
+		final String title = processInfo.getTitle();
+
+		return Joiner.on("_").skipNulls().join(instance, title) + ".pdf";
+	}
+
+	private void archive(@NonNull final ProcessInfo processInfo, @NonNull final ReportResult label)
+	{
+		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
+
+		final String fileExtWithDot = MimeType.getExtensionByType(OutputType.PDF.getContentType());
+		final String fileName = buildFilename(processInfo) + fileExtWithDot;
+		final byte[] labelData = label.getReportContent();
+
+		final Properties ctx = Env.getCtx();
+		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(ctx);
+		final I_AD_Archive archive = InterfaceWrapperHelper.create(archiveStorage.newArchive(ctx, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
+
+		archive.setName(fileName);
+		archiveStorage.setBinaryData(archive, labelData);
+		archive.setIsReport(true);
+		archive.setIsDirectEnqueue(true);
+		archive.setIsDirectProcessQueueItem(true);
+		InterfaceWrapperHelper.save(archive);
+	}
+
+	private PInstanceRequest createPInstanceRequest(@NonNull final AdProcessId adProcessId, final String printableQRCodesJSON)
+	{
+		return PInstanceRequest.builder()
+				.processId(adProcessId)
+				.processParams(ImmutableList.of(
+						ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
+				.build();
 	}
 
 	/**
