@@ -2,7 +2,6 @@
 
 -- DROP VIEW IF EXISTS EDI_Cctop_119_v;
 
-DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
@@ -17,7 +16,6 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        p.Value,
        p.VATaxID,
        lookup.Vendor_ReferenceNo AS ReferenceNo,
-       lookup.SiteName,
        lookup.Setup_Place_No,
        CASE lookup.Type_V
            WHEN 'ship'::TEXT THEN 'DP'::TEXT
@@ -48,7 +46,6 @@ FROM (
                                   i.C_Invoice_ID,
                                   0::INTEGER   AS M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_cust.bpartnername AS SiteName,
                                   pl_cust.Setup_Place_No
                   FROM C_Invoice i
                            LEFT JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -70,7 +67,6 @@ FROM (
                          i.C_Invoice_ID,
                          0::INTEGER         AS M_InOut_ID,
                          p_cust.ReferenceNo AS Vendor_ReferenceNo,
-                         pl_vend.bpartnername AS SiteName,
                          pl_vend.Setup_Place_No
                   FROM C_Invoice i
                            JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
@@ -85,7 +81,6 @@ FROM (
                                   i.C_Invoice_ID,
                                   0::INTEGER   AS M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_ship.bpartnername AS SiteName,
                                   pl_ship.Setup_Place_No
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -119,7 +114,6 @@ FROM (
                          i.C_Invoice_ID,
                          0::INTEGER   AS M_InOut_ID,
                          NULL::TEXT   AS Vendor_ReferenceNo,
-                         pl_bill.bpartnername AS SiteName,
                          pl_bill.Setup_Place_No
                   FROM C_Invoice i
                            LEFT JOIN C_BPartner_Location pl_bill ON pl_bill.C_BPartner_Location_ID = i.C_BPartner_Location_ID
@@ -132,7 +126,6 @@ FROM (
                                   i.C_Invoice_ID,
                                   s.M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_snum.bpartnername AS SiteName,
                                   pl_snum.Setup_Place_No
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID

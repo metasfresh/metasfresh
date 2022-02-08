@@ -24,7 +24,7 @@ SELECT
     pp.UPC AS UPC_CU,
     pp.EAN_CU,
     p.value,
-    pp.productno AS CustomerProductNo,
+    pp.productno AS vendorproductno,
     substr(p.name, 1, 35) AS name,
     substr(p.name, 36, 70) AS name2,
     t.rate,
