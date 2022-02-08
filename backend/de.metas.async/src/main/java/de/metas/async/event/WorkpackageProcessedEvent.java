@@ -22,6 +22,7 @@
 
 package de.metas.async.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.async.QueueWorkPackageId;
@@ -53,6 +54,7 @@ public class WorkpackageProcessedEvent implements IQueueWorkPackageIdProvider
 	@JsonProperty("correlationId")
 	UUID correlationId;
 
+	@JsonIgnore
 	public QueueWorkPackageId getQueueWorkPackageId()
 	{
 		return workPackageId;
