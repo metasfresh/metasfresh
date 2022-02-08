@@ -21,11 +21,11 @@ Feature: stock changes accordingly
       | 11                        | 21                            | 222          | 0       | 10       |
       | 12                        | 22                            | 222          | 10      | 16       |
     When complete inventory with inventoryIdentifier '11'
-    Then metasfresh has MD_Stock data
+    Then after not more than 10 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 10        |
 
     And complete inventory with inventoryIdentifier '12'
-    And metasfresh has MD_Stock data
+    And after not more than 10 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 16        |

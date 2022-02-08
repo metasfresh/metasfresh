@@ -1,18 +1,8 @@
-package de.metas.async;
-
-import static de.metas.util.Check.assumeGreaterThanZero;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.async
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +20,17 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.async;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.assumeGreaterThanZero;
+
 @Value
 public class QueueWorkPackageId implements RepoIdAware
 {
@@ -39,6 +40,7 @@ public class QueueWorkPackageId implements RepoIdAware
 		return new QueueWorkPackageId(repoId);
 	}
 
+	@Nullable
 	public static QueueWorkPackageId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

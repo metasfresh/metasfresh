@@ -126,7 +126,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.postEventNow(ppOrderRequestEvent);
+		materialEventService.postEventAsync(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -197,7 +197,7 @@ public class RequestMaterialOrderService
 	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
-		materialEventService.postEventNow(ddOrderRequestEvent);
+		materialEventService.postEventAsync(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
