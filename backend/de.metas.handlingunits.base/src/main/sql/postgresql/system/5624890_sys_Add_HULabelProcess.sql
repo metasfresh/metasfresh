@@ -28,3 +28,38 @@ UPDATE AD_Process SET IsFormatExcelFile='N',Updated=TO_TIMESTAMP('2022-02-08 16:
 UPDATE AD_Table_Process SET WEBUI_DocumentAction='N',Updated=TO_TIMESTAMP('2022-02-08 16:07:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541058
 ;
 
+-- 2022-02-08T15:12:02.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='QR Label',Updated=TO_TIMESTAMP('2022-02-08 17:12:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:12:28.291Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett',Updated=TO_TIMESTAMP('2022-02-08 17:12:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:12:32.087Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='', Help=NULL, Name='QR Etikett',Updated=TO_TIMESTAMP('2022-02-08 17:12:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:12:32.082Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett',Updated=TO_TIMESTAMP('2022-02-08 17:12:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:12:44.568Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Label',Updated=TO_TIMESTAMP('2022-02-08 17:12:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:12:53.045Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='QR Label',Updated=TO_TIMESTAMP('2022-02-08 17:12:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584980
+;
+
+-- 2022-02-08T15:29:04.060Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET ShowHelp='S',Updated=TO_TIMESTAMP('2022-02-08 17:29:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584980
+;
+
