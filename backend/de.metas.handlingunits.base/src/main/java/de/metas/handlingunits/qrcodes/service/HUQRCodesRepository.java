@@ -12,6 +12,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
@@ -28,11 +29,17 @@ public class HUQRCodesRepository
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
 	{
-		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
-				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, huQRCode.getId().getAsString())
+		return queryByQRCode(huQRCode.getId())
 				.create()
 				.firstOnlyOptional(I_M_HU_QRCode.class)
 				.flatMap(HUQRCodesRepository::toHUQRCodeAssignment);
+	}
+
+	private IQueryBuilder<I_M_HU_QRCode> queryByQRCode(final @NonNull HUQRCodeUniqueId uniqueId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, uniqueId.getAsString());
 	}
 
 	private static Optional<HUQRCodeAssignment> toHUQRCodeAssignment(final I_M_HU_QRCode record)
@@ -56,6 +63,25 @@ public class HUQRCodesRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
+	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	{
+		final I_M_HU_QRCode existingRecord = queryByQRCode(qrCode.getId())
+				.create()
+				.firstOnly(I_M_HU_QRCode.class);
+		if (existingRecord != null)
+		{
+			// NOTE: we assume the attributes and the other fields are correct.
+			// we cannot update them anyways.
+
+			existingRecord.setM_HU_ID(huId.getRepoId());
+			InterfaceWrapperHelper.save(existingRecord);
+		}
+		else
+		{
+			createNew(qrCode, huId);
+		}
+	}
+
 	private String toJsonString(final @NonNull HUQRCode qrCode)
 	{
 		try
@@ -69,13 +95,20 @@ public class HUQRCodesRepository
 		}
 	}
 
-	public Optional<HUQRCode> getQRCodeByHuId(@NonNull final HuId huId)
+	public Optional<HUQRCode> getFirstQRCodeByHuId(@NonNull final HuId huId)
+	{
+		return queryByHuId(huId)
+				.create()
+				.firstOptional(I_M_HU_QRCode.class)
+				.map(this::toHUQRCode);
+	}
+
+	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_QRCode.class)
-				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.firstOnlyOptional(I_M_HU_QRCode.class)
-				.map(this::toHUQRCode);
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, sourceHuId)
+				.orderBy(I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID);
 	}
 
 	public ImmutableSetMultimap<HuId, HUQRCode> getQRCodeByHuIds(@NonNull final Collection<HuId> huIds)
@@ -107,5 +140,4 @@ public class HUQRCodesRepository
 					.setParameter("json", record.getattributes());
 		}
 	}
-
 }

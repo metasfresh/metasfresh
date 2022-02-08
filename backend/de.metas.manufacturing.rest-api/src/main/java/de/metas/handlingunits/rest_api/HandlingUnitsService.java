@@ -120,7 +120,7 @@ public class HandlingUnitsService
 	@Nullable
 	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
 	{
-		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
+		return huQRCodeService.getFirstQRCodeByHuIdIfExists(huId)
 				.map(HandlingUnitsService::toJsonHUQRCode)
 				.orElse(null);
 	}

@@ -81,7 +81,7 @@ public class HUQRCodesService
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
 	{
-		final HUQRCode existingQRCode = getQRCodeByHuIdIfExists(huId).orElse(null);
+		final HUQRCode existingQRCode = getFirstQRCodeByHuIdIfExists(huId).orElse(null);
 		if (existingQRCode != null)
 		{
 			return existingQRCode;
@@ -100,8 +100,13 @@ public class HUQRCodesService
 		}
 	}
 
-	public Optional<HUQRCode> getQRCodeByHuIdIfExists(@NonNull final HuId huId)
+	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
-		return huQRCodesRepository.getQRCodeByHuId(huId);
+		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
+	}
+
+	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	{
+		huQRCodesRepository.assign(qrCode, huId);
 	}
 }
