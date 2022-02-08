@@ -128,11 +128,6 @@ INSERT INTO t_alter_column values('ad_eventlog','AD_Client_ID','NUMERIC(10)',nul
 UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=540527, FilterOperator='E', IsExcludeFromZoomTargets='Y', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-02-07 19:59:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579208
 ;
 
--- 2022-02-07T18:11:45.191Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET AD_Reference_Value_ID=541444,Updated=TO_TIMESTAMP('2022-02-07 20:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579208
-;
-
 -- 2022-02-07T18:14:05.303Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Reference_ID=19, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2022-02-07 20:14:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579208
