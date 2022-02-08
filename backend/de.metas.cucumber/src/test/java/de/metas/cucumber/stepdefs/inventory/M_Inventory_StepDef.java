@@ -39,7 +39,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -60,12 +59,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class M_Inventory_StepDef
 {
@@ -218,16 +214,6 @@ public class M_Inventory_StepDef
 
 			inventoryLineRecord.setM_Product_ID(productById.getM_Product_ID());
 		}
-
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
-
-			inventoryLineRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
-		}
-
 		save(inventoryLineRecord);
 
 		inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord);

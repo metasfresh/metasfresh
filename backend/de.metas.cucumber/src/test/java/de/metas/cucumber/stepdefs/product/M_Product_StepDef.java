@@ -168,7 +168,6 @@ public class M_Product_StepDef
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
 				() -> productDAO.retrieveProductByValue(productValue),
 				() -> newInstanceOutOfTrx(I_M_Product.class));
-		assertThat(productRecord).isNotNull();
 
 		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		productRecord.setValue(productValue);

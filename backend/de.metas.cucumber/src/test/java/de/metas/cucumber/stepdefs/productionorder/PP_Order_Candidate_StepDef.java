@@ -257,13 +257,14 @@ public class PP_Order_Candidate_StepDef
 
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(orderCandidateRecordIdentifier);
 
+		//validate asi
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(expectedASI).isNotNull();
 
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
 					.orElse(AttributesKey.NONE);
 			final AttributesKey ppOrderCandAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderCandidate.getM_AttributeSetInstance_ID()))
 					.orElse(AttributesKey.NONE);

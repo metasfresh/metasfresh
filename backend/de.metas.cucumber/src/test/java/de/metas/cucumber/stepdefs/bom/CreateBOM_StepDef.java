@@ -167,11 +167,7 @@ public class CreateBOM_StepDef
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
 			{
-				final I_M_AttributeSetInstance attributeSetInstance = queryBL.createQueryBuilder(I_M_AttributeSetInstance.class)
-						.addEqualsFilter(COLUMNNAME_M_AttributeSetInstance_ID, bom.getM_AttributeSetInstance_ID())
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.firstNotNull(I_M_AttributeSetInstance.class);
+				final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.load(bom.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
 
 				assertThat(attributeSetInstance).isNotNull();
 
@@ -218,11 +214,7 @@ public class CreateBOM_StepDef
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
 			{
-				final I_M_AttributeSetInstance attributeSetInstance = queryBL.createQueryBuilder(I_M_AttributeSetInstance.class)
-						.addEqualsFilter(COLUMNNAME_M_AttributeSetInstance_ID, bomLine.getM_AttributeSetInstance_ID())
-						.addOnlyActiveRecordsFilter()
-						.create()
-						.firstNotNull(I_M_AttributeSetInstance.class);
+				final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.load(bomLine.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
 
 				assertThat(attributeSetInstance).isNotNull();
 

@@ -143,15 +143,18 @@ public class PP_OrderLine_Candidate_StepDef
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(expectedASI).isNotNull();
 
-			final AttributesKey bomLineAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey ppOrderLineCandAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderLineCandidate.getM_AttributeSetInstance_ID()))
+			final AttributesKey expectedASIKey = AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
 					.orElse(AttributesKey.NONE);
 
-			assertThat(ppOrderLineCandAttributesKeys).isEqualTo(bomLineAttributesKeys);
+			final AttributesKey ppOrderLineCandAttributesKeys = AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderLineCandidate.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(ppOrderLineCandAttributesKeys).isEqualTo(expectedASIKey);
 		}
 	}
 }

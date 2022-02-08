@@ -340,17 +340,17 @@ public class MD_Candidate_StepDef
 			final String attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
 			{
-				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-				assertThat(attributeSetInstance).isNotNull();
+				final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				assertThat(expectedASI).isNotNull();
 
-				final AttributesKey attributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
+				final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
 						.orElse(AttributesKey.NONE);
 
-				final int attributeSetInstanceId = materialDispoRecord.getMaterialDescriptor().getAttributeSetInstanceId();
-				final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
+				final int materialCandASI = materialDispoRecord.getMaterialDescriptor().getAttributeSetInstanceId();
+				final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(materialCandASI))
 						.orElse(AttributesKey.NONE);
 
-				assertThat(attributesKeys).isEqualTo(mdAttributesKeys);
+				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
 			}
 
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);

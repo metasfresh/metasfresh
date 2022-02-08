@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -35,15 +34,12 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -68,7 +64,6 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_StepDef
 {
@@ -283,21 +278,5 @@ public class PP_Order_StepDef
 
 		final boolean orderFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
 		assertThat(orderFound).isTrue();
-
-		final I_PP_Order ppOrder = ppOrderTable.get(orderRecordIdentifier);
-
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
-
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey ppOrderAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-
-			assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
-		}
 	}
 }
