@@ -63,3 +63,8 @@ UPDATE AD_Process_Trl SET Name='QR Label',Updated=TO_TIMESTAMP('2022-02-08 17:12
 UPDATE AD_Process SET ShowHelp='S',Updated=TO_TIMESTAMP('2022-02-08 17:29:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584980
 ;
 
+-- 2022-02-08T16:00:08.473Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_SysConfig WHERE AD_SysConfig_ID=541447
+;
+
