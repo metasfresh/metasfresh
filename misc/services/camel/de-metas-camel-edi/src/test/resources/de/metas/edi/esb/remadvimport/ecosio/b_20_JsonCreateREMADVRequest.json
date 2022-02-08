@@ -31,7 +31,7 @@
           "bpartnerIdentifier": "gln-6234567890123",
           "invoiceBaseDocType": "ARC",
           "invoiceGrossAmount": 140.43,
-          "paymentDiscountAmount": -2.67,
+          "paymentDiscountAmount": 1.97,
           "serviceFeeAmount": 2.32,
           "serviceFeeVatRate": 7.7
         }

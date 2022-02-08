@@ -41,7 +41,7 @@ import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.REMADV_XML_TO_JSON_PROCESSOR;
 import static org.assertj.core.api.Assertions.*;
 
-class EcosioRemadvRoute_a_Test extends CamelTestSupport
+public class EcosioRemadvRouteTest_a extends CamelTestSupport
 {
 	private static final String MOCK_FROM_ENDPOINT = "direct:mockInput";
 	private static final String MOCK_XML_TO_JSON_ENDPOINT = "mock:xmlToJsonResult";
@@ -56,7 +56,7 @@ class EcosioRemadvRoute_a_Test extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(EcosioRemadvRoute_a_Test.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(EcosioRemadvRouteTest_a.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
