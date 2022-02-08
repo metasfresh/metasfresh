@@ -2057,3 +2057,8 @@ UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2022-02-04 17:50:39',
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2022-02-04 17:50:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_UI_Section_ID=544326
 ;
+
+-- 2022-02-08T09:27:35.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,563229,0,540058,541144,TO_TIMESTAMP('2022-02-08 11:27:35','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',557027,557027,540833,TO_TIMESTAMP('2022-02-08 11:27:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
