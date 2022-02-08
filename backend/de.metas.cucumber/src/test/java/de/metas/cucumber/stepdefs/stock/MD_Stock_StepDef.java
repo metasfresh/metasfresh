@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,8 +37,7 @@ import org.compiere.util.DB;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
+import java.util.function.Supplier;
 
 public class MD_Stock_StepDef
 {
@@ -49,14 +49,14 @@ public class MD_Stock_StepDef
 		truncateMDStockData();
 	}
 
-	@And("metasfresh has MD_Stock data")
-	public void verify_MD_Stock_Data(@NonNull final DataTable dataTable)
+	@And("after not more than {int} seconds metasfresh has MD_Stock data")
+	public void verify_MD_Stock_Data( final int timeoutSeconds, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> row = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : row)
-		{
-			validateMD_Stock(dataTableRow);
-		}
+		final List<Map<String, String>> rows = dataTable.asMaps();
+
+		final Supplier<Boolean> supplier = () -> rows.stream().allMatch(this::validateMD_Stock);
+
+		StepDefUtil.tryAndWait(timeoutSeconds, 500, supplier);
 	}
 
 	private void truncateMDStockData()
@@ -72,7 +72,7 @@ public class MD_Stock_StepDef
 		DB.executeUpdateEx("TRUNCATE TABLE m_hu_trx_line cascade", ITrx.TRXNAME_None);
 	}
 
-	private void validateMD_Stock(@NonNull final Map<String, String> row)
+	private boolean validateMD_Stock(@NonNull final Map<String, String> row)
 	{
 		final int productIdentifier = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
@@ -80,9 +80,7 @@ public class MD_Stock_StepDef
 		final I_MD_Stock mdStock = queryBL.createQueryBuilder(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productIdentifier)
 				.create()
-				.firstOnlyNotNull(I_MD_Stock.class);
-
-		assertThat(mdStock).isNotNull();
-		assertThat(mdStock.getQtyOnHand()).isEqualTo(qtyOnHand);
+				.firstOnly(I_MD_Stock.class);
+		return mdStock != null && mdStock.getQtyOnHand().compareTo(qtyOnHand) == 0;
 	}
 }
