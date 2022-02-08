@@ -1,6 +1,4 @@
-DROP VIEW IF EXISTS AD_AttachmentEntry_ReferencedRecord_v
-;
-
+-- dropping is iffy, because there are other views depending on this view
 CREATE OR REPLACE VIEW AD_AttachmentEntry_ReferencedRecord_v AS
 SELECT r.AD_Table_ID,
        r.Record_ID,
