@@ -17,9 +17,10 @@
     <properties>
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+<!--        <camel.version>3.4.2</camel.version>-->
         <camel.version>3.14.1</camel.version>
         <guava.version>30.1.1-jre</guava.version>
-        <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
+        <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.11.0</jackson.version>
         <org.apache.poi.version>3.15</org.apache.poi.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
@@ -166,16 +167,20 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
-            <groupId>org.smooks.cartridges</groupId>
-            <artifactId>smooks-camel-cartridge</artifactId>
-            <version>${smooks-cartridge.version}</version>
+            <groupId>org.milyn</groupId>
+            <artifactId>milyn-smooks-camel</artifactId>
+            <version>${smooks.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.smooks.cartridges</groupId>
-            <artifactId>smooks-templating-cartridge</artifactId>
-            <version>${smooks-cartridge.version}</version>
+            <groupId>org.milyn</groupId>
+            <artifactId>milyn-smooks-fixed-length</artifactId>
+            <version>${smooks.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.milyn</groupId>
+            <artifactId>milyn-smooks-templating</artifactId>
+            <version>${smooks.version}</version>
         </dependency>
 
         <dependency>

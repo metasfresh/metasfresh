@@ -29,7 +29,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

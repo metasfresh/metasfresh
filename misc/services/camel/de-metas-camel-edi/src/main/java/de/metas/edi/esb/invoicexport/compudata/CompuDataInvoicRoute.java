@@ -33,7 +33,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.commons.Constants;
@@ -67,7 +67,6 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
 		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic");
-		sdf.setCamelContext(getContext());
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
@@ -112,7 +111,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 				.to("{{" + CompuDataInvoicRoute.EP_EDI_FILE_INVOICE + "}}")
 
 		.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
-				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID))
+				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID))
 
 		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
