@@ -53,7 +53,6 @@ public class HUQRCodeCreatePDFCommand
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	final private HUReportService huReportService = HUReportService.get();
-	private final IHUAndItemsDAO huDao = HUAndItemsDAO.instance;
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -124,7 +123,7 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
-	private ReportResult printLabel(@NonNull final String printableQRCodesJSON, final boolean sendToPrinter)
+	public ReportResult printLabel(@NonNull final String printableQRCodesJSON, final boolean sendToPrinter)
 	{
 		final AdProcessId adProcessId = huReportService.retrieveHUJsontLabelProcessIdOrNull();
 		if (adProcessId == null)
