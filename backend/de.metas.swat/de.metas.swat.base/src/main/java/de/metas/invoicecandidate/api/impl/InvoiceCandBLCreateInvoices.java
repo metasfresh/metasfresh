@@ -328,7 +328,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			//
 			// Case: our invoice is linked to an order
 			// => start creating the invoice from Order
-			if (invoiceHeader.getC_Order_ID() > 0)
+			if (createInvoiceFromOrder && invoiceHeader.getC_Order_ID() > 0)
 			{
 				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
 
@@ -391,7 +391,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
+			if (invoiceHeader.getC_Order_ID() > 0)
+			{
+				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
+				invoice.setC_Order_ID(order.getC_Order_ID());
+				invoice.setPaymentRule(order.getPaymentRule());
+			}
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
