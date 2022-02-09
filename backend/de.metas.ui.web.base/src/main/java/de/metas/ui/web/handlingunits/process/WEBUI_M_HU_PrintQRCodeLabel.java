@@ -42,7 +42,7 @@ import java.util.List;
  * #L%
  */
 @Profile(Profiles.PROFILE_Webui)
-public class WEBUI_M_HU_PrintJSONLabel
+public class WEBUI_M_HU_PrintQRCodeLabel
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
@@ -62,13 +62,7 @@ public class WEBUI_M_HU_PrintJSONLabel
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
-		if (hu == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
-		}
-
-		final List<HUToReport> husToProcess = getHuToReportList();
+		final List<HuId> husToProcess = getHuIdsToProcess();
 		if (husToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("current HU's type does not match the receipt label process");
@@ -80,14 +74,7 @@ public class WEBUI_M_HU_PrintJSONLabel
 	@Override
 	protected String doIt()
 	{
-		final List<HUToReport> husToProcess = getHuToReportList();
-
-		final List<HuId> huIds = husToProcess
-				.stream()
-				.filter(HUToReport::isTopLevel)
-				.map(HUToReport::getHUId)
-				.collect(ImmutableList.toImmutableList());
-
+		final List<HuId> huIds = getHuIdsToProcess();
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 		final Resource pdf = huQRCodesService.createPDF(qrCodes.asList(), false);
 
@@ -97,12 +84,18 @@ public class WEBUI_M_HU_PrintJSONLabel
 		return MSG_OK;
 	}
 
-	private List<HUToReport> getHuToReportList()
+	private List<HuId> getHuIdsToProcess()
 	{
-		return getSingleSelectedRow()
+		final List<HUToReport> husToProcess = getSingleSelectedRow()
 				.getAsHUToReport()
 				.streamRecursively()
-				.filter(currentHU -> currentHU.isTopLevel())
+				.filter(HUToReport::isTopLevel)
+				.collect(ImmutableList.toImmutableList());
+
+		return husToProcess
+				.stream()
+				.filter(HUToReport::isTopLevel)
+				.map(HUToReport::getHUId)
 				.collect(ImmutableList.toImmutableList());
 	}
 
