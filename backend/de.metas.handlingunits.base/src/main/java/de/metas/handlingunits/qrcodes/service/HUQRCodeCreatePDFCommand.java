@@ -64,13 +64,8 @@ public class HUQRCodeCreatePDFCommand
 	{
 		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
 
-		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-				PInstanceRequest.builder()
-						.processId(qrCodeProcessId)
-						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
-						.build());
-
-		final ReportResult report = createPDF(printableQRCodesJSON, pinstanceId);
+		final PInstanceId pinstanceId = createPInstanceId(printableQRCodesJSON);
+		final ReportResult report = createPDF(pinstanceId);
 
 		if(sendToPrinter)
 		{
@@ -78,6 +73,15 @@ public class HUQRCodeCreatePDFCommand
 		}
 
 		return new ByteArrayResource(report.getReportContent());
+	}
+
+	private PInstanceId createPInstanceId(@NonNull final String printableQRCodesJSON)
+	{
+		return adPInstanceDAO.createADPinstanceAndADPInstancePara(
+				PInstanceRequest.builder()
+						.processId(qrCodeProcessId)
+						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
+						.build());
 	}
 
 	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
@@ -131,7 +135,7 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
-	public ReportResult createPDF(@NonNull final String printableQRCodesJSON, @NonNull final PInstanceId pinstanceId)
+	public ReportResult createPDF(@NonNull final PInstanceId pinstanceId)
 	{
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
