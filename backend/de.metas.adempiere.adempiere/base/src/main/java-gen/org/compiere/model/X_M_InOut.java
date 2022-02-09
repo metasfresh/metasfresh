@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1681125709L;
+	private static final long serialVersionUID = 228606393L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -222,6 +222,19 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -288,19 +301,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -653,6 +653,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -935,6 +947,59 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
+	}
+
+	/** 
+	 * MovementType AD_Reference_ID=189
+	 * Reference name: M_Transaction Movement Type
+	 */
+	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
+	/** CustomerShipment = C- */
+	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
+	/** CustomerReturns = C+ */
+	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
+	/** VendorReceipts = V+ */
+	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
+	/** VendorReturns = V- */
+	public static final String MOVEMENTTYPE_VendorReturns = "V-";
+	/** InventoryOut = I- */
+	public static final String MOVEMENTTYPE_InventoryOut = "I-";
+	/** InventoryIn = I+ */
+	public static final String MOVEMENTTYPE_InventoryIn = "I+";
+	/** MovementFrom = M- */
+	public static final String MOVEMENTTYPE_MovementFrom = "M-";
+	/** MovementTo = M+ */
+	public static final String MOVEMENTTYPE_MovementTo = "M+";
+	/** ProductionPlus = P+ */
+	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
+	/** ProductionMinus = P- */
+	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
+	/** WorkOrderPlus = W+ */
+	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
+	/** WorkOrderMinus = W- */
+	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
+	@Override
+	public void setMovementType (final java.lang.String MovementType)
+	{
+		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
+	}
+
+	@Override
+	public java.lang.String getMovementType() 
+	{
+		return get_ValueAsString(COLUMNNAME_MovementType);
+	}
+
+	@Override
 	public org.compiere.model.I_M_RMA getM_RMA()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_RMA_ID, org.compiere.model.I_M_RMA.class);
@@ -1016,59 +1081,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setMovementDate (final java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
-
-	/** 
-	 * MovementType AD_Reference_ID=189
-	 * Reference name: M_Transaction Movement Type
-	 */
-	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
-	/** CustomerShipment = C- */
-	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
-	/** CustomerReturns = C+ */
-	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
-	/** VendorReceipts = V+ */
-	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
-	/** VendorReturns = V- */
-	public static final String MOVEMENTTYPE_VendorReturns = "V-";
-	/** InventoryOut = I- */
-	public static final String MOVEMENTTYPE_InventoryOut = "I-";
-	/** InventoryIn = I+ */
-	public static final String MOVEMENTTYPE_InventoryIn = "I+";
-	/** MovementFrom = M- */
-	public static final String MOVEMENTTYPE_MovementFrom = "M-";
-	/** MovementTo = M+ */
-	public static final String MOVEMENTTYPE_MovementTo = "M+";
-	/** ProductionPlus = P+ */
-	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
-	/** ProductionMinus = P- */
-	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
-	/** WorkOrderPlus = W+ */
-	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
-	/** WorkOrderMinus = W- */
-	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
-	@Override
-	public void setMovementType (final java.lang.String MovementType)
-	{
-		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
-	}
-
-	@Override
-	public java.lang.String getMovementType() 
-	{
-		return get_ValueAsString(COLUMNNAME_MovementType);
 	}
 
 	@Override

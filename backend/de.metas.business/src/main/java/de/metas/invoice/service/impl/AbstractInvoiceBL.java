@@ -617,6 +617,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setUser1_ID(order.getUser1_ID());
 		invoice.setUser2_ID(order.getUser2_ID());
 
+		invoice.setEMail(order.getEMail());
+
 		// metas
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final I_C_Order order2 = InterfaceWrapperHelper.create(order, I_C_Order.class);

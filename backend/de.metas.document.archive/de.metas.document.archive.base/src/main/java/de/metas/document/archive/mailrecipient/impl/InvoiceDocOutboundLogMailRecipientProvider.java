@@ -76,6 +76,13 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
+
+			final String invoiceEmail = invoiceRecord.getEMail();
+			if(!Check.isEmpty(invoiceEmail, true))
+			{
+				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+			}
+
 			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
 			{
 				return Optional.of(invoiceUser);

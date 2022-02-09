@@ -109,6 +109,7 @@ public class CalloutInOut extends CalloutEngine
 		inout.setC_Project_ID(order.getC_Project_ID());
 		inout.setUser1_ID(order.getUser1_ID());
 		inout.setUser2_ID(order.getUser2_ID());
+		inout.setEMail(order.getEMail());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
@@ -164,6 +165,7 @@ public class CalloutInOut extends CalloutEngine
 			inout.setM_Shipper_ID(originalReceipt.getM_Shipper_ID());
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
+			inout.setEMail(originalReceipt.getEMail());
 
 			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}
