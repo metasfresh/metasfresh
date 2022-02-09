@@ -328,7 +328,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			//
 			// Case: our invoice is linked to an order
 			// => start creating the invoice from Order
-			if (createInvoiceFromOrder && invoiceHeader.getC_Order_ID() > 0)
+			if (invoiceHeader.getC_Order_ID() > 0)
 			{
 				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
 
