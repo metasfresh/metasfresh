@@ -7,7 +7,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -17,8 +16,6 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
-
-import java.util.List;
 
 /*
  * #%L
@@ -46,8 +43,7 @@ public class WEBUI_M_HU_PrintQRCodeLabel
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
-	private final HUReportService huReportService = HUReportService.get();
-	private HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -62,8 +58,7 @@ public class WEBUI_M_HU_PrintQRCodeLabel
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final List<HuId> husToProcess = getHuIdsToProcess();
-		if (husToProcess.isEmpty())
+		if (getHuIdsToPrint().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("current HU's type does not match the receipt label process");
 		}
@@ -74,36 +69,32 @@ public class WEBUI_M_HU_PrintQRCodeLabel
 	@Override
 	protected String doIt()
 	{
-		final List<HuId> huIds = getHuIdsToProcess();
+		final ImmutableSet<HuId> huIds = getHuIdsToPrint();
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
-		final Resource pdf = huQRCodesService.createPDF(qrCodes.asList(), false);
 
-		// preview
+		final Resource pdf = huQRCodesService.createPDF(qrCodes.asList(), false);
 		getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
 	}
 
-	private List<HuId> getHuIdsToProcess()
+	private ImmutableSet<HuId> getHuIdsToPrint()
 	{
-		final List<HUToReport> husToProcess = getSingleSelectedRow()
+		return getSingleSelectedRow()
 				.getAsHUToReport()
 				.streamRecursively()
 				.filter(HUToReport::isTopLevel)
-				.collect(ImmutableList.toImmutableList());
-
-		return husToProcess
-				.stream()
-				.filter(HUToReport::isTopLevel)
 				.map(HUToReport::getHUId)
-				.collect(ImmutableList.toImmutableList());
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableList<HUQRCode> generateQrCodes(@NonNull final List<HuId> huIds)
+	private ImmutableList<HUQRCode> generateQrCodes(@NonNull final ImmutableSet<HuId> huIds)
 	{
-		return huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.builder()
-															   .huIds(ImmutableSet.copyOf(huIds))
-															   .build())
+		return huQRCodesService.generateForExistingHUs(
+						HUQRCodeGenerateForExistingHUsRequest.builder()
+								.huIds(huIds)
+								.build())
 				.toList();
 	}
 }
