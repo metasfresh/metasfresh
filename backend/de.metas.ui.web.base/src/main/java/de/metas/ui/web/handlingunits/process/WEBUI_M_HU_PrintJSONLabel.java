@@ -1,32 +1,21 @@
 package de.metas.ui.web.handlingunits.process;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsResult;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
-import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
-import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.report.server.OutputType;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -79,8 +68,8 @@ public class WEBUI_M_HU_PrintJSONLabel
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No (single) HU selected");
 		}
 
-		final List<HUToReport> hUsToProcess = getHuToReportList();
-		if (hUsToProcess.isEmpty())
+		final List<HUToReport> husToProcess = getHuToReportList();
+		if (husToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("current HU's type does not match the receipt label process");
 		}
@@ -89,57 +78,39 @@ public class WEBUI_M_HU_PrintJSONLabel
 	}
 
 	@Override
-	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final List<HUToReport> hUsToProcess = getHuToReportList();
+		final List<HUToReport> husToProcess = getHuToReportList();
 
-		final List<HuId> huIds = hUsToProcess
+		final List<HuId> huIds = husToProcess
 				.stream()
-				.filter(HUToReport::isTopLevel) // issue https://github.com/metasfresh/metasfresh/issues/3851
+				.filter(HUToReport::isTopLevel)
 				.map(HUToReport::getHUId)
 				.collect(ImmutableList.toImmutableList());
 
-		final HUQRCodeGenerateForExistingHUsResult result = generateQrCodes(huIds);
-
-		final ImmutableSetMultimap<HuId, HUQRCode>  qrCodeMap =  result.toSetMultimap();
-
-		final ImmutableCollection<HUQRCode> qrCodes = qrCodeMap.values();
+		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 		final Resource pdf = huQRCodesService.createPDF(qrCodes.asList(), false);
 
 		// preview
-		getResult().setReportData(pdf, buildFilename(pdf), OutputType.PDF.getContentType());
+		getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
 	}
 
 	private List<HUToReport> getHuToReportList()
 	{
-		final HUToReport huToReport = getSingleSelectedRow().getAsHUToReport();
-
-		final List<HUToReport> hUsToProcess = huToReport.streamRecursively()
-				.filter(currentHU -> currentHU.isTopLevel() )
+		return getSingleSelectedRow()
+				.getAsHUToReport()
+				.streamRecursively()
+				.filter(currentHU -> currentHU.isTopLevel())
 				.collect(ImmutableList.toImmutableList());
-		return hUsToProcess;
 	}
 
-	private String buildFilename(@NonNull final Resource pdf)
+	private ImmutableList<HUQRCode> generateQrCodes(@NonNull final List<HuId> huIds)
 	{
-		final String fileName = pdf.getFilename();
-		if (fileName == null)
-		{
-			final HUToReport huToReport = getSingleSelectedRow().getAsHUToReport();
-			return Joiner.on("_").skipNulls().join(huToReport.getHUId(), huToReport.getHUUnitType()) + ".pdf";
-		}
-
-		return fileName + ".pdf";
-	}
-
-	private HUQRCodeGenerateForExistingHUsResult generateQrCodes(@NonNull final List<HuId> huIds)
-	{
-		final HUQRCodeGenerateForExistingHUsRequest request = HUQRCodeGenerateForExistingHUsRequest.builder()
-				.huIds(ImmutableSet.copyOf(huIds))
-				.build();
-		return huQRCodesService.generateForExistingHUs(request);
+		return huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.builder()
+															   .huIds(ImmutableSet.copyOf(huIds))
+															   .build())
+				.toList();
 	}
 }

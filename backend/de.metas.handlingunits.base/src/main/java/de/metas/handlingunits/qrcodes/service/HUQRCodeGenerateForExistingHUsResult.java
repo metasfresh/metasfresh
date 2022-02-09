@@ -1,5 +1,6 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -9,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
 
 @EqualsAndHashCode
 @ToString
@@ -32,5 +35,10 @@ public class HUQRCodeGenerateForExistingHUsResult
 		}
 
 		return qrCodes.iterator().next();
+	}
+
+	public ImmutableList<HUQRCode> toList()
+	{
+		return huQRCodes.values().asList();
 	}
 }

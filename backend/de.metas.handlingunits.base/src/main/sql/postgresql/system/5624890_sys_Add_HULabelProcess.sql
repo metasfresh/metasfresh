@@ -68,3 +68,14 @@ UPDATE AD_Process SET ShowHelp='S',Updated=TO_TIMESTAMP('2022-02-08 17:29:04','Y
 DELETE FROM AD_SysConfig WHERE AD_SysConfig_ID=541447
 ;
 
+
+-- 2022-02-09T12:42:46.835Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/label/QR_Label.jasper',Updated=TO_TIMESTAMP('2022-02-09 14:42:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584977
+;
+
+-- 2022-02-09T12:48:49.854Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.ui.web.handlingunits.process.WEBUI_M_HU_PrintQRCodeLabel',Updated=TO_TIMESTAMP('2022-02-09 14:48:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584980
+;
+
