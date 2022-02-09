@@ -26,6 +26,6 @@ UPDATE AD_Message_Trl SET MsgText='Die Attribute PP_Product_Planning und PP_Prod
 
 -- 2022-02-09T11:44:55.403Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message SET MsgText='Die Attribute PP_Product_Planning und PP_Product_BOM stimmen nicht überein',Updated=TO_TIMESTAMP('2022-02-09 13:44:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545096
+UPDATE AD_Message SET MsgText='Die Attribute des PP_Product_Planning- und PP_Product_BOM-Datensatzes stimmen nicht überein',Updated=TO_TIMESTAMP('2022-02-09 13:44:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545096
 ;
 
