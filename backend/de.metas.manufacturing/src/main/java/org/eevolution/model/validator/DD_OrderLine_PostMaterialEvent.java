@@ -88,6 +88,6 @@ public class DD_OrderLine_PostMaterialEvent
 				.toWarehouseId(WarehouseId.ofRepoId(oldDDOrderLine.getM_LocatorTo().getM_Warehouse_ID()))
 				.build();
 
-		postMaterialEventService.postEventNow(event);
+		postMaterialEventService.postEventAsync(event);
 	}
 }
