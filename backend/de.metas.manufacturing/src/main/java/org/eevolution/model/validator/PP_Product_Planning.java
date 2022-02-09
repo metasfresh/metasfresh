@@ -102,7 +102,11 @@ public class PP_Product_Planning
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID,  I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant})
+			ifColumnsChanged = {
+				I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID,
+				I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant,
+				I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID,
+			})
 	public void validateProductBOMASI(@NonNull final I_PP_Product_Planning productPlanning)
 	{
 		if (!productPlanning.isAttributeDependant())
