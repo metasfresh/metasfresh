@@ -31,7 +31,9 @@ import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -61,11 +63,18 @@ public class HUQRCodeCreatePDFCommand
 	public Resource execute()
 	{
 		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
-		final ReportResult report = createPDF(printableQRCodesJSON);
+
+		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
+				PInstanceRequest.builder()
+						.processId(qrCodeProcessId)
+						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
+						.build());
+
+		final ReportResult report = createPDF(printableQRCodesJSON, pinstanceId);
 
 		if(sendToPrinter)
 		{
-			print(report);
+			print(report, pinstanceId);
 		}
 
 		return new ByteArrayResource(report.getReportContent());
@@ -83,7 +92,7 @@ public class HUQRCodeCreatePDFCommand
 		{
 			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(printableQRCodes);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Failed converting QR codes to JSON", e);
 		}
@@ -122,14 +131,8 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
-	public ReportResult createPDF(@NonNull final String printableQRCodesJSON)
+	public ReportResult createPDF(@NonNull final String printableQRCodesJSON, @NonNull final PInstanceId pinstanceId)
 	{
-		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-				PInstanceRequest.builder()
-						.processId(qrCodeProcessId)
-						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
-						.build());
-
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(qrCodeProcessId)
@@ -140,13 +143,16 @@ public class HUQRCodeCreatePDFCommand
 		return ReportsClient.get().report(reportProcessInfo);
 	}
 
-	private void print(@NonNull final ReportResult report)
+	private void print(@NonNull final ReportResult report, @NonNull final PInstanceId pinstanceId )
 	{
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.flavor(DocumentReportFlavor.PRINT)
 				.data(new ByteArrayResource(report.getReportContent()))
 				.archiveName(report.getReportFilename())
+		        .processId(qrCodeProcessId)
+				.pinstanceId(pinstanceId)
+		        .recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pinstanceId.getRepoId()))
 				.isReport(true)
 				.force(true)
 				.save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
