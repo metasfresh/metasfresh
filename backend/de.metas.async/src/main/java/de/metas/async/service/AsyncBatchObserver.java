@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +57,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final Map<AsyncBatchId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
+	private final Map<AsyncBatchId, BatchProgress> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@Override
 	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
@@ -71,7 +72,23 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	public void observeOn(@NonNull final AsyncBatchId id)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
-		asyncBatch2Completion.put(id, new CompletableFuture<>());
+
+		//dev-note: make sure to wait for any work already enqueued with this async batch
+		Optional.ofNullable(asyncBatch2Completion.get(id))
+				.ifPresent(batchProgress -> {
+					try
+					{
+						batchProgress.getCompletableFuture().get();
+					}
+					catch (final Throwable t)
+					{
+						throw AdempiereException.wrapIfNeeded(t)
+								.appendParametersToMessage()
+								.setParameter("AsyncBatchId", id);
+					}
+				});
+
+		asyncBatch2Completion.put(id, new BatchProgress(Instant.now());
 	}
 
 	/**
@@ -88,13 +105,11 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		try
 		{
-			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id);
+			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id).getCompletableFuture();
 
 			final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
 			completableFuture.get(timeoutMS, TimeUnit.MILLISECONDS);
-
-			removeObserver(id);
 		}
 		catch (final TimeoutException timeoutException)
 		{
@@ -116,11 +131,22 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					.appendParametersToMessage()
 					.setParameter("AsyncBatchId", id);
 		}
+		finally
+		{
+			removeObserver(id);
+		}
 	}
 
 	public boolean isAsyncBatchObserved(@NonNull final AsyncBatchId id)
 	{
 		return asyncBatch2Completion.get(id) != null;
+	}
+
+	@NonNull
+	public Optional<Instant> getStartMonitoringTimestamp(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return Optional.ofNullable(asyncBatch2Completion.get(asyncBatchId))
+				.map(BatchProgress::getEnqueuedAt);
 	}
 
 	private void removeObserver(@NonNull final AsyncBatchId id)
@@ -155,5 +181,21 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 																		.appendParametersToMessage()
 																		.setParameter("AsyncBatchId" , id.getRepoId()));
 		}
+	}
+
+	@Value
+	private static class BatchProgress
+	{
+		public BatchProgress(@NonNull final Instant enqueuedAt)
+		{
+			this.completableFuture = new CompletableFuture<>();
+			this.enqueuedAt = enqueuedAt;
+		}
+
+		@NonNull
+		CompletableFuture<Void> completableFuture;
+
+		@NonNull
+		Instant enqueuedAt;
 	}
 }
