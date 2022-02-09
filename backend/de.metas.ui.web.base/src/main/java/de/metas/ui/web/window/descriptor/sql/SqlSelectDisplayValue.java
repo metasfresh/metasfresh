@@ -94,7 +94,23 @@ public class SqlSelectDisplayValue
 		}
 	}
 
-	public SqlSelectDisplayValue withJoinOnTableNameOrAlias(final String joinOnTableNameOrAlias)
+	public IStringExpression toOrderByStringExpression()
+	{
+		final String joinOnColumnNameFQ = !Check.isEmpty(joinOnTableNameOrAlias)
+				? joinOnTableNameOrAlias + "." + joinOnColumnName
+				: joinOnColumnName;
+
+		if (sqlExpression == null)
+		{
+			return ConstantStringExpression.of(joinOnColumnNameFQ);
+		}
+		else
+		{
+			return sqlExpression.toOrderByStringExpression(joinOnColumnNameFQ);
+		}
+	}
+
+	public SqlSelectDisplayValue withJoinOnTableNameOrAlias(@Nullable final String joinOnTableNameOrAlias)
 	{
 		return !Objects.equals(this.joinOnTableNameOrAlias, joinOnTableNameOrAlias)
 				? toBuilder().joinOnTableNameOrAlias(joinOnTableNameOrAlias).build()
