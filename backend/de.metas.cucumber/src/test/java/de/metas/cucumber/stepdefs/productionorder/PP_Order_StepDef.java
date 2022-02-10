@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -78,6 +79,7 @@ public class PP_Order_StepDef
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_PP_Order> ppOrderTable;
 	private final StepDefData<I_S_Resource> resourceTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public PP_Order_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
@@ -85,7 +87,8 @@ public class PP_Order_StepDef
 			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
 			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
-			@NonNull final StepDefData<I_S_Resource> resourceTable)
+			@NonNull final StepDefData<I_S_Resource> resourceTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -93,6 +96,7 @@ public class PP_Order_StepDef
 		this.bPartnerTable = bPartnerTable;
 		this.ppOrderTable = ppOrderTable;
 		this.resourceTable = resourceTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -273,7 +277,6 @@ public class PP_Order_StepDef
 		};
 
 		final boolean orderFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
-
 		assertThat(orderFound).isTrue();
 	}
 }

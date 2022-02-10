@@ -1,26 +1,24 @@
 package de.metas.rest_api.v1.product.command;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v1.product.ProductsServicesFacade;
-import de.metas.rest_api.product.response.JsonGetProductsResponse;
-import de.metas.rest_api.product.response.JsonProduct;
-import de.metas.rest_api.product.response.JsonProductBPartner;
+import de.metas.rest_api.v1.product.response.JsonGetProductsResponse;
+import de.metas.rest_api.v1.product.response.JsonProduct;
+import de.metas.rest_api.v1.product.response.JsonProductBPartner;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
+
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -120,7 +118,7 @@ public class GetProductsCommand
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> ProductId.ofRepoId(record.getM_Product_ID()),
-						record -> toJsonProductBPartner(record)));
+						this::toJsonProductBPartner));
 	}
 
 	private JsonProductBPartner toJsonProductBPartner(final I_C_BPartner_Product record)

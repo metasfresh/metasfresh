@@ -1,5 +1,11 @@
 const translations = {
   appName: 'metasfresh mobile',
+  error: {
+    PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    network: {
+      noResponse: 'Connection error',
+    },
+  },
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
@@ -10,7 +16,6 @@ const translations = {
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
-    PleaseTryAgain: 'Oops, das sollte nicht passieren',
     cancelText: 'Abbrechen',
   },
   login: {

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import de.metas.common.externalsystem.status.JsonExternalStatusResponse;
@@ -59,6 +60,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.rest_api.v2.externlasystem.dto.InvokeExternalSystemProcessRequest;
 import de.metas.util.Services;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -84,22 +86,30 @@ public class ExternalSystemService
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
-	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
-	private final RuntimeParametersRepository runtimeParametersRepository;
-	private final ExternalServices externalServices;
 
+	@NonNull
+	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull
+	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
+	@NonNull
+	private final RuntimeParametersRepository runtimeParametersRepository;
+	@NonNull
+	private final ExternalServices externalServices;
+	@NonNull
+	private final JsonExternalSystemRetriever jsonRetriever;
 
 	public ExternalSystemService(
-			final ExternalSystemConfigRepo externalSystemConfigRepo,
-			final ExternalSystemExportAuditRepo externalSystemExportAuditRepo,
-			final RuntimeParametersRepository runtimeParametersRepository,
-			final ExternalServices externalServices)
+			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemExportAuditRepo externalSystemExportAuditRepo,
+			@NonNull final RuntimeParametersRepository runtimeParametersRepository,
+			@NonNull final ExternalServices externalServices,
+			@NonNull final JsonExternalSystemRetriever jsonRetriever)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
 		this.externalSystemExportAuditRepo = externalSystemExportAuditRepo;
 		this.runtimeParametersRepository = runtimeParametersRepository;
 		this.externalServices = externalServices;
+		this.jsonRetriever = jsonRetriever;
 	}
 
 	@NonNull
@@ -247,6 +257,22 @@ public class ExternalSystemService
 		return JsonExternalStatusResponse.builder()
 				.externalStatusResponses(externalServices.getStatusInfo(externalSystemType))
 				.build();
+	}
+
+	@NonNull
+	public JsonExternalSystemInfo getExternalSystemInfo(@NonNull final ExternalSystemType externalSystemType, @NonNull final String childConfigValue)
+	{
+		final Optional<ExternalSystemParentConfig> parentConfig = getByTypeAndValue(externalSystemType, childConfigValue);
+
+		if (!parentConfig.isPresent())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("ExternalSystemConfig")
+					.resourceIdentifier("ExternalSystemType=" + externalSystemType + "; childConfigValue=" + childConfigValue)
+					.build();
+		}
+
+		return jsonRetriever.retrieveExternalSystemInfo(parentConfig.get());
 	}
 
 	@NonNull

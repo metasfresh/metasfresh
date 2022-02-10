@@ -41,13 +41,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Optional;
 
 @Service
 public class HUAuditService implements IMasterDataExportAuditService
 {
-	//dev-note: meant to capture any rest calls made against `api/v2/hu`
-	private final static String HANDLING_UNITS_RESOURCE = "/api/v2/hu/**";
+	//dev-note: meant to capture any rest calls made against `HANDLING_UNITS_RESOURCES`
+	private final static String[] HANDLING_UNITS_RESOURCES = {
+			DeprecatedHandlingUnitsRestController.HU_REST_CONTROLLER_PATH + "/**",
+			HandlingUnitsRestController.HU_REST_CONTROLLER_PATH + "/**" };
 
 	private final DataExportAuditService dataExportAuditService;
 
@@ -78,7 +81,8 @@ public class HUAuditService implements IMasterDataExportAuditService
 	{
 		final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-		return antPathMatcher.match(HANDLING_UNITS_RESOURCE, genericDataExportAuditRequest.getRequestURI());
+		return Arrays.stream(HANDLING_UNITS_RESOURCES)
+				.anyMatch(resource -> antPathMatcher.match(resource, genericDataExportAuditRequest.getRequestURI()));
 	}
 
 	private void auditHUResponse(

@@ -68,6 +68,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -208,6 +209,27 @@ public class C_Order
 
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_SalesRep_ID());
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void setIncoterms(final I_C_Order order)
+	{
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+
+		final int c_Incoterms;
+
+		if (order.isSOTrx())
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+		}
+		else
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+		}
+
+		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })

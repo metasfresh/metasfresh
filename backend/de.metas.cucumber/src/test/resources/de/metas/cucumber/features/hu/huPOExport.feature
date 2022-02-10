@@ -107,7 +107,7 @@ Feature: Handling unit export from purchase order
 
     And the metasfresh REST-API endpoint path '/api/v2/hu' receives a 'PUT' request with the payload from context and responds with '200' status code
 
-    When store HU endpointPath /api/v2/hu/byId/:processedTopHU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/:processedTopHU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

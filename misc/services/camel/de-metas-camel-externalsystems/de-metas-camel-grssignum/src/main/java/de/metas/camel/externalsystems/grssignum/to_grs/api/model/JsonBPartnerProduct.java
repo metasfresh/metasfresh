@@ -53,19 +53,25 @@ public class JsonBPartnerProduct
 	@JsonProperty("METASFRESHID")
 	String bPartnerMetasfreshId;
 
+	@Nullable
+	@JsonProperty("ANHANGDATEI")
+	String attachmentFilePath;
+
 	@Builder
 	public JsonBPartnerProduct(
 			@JsonProperty("MKREDID") final @Nullable String bpartnerId,
 			@JsonProperty("STDKRED") final @NonNull Integer currentVendor,
 			@JsonProperty("LIEFERANTENFREIGABE") final int approvedForPurchase,
 			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId)
+			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
+			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath)
 	{
 		this.bpartnerId = bpartnerId;
 		this.currentVendor = currentVendor == 1;
 		this.isExcludedFromPurchase = approvedForPurchase != 1;
 		this.isActive = inactive != 1;
 		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
+		this.attachmentFilePath = attachmentFilePath;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

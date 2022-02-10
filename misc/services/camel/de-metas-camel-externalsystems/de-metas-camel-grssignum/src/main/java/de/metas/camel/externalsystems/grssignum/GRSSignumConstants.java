@@ -45,5 +45,11 @@ public interface GRSSignumConstants
 
 	String EXTERNAL_REF_TYPE_PRODUCT = "Product";
 
+	String EXTERNAL_REF_TYPE_BPARTNER = "BPartner";
+
+	String ROUTE_PROPERTY_ATTACH_FILE_CONTEXT = "AttachFileRouteContext";
+
+	String ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT = "PushRawMaterialsRouteContext";
+
 	int CUSTOMER_FLAG = 500;
 }
