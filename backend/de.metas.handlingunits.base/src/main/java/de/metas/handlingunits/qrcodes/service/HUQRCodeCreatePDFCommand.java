@@ -58,6 +58,28 @@ public class HUQRCodeCreatePDFCommand
 		this.sendToPrinter = sendToPrinter;
 	}
 
+	public Resource execute()
+	{
+		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
+
+		final PInstanceId pinstanceId = createPInstanceId(printableQRCodesJSON);
+		final ReportResult report = createPDF(pinstanceId);
+
+		if (sendToPrinter)
+		{
+			print(report, pinstanceId);
+		}
+
+		return new ByteArrayResource(report.getReportContent())
+		{
+			@Override
+			public String getFilename()
+			{
+				return report.getReportFilename();
+			}
+		};
+	}
+
 	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
 	{
 		final JsonPrintableQRCodesList printableQRCodes = JsonPrintableQRCodesList.builder()
@@ -107,28 +129,6 @@ public class HUQRCodeCreatePDFCommand
 	private static String extractPrintableBottomText(final HUQRCode qrCode)
 	{
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
-	}
-
-	public Resource execute()
-	{
-		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
-
-		final PInstanceId pinstanceId = createPInstanceId(printableQRCodesJSON);
-		final ReportResult report = createPDF(pinstanceId);
-
-		if (sendToPrinter)
-		{
-			print(report, pinstanceId);
-		}
-
-		return new ByteArrayResource(report.getReportContent())
-		{
-			@Override
-			public String getFilename()
-			{
-				return report.getReportFilename();
-			}
-		};
 	}
 
 	private PInstanceId createPInstanceId(@NonNull final String printableQRCodesJSON)
