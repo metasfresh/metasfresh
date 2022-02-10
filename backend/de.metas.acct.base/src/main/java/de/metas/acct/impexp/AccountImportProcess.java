@@ -260,6 +260,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		elementvalue.setPostActual(importRecord.isPostActual());
 		elementvalue.setPostBudget(importRecord.isPostBudget());
 		elementvalue.setPostStatistical(importRecord.isPostStatistical());
+		elementvalue.setParent_ID(importRecord.getParentElementValue_ID());
 	}
 
 	private void createOrGetValidCombination(@NonNull final I_I_ElementValue importRecord)

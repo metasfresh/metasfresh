@@ -1,12 +1,8 @@
-package de.metas.rest_api.product.response;
-
-import javax.annotation.Nullable;
+package de.metas.rest_api.v1.product.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.product.ProductCategoryId;
-import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
+import de.metas.bpartner.BPartnerId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,33 +33,25 @@ import lombok.Value;
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JsonProductCategory
+public class JsonProductBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product_Category_ID`.")
+			value = "This translates to `C_BPartner_ID`.")
 	@NonNull
-	ProductCategoryId id;
+	BPartnerId bpartnerId;
 
-	@NonNull
-	String value;
+	String productNo;
+	String productName;
+	String productDescription;
+	String productCategory;
 
-	@NonNull
-	String name;
+	String ean;
 
-	@Nullable
-	String description;
+	boolean vendor;
+	boolean currentVendor;
+	boolean customer;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `M_Product_Category.M_Product_Category_Parent_ID`.")
-	@Nullable
-	ProductCategoryId parentProductCategoryId;
-
-	boolean defaultCategory;
-
-	@NonNull
-	JsonCreatedUpdatedInfo createdUpdatedInfo;
+	int leadTimeInDays;
 }

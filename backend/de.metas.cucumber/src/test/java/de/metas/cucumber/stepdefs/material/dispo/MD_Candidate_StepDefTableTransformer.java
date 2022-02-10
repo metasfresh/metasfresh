@@ -40,6 +40,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
 	private final StepDefData<I_M_Product> productTable;
@@ -78,6 +81,8 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
 
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
@@ -86,6 +91,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.time(time)
 					.qty(qty)
 					.atp(atp)
+					.attributeSetInstanceId(attributeSetInstanceIdentifier)
 					.build();
 			materialDispoTableBuilder.row(identifier, tableRow);
 		}

@@ -11,7 +11,8 @@
       "STDKRED": 1,
       "LIEFERANTENFREIGABE": 1,
       "INAKTIV": 1,
-      "METASFRESHID": "1"
+      "METASFRESHID": "1",
+      "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf"
     },
     {
       "MKREDID": "vendorId2",

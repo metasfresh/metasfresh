@@ -90,7 +90,7 @@ Feature: Handling unit rest controller
       | storageCreatedTU           | createdTU          | huProduct               | 9   |
       | storageNewCreatedCU        | newCreatedCU       | huProduct               | 9   |
 
-    When store HU endpointPath /api/v2/hu/byId/:createdLU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -100,7 +100,7 @@ Feature: Handling unit rest controller
       | createdTU          | TU         | newCreatedCU | null                  | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
       | newCreatedCU       | CU         |              | null                  | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
-    When store HU endpointPath /api/v2/hu/byId/:newCreatedCU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/:newCreatedCU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -114,7 +114,7 @@ Feature: Handling unit rest controller
 
     And the metasfresh REST-API endpoint path '/api/v2/hu' receives a 'PUT' request with the payload from context and responds with '200' status code
 
-    And store HU endpointPath /api/v2/hu/byId/:createdLU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

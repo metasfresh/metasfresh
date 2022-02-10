@@ -11,6 +11,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -51,6 +52,7 @@ public class BOMCreateRequest
 	@NonNull
 	Instant validFrom;
 	Boolean isActive;
+	AttributeSetInstanceId attributeSetInstanceId;
 	ImmutableList<BOMLine> lines;
 
 	@Builder
@@ -64,6 +66,7 @@ public class BOMCreateRequest
 			@Nullable final BOMUse bomUse,
 			@Nullable final Instant validFrom,
 			@Nullable final Boolean isActive,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull @Singular final ImmutableList<BOMLine> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines is not empty");
@@ -78,6 +81,7 @@ public class BOMCreateRequest
 		this.isActive = isActive;
 		this.lines = lines;
 		this.validFrom = validFrom != null ? validFrom : Instant.now();
+		this.attributeSetInstanceId = attributeSetInstanceId;
 	}
 
 	@Value
@@ -105,5 +109,8 @@ public class BOMCreateRequest
 
 		@Nullable
 		BigDecimal scrap;
+
+		@Nullable
+		AttributeSetInstanceId attributeSetInstanceId;
 	}
 }

@@ -1,0 +1,20 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "100"
+    },
+    {
+      "externalReferenceType": "Product",
+      "externalReferenceIdentifier": "ext-GRSSignum-ProductId"
+    }
+  ],
+  "attachment": {
+    "fileName": "Attachment.pdf",
+    "data": "file:///basePath/bpartnerValue/directory/Attachment.pdf",
+    "type": "LocalFileURL",
+    "mimeType": null,
+    "tags": null
+  }
+}

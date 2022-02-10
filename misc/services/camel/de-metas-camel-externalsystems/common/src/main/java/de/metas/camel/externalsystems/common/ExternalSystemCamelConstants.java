@@ -116,4 +116,6 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI = "metasfresh.update-hu-attributes-v2.api.uri";
 
 	public static final String MF_PROCESS_REMOTE_HTTP_ERROR_ROUTE_ID = "Extract_HTTP_Error-Route";
+
+	public static final String MF_GET_EXTERNAL_SYSTEM_INFO = "metasfresh.external-system-info-v2.camel.uri";
 }
