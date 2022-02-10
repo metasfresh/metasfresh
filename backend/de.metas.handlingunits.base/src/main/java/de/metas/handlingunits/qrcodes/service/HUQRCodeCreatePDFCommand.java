@@ -84,8 +84,8 @@ public class HUQRCodeCreatePDFCommand
 	{
 		final JsonPrintableQRCodesList printableQRCodes = JsonPrintableQRCodesList.builder()
 				.qrCodes(qrCodes.stream()
-								 .map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
-								 .collect(ImmutableList.toImmutableList()))
+						.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 
 		try
@@ -155,17 +155,17 @@ public class HUQRCodeCreatePDFCommand
 	private void print(@NonNull final ReportResult report, @NonNull final PInstanceId pinstanceId)
 	{
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-																	  .trxName(ITrx.TRXNAME_ThreadInherited)
-																	  .flavor(DocumentReportFlavor.PRINT)
-																	  .data(new ByteArrayResource(report.getReportContent()))
-																	  .archiveName(report.getReportFilename())
-																	  .processId(qrCodeProcessId)
-																	  .pinstanceId(pinstanceId)
-																	  .recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pinstanceId.getRepoId()))
-																	  .isReport(true)
-																	  .force(true)
-																	  .save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
-																	  .build());
+				.trxName(ITrx.TRXNAME_ThreadInherited)
+				.flavor(DocumentReportFlavor.PRINT)
+				.data(new ByteArrayResource(report.getReportContent()))
+				.archiveName(report.getReportFilename())
+				.processId(qrCodeProcessId)
+				.pinstanceId(pinstanceId)
+				.recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pinstanceId.getRepoId()))
+				.isReport(true)
+				.force(true)
+				.save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
+				.build());
 
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
 		if (archiveRecord == null)
