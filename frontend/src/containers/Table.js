@@ -267,6 +267,7 @@ const mapStateToProps = (state, props) => {
     collapsible: table.collapsible,
     keyProperty: table.keyProperty,
     size: table.size,
+    navigationActive: table.navigationActive,
     allowShortcut: handleShortcuts,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,

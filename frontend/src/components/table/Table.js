@@ -155,6 +155,7 @@ export default class Table extends PureComponent {
       selected,
       showSelectedIncludedView,
       handleSelect,
+      navigationActive,
     } = this.props;
     const { listenOnKeys } = this.state;
 
