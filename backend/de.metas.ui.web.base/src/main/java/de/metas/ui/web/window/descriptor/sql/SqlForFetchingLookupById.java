@@ -97,8 +97,8 @@ public class SqlForFetchingLookupById
 				.build();
 		this.sqlOrderBySelectFrom = IStringExpression
 				.composer()
-				.append("SELECT ")
-				.append("\n " + displayColumn)
+				.append("SELECT \n ")
+				.append(displayColumn)
 				.append("\n FROM ").append(sqlFrom)
 				.build();
 
