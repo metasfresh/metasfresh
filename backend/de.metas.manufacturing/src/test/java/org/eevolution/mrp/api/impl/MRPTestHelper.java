@@ -64,6 +64,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -291,7 +292,8 @@ public class MRPTestHelper
 				new DocumentNoBuilderFactory(Optional.empty()),
 				new PPOrderBOMBL(),
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
-				new ProductBOMVersionsDAO());
+				new ProductBOMVersionsDAO(),
+				new ProductBOMService(new ProductBOMVersionsDAO()));
 	}
 
 	public Timestamp getToday()
