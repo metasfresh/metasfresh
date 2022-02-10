@@ -40,7 +40,7 @@
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 				</reportElement>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
-					<jr:codeExpression><![CDATA[$F{bottomText}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{qrCode}]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
 		</band>
