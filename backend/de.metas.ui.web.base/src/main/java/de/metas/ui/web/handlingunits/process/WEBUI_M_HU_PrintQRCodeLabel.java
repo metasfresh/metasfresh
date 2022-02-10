@@ -74,24 +74,9 @@ public class WEBUI_M_HU_PrintQRCodeLabel
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 
 		final Resource pdf = huQRCodesService.createPDF(qrCodes.asList(), false);
-		getResult().setReportData(pdf, buildFilename(pdf, getHUToReport()), OutputType.PDF.getContentType());
+		getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
-	}
-
-	final private static String buildFilename(@NonNull final Resource pdf, @NonNull final HUToReport huToReport)
-	{
-		final String fileName = pdf.getFilename();
-		if (fileName == null)
-		{
-			return Joiner.on("_").skipNulls().join(huToReport.getHUId().getRepoId(), huToReport.getHUUnitType()) + ".pdf";
-		}
-		return fileName + ".pdf";
-	}
-
-	private HUToReport getHUToReport()
-	{
-		return getSingleSelectedRow().getAsHUToReport();
 	}
 
 	private ImmutableSet<HuId> getHuIdsToPrint()

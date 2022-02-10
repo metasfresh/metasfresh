@@ -72,7 +72,14 @@ public class HUQRCodeCreatePDFCommand
 			print(report, pinstanceId);
 		}
 
-		return new ByteArrayResource(report.getReportContent());
+		final ByteArrayResource resource = new ByteArrayResource(report.getReportContent()) {
+			@Override
+			public String getFilename() {
+				return report.getReportFilename();
+			};
+		};
+
+		return resource;
 	}
 
 	private PInstanceId createPInstanceId(@NonNull final String printableQRCodesJSON)
