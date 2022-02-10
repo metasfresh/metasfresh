@@ -333,6 +333,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public void setShip_BPartner_ID(final int C_BPartner_ID)
 	{
+
 		super.setC_BPartner_ID(C_BPartner_ID);
 	}    // setShip_BPartner_ID
 
