@@ -1,12 +1,12 @@
-package de.metas.manufacturing.workflows_api.activity_handlers;
+package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonRawMaterialsIssueLine;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonRejectReasonsList;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRawMaterialsIssueLine;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRejectReasonsList;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;

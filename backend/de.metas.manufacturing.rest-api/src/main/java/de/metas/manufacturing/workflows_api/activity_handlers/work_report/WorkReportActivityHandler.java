@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers;
+package de.metas.manufacturing.workflows_api.activity_handlers.work_report;
 
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;

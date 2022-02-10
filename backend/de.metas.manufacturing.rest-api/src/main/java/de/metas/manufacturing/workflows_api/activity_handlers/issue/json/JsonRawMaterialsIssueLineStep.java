@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers.json;
+package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;

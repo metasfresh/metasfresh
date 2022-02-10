@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers;
+package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -18,10 +18,10 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToExistingLU;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToNewLU;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToNewLUList;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonFinishedGoodsReceiveLine;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToExistingLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToNewLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToNewLUList;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonFinishedGoodsReceiveLine;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;

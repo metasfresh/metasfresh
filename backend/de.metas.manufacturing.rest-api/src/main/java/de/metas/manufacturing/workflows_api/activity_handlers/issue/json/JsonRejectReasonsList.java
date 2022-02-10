@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers.json;
+package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
