@@ -21,6 +21,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -168,6 +169,25 @@ public class C_Invoice // 03771
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setPaymentRule(final I_C_Invoice invoice)
+	{
+		final I_C_Order order = invoice.getC_Order();
+		final PaymentRule paymentRule ;
+
+		if (order != null && order.getC_Order_ID() > 0)
+		{
+			paymentRule = PaymentRule.ofNullableCode(order.getPaymentRule());
+		}
+		else
+		{
+			final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+			paymentRule = PaymentRule.ofNullableCode(partner.getPaymentRule());
+		}
+
+		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })

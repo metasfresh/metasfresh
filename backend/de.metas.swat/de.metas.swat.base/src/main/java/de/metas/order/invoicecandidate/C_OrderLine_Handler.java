@@ -36,6 +36,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
@@ -328,6 +329,17 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
 		setC_PaymentTerm(ic, orderLine);
+
+		setPaymentRule(ic, orderLine);
+	}
+
+	private void setPaymentRule(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
+		final PaymentRule paymentRule = PaymentRule.ofNullableCode(order.getPaymentRule());
+		ic.setPaymentRule(paymentRule.getCode());
 	}
 
 	private void setC_PaymentTerm(
