@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;

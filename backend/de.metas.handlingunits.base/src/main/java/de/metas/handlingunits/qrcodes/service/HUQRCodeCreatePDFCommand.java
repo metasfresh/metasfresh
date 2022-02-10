@@ -42,13 +42,11 @@ import java.util.List;
 
 public class HUQRCodeCreatePDFCommand
 {
+	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-
 	private final ImmutableList<HUQRCode> qrCodes;
 	private final boolean sendToPrinter;
-
-	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 
 	@Builder
 	private HUQRCodeCreatePDFCommand(
@@ -60,43 +58,12 @@ public class HUQRCodeCreatePDFCommand
 		this.sendToPrinter = sendToPrinter;
 	}
 
-	public Resource execute()
-	{
-		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
-
-		final PInstanceId pinstanceId = createPInstanceId(printableQRCodesJSON);
-		final ReportResult report = createPDF(pinstanceId);
-
-		if(sendToPrinter)
-		{
-			print(report, pinstanceId);
-		}
-
-		final ByteArrayResource resource = new ByteArrayResource(report.getReportContent()) {
-			@Override
-			public String getFilename() {
-				return report.getReportFilename();
-			};
-		};
-
-		return resource;
-	}
-
-	private PInstanceId createPInstanceId(@NonNull final String printableQRCodesJSON)
-	{
-		return adPInstanceDAO.createADPinstanceAndADPInstancePara(
-				PInstanceRequest.builder()
-						.processId(qrCodeProcessId)
-						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
-						.build());
-	}
-
 	private static String toPrintableQRCodesJsonString(@NonNull final List<HUQRCode> qrCodes)
 	{
 		final JsonPrintableQRCodesList printableQRCodes = JsonPrintableQRCodesList.builder()
 				.qrCodes(qrCodes.stream()
-						.map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
-						.collect(ImmutableList.toImmutableList()))
+								 .map(HUQRCodeCreatePDFCommand::toPrintableQRCode)
+								 .collect(ImmutableList.toImmutableList()))
 				.build();
 
 		try
@@ -142,6 +109,37 @@ public class HUQRCodeCreatePDFCommand
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
 	}
 
+	public Resource execute()
+	{
+		final String printableQRCodesJSON = toPrintableQRCodesJsonString(qrCodes);
+
+		final PInstanceId pinstanceId = createPInstanceId(printableQRCodesJSON);
+		final ReportResult report = createPDF(pinstanceId);
+
+		if (sendToPrinter)
+		{
+			print(report, pinstanceId);
+		}
+
+		return new ByteArrayResource(report.getReportContent())
+		{
+			@Override
+			public String getFilename()
+			{
+				return report.getReportFilename();
+			}
+		};
+	}
+
+	private PInstanceId createPInstanceId(@NonNull final String printableQRCodesJSON)
+	{
+		return adPInstanceDAO.createADPinstanceAndADPInstancePara(
+				PInstanceRequest.builder()
+						.processId(qrCodeProcessId)
+						.processParams(ImmutableList.of(ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, printableQRCodesJSON)))
+						.build());
+	}
+
 	public ReportResult createPDF(@NonNull final PInstanceId pinstanceId)
 	{
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
@@ -154,20 +152,20 @@ public class HUQRCodeCreatePDFCommand
 		return ReportsClient.get().report(reportProcessInfo);
 	}
 
-	private void print(@NonNull final ReportResult report, @NonNull final PInstanceId pinstanceId )
+	private void print(@NonNull final ReportResult report, @NonNull final PInstanceId pinstanceId)
 	{
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-				.trxName(ITrx.TRXNAME_ThreadInherited)
-				.flavor(DocumentReportFlavor.PRINT)
-				.data(new ByteArrayResource(report.getReportContent()))
-				.archiveName(report.getReportFilename())
-		        .processId(qrCodeProcessId)
-				.pinstanceId(pinstanceId)
-		        .recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pinstanceId.getRepoId()))
-				.isReport(true)
-				.force(true)
-				.save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
-				.build());
+																	  .trxName(ITrx.TRXNAME_ThreadInherited)
+																	  .flavor(DocumentReportFlavor.PRINT)
+																	  .data(new ByteArrayResource(report.getReportContent()))
+																	  .archiveName(report.getReportFilename())
+																	  .processId(qrCodeProcessId)
+																	  .pinstanceId(pinstanceId)
+																	  .recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pinstanceId.getRepoId()))
+																	  .isReport(true)
+																	  .force(true)
+																	  .save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
+																	  .build());
 
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
 		if (archiveRecord == null)
