@@ -78,7 +78,7 @@ public class SqlOrderByValue
 
 			// computed values:
 			this.sqlOrderByColumnNameFQ = sqlSelectDisplayValueEffective.toSqlOrderByUsingColumnNameAlias();
-			this.sourceSqlExpression = sqlSelectDisplayValueEffective.toStringExpression();
+			this.sourceSqlExpression = sqlSelectDisplayValueEffective.toOrderByStringExpression();
 		}
 		else if (sqlSelectValue != null)
 		{
