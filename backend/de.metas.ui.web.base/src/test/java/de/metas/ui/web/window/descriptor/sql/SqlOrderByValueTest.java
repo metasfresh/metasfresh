@@ -38,7 +38,7 @@ class SqlOrderByValueTest
 				.isEqualTo("joinOnTableNameOrAlias2.columnName$Display[2]");
 		assertThat(sqlOrderByValue.toSourceSqlExpression().evaluate(Evaluatees.empty(), IExpressionEvaluator.OnVariableNotFound.Fail))
 				.isEqualTo("SELECT "
-						+ "\n ARRAY[keyColumnNameFQ::text, displayColumn, descriptionColumn,IsActive, validationMsgColumn]"
+						+ "\n displayColumn"
 						+ "\n FROM sqlFrom"
 						+ "\n WHERE keyColumnNameFQ=joinOnTableNameOrAlias2.joinOnColumnName AND additionalWhereClause");
 	}

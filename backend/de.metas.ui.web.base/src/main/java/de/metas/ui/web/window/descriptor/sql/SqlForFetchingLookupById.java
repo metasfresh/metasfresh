@@ -64,9 +64,9 @@ public class SqlForFetchingLookupById
 	private final String additionalWhereClause;
 
 	private final IStringExpression sqlSelectFrom;
+	private final IStringExpression sqlOrderBySelectFrom;
 	@Getter
 	private final ImmutableSet<CtxName> parameters;
-
 	private static final ConstantStringExpression SQL_NULL = ConstantStringExpression.of("NULL");
 
 	@Builder
@@ -92,18 +92,32 @@ public class SqlForFetchingLookupById
 				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 3
 				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 4
 				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 5
-				.append("]")
+				.append("] ")
+				.append("\n FROM ").append(sqlFrom)
+				.build();
+		this.sqlOrderBySelectFrom = IStringExpression
+				.composer()
+				.append("SELECT ")
+				.append("\n " + displayColumn)
 				.append("\n FROM ").append(sqlFrom)
 				.build();
 
 		parameters = ImmutableSet.copyOf(sqlSelectFrom.getParameters());
 	}
 
-	public int getNameSqlArrayIndex() {return INDEX_Name;}
+	public int getNameSqlArrayIndex()
+	{
+		return INDEX_Name;
+	}
 
 	public IStringExpression toStringExpression(@NonNull final String joinOnColumnNameFQ)
 	{
 		return buildSql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
+	}
+
+	public IStringExpression toOrderByStringExpression(@NonNull final String joinOnColumnNameFQ)
+	{
+		return buildOrderBySql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
 	}
 
 	public boolean requiresParameter(@NonNull final String parameterName)
@@ -141,6 +155,18 @@ public class SqlForFetchingLookupById
 				return Optional.of(SqlAndParams.of(sql, sqlParams));
 			}
 		}
+	}
+
+	private IStringExpression buildOrderBySql(final String keyColumnWhereClause)
+	{
+		return IStringExpression.composer()
+				.append(sqlOrderBySelectFrom)
+				.append("\n WHERE ")
+				.append(keyColumnWhereClause)
+				.append(additionalWhereClause != null && !Check.isBlank(additionalWhereClause)
+						? " AND " + additionalWhereClause
+						: "")
+				.build();
 	}
 
 	private IStringExpression buildSql(final String keyColumnWhereClause)
