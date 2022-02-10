@@ -152,7 +152,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 					final I_M_HU_PI luPackingInstructions = handlingUnitsBL.getPI(luPackingInstructionsItem);
 					availablePackingMaterials.add(
 							JsonAggregateToNewLU.builder()
-									.caption(luPackingInstructions.getName())
+									.luCaption(luPackingInstructions.getName())
 									.tuCaption(tuPIItemProduct.getName())
 									.luPIItemId(HuPackingInstructionsItemId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()))
 									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
