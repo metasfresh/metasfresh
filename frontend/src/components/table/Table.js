@@ -258,7 +258,7 @@ export default class Table extends PureComponent {
 
           break;
         } else {
-          if (e.shiftKey) {
+          if (e.shiftKey && navigationActive) {
             e.preventDefault();
             //passing focus over table cells backwards
             this.table.focus();
