@@ -1,6 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
@@ -113,5 +114,12 @@ public class HUQRCodesService
 	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
 	{
 		huQRCodesRepository.assign(qrCode, huId);
+	}
+
+
+	private ImmutableSetMultimap<HuId, HUQRCode> generateQrCodes(@NonNull final ImmutableSet<HuId> huIds)
+	{
+		return generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds))
+				.toSetMultimap();
 	}
 }
