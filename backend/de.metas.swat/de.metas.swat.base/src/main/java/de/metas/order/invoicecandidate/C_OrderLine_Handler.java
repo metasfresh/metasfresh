@@ -11,6 +11,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -348,7 +349,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner partner = bpartnerDAO.getById(order.getC_BPartner_ID());
 			paymentRule = PaymentRule.ofNullableCode(partner.getPaymentRule());
 		}
-		ic.setPaymentRule(paymentRule.getCode());
+
+		if (paymentRule != null)
+		{
+			ic.setPaymentRule(paymentRule.getCode());
+		}
+		else
+		{
+			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
+		}
 	}
 
 	private void setC_PaymentTerm(
