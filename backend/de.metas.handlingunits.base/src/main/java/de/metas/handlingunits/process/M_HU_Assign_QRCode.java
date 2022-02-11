@@ -2,17 +2,23 @@ package de.metas.handlingunits.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportService;
-import de.metas.handlingunits.report.HUToReport;
-import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import de.metas.handlingunits.model.I_M_HU;
 
 import java.util.List;
 
@@ -40,7 +46,8 @@ import java.util.List;
 
 public class M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondition
 {
-	private final HUReportService huReportService = HUReportService.get();
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	@Param(parameterName = "Barcode", mandatory = true)
@@ -51,23 +58,30 @@ public class M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondit
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final ImmutableSet<HuId> huIds = huReportService.getHuIdsFromSelection(getPinstanceId());
-
-		if ( huIds.size() > 1)
+		if (context.isMoreThanOneSelected())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("");
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final int huId = context.getSingleSelectedRecordId();
+		final I_M_HU hu = handlingUnitsDAO.getById(HuId.ofRepoId(huId));
+
+		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("HU is aggregated or transport unit. Cannot assign QR code to it.");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
+
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableSet<HuId> huIds = huReportService.getHuIdsFromSelection(getPinstanceId());
+		final I_M_HU hu = getProcessInfo().getRecord(I_M_HU.class);
+		final HUQRCode huQRCode = HUQRCodeJsonConverter.fromQRCodeString(p_Barcode);
 
-		System.out.println("huIds=" + huIds.size());
-		// huIds.get
-		// huQRCodesService.assign(huIds.iterator().next(), p_Barcode);
+		huQRCodesService.assign(huQRCode, HuId.ofRepoId(hu.getM_HU_ID()));
 
 		return MSG_OK;
 	}
