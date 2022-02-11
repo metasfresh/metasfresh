@@ -25,10 +25,12 @@ package de.metas.cucumber.stepdefs.billofmaterial;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
@@ -42,8 +44,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Bom_StepDef
 {
@@ -51,17 +56,20 @@ public class PP_Product_Bom_StepDef
 	private final StepDefData<I_PP_Product_BOM> productBOMTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
 	private final StepDefData<I_PP_Product_BOMLine> productBOMLineTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public PP_Product_Bom_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
 			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable,
-			@NonNull final StepDefData<I_PP_Product_BOMLine> productBOMLineTable)
+			@NonNull final StepDefData<I_PP_Product_BOMLine> productBOMLineTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productBOMLineTable = productBOMLineTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains PP_Product_BOM")
@@ -105,6 +113,15 @@ public class PP_Product_Bom_StepDef
 		bomLine.setQtyBOM(qtyBatch);
 		bomLine.setValidFrom(validFrom);
 
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(asiIdentifier))
+		{
+			final I_M_AttributeSetInstance asiRecord = attributeSetInstanceTable.get(asiIdentifier);
+			assertThat(asiRecord).isNotNull();
+
+			bomLine.setM_AttributeSetInstance_ID(asiRecord.getM_AttributeSetInstance_ID());
+		}
+
 		saveRecord(bomLine);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "PP_Product_BOMLine");
@@ -129,6 +146,16 @@ public class PP_Product_Bom_StepDef
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
 		productBOMRecord.setValidFrom(validFrom);
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(asiIdentifier))
+		{
+			final I_M_AttributeSetInstance asiRecord = attributeSetInstanceTable.get(asiIdentifier);
+			assertThat(asiRecord).isNotNull();
+
+			productBOMRecord.setM_AttributeSetInstance_ID(asiRecord.getM_AttributeSetInstance_ID());
+		}
+
 		saveRecord(productBOMRecord);
 
 		productRecord.setIsBOM(true);
