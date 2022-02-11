@@ -47,6 +47,11 @@ public class HUQRCodesService
 		createPDF(qrCodes, true);
 	}
 
+	public Resource createPDF(final List<HUQRCode> qrCodes)
+	{
+		return createPDF(qrCodes, false);
+	}
+
 	public Resource createPDF(final List<HUQRCode> qrCodes, final boolean sendToPrinter)
 	{
 		return HUQRCodeCreatePDFCommand.builder()
