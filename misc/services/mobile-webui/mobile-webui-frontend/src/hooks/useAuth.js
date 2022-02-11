@@ -24,8 +24,9 @@ export function ProvideAuth({ children }) {
   const token = auth.userToken();
   if (!token) {
     const tokenFromCookie = Cookies.get('Token');
+    const languageFromCookie = Cookies.get('Language');
     if (tokenFromCookie) {
-      auth.loginByToken({ token: tokenFromCookie });
+      auth.loginByToken({ token: tokenFromCookie, language: languageFromCookie });
       console.log('ProvideAuth: Logged in by token from cookie');
     }
   }
@@ -54,6 +55,7 @@ function createAuthObject() {
 
     if (language) {
       setLanguage(language);
+      Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
     }
 
     await dispatch(setToken(token));
