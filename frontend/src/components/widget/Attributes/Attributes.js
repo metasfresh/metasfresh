@@ -145,8 +145,11 @@ export default class Attributes extends Component {
     } = this.props;
     const { loading, dropdown } = this.state;
 
-    const tableId = getTableId({ windowId: docType, docId: dataId, tabId });
-    setTableNavigation(tableId, !show);
+    // this is limited to tables only
+    if (rowIndex != null) {
+      const tableId = getTableId({ windowId: docType, docId: dataId, tabId });
+      setTableNavigation(tableId, !show);
+    }
 
     !dropdown &&
       !isModal &&
@@ -344,27 +347,27 @@ export default class Attributes extends Component {
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
-      <FocusTrap>
-        <div
-          onKeyDown={this.handleKeyDown}
-          className={classnames('attributes', {
-            'attributes-in-table': rowId,
-          })}
+      <div
+        onKeyDown={this.handleKeyDown}
+        className={classnames('attributes', {
+          'attributes-in-table': rowId,
+        })}
+      >
+        <button
+          tabIndex={tabIndex}
+          onClick={() => this.handleToggle(true)}
+          className={classnames(
+            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+            {
+              'tag-disabled': dropdown,
+              'tag-disabled disabled': readonly,
+            }
+          )}
         >
-          <button
-            tabIndex={tabIndex}
-            onClick={() => this.handleToggle(true)}
-            className={classnames(
-              'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-              {
-                'tag-disabled': dropdown,
-                'tag-disabled disabled': readonly,
-              }
-            )}
-          >
-            {label ? label : 'Edit'}
-          </button>
-          {dropdown && (
+          {label ? label : 'Edit'}
+        </button>
+        {dropdown && (
+          <FocusTrap>
             <AttributesDropdown
               {...this.props}
               attributeType={attributeType}
@@ -378,9 +381,9 @@ export default class Attributes extends Component {
               attrId={attrId}
               rowIndex={rowIndex}
             />
-          )}
-        </div>
-      </FocusTrap>
+          </FocusTrap>
+        )}
+      </div>
     );
   }
 }
