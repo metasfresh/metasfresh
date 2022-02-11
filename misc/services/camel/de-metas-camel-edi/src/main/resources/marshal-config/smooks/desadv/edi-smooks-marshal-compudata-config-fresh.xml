@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <smooks-resource-list xmlns="https://www.smooks.org/xsd/smooks-2.0.xsd"
+					  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					  xsi:schemaLocation="https://www.smooks.org/xsd/smooks-2.0.xsd smooks-2.0.xsd"
 					  xmlns:ftl="https://www.smooks.org/xsd/smooks/freemarker-2.0.xsd">
 
 	<!-- Thx to https://github.com/smooks/smooks-templating-cartridge/blob/v2.0.0-M3/src/test/java/org/smooks/cartridges/templating/freemarker/test-configs-ext-03.xml -->
