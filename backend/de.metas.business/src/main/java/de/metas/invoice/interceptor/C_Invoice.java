@@ -172,25 +172,6 @@ public class C_Invoice // 03771
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void setPaymentRule(final I_C_Invoice invoice)
-	{
-		final I_C_Order order = invoice.getC_Order();
-		final PaymentRule paymentRule ;
-
-		if (order != null && order.getC_Order_ID() > 0)
-		{
-			paymentRule = PaymentRule.ofNullableCode(order.getPaymentRule());
-		}
-		else
-		{
-			final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-			paymentRule = PaymentRule.ofNullableCode(partner.getPaymentRule());
-		}
-
-		invoice.setPaymentRule(paymentRule.getCode());
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setIsDiscountPrinted(final I_C_Invoice invoice)
 	{
 		// do nothing in case of PO invoice
