@@ -20,4 +20,9 @@ public class HUQRCodeGenerateForExistingHUsRequest
 		Check.assumeNotEmpty(huIds, "huIds is not empty");
 		this.huIds = ImmutableSet.copyOf(huIds);
 	}
+
+	public static HUQRCodeGenerateForExistingHUsRequest ofHuIds(@NonNull final Set<HuId> huIds)
+	{
+		return builder().huIds(huIds).build();
+	}
 }

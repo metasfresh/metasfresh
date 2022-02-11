@@ -2,16 +2,21 @@ package de.metas.handlingunits.report;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -323,4 +328,13 @@ public class HUReportService
 		.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 
+	public ImmutableSet<HuId> getHuIdsFromSelection(@NonNull PInstanceId selectionId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.listIds(HuId::ofRepoId);
+	}
 }
