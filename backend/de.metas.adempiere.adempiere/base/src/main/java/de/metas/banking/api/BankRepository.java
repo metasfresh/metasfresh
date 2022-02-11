@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,6 @@
 
 package de.metas.banking.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Bank;
-import org.springframework.stereotype.Repository;
-
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -40,8 +30,15 @@ import de.metas.location.LocationId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Bank;
+import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class BankRepository
@@ -70,7 +67,6 @@ public class BankRepository
 		{
 			bankIdsBySwiftCode.put(bank.getSwiftCode(), Optional.of(bank.getBankId()));
 		}
-
 		return bank;
 	}
 
