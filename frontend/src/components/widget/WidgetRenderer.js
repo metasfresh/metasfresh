@@ -210,6 +210,7 @@ class WidgetRenderer extends PureComponent {
       autoFocus,
       readonly,
       disconnected,
+      setTableNavigation: this.props.setTableNavigation,
     };
 
     switch (widgetType) {
