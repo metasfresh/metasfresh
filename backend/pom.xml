@@ -85,6 +85,7 @@
         <module>de.metas.device.adempiere</module>
         <module>de.metas.device.api</module>
         <module>de.metas.device.scales</module>
+        <module>de.metas.device.webui</module>
 
         <module>de.metas.dimension</module> <!-- task 08681 -->
 
