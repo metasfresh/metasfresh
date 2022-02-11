@@ -29,7 +29,7 @@ import lombok.ToString;
  */
 
 @ToString
-public class DummyDeviceResponse implements ISingleValueResponse<BigDecimal>
+public class DummyDeviceResponse implements ISingleValueResponse
 {
 	private final BigDecimal value;
 

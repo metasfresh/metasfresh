@@ -1,13 +1,6 @@
 package de.metas.device.adempiere;
 
-import java.util.Set;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.warehouse.WarehouseId;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
@@ -18,6 +11,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Set;
 
 /*
  * #%L
@@ -47,7 +46,6 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@SuppressWarnings("rawtypes")
 @ToString
 public final class AttributeDeviceAccessor
 {
@@ -91,7 +89,7 @@ public final class AttributeDeviceAccessor
 		return assignedWarehouseIds.contains(warehouseId);
 	}
 
-	public synchronized Object acquireValue()
+	public synchronized BigDecimal acquireValue()
 	{
 		logger.debug("This: {}, Device: {}; Request: {}", this, device, request);
 

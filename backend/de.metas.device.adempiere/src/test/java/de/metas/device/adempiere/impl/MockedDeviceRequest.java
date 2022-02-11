@@ -1,10 +1,10 @@
 package de.metas.device.adempiere.impl;
 
-import java.math.BigDecimal;
-
 import de.metas.device.adempiere.impl.MockedDeviceRequest.Response;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -30,7 +30,7 @@ import de.metas.device.api.ISingleValueResponse;
 
 public class MockedDeviceRequest implements IDeviceRequest<Response>
 {
-	public static final class Response implements ISingleValueResponse<BigDecimal>
+	public static final class Response implements ISingleValueResponse
 	{
 		@Override
 		public BigDecimal getSingleValue()
