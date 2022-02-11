@@ -38,11 +38,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_ShipmentSchedule_QtyPicked_StepDef
 {
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-	public M_ShipmentSchedule_QtyPicked_StepDef(@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+	public M_ShipmentSchedule_QtyPicked_StepDef(@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
