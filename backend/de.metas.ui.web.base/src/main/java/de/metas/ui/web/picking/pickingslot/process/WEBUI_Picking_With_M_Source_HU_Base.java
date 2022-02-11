@@ -61,7 +61,6 @@ import java.util.List;
  * contains common code of the two fine picking process classes that we have.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
@@ -70,7 +69,7 @@ import java.util.List;
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	protected final boolean noSourceHUAvailable()
 	{
@@ -83,10 +82,18 @@ import java.util.List;
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
+		return getSourceHUIds(true);
+	}
+
+	@NonNull
+	protected ImmutableList<HuId> getSourceHUIds(final boolean onlyIfAttributesMatchWithShipmentSchedules)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+
 		final PickingHUsQuery query = PickingHUsQuery.builder()
 				.shipmentSchedule(shipmentSchedule)
 				.onlyTopLevelHUs(true)
-				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(onlyIfAttributesMatchWithShipmentSchedules)
 				.build();
 
 		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
@@ -138,13 +145,13 @@ import java.util.List;
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(qtyToPack)
-				.packToHuId(packToHuId)
-				.sourceHUIds(huIdsToPick)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
+														  .qtyToPack(qtyToPack)
+														  .packToHuId(packToHuId)
+														  .sourceHUIds(huIdsToPick)
+														  .pickingSlotId(pickingSlotId)
+														  .shipmentScheduleId(getCurrentShipmentScheduleId())
+														  .allowOverDelivery(allowOverDelivery)
+														  .build());
 	}
 
 	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
@@ -155,7 +162,7 @@ import java.util.List;
 		}
 
 		// 1. try to pick from source HUs if any are available
-		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
+		final ImmutableList<HuId> sourceHUIds = getSourceHUIds(false);
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} sourceHUIds: {}", qtyToPack, sourceHUIds);
 
