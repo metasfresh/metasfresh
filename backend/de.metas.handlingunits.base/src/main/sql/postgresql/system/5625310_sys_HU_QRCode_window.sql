@@ -25,7 +25,9 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541422
 
 -- 2022-02-10T13:41:01.506Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,580520,0,545387,541977,541422,'Y',TO_TIMESTAMP('2022-02-10 15:41:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','N','N','A','M_HU_QRCode','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'HU QR Code','N',10,0,TO_TIMESTAMP('2022-02-10 15:41:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES
+(0,580520,0,545387,541977,541422,'Y',TO_TIMESTAMP('2022-02-10 15:41:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','N','N','A','M_HU_QRCode','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'HU QR Code','N',10,0,TO_TIMESTAMP('2022-02-10 15:41:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-02-10T13:41:01.510Z
