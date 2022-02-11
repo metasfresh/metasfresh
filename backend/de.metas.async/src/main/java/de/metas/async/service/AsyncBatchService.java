@@ -23,6 +23,7 @@
 package de.metas.async.service;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -41,7 +42,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
@@ -68,7 +71,12 @@ public class AsyncBatchService
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
-		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+		final List<I_C_Queue_WorkPackage> workPackages = getWorkPackagesFromCurrentRun(asyncBatch, trxName);
+
+		if (workPackages.isEmpty())
+		{
+			return;
+		}
 
 		final int workPackagesProcessedCount = (int)workPackages.stream()
 				.filter(I_C_Queue_WorkPackage::isProcessed)
@@ -116,5 +124,33 @@ public class AsyncBatchService
 		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 
 		return result;
+	}
+
+	@NonNull
+	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
+	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		final Optional<Instant> startMonitoringFrom = asyncBatchObserver.getStartMonitoringTimestamp(asyncBatchId);
+
+		if (!startMonitoringFrom.isPresent())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {} not monitored! Return empty list!", asyncBatchId);
+			return ImmutableList.of();
+		}
+
+		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}!",
+														asyncBatchId, startMonitoringFrom.get(), workPackages.size());
+
+		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
+				.filter(workPackage -> workPackage.getCreated().toInstant().getEpochSecond() >= startMonitoringFrom.get().getEpochSecond())
+				.collect(ImmutableList.toImmutableList());
+
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
+														asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
+
+		return filteredWPs;
 	}
 }
