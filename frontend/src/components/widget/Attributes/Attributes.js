@@ -347,27 +347,27 @@ export default class Attributes extends Component {
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
-      <div
-        onKeyDown={this.handleKeyDown}
-        className={classnames('attributes', {
-          'attributes-in-table': rowId,
-        })}
-      >
-        <button
-          tabIndex={tabIndex}
-          onClick={() => this.handleToggle(true)}
-          className={classnames(
-            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-            {
-              'tag-disabled': dropdown,
-              'tag-disabled disabled': readonly,
-            }
-          )}
+      <FocusTrap active={!!dropdown}>
+        <div
+          onKeyDown={this.handleKeyDown}
+          className={classnames('attributes', {
+            'attributes-in-table': rowId,
+          })}
         >
-          {label ? label : 'Edit'}
-        </button>
-        {dropdown && (
-          <FocusTrap>
+          <button
+            tabIndex={tabIndex}
+            onClick={() => this.handleToggle(true)}
+            className={classnames(
+              'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+              {
+                'tag-disabled': dropdown,
+                'tag-disabled disabled': readonly,
+              }
+            )}
+          >
+            {label ? label : 'Edit'}
+          </button>
+          {dropdown && (
             <AttributesDropdown
               {...this.props}
               attributeType={attributeType}
@@ -381,9 +381,9 @@ export default class Attributes extends Component {
               attrId={attrId}
               rowIndex={rowIndex}
             />
-          </FocusTrap>
-        )}
-      </div>
+          )}
+        </div>
+      </FocusTrap>
     );
   }
 }
