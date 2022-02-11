@@ -80,8 +80,6 @@ import java.util.List;
 	@NonNull
 	protected ImmutableList<HuId> getSourceHUIds()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
-
 		return getSourceHUIds(true);
 	}
 
