@@ -303,6 +303,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isLoadingUnit(I_M_HU hu);
 
+	boolean isLoadingUnitOrAggregate(I_M_HU hu);
+
 	/**
 	 * Determines if the handling unit is strictly a transport unit (a.k.a. trade unit, type {@link X_M_HU_PI_Version#HU_UNITTYPE_TransportUnit} ).
 	 *

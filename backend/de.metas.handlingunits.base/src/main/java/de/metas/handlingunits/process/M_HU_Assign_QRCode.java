@@ -66,7 +66,7 @@ public class M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondit
 		final int huId = context.getSingleSelectedRecordId();
 		final I_M_HU hu = handlingUnitsDAO.getById(HuId.ofRepoId(huId));
 
-		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
+		if (handlingUnitsBL.isLoadingUnitOrAggregate(hu))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("HU is aggregated or transport unit. Cannot assign QR code to it.");
 		}
