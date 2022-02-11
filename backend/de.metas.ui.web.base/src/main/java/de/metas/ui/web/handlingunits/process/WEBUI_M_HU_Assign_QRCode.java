@@ -1,26 +1,23 @@
-package de.metas.handlingunits.process;
+package de.metas.ui.web.handlingunits.process;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ParamBarcodeScannerType;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.process.adprocess.WebuiProcess;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import de.metas.handlingunits.model.I_M_HU;
-
-import java.util.List;
 
 /*
  * #%L
@@ -44,16 +41,15 @@ import java.util.List;
  * #L%
  */
 
-public class M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondition
+@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
+public class WEBUI_M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondition
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
-	@Param(parameterName = "Barcode", mandatory = true)
+	@Param(parameterName = "Barcode", mandatory = true, barcodeScannerType = ParamBarcodeScannerType.QRCode)
 	private String p_Barcode;
-
-
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -66,22 +62,20 @@ public class M_HU_Assign_QRCode extends JavaProcess implements IProcessPrecondit
 		final int huId = context.getSingleSelectedRecordId();
 		final I_M_HU hu = handlingUnitsDAO.getById(HuId.ofRepoId(huId));
 
-		if (handlingUnitsBL.isLoadingUnitOrAggregate(hu))
+		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("HU is aggregated or transport unit. Cannot assign QR code to it.");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("HU is aggregated. Cannot assign QR code to it.");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	@RunOutOfTrx
 	protected String doIt()
 	{
-		final I_M_HU hu = getProcessInfo().getRecord(I_M_HU.class);
 		final HUQRCode huQRCode = HUQRCodeJsonConverter.fromQRCodeString(p_Barcode);
 
-		huQRCodesService.assign(huQRCode, HuId.ofRepoId(hu.getM_HU_ID()));
+		huQRCodesService.assign(huQRCode, HuId.ofRepoId(getRecord_ID()));
 
 		return MSG_OK;
 	}
