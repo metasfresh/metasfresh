@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers.json;
+package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;

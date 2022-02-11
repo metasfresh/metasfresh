@@ -297,6 +297,7 @@ public class JasperEngine extends AbstractReportEngine
 			return ReportResult.builder()
 					.outputType(outputType)
 					.reportContentBase64(Util.encodeBase64(data))
+					.reportFilename(buildReportFilename(jasperPrint, outputType))
 					.build();
 		}
 		else if (OutputType.HTML == outputType)
@@ -311,6 +312,7 @@ public class JasperEngine extends AbstractReportEngine
 			return ReportResult.builder()
 					.outputType(outputType)
 					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
+					.reportFilename(buildReportFilename(jasperPrint, outputType))
 					.build();
 		}
 		else if (OutputType.XML == outputType)
@@ -321,6 +323,7 @@ public class JasperEngine extends AbstractReportEngine
 			return ReportResult.builder()
 					.outputType(outputType)
 					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
+					.reportFilename(buildReportFilename(jasperPrint, outputType))
 					.build();
 		}
 		else if (OutputType.JasperPrint == outputType)
@@ -337,6 +340,12 @@ public class JasperEngine extends AbstractReportEngine
 		}
 	}
 
+	private static String buildReportFilename(@NonNull final JasperPrint jasperPrint, @NonNull final OutputType outputType)
+	{
+		final String fileBasename = FileUtil.stripIllegalCharacters(jasperPrint.getName());
+		return FileUtil.changeFileExtension(fileBasename, outputType.getFileExtension());
+	}
+
 	private ReportResult exportAsJasperPrint(final JasperPrint jasperPrint) throws IOException
 	{
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -345,6 +354,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.JasperPrint)
+				.reportFilename(buildReportFilename(jasperPrint, OutputType.JasperPrint))
 				.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 				.build();
 	}

@@ -36,8 +36,6 @@ public interface IPPOrderReceiptHUProducer
 
 	List<I_M_HU> receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
 
-	List<I_M_HU> receiveHUs(@NonNull Quantity qtyToReceive);
-
 	/**
 	 * NOTE: by default current system time is considered.
 	 */

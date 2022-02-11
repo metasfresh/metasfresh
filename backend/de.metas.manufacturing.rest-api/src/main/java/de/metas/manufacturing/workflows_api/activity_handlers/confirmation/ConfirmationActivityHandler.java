@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers;
+package de.metas.manufacturing.workflows_api.activity_handlers.confirmation;
 
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;

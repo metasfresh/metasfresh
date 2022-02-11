@@ -1,4 +1,4 @@
-package de.metas.manufacturing.workflows_api.activity_handlers.json;
+package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.util.Check;

@@ -285,7 +285,7 @@ public class HUTracerInstance
 
 			//
 			// QR Code
-			huQRCodeRepository.getQRCodeByHuId(HuId.ofRepoId(hu.getM_HU_ID()))
+			huQRCodeRepository.getFirstQRCodeByHuId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.map(HUQRCode::toRenderedJson)
 					.ifPresent(qrCode -> out.append(" [QR ...").append(qrCode.getDisplayable()).append("]"));
 

@@ -39,7 +39,7 @@ const ReceiptNewHUScreen = () => {
   return (
     <div className="section pt-2">
       {availableReceivingTargets.values.map((target) => (
-        <ButtonWithIndicator key={target.luPIItemId} caption={target.caption} onClick={() => handleClick(target)}>
+        <ButtonWithIndicator key={target.luPIItemId} caption={target.luCaption} onClick={() => handleClick(target)}>
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
       ))}

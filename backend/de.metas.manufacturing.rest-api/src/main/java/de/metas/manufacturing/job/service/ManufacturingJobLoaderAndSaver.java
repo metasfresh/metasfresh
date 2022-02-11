@@ -261,6 +261,12 @@ public class ManufacturingJobLoaderAndSaver
 		}
 	}
 
+	public static void updateRecordFromCurrentReceivingHU(@NonNull final I_PP_Order record, @NonNull final CurrentReceivingHU currentReceivingHU)
+	{
+		record.setCurrent_Receiving_LU_HU_ID(currentReceivingHU.getAggregateToLUId().getRepoId());
+		record.setCurrent_Receiving_TU_PI_Item_Product_ID(currentReceivingHU.getTuPIItemProductId().getRepoId());
+	}
+
 	@Nullable
 	private FinishedGoodsReceiveLine toFinishedGoodsReceiveLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
@@ -298,6 +304,12 @@ public class ManufacturingJobLoaderAndSaver
 		{
 			return null;
 		}
+	}
+
+	public static void updateRecordFromCurrentReceivingHU(@NonNull final I_PP_Order_BOMLine record, @NonNull final CurrentReceivingHU currentReceivingHU)
+	{
+		record.setCurrent_Receiving_LU_HU_ID(currentReceivingHU.getAggregateToLUId().getRepoId());
+		record.setCurrent_Receiving_TU_PI_Item_Product_ID(currentReceivingHU.getTuPIItemProductId().getRepoId());
 	}
 
 	public void saveActivityStatuses(final ManufacturingJob job)

@@ -187,8 +187,7 @@ import java.util.Map;
 		return receiveHUs(qtyToReceive);
 	}
 
-	@Override
-	public List<I_M_HU> receiveHUs(@NonNull final Quantity qtyToReceive)
+	private List<I_M_HU> receiveHUs(@NonNull final Quantity qtyToReceive)
 	{
 		this.processReceiptCandidates = true;
 		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
