@@ -206,7 +206,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 
-		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isAfter(Instant.now());
+		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
 
 		while (!timeoutReached.get())
 		{
