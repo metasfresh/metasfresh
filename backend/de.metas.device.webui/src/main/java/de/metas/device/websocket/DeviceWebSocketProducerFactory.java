@@ -73,7 +73,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this).addValue(TOPIC).toString();
+		return MoreObjects.toStringHelper(this).addValue(TOPIC_AND_SLASH).toString();
 	}
 
 	@Override

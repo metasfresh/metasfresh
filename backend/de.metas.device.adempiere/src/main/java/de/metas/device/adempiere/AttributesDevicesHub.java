@@ -1,19 +1,8 @@
 package de.metas.device.adempiere;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
@@ -22,6 +11,15 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -47,11 +45,10 @@ import lombok.NonNull;
 
 /**
  * Attribute's devices hub.
- *
+ * <p>
  * Maintains a list of devices assigned to each attribute.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class AttributesDevicesHub
 {
@@ -62,20 +59,18 @@ public class AttributesDevicesHub
 
 	private final ConcurrentHashMap<AttributeCode, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
 
-	private final IDeviceConfigPoolListener deviceConfigPoolListener = new IDeviceConfigPoolListener()
-	{
-		@Override
-		public void onConfigurationChanged(final IDeviceConfigPool deviceConfigPool)
-		{
-			attributeCode2deviceAccessors.clear();
-			logger.info("Reset {} because configuration changed for {}", this, deviceConfigPool);
-		}
-	};
-
 	public AttributesDevicesHub(@NonNull final IDeviceConfigPool deviceConfigPool)
 	{
 		this.deviceConfigPool = deviceConfigPool;
-		this.deviceConfigPool.addListener(deviceConfigPoolListener);
+		this.deviceConfigPool.addListener(new IDeviceConfigPoolListener()
+		{
+			@Override
+			public void onConfigurationChanged(final IDeviceConfigPool deviceConfigPool1)
+			{
+				attributeCode2deviceAccessors.clear();
+				logger.info("Reset {} because configuration changed for {}", this, deviceConfigPool1);
+			}
+		});
 	}
 
 	@Override
@@ -91,9 +86,9 @@ public class AttributesDevicesHub
 	{
 		return deviceConfigPool.getAllAttributeCodes()
 				.stream()
-				.map(attributeCode -> getAttributeDeviceAccessors(attributeCode))
+				.map(this::getAttributeDeviceAccessors)
 				.map(deviceAccessorsList -> deviceAccessorsList.getByIdOrNull(id))
-				.filter(deviceAccessor -> deviceAccessor != null)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
 	}
@@ -103,11 +98,10 @@ public class AttributesDevicesHub
 		return attributeCode2deviceAccessors.computeIfAbsent(attributeCode, this::createAttributeDeviceAccessor);
 	}
 
-	@SuppressWarnings("rawtypes")
 	private AttributeDeviceAccessorsList createAttributeDeviceAccessor(final AttributeCode attributeCode)
 	{
 		final List<DeviceConfig> deviceConfigsForThisAttribute = deviceConfigPool.getDeviceConfigsForAttributeCode(attributeCode);
-		logger.info("Devices configs for attributte {}: {}", attributeCode, deviceConfigsForThisAttribute);
+		logger.info("Devices configs for attribute {}: {}", attributeCode, deviceConfigsForThisAttribute);
 		if (deviceConfigsForThisAttribute.isEmpty())
 		{
 			return AttributeDeviceAccessorsList.EMPTY;
@@ -166,20 +160,20 @@ public class AttributesDevicesHub
 
 	private static String extractDeviceDisplayNameCommonPrefixForDeviceConfigs(final List<DeviceConfig> deviceConfigs)
 	{
-		final List<String> deviceNames = Lists.transform(deviceConfigs, deviceConfig -> deviceConfig.getDeviceName());
+		final List<String> deviceNames = deviceConfigs.stream().map(DeviceConfig::getDeviceName).collect(Collectors.toList());
 		return extractDeviceDisplayNameCommonPrefix(deviceNames);
 	}
 
 	/**
 	 * Extracts device names common prefix.
-	 *
+	 * <p>
 	 * If there are more than one device for this attribute, we use the device names' first characters for the button texts.
 	 * How many chars we need depends of how log the common prefix is.
 	 *
 	 * @return common prefix
 	 */
 	@VisibleForTesting
-	/* package */static String extractDeviceDisplayNameCommonPrefix(final List<String> deviceNames)
+	/* package */ static String extractDeviceDisplayNameCommonPrefix(final List<String> deviceNames)
 	{
 		if (deviceNames.size() <= 1)
 		{
@@ -192,7 +186,7 @@ public class AttributesDevicesHub
 	}
 
 	@VisibleForTesting
-	/* package */static String createDeviceDisplayName(
+	/* package */ static String createDeviceDisplayName(
 			@Nullable final String deviceDisplayNameCommonPrefix,
 			@NonNull final String deviceName)
 	{
