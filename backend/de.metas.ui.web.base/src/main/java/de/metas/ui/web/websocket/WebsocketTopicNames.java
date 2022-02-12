@@ -41,7 +41,6 @@ public class WebsocketTopicNames
 	static final String TOPIC_Document = "/document";
 	static final String TOPIC_Board = "/board";
 	public static final String TOPIC_Dashboard = "/dashboard";
-	public static final String TOPIC_Devices = "/devices";
 
 	public static WebsocketTopicName buildUserSessionTopicName(@NonNull final UserId adUserId)
 	{

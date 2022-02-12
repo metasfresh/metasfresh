@@ -1,10 +1,4 @@
-package de.metas.ui.web.devices;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.ui.web.process.adprocess.device_providers;
 
 /*
  * #%L
@@ -28,24 +22,11 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class DeviceDescriptor
+/**
+ * Use {@link DeviceDescriptorsProviders} to create various instances.
+ */
+@FunctionalInterface
+public interface DeviceDescriptorsProvider
 {
-	String deviceId;
-	ITranslatableString caption;
-	String websocketEndpoint;
-
-	@Builder
-	private DeviceDescriptor(
-			@NonNull final String deviceId,
-			@NonNull final ITranslatableString caption,
-			@NonNull final String websocketEndpoint)
-	{
-		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
-		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
-
-		this.deviceId = deviceId;
-		this.caption = caption;
-		this.websocketEndpoint = websocketEndpoint;
-	}
+	DeviceDescriptorsList getDeviceDescriptors();
 }

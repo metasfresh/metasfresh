@@ -1,20 +1,16 @@
-package de.metas.ui.web.devices.providers;
+package de.metas.ui.web.process.adprocess.device_providers;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableStrings;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.ui.web.devices.DeviceDescriptor;
-import de.metas.ui.web.devices.DeviceDescriptorsList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -59,6 +55,7 @@ public class MethodDeviceDescriptorsProviderTest
 			throw new UnsupportedOperationException("shall not be invoked");
 		}
 
+		@SuppressWarnings("unused")
 		public DeviceDescriptorsList getDevicesInvalidArguments(int someArg)
 		{
 			throw new UnsupportedOperationException("shall not be invoked");
@@ -109,7 +106,7 @@ public class MethodDeviceDescriptorsProviderTest
 
 		final MethodDeviceDescriptorsProvider provider = MethodDeviceDescriptorsProvider.ofMethod(method, () -> obj);
 
-		assertThatThrownBy(() -> provider.getDeviceDescriptors())
+		assertThatThrownBy(provider::getDeviceDescriptors)
 				.isSameAs(exception);
 	}
 

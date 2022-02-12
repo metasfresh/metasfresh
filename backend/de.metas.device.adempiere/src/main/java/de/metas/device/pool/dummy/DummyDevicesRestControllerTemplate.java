@@ -1,20 +1,19 @@
 package de.metas.device.pool.dummy;
 
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.device.adempiere.DeviceConfig;
+import de.metas.device.adempiere.IDevicesHubFactory;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.RepoIdAwares;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.RepoIdAwares;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public abstract class DummyDevicesRestControllerTemplate
 
 		final ImmutableList<String> devicesInfo = DummyDeviceConfigPool.getAllDevices()
 				.stream()
-				.map(device -> device.toString())
+				.map(DeviceConfig::toString)
 				.collect(ImmutableList.toImmutableList());
 
 		return ImmutableMap.<String, Object> builder()
@@ -60,7 +59,7 @@ public abstract class DummyDevicesRestControllerTemplate
 
 	@GetMapping("/config")
 	public Map<String, Object> configScales(
-			@RequestParam(name = "enabled", required = true) final boolean enabled,
+			@RequestParam(name = "enabled") final boolean enabled,
 			@RequestParam(name = "responseMinValue", required = false, defaultValue = "-1") final int responseMinValue,
 			@RequestParam(name = "responseMaxValue", required = false, defaultValue = "-1") final int responseMaxValue)
 	{

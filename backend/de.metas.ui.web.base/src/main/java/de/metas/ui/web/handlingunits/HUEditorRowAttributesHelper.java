@@ -1,30 +1,16 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.NamePair;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
+import de.metas.device.websocket.DeviceWebSocketProducerFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.devices.DeviceDescriptor;
-import de.metas.ui.web.devices.DeviceDescriptorsList;
-import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -36,6 +22,17 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -109,7 +106,7 @@ public final class HUEditorRowAttributesHelper
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attributeCode)
 				.stream(warehouseId)
-				.map(attributeDeviceAccessor -> toDeviceDescriptor(attributeDeviceAccessor))
+				.map(HUEditorRowAttributesHelper::toDeviceDescriptor)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return DeviceDescriptorsList.ofList(deviceDescriptors);
@@ -138,8 +135,7 @@ public final class HUEditorRowAttributesHelper
 	{
 		final Object value = extractValueAndResolve(attributesStorage, attributeValue);
 
-		final Object jsonValue = Values.valueToJsonObject(value, jsonOpts);
-		return jsonValue;
+		return Values.valueToJsonObject(value, jsonOpts);
 	}
 
 	@Nullable

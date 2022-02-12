@@ -1,10 +1,10 @@
-package de.metas.ui.web.devices.providers;
+package de.metas.ui.web.process.adprocess.device_providers;
 
-import java.lang.reflect.Method;
-import java.util.function.Supplier;
-
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,18 +28,24 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class DeviceDescriptorsProviders
+@Value
+public class DeviceDescriptor
 {
-	public static DeviceDescriptorsProvider empty()
-	{
-		return EmptyDeviceDescriptorsProvider.instance;
-	}
+	String deviceId;
+	ITranslatableString caption;
+	String websocketEndpoint;
 
-	public static DeviceDescriptorsProvider ofMethod(
-			@NonNull final Method method,
-			@NonNull final Supplier<Object> objectInstanceSupplier)
+	@Builder
+	private DeviceDescriptor(
+			@NonNull final String deviceId,
+			@NonNull final ITranslatableString caption,
+			@NonNull final String websocketEndpoint)
 	{
-		return MethodDeviceDescriptorsProvider.ofMethod(method, objectInstanceSupplier);
+		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
+		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
+
+		this.deviceId = deviceId;
+		this.caption = caption;
+		this.websocketEndpoint = websocketEndpoint;
 	}
 }

@@ -1,6 +1,10 @@
-package de.metas.ui.web.devices.providers;
+package de.metas.ui.web.process.adprocess.device_providers;
 
-import de.metas.ui.web.devices.DeviceDescriptorsList;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.lang.reflect.Method;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -24,11 +28,18 @@ import de.metas.ui.web.devices.DeviceDescriptorsList;
  * #L%
  */
 
-/**
- * Use {@link DeviceDescriptorsProviders} to create various instances.
- */
-@FunctionalInterface
-public interface DeviceDescriptorsProvider
+@UtilityClass
+public class DeviceDescriptorsProviders
 {
-	DeviceDescriptorsList getDeviceDescriptors();
+	public static DeviceDescriptorsProvider empty()
+	{
+		return EmptyDeviceDescriptorsProvider.instance;
+	}
+
+	public static DeviceDescriptorsProvider ofMethod(
+			@NonNull final Method method,
+			@NonNull final Supplier<Object> objectInstanceSupplier)
+	{
+		return MethodDeviceDescriptorsProvider.ofMethod(method, objectInstanceSupplier);
+	}
 }

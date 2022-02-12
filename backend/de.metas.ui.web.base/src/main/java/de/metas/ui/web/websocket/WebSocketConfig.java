@@ -2,11 +2,11 @@ package de.metas.ui.web.websocket;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.device.websocket.DeviceWebSocketProducerFactory;
 import de.metas.ui.web.session.UserSession;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -87,7 +87,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 				WebsocketTopicNames.TOPIC_Document,
 				WebsocketTopicNames.TOPIC_Board,
 				WebsocketTopicNames.TOPIC_Dashboard,
-				WebsocketTopicNames.TOPIC_Devices);
+				DeviceWebSocketProducerFactory.TOPIC);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");

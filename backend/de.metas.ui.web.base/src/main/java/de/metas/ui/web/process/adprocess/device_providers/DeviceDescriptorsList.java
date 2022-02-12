@@ -1,13 +1,12 @@
-package de.metas.ui.web.devices;
-
-import java.util.List;
-import java.util.stream.Stream;
+package de.metas.ui.web.process.adprocess.device_providers;
 
 import com.google.common.collect.ImmutableList;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L

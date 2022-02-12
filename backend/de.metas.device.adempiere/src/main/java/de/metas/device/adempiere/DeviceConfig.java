@@ -1,19 +1,17 @@
 package de.metas.device.adempiere;
 
-import java.util.Collection;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceParameterValueSupplier;
+import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceRequestClassnamesSupplier;
+import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.warehouse.WarehouseId;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceParameterValueSupplier;
-import de.metas.device.adempiere.DeviceConfig.Builder.IDeviceRequestClassnamesSupplier;
-import de.metas.device.api.IDevice;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -37,12 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/**
- * {@link IDevice} configuration.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
+@ToString(of={"deviceName", "assignedAttributeCodes", "deviceClassname", "assignedWarehouseIds"})
 public final class DeviceConfig
 {
 	public static DeviceConfig.Builder builder(@NonNull final String deviceName)
@@ -50,11 +43,19 @@ public final class DeviceConfig
 		return new Builder(deviceName);
 	}
 
+	@Getter
 	private final String deviceName;
-	private final Set<AttributeCode> assignedAttributeCodes;
+
+	@Getter
+	private final ImmutableSet<AttributeCode> assignedAttributeCodes;
+
+	@Getter
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
+
+	/** warehouse IDs where this device is available; empty means that it's available to any warehouse */
+	@Getter
 	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
@@ -64,38 +65,7 @@ public final class DeviceConfig
 		deviceClassname = builder.getDeviceClassname();
 		parameterValueSupplier = builder.getParameterValueSupplier();
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
-		assignedWarehouseIds = builder.getAssignedWareouseIds();
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("deviceName", deviceName)
-				.add("assignedAttributeCodes", assignedAttributeCodes)
-				.add("deviceClassname", deviceClassname)
-				.add("assignedWarehouseId", assignedWarehouseIds)
-				.toString();
-	}
-
-	public String getDeviceName()
-	{
-		return deviceName;
-	}
-
-	public Set<AttributeCode> getAssignedAttributeCodes()
-	{
-		return assignedAttributeCodes;
-	}
-
-	public boolean isAvailableForAttributeCode(final AttributeCode attributeCode)
-	{
-		return assignedAttributeCodes.contains(attributeCode);
-	}
-
-	public String getDeviceClassname()
-	{
-		return deviceClassname;
+		assignedWarehouseIds = builder.getAssignedWarehouseIds();
 	}
 
 	public String getParameterValue(final String parameterName, final String defaultValue)
@@ -106,12 +76,6 @@ public final class DeviceConfig
 	public Set<String> getRequestClassnames(final AttributeCode attributeCode)
 	{
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
-	}
-
-	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
-	public ImmutableSet<WarehouseId> getAssignedWarehouseIds()
-	{
-		return assignedWarehouseIds;
 	}
 
 	public static final class Builder
@@ -145,7 +109,7 @@ public final class DeviceConfig
 			return this;
 		}
 
-		private Set<AttributeCode> getAssignedAttributeCodes()
+		private ImmutableSet<AttributeCode> getAssignedAttributeCodes()
 		{
 			Check.assumeNotEmpty(assignedAttributeCodes, "assignedAttributeCodes is not empty");
 			return ImmutableSet.copyOf(assignedAttributeCodes);
@@ -205,7 +169,7 @@ public final class DeviceConfig
 			return this;
 		}
 
-		private ImmutableSet<WarehouseId> getAssignedWareouseIds()
+		private ImmutableSet<WarehouseId> getAssignedWarehouseIds()
 		{
 			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
 		}

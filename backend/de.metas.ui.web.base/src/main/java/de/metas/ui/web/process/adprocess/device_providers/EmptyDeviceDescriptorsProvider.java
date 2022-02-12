@@ -1,6 +1,4 @@
-package de.metas.ui.web.devices.providers;
-
-import de.metas.ui.web.devices.DeviceDescriptorsList;
+package de.metas.ui.web.process.adprocess.device_providers;
 
 /*
  * #%L

@@ -1,16 +1,14 @@
-package de.metas.ui.web.devices.providers;
+package de.metas.ui.web.process.adprocess.device_providers;
+
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.MethodReference;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.reflect.MethodReference;
-
-import de.metas.ui.web.devices.DeviceDescriptorsList;
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -80,8 +78,7 @@ final class MethodDeviceDescriptorsProvider implements DeviceDescriptorsProvider
 				method.setAccessible(true);
 			}
 
-			final DeviceDescriptorsList deviceDescriptorsList = (DeviceDescriptorsList)method.invoke(objectInstance);
-			return deviceDescriptorsList;
+			return (DeviceDescriptorsList)method.invoke(objectInstance);
 		}
 		catch (IllegalAccessException | InvocationTargetException ex)
 		{

@@ -1,18 +1,19 @@
-package de.metas.ui.web.devices;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
+package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.device.websocket.JSONDeviceValueChangedEvent;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -48,21 +49,35 @@ import lombok.Value;
 @Value
 public class JSONDeviceDescriptor
 {
+	String deviceId;
+	String caption;
+	String websocketEndpoint;
+
+	@Builder
+	@Jacksonized
+	private JSONDeviceDescriptor(
+			@NonNull final String deviceId,
+			@Nullable final String caption,
+			@NonNull final String websocketEndpoint)
+	{
+		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
+		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
+
+		this.deviceId = deviceId;
+		this.caption = caption;
+		this.websocketEndpoint = websocketEndpoint;
+	}
+
 	public static List<JSONDeviceDescriptor> ofList(
 			@NonNull final DeviceDescriptorsList list,
 			@NonNull final String adLanguage)
 	{
-		if (list.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
 		return list.stream()
 				.map(descriptor -> of(descriptor, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static JSONDeviceDescriptor of(
+	private static JSONDeviceDescriptor of(
 			@NonNull final DeviceDescriptor descriptor,
 			@NonNull final String adLanguage)
 	{
@@ -71,26 +86,5 @@ public class JSONDeviceDescriptor
 				.caption(descriptor.getCaption().translate(adLanguage))
 				.websocketEndpoint(descriptor.getWebsocketEndpoint())
 				.build();
-	}
-
-	@JsonProperty("deviceId")
-	private final String deviceId;
-	@JsonProperty("caption")
-	private final String caption;
-	@JsonProperty("websocketEndpoint")
-	private final String websocketEndpoint;
-
-	@Builder
-	private JSONDeviceDescriptor(
-			@JsonProperty("deviceId") @NonNull final String deviceId,
-			@JsonProperty("caption") @Nullable final String caption,
-			@JsonProperty("websocketEndpoint") @NonNull final String websocketEndpoint)
-	{
-		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
-		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
-
-		this.deviceId = deviceId;
-		this.caption = caption;
-		this.websocketEndpoint = websocketEndpoint;
 	}
 }
