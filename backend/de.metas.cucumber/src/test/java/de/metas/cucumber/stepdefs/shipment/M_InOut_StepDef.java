@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
@@ -29,15 +30,19 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -60,14 +65,16 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 
 public class M_InOut_StepDef
 {
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
@@ -89,7 +96,7 @@ public class M_InOut_StepDef
 		{
 			final String identifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
 			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
-			final String poReference = DataTableUtil.extractStringForColumnName(row, "poreference");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "poreference");
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 			final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
@@ -122,9 +129,9 @@ public class M_InOut_StepDef
 		final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final IQueryFilter<I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
 
@@ -152,7 +159,7 @@ public class M_InOut_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
 
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		final Supplier<Boolean> isShipmentCreated = () -> {
 
@@ -222,5 +229,29 @@ public class M_InOut_StepDef
 
 			documentBL.processEx(shipment, docAction);
 		}
+	}
+
+	@Then("locate M_InOut by shipment schedule Id")
+	public void locate_shipment_by_scheduleId(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			locateShipmentByScheduleId(row);
+		}
+	}
+
+	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedRecords = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final InOutLineId lineId = InOutLineId.ofRepoId(shipmentScheduleQtyPickedRecords.get(0).getM_InOutLine_ID());
+
+		final I_M_InOut shipmentRecord = inOutDAO.retrieveInOutByLineIds(ImmutableSet.of(lineId)).get(lineId);
+
+		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
+		shipmentTable.put(shipmentIdentifier, shipmentRecord);
 	}
 }
