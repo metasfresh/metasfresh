@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
-import de.metas.cache.ICacheResetListener;
 import de.metas.device.adempiere.DeviceConfig;
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceConfigPool;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -63,8 +63,8 @@ import java.util.TreeMap;
  */
 /* package */ class SysConfigDeviceConfigPool implements IDeviceConfigPool
 {
-	private static final transient Logger logger = LogManager.getLogger(SysConfigDeviceConfigPool.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static final Logger logger = LogManager.getLogger(SysConfigDeviceConfigPool.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String CFG_DEVICE_PREFIX = "de.metas.device";
 	private static final String CFG_DEVICE_NAME_PREFIX = CFG_DEVICE_PREFIX + ".Name";
@@ -79,9 +79,7 @@ import java.util.TreeMap;
 	private final ClientAndOrgId clientAndOrgId;
 
 	private final ExtendedMemorizingSupplier<ImmutableListMultimap<AttributeCode, DeviceConfig>> //
-	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
-
-	private final ICacheResetListener cacheResetListener = request -> resetDeviceConfigs();
+	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(this::loadDeviceConfigsIndexedByAttributeCode);
 
 	private final WeakList<IDeviceConfigPoolListener> listeners = new WeakList<>(true); // weakDefault=true
 
@@ -93,7 +91,7 @@ import java.util.TreeMap;
 		this.clientHost = clientHost;
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId);
 
-		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, cacheResetListener);
+		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, request -> resetDeviceConfigs());
 	}
 
 	@Override
@@ -115,8 +113,7 @@ import java.util.TreeMap;
 	@Override
 	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final AttributeCode attributeCode)
 	{
-		return deviceConfigsIndexedByAttributeCodeSupplier.get()
-				.get(attributeCode);
+		return deviceConfigsIndexedByAttributeCodeSupplier.get().get(attributeCode);
 	}
 
 	@Override
@@ -149,15 +146,15 @@ import java.util.TreeMap;
 	{
 		return getAllDeviceNames()
 				.stream()
-				.map(deviceName -> createDeviceConfigOrNull(deviceName))
-				.filter(deviceConfig -> deviceConfig != null)
+				.map(this::createDeviceConfigOrNull)
+				.filter(Objects::nonNull)
 				.flatMap(deviceConfig -> deviceConfig.getAssignedAttributeCodes()
 						.stream()
 						.map(attributeCode -> GuavaCollectors.entry(attributeCode, deviceConfig)))
 				.collect(GuavaCollectors.toImmutableListMultimap());
 	}
 
-	private final DeviceConfig createDeviceConfigOrNull(final String deviceName)
+	private DeviceConfig createDeviceConfigOrNull(final String deviceName)
 	{
 		if (!isDeviceAvailableHost(deviceName))
 		{
@@ -218,15 +215,14 @@ import java.util.TreeMap;
 
 	private String getDeviceParamValue(final String deviceName, final String parameterName, final String defaultValue)
 	{
-		final String paramValue = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, parameterName, defaultValue);
-		return paramValue;
+		return getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, parameterName, defaultValue);
 	}
 
 	private ImmutableSet<AttributeCode> getDeviceAssignedAttributeCodes(final String deviceName)
 	{
-		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
+		final String attributeSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
 		final ImmutableSet<AttributeCode> assignedAttributeCodes = sysConfigBL
-				.getValuesForPrefix(attribSysConfigPrefix, clientAndOrgId)
+				.getValuesForPrefix(attributeSysConfigPrefix, clientAndOrgId)
 				.values()
 				.stream()
 				.map(AttributeCode::ofString)
@@ -234,7 +230,7 @@ import java.util.TreeMap;
 
 		if (assignedAttributeCodes.isEmpty())
 		{
-			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
+			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attributeSysConfigPrefix);
 			return ImmutableSet.of();
 		}
 		else
@@ -243,10 +239,6 @@ import java.util.TreeMap;
 		}
 	}
 
-	/**
-	 * @param deviceName
-	 * @return M_Warehouse_IDs
-	 */
 	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
@@ -264,7 +256,7 @@ import java.util.TreeMap;
 						return null;
 					}
 				})
-				.filter(warehouseId -> warehouseId != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -274,9 +266,8 @@ import java.util.TreeMap;
 	 */
 	private String getDeviceClassname(final String deviceName)
 	{
-		final String deviceClassname = getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, DEVICE_PARAM_DeviceClass, null);
 		// note: assume not null because in that case, the method above would fail
-		return deviceClassname;
+		return getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, DEVICE_PARAM_DeviceClass, null);
 	}
 
 	private Set<String> getDeviceRequestClassnames(final String deviceName, final AttributeCode attributeCode)
@@ -287,9 +278,6 @@ import java.util.TreeMap;
 
 	/**
 	 *
-	 * @param prefix
-	 * @param suffix
-	 * @param defaultValue
 	 * @return value; never returns null
 	 * @throws DeviceConfigException if configuration parameter was not found and given <code>defaultStr</code> is <code>null</code>.
 	 */
@@ -337,8 +325,9 @@ import java.util.TreeMap;
 
 		//
 		// Throw exception
-		final String msg = "@NotFound@: @AD_SysConfig@ " + deviceKeyWithHostName + ", " + deviceKeyWithIP + ", " + deviceKeyWithWildCard
-				+ "; @AD_Client_ID@=" + clientAndOrgId.getClientId() + " @AD_Org_ID@=" + clientAndOrgId.getOrgId();
-		throw new DeviceConfigException(msg);
+		throw new DeviceConfigException("@NotFound@: @AD_SysConfig@ " + deviceKeyWithHostName
+				+ ", " + deviceKeyWithIP + ", " + deviceKeyWithWildCard
+				+ "; @AD_Client_ID@=" + clientAndOrgId.getClientId()
+				+ " @AD_Org_ID@=" + clientAndOrgId.getOrgId());
 	}
 }

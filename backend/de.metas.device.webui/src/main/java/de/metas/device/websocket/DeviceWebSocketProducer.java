@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import de.metas.websocket.producers.WebSocketProducer;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,12 +31,10 @@ final class DeviceWebSocketProducer implements WebSocketProducer
 	@Override
 	public List<JSONDeviceValueChangedEvent> produceEvents()
 	{
-		final AttributeDeviceAccessor deviceAccessor = devicesHubFactory
-				.getDefaultAttributesDevicesHub()
-				.getAttributeDeviceAccessorById(deviceId);
+		final AttributeDeviceAccessor deviceAccessor = devicesHubFactory.getAttributeDeviceAccessorById(deviceId);
 		if (deviceAccessor == null)
 		{
-			throw new RuntimeException("Device accessor no longer exists for: " + deviceId);
+			throw new AdempiereException("Device accessor no longer exists for `" + deviceId+"`");
 		}
 
 		final BigDecimal valueBD = deviceAccessor.acquireValue();

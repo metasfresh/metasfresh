@@ -1,10 +1,10 @@
 package de.metas.device.adempiere;
 
-import org.adempiere.service.ClientId;
-import org.adempiere.util.net.IHostIdentifier;
-
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.net.IHostIdentifier;
 
 /*
  * #%L
@@ -33,6 +33,11 @@ public interface IDevicesHubFactory extends ISingletonService
 	AttributesDevicesHub getDefaultAttributesDevicesHub();
 
 	AttributesDevicesHub getAttributesDevicesHub(IHostIdentifier clientHost, ClientId adClientId, OrgId adOrgId);
+
+	default AttributeDeviceAccessor getAttributeDeviceAccessorById(@NonNull String deviceId)
+	{
+		return getDefaultAttributesDevicesHub().getAttributeDeviceAccessorById(deviceId);
+	}
 
 	void cacheReset();
 }
