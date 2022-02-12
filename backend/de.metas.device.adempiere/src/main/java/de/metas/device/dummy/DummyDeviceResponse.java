@@ -1,15 +1,14 @@
-package de.metas.ui.web.process.adprocess.device_providers;
+package de.metas.device.dummy;
 
-import de.metas.device.accessor.DeviceId;
-import de.metas.i18n.ITranslatableString;
-import de.metas.websocket.WebsocketTopicName;
-import lombok.Builder;
+import de.metas.device.api.ISingleValueResponse;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.device.adempiere
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -17,23 +16,31 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class DeviceDescriptor
+@ToString
+public class DummyDeviceResponse implements ISingleValueResponse
 {
-	@NonNull DeviceId deviceId;
-	@NonNull ITranslatableString caption;
-	@NonNull WebsocketTopicName websocketEndpoint;
+	private final BigDecimal value;
+
+	public DummyDeviceResponse(@NonNull final BigDecimal value)
+	{
+		this.value = value;
+	}
+
+	@Override
+	public BigDecimal getSingleValue()
+	{
+		return value;
+	}
 }

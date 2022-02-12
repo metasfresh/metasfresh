@@ -2,16 +2,16 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.device.adempiere.AttributeDeviceAccessor;
-import de.metas.device.adempiere.DeviceId;
-import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
-import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceId;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.websocket.DeviceWebSocketProducerFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -28,6 +28,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
@@ -103,9 +104,11 @@ public final class HUEditorRowAttributesHelper
 			@NonNull final AttributeCode attributeCode,
 			@Nullable final WarehouseId warehouseId)
 	{
-		final ImmutableList<DeviceDescriptor> deviceDescriptors = Services.get(IDevicesHubFactory.class)
-				.getDefaultAttributesDevicesHub()
-				.getAttributeDeviceAccessors(attributeCode)
+		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+
+		final ImmutableList<DeviceDescriptor> deviceDescriptors = deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessors(attributeCode)
 				.stream(warehouseId)
 				.map(HUEditorRowAttributesHelper::toDeviceDescriptor)
 				.collect(GuavaCollectors.toImmutableList());
@@ -113,13 +116,13 @@ public final class HUEditorRowAttributesHelper
 		return DeviceDescriptorsList.ofList(deviceDescriptors);
 	}
 
-	private static DeviceDescriptor toDeviceDescriptor(final AttributeDeviceAccessor attributeDeviceAccessor)
+	private static DeviceDescriptor toDeviceDescriptor(final DeviceAccessor deviceAccessor)
 	{
-		final DeviceId deviceId = attributeDeviceAccessor.getPublicId();
+		final DeviceId deviceId = deviceAccessor.getId();
 
 		return DeviceDescriptor.builder()
 				.deviceId(deviceId)
-				.caption(attributeDeviceAccessor.getDisplayName())
+				.caption(deviceAccessor.getDisplayName())
 				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
 				.build();
 	}

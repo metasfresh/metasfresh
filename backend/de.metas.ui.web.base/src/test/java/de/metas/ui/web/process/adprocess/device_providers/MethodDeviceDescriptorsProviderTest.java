@@ -1,7 +1,7 @@
 package de.metas.ui.web.process.adprocess.device_providers;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.device.adempiere.DeviceId;
+import de.metas.device.accessor.DeviceId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.websocket.WebsocketTopicName;
 import org.adempiere.exceptions.AdempiereException;

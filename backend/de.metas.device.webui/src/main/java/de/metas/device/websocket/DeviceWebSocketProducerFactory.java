@@ -1,10 +1,9 @@
 package de.metas.device.websocket;
 
 import com.google.common.base.MoreObjects;
-import de.metas.device.adempiere.AttributeDeviceAccessor;
-import de.metas.device.adempiere.DeviceId;
-import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.util.Services;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceId;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
@@ -37,7 +36,7 @@ import javax.annotation.Nullable;
  */
 
 /**
- * Creates {@link WebSocketProducer} instances which are reading {@link AttributeDeviceAccessor#acquireValue()} and creates {@link JSONDeviceValueChangedEvent}.
+ * Creates {@link WebSocketProducer} instances which are reading {@link DeviceAccessor#acquireValue()} and creates {@link JSONDeviceValueChangedEvent}.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -47,7 +46,13 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 	public static final String TOPIC = "/devices";
 	private static final String TOPIC_AND_SLASH = TOPIC + "/";
 
-	private final IDevicesHubFactory devicesHubFactory = Services.get(IDevicesHubFactory.class);
+	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
+
+	public DeviceWebSocketProducerFactory(
+			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory)
+	{
+		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
+	}
 
 	public static WebsocketTopicName buildDeviceTopicName(@NonNull final DeviceId deviceId)
 	{
@@ -89,7 +94,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 		{
 			throw new AdempiereException("Cannot extract deviceId from topic name `" + topicName + "`");
 		}
-		return new DeviceWebSocketProducer(devicesHubFactory, deviceId);
+		return new DeviceWebSocketProducer(deviceAccessorsHubFactory, deviceId);
 	}
 
 }

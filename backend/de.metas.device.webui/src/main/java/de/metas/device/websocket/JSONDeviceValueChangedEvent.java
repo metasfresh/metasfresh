@@ -2,7 +2,7 @@ package de.metas.device.websocket;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import de.metas.device.adempiere.DeviceId;
+import de.metas.device.accessor.DeviceId;
 import lombok.NonNull;
 import lombok.Value;
 
