@@ -160,6 +160,7 @@ import java.util.List;
 		}
 
 		// 1. try to pick from source HUs if any are available
+		// #12516 : Allow picking from HUs that don't match the attributes
 		final ImmutableList<HuId> sourceHUIds = getSourceHUIds(false);
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} sourceHUIds: {}", qtyToPack, sourceHUIds);
