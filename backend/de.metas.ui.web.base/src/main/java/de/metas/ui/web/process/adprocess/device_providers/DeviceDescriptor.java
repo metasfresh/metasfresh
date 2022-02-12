@@ -1,7 +1,8 @@
 package de.metas.ui.web.process.adprocess.device_providers;
 
+import de.metas.device.adempiere.DeviceId;
 import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,23 +30,10 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class DeviceDescriptor
 {
-	String deviceId;
-	ITranslatableString caption;
-	String websocketEndpoint;
-
-	@Builder
-	private DeviceDescriptor(
-			@NonNull final String deviceId,
-			@NonNull final ITranslatableString caption,
-			@NonNull final String websocketEndpoint)
-	{
-		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
-		Check.assumeNotEmpty(websocketEndpoint, "websocketEndpoint is not empty");
-
-		this.deviceId = deviceId;
-		this.caption = caption;
-		this.websocketEndpoint = websocketEndpoint;
-	}
+	@NonNull DeviceId deviceId;
+	@NonNull ITranslatableString caption;
+	@NonNull WebsocketTopicName websocketEndpoint;
 }

@@ -82,7 +82,7 @@ public class AttributesDevicesHub
 	}
 
 	@Nullable
-	public AttributeDeviceAccessor getAttributeDeviceAccessorById(final String id)
+	public AttributeDeviceAccessor getAttributeDeviceAccessorById(@NonNull final DeviceId id)
 	{
 		return deviceConfigPool.getAllAttributeCodes()
 				.stream()

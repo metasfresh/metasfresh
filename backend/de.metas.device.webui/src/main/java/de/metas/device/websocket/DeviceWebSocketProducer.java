@@ -2,8 +2,8 @@ package de.metas.device.websocket;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
+import de.metas.device.adempiere.DeviceId;
 import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.util.Check;
 import de.metas.websocket.producers.WebSocketProducer;
 import lombok.NonNull;
 import lombok.ToString;
@@ -16,14 +16,12 @@ import java.util.List;
 final class DeviceWebSocketProducer implements WebSocketProducer
 {
 	private final IDevicesHubFactory devicesHubFactory;
-	private final String deviceId;
+	private final DeviceId deviceId;
 
 	public DeviceWebSocketProducer(
 			@NonNull final IDevicesHubFactory devicesHubFactory,
-			@NonNull final String deviceId)
+			@NonNull final DeviceId deviceId)
 	{
-		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
-
 		this.devicesHubFactory = devicesHubFactory;
 		this.deviceId = deviceId;
 	}

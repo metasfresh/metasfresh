@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
+import de.metas.device.adempiere.DeviceId;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
@@ -114,7 +115,7 @@ public final class HUEditorRowAttributesHelper
 
 	private static DeviceDescriptor toDeviceDescriptor(final AttributeDeviceAccessor attributeDeviceAccessor)
 	{
-		final String deviceId = attributeDeviceAccessor.getPublicId();
+		final DeviceId deviceId = attributeDeviceAccessor.getPublicId();
 
 		return DeviceDescriptor.builder()
 				.deviceId(deviceId)

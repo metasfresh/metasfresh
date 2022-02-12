@@ -58,7 +58,7 @@ public final class AttributeDeviceAccessor
 	private final IDeviceRequest<ISingleValueResponse> request;
 
 	@Getter
-	private final String publicId;
+	private final DeviceId publicId;
 
 	@Builder
 	private AttributeDeviceAccessor(
@@ -76,7 +76,7 @@ public final class AttributeDeviceAccessor
 		this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
 		this.request = request;
 
-		publicId = deviceName + "-" + attributeCode.getCode() + "-" + request.getClass().getSimpleName();
+		publicId = DeviceId.ofString(deviceName + "-" + attributeCode.getCode() + "-" + request.getClass().getSimpleName());
 	}
 
 	public boolean isAvailableForWarehouse(final WarehouseId warehouseId)

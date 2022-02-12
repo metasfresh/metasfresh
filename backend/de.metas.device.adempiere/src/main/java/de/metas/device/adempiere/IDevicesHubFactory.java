@@ -34,7 +34,7 @@ public interface IDevicesHubFactory extends ISingletonService
 
 	AttributesDevicesHub getAttributesDevicesHub(IHostIdentifier clientHost, ClientId adClientId, OrgId adOrgId);
 
-	default AttributeDeviceAccessor getAttributeDeviceAccessorById(@NonNull String deviceId)
+	default AttributeDeviceAccessor getAttributeDeviceAccessorById(@NonNull DeviceId deviceId)
 	{
 		return getDefaultAttributesDevicesHub().getAttributeDeviceAccessorById(deviceId);
 	}

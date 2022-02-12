@@ -82,9 +82,9 @@ public class JSONDeviceDescriptor
 			@NonNull final String adLanguage)
 	{
 		return JSONDeviceDescriptor.builder()
-				.deviceId(descriptor.getDeviceId())
+				.deviceId(descriptor.getDeviceId().getAsString())
 				.caption(descriptor.getCaption().translate(adLanguage))
-				.websocketEndpoint(descriptor.getWebsocketEndpoint())
+				.websocketEndpoint(descriptor.getWebsocketEndpoint().getAsString())
 				.build();
 	}
 }

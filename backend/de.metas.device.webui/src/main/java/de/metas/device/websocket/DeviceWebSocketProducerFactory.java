@@ -2,8 +2,8 @@ package de.metas.device.websocket;
 
 import com.google.common.base.MoreObjects;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
+import de.metas.device.adempiere.DeviceId;
 import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
@@ -49,20 +49,19 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 
 	private final IDevicesHubFactory devicesHubFactory = Services.get(IDevicesHubFactory.class);
 
-	public static String buildDeviceTopicName(@NonNull final String deviceId)
+	public static WebsocketTopicName buildDeviceTopicName(@NonNull final DeviceId deviceId)
 	{
-		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
-		return TOPIC_AND_SLASH + deviceId;
+		return WebsocketTopicName.ofString(TOPIC_AND_SLASH + deviceId.getAsString());
 	}
 
 	@Nullable
-	private static String extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
+	private static DeviceId extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
 	{
 		final String topicNameString = topicName.getAsString();
 
 		if (topicNameString.startsWith(TOPIC_AND_SLASH))
 		{
-			return topicNameString.substring(TOPIC_AND_SLASH.length());
+			return DeviceId.ofString(topicNameString.substring(TOPIC_AND_SLASH.length()));
 		}
 		else
 		{
@@ -85,7 +84,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 	@Override
 	public WebSocketProducer createProducer(final WebsocketTopicName topicName)
 	{
-		final String deviceId = extractDeviceIdFromTopicName(topicName);
+		final DeviceId deviceId = extractDeviceIdFromTopicName(topicName);
 		if (deviceId == null)
 		{
 			throw new AdempiereException("Cannot extract deviceId from topic name `" + topicName + "`");

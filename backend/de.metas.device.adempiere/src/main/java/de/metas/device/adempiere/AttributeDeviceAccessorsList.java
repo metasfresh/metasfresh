@@ -1,19 +1,16 @@
 package de.metas.device.adempiere;
 
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.Check;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.concurrent.Immutable;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -40,7 +37,7 @@ import de.metas.util.Check;
 /**
  * List of {@link AttributeDeviceAccessor}s.
  *
- * It also contains other informations like {@link AttributeDeviceAccessorsList#getWarningMessage()}.
+ * It also contains other information like warningMessage.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -61,7 +58,7 @@ public final class AttributeDeviceAccessorsList
 	static final AttributeDeviceAccessorsList EMPTY = new AttributeDeviceAccessorsList();
 
 	private final ImmutableList<AttributeDeviceAccessor> attributeDeviceAccessors;
-	private final ImmutableMap<String, AttributeDeviceAccessor> attributeDeviceAccessorsById;
+	private final ImmutableMap<DeviceId, AttributeDeviceAccessor> attributeDeviceAccessorsById;
 	private final String warningMessage;
 
 	private AttributeDeviceAccessorsList(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
@@ -89,11 +86,6 @@ public final class AttributeDeviceAccessorsList
 				.toString();
 	}
 
-	public List<AttributeDeviceAccessor> getAttributeDeviceAccessors()
-	{
-		return attributeDeviceAccessors;
-	}
-
 	public Stream<AttributeDeviceAccessor> stream()
 	{
 		return attributeDeviceAccessors.stream();
@@ -105,33 +97,21 @@ public final class AttributeDeviceAccessorsList
 				.filter(attributeDeviceAccessor -> attributeDeviceAccessor.isAvailableForWarehouse(warehouseId));
 	}
 
-	public AttributeDeviceAccessor getByIdOrNull(final String id)
+	public AttributeDeviceAccessor getByIdOrNull(final DeviceId id)
 	{
 		return attributeDeviceAccessorsById.get(id);
 	}
 
 	/**
-	 * @return warning message(s) fired while the devices were created or configured
+	 * Convenient (fluent) method to consume the warningMessage if any.
 	 */
-	public String getWarningMessage()
+	public void consumeWarningMessageIfAny(final Consumer<String> warningMessageConsumer)
 	{
-		return warningMessage;
-	}
-
-	/**
-	 * Convenient (fluent) method to consume {@link #getWarningMessage()} if any.
-	 *
-	 * @param warningMessageConsumer
-	 */
-	public AttributeDeviceAccessorsList consumeWarningMessageIfAny(final Consumer<String> warningMessageConsumer)
-	{
-		if (Check.isEmpty(warningMessage, true))
+		if (warningMessage == null || Check.isBlank(warningMessage))
 		{
-			return this;
+			return;
 		}
 
 		warningMessageConsumer.accept(warningMessage);
-
-		return this;
 	}
 }

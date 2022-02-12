@@ -2,10 +2,11 @@ package de.metas.device.websocket;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import lombok.Builder;
+import de.metas.device.adempiere.DeviceId;
+import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /*
@@ -30,19 +31,17 @@ import java.io.Serializable;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Builder
-@Jacksonized
 public class JSONDeviceValueChangedEvent implements Serializable
 {
 	String deviceId;
 	Object value;
 	long timestampMillis;
 
-	public static JSONDeviceValueChangedEvent of(final String deviceId, final Object jsonValue)
+	public static JSONDeviceValueChangedEvent of(@NonNull final DeviceId deviceId, @Nullable final Object jsonValue)
 	{
 		final long timestampMillis = System.currentTimeMillis();
-		return new JSONDeviceValueChangedEvent(deviceId, jsonValue, timestampMillis);
+		return new JSONDeviceValueChangedEvent(deviceId.getAsString(), jsonValue, timestampMillis);
 	}
 }

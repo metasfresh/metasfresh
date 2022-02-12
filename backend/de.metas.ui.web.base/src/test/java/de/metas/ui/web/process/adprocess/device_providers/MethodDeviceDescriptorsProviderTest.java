@@ -1,7 +1,9 @@
 package de.metas.ui.web.process.adprocess.device_providers;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.device.adempiere.DeviceId;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.websocket.WebsocketTopicName;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
@@ -66,9 +68,9 @@ public class MethodDeviceDescriptorsProviderTest
 	private DeviceDescriptor createDeviceDescriptor(final String deviceId)
 	{
 		return DeviceDescriptor.builder()
-				.deviceId(deviceId)
+				.deviceId(DeviceId.ofString(deviceId))
 				.caption(TranslatableStrings.anyLanguage("caption_" + deviceId))
-				.websocketEndpoint("websocketEndpoint_" + deviceId)
+				.websocketEndpoint(WebsocketTopicName.ofString("websocketEndpoint_" + deviceId))
 				.build();
 	}
 
