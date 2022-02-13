@@ -73,6 +73,7 @@
 
         <module>de.metas.aggregation</module>
 
+        <module>de.metas.global_qrcode.api</module>
         <module>de.metas.business</module>
 
         <module>de.metas.business.rest-api</module>

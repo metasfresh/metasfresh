@@ -1,6 +1,5 @@
 package de.metas.global_qrcodes;
 
-import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 class PrintableQRCodeTest
 {
 	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG);}
 
 	private PrintableQRCode newStandardPrintableQRCode()
 	{
