@@ -118,7 +118,7 @@ public interface I_PP_Order_Node
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -128,7 +128,7 @@ public interface I_PP_Order_Node
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -273,7 +273,8 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
-	 * Set DateStartSchedule.
+	 * Set Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -282,7 +283,8 @@ public interface I_PP_Order_Node
 	void setDateStartSchedule (@Nullable java.sql.Timestamp DateStartSchedule);
 
 	/**
-	 * Get DateStartSchedule.
+	 * Get Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -490,19 +492,19 @@ public interface I_PP_Order_Node
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (@Nullable java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_Name = new ModelColumn<>(I_PP_Order_Node.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -627,8 +629,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -637,8 +638,7 @@ public interface I_PP_Order_Node
 	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -736,7 +736,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table
@@ -746,7 +746,7 @@ public interface I_PP_Order_Node
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table

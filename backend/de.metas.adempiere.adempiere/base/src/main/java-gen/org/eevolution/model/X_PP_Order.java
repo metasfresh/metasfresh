@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1398694279L;
+	private static final long serialVersionUID = -1808118019L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -339,6 +339,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getCurrent_Receiving_TU_PI_Item_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public void setCurrentScaleDeviceId (final @Nullable java.lang.String CurrentScaleDeviceId)
+	{
+		set_Value (COLUMNNAME_CurrentScaleDeviceId, CurrentScaleDeviceId);
+	}
+
+	@Override
+	public java.lang.String getCurrentScaleDeviceId() 
+	{
+		return get_ValueAsString(COLUMNNAME_CurrentScaleDeviceId);
 	}
 
 	@Override
