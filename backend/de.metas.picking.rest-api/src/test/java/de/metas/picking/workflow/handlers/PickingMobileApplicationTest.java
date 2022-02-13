@@ -221,7 +221,7 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
 							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
 							.build()
@@ -362,7 +362,7 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
 							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
 							.build()

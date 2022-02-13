@@ -28,16 +28,15 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupportHelper;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
-import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
@@ -46,7 +45,6 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.setPickingSlot");
-	public static final UIComponentType COMPONENTTYPE = UIComponentType.SCAN_BARCODE;
 
 	private final PickingJobRestService pickingJobRestService;
 
@@ -65,13 +63,8 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 			final @NonNull JsonOpts jsonOpts)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-
-		return UIComponent.builder()
-				.type(COMPONENTTYPE)
-				.properties(Params.builder()
-						.value("barcodeCaption", pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null))
-						.build())
-				.build();
+		final String barcodeCaption = pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null);
+		return SetScannedBarcodeSupportHelper.createUIComponent(barcodeCaption);
 	}
 
 	@Override

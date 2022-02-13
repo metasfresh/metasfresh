@@ -22,6 +22,24 @@
 
 package de.metas.workflow.rest_api.activity_features.set_scanned_barcode;
 
+import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.UIComponentType;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.api.Params;
+
+import javax.annotation.Nullable;
+
+@UtilityClass
 public class SetScannedBarcodeSupportHelper
 {
+	public static UIComponent createUIComponent(
+			@Nullable final String barcodeCaption)
+	{
+		return UIComponent.builder()
+				.type(UIComponentType.SCAN_BARCODE)
+				.properties(Params.builder()
+						.value("barcodeCaption", barcodeCaption)
+						.build())
+				.build();
+	}
 }
