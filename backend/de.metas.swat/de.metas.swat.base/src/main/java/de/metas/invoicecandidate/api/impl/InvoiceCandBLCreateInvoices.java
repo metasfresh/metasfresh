@@ -145,7 +145,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final transient IInOutDAO inoutDAO = Services.get(InOutDAO.class);
+	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
