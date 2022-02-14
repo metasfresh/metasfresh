@@ -95,16 +95,12 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public I_PP_Order_Candidate createCandidateWithLines(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
+	public I_PP_Order_Candidate createCandidate(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
 	{
-		final I_PP_Order_Candidate ppOrderCandidateRecord = CreateOrderCandidateCommand.builder()
+		return CreateOrderCandidateCommand.builder()
 				.request(ppOrderCandidateCreateRequest)
 				.build()
 				.execute();
-
-		createPPOrderCandidateLines(ppOrderCandidateRecord);
-
-		return ppOrderCandidateRecord;
 	}
 
 	@NonNull
@@ -166,7 +162,7 @@ public class PPOrderCandidateService
 		}
 		else
 		{
-			final Quantity finishedGoodQty = Quantitys.create(ppOrderCandidate.getQtyEntered(), UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID()));
+			final Quantity finishedGoodQty = Quantitys.create(ppOrderCandidate.getQtyToProcess(), UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID()));
 
 			orderCandidateLines.forEach(ppOrderCandidateLine -> {
 				final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
@@ -257,7 +253,7 @@ public class PPOrderCandidateService
 			orderLineCandidate.setM_AttributeSetInstance_ID(asiCopy.getRepoId());
 		}
 
-		final Quantity finishedGoodQty = Quantitys.create(orderCandidateRecord.getQtyEntered(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
+		final Quantity finishedGoodQty = Quantitys.create(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
 
 		final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
 				.finishedGoodQty(finishedGoodQty)

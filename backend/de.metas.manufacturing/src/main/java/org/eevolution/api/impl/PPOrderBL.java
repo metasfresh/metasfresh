@@ -34,12 +34,17 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
@@ -115,6 +120,9 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
+	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -597,5 +605,19 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setC_OrderLine(ol);
 
 		ppOrdersRepo.save(ppOrder);
+	}
+
+	@Override
+	public void postPPOrderCreatedEvent(final @NonNull I_PP_Order ppOrder)
+	{
+		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrder);
+
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrder.getAD_Client_ID(), ppOrder.getAD_Org_ID()))
+				.ppOrder(ppOrderPojo)
+				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
+				.build();
+
+		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 }

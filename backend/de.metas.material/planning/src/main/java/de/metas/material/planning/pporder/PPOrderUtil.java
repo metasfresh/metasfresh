@@ -1,7 +1,9 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.IProductDAO;
@@ -12,6 +14,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -21,6 +24,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -183,5 +187,25 @@ public class PPOrderUtil
 		orderBOMLine.setAD_Org_ID(fromOrder.getAD_Org_ID());
 		orderBOMLine.setM_Warehouse_ID(fromOrder.getM_Warehouse_ID());
 		orderBOMLine.setM_Locator_ID(fromOrder.getM_Locator_ID());
+	}
+
+	public boolean pickIfFeasible(@NonNull final PPOrderData ppOrderData)
+	{
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId());
+
+		final IProductPlanningDAO.ProductPlanningQuery productPlanningQuery = IProductPlanningDAO.ProductPlanningQuery.builder()
+				.orgId(ppOrderData.getClientAndOrgId().getOrgId())
+				.warehouseId(ppOrderData.getWarehouseId())
+				.plantId(ppOrderData.getPlantId())
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
+				.build();
+
+		return productPlanningDAO.find(productPlanningQuery)
+				.map(I_PP_Product_Planning::isPickDirectlyIfFeasible)
+				.orElse(false);
 	}
 }

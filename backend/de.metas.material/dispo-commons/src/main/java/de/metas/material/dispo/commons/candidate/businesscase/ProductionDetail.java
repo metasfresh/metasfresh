@@ -58,6 +58,8 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	int ppOrderCandidateId;
 
+	int ppOrderLineCandidateId;
+
 	DocStatus ppOrderDocStatus;
 
 	int ppOrderLineId;
@@ -76,6 +78,7 @@ public class ProductionDetail implements BusinessCaseDetail
 			final String description,
 			final int ppOrderId,
 			final int ppOrderCandidateId,
+			final int ppOrderLineCandidateId,
 			final DocStatus ppOrderDocStatus,
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
@@ -99,6 +102,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.description = description;
 		this.ppOrderId = ppOrderId;
 		this.ppOrderCandidateId = ppOrderCandidateId;
+		this.ppOrderLineCandidateId = ppOrderLineCandidateId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
 		this.qty = qty;

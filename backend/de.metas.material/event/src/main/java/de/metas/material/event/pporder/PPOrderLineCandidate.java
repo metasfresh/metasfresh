@@ -2,7 +2,7 @@
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,28 +29,21 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class PPOrderCandidate
+public class PPOrderLineCandidate
 {
-	int ppOrderCandidateId;
+	int ppOrderLineCandidateId;
 
-	PPOrderData ppOrderData;
-
-	List<PPOrderLineCandidate> lines;
+	PPOrderLineData ppOrderLineData;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	public PPOrderCandidate(
-			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
-			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
-			@JsonProperty("lines") @Nullable final List<PPOrderLineCandidate> lines)
+	public PPOrderLineCandidate(
+			@JsonProperty("ppOrderLineCandidateId") final int ppOrderLineCandidateId,
+			@JsonProperty("ppOrderLineData") @NonNull final PPOrderLineData ppOrderLineData)
 	{
-		this.ppOrderCandidateId = ppOrderCandidateId;
-		this.ppOrderData = ppOrderData;
-		this.lines = lines;
+		this.ppOrderLineCandidateId = ppOrderLineCandidateId;
+		this.ppOrderLineData = ppOrderLineData;
 	}
 }

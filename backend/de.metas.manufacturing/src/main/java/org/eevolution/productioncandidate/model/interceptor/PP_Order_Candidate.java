@@ -63,8 +63,10 @@ public class PP_Order_Candidate
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void postNewMaterialEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
+		ppOrderCandidateService.syncLinesWithRequiredQty(ppOrderCandidateRecord);
+
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
@@ -77,12 +79,20 @@ public class PP_Order_Candidate
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
 	public void syncLinesAndMaterialDisposition(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		validateQuantities(ppOrderCandidateRecord);
+		final I_PP_Order_Candidate oldRecord = InterfaceWrapperHelper.createOld(ppOrderCandidateRecord, I_PP_Order_Candidate.class);
 
-		ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
+		final boolean qtyEnteredOrProcessedChanged = !oldRecord.getQtyEntered().equals(ppOrderCandidateRecord.getQtyEntered())
+				|| !oldRecord.getQtyProcessed().equals(ppOrderCandidateRecord.getQtyProcessed());
+
+		if (qtyEnteredOrProcessedChanged)
+		{
+			ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
+		}
+
+		validateQuantities(ppOrderCandidateRecord);
 
 		if (!InterfaceWrapperHelper.isNew(ppOrderCandidateRecord))
 		{
@@ -110,12 +120,20 @@ public class PP_Order_Candidate
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_QtyToProcess)
-	public void validateQtyToProcess(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final BigDecimal qtyEntered = ppOrderCandidateRecord.getQtyEntered();
 		final BigDecimal qtyProcessed = ppOrderCandidateRecord.getQtyProcessed();
 		final BigDecimal actualQtyLeftToBeProcessed = qtyEntered.subtract(qtyProcessed);
+
+		if (qtyEntered.compareTo(qtyProcessed) < 0)
+		{
+			throw new AdempiereException("QtyEntered cannot go lower than the QtyProcessed!")
+					.appendParametersToMessage()
+					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
+					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
+					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered());
+		}
 
 		if (ppOrderCandidateRecord.getQtyToProcess().compareTo(actualQtyLeftToBeProcessed) > 0)
 		{
@@ -126,21 +144,6 @@ public class PP_Order_Candidate
 					.setParameter("PP_Order_Candidate.QtyEntered", ppOrderCandidateRecord.getQtyEntered())
 					.setParameter("PP_Order_Candidate.QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
 					.markAsUserValidationError();
-		}
-	}
-
-	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
-	{
-		final BigDecimal qtyEntered = ppOrderCandidateRecord.getQtyEntered();
-		final BigDecimal qtyProcessed = ppOrderCandidateRecord.getQtyProcessed();
-
-		if (qtyEntered.compareTo(qtyProcessed) < 0)
-		{
-			throw new AdempiereException("QtyEntered cannot go lower than the QtyProcessed!")
-					.appendParametersToMessage()
-					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
-					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
-					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered());
 		}
 	}
 
