@@ -709,7 +709,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if (Check.isEmpty(getIncoterm()))
+		if (getC_Incoterms_ID() <= 0)
 		{
 			setIncotermLocation("");
 		}
