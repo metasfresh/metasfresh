@@ -40,7 +40,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -59,13 +58,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
@@ -76,7 +73,6 @@ public class PP_Order_Candidate_StepDef
 	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
 	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
 	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
 	private final PPOrderCandidateService ppOrderCandidateService;
@@ -89,11 +85,9 @@ public class PP_Order_Candidate_StepDef
 			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
 			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
 			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.orderLineTable = orderLineTable;
 		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
 		this.ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
 
@@ -155,17 +149,6 @@ public class PP_Order_Candidate_StepDef
 		for (final Map<String, String> row : tableRows)
 		{
 			ppOrderCandidateService.reopenCandidate(getPPOrderCandidate(row));
-		}
-	}
-
-	@And("^after not more than (.*)s, no PP_Order_Candidates are found:$")
-	public void PP_Order_Candidates_not_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadPPOrderCandidates(tableRow));
-			assertThat(candidateFound).isFalse();
 		}
 	}
 
@@ -271,28 +254,5 @@ public class PP_Order_Candidate_StepDef
 
 			assertThat(ppOrderCandAttributesKeys).isEqualTo(expectedAttributesKeys);
 		}
-	}
-
-	private boolean loadPPOrderCandidates(@NonNull final Map<String, String> row)
-	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-
-		assertThat(orderLine).isNotNull();
-
-		final Optional<I_PP_Order_Candidate> ppOrderCandidate = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.create()
-				.firstOnlyOptional(I_PP_Order_Candidate.class);
-
-		if (!ppOrderCandidate.isPresent())
-		{
-			return false;
-		}
-
-		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_PP_Order_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		ppOrderCandidateTable.put(ppOrderIdentifier, ppOrderCandidate.get());
-
-		return true;
 	}
 }
