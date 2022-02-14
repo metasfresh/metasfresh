@@ -87,6 +87,8 @@ import java.util.List;
 
 	private int C_Incoterms_ID;
 
+	private String incotermLocation;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}
@@ -337,6 +339,17 @@ import java.util.List;
 	public void setC_Incoterms_ID(final int C_Incoterms_ID)
 	{
 		this.C_Incoterms_ID = C_Incoterms_ID;
+	}
+
+	@Override
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = incotermLocation;
 	}
 
 }
