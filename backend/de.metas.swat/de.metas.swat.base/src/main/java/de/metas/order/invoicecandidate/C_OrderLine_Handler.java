@@ -234,6 +234,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
 
+		icRecord.setEMail(order.getEMail());
+
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
 		// Don't save.

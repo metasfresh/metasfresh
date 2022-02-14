@@ -397,6 +397,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
+			if(Check.isEmpty(invoice.getEMail(), true))
+			{
+				invoice.setEMail(invoiceHeader.getEMail());
+			}
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 
