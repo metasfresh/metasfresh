@@ -1,7 +1,11 @@
 package de.metas.manufacturing.job.service;
 
 import de.metas.dao.ValueRestriction;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
@@ -14,6 +18,7 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToLU;
@@ -24,6 +29,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -43,6 +49,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -55,15 +62,18 @@ public class ManufacturingJobService
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
+	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
+			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
+		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
 
 		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -280,6 +290,54 @@ public class ManufacturingJobService
 				.date(date)
 				//
 				.build().execute();
+	}
+
+	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
+	{
+		if (!DeviceId.equals(job.getCurrentScaleDeviceId(), currentScaleDeviceId))
+		{
+			final ManufacturingJob jobChanged = job.withCurrentScaleDevice(currentScaleDeviceId);
+			newSaver().saveHeader(jobChanged);
+			return jobChanged;
+		}
+		else
+		{
+			return job;
+		}
+	}
+
+	public Optional<ScaleDevice> getCurrentScaleDevice(final ManufacturingJob job)
+	{
+		final DeviceId currentScaleDeviceId = job.getCurrentScaleDeviceId();
+		return currentScaleDeviceId != null
+				? getScaleDevice(currentScaleDeviceId)
+				: Optional.empty();
+	}
+
+	private Optional<ScaleDevice> getScaleDevice(@NonNull final DeviceId currentScaleDeviceId)
+	{
+		return deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessorById(currentScaleDeviceId)
+				.map(ManufacturingJobService::toScaleDevice);
+	}
+
+	private static ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
+	{
+		return ScaleDevice.builder()
+				.deviceId(deviceAccessor.getId())
+				.caption(deviceAccessor.getDisplayName())
+				.websocketEndpoint(WebsocketTopicName.ofString("TODO-websocketTopic!!!")) // TOD
+				.build();
+	}
+
+	public Stream<ScaleDevice> streamAvailableScaleDevices(@NonNull final ManufacturingJob job)
+	{
+		return deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessors(Weightables.ATTR_WeightGross)
+				.stream(job.getWarehouseId())
+				.map(ManufacturingJobService::toScaleDevice);
 	}
 
 }

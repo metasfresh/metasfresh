@@ -132,4 +132,11 @@ public class ManufacturingJob
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No finished goods receive line found for " + finishedGoodsReceiveLineId));
 	}
+
+	public ManufacturingJob withCurrentScaleDevice(@Nullable final DeviceId currentScaleDeviceId)
+	{
+		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
+				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
+				: this;
+	}
 }

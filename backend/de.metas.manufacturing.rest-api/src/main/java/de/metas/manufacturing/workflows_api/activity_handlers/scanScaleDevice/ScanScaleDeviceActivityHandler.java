@@ -1,8 +1,12 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice;
 
-import de.metas.device.accessor.DeviceAccessor;
-import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import com.google.common.collect.ImmutableList;
+import de.metas.device.accessor.DeviceId;
+import de.metas.device.accessor.qrcode.DeviceQRCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ScaleDevice;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupportHelper;
@@ -17,18 +21,19 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.scanScaleDevice");
 
-	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
+	private final ManufacturingJobService manufacturingJobService;
 
 	public ScanScaleDeviceActivityHandler(
-			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory)
+			final @NonNull ManufacturingJobService manufacturingJobService)
 	{
-		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
+		this.manufacturingJobService = manufacturingJobService;
 	}
 
 	@Override
@@ -40,25 +45,40 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		final String barcodeCaption = getCurrentScaleDevice(wfProcess)
-				.map(deviceAccessor -> deviceAccessor.getDisplayName().translate(jsonOpts.getAdLanguage()))
+		final JsonQRCode currentScaleDevice = getCurrentScaleDevice(wfProcess)
+				.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
 				.orElse(null);
-		return SetScannedBarcodeSupportHelper.createUIComponent(barcodeCaption);
+
+		final ImmutableList<JsonQRCode> availableScaleDevices = streamAvailableScaleDevices(wfProcess)
+				.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
+				.collect(ImmutableList.toImmutableList());
+
+		return SetScannedBarcodeSupportHelper.createUIComponent(currentScaleDevice, availableScaleDevices);
 	}
 
-	private Optional<DeviceAccessor> getCurrentScaleDevice(final @NonNull WFProcess wfProcess)
+	private Optional<ScaleDevice> getCurrentScaleDevice(final @NonNull WFProcess wfProcess)
 	{
 		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
-		if (job.getCurrentScaleDeviceId() != null)
-		{
-			return deviceAccessorsHubFactory
-					.getDefaultDeviceAccessorsHub()
-					.getDeviceAccessorById(job.getCurrentScaleDeviceId());
-		}
-		else
-		{
-			return Optional.empty();
-		}
+		return manufacturingJobService.getCurrentScaleDevice(job);
+	}
+
+	private Stream<ScaleDevice> streamAvailableScaleDevices(final @NonNull WFProcess wfProcess)
+	{
+		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		return manufacturingJobService.streamAvailableScaleDevices(job);
+	}
+
+	private static JsonQRCode toJsonQRCode(final ScaleDevice scaleDevice, final String adLanguage)
+	{
+		final DeviceQRCode qrCode = DeviceQRCode.builder()
+				.deviceId(scaleDevice.getDeviceId())
+				.caption(scaleDevice.getCaption().translate(adLanguage))
+				.build();
+
+		return JsonQRCode.builder()
+				.qrCode(qrCode.toGlobalQRCodeJsonString())
+				.caption(qrCode.getCaption())
+				.build();
 	}
 
 	@Override
@@ -72,9 +92,8 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 	@Override
 	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
 	{
-		// final PickingSlotBarcode pickingSlotBarcode = PickingSlotBarcode.ofBarcodeString(request.getScannedBarcode());
-		// final WFProcess wfProcess = request.getWfProcess();
-		// return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
-		throw new UnsupportedOperationException(); // TODO
+		final DeviceId newScaleDeviceId = DeviceQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode()).getDeviceId();
+		final WFProcess wfProcess = request.getWfProcess();
+		return wfProcess.<ManufacturingJob>mapDocument(job -> manufacturingJobService.withCurrentScaleDevice(job, newScaleDeviceId));
 	}
 }

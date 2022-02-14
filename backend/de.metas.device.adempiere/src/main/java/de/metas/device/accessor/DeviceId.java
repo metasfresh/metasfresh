@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -50,4 +51,6 @@ public final class DeviceId
 	{
 		return value;
 	}
+
+	public static boolean equals(@Nullable final DeviceId deviceId1, @Nullable final DeviceId deviceId2) {return Objects.equals(deviceId1, deviceId2);}
 }

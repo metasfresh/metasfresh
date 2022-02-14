@@ -30,6 +30,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -340,5 +341,12 @@ public class ManufacturingJobLoaderAndSaver
 	public void saveRouting(final PPOrderRouting routing)
 	{
 		supportingServices.saveOrderRouting(routing);
+	}
+
+	public void saveHeader(@NonNull final ManufacturingJob job)
+	{
+		final I_PP_Order ppOrder = getPPOrderRecordById(job.getPpOrderId());
+		ppOrder.setCurrentScaleDeviceId(job.getCurrentScaleDeviceId() != null ? job.getCurrentScaleDeviceId().getAsString() : null);
+		InterfaceWrapperHelper.saveRecord(ppOrder);
 	}
 }

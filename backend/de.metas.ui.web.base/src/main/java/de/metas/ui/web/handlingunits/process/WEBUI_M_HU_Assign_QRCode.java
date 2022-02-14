@@ -79,7 +79,7 @@ public class WEBUI_M_HU_Assign_QRCode extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt()
 	{
-		final HUQRCode huQRCode = HUQRCodeJsonConverter.fromQRCodeString(p_Barcode);
+		final HUQRCode huQRCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(p_Barcode);
 
 		huQRCodesService.assign(huQRCode, HuId.ofRepoId(getRecord_ID()));
 

@@ -69,7 +69,7 @@ public class HUQRCodesService
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final String qrCodeString)
 	{
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromQRCodeString(qrCodeString);
+		final HUQRCode qrCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 		return getHuIdByQRCodeIfExists(qrCode);
 	}
 

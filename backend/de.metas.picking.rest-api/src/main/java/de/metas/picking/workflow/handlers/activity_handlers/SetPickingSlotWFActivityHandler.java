@@ -26,6 +26,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupportHelper;
@@ -62,9 +63,20 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		final PickingJob pickingJob = getPickingJob(wfProcess);
-		final String barcodeCaption = pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null);
-		return SetScannedBarcodeSupportHelper.createUIComponent(barcodeCaption);
+		final JsonQRCode currentPickingSlot = getPickingJob(wfProcess)
+				.getPickingSlot()
+				.map(SetPickingSlotWFActivityHandler::toJsonQRCode)
+				.orElse(null);
+
+		return SetScannedBarcodeSupportHelper.createUIComponent(currentPickingSlot);
+	}
+
+	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	{
+		return JsonQRCode.builder()
+				.qrCode(PickingSlotBarcode.ofPickingSlotId(pickingSlotIdAndCaption.getPickingSlotId()).getAsString())
+				.caption(pickingSlotIdAndCaption.getCaption())
+				.build();
 	}
 
 	@Override
