@@ -24,3 +24,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Field SET DisplayLogic='@C_Incoterm_ID@ >0',Updated=TO_TIMESTAMP('2022-02-14 12:51:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501623
 ;
 
+
+-- 2022-02-14T10:54:56.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@C_Incoterms_ID/-1@>0 ',Updated=TO_TIMESTAMP('2022-02-14 12:54:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=501623
+;
+
