@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
@@ -90,12 +91,15 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final DunningDocId dunningDocId = DunningDocId.ofRepoId(dunningRecord.getC_DunningDoc_ID());
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
-		final String invoiceEmail = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getEMail, null);
+
 		if (singleCommonInvoiceContactId > 0)
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
 
-			if (!Check.isEmpty(invoiceEmail,true))
+			final String invoiceEmail = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices,
+																					  invoice -> CoalesceUtil.coalesce(invoice.getEMail(), ""),
+																					  "");
+			if (!Check.isEmpty(invoiceEmail, true))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, invoiceEmail);
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
