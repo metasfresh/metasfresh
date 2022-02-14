@@ -169,7 +169,10 @@ public class BankStatementImportTableSqlUpdater
 																+ " WHERE a." + I_C_BP_BankAccount.COLUMNNAME_IBAN
 																+ " = i." + I_I_BankStatement.COLUMNNAME_IBAN
 																+ " AND a.AD_Client_ID=i.AD_Client_ID "
-																+ " )"
+																+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
+																+ " = a. " + I_C_BP_BankAccount.COLUMNNAME_AD_Org_ID
+																+ " AND a."+ I_C_BP_BankAccount.COLUMNNAME_IsActive
+																+ " = 'Y' )"
 																+ "WHERE i.C_BP_BankAccount_ID IS NULL "
 																+ "AND i.I_IsImported<>'Y' "
 																+ "OR i.I_IsImported IS NULL")
@@ -264,7 +267,9 @@ public class BankStatementImportTableSqlUpdater
 															+ " FROM " + I_C_BP_BankAccount.Table_Name + " ba "
 															+ " WHERE ba." + I_C_BP_BankAccount.COLUMNNAME_IBAN
 															+ " = i." + I_I_BankStatement.COLUMNNAME_IBAN_To
-															+ " AND ba."+ I_C_BP_BankAccount.COLUMNNAME_IsActive
+															+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
+															+ " = a. " + I_C_BP_BankAccount.COLUMNNAME_AD_Org_ID
+															+ " AND a."+ I_C_BP_BankAccount.COLUMNNAME_IsActive
 															+ " = 'Y' )"
 															+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BP_BankAccountTo_ID + " IS NULL "
 															+ "AND i.I_IsImported<>'Y' "
