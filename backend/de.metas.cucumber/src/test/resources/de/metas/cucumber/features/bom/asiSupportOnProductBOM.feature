@@ -151,11 +151,15 @@ Feature: ASI support in Product BOM rest-api
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S1              | 5          | orderLineAttributeSetInstance            |
+
+    And metasfresh has no AD_EventLog_Entry records
+
     And the order identified by order_SO is completed
 
-    And after not more than 30s, no PP_Order_Candidates are found:
-      | C_OrderLine_ID.Identifier |
-      | orderLine_SO              |
+    And after not more than 30s, AD_EventLog_Entry are found
+      | AD_EventLog_Entry_ID.Identifier | Classname                                              | MsgText                                               | Processed |
+      | eventLog_1                      | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
+      | eventLog_2                      | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI
@@ -375,18 +379,6 @@ Feature: ASI support in Product BOM rest-api
       | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
       | pp_finishedGood | product_S3              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
-    And metasfresh contains M_AttributeSetInstance with identifier "po_AttributeSetInstance":
-  """
-  {
-    "attributeInstances":[
-      {
-        "attributeCode":"1000002",
-          "valueStr":"Bio"
-      }
-    ]
-  }
-  """
-
     And metasfresh contains M_PricingSystems
       | Identifier | Name  | Value | OPT.IsActive |
       | ps_PO      | ps_PO | ps_PO | true         |
@@ -405,6 +397,18 @@ Feature: ASI support in Product BOM rest-api
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier |
       | supplierLocation_PO | supplierP101 | supplier_PO              |
+
+    And metasfresh contains M_AttributeSetInstance with identifier "po_AttributeSetInstance":
+  """
+  {
+    "attributeInstances":[
+      {
+        "attributeCode":"1000002",
+          "valueStr":"Bio"
+      }
+    ]
+  }
+  """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
       | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             | 2022-01-08T21:00:00Z |
