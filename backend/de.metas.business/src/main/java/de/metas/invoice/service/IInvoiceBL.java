@@ -423,4 +423,6 @@ public interface IInvoiceBL extends ISingletonService
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	String getLocationEmail(InvoiceId invoiceId);
 }

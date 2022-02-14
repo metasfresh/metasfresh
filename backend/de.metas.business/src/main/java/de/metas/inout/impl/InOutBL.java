@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -42,6 +43,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -126,7 +129,6 @@ public class InOutBL implements IInOutBL
 		return getLines(inout);
 	}
 
-
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
@@ -160,8 +162,8 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+												 + "\n @M_InOut_ID@: " + inOut
+												 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -172,8 +174,8 @@ public class InOutBL implements IInOutBL
 				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
-				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
-				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
+					  "No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+					  inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
@@ -237,7 +239,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+													 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -591,5 +593,35 @@ public class InOutBL implements IInOutBL
 				.build();
 
 		return requestsRepo.createRequest(requestCandidate);
+	}
+
+	public String getLocationEmail(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inOutId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final I_AD_User contactRecord = bpartnerDAO.getContactById(BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID()));
+
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+		if (contactLocationId != null)
+		{
+			final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
+			final String contactLocationEmail = contactLocationRecord.getEMail();
+
+			if (!Check.isEmpty(contactLocationEmail))
+			{
+				return contactLocationEmail;
+			}
+		}
+
+		return null;
 	}
 }

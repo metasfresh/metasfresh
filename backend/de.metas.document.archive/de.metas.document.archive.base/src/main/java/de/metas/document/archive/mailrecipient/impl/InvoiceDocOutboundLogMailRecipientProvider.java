@@ -10,8 +10,11 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.user.User;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -47,6 +50,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 
 	private final DocOutBoundRecipientRepository recipientRepository;
 	private final IBPartnerBL bpartnerBL;
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public InvoiceDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
@@ -73,12 +77,14 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	{
 		final I_C_Invoice invoiceRecord = request.getRecordRef()
 				.getModel(I_C_Invoice.class);
+
+		final String invoiceEmail = invoiceRecord.getEMail();
+
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
 
-			final String invoiceEmail = invoiceRecord.getEMail();
-			if(!Check.isEmpty(invoiceEmail, true))
+			if (!Check.isEmpty(invoiceEmail, true))
 			{
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
 			}
@@ -87,6 +93,14 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 			{
 				return Optional.of(invoiceUser);
 			}
+
+			final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+
+			if (!Check.isEmpty(locationEmail))
+			{
+				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
+			}
+
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
@@ -103,7 +117,14 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
+
+			if (!Check.isEmpty(invoiceEmail, true))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
+			}
+
 			return Optional.of(docOutBoundRecipient);
+
 		}
 		return Optional.empty();
 	}
