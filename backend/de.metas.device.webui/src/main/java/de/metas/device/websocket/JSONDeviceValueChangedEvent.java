@@ -7,7 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.io.Serializable;
 
 /*
  * #%L
@@ -33,7 +32,7 @@ import java.io.Serializable;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONDeviceValueChangedEvent implements Serializable
+public class JSONDeviceValueChangedEvent
 {
 	String deviceId;
 	Object value;

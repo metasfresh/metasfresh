@@ -1,9 +1,11 @@
-package de.metas.device.dummy;
+package de.metas.device.rest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfig;
+import de.metas.device.dummy.DummyDeviceAddRequest;
+import de.metas.device.dummy.DummyDeviceConfigPool;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;

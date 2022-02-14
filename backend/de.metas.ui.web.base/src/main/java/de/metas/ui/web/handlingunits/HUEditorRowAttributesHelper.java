@@ -3,9 +3,8 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.accessor.DeviceAccessor;
-import de.metas.device.accessor.DeviceId;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
-import de.metas.device.websocket.DeviceWebSocketProducerFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
@@ -13,6 +12,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -123,7 +123,7 @@ public final class HUEditorRowAttributesHelper
 		return DeviceDescriptor.builder()
 				.deviceId(deviceId)
 				.caption(deviceAccessor.getDisplayName())
-				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
+				.websocketEndpoint(WebsocketTopicNames.DEVICES_NAMING_STRATEGY.toWebsocketEndpoint(deviceId))
 				.build();
 	}
 

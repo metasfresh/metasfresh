@@ -4,6 +4,7 @@ import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
+import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -29,7 +30,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -63,17 +63,20 @@ public class ManufacturingJobService
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
+	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
+			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
+		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
 
 		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -319,15 +322,15 @@ public class ManufacturingJobService
 		return deviceAccessorsHubFactory
 				.getDefaultDeviceAccessorsHub()
 				.getDeviceAccessorById(currentScaleDeviceId)
-				.map(ManufacturingJobService::toScaleDevice);
+				.map(this::toScaleDevice);
 	}
 
-	private static ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
+	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
 	{
 		return ScaleDevice.builder()
 				.deviceId(deviceAccessor.getId())
 				.caption(deviceAccessor.getDisplayName())
-				.websocketEndpoint(WebsocketTopicName.ofString("TODO-websocketTopic!!!")) // TOD
+				.websocketEndpoint(deviceWebsocketNamingStrategy.toWebsocketEndpoint(deviceAccessor.getId()))
 				.build();
 	}
 
@@ -337,7 +340,7 @@ public class ManufacturingJobService
 				.getDefaultDeviceAccessorsHub()
 				.getDeviceAccessors(Weightables.ATTR_WeightGross)
 				.stream(job.getWarehouseId())
-				.map(ManufacturingJobService::toScaleDevice);
+				.map(this::toScaleDevice);
 	}
 
 }

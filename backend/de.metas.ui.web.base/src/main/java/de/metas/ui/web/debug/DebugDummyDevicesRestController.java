@@ -4,7 +4,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.device.dummy.DummyDevicesRestControllerTemplate;
+import de.metas.device.rest.DummyDevicesRestControllerTemplate;
 import de.metas.ui.web.session.UserSession;
 import lombok.NonNull;
 

@@ -1,14 +1,18 @@
-package de.metas.server.config;
+package de.metas.ui.web.websocket;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.WebuiURLs;
+import de.metas.ui.web.session.UserSession;
 import de.metas.util.Check;
 import de.metas.websocket.producers.WebSocketProducerFactory;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -16,27 +20,59 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+/*
+ * #%L
+ * metasfresh-webui-vaadin
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 @Configuration
 @EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
+public class WebsocketConfig implements WebSocketMessageBrokerConfigurer
 {
-	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
-
-	private static final String ENDPOINT = "/stomp";
+	private static final Logger logger = LogManager.getLogger(WebsocketConfig.class);
 
 	private final ImmutableSet<String> topicNamePrefixes;
 
-	public WebSocketConfig(@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories)
+	public WebsocketConfig(@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories)
 	{
-		topicNamePrefixes = extractTopicPrefixes(producerFactories);
+		topicNamePrefixes = ImmutableSet.<String>builder()
+				.add(WebsocketTopicNames.TOPIC_UserSession)
+				.add(WebsocketTopicNames.TOPIC_Notifications)
+				.add(WebsocketTopicNames.TOPIC_View)
+				.add(WebsocketTopicNames.TOPIC_Document)
+				.add(WebsocketTopicNames.TOPIC_Board)
+				.add(WebsocketTopicNames.TOPIC_Dashboard)
+				.addAll(extractTopicPrefixes(producerFactories))
+				.build();
 	}
 
 	private static ImmutableSet<String> extractTopicPrefixes(@NonNull final Optional<List<WebSocketProducerFactory>> producerFactories)
@@ -52,8 +88,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	@Override
 	public void registerStompEndpoints(@NonNull final StompEndpointRegistry registry)
 	{
-		registry.addEndpoint(ENDPOINT)
-				.setAllowedOriginPatterns("http://*", "https://*")
+		final StompWebSocketEndpointRegistration endpoint = registry.addEndpoint("/stomp");
+
+		final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+		if (webuiURLs.isCrossSiteUsageAllowed())
+		{
+			// we can't allow '*' anymore, see https://github.com/spring-projects/spring-framework/issues/26111	
+			endpoint.setAllowedOriginPatterns("http://*", "https://*");
+		}
+		else
+		{
+			endpoint.setAllowedOrigins(webuiURLs.getFrontendURL()); // the endpoint for websocket connections	
+		}
+
+		endpoint
+				.addInterceptors(new AuthorizationHandshakeInterceptor())
 				.withSockJS();
 	}
 
@@ -94,9 +143,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	@Override
 	public boolean configureMessageConverters(final List<MessageConverter> messageConverters)
 	{
-		final MappingJackson2MessageConverter jsonConverter = new MappingJackson2MessageConverter();
-		jsonConverter.setObjectMapper(JsonObjectMapperHolder.sharedJsonObjectMapper());
-		messageConverters.add(jsonConverter);
+		messageConverters.add(new MappingJackson2MessageConverter());
 		return true;
 	}
 
@@ -122,5 +169,37 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 			}
 		}
 
+	}
+
+	private static class AuthorizationHandshakeInterceptor implements HandshakeInterceptor
+	{
+		private static final Logger logger = LogManager.getLogger(AuthorizationHandshakeInterceptor.class);
+
+		@Override
+		public boolean beforeHandshake(@NonNull final ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final @NonNull Map<String, Object> attributes)
+		{
+			final UserSession userSession = UserSession.getCurrentOrNull();
+			if (userSession == null)
+			{
+				logger.warn("Websocket connection not allowed (missing userSession)");
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
+			}
+
+			if (!userSession.isLoggedIn())
+			{
+				logger.warn("Websocket connection not allowed (not logged in) - userSession={}", userSession);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				return false;
+			}
+
+			return true;
+		}
+
+		@Override
+		public void afterHandshake(final @NonNull ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final Exception exception)
+		{
+			// nothing
+		}
 	}
 }

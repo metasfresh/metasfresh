@@ -2,16 +2,15 @@ package de.metas.device.websocket;
 
 import com.google.common.base.MoreObjects;
 import de.metas.device.accessor.DeviceAccessor;
-import de.metas.device.accessor.DeviceId;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
+import de.metas.logging.LogManager;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,57 +42,37 @@ import javax.annotation.Nullable;
 @Component
 public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 {
-	public static final String TOPIC = "/devices";
-	private static final String TOPIC_AND_SLASH = TOPIC + "/";
+	private static final Logger logger = LogManager.getLogger(DeviceWebSocketProducerFactory.class);
 
+	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 
 	public DeviceWebSocketProducerFactory(
+			@NonNull final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			@NonNull final DeviceAccessorsHubFactory deviceAccessorsHubFactory)
 	{
+		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
-	}
 
-	public static WebsocketTopicName buildDeviceTopicName(@NonNull final DeviceId deviceId)
-	{
-		return WebsocketTopicName.ofString(TOPIC_AND_SLASH + deviceId.getAsString());
-	}
-
-	@Nullable
-	private static DeviceId extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
-	{
-		final String topicNameString = topicName.getAsString();
-
-		if (topicNameString.startsWith(TOPIC_AND_SLASH))
-		{
-			return DeviceId.ofString(topicNameString.substring(TOPIC_AND_SLASH.length()));
-		}
-		else
-		{
-			return null;
-		}
+		logger.info("deviceWebsocketNamingStrategy={}", deviceWebsocketNamingStrategy);
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this).addValue(TOPIC_AND_SLASH).toString();
+		return MoreObjects.toStringHelper(this).addValue(deviceWebsocketNamingStrategy.getPrefixAndSlash()).toString();
 	}
 
 	@Override
 	public String getTopicNamePrefix()
 	{
-		return TOPIC_AND_SLASH;
+		return deviceWebsocketNamingStrategy.getPrefixAndSlash();
 	}
 
 	@Override
 	public WebSocketProducer createProducer(final WebsocketTopicName topicName)
 	{
-		final DeviceId deviceId = extractDeviceIdFromTopicName(topicName);
-		if (deviceId == null)
-		{
-			throw new AdempiereException("Cannot extract deviceId from topic name `" + topicName + "`");
-		}
+		final DeviceId deviceId = deviceWebsocketNamingStrategy.extractDeviceId(topicName);
 		return new DeviceWebSocketProducer(deviceAccessorsHubFactory, deviceId);
 	}
 

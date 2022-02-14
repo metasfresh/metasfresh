@@ -3,6 +3,7 @@ package de.metas.device.accessor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
@@ -21,7 +22,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /*
@@ -56,7 +56,8 @@ public class DeviceAccessorsHub
 	private static final Logger logger = LogManager.getLogger(DeviceAccessorsHub.class);
 	private final IDeviceConfigPool deviceConfigPool;
 
-	private final ConcurrentHashMap<AttributeCode, DeviceAccessorsList> deviceAccessors = new ConcurrentHashMap<>();
+	private final CCache<AttributeCode, DeviceAccessorsList> cache = CCache.<AttributeCode, DeviceAccessorsList>builder()
+			.build();
 
 	public DeviceAccessorsHub(@NonNull final IDeviceConfigPool deviceConfigPool)
 	{
@@ -64,10 +65,10 @@ public class DeviceAccessorsHub
 		this.deviceConfigPool.addListener(new IDeviceConfigPoolListener()
 		{
 			@Override
-			public void onConfigurationChanged(final IDeviceConfigPool deviceConfigPool1)
+			public void onConfigurationChanged(final IDeviceConfigPool deviceConfigPool)
 			{
-				deviceAccessors.clear();
-				logger.info("Reset {} because configuration changed for {}", this, deviceConfigPool1);
+				cache.reset();
+				logger.info("Reset {} because configuration changed for {}", this, deviceConfigPool);
 			}
 		});
 	}
@@ -92,7 +93,7 @@ public class DeviceAccessorsHub
 
 	public DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
 	{
-		return deviceAccessors.computeIfAbsent(attributeCode, this::createDeviceAccessorsList);
+		return cache.getOrLoad(attributeCode, this::createDeviceAccessorsList);
 	}
 
 	private DeviceAccessorsList createDeviceAccessorsList(final AttributeCode attributeCode)
