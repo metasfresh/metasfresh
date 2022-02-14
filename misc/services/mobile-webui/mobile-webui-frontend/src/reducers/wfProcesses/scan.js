@@ -42,7 +42,6 @@ registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
-    console.log('mergeActivityDataStored', { fromActivity });
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
     draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
