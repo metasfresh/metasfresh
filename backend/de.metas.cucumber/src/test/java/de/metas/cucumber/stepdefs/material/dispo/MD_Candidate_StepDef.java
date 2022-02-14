@@ -408,7 +408,6 @@ public class MD_Candidate_StepDef
 		}
 
 		assertThat(freshMaterialDispoItemInfo.getType().getCode()).isEqualTo(type);
-		assertThat(freshMaterialDispoItemInfo.getBusinessCase().getCode()).isEqualTo(businessCase);
 		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getProductId()).isEqualTo(productRecord.getM_Product_ID());
 		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getDate()).isEqualTo(dateProjected);
 		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(qty);

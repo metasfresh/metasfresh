@@ -121,9 +121,6 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	private final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
-	private final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
 
@@ -610,6 +607,9 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void postPPOrderCreatedEvent(final @NonNull I_PP_Order ppOrder)
 	{
+		final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrder);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()

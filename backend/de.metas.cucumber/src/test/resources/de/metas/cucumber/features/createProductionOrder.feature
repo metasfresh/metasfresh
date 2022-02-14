@@ -155,9 +155,9 @@ Feature: create production order
       | c_l_3      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | -100 | 0                      |
     And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_3                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-04-16T21:00:00Z | 0   | -10                    |
-      | c_l_1                      | DEMAND            | PRODUCTION                    | p_4                     | 2021-04-16T21:00:00Z | 0   | 0                      |
-      | c_l_2                      | SUPPLY            |                               | p_4                     | 2021-04-16T21:00:00Z | 100 | 100                    |
+      | c_3                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 0   | -10                    |
+      | c_l_1                      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | 0   | 0                      |
+      | c_l_2                      | SUPPLY            |                               | p_4                     | 2021-06-16T21:00:00Z | 100 | 100                    |
     And the following PP_Order_Candidates are re-opened
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
