@@ -59,7 +59,7 @@ public class DocOutboundService implements IPDFArchiveProvider
 	private final IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInOutBL inoutBL = Services.get(InOutBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	@Override
 	public <T extends I_AD_Archive> Optional<T> getPDFArchiveForModel(
