@@ -124,6 +124,7 @@ public class HandlerTools
 			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
 			ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+			ic.setIncotermLocation(order.getIncotermLocation());
 
 			//DocType
 			final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(

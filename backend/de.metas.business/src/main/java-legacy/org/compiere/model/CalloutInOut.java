@@ -110,6 +110,7 @@ public class CalloutInOut extends CalloutEngine
 		inout.setUser1_ID(order.getUser1_ID());
 		inout.setUser2_ID(order.getUser2_ID());
 		inout.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		inout.setIncotermLocation(order.getIncotermLocation());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
@@ -167,6 +168,7 @@ public class CalloutInOut extends CalloutEngine
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
 			inout.setC_Incoterms_ID(originalReceipt.getC_Incoterms_ID());
+			inout.setIncotermLocation(originalReceipt.getIncotermLocation());
 
 			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}
