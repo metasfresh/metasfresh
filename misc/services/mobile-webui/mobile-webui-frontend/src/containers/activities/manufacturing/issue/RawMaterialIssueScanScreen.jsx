@@ -1,22 +1,21 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
 import { toastError } from '../../../../utils/toast';
-import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../../reducers/wfProcesses';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { toQRCodeString } from '../../../../utils/huQRCodes';
 
 const RawMaterialIssueScanScreen = () => {
   const {
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
+    params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huBarcode, qtyToIssue, uom } = useSelector((state) =>
+  const { huQRCode, qtyToIssue, uom } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
 
@@ -26,24 +25,6 @@ const RawMaterialIssueScanScreen = () => {
   });
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }),
-        values: [
-          {
-            caption: trl('general.Barcode'),
-            value: huBarcode,
-          },
-          {
-            caption: trl('activities.mfg.issues.qtyToIssue'),
-            value: qtyToIssue + ' ' + uom,
-          },
-        ],
-      })
-    );
-  }, []);
-
   const history = useHistory();
   const onResult = ({ qty = 0, reason = null }) => {
     dispatch(
@@ -63,7 +44,7 @@ const RawMaterialIssueScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      eligibleBarcode={huBarcode}
+      eligibleBarcode={toQRCodeString(huQRCode)}
       qtyCaption={trl('general.QtyToPick')}
       qtyTarget={qtyToIssue}
       qtyInitial={qtyToIssue}

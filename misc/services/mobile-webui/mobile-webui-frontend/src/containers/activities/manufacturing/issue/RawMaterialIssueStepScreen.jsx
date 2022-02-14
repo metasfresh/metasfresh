@@ -9,6 +9,7 @@ import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
+import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
 
 const RawMaterialIssueStepScreen = () => {
   const {
@@ -16,7 +17,7 @@ const RawMaterialIssueStepScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { locatorName, huBarcode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) =>
+  const { locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
 
@@ -46,7 +47,7 @@ const RawMaterialIssueStepScreen = () => {
           },
           {
             caption: trl('general.Barcode'),
-            value: huBarcode,
+            value: toQRCodeDisplayable(huQRCode),
           },
         ],
       })
@@ -59,7 +60,7 @@ const RawMaterialIssueStepScreen = () => {
   };
 
   const isIssued = qtyIssued > 0 || qtyRejected > 0;
-  const scanButtonCaption = isIssued ? `${huBarcode}` : trl('activities.picking.scanQRCode');
+  const scanButtonCaption = isIssued ? toQRCodeDisplayable(huQRCode) : trl('activities.picking.scanQRCode');
 
   const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
