@@ -192,7 +192,7 @@ public class OLCandsProcessorExecutor
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
 	}
 
-	private OLCand prepareOLCandBeforeProcessing(final OLCand candidate)
+	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate)
 	{
 		if (candidate.getDateDoc() == null)
 		{
