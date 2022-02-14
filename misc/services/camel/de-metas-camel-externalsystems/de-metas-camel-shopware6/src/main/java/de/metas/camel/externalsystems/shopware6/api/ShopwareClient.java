@@ -120,7 +120,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.SEARCH.getValue())
 				.pathSegment(PathSegmentsEnum.ORDER.getValue());
 
@@ -177,7 +176,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.ORDER_ADDRESS.getValue())
 				.pathSegment(orderAddressId);
 
@@ -214,7 +212,6 @@ public class ShopwareClient
 		final List<OrderDeliveryItem> deliveryItemList = new ArrayList<>();
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.ORDER.getValue())
 				.pathSegment(orderId)
 				.pathSegment(PathSegmentsEnum.DELIVERIES.getValue());
@@ -271,7 +268,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.COUNTRY.getValue())
 				.pathSegment(countryId);
 
@@ -307,7 +303,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.ORDER.getValue())
 				.pathSegment(orderId)
 				.pathSegment(PathSegmentsEnum.LINE_ITEMS.getValue());
@@ -332,7 +327,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.ORDER.getValue())
 				.pathSegment(orderId)
 				.pathSegment(PathSegmentsEnum.TRANSACTIONS.getValue());
@@ -357,7 +351,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.PAYMENT_METHOD.getValue())
 				.pathSegment(paymentMethodId);
 
@@ -391,7 +384,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.CURRENCY.getValue());
 
 		refreshTokenIfExpired();
@@ -414,7 +406,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.SALUTATION.getValue());
 
 		refreshTokenIfExpired();
@@ -463,7 +454,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.SEARCH.getValue())
 				.pathSegment(PathSegmentsEnum.PRODUCT.getValue());
 
@@ -487,7 +477,6 @@ public class ShopwareClient
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
-				.pathSegment(PathSegmentsEnum.V3.getValue())
 				.pathSegment(PathSegmentsEnum.UNIT.getValue());
 
 		refreshTokenIfExpired();
