@@ -37,6 +37,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -197,22 +198,28 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// If HU does not support the SubProducer attribute, we have nothing to do
 		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-		final org.compiere.model.I_M_Attribute attribute_subProducer = huAttributeStorage.getAttributeByValueKeyOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
-		if (attribute_subProducer == null)
+		setPartnerAttribute(bpartnerId, huAttributeStorage, HUAttributeConstants.ATTR_SubProducerBPartner_Value);
+		setPartnerAttribute(bpartnerId, huAttributeStorage, HUAttributeConstants.ATTR_VendorBPartnerId_Value);
+	}
+
+	private void setPartnerAttribute(final int bpartnerId, final IAttributeStorage huAttributeStorage, final AttributeCode attributeCode)
+	{
+		final org.compiere.model.I_M_Attribute partnerAttribute = huAttributeStorage.getAttributeByValueKeyOrNull(attributeCode);
+		if (partnerAttribute == null)
 		{
 			return;
 		}
 
 		//
 		// Don't override existing value
-		final int subproducerBPartnerId = huAttributeStorage.getValueAsInt(attribute_subProducer);
-		if (subproducerBPartnerId > 0)
+		final int partnerId = huAttributeStorage.getValueAsInt(partnerAttribute);
+		if (partnerId > 0)
 		{
 			return;
 		}
 
 		//
 		// Sets the ex-Vendor BPartner ID as SubProducer.
-		huAttributeStorage.setValue(attribute_subProducer, bpartnerId);
+		huAttributeStorage.setValue(partnerAttribute, bpartnerId);
 	}
 }

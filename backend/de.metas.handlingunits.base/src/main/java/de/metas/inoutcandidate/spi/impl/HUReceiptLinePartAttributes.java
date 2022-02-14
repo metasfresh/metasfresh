@@ -76,6 +76,7 @@ import lombok.NonNull;
 	private final I_M_Attribute attr_QualityDiscountPercent;
 	private final I_M_Attribute attr_QualityNotice;
 	private final I_M_Attribute attr_SubProducerBPartner;
+	private final I_M_Attribute attr_Vendor;
 
 	public static HUReceiptLinePartAttributes newInstance(final IHUContext huContext, final I_M_HU tuHU)
 	{
@@ -97,6 +98,7 @@ import lombok.NonNull;
 		this.attr_QualityDiscountPercent = null;
 		this.attr_QualityNotice = null;
 		this.attr_SubProducerBPartner = null;
+		this.attr_Vendor = null;
 	}
 
 	private HUReceiptLinePartAttributes(@NonNull final IHUContext huContext, @NonNull final I_M_HU tuHU)
@@ -111,6 +113,7 @@ import lombok.NonNull;
 		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
 		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityNotice_Value);
 		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
+		attr_Vendor = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_VendorBPartnerId_Value);
 	}
 
 	@Override
@@ -205,6 +208,19 @@ import lombok.NonNull;
 
 		final int subProducerBPartnerId = attributeStorage.getValueAsInt(attr_SubProducerBPartner);
 		return subProducerBPartnerId <= 0 ? -1 : subProducerBPartnerId; // make sure we use same value for N/A
+	}
+
+
+	public int getVendor_BPartner_ID()
+	{
+		final IAttributeStorage attributeStorage = getAttributeStorage();
+		if (!attributeStorage.hasAttribute(attr_Vendor))
+		{
+			return -1;
+		}
+
+		final int vendorId = attributeStorage.getValueAsInt(attr_Vendor);
+		return vendorId <= 0 ? -1 : vendorId; // make sure we use same value for N/A
 	}
 
 	public Optional<Quantity> getWeight()

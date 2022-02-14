@@ -55,6 +55,7 @@ import lombok.NonNull;
 	//
 	// Aggregation Matchers
 	private int _subProducerBPartnerId = -1;
+	private int _vendorBPartnerId = -1;
 	private Object _asiAggregationKey = null;
 
 	private final List<HUReceiptLinePartCandidate> receiptLinePartCandidates = new ArrayList<HUReceiptLinePartCandidate>();
@@ -153,6 +154,11 @@ import lombok.NonNull;
 			return false;
 		}
 
+		if (_vendorBPartnerId != receiptLinePartToAdd.getVendor_BPartner_ID())
+		{
+			return false;
+		}
+
 		// It shall have the same ASI Aggregation Key
 		final Object receiptLinePartToAdd_ASIAggregationKey = receiptLinePartToAdd.getAttributeStorageAggregationKey();
 		if (!Objects.equals(_asiAggregationKey, receiptLinePartToAdd_ASIAggregationKey))
@@ -183,6 +189,7 @@ import lombok.NonNull;
 		Check.assume(isNew(), "this candidate shall be new in order to be able to initialize it: {}", this);
 
 		_subProducerBPartnerId = receiptLinePart.getSubProducer_BPartner_ID();
+		_vendorBPartnerId = receiptLinePart.getVendor_BPartner_ID();
 		_asiAggregationKey = receiptLinePart.getAttributeStorageAggregationKey();
 	}
 
@@ -240,6 +247,12 @@ import lombok.NonNull;
 	{
 		// updateIfStale(); // no need
 		return _subProducerBPartnerId;
+	}
+
+	public int getVendor_BPartner_ID()
+	{
+		// updateIfStale(); // no need
+		return _vendorBPartnerId;
 	}
 
 	public List<I_M_ReceiptSchedule_Alloc> getReceiptScheduleAllocs()

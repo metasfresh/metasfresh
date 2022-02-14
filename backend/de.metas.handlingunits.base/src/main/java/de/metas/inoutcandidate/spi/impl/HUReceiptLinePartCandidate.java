@@ -66,6 +66,7 @@ import lombok.NonNull;
 	private ReceiptQty _qtyAndQuality = null;
 	private Quantity _qty;
 	private int _subProducerBPartnerId = -1;
+	private int _vendorBPartnerId = -1;
 	private Object _attributeStorageAggregationKey = null;
 	//
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
@@ -197,6 +198,7 @@ import lombok.NonNull;
 		}
 		_qtyAndQuality = qtyAndQuality;
 		_subProducerBPartnerId = attributes.getSubProducer_BPartner_ID();
+		_vendorBPartnerId = attributes.getVendor_BPartner_ID();
 		_attributeStorageAggregationKey = attributes.getAttributeStorageAggregationKey();
 		_stale = false; // not stale anymore
 	}
@@ -223,6 +225,12 @@ import lombok.NonNull;
 	{
 		updateIfStale();
 		return _subProducerBPartnerId;
+	}
+
+	public int getVendor_BPartner_ID()
+	{
+		updateIfStale();
+		return _vendorBPartnerId;
 	}
 
 	public Object getAttributeStorageAggregationKey()

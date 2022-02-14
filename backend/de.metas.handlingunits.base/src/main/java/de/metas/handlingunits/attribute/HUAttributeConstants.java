@@ -24,7 +24,7 @@ public final class HUAttributeConstants
 	public static final String ATTR_QualityNotice_Value = "QualityNotice";
 	public static final AttributeCode ATTR_SSCC18_Value = AttributeCode.ofString("SSCC18");
 	public static final AttributeCode ATTR_SubProducerBPartner_Value = AttributeConstants.ATTR_SubProducerBPartner_Value;
-
+	public static final AttributeCode ATTR_VendorBPartnerId_Value = AttributeConstants.ATTR_Vendor_BPartner_ID;
 	public static final AttributeCode ATTR_CostPrice = AttributeCode.ofString("HU_CostPrice");
 
 	public static final AttributeCode ATTR_LotNumberDate = AttributeConstants.ATTR_LotNumberDate;
