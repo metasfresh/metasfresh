@@ -50,7 +50,6 @@ import lombok.NonNull;
 public class DunningService
 {
 
-
 	final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 	final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
 
@@ -68,7 +67,6 @@ public class DunningService
 				.list();
 	}
 
-
 	public String getLocationEmail(@NonNull final DunningDocId dunningDocId)
 	{
 		final I_C_DunningDoc dunningDocRecord = dunningDAO.getByIdInTrx(dunningDocId);
@@ -82,9 +80,16 @@ public class DunningService
 			return locationEmail;
 		}
 
-		final I_AD_User contactRecord = partnersRepo.getContactById(BPartnerContactId.ofRepoIdOrNull(bpartnerId, dunningDocRecord.getC_Dunning_Contact_ID()));
+		final BPartnerContactId dunningContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, dunningDocRecord.getC_Dunning_Contact_ID());
 
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+		if (dunningContactId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User dunningContactRecord = partnersRepo.getContactById(dunningContactId);
+
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, dunningContactRecord.getC_BPartner_Location_ID());
 
 		if (contactLocationId != null)
 		{
