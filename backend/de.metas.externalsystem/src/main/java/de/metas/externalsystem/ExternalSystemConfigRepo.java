@@ -48,6 +48,7 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
+import de.metas.user.UserGroupId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -327,6 +328,8 @@ public class ExternalSystemConfigRepo
 				.remoteUrl(rabbitMQConfigRecord.getRemoteURL())
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
+				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getBPartnerCreatedByUserGroup_ID()))
 				.build();
 	}
 

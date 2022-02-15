@@ -27,8 +27,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
@@ -37,17 +39,21 @@ import org.compiere.model.I_C_BPartner;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcurementUser;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_ProcurementPassword;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
+import static org.compiere.model.I_AD_User.COLUMNNAME_Login;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
 
 public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_AD_User> userTable;
 
@@ -66,6 +72,23 @@ public class AD_User_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createUser(tableRow);
+		}
+	}
+
+	@And("load AD_User:")
+	public void load_ad_user(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String login = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Login);
+
+			final I_AD_User userRecord = queryBL.createQueryBuilder(I_AD_User.class)
+					.addEqualsFilter(COLUMNNAME_Login, login)
+					.create()
+					.firstOnlyNotNull(I_AD_User.class);
+
+			final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_User.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			userTable.put(userIdentifier, userRecord);
 		}
 	}
 
