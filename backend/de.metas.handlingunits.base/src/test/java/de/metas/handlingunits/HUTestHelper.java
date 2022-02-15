@@ -358,6 +358,8 @@ public class HUTestHelper
 	 */
 	public I_M_Attribute attr_SubProducerBPartner;
 
+	public I_M_Attribute attr_VendorBPartner;
+
 	/**
 	 * Mandatory for integration with the de.metas.materialtracking module
 	 */
@@ -664,6 +666,8 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
 		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
+		attr_VendorBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_Vendor_BPartner_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 

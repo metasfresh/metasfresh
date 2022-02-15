@@ -36,6 +36,7 @@ public class PlainHUReceiptLinePartAttributes extends HUReceiptLinePartAttribute
 	private BigDecimal QualityDiscountPercent = BigDecimal.ZERO;
 	private String QualityNoticeDisplayName;
 	private int SubProducer_BPartner_ID;
+	private int Vendor_BPartner_ID;
 	private String AttributeStorageAggregationKey;
 
 	public PlainHUReceiptLinePartAttributes()
@@ -51,6 +52,7 @@ public class PlainHUReceiptLinePartAttributes extends HUReceiptLinePartAttribute
 				+ ", QualityDiscountPercent=" + QualityDiscountPercent
 				+ ", QualityNoticeDisplayName=" + QualityNoticeDisplayName
 				+ ", SubProducer_BPartner_ID=" + SubProducer_BPartner_ID
+				+ ", Vendor_BPartner_ID=" + Vendor_BPartner_ID
 				+ ", AttributeStorageAggregationKey=" + AttributeStorageAggregationKey
 				+ "]";
 	}
@@ -97,6 +99,17 @@ public class PlainHUReceiptLinePartAttributes extends HUReceiptLinePartAttribute
 	public void setSubProducer_BPartner_ID(final int subProducer_BPartner_ID)
 	{
 		SubProducer_BPartner_ID = subProducer_BPartner_ID;
+	}
+
+	@Override
+	public int getVendor_BPartner_ID()
+	{
+		return Vendor_BPartner_ID;
+	}
+
+	public void setVendor_BPartner_ID(final int vendor_BPartner_ID)
+	{
+		Vendor_BPartner_ID = vendor_BPartner_ID;
 	}
 
 	@Override
