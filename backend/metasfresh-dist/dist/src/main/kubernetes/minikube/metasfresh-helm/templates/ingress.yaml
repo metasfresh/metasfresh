@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # tls:
+  # - hosts:
+  #   - demouser-demo.metasfresh.com
+  #   secretName: tls-certificate
+  rules:
+  - host: {{ .Values.ingress.webui.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-{{ .Release.Name }}-webui
+            port:
+              number: {{ .Values.ingress.webui.port }}
+  {{- if .Values.ingress.pgadmin.enabled }}
+  - host: {{ .Values.ingress.pgadmin.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-{{ .Release.Name }}-pgadmin
+            port:
+              number: {{ .Values.ingress.pgadmin.port }}
+  {{- end }}
+
+
+
+      
