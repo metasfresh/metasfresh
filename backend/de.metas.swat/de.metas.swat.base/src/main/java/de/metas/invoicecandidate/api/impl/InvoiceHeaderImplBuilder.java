@@ -45,6 +45,8 @@ public class InvoiceHeaderImplBuilder
 
 	private BPartnerInfo billTo;
 
+	private String paymentRule;
+
 	private int Sales_BPartner_ID;
 
 	private int SalesRep_User_ID;
@@ -115,6 +117,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
 
+		invoiceHeader.setPaymentRule(getPaymentRule());
+
 		return invoiceHeader;
 	}
 
@@ -173,6 +177,16 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		return _dateAcct;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)

@@ -3612,4 +3612,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRule (@Nullable java.lang.String PaymentRule);
+
+	/**
+	 * Get Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Invoice_Candidate.class, "PaymentRule", null);
+	String COLUMNNAME_PaymentRule = "PaymentRule";
 }

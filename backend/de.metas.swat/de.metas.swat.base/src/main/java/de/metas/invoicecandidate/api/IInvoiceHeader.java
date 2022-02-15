@@ -76,4 +76,6 @@ public interface IInvoiceHeader
 	String getExternalId();
 
 	int getC_Async_Batch_ID();
+
+	String getPaymentRule();
 }
