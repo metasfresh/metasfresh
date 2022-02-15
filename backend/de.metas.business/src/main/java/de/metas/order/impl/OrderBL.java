@@ -1206,21 +1206,33 @@ public class OrderBL implements IOrderBL
 			return locationEmail;
 		}
 
-		final I_AD_User contactRecord = bpartnerDAO.getContactById(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID()));
+		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
 
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
-		if (contactLocationId != null)
+		if (orderContactId != null)
 		{
-			final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
-			final String contactLocationEmail = contactLocationRecord.getEMail();
+			final I_AD_User contactRecord = bpartnerDAO.getContactById(orderContactId);
 
-			if (!Check.isEmpty(contactLocationEmail))
+			final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+			if (contactLocationId != null)
 			{
-				return contactLocationEmail;
+				final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
+				final String contactLocationEmail = contactLocationRecord.getEMail();
+
+				if (!Check.isEmpty(contactLocationEmail))
+				{
+					return contactLocationEmail;
+				}
 			}
 		}
 
-		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(order.getBill_BPartner_ID(), order.getBill_Location_ID()));
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+
+		if(bpartnerLocationId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
 
 		return billLocationRecord.getEMail();
 	}
