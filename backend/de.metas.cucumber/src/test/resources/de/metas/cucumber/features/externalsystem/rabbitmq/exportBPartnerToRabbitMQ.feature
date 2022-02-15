@@ -49,6 +49,7 @@ Feature: Validate BPartner is sent to RabbitMQ
 
 
   Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq
+    Given all the export audit data is reset
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue |
       | config_1                            | RabbitMQ | testRabbitMQ        |

@@ -94,7 +94,11 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedBPartner.getLanguage()).contains(language);
 			assertThat(persistedBPartner.getCode()).isEqualTo(code);
 			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
-			assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+
+			if (Check.isNotBlank(group))
+			{
+				assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+			}
 
 			if (Check.isNotBlank(parentId))
 			{
@@ -104,7 +108,7 @@ public class CreateBPartnerV2_StepDef
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(persistedBPartner.getMetasfreshId().getValue());
 
 			final String createdByIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_CreatedBy);
-			if(Check.isNotBlank(createdByIdentifier))
+			if (Check.isNotBlank(createdByIdentifier))
 			{
 				final I_AD_User userRecord = userTable.get(createdByIdentifier);
 
