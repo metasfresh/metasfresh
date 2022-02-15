@@ -179,7 +179,12 @@
             <artifactId>smooks-templating-cartridge</artifactId>
             <version>${smooks-cartridge.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.smooks.cartridges</groupId>
+            <artifactId>smooks-fixed-length-cartridge</artifactId>
+            <version>${smooks-cartridge.version}</version>
+        </dependency>
+        
         <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
