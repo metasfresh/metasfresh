@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.model;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_M_InOut;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -542,6 +543,30 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_InOut.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
 
 	/**
 	 * Set Aggregator.
