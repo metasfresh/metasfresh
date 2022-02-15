@@ -4,7 +4,7 @@
 					  xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd">
 
 	<core:exports>
-		<core:result type="org.milyn.payload.JavaResult" extract="T100" />
+		<core:result type="org.smooks.io.payload" extract="T100" />
 	</core:exports>
 	<fl:reader fields="record[4],partner[35],messageNo[14],contractValue[15]">
 		<fl:listBinding beanId="T100" class="de.metas.edi.esb.ordersimport.compudata.T100" />

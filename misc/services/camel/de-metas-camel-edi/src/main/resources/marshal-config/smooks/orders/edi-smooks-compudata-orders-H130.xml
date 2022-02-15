@@ -4,7 +4,7 @@
 					  xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd">
 
 	<core:exports>
-		<core:result type="org.milyn.payload.JavaResult" extract="H130" />
+		<core:result type="org.smooks.io.payload" extract="H130" />
 	</core:exports>
 	<fl:reader
 		fields="record[4],partner[35],messageNo[14],skonto[10],payTimeSkonto[3],payTimeNetto[3],transportMode[3],deliveryTermCode[3],deliveryTermText[70],packCode[3],iataCode[3],iataText[70]">

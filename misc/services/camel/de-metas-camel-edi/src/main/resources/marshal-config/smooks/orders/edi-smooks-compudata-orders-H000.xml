@@ -4,7 +4,7 @@
                       xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd">
 
     <core:exports>
-        <core:result type="org.milyn.payload.JavaResult" extract="H000"/>
+        <core:result type="org.smooks.io.payload" extract="H000"/>
     </core:exports>
 
     <fl:reader

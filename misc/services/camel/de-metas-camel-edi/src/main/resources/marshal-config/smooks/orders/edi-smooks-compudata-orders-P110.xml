@@ -4,7 +4,7 @@
 					  xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd">
 
 	<core:exports>
-		<core:result type="org.milyn.payload.JavaResult" extract="P110" />
+		<core:result type="org.smooks.io.payload" extract="P110" />
 	</core:exports>
 	<fl:reader fields="record[4],partner[35],messageNo[14],qualifier[3],text1[70],text2[70],text3[70],text4[70],text5[70]">
 		<fl:listBinding beanId="P110" class="de.metas.edi.esb.ordersimport.compudata.P110" />

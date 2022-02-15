@@ -4,7 +4,7 @@
 					  xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd">
 
 	<core:exports>
-		<core:result type="org.milyn.payload.JavaResult" extract="H110" />
+		<core:result type="org.smooks.io.payload" extract="H110" />
 	</core:exports>
 	<fl:reader
 		fields="record[4],partner[35],messageNo[14],delName1[35],delName2[35],delName3[35],delStrasse1[35],delStrasse2[35],delOrt[35],delPLZ[9],delLand[3],homeDelName[35],homeDelStrasse[35],homeDelOrt[35],custKommission1[35],custKommission2[35]">
