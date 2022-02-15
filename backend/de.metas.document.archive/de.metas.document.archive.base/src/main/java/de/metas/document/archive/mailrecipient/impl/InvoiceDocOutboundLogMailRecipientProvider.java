@@ -79,6 +79,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 				.getModel(I_C_Invoice.class);
 
 		final String invoiceEmail = invoiceRecord.getEMail();
+		final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
@@ -93,8 +94,6 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 			{
 				return Optional.of(invoiceUser);
 			}
-
-			final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 
 			if (!Check.isEmpty(locationEmail))
 			{
@@ -111,8 +110,8 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
 						.contactType(ContactType.BILL_TO_DEFAULT)
-						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
+
 		if (billContact != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
@@ -123,10 +122,19 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
-			return Optional.of(docOutBoundRecipient);
+			if (!Check.isEmpty(locationEmail, true))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+			}
 
+			if (!Check.isEmpty(docOutBoundRecipient.getEmailAddress(), true))
+			{
+				return Optional.of(docOutBoundRecipient);
+			}
 		}
+
 		return Optional.empty();
+
 	}
 
 }

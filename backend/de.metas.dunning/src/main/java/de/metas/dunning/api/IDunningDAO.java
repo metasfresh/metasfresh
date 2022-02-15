@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -35,6 +36,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IDunningDAO extends ISingletonService
 {
@@ -171,4 +173,6 @@ public interface IDunningDAO extends ISingletonService
 	int deleteNotProcessedCandidates(IDunningContext context, I_C_DunningLevel dunningLevel);
 
 	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
+
+	I_C_DunningDoc getByIdInTrx(@NonNull DunningDocId dunningDocId);
 }

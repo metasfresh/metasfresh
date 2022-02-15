@@ -76,6 +76,7 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 				.getModel(I_C_Order.class);
 
 		final String orderEmail = orderRecord.getEMail();
+		final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 
 		final int orderUserRecordId = orderRecord.getAD_User_ID();
 		if (orderUserRecordId > 0)
@@ -92,8 +93,6 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 				return Optional.of(orderUser);
 			}
 
-			final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
-
 			if (!Check.isEmpty(locationEmail))
 			{
 				return Optional.of(orderUser.withEmailAddress(locationEmail));
@@ -108,7 +107,6 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
-						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
 		if (billContact != null)
 		{
@@ -119,8 +117,19 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(orderEmail));
 			}
-			return Optional.of(docOutBoundRecipient);
+
+			if (!Check.isEmpty(locationEmail, true))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+			}
+
+			if(!Check.isEmpty(docOutBoundRecipient.getEmailAddress(), true))
+			{
+				return Optional.of(docOutBoundRecipient);
+			}
 		}
+
+
 		return Optional.empty();
 	}
 }
