@@ -2,14 +2,14 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
   "alternatives" : {
     "pickFroms" : [ {
       "availableQty" : "960.000 Kg",
-      "huId" : 100237,
+      "huId" : 100238,
       "key" : {
-        "huId" : 100237,
-        "locatorId" : "100161_100163",
-        "productId" : 100160
+        "huId" : 100238,
+        "locatorId" : "100162_100164",
+        "productId" : 100161
       },
-      "locatorId" : "100161_100163",
-      "productId" : 100160
+      "locatorId" : "100162_100164",
+      "productId" : 100161
     } ]
   },
   "lines" : [ {
@@ -17,22 +17,22 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100238,
+          "locatorId" : "100162_100164",
+          "productId" : 100161
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100272",
+      "huCode" : "100273",
       "huReservedForThisLine" : true,
-      "locatorId" : "100161_100163",
+      "locatorId" : "100162_100164",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null,
-      "topLevelHUId" : 100272
+      "topLevelHUId" : 100273
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 100161,
     "qty" : "1.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
@@ -53,22 +53,22 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100238,
+          "locatorId" : "100162_100164",
+          "productId" : 100161
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100165",
+      "huCode" : "100166",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "100162_100164",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null,
-      "topLevelHUId" : 100165
+      "topLevelHUId" : 100166
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 100161,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
@@ -89,22 +89,22 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     "pickFromHU" : {
       "alternatives" : {
         "keys" : [ {
-          "huId" : 100237,
-          "locatorId" : "100161_100163",
-          "productId" : 100160
+          "huId" : 100238,
+          "locatorId" : "100162_100164",
+          "productId" : 100161
         } ]
       },
       "expiringDate" : null,
-      "huCode" : "100201",
+      "huCode" : "100202",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "100162_100164",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null,
-      "topLevelHUId" : 100201
+      "topLevelHUId" : 100202
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 100161,
     "qty" : "30.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
@@ -127,16 +127,16 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
         "keys" : [ ]
       },
       "expiringDate" : null,
-      "huCode" : "100237",
+      "huCode" : "100238",
       "huReservedForThisLine" : false,
-      "locatorId" : "100161_100163",
+      "locatorId" : "100162_100164",
       "lotNumber" : null,
       "repackNumber" : null,
       "serialNo" : null,
-      "topLevelHUId" : 100237
+      "topLevelHUId" : 100238
     },
     "pickFromPickingOrder" : null,
-    "productId" : 100160,
+    "productId" : 100161,
     "qty" : "39.000 Kg",
     "sourceDocumentInfo" : {
       "existingPickingCandidate" : null,
@@ -153,5 +153,5 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
     },
     "type" : "PICK_FROM_HU"
   } ],
-  "singleProductId" : 100160
+  "singleProductId" : 100161
 } ]
