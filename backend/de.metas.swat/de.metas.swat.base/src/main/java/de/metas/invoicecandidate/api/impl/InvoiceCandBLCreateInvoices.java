@@ -399,7 +399,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
 			}
 
-			//
+			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

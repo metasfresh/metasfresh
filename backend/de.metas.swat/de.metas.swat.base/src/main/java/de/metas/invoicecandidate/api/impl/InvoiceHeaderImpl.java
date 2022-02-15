@@ -79,6 +79,8 @@ import javax.annotation.Nullable;
 
 	private PaymentTermId paymentTermId;
 
+	private String paymentRule;
+
 	private int C_Async_Batch_ID;
 
 	/* package */ InvoiceHeaderImpl()
@@ -298,6 +300,17 @@ import javax.annotation.Nullable;
 	public PaymentTermId getPaymentTermId()
 	{
 		return paymentTermId;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	@Override
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	@Override

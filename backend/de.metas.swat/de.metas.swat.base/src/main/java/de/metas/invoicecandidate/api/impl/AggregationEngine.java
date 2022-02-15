@@ -381,7 +381,7 @@ public final class AggregationEngine
 			{
 				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
 			}
-
+			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
 			// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.

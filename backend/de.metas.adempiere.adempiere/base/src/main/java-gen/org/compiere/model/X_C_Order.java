@@ -1683,6 +1683,12 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = PE */
+	public static final String PAYMENTRULE_PayPalExtern = "PE";
+	/** Credit Card Extern = CE */
+	public static final String PAYMENTRULE_CreditCardExtern = "CE";
+	/** Instant Bank Transfer = BE */
+	public static final String PAYMENTRULE_InstantBankTransfer = "BE";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
