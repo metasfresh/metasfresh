@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 /*
@@ -55,6 +57,11 @@ public final class DeviceAccessorsList
 		}
 
 		return new DeviceAccessorsList(deviceAccessors, warningMessageNorm);
+	}
+
+	public static Collector<DeviceAccessor, ?, DeviceAccessorsList> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(list -> of(list, null));
 	}
 
 	static final DeviceAccessorsList EMPTY = new DeviceAccessorsList();

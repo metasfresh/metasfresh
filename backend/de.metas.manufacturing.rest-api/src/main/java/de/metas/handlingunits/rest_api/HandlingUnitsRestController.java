@@ -29,8 +29,8 @@ import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -53,7 +53,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,8 +77,6 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/hu";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -258,10 +255,11 @@ public class HandlingUnitsRestController
 
 		final HUQRCodeGenerateRequest request = JsonQRCodesGenerateRequestConverters.toHUQRCodeGenerateRequest(jsonRequest, attributeDAO);
 		final List<HUQRCode> qrCodes = huQRCodesService.generate(request);
-		final Resource pdf = huQRCodesService.createPDF(qrCodes, jsonRequest.isOnlyPrint());
+		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes);
 
 		if (jsonRequest.isOnlyPrint())
 		{
+			huQRCodesService.print(pdf);
 			return ResponseEntity.ok().body(null);
 		}
 		else
@@ -270,9 +268,9 @@ public class HandlingUnitsRestController
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MimeType.getMediaType(filename));
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+			headers.set("AD_PInstance_ID", String.valueOf(pdf.getPinstanceId().getRepoId()));
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
 		}
-
 	}
 }

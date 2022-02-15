@@ -1,6 +1,9 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
@@ -9,7 +12,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +22,17 @@ public class HUQRCodesService
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
+	@NonNull private final GlobalQRCodeService globalQRCodeService;
 
 	private static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
-	public HUQRCodesService(final @NonNull HUQRCodesRepository huQRCodesRepository) {this.huQRCodesRepository = huQRCodesRepository;}
+	public HUQRCodesService(
+			final @NonNull HUQRCodesRepository huQRCodesRepository,
+			final @NonNull GlobalQRCodeService globalQRCodeService)
+	{
+		this.huQRCodesRepository = huQRCodesRepository;
+		this.globalQRCodeService = globalQRCodeService;
+	}
 
 	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
 	{
@@ -42,23 +51,22 @@ public class HUQRCodesService
 				.execute();
 	}
 
-	public void print(final List<HUQRCode> qrCodes)
+	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes)
 	{
-		createPDF(qrCodes, true);
+		return globalQRCodeService.createPDF(
+				qrCodes.stream()
+						.map(HUQRCode::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public Resource createPDF(final List<HUQRCode> qrCodes)
+	public void print(@NonNull final List<HUQRCode> qrCodes)
 	{
-		return createPDF(qrCodes, false);
+		print(createPDF(qrCodes));
 	}
 
-	public Resource createPDF(final List<HUQRCode> qrCodes, final boolean sendToPrinter)
+	public void print(@NonNull final QRCodePDFResource pdf)
 	{
-		return HUQRCodeCreatePDFCommand.builder()
-				.qrCodes(qrCodes)
-				.sendToPrinter(sendToPrinter)
-				.build()
-				.execute();
+		globalQRCodeService.print(pdf);
 	}
 
 	public HuId getHuIdByQRCode(@NonNull final String qrCodeString)

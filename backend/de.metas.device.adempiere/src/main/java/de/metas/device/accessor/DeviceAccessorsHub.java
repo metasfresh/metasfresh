@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -79,6 +80,14 @@ public class DeviceAccessorsHub
 		return MoreObjects.toStringHelper(this)
 				.add("deviceConfigPool", deviceConfigPool)
 				.toString();
+	}
+
+	public Stream<DeviceAccessor> streamAllDeviceAccessors()
+	{
+		return deviceConfigPool.getAllAttributeCodes()
+				.stream()
+				.map(this::getDeviceAccessors)
+				.flatMap(DeviceAccessorsList::stream);
 	}
 
 	public Optional<DeviceAccessor> getDeviceAccessorById(@NonNull final DeviceId id)

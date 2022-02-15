@@ -1,6 +1,7 @@
 package de.metas.device.accessor.qrcode;
 
 import de.metas.device.accessor.DeviceId;
+import de.metas.global_qrcodes.PrintableQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -25,4 +26,12 @@ public class DeviceQRCode
 	public String toGlobalQRCodeJsonString() {return DeviceQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
 	public static DeviceQRCode ofGlobalQRCodeJsonString(final String json) {return DeviceQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}
+
+	public PrintableQRCode toPrintableQRCode()
+	{
+		return PrintableQRCode.builder()
+				.bottomText(caption)
+				.qrCode(toGlobalQRCodeJsonString())
+				.build();
+	}
 }
