@@ -17,6 +17,7 @@ const ScanHUAndGetQtyComponent = ({
   qtyInitial,
   qtyTarget,
   qtyRejectedReasons,
+  scaleDevice,
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   onResult,
@@ -85,6 +86,8 @@ const ScanHUAndGetQtyComponent = ({
           qtyCaption={qtyCaption}
           uom={uom}
           qtyRejectedReasons={qtyRejectedReasons}
+          scaleDevice={scaleDevice}
+          //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={() => setProgressStatus(STATUS_READ_BARCODE)}
@@ -107,6 +110,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
+  scaleDevice: PropTypes.object,
   //
   // Functions
   onResult: PropTypes.func,

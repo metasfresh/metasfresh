@@ -4,7 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
 import { toastError } from '../../../../utils/toast';
-import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getQtyRejectedReasonsFromActivity,
+  getScaleDeviceFromActivity,
+  getStepByIdFromActivity,
+} from '../../../../reducers/wfProcesses';
 import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
@@ -15,14 +20,9 @@ const RawMaterialIssueScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, qtyToIssue, uom } = useSelector((state) =>
-    getStepById(state, wfProcessId, activityId, lineId, stepId)
+  const { huQRCode, qtyToIssue, uom, qtyRejectedReasons, scaleDevice } = useSelector((state) =>
+    getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
-
-  const qtyRejectedReasons = useSelector((state) => {
-    const activity = getActivityById(state, wfProcessId, activityId);
-    return getQtyRejectedReasonsFromActivity(activity);
-  });
 
   const dispatch = useDispatch();
   const history = useHistory();
@@ -50,10 +50,24 @@ const RawMaterialIssueScanScreen = () => {
       qtyInitial={qtyToIssue}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
+      scaleDevice={scaleDevice}
       // Callbacks:
       onResult={onResult}
     />
   );
+};
+
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const step = getStepByIdFromActivity(activity, lineId, stepId);
+
+  return {
+    huQRCode: step.huQRCode,
+    qtyToIssue: step.qtyToIssue,
+    uom: step.uom,
+    qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),
+    scaleDevice: getScaleDeviceFromActivity(activity),
+  };
 };
 
 export default RawMaterialIssueScanScreen;

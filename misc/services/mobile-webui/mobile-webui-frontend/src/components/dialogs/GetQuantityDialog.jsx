@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 
 import { trl } from '../../utils/translations';
 
 import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
+import * as ws from '../../utils/websocket';
+import { qtyInfos } from '../../utils/qtyInfos';
 
 const GetQuantityDialog = ({
   qtyInitial,
@@ -12,34 +15,66 @@ const GetQuantityDialog = ({
   qtyCaption,
   uom,
   qtyRejectedReasons,
+  scaleDevice,
+  //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
 }) => {
-  const [qty, setQty] = useState(null);
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyInitial));
   const [rejectedReason, setRejectedReason] = useState(null);
+  const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
-  const onQtyEntered = (qtyEntered) => {
-    setQty(qtyEntered);
-  };
+  const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
+
   const onReasonSelected = (reason) => {
     console.log('onReasonSelected', reason);
     setRejectedReason(reason);
   };
 
   const requiredQtyRejectedReason = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
-  const qtyRejected = requiredQtyRejectedReason ? Math.max(qtyTarget - qty, 0) : 0;
+  const qtyRejected =
+    requiredQtyRejectedReason && qtyInfos.isValid(qtyInfo)
+      ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
+      : 0;
 
-  const allValid = qty != null && (qtyRejected === 0 || rejectedReason != null);
+  const allValid = qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null);
 
   const onDialogYes = () => {
     if (allValid) {
       onQtyChange({
-        qtyEnteredAndValidated: qty,
+        qtyEnteredAndValidated: qtyInfos.toNumberOrString(qtyInfo),
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
       });
     }
   };
+
+  const wsClientRef = useRef(null);
+  if (scaleDevice) {
+    useEffect(() => {
+      if (useScaleDevice) {
+        if (!wsClientRef.current) {
+          wsClientRef.current = ws.connectAndSubscribe({
+            topic: scaleDevice.websocketEndpoint,
+            debug: false,
+            onWebsocketMessage: (message) => {
+              if (useScaleDevice) {
+                const { value } = JSON.parse(message.body);
+                setQtyInfo(qtyInfos.invalidOfNumber(value));
+              }
+            },
+          });
+        }
+      }
+
+      return () => {
+        if (wsClientRef.current) {
+          ws.disconnectClient(wsClientRef.current);
+          wsClientRef.current = null;
+        }
+      };
+    }, [useScaleDevice]);
+  }
 
   return (
     <div>
@@ -58,14 +93,35 @@ const GetQuantityDialog = ({
                   <th>Qty</th>
                   <td>
                     <QtyInputField
-                      qtyInitial={qtyInitial}
+                      qty={qtyInfos.toNumberOrString(qtyInfo)}
                       uom={uom}
                       validateQtyEntered={validateQtyEntered}
+                      readonly={useScaleDevice}
                       onQtyChange={onQtyEntered}
                       isRequestFocus={true}
                     />
                   </td>
                 </tr>
+                {scaleDevice && (
+                  <tr>
+                    <td colSpan="2">
+                      <div className="buttons has-addons">
+                        <button
+                          className={cx('button', { 'is-success': useScaleDevice, 'is-selected': useScaleDevice })}
+                          onClick={() => setUseScaleDevice(true)}
+                        >
+                          {scaleDevice.caption}
+                        </button>
+                        <button
+                          className={cx('button', { 'is-success': !useScaleDevice, 'is-selected': !useScaleDevice })}
+                          onClick={() => setUseScaleDevice(false)}
+                        >
+                          Manual
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
                 {requiredQtyRejectedReason && (
                   <tr>
                     <th>{trl('general.QtyRejected')}</th>
@@ -111,6 +167,7 @@ GetQuantityDialog.propTypes = {
   qtyCaption: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
+  scaleDevice: PropTypes.object,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,
