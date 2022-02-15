@@ -1,6 +1,5 @@
 package de.metas.device.accessor;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
@@ -12,17 +11,13 @@ import de.metas.device.config.IDeviceConfigPool;
 import de.metas.device.config.IDeviceConfigPoolListener;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -114,8 +109,6 @@ public class DeviceAccessorsHub
 			return DeviceAccessorsList.EMPTY;
 		}
 
-		final String deviceDisplayNameCommonPrefix = extractDeviceDisplayNameCommonPrefixForDeviceConfigs(deviceConfigsForThisAttribute);
-
 		final ImmutableList.Builder<DeviceAccessor> deviceAccessors = ImmutableList.builder();
 		final StringBuilder warningMessage = new StringBuilder();
 
@@ -152,7 +145,7 @@ public class DeviceAccessorsHub
 
 				final DeviceAccessor deviceAccessor = DeviceAccessor.builder()
 						.id(deviceId)
-						.displayName(TranslatableStrings.anyLanguage(createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName)))
+						.displayName(TranslatableStrings.anyLanguage(deviceName))
 						.device(device)
 						.assignedWarehouseIds(deviceConfig.getAssignedWarehouseIds())
 						.request(request)
@@ -163,53 +156,5 @@ public class DeviceAccessorsHub
 		}
 
 		return DeviceAccessorsList.of(deviceAccessors.build(), warningMessage.toString());
-	}
-
-	private static String extractDeviceDisplayNameCommonPrefixForDeviceConfigs(final List<DeviceConfig> deviceConfigs)
-	{
-		final List<String> deviceNames = deviceConfigs.stream().map(DeviceConfig::getDeviceName).collect(Collectors.toList());
-		return extractDeviceDisplayNameCommonPrefix(deviceNames);
-	}
-
-	/**
-	 * Extracts device names common prefix.
-	 * <p>
-	 * If there are more than one device for this attribute, we use the device names' first characters for the button texts.
-	 * How many chars we need depends of how log the common prefix is.
-	 *
-	 * @return common prefix
-	 */
-	@VisibleForTesting
-	/* package */ static String extractDeviceDisplayNameCommonPrefix(final List<String> deviceNames)
-	{
-		if (deviceNames.size() <= 1)
-		{
-			return ""; // only one device => we will do with the device name's first character
-		}
-		else
-		{
-			return StringUtils.getCommonPrefix(deviceNames.toArray(new String[0]));
-		}
-	}
-
-	@VisibleForTesting
-	/* package */ static String createDeviceDisplayName(
-			@Nullable final String deviceDisplayNameCommonPrefix,
-			@NonNull final String deviceName)
-	{
-		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-
-		if (deviceDisplayNameCommonPrefix == null || deviceDisplayNameCommonPrefix.isEmpty())
-		{
-			return String.valueOf(deviceName.charAt(0));
-		}
-		else if (deviceDisplayNameCommonPrefix.equals(deviceName))
-		{
-			return deviceDisplayNameCommonPrefix;
-		}
-		else
-		{
-			return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
-		}
 	}
 }
