@@ -397,7 +397,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			if(Check.isEmpty(invoice.getEMail(), true))
+			if(Check.isBlank(invoice.getEMail()))
 			{
 				invoice.setEMail(invoiceHeader.getEMail());
 			}
