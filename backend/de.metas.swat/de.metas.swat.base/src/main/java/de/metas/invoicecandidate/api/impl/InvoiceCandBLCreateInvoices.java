@@ -397,7 +397,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			if(Check.isEmpty(invoice.getEMail(), true))
+			if(Check.isBlank(invoice.getEMail()))
 			{
 				invoice.setEMail(invoiceHeader.getEMail());
 			}
@@ -408,7 +408,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
 				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
-				if(!Check.isEmpty(inout.getEMail()))
+				if(!Check.isBlank(inout.getEMail()))
 				{
 					invoice.setEMail(inout.getEMail());
 				}

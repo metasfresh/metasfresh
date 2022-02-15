@@ -620,7 +620,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setDateOrdered(order.getDateOrdered());
-			if (Check.isEmpty(icRecord.getEMail(), true))
+			if (Check.isBlank(icRecord.getEMail()))
 			{
 				icRecord.setEMail(order.getEMail());
 			}
