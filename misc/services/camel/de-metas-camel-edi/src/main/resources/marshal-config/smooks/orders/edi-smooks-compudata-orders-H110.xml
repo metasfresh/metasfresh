@@ -8,7 +8,7 @@
 	</core:exports>
 	<fl:reader
 		fields="record[4],partner[35],messageNo[14],delName1[35],delName2[35],delName3[35],delStrasse1[35],delStrasse2[35],delOrt[35],delPLZ[9],delLand[3],homeDelName[35],homeDelStrasse[35],homeDelOrt[35],custKommission1[35],custKommission2[35]">
-		<fl:singleBinding beanId="H110" class="de.metas.edi.esb.ordersimport.compudata.H110" />
+		<fl:listBinding beanId="H110" class="de.metas.edi.esb.ordersimport.compudata.H110" />
 	</fl:reader>
 
 </smooks-resource-list>

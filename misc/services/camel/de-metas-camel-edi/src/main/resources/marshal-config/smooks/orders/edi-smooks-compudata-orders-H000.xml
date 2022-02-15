@@ -9,7 +9,7 @@
 
     <fl:reader
             fields="record[4],sender[35],senderQual[4],receiver[35],receiverQual[4],reference[35],msgFormat[6],msgType[25],msgSubType[25],msgCount[4],syntaxID[4],syntaxVersion[1],messageDate[6],messageTime[4],applicationRef[16],commsAgreement[35],testFlag[1]">
-        <fl:singleBinding beanId="H000" class="de.metas.edi.esb.ordersimport.compudata.H000"/>
+        <fl:listBinding beanId="H000" class="de.metas.edi.esb.ordersimport.compudata.H000"/>
     </fl:reader>
    
 

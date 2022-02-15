@@ -7,7 +7,7 @@
 		<core:result type="org.milyn.payload.JavaResult" extract="T100" />
 	</core:exports>
 	<fl:reader fields="record[4],partner[35],messageNo[14],contractValue[15]">
-		<fl:singleBinding beanId="T100" class="de.metas.edi.esb.ordersimport.compudata.T100" />
+		<fl:listBinding beanId="T100" class="de.metas.edi.esb.ordersimport.compudata.T100" />
 	</fl:reader>
 
 </smooks-resource-list>
