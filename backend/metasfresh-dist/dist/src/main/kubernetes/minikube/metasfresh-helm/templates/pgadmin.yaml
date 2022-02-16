@@ -58,4 +58,3 @@ spec:
       #     path: /volumes/{{ .Release.Namespace }}/pgadmin
       #     type: DirectoryOrCreate
         
-

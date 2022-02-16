@@ -48,7 +48,7 @@ spec:
         - containerPort: {{ .Values.webapi.port.debug }} 
         env:
         - name: WEBUI_FRONTEND_URL
-          value: http://{{ .Values.ingress.webui.url }}
+          value: {{ .Values.webui.webuiAPIClient.protocol }}://{{ .Values.ingress.webui.url }}
         #db
         - name: DB_HOST
           value: metasfresh-{{ .Release.Name }}-db
@@ -118,3 +118,4 @@ spec:
       - name: host-timezone
         hostPath:
           path: /etc/timezone
+          

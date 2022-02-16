@@ -79,3 +79,4 @@ spec:
       - name: host-timezone
         hostPath:
           path: /etc/timezone
+          

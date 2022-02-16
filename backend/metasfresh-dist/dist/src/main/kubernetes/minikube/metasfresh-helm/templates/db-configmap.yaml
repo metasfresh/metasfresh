@@ -5,3 +5,4 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   {{ (.Files.Glob "files/postgresql.conf").AsConfig | indent 2 }}
+  
