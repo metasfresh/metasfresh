@@ -46,7 +46,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,6 +54,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -106,18 +106,8 @@ public class HandlingUnitsService
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
 				.attributes(getAttributes(huContext, hu))
-				.clearanceNote(hu.getClearanceNote());
-
-		final String clearanceStatus = hu.getClearanceStatus();
-		if (Check.isNotBlank(clearanceStatus))
-		{
-			final JsonClearanceStatusInfo clearanceStatusInfo = JsonClearanceStatusInfo.builder()
-					.key(clearanceStatus)
-					.caption(handlingUnitsBL.getHUCaption(clearanceStatus))
-					.build();
-
-			jsonHUBuilder.huClearanceStatus(clearanceStatusInfo);
-		}
+				.clearanceNote(hu.getClearanceNote())
+				.huClearanceStatus(getClearanceStatusInfo(hu));
 
 		if (isAggregatedTU)
 		{
@@ -179,11 +169,8 @@ public class HandlingUnitsService
 		final ClearanceStatus currentClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
 
 		final ImmutableList<JsonClearanceStatusInfo> huStatuses = Arrays.stream(ClearanceStatus.values())
-				.filter(s -> !s.equals(currentClearanceStatus))
-				.map(allowedS -> JsonClearanceStatusInfo.builder()
-						.key(allowedS.getCode())
-						.caption(handlingUnitsBL.getHUCaption(allowedS.getCode()))
-						.build())
+				.filter(availableStatus -> !availableStatus.equals(currentClearanceStatus))
+				.map(this::getClearanceStatusInfo)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonAllowedHUClearanceStatuses.builder()
@@ -295,5 +282,30 @@ public class HandlingUnitsService
 				.stream()
 				.map(includedHU -> toJson(includedHU, adLanguage))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private JsonClearanceStatusInfo getClearanceStatusInfo(@NonNull final I_M_HU hu)
+	{
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
+
+		if (clearanceStatus == null)
+		{
+			return null;
+		}
+
+		return getClearanceStatusInfo(clearanceStatus);
+	}
+
+	@NonNull
+	private JsonClearanceStatusInfo getClearanceStatusInfo(@NonNull final ClearanceStatus clearanceStatus)
+	{
+		final String caption = handlingUnitsBL.getClearanceStatusCaption(clearanceStatus)
+				.translate(Env.getAD_Language());
+
+		return JsonClearanceStatusInfo.builder()
+				.key(clearanceStatus.getCode())
+				.caption(caption)
+				.build();
 	}
 }

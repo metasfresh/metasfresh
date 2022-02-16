@@ -95,6 +95,7 @@ import java.util.stream.Collectors;
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
 
+	@Nullable
 	private ClearanceStatus _huClearanceStatus;
 
 	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
@@ -225,7 +226,7 @@ import java.util.stream.Collectors;
 	}
 
 	@Override
-	public IHUBuilder setHUClearanceStatus(final ClearanceStatus huClearanceStatus)
+	public IHUBuilder setHUClearanceStatus(@Nullable final ClearanceStatus huClearanceStatus)
 	{
 		_huClearanceStatus = huClearanceStatus;
 		return this;
@@ -484,7 +485,7 @@ import java.util.stream.Collectors;
 
 	private static void setClearanceStatus(@NonNull final I_M_HU hu, @Nullable final I_M_HU parentHU, @Nullable final ClearanceStatus configuredStatus)
 	{
-		// Copy HUClearanceStatus from parent
+		// Copy HUClearanceStatus from parent or use the configured one if no parent
 		final ClearanceStatus huClearanceStatus = parentHU != null
 				? ClearanceStatus.ofNullableCode(parentHU.getClearanceStatus())
 				: configuredStatus;

@@ -64,8 +64,6 @@ import java.util.function.Function;
 @UtilityClass
 public class RetrieveAvailableHUsToPick
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 	public List<I_M_HU> retrieveAvailableHUsToPick(
 			@NonNull final PickingHUsQuery query,
 			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction)
@@ -150,7 +148,8 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		if (!handlingUnitsBL.isCleared(vhu))
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(vhu.getM_HU_ID())))
 		{
 			return;
 		}

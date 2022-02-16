@@ -1108,24 +1108,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isCleared(final I_M_HU hu)
-	{
-		return Check.isBlank(hu.getClearanceStatus()) ||
-				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
-	}
-
-	@Override
-	public boolean isClearedHUById(@NonNull final HuId huId)
-	{
-		final I_M_HU hu = getById(huId);
-
-		if (!isCleared(hu))
-		{
-			throw new AdempiereException("HU " + huId.getRepoId() + " not cleared!");
-		}
-		return true;
-	}
-
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));
@@ -1133,10 +1115,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public String getHUCaption(@NonNull final String clearanceStatusKey)
+	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{
-		final ITranslatableString huClearanceStatusCaptionTranslatable = adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatusKey);
-		return huClearanceStatusCaptionTranslatable.translate(Env.getAD_Language());
+		return adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
 	}
 
 	private boolean isWholeHierarchyCleared(@NonNull final I_M_HU hu)
@@ -1158,5 +1139,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			}
 		}
 		return true;
+	}
+
+	private boolean isCleared(final I_M_HU hu)
+	{
+		return Check.isBlank(hu.getClearanceStatus()) ||
+				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
 	}
 }

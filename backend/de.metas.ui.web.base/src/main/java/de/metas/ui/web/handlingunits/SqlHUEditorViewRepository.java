@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -17,6 +18,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -669,16 +671,16 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Nullable
 	private JSONLookupValue createHUClearanceStatusLookupValue(@NonNull final I_M_HU hu)
 	{
-		final String huClearanceStatusKey = hu.getClearanceStatus();
+		final ClearanceStatus huClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
 
-		if(Check.isBlank(huClearanceStatusKey))
+		if (huClearanceStatus == null)
 		{
 			return null;
 		}
 
-		final String huClearanceStatusCaption = handlingUnitsBL.getHUCaption(huClearanceStatusKey);
+		final ITranslatableString huClearanceStatusCaption = handlingUnitsBL.getClearanceStatusCaption(huClearanceStatus);
 
-		return  JSONLookupValue.of(huClearanceStatusKey, huClearanceStatusCaption);
+		return JSONLookupValue.of(huClearanceStatus.getCode(), huClearanceStatusCaption.translate(Env.getAD_Language()));
 	}
 
 }

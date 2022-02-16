@@ -728,7 +728,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return this;
 	}
 
-	protected final ClearanceStatus getHUClearanceStatus()
+	public final ClearanceStatus getHUClearanceStatus()
 	{
 		return _huClearanceStatus;
 	}

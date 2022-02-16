@@ -24,6 +24,7 @@ package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
@@ -289,7 +290,7 @@ public class HandlingUnitsRestController
 	}
 
 	@GetMapping("/{huId}/allowedClearanceStatuses")
-	public ResponseEntity<?> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
+	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
 	{
 		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
 	}

@@ -97,6 +97,8 @@ public class AddQtyToHUCommand
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final AddQtyToHURequest request)
 	{
+		validateSourceHUs(request.getSourceHUIds());
+
 		this.sourceHUIds = request.getSourceHUIds();
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
@@ -168,10 +170,8 @@ public class AddQtyToHUCommand
 				.orElse(null);
 		if (existingCandidate != null)
 		{
-			return validatePickingCandidate(existingCandidate);
+			return existingCandidate;
 		}
-
-		handlingUnitsBL.isClearedHUById(packToHuId);
 
 		final PickingCandidate newCandidate = PickingCandidate.builder()
 				.qtyPicked(qtyToPack.toZero())
@@ -252,16 +252,16 @@ public class AddQtyToHUCommand
 		}
 	}
 
-	@NonNull
-	private PickingCandidate validatePickingCandidate(@NonNull final PickingCandidate pickingCandidate)
+	private void validateSourceHUs(@NonNull final List<HuId> sourceHUIds)
 	{
-		final HuId huId = pickingCandidate.getPackedToHuId();
-
-		if (huId != null)
+		for (final HuId sourceHuId : sourceHUIds)
 		{
-			handlingUnitsBL.isClearedHUById(huId);
+			if (!handlingUnitsBL.isHUHierarchyCleared(sourceHuId))
+			{
+				throw new AdempiereException("Non 'Cleared' HUs cannot be picked!")
+						.appendParametersToMessage()
+						.setParameter("M_HU_ID", sourceHuId);
+			}
 		}
-
-		return pickingCandidate;
 	}
 }

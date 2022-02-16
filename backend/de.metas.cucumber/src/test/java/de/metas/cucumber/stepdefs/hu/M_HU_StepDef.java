@@ -484,12 +484,8 @@ public class M_HU_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_ClearanceNote);
-		final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
-
-		final I_M_HU hu = huTable.get(huIdentifier);
-		assertThat(hu).isNotNull();
+		final String clearanceNote = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceNote);
+		final String clearanceStatus = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
 
 		final JsonClearanceStatus jsonClearanceStatus = JsonClearanceStatus.valueOf(clearanceStatus);
 

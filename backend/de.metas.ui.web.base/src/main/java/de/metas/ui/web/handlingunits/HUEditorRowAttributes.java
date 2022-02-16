@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -251,7 +252,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 			final I_M_HU hu = huDAO.getById(huEditorRowId.getHuId());
 
-			if(Check.isNotBlank(hu.getClearanceNote()))
+			if (Check.isNotBlank(hu.getClearanceNote()))
 			{
 				jsonFields.add(toJSONDocumentField(hu, jsonOpts));
 			}
