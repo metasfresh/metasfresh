@@ -48,6 +48,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -265,9 +266,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatusDisplay(huStatusDisplay)
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
-
-				.setPackingInfo(extractPackingInfo(hu, huRecordType));
-
+				.setPackingInfo(extractPackingInfo(hu, huRecordType))
+				.setClearanceStatus(createHUClearanceStatusLookupValue(hu));
 		//
 		// Acquire Best Before Date if required
 		if (showBestBeforeDate)
@@ -414,7 +414,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setProduct(createProductLookupValue(productId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
-				//
+				.setClearanceStatus(createHUClearanceStatusLookupValue(hu))
 				.build();
 	}
 
@@ -664,6 +664,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		InterfaceWrapperHelper.loadByRepoIdAwares(huIds, I_M_HU.class); // caches the given HUs with one SQL query
 		huReservationService.warmup(huIds);
+	}
+
+	@Nullable
+	private JSONLookupValue createHUClearanceStatusLookupValue(@NonNull final I_M_HU hu)
+	{
+		final String huClearanceStatusKey = hu.getClearanceStatus();
+
+		if(Check.isBlank(huClearanceStatusKey))
+		{
+			return null;
+		}
+
+		final String huClearanceStatusCaption = handlingUnitsBL.getHUCaption(huClearanceStatusKey);
+
+		return  JSONLookupValue.of(huClearanceStatusKey, huClearanceStatusCaption);
 	}
 
 }

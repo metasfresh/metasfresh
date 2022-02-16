@@ -124,6 +124,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
 				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setOnlyClearedHUs()
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();

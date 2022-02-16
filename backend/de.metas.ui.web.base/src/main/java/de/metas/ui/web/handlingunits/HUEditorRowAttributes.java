@@ -1,30 +1,10 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -39,9 +19,11 @@ import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
@@ -57,6 +39,27 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
 
 /*
  * #%L
@@ -95,6 +98,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	private final ImmutableSet<AttributeCode> readonlyAttributeNames;
 	private final ImmutableSet<AttributeCode> hiddenAttributeNames;
 
+	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+
 	@Getter
 	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
 
@@ -102,12 +107,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
 			@NonNull final ImmutableSet<ProductId> productIDs,
+			@NonNull final I_M_HU hu,
 			final boolean readonly)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 
-		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage, hu));
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
@@ -228,7 +234,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts, final DocumentId huId)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 
@@ -236,6 +242,20 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 				.stream()
 				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
+
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (isDisplayedClearanceStatus)
+		{
+			final HUEditorRowId huEditorRowId = HUEditorRowId.ofDocumentId(huId);
+
+			final I_M_HU hu = huDAO.getById(huEditorRowId.getHuId());
+
+			if(Check.isNotBlank(hu.getClearanceNote()))
+			{
+				jsonFields.add(toJSONDocumentField(hu, jsonOpts));
+			}
+		}
 
 		jsonDocument.setFields(jsonFields);
 
@@ -422,6 +442,19 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public boolean hasAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.hasAttribute(attributeCode);
+	}
+
+
+	private static JSONDocumentField toJSONDocumentField(final I_M_HU hu, final JSONOptions jsonOpts)
+	{
+		final Object jsonValue = Values.valueToJsonObject(hu.getClearanceNote(), jsonOpts);
+		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Text;
+
+		return JSONDocumentField.ofNameAndValue(I_M_HU.COLUMNNAME_ClearanceNote, jsonValue)
+				.setDisplayed(true)
+				.setMandatory(false)
+				.setReadonly(true)
+				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
 	}
 
 	/**

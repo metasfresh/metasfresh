@@ -28,9 +28,9 @@ import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -274,5 +274,23 @@ public class HandlingUnitsRestController
 			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
 		}
 
+	}
+
+	@PutMapping("/{huId}/clearance")
+	public ResponseEntity<?> setHUClearanceStatus(
+			@PathVariable("huId") final int huRepoId,
+			@RequestBody @NonNull final JsonSetClearanceStatusRequest request)
+	{
+		final HuId huId = HuId.ofRepoId(huRepoId);
+
+		handlingUnitsService.setClearanceStatus(huId, request);
+
+		return ResponseEntity.ok().body(null);
+	}
+
+	@GetMapping("/{huId}/allowedClearanceStatuses")
+	public ResponseEntity<?> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
+	{
+		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
 	}
 }

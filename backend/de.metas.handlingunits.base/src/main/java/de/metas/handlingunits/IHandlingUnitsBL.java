@@ -572,4 +572,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
+
+	void setClearanceStatus(final HuId huId,final ClearanceStatus status, final String clearanceNote);
+
+	boolean isCleared(final I_M_HU hu);
+
+	boolean isClearedHUById(final HuId huId);
+
+	boolean isHUHierarchyCleared(final HuId huId);
+
+	String getHUCaption(final String clearanceStatusKey);
 }

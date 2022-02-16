@@ -1,26 +1,14 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.NamePair;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.devices.DeviceDescriptor;
 import de.metas.ui.web.devices.DeviceDescriptorsList;
@@ -32,10 +20,26 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
 
 /*
  * #%L
@@ -67,15 +71,22 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class HUEditorRowAttributesHelper
 {
-	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
+	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage, @NonNull final I_M_HU hu)
 	{
 		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
-		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
+		final List<DocumentLayoutElementDescriptor> attributeLayoutElements = attributeStorage.getAttributeValues()
 				.stream()
 				.map(av -> createLayoutElement(av, warehouseId))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(Collectors.toList());
 
-		return ViewRowAttributesLayout.of(elements);
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (isDisplayedClearanceStatus && Check.isNotBlank(hu.getClearanceNote()))
+		{
+			attributeLayoutElements.add(createLayoutElement());
+		}
+
+		return ViewRowAttributesLayout.of(ImmutableList.copyOf(attributeLayoutElements));
 	}
 
 	private static DocumentLayoutElementDescriptor createLayoutElement(
@@ -193,4 +204,16 @@ public final class HUEditorRowAttributesHelper
 		}
 	}
 
+	private static DocumentLayoutElementDescriptor createLayoutElement()
+	{
+		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Text;
+
+		final ITranslatableString caption = Services.get(IMsgBL.class).translatable(I_M_HU.COLUMNNAME_ClearanceNote);
+		return DocumentLayoutElementDescriptor.builder()
+				.setCaption(caption)
+				.setWidgetType(widgetType)
+				.addField(DocumentLayoutElementFieldDescriptor.builder(I_M_HU.COLUMNNAME_ClearanceNote)
+								  .setPublicField(true))
+				.build();
+	}
 }

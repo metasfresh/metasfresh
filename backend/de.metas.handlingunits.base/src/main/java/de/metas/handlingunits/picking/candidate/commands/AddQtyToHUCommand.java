@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -76,6 +77,7 @@ public class AddQtyToHUCommand
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -166,8 +168,10 @@ public class AddQtyToHUCommand
 				.orElse(null);
 		if (existingCandidate != null)
 		{
-			return existingCandidate;
+			return validatePickingCandidate(existingCandidate);
 		}
+
+		handlingUnitsBL.isClearedHUById(packToHuId);
 
 		final PickingCandidate newCandidate = PickingCandidate.builder()
 				.qtyPicked(qtyToPack.toZero())
@@ -246,5 +250,18 @@ public class AddQtyToHUCommand
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);
 		}
+	}
+
+	@NonNull
+	private PickingCandidate validatePickingCandidate(@NonNull final PickingCandidate pickingCandidate)
+	{
+		final HuId huId = pickingCandidate.getPackedToHuId();
+
+		if (huId != null)
+		{
+			handlingUnitsBL.isClearedHUById(huId);
+		}
+
+		return pickingCandidate;
 	}
 }

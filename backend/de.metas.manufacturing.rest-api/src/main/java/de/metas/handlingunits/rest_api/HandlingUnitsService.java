@@ -23,11 +23,15 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
+import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -42,6 +46,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +58,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -99,7 +105,19 @@ public class HandlingUnitsService
 				.qrCode(toJsonHUQRCode(huId))
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
-				.attributes(getAttributes(huContext, hu));
+				.attributes(getAttributes(huContext, hu))
+				.clearanceNote(hu.getClearanceNote());
+
+		final String clearanceStatus = hu.getClearanceStatus();
+		if (Check.isNotBlank(clearanceStatus))
+		{
+			final JsonClearanceStatusInfo clearanceStatusInfo = JsonClearanceStatusInfo.builder()
+					.key(clearanceStatus)
+					.caption(handlingUnitsBL.getHUCaption(clearanceStatus))
+					.build();
+
+			jsonHUBuilder.huClearanceStatus(clearanceStatusInfo);
+		}
 
 		if (isAggregatedTU)
 		{
@@ -144,6 +162,33 @@ public class HandlingUnitsService
 
 			huAttributesBL.updateHUAttributeRecursive(huId, attributeCode, attribute.getValue(), null);
 		}
+	}
+
+	public void setClearanceStatus(@NonNull final HuId huId, @NonNull final JsonSetClearanceStatusRequest updateClearanceStatusRequest)
+	{
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofCode(updateClearanceStatusRequest.getClearanceStatus().name());
+		final String clearanceNote = updateClearanceStatusRequest.getClearanceNote();
+
+		handlingUnitsBL.setClearanceStatus(huId, clearanceStatus, clearanceNote);
+	}
+
+	@NonNull
+	public JsonAllowedHUClearanceStatuses getAllowedStatusesForHUId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final ClearanceStatus currentClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
+
+		final ImmutableList<JsonClearanceStatusInfo> huStatuses = Arrays.stream(ClearanceStatus.values())
+				.filter(s -> !s.equals(currentClearanceStatus))
+				.map(allowedS -> JsonClearanceStatusInfo.builder()
+						.key(allowedS.getCode())
+						.caption(handlingUnitsBL.getHUCaption(allowedS.getCode()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonAllowedHUClearanceStatuses.builder()
+				.clearanceStatuses(huStatuses)
+				.build();
 	}
 
 	@NonNull

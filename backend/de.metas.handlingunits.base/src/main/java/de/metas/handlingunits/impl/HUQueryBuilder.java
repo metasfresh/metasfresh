@@ -24,6 +24,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
@@ -136,6 +137,8 @@ import java.util.Set;
 	private final Set<HuPackingInstructionsVersionId> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
 
+	private boolean _onlyClearedHUs = false;
+
 	private HUReservationDocRef _excludeReservedToOtherThanRef = null;
 	private boolean _excludeReserved = false;
 
@@ -185,6 +188,7 @@ import java.util.Set;
 		this._huStatusesToExclude.addAll(from._huStatusesToExclude);
 		this.onlyActiveHUs = from.onlyActiveHUs;
 		this.onlyStockedProducts = from.onlyStockedProducts;
+		this._onlyClearedHUs = from._onlyClearedHUs;
 
 		this._onlyHUIds = from._onlyHUIds == null ? null : new HashSet<>(from._onlyHUIds);
 
@@ -243,6 +247,7 @@ import java.util.Set;
 				.append(locked)
 				.append(_errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage)
+				.append(_onlyClearedHUs)
 				.toHashcode();
 	}
 
@@ -288,6 +293,7 @@ import java.util.Set;
 				.append(locked, other.locked)
 				.append(_errorIfNoHUs, other._errorIfNoHUs)
 				.append(_errorIfNoHUs_ADMessage, other._errorIfNoHUs_ADMessage)
+				.append(_onlyClearedHUs, other._onlyClearedHUs)
 				.isEqual();
 	}
 
@@ -492,6 +498,14 @@ import java.util.Set;
 		if (!huPIVersionIdsToInclude.isEmpty())
 		{
 			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
+		}
+
+		//
+		// Filter by HU ClearanceStatus:
+		// include
+		if (_onlyClearedHUs)
+		{
+			andFilters.addFilter(getOnlyClearedHUsFilter());
 		}
 
 		//
@@ -1191,5 +1205,27 @@ import java.util.Set;
 	{
 		_excludeReserved = true;
 		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setOnlyClearedHUs()
+	{
+		return setOnlyClearedHUs(true);
+	}
+
+	@Override
+	public IHUQueryBuilder setOnlyClearedHUs(final boolean onlyClearedHUs)
+	{
+		_onlyClearedHUs = onlyClearedHUs;
+		return this;
+	}
+
+	@NonNull
+	private IQueryFilter<I_M_HU> getOnlyClearedHUsFilter()
+	{
+		return queryBL.createCompositeQueryFilter(I_M_HU.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_ClearanceStatus, ClearanceStatus.Cleared.getCode())
+				.addEqualsFilter(I_M_HU.COLUMNNAME_ClearanceStatus, null);
 	}
 }

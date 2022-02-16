@@ -1,11 +1,5 @@
 package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.util.lang.IMutable;
-import org.compiere.Adempiere;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -18,6 +12,11 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -52,6 +51,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RetrieveAvailableHUsToPickFilters
 {
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	/**
 	 * Excludes HU that are already picked or already selected as fine picking source HUs.
 	 */
@@ -104,6 +104,8 @@ public class RetrieveAvailableHUsToPickFilters
 		final List<I_M_HU> result = new ArrayList<>();
 		for (final I_M_HU huTopLevel : husTopLevel)
 		{
+			final List<I_M_HU> validHUs = new ArrayList<>();
+
 			new HUIterator()
 					.setEnableStorageIteration(false)
 					.setListener(new HUIteratorListenerAdapter()
@@ -111,19 +113,28 @@ public class RetrieveAvailableHUsToPickFilters
 						@Override
 						public Result beforeHU(IMutable<I_M_HU> hu)
 						{
+							if (!handlingUnitsBL.isCleared(hu.getValue()))
+							{
+								//dev-note: if one HU is locked, the whole HU hierarchy should be skipped
+								validHUs.clear();
+								return Result.STOP;
+							}
 							if (!isNotPickedAndNotSourceHU(hu.getValue()))
 							{
 								return Result.SKIP_DOWNSTREAM;
 							}
 							else
 							{
-								result.add(hu.getValue());
+								validHUs.add(hu.getValue());
 								return Result.CONTINUE;
 							}
 						}
 					})
 					.iterate(huTopLevel);
+
+			result.addAll(validHUs);
 		}
+
 		return result;
 	}
 }

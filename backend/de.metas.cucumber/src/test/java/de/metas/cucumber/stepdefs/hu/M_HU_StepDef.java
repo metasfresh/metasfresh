@@ -25,11 +25,13 @@ package de.metas.cucumber.stepdefs.hu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonHUType;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -46,6 +48,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -69,8 +72,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.HU_ATTR_LockNotice;
+import static de.metas.cucumber.stepdefs.StepDefConstants.HU_ATTR_LOT_NUMBER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_ClearanceStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_HUStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
@@ -309,13 +313,13 @@ public class M_HU_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String attrLockNotice = DataTableUtil.extractStringOrNullForColumnName(row, "attributes." + HU_ATTR_LockNotice);
+		final String attrLotNo = DataTableUtil.extractStringOrNullForColumnName(row, "attributes." + HU_ATTR_LOT_NUMBER);
 
 		final I_M_HU hu = huTable.get(huIdentifier);
 		assertThat(hu).isNotNull();
 
 		final JsonHUAttributes attributes = new JsonHUAttributes();
-		attributes.putAttribute(HU_ATTR_LockNotice, attrLockNotice);
+		attributes.putAttribute(HU_ATTR_LOT_NUMBER, attrLotNo);
 
 		final JsonHUAttributesRequest jsonHUAttributesRequest = JsonHUAttributesRequest.builder()
 				.huId(String.valueOf(hu.getM_HU_ID()))
@@ -329,7 +333,7 @@ public class M_HU_StepDef
 	@And("^store HU endpointPath (.*) in context$")
 	public void store_hu_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+).*";
+		final String regex = ".*(:[a-zA-Z]+)/?.*";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
@@ -388,7 +392,7 @@ public class M_HU_StepDef
 					.findFirst().orElseThrow(() -> new AdempiereException("No HU found for HuId:" + huId));
 
 			final String jsonHUType = DataTableUtil.extractStringForColumnName(row, "jsonHUType");
-			final String attrLockNotice = DataTableUtil.extractStringOrNullForColumnName(row, "attributes." + HU_ATTR_LockNotice);
+			final String attrLotNo = DataTableUtil.extractStringOrNullForColumnName(row, "attributes." + HU_ATTR_LOT_NUMBER);
 			final String productName = DataTableUtil.extractStringForColumnName(row, "products.productName");
 			final String productValue = DataTableUtil.extractStringForColumnName(row, "products.productValue");
 			final String productQty = DataTableUtil.extractStringForColumnName(row, "products.qty");
@@ -404,8 +408,28 @@ public class M_HU_StepDef
 			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
 			assertThat(locator).isNotNull();
 
+			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU.COLUMNNAME_ClearanceNote);
+			if (Check.isNotBlank(clearanceNote))
+			{
+				assertThat(jsonHU.getClearanceNote()).isEqualTo(clearanceNote);
+			}
+
+			final String clearanceStatusKey = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus + "." + "key");
+			if (Check.isNotBlank(clearanceStatusKey))
+			{
+				assertThat(jsonHU.getHuClearanceStatus()).isNotNull();
+				assertThat(jsonHU.getHuClearanceStatus().getKey()).isEqualTo(clearanceStatusKey);
+			}
+
+			final String clearanceStatusCaption = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus + "." + "caption");
+			if (Check.isNotBlank(clearanceStatusCaption))
+			{
+				assertThat(jsonHU.getHuClearanceStatus()).isNotNull();
+				assertThat(jsonHU.getHuClearanceStatus().getCaption()).isEqualTo(clearanceStatusCaption);
+			}
+
 			assertThat(jsonHU.getJsonHUType()).isEqualTo(JsonHUType.valueOf(jsonHUType));
-			assertThat(jsonHU.getAttributes().getAttributes().get(HU_ATTR_LockNotice)).isEqualTo(attrLockNotice);
+			assertThat(jsonHU.getAttributes().getAttributes().get(HU_ATTR_LOT_NUMBER)).isEqualTo(attrLotNo);
 			assertThat(jsonHU.getProducts().get(0).getProductName()).isEqualTo(productName);
 			assertThat(jsonHU.getProducts().get(0).getProductValue()).isEqualTo(productValue);
 			assertThat(jsonHU.getProducts().get(0).getQty()).isEqualTo(productQty);
@@ -453,5 +477,28 @@ public class M_HU_StepDef
 		huTable.putOrReplace(request.getHuIdentifier(), hu.get());
 
 		return true;
+	}
+
+	@And("store JsonSetClearanceStatusRequest in context")
+	public void store_JsonSetClearanceStatusRequest_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_ClearanceNote);
+		final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
+
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		final JsonClearanceStatus jsonClearanceStatus = JsonClearanceStatus.valueOf(clearanceStatus);
+
+		final JsonSetClearanceStatusRequest jsonSetClearanceStatusRequest = JsonSetClearanceStatusRequest.builder()
+				.clearanceStatus(jsonClearanceStatus)
+				.clearanceNote(clearanceNote)
+				.build();
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
 	}
 }

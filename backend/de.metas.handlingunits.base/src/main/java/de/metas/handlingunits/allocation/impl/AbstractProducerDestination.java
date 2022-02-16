@@ -3,6 +3,7 @@ package de.metas.handlingunits.allocation.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -71,6 +72,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// Parameters
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
+	private ClearanceStatus _huClearanceStatus = null;
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
@@ -264,6 +266,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
+
+		huBuilder.setHUClearanceStatus(getHUClearanceStatus());
 
 		return huBuilder;
 	}
@@ -714,5 +718,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			throw new HUException("This producer is not configurable anymore: " + this);
 		}
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setHUClearanceStatus(final ClearanceStatus huClearanceStatus)
+	{
+		assertConfigurable();
+		_huClearanceStatus = huClearanceStatus;
+		return this;
+	}
+
+	protected final ClearanceStatus getHUClearanceStatus()
+	{
+		return _huClearanceStatus;
 	}
 }

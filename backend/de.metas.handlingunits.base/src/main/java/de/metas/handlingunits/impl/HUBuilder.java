@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -93,6 +94,8 @@ import java.util.stream.Collectors;
 	 * Default: {@link X_M_HU#HUSTATUS_Planning}.
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
+
+	private ClearanceStatus _huClearanceStatus;
 
 	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
@@ -219,6 +222,18 @@ import java.util.stream.Collectors;
 	public boolean isHUPlanningReceiptOwnerPM()
 	{
 		return _huPlanningReceiptOwnerPM;
+	}
+
+	@Override
+	public IHUBuilder setHUClearanceStatus(final ClearanceStatus huClearanceStatus)
+	{
+		_huClearanceStatus = huClearanceStatus;
+		return this;
+	}
+
+	public ClearanceStatus getHUClearanceStatus()
+	{
+		return _huClearanceStatus;
 	}
 
 	@Nullable
@@ -422,6 +437,8 @@ import java.util.stream.Collectors;
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
 
+		setClearanceStatus(hu, parentHU, getHUClearanceStatus());
+
 		//
 		// Notify Storage and Attributes DAO that a new HU was created
 		// NOTE: depends on their implementation, but they have a chance to do some optimizations
@@ -463,6 +480,19 @@ import java.util.stream.Collectors;
 			piip = IHandlingUnitsBL.extractPIItemProductOrNull(parentHU);
 		}
 		return piip;
+	}
+
+	private static void setClearanceStatus(@NonNull final I_M_HU hu, @Nullable final I_M_HU parentHU, @Nullable final ClearanceStatus configuredStatus)
+	{
+		// Copy HUClearanceStatus from parent
+		final ClearanceStatus huClearanceStatus = parentHU != null
+				? ClearanceStatus.ofNullableCode(parentHU.getClearanceStatus())
+				: configuredStatus;
+
+		if (huClearanceStatus != null)
+		{
+			hu.setClearanceStatus(huClearanceStatus.getCode());
+		}
 	}
 
 	/**
