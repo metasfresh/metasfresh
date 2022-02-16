@@ -57,7 +57,7 @@ spec:
           value: '{{ .Values.app.port.debug }}'
         - name: DEBUG_PRINT_BASH_CMDS
           value: '{{ .Values.app.debug.printBashCmds }}'
-        - name: DEBUG_PRINT_BASH_CMDS
+        - name: DEBUG_SUSPEND
           value: '{{ .Values.app.debug.suspend }}'
         #db
         - name: DB_HOST
