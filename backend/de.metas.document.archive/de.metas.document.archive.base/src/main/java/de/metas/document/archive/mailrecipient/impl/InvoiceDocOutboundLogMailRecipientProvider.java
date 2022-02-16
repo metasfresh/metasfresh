@@ -85,17 +85,17 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
 
-			if (!Check.isEmpty(invoiceEmail, true))
+			if (!Check.isBlank(invoiceEmail))
 			{
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
+			if (!Check.isBlank(invoiceUser.getEmailAddress()))
 			{
 				return Optional.of(invoiceUser);
 			}
 
-			if (!Check.isEmpty(locationEmail))
+			if (!Check.isBlank(locationEmail))
 			{
 				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
 			}
@@ -117,17 +117,17 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
-			if (!Check.isEmpty(invoiceEmail, true))
+			if (!Check.isBlank(invoiceEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isEmpty(locationEmail, true))
+			if (!Check.isBlank(locationEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
-			if (!Check.isEmpty(docOutBoundRecipient.getEmailAddress(), true))
+			if (!Check.isBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
 			}

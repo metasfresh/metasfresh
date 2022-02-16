@@ -83,17 +83,17 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		{
 			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderUserRecordId));
 
-			if (!Check.isEmpty(orderEmail))
+			if (!Check.isBlank(orderEmail))
 			{
 				return Optional.of(orderUser.withEmailAddress(orderEmail));
 			}
 
-			if (!Check.isEmpty(orderUser.getEmailAddress(), true))
+			if (!Check.isBlank(orderUser.getEmailAddress()))
 			{
 				return Optional.of(orderUser);
 			}
 
-			if (!Check.isEmpty(locationEmail))
+			if (!Check.isBlank(locationEmail))
 			{
 				return Optional.of(orderUser.withEmailAddress(locationEmail));
 			}
@@ -113,22 +113,21 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
-			if (!Check.isEmpty(orderEmail, true))
+			if (!Check.isBlank(orderEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(orderEmail));
 			}
 
-			if (!Check.isEmpty(locationEmail, true))
+			if (!Check.isBlank(locationEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
-			if(!Check.isEmpty(docOutBoundRecipient.getEmailAddress(), true))
+			if (!Check.isBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
 			}
 		}
-
 
 		return Optional.empty();
 	}

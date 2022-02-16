@@ -102,19 +102,19 @@ public class DunningDocOutboundLogMailRecipientProvider
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
 
-			if (!Check.isEmpty(invoiceEmail, true))
+			if (!Check.isBlank(invoiceEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, invoiceEmail);
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
+			if (!Check.isBlank(invoiceUser.getEmailAddress()))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", invoiceUser);
 				return Optional.of(invoiceUser);
 			}
 
-			if (!Check.isEmpty(locationEmail, true))
+			if (!Check.isBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, locationEmail);
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
@@ -141,19 +141,19 @@ public class DunningDocOutboundLogMailRecipientProvider
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
-			if (!Check.isEmpty(invoiceEmail, true))
+			if (!Check.isBlank(invoiceEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the invoice email {} as address}", billContact, invoiceEmail);
 				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isEmpty(locationEmail, true))
+			if (!Check.isBlank(locationEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the location email {} as address}", billContact, locationEmail);
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
-			if (!Check.isEmpty(docOutBoundRecipient.getEmailAddress(), true))
+			if (!Check.isBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
 			}
