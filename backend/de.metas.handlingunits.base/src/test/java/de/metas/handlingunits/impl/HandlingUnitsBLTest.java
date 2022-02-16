@@ -162,7 +162,11 @@ public class HandlingUnitsBLTest
 			assertThat(updatedTU.getClearanceNote()).isEqualTo("LockedNote");
 			assertThat(updatedCU.getClearanceNote()).isEqualTo("LockedNote");
 		}
+	}
 
+	@Nested
+	class isHUHierarchyCleared
+	{
 		@Test
 		public void givenTU_OfA_LU_TU_CU_Cleared_Hierarchy_whenIsHUHierarchyCleared_thenTrue()
 		{
@@ -193,19 +197,19 @@ public class HandlingUnitsBLTest
 			//then
 			assertThat(isWholeHierarchyCleared).isFalse();
 		}
+	}
 
-		private I_M_HU_Item createHU(@Nullable final I_M_HU_Item parent)
-		{
-			final I_M_HU hu = newInstance(I_M_HU.class);
-			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-			hu.setM_HU_Item_Parent(parent);
-			saveRecord(hu);
+	private static I_M_HU_Item createHU(@Nullable final I_M_HU_Item parent)
+	{
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		hu.setM_HU_Item_Parent(parent);
+		saveRecord(hu);
 
-			final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
-			item.setM_HU(hu);
-			saveRecord(item);
+		final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
+		item.setM_HU(hu);
+		saveRecord(item);
 
-			return item;
-		}
+		return item;
 	}
 }
