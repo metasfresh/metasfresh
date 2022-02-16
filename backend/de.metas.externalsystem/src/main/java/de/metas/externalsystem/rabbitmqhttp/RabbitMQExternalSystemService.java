@@ -35,6 +35,7 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
@@ -44,6 +45,9 @@ import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
@@ -59,6 +63,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link ExternalSystemType#RabbitMQ}.
@@ -74,6 +79,7 @@ public class RabbitMQExternalSystemService
 	private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
 	private final DataExportAuditRepository dataExportAuditRepository;
+	private final UserGroupRepository userGroupRepository;
 	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -84,12 +90,14 @@ public class RabbitMQExternalSystemService
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final DataExportAuditRepository dataExportAuditRepository)
+			@NonNull final DataExportAuditRepository dataExportAuditRepository,
+			@NonNull final UserGroupRepository userGroupRepository)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
 		this.externalSystemMessageSender = externalSystemMessageSender;
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
 		this.dataExportAuditRepository = dataExportAuditRepository;
+		this.userGroupRepository = userGroupRepository;
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.bufferMaxSize", 100))
@@ -138,9 +146,9 @@ public class RabbitMQExternalSystemService
 
 		final ExternalSystemRabbitMQConfig rabbitMQConfig = ExternalSystemRabbitMQConfig.cast(config.getChildConfig());
 
-		if (!rabbitMQConfig.isSyncBPartnerToRabbitMQ())
+		if (!rabbitMQConfig.isSendBPartnerAllowed())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("RabbitMQConfig: {} isSyncBPartnerToRabbitMQ = false! No action is performed!", externalSystemConfigRabbitMQId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("RabbitMQConfig: {} isSendBPartnerAllowed = false! No action is performed!", externalSystemConfigRabbitMQId);
 			return Optional.empty();
 		}
 
@@ -204,13 +212,18 @@ public class RabbitMQExternalSystemService
 	{
 		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
 
-		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
-		if (!dataExportAudit.isPresent())
-		{
-			return;
-		}
+		final ImmutableSet.Builder<ExternalSystemRabbitMQConfigId> rabbitMQConfigIdsBuilder = ImmutableSet.builder();
 
-		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getId());
+		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
+
+		dataExportAudit
+				.map(DataExportAudit::getId)
+				.map(this::getRabbitMQConfigsToSyncWith)
+				.ifPresent(rabbitMQConfigIdsBuilder::addAll);
+
+		rabbitMQConfigIdsBuilder.addAll(getAdditionalExternalSystemConfigsToSyncWith(bPartnerId));
+
+		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = rabbitMQConfigIdsBuilder.build();
 
 		if (rabbitMQConfigIds.isEmpty())
 		{
@@ -218,5 +231,43 @@ public class RabbitMQExternalSystemService
 		}
 
 		rabbitMQConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
+	}
+
+	@NonNull
+	private ImmutableSet<ExternalSystemRabbitMQConfigId> getAdditionalExternalSystemConfigsToSyncWith(@NonNull final BPartnerId bPartnerId)
+	{
+		final ImmutableSet<ExternalSystemRabbitMQConfig> rabbitMQConfigs = externalSystemConfigRepo.getAllByType(ExternalSystemType.RabbitMQ)
+				.stream()
+				.map(ExternalSystemParentConfig::getChildConfig)
+				.map(ExternalSystemRabbitMQConfig::cast)
+				.filter(ExternalSystemRabbitMQConfig::isAutoSendBPartnerEnabled)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (rabbitMQConfigs.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
+
+		final Set<UserGroupId> assignedUserGroupIds = userGroupRepository.getAssignedGroupIdsByUserId(UserId.ofRepoId(bPartner.getCreatedBy()));
+
+		if (Check.isEmpty(assignedUserGroupIds))
+		{
+			return ImmutableSet.of();
+		}
+
+		return rabbitMQConfigs.stream()
+				.filter(config -> qualifiesForAutoExport(config, assignedUserGroupIds))
+				.map(ExternalSystemRabbitMQConfig::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private boolean qualifiesForAutoExport(
+			@NonNull final ExternalSystemRabbitMQConfig rabbitMQConfig,
+			@NonNull final Set<UserGroupId> assignedUserGroupIds)
+	{
+		return rabbitMQConfig.isAutoSendBPartnerEnabled()
+				&& assignedUserGroupIds.contains(rabbitMQConfig.getUserGroupId());
 	}
 }

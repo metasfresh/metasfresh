@@ -150,6 +150,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setAuthToken("authToken");
 		childRecord.setIsSyncBPartnersToRabbitMQ(true);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setIsAutoSendWhenCreatedByUserGroup(false);
 		saveRecord(childRecord);
 
 		// when
@@ -238,6 +239,8 @@ class ExternalSystemConfigRepoTest
 		childRecord.setAuthToken("authToken");
 		childRecord.setIsSyncBPartnersToRabbitMQ(true);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setIsAutoSendWhenCreatedByUserGroup(true);
+		childRecord.setBPartnerCreatedByUserGroup_ID(1);
 		saveRecord(childRecord);
 
 		// when
