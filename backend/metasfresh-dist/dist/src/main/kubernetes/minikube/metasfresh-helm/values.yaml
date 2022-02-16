@@ -31,7 +31,7 @@ rabbitmq:
   password: metasfresh
   
 search:
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
   port: 
     search: 9200
   clusterName: metasfresh
