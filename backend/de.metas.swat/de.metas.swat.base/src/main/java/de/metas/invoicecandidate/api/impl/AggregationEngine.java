@@ -376,6 +376,7 @@ public final class AggregationEngine
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+			invoiceHeader.setEmail(icRecord.getEMail());
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{

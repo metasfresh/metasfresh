@@ -6,6 +6,7 @@ import de.metas.i18n.Language;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 /*
  * #%L
@@ -36,6 +37,7 @@ public class DocOutBoundRecipient
 	@NonNull
 	DocOutBoundRecipientId id;
 
+	@With
 	@Nullable
 	String emailAddress;
 

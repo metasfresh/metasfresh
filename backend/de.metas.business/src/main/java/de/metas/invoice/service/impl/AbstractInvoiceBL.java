@@ -44,8 +44,8 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -95,6 +95,7 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
@@ -616,6 +617,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setC_Activity_ID(order.getC_Activity_ID());
 		invoice.setUser1_ID(order.getUser1_ID());
 		invoice.setUser2_ID(order.getUser2_ID());
+
+		invoice.setEMail(order.getEMail());
 
 		// metas
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
@@ -1879,5 +1882,47 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			.lineDone()
 			.create(true);
 		// @formatter:on
+	}
+
+	@Override
+	@Nullable
+	public String getLocationEmail(@NonNull final InvoiceId invoiceId)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
+
+		final org.compiere.model.I_C_Invoice invoice =invoiceDAO.getByIdInTrx(invoiceId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId invoiceContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, invoice.getAD_User_ID());
+
+		if(invoiceContactId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User invoiceContactRecord = partnersRepo.getContactById(invoiceContactId);
+
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoiceContactRecord.getC_BPartner_Location_ID());
+		if(contactLocationId != null)
+		{
+			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
+			final String contactLocationEmail = contactLocationRecord.getEMail();
+
+			if(!Check.isEmpty(contactLocationEmail))
+			{
+				return contactLocationEmail;
+			}
+		}
+
+		return null;
 	}
 }

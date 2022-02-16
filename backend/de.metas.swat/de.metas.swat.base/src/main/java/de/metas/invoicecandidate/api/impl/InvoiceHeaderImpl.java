@@ -38,6 +38,8 @@ import javax.annotation.Nullable;
 
 	private String poReference;
 
+	private String eMail;
+
 	private LocalDate dateInvoiced;
 
 	private LocalDate dateAcct;
@@ -131,6 +133,12 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
+	public String getEMail()
+	{
+		return eMail;
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
@@ -167,6 +175,11 @@ import javax.annotation.Nullable;
 	public void setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
+	}
+
+	public void setEMail(final String eMail)
+	{
+		this.eMail = eMail;
 	}
 
 	public void setDateInvoiced(final LocalDate dateInvoiced)

@@ -24,6 +24,8 @@ public interface IInvoiceHeader
 
 	String getPOReference();
 
+	String getEMail();
+
 	LocalDate getDateInvoiced();
 
 	/**
