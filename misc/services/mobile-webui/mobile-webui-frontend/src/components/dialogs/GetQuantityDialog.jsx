@@ -78,7 +78,7 @@ const GetQuantityDialog = ({
 
   return (
     <div>
-      <div className="prompt-dialog-screen get-qty-dialog">
+      <div className="prompt-dialog get-qty-dialog">
         <article className="message is-dark">
           <div className="message-body">
             <table className="table">
