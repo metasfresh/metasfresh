@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.device.accessor.DeviceId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -29,6 +30,8 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -72,6 +75,10 @@ public class ManufacturingJobLoaderAndSaver
 				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(supportingServices::getTimeZone))
 				.responsibleId(extractResponsibleId(ppOrder))
 				.allowUserReporting(ppOrderDocStatus.isCompleted())
+				//
+				.warehouseId(WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID()))
+				.currentScaleDeviceId(DeviceId.ofNullableString(ppOrder.getCurrentScaleDeviceId()))
+				//
 				.activities(routing.getActivities()
 						.stream()
 						.sorted(Comparator.comparing(activity -> activity.getCode().getAsString()))
@@ -133,6 +140,7 @@ public class ManufacturingJobLoaderAndSaver
 			case WorkReport:
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
+			case ScanScaleDevice:
 				return prepareJobActivity(from)
 						.build();
 			default:
@@ -333,5 +341,12 @@ public class ManufacturingJobLoaderAndSaver
 	public void saveRouting(final PPOrderRouting routing)
 	{
 		supportingServices.saveOrderRouting(routing);
+	}
+
+	public void saveHeader(@NonNull final ManufacturingJob job)
+	{
+		final I_PP_Order ppOrder = getPPOrderRecordById(job.getPpOrderId());
+		ppOrder.setCurrentScaleDeviceId(job.getCurrentScaleDeviceId() != null ? job.getCurrentScaleDeviceId().getAsString() : null);
+		InterfaceWrapperHelper.saveRecord(ppOrder);
 	}
 }

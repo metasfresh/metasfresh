@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -11,6 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -27,6 +29,10 @@ public class ManufacturingJob
 	@NonNull ZonedDateTime datePromised;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
+
+	@NonNull WarehouseId warehouseId;
+	@Nullable DeviceId currentScaleDeviceId;
+
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
 
 	@Builder(toBuilder = true)
@@ -37,8 +43,14 @@ public class ManufacturingJob
 			@NonNull final ZonedDateTime datePromised,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
+			//
+			final @NonNull WarehouseId warehouseId,
+			@Nullable final DeviceId currentScaleDeviceId,
+			//
 			@NonNull final ImmutableList<ManufacturingJobActivity> activities)
 	{
+		this.warehouseId = warehouseId;
+		this.currentScaleDeviceId = currentScaleDeviceId;
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.ppOrderId = ppOrderId;
@@ -119,5 +131,12 @@ public class ManufacturingJob
 				.filter(Objects::nonNull)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No finished goods receive line found for " + finishedGoodsReceiveLineId));
+	}
+
+	public ManufacturingJob withCurrentScaleDevice(@Nullable final DeviceId currentScaleDeviceId)
+	{
+		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
+				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
+				: this;
 	}
 }

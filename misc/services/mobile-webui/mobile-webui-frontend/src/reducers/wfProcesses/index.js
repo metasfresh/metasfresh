@@ -89,6 +89,10 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
   return activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
 };
 
+export const getScaleDeviceFromActivity = (activity) => {
+  return activity?.dataStored?.scaleDevice;
+};
+
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });

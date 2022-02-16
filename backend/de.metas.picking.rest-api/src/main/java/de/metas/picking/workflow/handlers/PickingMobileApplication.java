@@ -273,7 +273,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromQRCodeString(json.getHuQRCode());
+		final HUQRCode qrCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(json.getHuQRCode());
 		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
 
 		return PickingJobStepEvent.builder()

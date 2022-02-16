@@ -32,12 +32,12 @@ const ScanActivity = (props) => {
 };
 
 const computeButtonCaption = (activityState) => {
-  const scannedBarcode = activityState.dataStored.scannedBarcode;
-  const scannedBarcodeCaption = activityState.dataStored.barcodeCaption;
+  const currentValue = activityState.dataStored.currentValue;
+  if (currentValue && currentValue.caption) {
+    return currentValue.caption;
+  }
 
-  return (
-    scannedBarcodeCaption || scannedBarcode || activityState.caption || trl('activities.scanBarcode.defaultCaption')
-  );
+  return activityState.caption || trl('activities.scanBarcode.defaultCaption');
 };
 
 ScanActivity.propTypes = {
