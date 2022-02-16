@@ -1,7 +1,7 @@
 app:
   image: nexus.metasfresh.com:6001/metasfresh/metasfresh-app:master_dockerimages_5.175.2_1_masterdockerimages
   port:
-    app: 8282 #don't change
+    app: 8282
     debug: 8788
   resources:
     memory: 1200M
@@ -65,9 +65,15 @@ webui:
 ingress:
   webui:
     url: demouser-demo.metasfresh.com
-    port: 80
   pgadmin: 
     url: pgadmin.demouser-demo.metasfresh.com
-    port: 80
     enabled: true
-
+  app: 
+    url: app-debug.demouser-demo.metasfresh.com
+    enabled: false
+  rabbitmq:
+    url: rabbitmq-management.demouser-demo.metasfresh.com
+    enabled: false
+  webapi:
+    url: webapi-debug.demouser-demo.metasfresh.com
+    enabled: false

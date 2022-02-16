@@ -20,7 +20,7 @@ spec:
           service:
             name: metasfresh-{{ .Release.Name }}-webui
             port:
-              number: {{ .Values.ingress.webui.port }}
+              number: {{ .Values.webui.webuiAPIClient.port }}
   {{- if .Values.ingress.pgadmin.enabled }}
   - host: {{ .Values.ingress.pgadmin.url }}
     http:
@@ -31,6 +31,41 @@ spec:
           service:
             name: metasfresh-{{ .Release.Name }}-pgadmin
             port:
-              number: {{ .Values.ingress.pgadmin.port }}
+              number: {{ .Values.pgadmin.port.pgadmin }}
   {{- end }}
-  
+  {{- if .Values.ingress.app.enabled }}
+  - host: {{ .Values.ingress.app.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-{{ .Release.Name }}-app
+            port:
+              number: {{ .Values.app.port.debug }}
+  {{- end }}
+  {{- if .Values.ingress.rabbitmq.enabled }}
+  - host: {{ .Values.ingress.rabbitmq.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-{{ .Release.Name }}-rabbitmq
+            port:
+              number: {{ .Values.rabbitmq.port.management }}
+  {{- end }}
+  {{- if .Values.ingress.webapi.enabled }}
+  - host: {{ .Values.ingress.webapi.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-{{ .Release.Name }}-webapi
+            port:
+              number: {{ .Values.webapi.port.debug }}
+  {{- end }}
