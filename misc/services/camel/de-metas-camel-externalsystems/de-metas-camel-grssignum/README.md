@@ -160,15 +160,15 @@ ATTRIBUTES.value | `M_HU_Attribute.Value` | Y | JsonHUAttributes.value  | attrib
 
 * `JsonHUClear` - payload sent to camel http endpoint
   * see: `de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUClear`
-  * metasfresh-json => `ClearHUCamelRequest`
+  * metasfresh-json => `JsonSetClearanceStatusRequest`
 
 1. `JsonHUClear` - the columns refers to `M_HU`
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- | 
 METASFRESHID | `M_HU_ID` | Y | ---- | ---- | 
-CLEARANCE_NOTE | `ClearanceNote` | Y | JsonSetClearanceStatusRequest.clearanceNote  |  | 
-CLEARANCE_STATUS | `ClearanceStatus` | Y | JsonSetClearanceStatusRequest.clearanceStatus  |  | 
+CLEARANCE_NOTE | `ClearanceNote` | N | clearanceNote  |  | 
+CLEARANCE_STATUS | `ClearanceStatus` | N | clearanceStatus  |  | 
 
 **2. metasfresh to GRSSignum**
 ---
@@ -321,3 +321,9 @@ GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | `M_Attribute.Name` | Y | key  | name for a specific M_Attribute from metasfresh | 
 ---- | `M_HU_Attribute.Value` | Y | value  | attribute value mapped based on M_Attribute_ID identified from ATTRIBUTES.key.M_Attribute_ID and M_HU_ID | 
 
+* `JsonClearanceStatusInfo`
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- | 
+---- | `M_HU.ClearanceStatus` | N | key  |  | 
+---- | --- | N | caption  | Translated name of the clearance status  |
