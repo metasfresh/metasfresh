@@ -15,7 +15,7 @@ Feature: Validate BPartner is sent to RabbitMQ
       | userGroupAssign_1                      | userGroup_1                | metasfresh_user       | true     |
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.BPartnerCreatedByUserGroup_ID.Identifier |
-      | config_1                            | RabbitMQ | testRabbitMQ        | true                                 | userGroup_1                                  |
+      | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                  |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -46,6 +46,9 @@ Feature: Validate BPartner is sent to RabbitMQ
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | created_bpartner         | config_1                            |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |
 
 
   Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq

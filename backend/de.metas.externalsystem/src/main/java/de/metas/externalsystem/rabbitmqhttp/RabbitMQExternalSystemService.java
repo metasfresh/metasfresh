@@ -212,15 +212,15 @@ public class RabbitMQExternalSystemService
 	{
 		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
 
-		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
-		if (!dataExportAudit.isPresent())
-		{
-			return;
-		}
-
 		final ImmutableSet.Builder<ExternalSystemRabbitMQConfigId> rabbitMQConfigIdsBuilder = ImmutableSet.builder();
 
-		rabbitMQConfigIdsBuilder.addAll(getRabbitMQConfigsToSyncWith(dataExportAudit.get().getId()));
+		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
+
+		dataExportAudit
+				.map(DataExportAudit::getId)
+				.map(this::getRabbitMQConfigsToSyncWith)
+				.ifPresent(rabbitMQConfigIdsBuilder::addAll);
+
 		rabbitMQConfigIdsBuilder.addAll(getAdditionalExternalSystemConfigsToSyncWith(bPartnerId));
 
 		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = rabbitMQConfigIdsBuilder.build();
