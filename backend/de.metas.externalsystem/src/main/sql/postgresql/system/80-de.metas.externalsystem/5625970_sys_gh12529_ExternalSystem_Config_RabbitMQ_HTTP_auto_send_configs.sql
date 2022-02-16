@@ -368,3 +368,13 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLogic='@IsSyncBPartnersToRabbitMQ@=''Y''',Updated=TO_TIMESTAMP('2022-02-15 17:34:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=680055
 ;
 
+-- 2022-02-16T11:40:10.036Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET AD_UI_Column_ID=544337, SeqNo=30,Updated=TO_TIMESTAMP('2022-02-16 13:40:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=548110
+;
+
+-- 2022-02-16T11:40:30.523Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET SeqNo=15,Updated=TO_TIMESTAMP('2022-02-16 13:40:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=548110
+;
+
