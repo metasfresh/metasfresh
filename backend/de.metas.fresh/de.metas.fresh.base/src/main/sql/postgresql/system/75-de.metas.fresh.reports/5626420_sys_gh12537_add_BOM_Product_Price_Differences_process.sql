@@ -1,11 +1,12 @@
--- 2022-02-16T18:56:27.145Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET IsApplySecuritySettings='Y',Updated=TO_TIMESTAMP('2022-02-16 20:56:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540243
-;
-
 -- 2022-02-16T19:40:36.381Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584994,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2022-02-16 21:40:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','Y','Y',0,'Rohwarenpreis vs. BOM kosten','json','N','N','xls','select * from de_metas_endcustomer_fresh_reports.get_BOM_Product_Differences(@PP_Product_BOM_ID@, @C_Pricelist_ID@, ''@Date@''::date )','Excel',TO_TIMESTAMP('2022-02-16 21:40:36','YYYY-MM-DD HH24:MI:SS'),100,'get_BOM_Product_Differences')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584994,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2022-02-16 21:40:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','Y','Y',0,'Rohwarenpreis vs. BOM kosten','json','N','N','xls','SELECT ProductName as "Suchschlüssel",
+       ProductValue as "Produktname",
+       UOM as "Maßeinheit",
+       ValidFrom as "Gültig ab",
+       ProductPriceDifference as "Produkt Preisdifferenz",
+       ProductsListPriceDifferences as "Komponente Preisdifferenzen"
+FROM de_metas_endcustomer_fresh_reports.get_BOM_Product_Differences(@PP_Product_BOM_ID/NULL@, @M_PriceList_ID@, ''@Date@''::date )','Excel',TO_TIMESTAMP('2022-02-16 21:40:36','YYYY-MM-DD HH24:MI:SS'),100,'get_BOM_Product_Differences')
 ;
 
 -- 2022-02-16T19:40:36.382Z
@@ -123,26 +124,6 @@ The differences are displayed as a percentage of the average purchase price (a p
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Menu SET Description='Report that provided an overview of how a manufactured product component''s current purchase price compares against their historic average purchase price.
 The differences are displayed as a percentage of the average purchase price (a positive number meaning components are becoming more expensive while a negative number means they''re becoming cheaper).', IsActive='Y', Name='Rohwarenpreis vs. BOM kosten',Updated=TO_TIMESTAMP('2022-02-16 22:01:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541907
-;
-
--- 2022-02-17T11:50:28.654Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580599,0,TO_TIMESTAMP('2022-02-17 13:50:28','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Produktwert','Produktwert',TO_TIMESTAMP('2022-02-17 13:50:28','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-02-17T11:50:28.658Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=580599 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- 2022-02-17T11:50:49.238Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Name='BOM Product Value', PrintName='BOM Product Value',Updated=TO_TIMESTAMP('2022-02-17 13:50:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580599 AND AD_Language='en_US'
-;
-
--- 2022-02-17T11:50:49.239Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580599,'en_US') 
 ;
 
 -- 2022-02-17T12:32:58.541Z
@@ -356,4 +337,12 @@ UPDATE AD_Process_Trl SET Description='Erstellt einen Bericht über die Entwickl
 UPDATE AD_Process_Trl SET Description='Erstellt einen Bericht über die Entwicklung des aktuellen Einkaufspreises der Komponenten von Fertigungsprodukten im Vergleich zu deren historischem Durchschnittseinkaufspreis. Die Differenzen werden als Prozentsatz des durchschnittlichen Einkaufspreises angezeigt (eine positive Zahl bedeutet, dass die Komponenten teurer werden, eine negative Zahl, dass sie günstiger werden).',Updated=TO_TIMESTAMP('2022-02-17 14:35:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584994
 ;
 
+-- 2022-02-17T13:37:29.678Z
+-- URL zum Konzept
+UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2022-02-17 15:37:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541907
+;
 
+-- 2022-02-17T13:37:50.225Z
+-- URL zum Konzept
+UPDATE AD_Menu SET Action='R',Updated=TO_TIMESTAMP('2022-02-17 15:37:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541907
+;
