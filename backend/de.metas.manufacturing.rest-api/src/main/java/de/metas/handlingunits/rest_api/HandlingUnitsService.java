@@ -125,23 +125,6 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	@Nullable
-	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
-	{
-		return huQRCodeService.getFirstQRCodeByHuIdIfExists(huId)
-				.map(HandlingUnitsService::toJsonHUQRCode)
-				.orElse(null);
-	}
-
-	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
-	{
-		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
-		return JsonHUQRCode.builder()
-				.code(rendered.getCode())
-				.displayable(rendered.getDisplayable())
-				.build();
-	}
-
 	public void updateAttributes(@NonNull final HuId huId, @NonNull final JsonHUAttributes jsonHUAttributes)
 	{
 		final Map<String, Object> attributes = jsonHUAttributes.getAttributes();
@@ -287,7 +270,7 @@ public class HandlingUnitsService
 	@Nullable
 	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
 	{
-		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
+		return huQRCodeService.getFirstQRCodeByHuIdIfExists(huId)
 				.map(HandlingUnitsService::toJsonHUQRCode)
 				.orElse(null);
 	}
