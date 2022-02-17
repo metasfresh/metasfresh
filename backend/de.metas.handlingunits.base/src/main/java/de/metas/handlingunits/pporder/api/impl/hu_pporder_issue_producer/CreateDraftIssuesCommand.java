@@ -350,7 +350,7 @@ public class CreateDraftIssuesCommand
 
 	private void validateSourceHUs(@NonNull final Collection<I_M_HU> sourceHUs)
 	{
-		for (final I_M_HU hu : issueFromHUs)
+		for (final I_M_HU hu : sourceHUs)
 		{
 			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
