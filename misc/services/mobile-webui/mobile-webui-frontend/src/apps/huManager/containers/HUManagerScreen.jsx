@@ -19,6 +19,7 @@ const HUManagerScreen = () => {
 
   const { url } = useRouteMatch();
   useEffect(() => {
+    // IMPORTANT, else it won't restore the title when we move back to this screen
     dispatch(pushHeaderEntry({ location: url }));
   }, []);
 
