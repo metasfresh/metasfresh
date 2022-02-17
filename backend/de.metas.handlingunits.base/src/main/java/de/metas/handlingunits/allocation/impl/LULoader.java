@@ -113,8 +113,9 @@ public class LULoader
 		final String huStatus = tuHU.getHUStatus();
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
 		final ClearanceStatus huClearanceStatus = ClearanceStatus.ofNullableCode(tuHU.getClearanceStatus());
+		final String huClearanceNote = tuHU.getClearanceNote();
 
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, huClearanceStatus);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, huClearanceStatus, huClearanceNote);
 
 		luInstances.add(luInstance);
 		return luInstance;

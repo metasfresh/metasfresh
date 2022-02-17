@@ -73,6 +73,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
 	private ClearanceStatus _huClearanceStatus = null;
+	private String _huClearanceNote = null;
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
@@ -267,7 +268,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-		huBuilder.setHUClearanceStatus(getHUClearanceStatus());
+		huBuilder.setHUClearanceStatus(getHUClearanceStatus(), getHUClearanceNote());
 
 		return huBuilder;
 	}
@@ -721,15 +722,21 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final IHUProducerAllocationDestination setHUClearanceStatus(final ClearanceStatus huClearanceStatus)
+	public final IHUProducerAllocationDestination setHUClearanceStatus(final ClearanceStatus huClearanceStatus, final String huClearanceNote)
 	{
 		assertConfigurable();
 		_huClearanceStatus = huClearanceStatus;
+		_huClearanceNote = huClearanceNote;
 		return this;
 	}
 
 	public final ClearanceStatus getHUClearanceStatus()
 	{
 		return _huClearanceStatus;
+	}
+
+	public final String getHUClearanceNote()
+	{
+		return _huClearanceNote;
 	}
 }

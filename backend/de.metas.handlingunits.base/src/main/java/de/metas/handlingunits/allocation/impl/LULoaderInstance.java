@@ -65,7 +65,8 @@ import java.util.TreeSet;
 			final LocatorId locatorId,
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion,
-			final ClearanceStatus huClearanceStatus)
+			final ClearanceStatus huClearanceStatus,
+			final String huClearanceNote)
 	{
 		this.huContext = huContext;
 		this.bpartnerId = bpartnerId;
@@ -92,7 +93,7 @@ import java.util.TreeSet;
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
 		huBuilder.setLocatorId(locatorId);
 		huBuilder.setHUStatus(huStatus);
-		huBuilder.setHUClearanceStatus(huClearanceStatus);
+		huBuilder.setHUClearanceStatus(huClearanceStatus, huClearanceNote);
 		// set up a little custom anonymous listener so that if the huBuilder created a HU item (*not* an aggregate one), it shall be added to this LULoaderInstance's HU
 		huBuilder.setListener(new HUIteratorListenerAdapter()
 		{
