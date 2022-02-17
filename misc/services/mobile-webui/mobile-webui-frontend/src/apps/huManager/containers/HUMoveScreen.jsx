@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 
+import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { handlingUnitLoaded } from '../actions';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { toastError } from '../../../utils/toast';
+import { HUInfoComponent } from '../components/HUInfoComponent';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 const HUMoveScreen = () => {
   const dispatch = useDispatch();
@@ -15,11 +18,19 @@ const HUMoveScreen = () => {
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
+  const { url } = useRouteMatch();
   useEffect(() => {
     if (!handlingUnitInfo) {
       history.goBack();
       return;
     }
+
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        caption: trl('huManager.action.move.scanTarget'),
+      })
+    );
   }, []);
 
   const onResolvedResult = ({ scannedBarcode }) => {
@@ -28,12 +39,19 @@ const HUMoveScreen = () => {
       .moveHU({ huId: handlingUnitInfo.id, targetQRCode: scannedBarcode })
       .then((handlingUnitInfo) => {
         dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-        history.goBack();
       })
       .catch((axiosError) => toastError({ axiosError }));
+
+    // we have to go back anyway because at this point the scanner is no longer displayed
+    history.goBack();
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} />;
+  return (
+    <>
+      <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
+      <BarcodeScannerComponent onResolvedResult={onResolvedResult} />
+    </>
+  );
 };
 
 export default HUMoveScreen;

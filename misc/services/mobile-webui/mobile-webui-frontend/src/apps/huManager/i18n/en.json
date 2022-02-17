@@ -9,7 +9,8 @@
       "buttonCaption": "Dispose"
     },
     "move": {
-      "buttonCaption": "Move"
+      "buttonCaption": "Move",
+      "scanTarget": "Scan target"
     },
     "scanAgain": {
       "buttonCaption": "Scan again"
