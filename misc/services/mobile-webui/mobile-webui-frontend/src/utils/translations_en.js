@@ -54,7 +54,7 @@ const translations = {
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
       scanLocator: 'Scan drop to Locator',
-      invalidLocatorBarcode: 'Invalid locator barcode',
+      invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
     },
     confirmButton: {
