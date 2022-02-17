@@ -95,6 +95,7 @@ public class HUMovementGenerator
 	private HuIdsWithPackingMaterialsTransferred huIdsWithPackingMaterialsTransferred = new HuIdsWithPackingMaterialsTransferred();
 	private final HashMap<HuId, I_M_HU> husCache = new HashMap<>();
 	private final List<I_M_HU> _husMoved = new ArrayList<>();
+	private LocatorId locatorFromId;
 	private I_M_Movement movementHeader;
 	private final LinkedHashMap<ProductId, I_M_MovementLine> movementLines = new LinkedHashMap<>();
 	private boolean executed;
@@ -205,6 +206,24 @@ public class HUMovementGenerator
 			throw new HUException("@NoSelection@ (@M_HU_ID@)");
 		}
 
+		//
+		// Determine the locator from which we move the HUs
+		this.locatorFromId = request.getFromLocatorId();
+		for (final I_M_HU hu : husToMove)
+		{
+			final LocatorId huLocatorId = IHandlingUnitsBL.extractLocatorId(hu);
+			if(locatorFromId == null)
+			{
+				locatorFromId = huLocatorId;
+			}
+			else if(!LocatorId.equals(locatorFromId, huLocatorId))
+			{
+				throw new HUException("HU's locator does not match movement's locator from."
+						+ "\n Movement Locator From: " + locatorFromId
+						+ "\n HU's Locator: " + huLocatorId);
+			}
+		}
+
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 
 		//
@@ -215,16 +234,6 @@ public class HUMovementGenerator
 			if (!handlingUnitsBL.isTopLevel(hu))
 			{
 				throw new HUException("@M_HU_ID@ @TopLevel@=@N@: " + hu);
-			}
-
-			//
-			// HU's locator shall match movement's From Locator
-			final LocatorId locatorFromId = request.getFromLocatorId();
-			if (locatorFromId.getRepoId() != hu.getM_Locator_ID())
-			{
-				throw new HUException("HU's locator does not match movement's locator from."
-						+ "\n Movement Locator From: " + locatorFromId
-						+ "\n HU's Locator: " + IHandlingUnitsBL.extractLocatorOrNull(hu));
 			}
 
 			//
@@ -388,11 +397,8 @@ public class HUMovementGenerator
 
 		movementLine.setM_Product_ID(productId.getRepoId());
 
-		final LocatorId locatorFromId = request.getFromLocatorId();
-		final LocatorId locatorToId = request.getToLocatorId();
-
 		movementLine.setM_Locator_ID(locatorFromId.getRepoId());
-		movementLine.setM_LocatorTo_ID(locatorToId.getRepoId());
+		movementLine.setM_LocatorTo_ID(request.getToLocatorId().getRepoId());
 
 		//
 		// Reference
