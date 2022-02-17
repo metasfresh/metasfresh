@@ -1,11 +1,16 @@
 package de.metas.handlingunits.impl;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.IDimensionspecDAO;
+import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -16,17 +21,13 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.IDimensionspecDAO;
-import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -65,15 +66,18 @@ final class HUQueryBuilder_Attributes
 	private final HashMap<AttributeId, HUAttributeQueryFilterVO> onlyAttributes;
 	private boolean allowSql = true;
 	private String barcode;
+	private final Set<AttributeId> huRelevantAttributeIds;
 
 	public HUQueryBuilder_Attributes()
 	{
+		huRelevantAttributeIds = Services.get(IHUStorageBL.class).getAvailableAttributeIds();
 		onlyAttributes = new HashMap<>();
 		barcode = null;
 	}
 
 	private HUQueryBuilder_Attributes(final HUQueryBuilder_Attributes from)
 	{
+		huRelevantAttributeIds = Services.get(IHUStorageBL.class).getAvailableAttributeIds();
 		onlyAttributes = deepCopy(from.onlyAttributes);
 		barcode = from.barcode;
 		allowSql = from.allowSql;
@@ -197,8 +201,8 @@ final class HUQueryBuilder_Attributes
 
 	public void addOnlyWithAttribute(final I_M_Attribute attribute, final Object value)
 	{
-		final HUAttributeQueryFilterVO attributeFilterVO = getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown);
-		attributeFilterVO.addValue(value);
+		getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
+				.ifPresent(attributeFilterVO -> attributeFilterVO.addValue(value));
 	}
 
 	public void addOnlyWithAttribute(final AttributeCode attributeCode, final Object value)
@@ -216,8 +220,8 @@ final class HUQueryBuilder_Attributes
 	public void addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, @NonNull final List<? extends Object> values)
 	{
 		Check.assumeNotNull(values, "values not null");
-		final HUAttributeQueryFilterVO attributeFilterVO = getOrCreateAttributeFilterVO(attribute, attributeValueType);
-		attributeFilterVO.addValues(values);
+		getOrCreateAttributeFilterVO(attribute, attributeValueType)
+				.ifPresent(attributeFilterVO -> attributeFilterVO.addValues(values));
 	}
 
 	public void addOnlyWithAttributeInList(final AttributeCode attributeCode, final Object... values)
@@ -231,14 +235,14 @@ final class HUQueryBuilder_Attributes
 	{
 		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
-				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
+				.ifPresent(huAttributeQueryFilterVO -> huAttributeQueryFilterVO.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull));
 	}
 
 	public void addOnlyWithAttributeMissingOrNull(final AttributeCode attributeCode)
 	{
 		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
-				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
+				.ifPresent(attributeFilterVO -> attributeFilterVO.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull));
 	}
 
 	public void addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
@@ -250,9 +254,14 @@ final class HUQueryBuilder_Attributes
 		}
 	}
 
-	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
+	private Optional<HUAttributeQueryFilterVO> getOrCreateAttributeFilterVO(@NonNull final I_M_Attribute attribute, final String attributeValueType)
 	{
-		return getOrCreateAttributeFilterVO(onlyAttributes, attribute, attributeValueType);
+		if (!huRelevantAttributeIds.contains(AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(getOrCreateAttributeFilterVO(onlyAttributes, attribute, attributeValueType));
 	}
 
 	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(

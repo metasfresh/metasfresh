@@ -16,6 +16,7 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,4 +73,6 @@ public interface IProductPlanningDAO extends ISingletonService
 	void setProductBOMVersionsIdIfAbsent(ProductId productId, ProductBOMVersionsId bomVersionsId);
 
 	Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds();
+
+	List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(final ProductBOMVersionsId bomId);
 }

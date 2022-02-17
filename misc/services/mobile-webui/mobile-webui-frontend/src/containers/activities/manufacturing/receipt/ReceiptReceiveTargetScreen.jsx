@@ -22,7 +22,7 @@ const ReceiptReceiveTargetScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Target HU', // TODO trl
+        caption: trl('activities.mfg.receipts.btnReceiveTarget'),
       })
     );
   }, []);

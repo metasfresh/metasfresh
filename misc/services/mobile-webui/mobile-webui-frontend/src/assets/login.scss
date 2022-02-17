@@ -5,4 +5,16 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .button {
+    background-color: $base-mf-green;
+    color: white;
+
+    &[disabled] {
+      background-color: $base-mf-green;
+      border-color: transparent;
+      box-shadow: none;
+    }
+  }
+
 }

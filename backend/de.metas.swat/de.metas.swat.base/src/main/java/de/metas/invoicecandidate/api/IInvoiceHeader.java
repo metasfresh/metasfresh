@@ -78,4 +78,6 @@ public interface IInvoiceHeader
 	int getC_Async_Batch_ID();
 
 	int getC_Incoterms_ID();
+
+	String getIncotermLocation();
 }

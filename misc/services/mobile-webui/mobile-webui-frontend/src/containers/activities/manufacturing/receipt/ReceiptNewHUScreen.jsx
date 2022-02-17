@@ -6,6 +6,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { trl } from '../../../../utils/translations';
 
 const ReceiptNewHUScreen = () => {
   const {
@@ -25,7 +26,7 @@ const ReceiptNewHUScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'New HU', // TODO trl
+        caption: trl('activities.mfg.receipts.newHU'),
       })
     );
   }, []);
@@ -39,7 +40,7 @@ const ReceiptNewHUScreen = () => {
   return (
     <div className="section pt-2">
       {availableReceivingTargets.values.map((target) => (
-        <ButtonWithIndicator key={target.luPIItemId} caption={target.caption} onClick={() => handleClick(target)}>
+        <ButtonWithIndicator key={target.luPIItemId} caption={target.luCaption} onClick={() => handleClick(target)}>
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
       ))}

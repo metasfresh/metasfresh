@@ -129,6 +129,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.device.webui</groupId>
+			<artifactId>de.metas.device.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

@@ -27,16 +27,21 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
@@ -55,8 +60,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_Candidate_StepDef
 {
@@ -64,6 +72,7 @@ public class PP_Order_Candidate_StepDef
 	private final StepDefData<I_PP_Product_BOM> productBOMTable;
 	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
 	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
 	private final PPOrderCandidateService ppOrderCandidateService;
@@ -75,8 +84,10 @@ public class PP_Order_Candidate_StepDef
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
 			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
-			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable)
+			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
 		this.ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
 
@@ -143,7 +154,7 @@ public class PP_Order_Candidate_StepDef
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
 	{
-		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_PP_Order_Candidate ppOrderCandidateRecord = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
 
 		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
@@ -164,7 +175,7 @@ public class PP_Order_Candidate_StepDef
 
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final Map<String, String> tableRow)
 	{
-		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		return ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
 	}
 
@@ -225,7 +236,23 @@ public class PP_Order_Candidate_StepDef
 		};
 
 		final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
-
 		assertThat(candidateFound).isTrue();
+
+		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(orderCandidateRecordIdentifier);
+
+		//validate asi
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(expectedASI).isNotNull();
+
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+			final AttributesKey ppOrderCandAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderCandidate.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(ppOrderCandAttributesKeys).isEqualTo(expectedAttributesKeys);
+		}
 	}
 }

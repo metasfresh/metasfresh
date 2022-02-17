@@ -2,18 +2,19 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.device.adempiere.AttributeDeviceAccessor;
-import de.metas.device.adempiere.IDevicesHubFactory;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.devices.DeviceDescriptor;
-import de.metas.ui.web.devices.DeviceDescriptorsList;
-import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -25,6 +26,18 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -112,24 +125,26 @@ public final class HUEditorRowAttributesHelper
 			@NonNull final AttributeCode attributeCode,
 			@Nullable final WarehouseId warehouseId)
 	{
-		final ImmutableList<DeviceDescriptor> deviceDescriptors = Services.get(IDevicesHubFactory.class)
-				.getDefaultAttributesDevicesHub()
-				.getAttributeDeviceAccessors(attributeCode)
+		final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+
+		final ImmutableList<DeviceDescriptor> deviceDescriptors = deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessors(attributeCode)
 				.stream(warehouseId)
-				.map(attributeDeviceAccessor -> toDeviceDescriptor(attributeDeviceAccessor))
+				.map(HUEditorRowAttributesHelper::toDeviceDescriptor)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return DeviceDescriptorsList.ofList(deviceDescriptors);
 	}
 
-	private static DeviceDescriptor toDeviceDescriptor(final AttributeDeviceAccessor attributeDeviceAccessor)
+	private static DeviceDescriptor toDeviceDescriptor(final DeviceAccessor deviceAccessor)
 	{
-		final String deviceId = attributeDeviceAccessor.getPublicId();
+		final DeviceId deviceId = deviceAccessor.getId();
 
 		return DeviceDescriptor.builder()
 				.deviceId(deviceId)
-				.caption(attributeDeviceAccessor.getDisplayName())
-				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
+				.caption(deviceAccessor.getDisplayName())
+				.websocketEndpoint(WebsocketTopicNames.DEVICES_NAMING_STRATEGY.toWebsocketEndpoint(deviceId))
 				.build();
 	}
 
@@ -145,8 +160,7 @@ public final class HUEditorRowAttributesHelper
 	{
 		final Object value = extractValueAndResolve(attributesStorage, attributeValue);
 
-		final Object jsonValue = Values.valueToJsonObject(value, jsonOpts);
-		return jsonValue;
+		return Values.valueToJsonObject(value, jsonOpts);
 	}
 
 	@Nullable

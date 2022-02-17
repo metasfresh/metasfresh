@@ -26,7 +26,7 @@ public class JsonConverterV1
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
-		Check.assumeEquals(globalQRCode.getVersion(), JsonConverterV1.GLOBAL_QRCODE_VERSION, "HU QR Code version");
+		Check.assumeEquals(globalQRCode.getVersion(), GLOBAL_QRCODE_VERSION, "HU QR Code version");
 
 		final JsonHUQRCodeV1 json = globalQRCode.getPayloadAs(JsonHUQRCodeV1.class);
 		return fromJson(json);

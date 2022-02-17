@@ -6,6 +6,7 @@ import {
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
+import { toQRCodeString } from '../utils/huQRCodes';
 
 export const updateManufacturingIssueQty = ({
   wfProcessId,
@@ -38,14 +39,14 @@ export const updateManufacturingIssue = ({ wfProcessId, activityId, lineId, step
 
     if (line) {
       const step = line.steps[stepId];
-      const { id, huBarcode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
+      const { id, huQRCode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
 
       return postManufacturingIssueEvent({
         wfProcessId,
         activityId,
         issueTo: {
           issueStepId: id,
-          huBarcode: huBarcode,
+          huQRCode: toQRCodeString(huQRCode),
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,

@@ -9,7 +9,7 @@ const YesNoDialog = ({ promptQuestion, onYes, onNo }) => {
     : trl('activities.confirmButton.default.promptQuestion');
 
   return (
-    <div className="prompt-dialog-screen">
+    <div className="prompt-dialog">
       <article className="message is-dark">
         <div className="message-body">
           <strong>{promptQuestionEffective}</strong>
