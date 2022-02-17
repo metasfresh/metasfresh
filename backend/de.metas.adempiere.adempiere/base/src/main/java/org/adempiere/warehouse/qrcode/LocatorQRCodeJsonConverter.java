@@ -30,7 +30,7 @@ public class LocatorQRCodeJsonConverter
 
 	public static LocatorQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
 	{
-		if (!GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType()))
+		if (!isTypeMatching(globalQRCode))
 		{
 			throw new AdempiereException("Invalid QR Code")
 					.setParameter("globalQRCode", globalQRCode); // avoid adding it to error message, it might be quite long
@@ -45,6 +45,11 @@ public class LocatorQRCodeJsonConverter
 		{
 			throw new AdempiereException("Invalid QR Code version: " + version);
 		}
+	}
+
+	public static boolean isTypeMatching(final @NonNull GlobalQRCode globalQRCode)
+	{
+		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
 	}
 
 }
