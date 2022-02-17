@@ -73,7 +73,7 @@ import java.util.function.Supplier;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 
-@RequestMapping(value = {HandlingUnitsRestController.HU_REST_CONTROLLER_PATH})
+@RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
@@ -237,12 +237,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-								 .stream()
-								 .map(item -> JsonDisposalReason.builder()
-										 .key(item.getValue())
-										 .caption(item.getName().translate(adLanguage))
-										 .build())
-								 .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(item -> JsonDisposalReason.builder()
+								.key(item.getValue())
+								.caption(item.getName().translate(adLanguage))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -292,5 +292,16 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
 	{
 		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
+	}
+
+	@PostMapping("/byId/{huId}/moveTo")
+	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
+			@PathVariable("huId") final int huRepoId,
+			@RequestBody @NonNull final JsonMoveToRequest request)
+	{
+		final HuId huId = HuId.ofRepoId(huRepoId);
+		final GlobalQRCode targetQRCode = GlobalQRCode.ofString(request.getTargetQRCode());
+		handlingUnitsService.move(huId, targetQRCode);
+		return getByIdSupplier(() -> huId);
 	}
 }

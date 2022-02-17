@@ -31,6 +31,7 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -39,6 +40,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -53,6 +55,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -307,5 +310,20 @@ public class HandlingUnitsService
 				.key(clearanceStatus.getCode())
 				.caption(caption)
 				.build();
+	}
+
+	public void move(@NonNull final HuId huId, @NonNull final GlobalQRCode targetQRCode)
+	{
+		if (LocatorQRCode.isTypeMatching(targetQRCode))
+		{
+			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
+			final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
+			huMovementBL.moveHUIdToLocator(huId, locatorQRCode.getLocatorId());
+		}
+		else
+		{
+			throw new AdempiereException("Move target not handled: " + targetQRCode);
+		}
 	}
 }
