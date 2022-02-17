@@ -99,6 +99,11 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${latestE2eDockerImageName}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this branch's latest e2e-docker image.</li>
 </ul>
 <p>
+<h3>Dockerimage Name Testarea</h3>
+<ul>
+  <li> nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${env.BRANCH_NAME_DOCKERIZED}${misc.mkDockerTag(${mavenProps['metasfresh-webui-frontend.version']})}
+</ul>
+<p>
 <h3>Additional notes</h3>
 <ul>
   <li>The artifacts on <a href="${mvnConf.mvnDeployRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
