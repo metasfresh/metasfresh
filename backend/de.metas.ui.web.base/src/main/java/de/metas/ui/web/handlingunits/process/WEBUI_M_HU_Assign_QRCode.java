@@ -6,7 +6,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -79,7 +78,7 @@ public class WEBUI_M_HU_Assign_QRCode extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt()
 	{
-		final HUQRCode huQRCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(p_Barcode);
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(p_Barcode);
 
 		huQRCodesService.assign(huQRCode, HuId.ofRepoId(getRecord_ID()));
 
