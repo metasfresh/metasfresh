@@ -101,7 +101,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <p>
 <h3>Dockerimage Name Testarea</h3>
 <ul>
-  <li> nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${env.BRANCH_NAME_DOCKERIZED}${misc.mkDockerTag(${mavenProps['metasfresh-webui-frontend.version']})}
+  <li> nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${env.BRANCH_NAME_DOCKERIZED}${misc.mkDockerTag(${mavenProps['metasfresh-webui-frontend.version']})}</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
