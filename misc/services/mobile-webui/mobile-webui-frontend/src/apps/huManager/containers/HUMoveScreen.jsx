@@ -25,12 +25,7 @@ const HUMoveScreen = () => {
       return;
     }
 
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('huManager.action.move.scanTarget'),
-      })
-    );
+    dispatch(pushHeaderEntry({ location: url, caption: trl('huManager.action.move.scanTarget') }));
   }, []);
 
   const onResolvedResult = ({ scannedBarcode }) => {

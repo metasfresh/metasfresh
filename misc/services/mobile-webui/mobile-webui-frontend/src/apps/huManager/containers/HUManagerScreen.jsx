@@ -1,5 +1,5 @@
-import React from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
@@ -12,9 +12,15 @@ import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
+
+  const { url } = useRouteMatch();
+  useEffect(() => {
+    dispatch(pushHeaderEntry({ location: url }));
+  }, []);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return api
