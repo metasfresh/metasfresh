@@ -27,6 +27,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -189,6 +190,7 @@ public class ManufacturingJobLoaderAndSaver
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToIssue(bomLineQuantities.getQtyRequired())
+				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
 				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
@@ -197,6 +199,14 @@ public class ManufacturingJobLoaderAndSaver
 						.map(this::toRawMaterialsIssueStep)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	@Nullable
+	private static Percent extractQtyToIssueTolerance(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		return orderBOMLine.isEnforceTolerance()
+				? Percent.of(orderBOMLine.getTolerance_Perc())
+				: null;
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)

@@ -7,11 +7,13 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -22,6 +24,7 @@ public class RawMaterialsIssueLine
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
 	@NonNull Quantity qtyToIssue;
+	@Nullable Percent qtyToIssueTolerance;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
 
 	@NonNull Quantity qtyIssued; // computed
@@ -32,11 +35,13 @@ public class RawMaterialsIssueLine
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final Quantity qtyToIssue,
+			@Nullable final Percent qtyToIssueTolerance,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps)
 	{
 		this.productId = productId;
 		this.productName = productName;
 		this.qtyToIssue = qtyToIssue;
+		this.qtyToIssueTolerance = qtyToIssueTolerance;
 		this.steps = steps;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
@@ -70,6 +75,20 @@ public class RawMaterialsIssueLine
 		{
 			return WFActivityStatus.IN_PROGRESS;
 		}
+	}
+
+	public Optional<Quantity> getQtyToIssueMin()
+	{
+		return qtyToIssueTolerance != null
+				? Optional.of(qtyToIssue.subtract(qtyToIssueTolerance))
+				: Optional.empty();
+	}
+
+	public Optional<Quantity> getQtyToIssueMax()
+	{
+		return qtyToIssueTolerance != null
+				? Optional.of(qtyToIssue.add(qtyToIssueTolerance))
+				: Optional.empty();
 	}
 
 	public RawMaterialsIssueLine withChangedRawMaterialsIssueStep(

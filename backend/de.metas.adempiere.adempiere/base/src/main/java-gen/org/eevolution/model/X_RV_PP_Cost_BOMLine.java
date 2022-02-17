@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for T_BOMLine
+/** Generated Model for RV_PP_Cost_BOMLine
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, org.compiere.model.I_Persistent 
+public class X_RV_PP_Cost_BOMLine extends org.compiere.model.PO implements I_RV_PP_Cost_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1163201524L;
+	private static final long serialVersionUID = 1995649221L;
 
     /** Standard Constructor */
-    public X_T_BOMLine (final Properties ctx, final int T_BOMLine_ID, @Nullable final String trxName)
+    public X_RV_PP_Cost_BOMLine (final Properties ctx, final int RV_PP_Cost_BOMLine_ID, @Nullable final String trxName)
     {
-      super (ctx, T_BOMLine_ID, trxName);
+      super (ctx, RV_PP_Cost_BOMLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_T_BOMLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_RV_PP_Cost_BOMLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -87,6 +87,60 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	public int getC_AcctSchema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	/** 
+	 * ComponentType AD_Reference_ID=53225
+	 * Reference name: PP_ComponentType
+	 */
+	public static final int COMPONENTTYPE_AD_Reference_ID=53225;
+	/** By-Product = BY */
+	public static final String COMPONENTTYPE_By_Product = "BY";
+	/** Component = CO */
+	public static final String COMPONENTTYPE_Component = "CO";
+	/** Phantom = PH */
+	public static final String COMPONENTTYPE_Phantom = "PH";
+	/** Packing = PK */
+	public static final String COMPONENTTYPE_Packing = "PK";
+	/** Planning = PL */
+	public static final String COMPONENTTYPE_Planning = "PL";
+	/** Tools = TL */
+	public static final String COMPONENTTYPE_Tools = "TL";
+	/** Option = OP */
+	public static final String COMPONENTTYPE_Option = "OP";
+	/** Variant = VA */
+	public static final String COMPONENTTYPE_Variant = "VA";
+	/** Co-Product = CP */
+	public static final String COMPONENTTYPE_Co_Product = "CP";
+	/** Scrap = SC */
+	public static final String COMPONENTTYPE_Scrap = "SC";
+	/** Product = PR */
+	public static final String COMPONENTTYPE_Product = "PR";
+	@Override
+	public void setComponentType (final @Nullable java.lang.String ComponentType)
+	{
+		set_Value (COLUMNNAME_ComponentType, ComponentType);
+	}
+
+	@Override
+	public java.lang.String getComponentType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ComponentType);
 	}
 
 	@Override
@@ -177,6 +231,18 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	}
 
 	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
 	public void setFutureCostPrice (final @Nullable BigDecimal FutureCostPrice)
 	{
 		set_Value (COLUMNNAME_FutureCostPrice, FutureCostPrice);
@@ -227,6 +293,43 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	}
 
 	@Override
+	public void setIsCritical (final boolean IsCritical)
+	{
+		set_Value (COLUMNNAME_IsCritical, IsCritical);
+	}
+
+	@Override
+	public boolean isCritical() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCritical);
+	}
+
+	@Override
+	public void setIsQtyPercentage (final @Nullable BigDecimal IsQtyPercentage)
+	{
+		set_Value (COLUMNNAME_IsQtyPercentage, IsQtyPercentage);
+	}
+
+	@Override
+	public BigDecimal getIsQtyPercentage() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_IsQtyPercentage);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIssueMethod (final boolean IssueMethod)
+	{
+		set_Value (COLUMNNAME_IssueMethod, IssueMethod);
+	}
+
+	@Override
+	public boolean issueMethod() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IssueMethod);
+	}
+
+	@Override
 	public void setLevelNo (final int LevelNo)
 	{
 		set_Value (COLUMNNAME_LevelNo, LevelNo);
@@ -248,6 +351,45 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	public java.lang.String getLevels() 
 	{
 		return get_ValueAsString(COLUMNNAME_Levels);
+	}
+
+	@Override
+	public void setLine (final int Line)
+	{
+		set_Value (COLUMNNAME_Line, Line);
+	}
+
+	@Override
+	public int getLine() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Line);
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -387,18 +529,16 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	}
 
 	@Override
-	public void setSel_Product_ID (final int Sel_Product_ID)
+	public void setScrap (final @Nullable BigDecimal Scrap)
 	{
-		if (Sel_Product_ID < 1) 
-			set_Value (COLUMNNAME_Sel_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_Sel_Product_ID, Sel_Product_ID);
+		set_Value (COLUMNNAME_Scrap, Scrap);
 	}
 
 	@Override
-	public int getSel_Product_ID() 
+	public BigDecimal getScrap() 
 	{
-		return get_ValueAsInt(COLUMNNAME_Sel_Product_ID);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Scrap);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -414,17 +554,41 @@ public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, o
 	}
 
 	@Override
-	public void setT_BOMLine_ID (final int T_BOMLine_ID)
+	public void setTM_Product_ID (final int TM_Product_ID)
 	{
-		if (T_BOMLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_T_BOMLine_ID, null);
+		if (TM_Product_ID < 1) 
+			set_Value (COLUMNNAME_TM_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_T_BOMLine_ID, T_BOMLine_ID);
+			set_Value (COLUMNNAME_TM_Product_ID, TM_Product_ID);
 	}
 
 	@Override
-	public int getT_BOMLine_ID() 
+	public int getTM_Product_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_T_BOMLine_ID);
+		return get_ValueAsInt(COLUMNNAME_TM_Product_ID);
+	}
+
+	@Override
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
+	}
+
+	@Override
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
+	{
+		set_Value (COLUMNNAME_ValidTo, ValidTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
 	}
 }
