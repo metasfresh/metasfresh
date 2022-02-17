@@ -55,6 +55,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.global_qrcode</groupId>
+            <artifactId>de.metas.global_qrcode.api</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
