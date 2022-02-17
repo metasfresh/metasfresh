@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -869,6 +870,7 @@ public class HUTransformService
 					.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceTuHU))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
+					.setHUClearanceStatus(ClearanceStatus.ofNullableCode(sourceTuHU.getClearanceStatus()), sourceTuHU.getClearanceNote())
 					.create(luPIItem.getM_HU_PI_Version());
 
 			// get or create the new parent item

@@ -24,10 +24,12 @@ package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
@@ -272,5 +274,23 @@ public class HandlingUnitsRestController
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 			return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
 		}
+	}
+
+	@PutMapping("/{huId}/clearance")
+	public ResponseEntity<?> setHUClearanceStatus(
+			@PathVariable("huId") final int huRepoId,
+			@RequestBody @NonNull final JsonSetClearanceStatusRequest request)
+	{
+		final HuId huId = HuId.ofRepoId(huRepoId);
+
+		handlingUnitsService.setClearanceStatus(huId, request);
+
+		return ResponseEntity.ok().body(null);
+	}
+
+	@GetMapping("/{huId}/allowedClearanceStatuses")
+	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
+	{
+		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
 	}
 }

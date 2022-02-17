@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-manufacturing
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,65 +23,27 @@
 package de.metas.common.handlingunits;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonHU.JsonHUBuilder.class)
-public class JsonHU
+@JsonDeserialize(builder = JsonClearanceStatusInfo.JsonClearanceStatusInfoBuilder.class)
+public class JsonClearanceStatusInfo
 {
-	@NonNull String id;
-	@NonNull String huStatus;
-	@NonNull String huStatusCaption;
-
-	@NonNull String displayName;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	JsonHUQRCode qrCode;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String warehouseValue;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String locatorValue;
-
-	int numberOfAggregatedHUs;
+	@NonNull
+	@JsonProperty("key")
+	String key;
 
 	@NonNull
-	@Singular
-	List<JsonHUProduct> products;
-
-	@NonNull
-	JsonHUAttributes attributes;
-
-	@Nullable
-	JsonClearanceStatusInfo clearanceStatus;
-
-	@Nullable
-	String clearanceNote;
-
-	@Nullable
-	JsonHUType jsonHUType;
-
-	@Nullable
-	List<JsonHU> includedHUs;
-
+	@JsonProperty("caption")
+	String caption;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonHUBuilder
-	{
-	}
+	public static class JsonClearanceStatusInfoBuilder {}
 }
