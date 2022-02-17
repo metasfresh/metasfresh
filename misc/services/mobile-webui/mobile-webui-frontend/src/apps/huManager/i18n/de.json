@@ -1,6 +1,6 @@
 {
   "HU": "HU",
-  "barcode": "Barcode",
+  "qrCode": "QR code",
   "locator": "Locator",
   "product": "Product",
   "qty": "Quantity",
