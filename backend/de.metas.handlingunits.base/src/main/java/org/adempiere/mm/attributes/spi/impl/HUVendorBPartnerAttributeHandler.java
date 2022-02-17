@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.spi.impl;
  */
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -88,5 +89,22 @@ public class HUVendorBPartnerAttributeHandler
 		}
 
 		return false;
+	}
+
+	@Override
+	public void onValueChanged(final IAttributeValueContext attributeValueContext,
+			final IAttributeSet attributeSet,
+			final org.compiere.model.I_M_Attribute attribute,
+			final Object valueOld,
+			final Object valueNew)
+	{
+		final BigDecimal valueOldBD = ConversionHelper.toBigDecimal(valueOld);
+		final BigDecimal valueNewBD = ConversionHelper.toBigDecimal(valueNew);
+		if (valueNewBD.signum() == 0 && valueOldBD.signum() == 0)
+		{
+			return;
+		}
+		final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
+		attributeStorage.setValue(attribute, valueNewBD);
 	}
 }
