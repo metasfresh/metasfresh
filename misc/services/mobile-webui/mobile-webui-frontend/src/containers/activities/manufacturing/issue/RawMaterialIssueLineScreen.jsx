@@ -4,7 +4,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
 import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
@@ -16,22 +16,21 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { productName, steps } = useSelector(
+  const { caption, productName, uom, qtyToIssue, qtyToIssueMin, qtyToIssueMax, steps } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
     shallowEqual
   );
+  console.log('RawMaterialIssueLineScreen', { productName, uom, qtyToIssue, qtyToIssueMin, qtyToIssueMax, steps });
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Issue', // TODO: trl
+        caption: caption,
         values: [
-          {
-            caption: trl('general.Product'),
-            value: productName,
-          },
+          { caption: trl('general.Product'), value: productName },
+          { caption: trl('mfg.issues.qtyToIssue'), value: qtyToIssue + ' ' + uom },
         ],
       })
     );
@@ -68,9 +67,16 @@ const RawMaterialIssueLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
+  console.log('getPropsFromState', { activity, line });
   return {
+    caption: activity?.caption ?? 'Issue',
     productName: line?.productName,
+    uom: line?.uom,
+    qtyToIssue: line?.qtyToIssue,
+    qtyToIssueMin: line?.qtyToIssueMin,
+    qtyToIssueMax: line?.qtyToIssueMax,
     steps: getStepsArrayFromLine(line),
   };
 };
