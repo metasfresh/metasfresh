@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
-import { disposeHU, getDisposalReasonsArray } from '../api';
+import * as api from '../api';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
@@ -24,7 +24,8 @@ const HUDisposalScreen = () => {
       return;
     }
 
-    getDisposalReasonsArray()
+    api
+      .getDisposalReasonsArray()
       .then((disposalReasons) => {
         setDisposalReasons(disposalReasons);
         setSelectedDisposalReasonKey(null);
@@ -36,10 +37,11 @@ const HUDisposalScreen = () => {
   }, []);
 
   const onDisposeClick = () => {
-    disposeHU({
-      huId: handlingUnitInfo.id,
-      reasonCode: selectedDisposalReasonKey,
-    })
+    api
+      .disposeHU({
+        huId: handlingUnitInfo.id,
+        reasonCode: selectedDisposalReasonKey,
+      })
       .then(() => {
         history.push('/');
       })

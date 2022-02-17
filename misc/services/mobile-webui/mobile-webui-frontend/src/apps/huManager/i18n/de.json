@@ -8,6 +8,9 @@
     "dispose": {
       "buttonCaption": "Dispose"
     },
+    "move": {
+      "buttonCaption": "Move"
+    },
     "scanAgain": {
       "buttonCaption": "Scan again"
     }
