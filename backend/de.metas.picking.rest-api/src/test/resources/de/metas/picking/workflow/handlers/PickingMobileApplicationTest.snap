@@ -2022,7 +2022,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -2356,7 +2356,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -2884,7 +2884,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -3193,7 +3193,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -3633,7 +3633,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -4433,7 +4433,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
@@ -4742,7 +4742,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentProps" : {
           "currentValue" : {
             "caption" : "1",
-            "qrCode" : "pickingSlot-1000000"
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
           "validOptions" : null
         },
