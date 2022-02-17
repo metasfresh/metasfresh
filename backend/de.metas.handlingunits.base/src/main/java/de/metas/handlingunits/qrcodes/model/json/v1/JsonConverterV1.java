@@ -2,12 +2,12 @@ package de.metas.handlingunits.qrcodes.model.json.v1;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -19,9 +19,9 @@ public class JsonConverterV1
 {
 	public static final GlobalQRCodeVersion GLOBAL_QRCODE_VERSION = GlobalQRCodeVersion.ofInt(1);
 
-	public static GlobalQRCode toGlobalQRCode(@NonNull final HUQRCode qrCode)
+	public static GlobalQRCode toGlobalQRCode(@NonNull GlobalQRCodeType type, @NonNull final HUQRCode qrCode)
 	{
-		return GlobalQRCode.of(HUQRCodeJsonConverter.GLOBAL_QRCODE_TYPE, GLOBAL_QRCODE_VERSION, toJson(qrCode));
+		return GlobalQRCode.of(type, GLOBAL_QRCODE_VERSION, toJson(qrCode));
 	}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -18,7 +18,7 @@ public final class GlobalQRCodeVersion
 	{
 		if (value <= 0)
 		{
-			throw new AdempiereException("Invalid global QR code version: " + value);
+			throw Check.mkEx("Invalid global QR code version: " + value);
 		}
 
 		return interner.intern(new GlobalQRCodeVersion(value));
@@ -33,7 +33,7 @@ public final class GlobalQRCodeVersion
 		}
 		catch (final NumberFormatException e)
 		{
-			throw new AdempiereException("Invalid global QR code version: `" + string + "`", e);
+			throw Check.mkEx("Invalid global QR code version: `" + string + "`", e);
 		}
 	}
 

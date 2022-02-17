@@ -7,7 +7,6 @@ import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -77,7 +76,7 @@ public class HUQRCodesService
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final String qrCodeString)
 	{
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(qrCodeString);
 		return getHuIdByQRCodeIfExists(qrCode);
 	}
 

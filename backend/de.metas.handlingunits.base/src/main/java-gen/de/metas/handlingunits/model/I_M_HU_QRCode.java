@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_HU_QRCode
  *  @author metasfresh (generated) 
@@ -51,31 +52,6 @@ public interface I_M_HU_QRCode
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Aggregate HU Item.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAggregate_HU_Item_ID (int Aggregate_HU_Item_ID);
-
-	/**
-	 * Get Aggregate HU Item.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAggregate_HU_Item_ID();
-
-	@Nullable de.metas.handlingunits.model.I_M_HU_Item getAggregate_HU_Item();
-
-	void setAggregate_HU_Item(@Nullable de.metas.handlingunits.model.I_M_HU_Item Aggregate_HU_Item);
-
-	ModelColumn<I_M_HU_QRCode, de.metas.handlingunits.model.I_M_HU_Item> COLUMN_Aggregate_HU_Item_ID = new ModelColumn<>(I_M_HU_QRCode.class, "Aggregate_HU_Item_ID", de.metas.handlingunits.model.I_M_HU_Item.class);
-	String COLUMNNAME_Aggregate_HU_Item_ID = "Aggregate_HU_Item_ID";
-
-	/**
 	 * Set attributes.
 	 *
 	 * <br>Type: TextLong
@@ -120,6 +96,29 @@ public interface I_M_HU_QRCode
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Displayable QR Code.
+	 * It's the user friendly QR Code which displayed to the user. This might not be unique but it shall be unique enough for help the user distinquish between several nearby items. Also it's shorter and easy to remember on short term.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDisplayableQRCode (java.lang.String DisplayableQRCode);
+
+	/**
+	 * Get Displayable QR Code.
+	 * It's the user friendly QR Code which displayed to the user. This might not be unique but it shall be unique enough for help the user distinquish between several nearby items. Also it's shorter and easy to remember on short term.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDisplayableQRCode();
+
+	ModelColumn<I_M_HU_QRCode, Object> COLUMN_DisplayableQRCode = new ModelColumn<>(I_M_HU_QRCode.class, "DisplayableQRCode", null);
+	String COLUMNNAME_DisplayableQRCode = "DisplayableQRCode";
 
 	/**
 	 * Set Active.
@@ -189,6 +188,29 @@ public interface I_M_HU_QRCode
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_M_HU_QRCode_ID = new ModelColumn<>(I_M_HU_QRCode.class, "M_HU_QRCode_ID", null);
 	String COLUMNNAME_M_HU_QRCode_ID = "M_HU_QRCode_ID";
+
+	/**
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_HU_QRCode, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_HU_QRCode.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
 
 	/**
 	 * Set Unique ID.

@@ -32,7 +32,7 @@ public class JsonConverterV1
 		return fromJson(payload);
 	}
 
-	public static DeviceQRCode fromJson(@NonNull final JsonDeviceQRCodePayloadV1 json)
+	private static DeviceQRCode fromJson(@NonNull final JsonDeviceQRCodePayloadV1 json)
 	{
 		return DeviceQRCode.builder()
 				.deviceId(DeviceId.ofString(json.getDeviceId()))

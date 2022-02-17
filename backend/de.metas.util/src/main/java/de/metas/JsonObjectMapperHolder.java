@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 @UtilityClass
 public class JsonObjectMapperHolder
 {
-	private static final Logger logger = LogManager.getLogger(JsonObjectMapperHolder.class);
+	private static final Logger logger = LoggerFactory.getLogger(JsonObjectMapperHolder.class);
 
 	public static ObjectMapper sharedJsonObjectMapper()
 	{
