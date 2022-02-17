@@ -168,7 +168,7 @@ public class HandlingUnitsBLTest
 	class isHUHierarchyCleared
 	{
 		@Test
-		public void givenTU_OfA_LU_TU_CU_Cleared_Hierarchy_whenIsHUHierarchyCleared_thenTrue()
+		public void givenTU_OfA_LU_TU_CU_Cleared_Hierarchy_whenIsHUHierarchyCleared_thenReturnTrue()
 		{
 			//given
 			final I_M_HU_Item lu = createHU(null);
@@ -176,10 +176,14 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item cu = createHU(tu);
 
 			//when
-			final boolean isWholeHierarchyCleared = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_LU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_TU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(tu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_CU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(cu.getM_HU_ID()));
 
 			//then
-			assertThat(isWholeHierarchyCleared).isTrue();
+			assertThat(isWholeHierarchyCleared_LU).isTrue();
+			assertThat(isWholeHierarchyCleared_TU).isTrue();
+			assertThat(isWholeHierarchyCleared_CU).isTrue();
 		}
 
 		@Test
@@ -192,10 +196,14 @@ public class HandlingUnitsBLTest
 			handlingUnitsBL.setClearanceStatus(HuId.ofRepoId(cu.getM_HU_ID()), ClearanceStatus.Locked, "Locked HU");
 
 			//when
-			final boolean isWholeHierarchyCleared = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_LU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_TU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(tu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_CU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(cu.getM_HU_ID()));
 
 			//then
-			assertThat(isWholeHierarchyCleared).isFalse();
+			assertThat(isWholeHierarchyCleared_LU).isFalse();
+			assertThat(isWholeHierarchyCleared_TU).isFalse();
+			assertThat(isWholeHierarchyCleared_CU).isFalse();
 		}
 	}
 

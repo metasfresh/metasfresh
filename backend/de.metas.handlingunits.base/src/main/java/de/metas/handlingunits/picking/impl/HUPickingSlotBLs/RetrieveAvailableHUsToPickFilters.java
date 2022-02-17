@@ -51,7 +51,6 @@ import java.util.List;
 @UtilityClass
 public class RetrieveAvailableHUsToPickFilters
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	/**
 	 * Excludes HU that are already picked or already selected as fine picking source HUs.
 	 */
@@ -104,8 +103,6 @@ public class RetrieveAvailableHUsToPickFilters
 		final List<I_M_HU> result = new ArrayList<>();
 		for (final I_M_HU huTopLevel : husTopLevel)
 		{
-			final List<I_M_HU> validHUs = new ArrayList<>();
-
 			new HUIterator()
 					.setEnableStorageIteration(false)
 					.setListener(new HUIteratorListenerAdapter()
@@ -113,28 +110,19 @@ public class RetrieveAvailableHUsToPickFilters
 						@Override
 						public Result beforeHU(IMutable<I_M_HU> hu)
 						{
-							if (!handlingUnitsBL.isCleared(hu.getValue()))
-							{
-								//dev-note: if one HU is locked, the whole HU hierarchy should be skipped
-								validHUs.clear();
-								return Result.STOP;
-							}
 							if (!isNotPickedAndNotSourceHU(hu.getValue()))
 							{
 								return Result.SKIP_DOWNSTREAM;
 							}
 							else
 							{
-								validHUs.add(hu.getValue());
+								result.add(hu.getValue());
 								return Result.CONTINUE;
 							}
 						}
 					})
 					.iterate(huTopLevel);
-
-			result.addAll(validHUs);
 		}
-
 		return result;
 	}
 }

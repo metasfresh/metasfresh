@@ -71,10 +71,10 @@ public class HandlingUnitsService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+
 	private final HUQRCodesService huQRCodeService;
 
-	public HandlingUnitsService(
-			final @NonNull HUQRCodesService huQRCodeService)
+	public HandlingUnitsService(final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.huQRCodeService = huQRCodeService;
 	}
@@ -107,7 +107,7 @@ public class HandlingUnitsService
 				.products(getProductStorage(huContext, hu))
 				.attributes(getAttributes(huContext, hu))
 				.clearanceNote(hu.getClearanceNote())
-				.huClearanceStatus(getClearanceStatusInfo(hu));
+				.clearanceStatus(getClearanceStatusInfo(hu));
 
 		if (isAggregatedTU)
 		{
@@ -122,23 +122,6 @@ public class HandlingUnitsService
 		}
 
 		return jsonHUBuilder.includedHUs(getIncludedHUs(hu, adLanguage))
-				.build();
-	}
-
-	@Nullable
-	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
-	{
-		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
-				.map(HandlingUnitsService::toJsonHUQRCode)
-				.orElse(null);
-	}
-
-	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
-	{
-		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
-		return JsonHUQRCode.builder()
-				.code(rendered.getCode())
-				.displayable(rendered.getDisplayable())
 				.build();
 	}
 
@@ -282,6 +265,23 @@ public class HandlingUnitsService
 				.stream()
 				.map(includedHU -> toJson(includedHU, adLanguage))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
+	{
+		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
+				.map(HandlingUnitsService::toJsonHUQRCode)
+				.orElse(null);
+	}
+
+	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
+	{
+		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
+		return JsonHUQRCode.builder()
+				.code(rendered.getCode())
+				.displayable(rendered.getDisplayable())
+				.build();
 	}
 
 	@Nullable

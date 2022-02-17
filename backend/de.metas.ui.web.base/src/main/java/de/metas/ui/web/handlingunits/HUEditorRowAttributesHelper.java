@@ -37,6 +37,7 @@ import org.compiere.util.NamePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
@@ -71,7 +72,7 @@ import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARA
 @UtilityClass
 public final class HUEditorRowAttributesHelper
 {
-	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage, @NonNull final I_M_HU hu)
+	public static ViewRowAttributesLayout createLayout(@NonNull final IAttributeStorage attributeStorage, @NonNull final I_M_HU hu)
 	{
 		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
 		final List<DocumentLayoutElementDescriptor> attributeLayoutElements = attributeStorage.getAttributeValues()
@@ -79,12 +80,7 @@ public final class HUEditorRowAttributesHelper
 				.map(av -> createLayoutElement(av, warehouseId))
 				.collect(Collectors.toList());
 
-		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
-
-		if (isDisplayedClearanceStatus && Check.isNotBlank(hu.getClearanceNote()))
-		{
-			attributeLayoutElements.add(createLayoutElement());
-		}
+		getClearanceNoteLayoutElement(hu).ifPresent(attributeLayoutElements::add);
 
 		return ViewRowAttributesLayout.of(ImmutableList.copyOf(attributeLayoutElements));
 	}
@@ -204,15 +200,34 @@ public final class HUEditorRowAttributesHelper
 		}
 	}
 
-	private static DocumentLayoutElementDescriptor createLayoutElement()
+	@NonNull
+	private static Optional<DocumentLayoutElementDescriptor> getClearanceNoteLayoutElement(@NonNull final I_M_HU hu)
 	{
-		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Text;
+		if (Check.isBlank(hu.getClearanceNote()))
+		{
+			return Optional.empty();
+		}
 
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (!isDisplayedClearanceStatus)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(createClearanceNoteLayoutElement());
+	}
+
+	@NonNull
+	private static DocumentLayoutElementDescriptor createClearanceNoteLayoutElement()
+	{
 		final ITranslatableString caption = Services.get(IMsgBL.class).translatable(I_M_HU.COLUMNNAME_ClearanceNote);
+
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)
-				.setWidgetType(widgetType)
-				.addField(DocumentLayoutElementFieldDescriptor.builder(I_M_HU.COLUMNNAME_ClearanceNote)
+				.setWidgetType(DocumentFieldWidgetType.Text)
+				.addField(DocumentLayoutElementFieldDescriptor
+								  .builder(I_M_HU.COLUMNNAME_ClearanceNote)
 								  .setPublicField(true))
 				.build();
 	}

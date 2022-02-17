@@ -417,15 +417,15 @@ public class M_HU_StepDef
 			final String clearanceStatusKey = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus + "." + "key");
 			if (Check.isNotBlank(clearanceStatusKey))
 			{
-				assertThat(jsonHU.getHuClearanceStatus()).isNotNull();
-				assertThat(jsonHU.getHuClearanceStatus().getKey()).isEqualTo(clearanceStatusKey);
+				assertThat(jsonHU.getClearanceStatus()).isNotNull();
+				assertThat(jsonHU.getClearanceStatus().getKey()).isEqualTo(clearanceStatusKey);
 			}
 
 			final String clearanceStatusCaption = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus + "." + "caption");
 			if (Check.isNotBlank(clearanceStatusCaption))
 			{
-				assertThat(jsonHU.getHuClearanceStatus()).isNotNull();
-				assertThat(jsonHU.getHuClearanceStatus().getCaption()).isEqualTo(clearanceStatusCaption);
+				assertThat(jsonHU.getClearanceStatus()).isNotNull();
+				assertThat(jsonHU.getClearanceStatus().getCaption()).isEqualTo(clearanceStatusCaption);
 			}
 
 			assertThat(jsonHU.getJsonHUType()).isEqualTo(JsonHUType.valueOf(jsonHUType));

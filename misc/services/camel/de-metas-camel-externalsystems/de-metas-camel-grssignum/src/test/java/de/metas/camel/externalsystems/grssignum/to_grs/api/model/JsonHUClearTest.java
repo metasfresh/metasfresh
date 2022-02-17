@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.grssignum.to_grs.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -39,7 +38,7 @@ public class JsonHUClearTest
 		//given
 		final String candidate = "{\n"
 				+ "    \"FLAG\": 998,\n"
-				+ "    \"METASFRESHID\": 100,\n"
+				+ "    \"METASFRESHID\": \"100\",\n"
 				+ "    \"dummyValue\": \"TEST\",\n"
 				+ "    \"CLEARANCE_STATUS\": \"ClearanceStatus\",\n"
 				+ "    \"CLEARANCE_NOTE\": \"ClearanceNote\"\n"
@@ -49,7 +48,7 @@ public class JsonHUClearTest
 
 		//then
 		final JsonHUClear expectedJsonHuClear = JsonHUClear.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
+				.metasfreshId("100")
 				.flag(998)
 				.clearanceNote("ClearanceNote")
 				.clearanceStatus("ClearanceStatus")
@@ -63,7 +62,7 @@ public class JsonHUClearTest
 	{
 		//given
 		final JsonHUClear jsonHUClear = JsonHUClear.builder()
-				.metasfreshId(JsonMetasfreshId.of(100))
+				.metasfreshId("100")
 				.flag(998)
 				.clearanceNote("ClearanceNote")
 				.clearanceStatus("ClearanceStatus")

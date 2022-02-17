@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +42,7 @@ public class JsonHUClear
 
 	@NonNull
 	@JsonProperty("METASFRESHID")
-	JsonMetasfreshId metasfreshId;
+	String metasfreshId;
 
 	@NonNull
 	@JsonProperty("CLEARANCE_STATUS")
@@ -56,7 +55,7 @@ public class JsonHUClear
 	@Builder
 	public JsonHUClear(
 			@JsonProperty("FLAG") @NonNull final Integer flag,
-			@JsonProperty("METASFRESHID") @NonNull final JsonMetasfreshId metasfreshId,
+			@JsonProperty("METASFRESHID") @NonNull final String metasfreshId,
 			@JsonProperty("CLEARANCE_STATUS") @NonNull final String clearanceStatus,
 			@JsonProperty("CLEARANCE_NOTE") @Nullable final String clearanceNote)
 	{

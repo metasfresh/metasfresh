@@ -102,6 +102,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.collect(ImmutableSet.toImmutableSet());
 
 		final DocumentPath documentPath = createDocumentPath(key);
+
 		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, hu, rowAttributesReadonly);
 	}
 

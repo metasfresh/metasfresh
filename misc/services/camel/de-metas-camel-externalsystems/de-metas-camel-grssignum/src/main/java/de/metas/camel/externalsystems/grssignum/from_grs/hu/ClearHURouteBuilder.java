@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.common.v2.ClearHUCamelRequest;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUClear;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -69,7 +70,7 @@ public class ClearHURouteBuilder extends RouteBuilder
 				.build();
 
 		final ClearHUCamelRequest huClearCamelRequest = ClearHUCamelRequest.builder()
-				.metasfreshId(requestBody.getMetasfreshId())
+				.metasfreshId(JsonMetasfreshId.of(Integer.parseInt(requestBody.getMetasfreshId())))
 				.clearanceStatusRequest(clearanceStatusRequest)
 				.build();
 
@@ -77,7 +78,7 @@ public class ClearHURouteBuilder extends RouteBuilder
 	}
 
 	@NonNull
-	private JsonClearanceStatus toJsonClearanceStatus(@NonNull final String status)
+	private static JsonClearanceStatus toJsonClearanceStatus(@NonNull final String status)
 	{
 		try
 		{

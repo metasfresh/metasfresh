@@ -120,5 +120,5 @@ public class ExternalSystemCamelConstants
 	public static final String MF_GET_EXTERNAL_SYSTEM_INFO = "metasfresh.external-system-info-v2.camel.uri";
 
 	public static final String MF_CLEAR_HU_V2_CAMEL_ROUTE_ID = "To-MF_clearHU_V2-Route";
-	public static final String MF_CLEAR_HU_V2_CAMEL_URI = "metasfresh.clear-hu-v2.api.uri";
+	public static final String MF_CLEAR_HU_V2_URI = "metasfresh.clear-hu-v2.api.uri";
 }

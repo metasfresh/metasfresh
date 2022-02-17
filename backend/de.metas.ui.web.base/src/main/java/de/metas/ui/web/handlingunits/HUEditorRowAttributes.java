@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -91,6 +90,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return (HUEditorRowAttributes)attributes;
 	}
 
+	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
 
@@ -98,8 +99,6 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	private final ImmutableSet<AttributeCode> readonlyAttributeNames;
 	private final ImmutableSet<AttributeCode> hiddenAttributeNames;
-
-	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Getter
 	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
@@ -244,19 +243,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
 
-		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
-
-		if (isDisplayedClearanceStatus)
-		{
-			final HUEditorRowId huEditorRowId = HUEditorRowId.ofDocumentId(huId);
-
-			final I_M_HU hu = huDAO.getById(huEditorRowId.getHuId());
-
-			if (Check.isNotBlank(hu.getClearanceNote()))
-			{
-				jsonFields.add(toJSONDocumentField(hu, jsonOpts));
-			}
-		}
+		getClearanceNoteField(huId, jsonOpts).ifPresent(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
 
@@ -445,17 +432,39 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return attributesStorage.hasAttribute(attributeCode);
 	}
 
-
-	private static JSONDocumentField toJSONDocumentField(final I_M_HU hu, final JSONOptions jsonOpts)
+	@NonNull
+	private Optional<JSONDocumentField> getClearanceNoteField(@NonNull final DocumentId huId, @NonNull final JSONOptions jsonOptions)
 	{
-		final Object jsonValue = Values.valueToJsonObject(hu.getClearanceNote(), jsonOpts);
-		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Text;
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (!isDisplayedClearanceStatus)
+		{
+			return Optional.empty();
+		}
+
+		final HUEditorRowId huEditorRowId = HUEditorRowId.ofDocumentId(huId);
+
+		final I_M_HU hu = huDAO.getById(huEditorRowId.getHuId());
+
+		if (Check.isBlank(hu.getClearanceNote()))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toJSONDocumentField(hu.getClearanceNote(), jsonOptions));
+	}
+
+
+	@NonNull
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	{
+		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
 
 		return JSONDocumentField.ofNameAndValue(I_M_HU.COLUMNNAME_ClearanceNote, jsonValue)
 				.setDisplayed(true)
 				.setMandatory(false)
 				.setReadonly(true)
-				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
+				.setWidgetType(JSONLayoutWidgetType.Text);
 	}
 
 	/**

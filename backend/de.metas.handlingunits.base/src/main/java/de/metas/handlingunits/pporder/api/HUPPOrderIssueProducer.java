@@ -107,16 +107,12 @@ public class HUPPOrderIssueProducer
 	{
 		final List<I_PP_Order_BOMLine> targetOrderBOMLines = getTargetOrderBOMLines();
 
-		final Collection<I_M_HU> clearedHus = hus.stream()
-				.filter(handlingUnitsBL::isCleared)
-				.collect(ImmutableList.toImmutableList());
-
 		final List<I_PP_Order_Qty> candidates = CreateDraftIssuesCommand.builder()
 				.targetOrderBOMLines(targetOrderBOMLines)
 				.movementDate(movementDate)
 				.fixedQtyToIssue(fixedQtyToIssue)
 				.considerIssueMethodForQtyToIssueCalculation(considerIssueMethodForQtyToIssueCalculation)
-				.issueFromHUs(clearedHus)
+				.issueFromHUs(hus)
 				.changeHUStatusToIssued(changeHUStatusToIssued)
 				.generatedBy(generatedBy)
 				.build()

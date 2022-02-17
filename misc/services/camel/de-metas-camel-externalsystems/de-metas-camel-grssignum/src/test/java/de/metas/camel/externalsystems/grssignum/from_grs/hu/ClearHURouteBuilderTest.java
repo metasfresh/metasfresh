@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.grssignum.from_grs.hu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.ClearHUCamelRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -51,7 +51,7 @@ public class ClearHURouteBuilderTest extends CamelTestSupport
 	private static final String JSON_HU_CLEAR = "1_JsonHUClear.json";
 	private static final String JSON_HU_CLEAR_CAMEL_REQUEST = "10_ClearHUCamelRequest.json";
 
-	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
