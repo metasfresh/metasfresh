@@ -92,6 +92,11 @@ public interface IHUTrxBL extends ISingletonService
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
 
+	void unlinkFromParentBeforeDestroy(
+			IHUContext huContext,
+			@NonNull I_M_HU hu,
+			boolean destroyOldParentIfEmptyStorage);
+
 	/**
 	 * Link a given {@code hu} to its parent.
 	 * <p>

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.org;
 
 import lombok.NonNull;
 import org.assertj.core.api.Assertions;

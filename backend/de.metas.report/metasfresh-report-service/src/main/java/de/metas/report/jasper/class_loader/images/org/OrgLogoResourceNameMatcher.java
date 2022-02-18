@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.org;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
