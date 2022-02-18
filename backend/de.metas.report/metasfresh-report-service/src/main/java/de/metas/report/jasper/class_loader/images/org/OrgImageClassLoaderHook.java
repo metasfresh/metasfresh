@@ -1,4 +1,4 @@
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.org;
 
 /*
  * #%L
@@ -25,6 +25,8 @@ package de.metas.report.jasper.class_loader;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.report.jasper.class_loader.JasperClassLoader;
+import de.metas.report.jasper.class_loader.images.ImageUtils;
 import lombok.NonNull;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
@@ -43,7 +45,7 @@ import java.util.Optional;
  *
  * @author tsa
  */
-final class OrgImageClassLoaderHook
+public final class OrgImageClassLoaderHook
 {
 	public static OrgImageClassLoaderHook newInstance()
 	{
@@ -89,11 +91,8 @@ final class OrgImageClassLoaderHook
 		
 		//
 		// Get the local image file
-		final File imageFile = getLocalImageFile(context);
-		if (imageFile == null)
-		{
-			return null;
-		}
+		final File imageFile = getLocalImageFile(context)
+				.orElseGet(ImageUtils::getEmptyPNGFile);
 
 		//
 		// Convert the image file to URL
@@ -109,8 +108,7 @@ final class OrgImageClassLoaderHook
 	}
 
 	
-	@Nullable
-	private File getLocalImageFile(@NonNull final OrgResourceNameContext context)
+	private Optional<File> getLocalImageFile(@NonNull final OrgResourceNameContext context)
 	{
 		File imageFile = imageLocalFileByOrgId
 				.getOrLoad(context, orgImageLocalFileLoader::getImageLocalFile)
@@ -125,6 +123,6 @@ final class OrgImageClassLoaderHook
 					.orElse(null);
 		}
 
-		return imageFile;
+		return Optional.ofNullable(imageFile);
 	}
 }
