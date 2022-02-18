@@ -831,9 +831,7 @@ public class HUTransformService
 							// Take it out from its parent
 							huTrxBL.setParentHU(localHuContext,
 									parentItem, // might be null
-									childHU,
-									true // destroyOldParentIfEmptyStorage
-							);
+									childHU);
 
 							afterParentChange.accept(localHuContext);
 
