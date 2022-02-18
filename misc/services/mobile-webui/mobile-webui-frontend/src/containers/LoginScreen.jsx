@@ -97,12 +97,7 @@ const LoginScreen = () => {
             </div>
             <div className="field">
               <div className="control">
-                <button
-                  type="submit"
-                  className="button is-medium btn-green"
-                  disabled={loginPending}
-                  onClick={submitForm}
-                >
+                <button type="submit" className="button is-medium" disabled={loginPending} onClick={submitForm}>
                   {/* eslint-disable-next-line no-undef */}
                   {trl('login.submitButton')}
                 </button>

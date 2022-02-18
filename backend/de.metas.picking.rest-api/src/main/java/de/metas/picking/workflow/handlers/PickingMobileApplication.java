@@ -34,7 +34,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -273,7 +272,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromQRCodeString(json.getHuQRCode());
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
 		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
 
 		return PickingJobStepEvent.builder()

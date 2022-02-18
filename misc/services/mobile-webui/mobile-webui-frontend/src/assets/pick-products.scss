@@ -27,29 +27,3 @@
   width: 25%;
   font-size: 1.5em;
 }
-
-
-.pickgoback-btn-green {
-  width: 8em;
-  color: white;
-  background-color: $base-mf-green;
-  font-weight: 400;
-  border: 0;
-  padding: 5px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.pickgoback-btn-green:hover {
-  color: white;
-  background-color: $base-mf-green;
-}
-
-.pickgoback-btn-green:focus {
-  color: white;
-  border-color: $base-mf-green;
-}
-
-.pick-higher-btn {
-  height: 5rem;
-}

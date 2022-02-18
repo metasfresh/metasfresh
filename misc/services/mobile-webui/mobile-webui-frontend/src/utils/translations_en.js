@@ -1,5 +1,11 @@
 const translations = {
   appName: 'metasfresh mobile',
+  error: {
+    PleaseTryAgain: 'Please try again',
+    network: {
+      noResponse: 'Connection error',
+    },
+  },
   general: {
     Product: 'Product',
     Locator: 'Locator',
@@ -10,7 +16,6 @@ const translations = {
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
     DropToLocator: 'Drop to locator',
-    PleaseTryAgain: 'Please try again',
     cancelText: 'Cancel',
   },
   login: {
@@ -49,7 +54,7 @@ const translations = {
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
       scanLocator: 'Scan drop to Locator',
-      invalidLocatorBarcode: 'Invalid locator barcode',
+      invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
     },
     confirmButton: {

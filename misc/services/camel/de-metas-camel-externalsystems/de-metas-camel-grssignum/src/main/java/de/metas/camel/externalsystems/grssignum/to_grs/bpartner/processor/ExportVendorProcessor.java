@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
@@ -31,6 +30,7 @@ import de.metas.camel.externalsystems.grssignum.from_grs.restapi.Endpoint;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonVendor;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonVendorContact;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.ExportBPartnerRouteContext;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.ExportLocationHelper;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
@@ -43,9 +43,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,7 +86,7 @@ public class ExportVendorProcessor implements Processor
 
 		final int inactive = jsonResponseBPartner.isActive() ? 0 : 1;
 
-		final JsonVendor.JsonVendorBuilder vendorBuilder = getVendorLocationToExport(jsonResponseComposite.getLocations())
+		final JsonVendor.JsonVendorBuilder vendorBuilder = ExportLocationHelper.getBPartnerMainLocation(jsonResponseComposite.getLocations())
 				.map(ExportVendorProcessor::initVendorWithLocationFields)
 				.orElseGet(JsonVendor::builder);
 
@@ -147,23 +145,6 @@ public class ExportVendorProcessor implements Processor
 						.position(contact.getPosition() == null ? null : contact.getPosition().getName())
 						.build())
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	@VisibleForTesting
-	public static Optional<JsonResponseLocation> getVendorLocationToExport(@NonNull final List<JsonResponseLocation> jsonResponseLocations)
-	{
-		if (Check.isEmpty(jsonResponseLocations))
-		{
-			return Optional.empty();
-		}
-
-		return jsonResponseLocations.stream()
-				.min(Comparator.comparing(JsonResponseLocation::isVisitorsAddress, Comparator.reverseOrder())
-							 .thenComparing(JsonResponseLocation::isBillToDefault, Comparator.reverseOrder())
-							 .thenComparing(JsonResponseLocation::isShipToDefault, Comparator.reverseOrder())
-							 .thenComparing(JsonResponseLocation::isBillTo, Comparator.reverseOrder())
-							 .thenComparing(JsonResponseLocation::isShipTo, Comparator.reverseOrder()));
 	}
 
 	@Nullable

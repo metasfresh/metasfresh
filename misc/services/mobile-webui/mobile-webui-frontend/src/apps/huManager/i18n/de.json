@@ -1,12 +1,16 @@
 {
   "HU": "HU",
-  "barcode": "Barcode",
+  "qrCode": "QR code",
   "locator": "Locator",
   "product": "Product",
   "qty": "Quantity",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
+    },
+    "move": {
+      "buttonCaption": "Move",
+      "scanTarget": "Scan target"
     },
     "scanAgain": {
       "buttonCaption": "Scan again"

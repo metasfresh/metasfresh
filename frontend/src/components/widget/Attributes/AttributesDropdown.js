@@ -102,6 +102,7 @@ class AttributesDropdown extends PureComponent {
             widgetData={widgetData}
             gridAlign={item.gridAlign}
             key={idx}
+            autoFocus={idx === 0}
             type={item.type}
             caption={item.caption}
             handlePatch={(prop, value) => this.handlePatch(prop, value, idx)}

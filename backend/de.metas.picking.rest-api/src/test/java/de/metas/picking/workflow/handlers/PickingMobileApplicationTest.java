@@ -12,8 +12,8 @@ import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.PickingSlotBarcode;
-import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -69,7 +69,7 @@ class PickingMobileApplicationTest
 	private HuId lu2;
 
 	private TestRecorder recorder;
-	private PickingSlotId pickingSlotId;
+	private PickingSlotIdAndCaption pickingSlot;
 
 	@BeforeAll
 	static void beforeAll()
@@ -104,7 +104,7 @@ class PickingMobileApplicationTest
 
 	private void createMasterdata()
 	{
-		pickingSlotId = helper.createPickingSlot("1");
+		pickingSlot = PickingSlotIdAndCaption.of(helper.createPickingSlot("1"), "1");
 
 		final I_C_UOM uomKg = BusinessTestHelper.createUomKg();
 		final ProductId productId = BusinessTestHelper.createProductId("P1", uomKg);
@@ -221,9 +221,9 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
-							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
+							.barcode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 							.build()
 			);
 			assertEqualsToDatabaseVersion(wfProcess);
@@ -362,9 +362,9 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
-							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
+							.barcode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 							.build()
 			);
 			assertEqualsToDatabaseVersion(wfProcess);

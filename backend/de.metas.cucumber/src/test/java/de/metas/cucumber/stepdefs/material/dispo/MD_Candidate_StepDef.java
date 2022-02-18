@@ -49,6 +49,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
@@ -61,9 +62,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -74,10 +77,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
 {
@@ -88,14 +93,17 @@ public class MD_Candidate_StepDef
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_MD_Candidate> stockCandidateTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 
 	public MD_Candidate_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable)
+			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Before
@@ -331,6 +339,22 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
 
+			final String attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				assertThat(expectedASI).isNotNull();
+
+				final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+						.orElse(AttributesKey.NONE);
+
+				final int materialCandASI = materialDispoRecord.getMaterialDescriptor().getAttributeSetInstanceId();
+				final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(materialCandASI))
+						.orElse(AttributesKey.NONE);
+
+				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
+			}
+
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
@@ -357,7 +381,7 @@ public class MD_Candidate_StepDef
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
 	{
-		final String stockCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String stockCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_MD_Candidate stockCandidateRecord = stockCandidateTable.get(stockCandidateIdentifier);
 
 		final Candidate stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(CandidateId.ofRepoId(stockCandidateRecord.getMD_Candidate_ID())));
@@ -377,7 +401,7 @@ public class MD_Candidate_StepDef
 
 	private void validate_md_candidate_with_stock(@NonNull final Map<String, String> tableRow)
 	{
-		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoDataIdentifier);
 
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
@@ -412,5 +436,21 @@ public class MD_Candidate_StepDef
 		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getDate()).isEqualTo(dateProjected);
 		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(qty);
 		assertThat(freshMaterialDispoItemInfo.getAtp()).isEqualByComparingTo(atp);
+
+		final String expectedASIIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(expectedASIIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(expectedASIIdentifier);
+			assertThat(expectedASI).isNotNull();
+
+			final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			final int materialCandASI = freshMaterialDispoItemInfo.getMaterialDescriptor().getAttributeSetInstanceId();
+			final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(materialCandASI))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
+		}
 	}
 }

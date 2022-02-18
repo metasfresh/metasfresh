@@ -30,6 +30,7 @@ export const initialTableState = {
   collapsible: false,
   indentSupported: false,
   supportAttribute: false,
+  navigationActive: true,
 };
 
 // we store the length of the tables structure for the sake of testing and debugging
@@ -313,6 +314,16 @@ const reducer = produce((draftState, action) => {
       const { id, active } = action.payload;
 
       draftState[id].activeSort = active;
+
+      return;
+    }
+
+    case types.SET_TABLE_NAVIGATION: {
+      const { id, active } = action.payload;
+
+      draftState[id].navigationActive = active;
+
+      return;
     }
   }
 }, initialState);

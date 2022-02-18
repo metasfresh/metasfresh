@@ -24,13 +24,18 @@ package de.metas.camel.externalsystems.grssignum.from_grs.bom;
 
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
-@Value
+import javax.annotation.Nullable;
+
+@Data
 @Builder
 public class PushBOMsRouteContext
 {
 	@NonNull
-	JsonBOM jsonBOM;
+	private final JsonBOM jsonBOM;
+
+	@Nullable
+	private String exportDirectoriesBasePath;
 }

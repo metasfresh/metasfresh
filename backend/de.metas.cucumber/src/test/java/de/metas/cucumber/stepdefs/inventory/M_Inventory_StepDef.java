@@ -49,6 +49,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -71,6 +72,7 @@ public class M_Inventory_StepDef
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_M_HU> huTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
@@ -79,13 +81,15 @@ public class M_Inventory_StepDef
 			final StepDefData<I_M_InventoryLine> inventoryLineTable,
 			final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
 			final StepDefData<I_M_Product> productTable,
-			final StepDefData<I_M_HU> huTable)
+			final StepDefData<I_M_HU> huTable,
+			final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.productTable = productTable;
 		this.huTable = huTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@And("metasfresh initially has M_Inventory data")
@@ -210,7 +214,6 @@ public class M_Inventory_StepDef
 
 			inventoryLineRecord.setM_Product_ID(productById.getM_Product_ID());
 		}
-
 		save(inventoryLineRecord);
 
 		inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord);

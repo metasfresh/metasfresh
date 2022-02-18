@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -62,7 +63,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
@@ -115,10 +116,18 @@ public class C_Order_StepDef
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
 			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
-			if (preparationDate != null)
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+
+			final ZonedDateTime preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
+			if (preparationDateToBeSet != null)
 			{
-				order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
-				order.setDatePromised(TimeUtil.asTimestamp(preparationDate));
+				order.setPreparationDate(TimeUtil.asTimestamp(preparationDateToBeSet));
+			}
+
+			final ZonedDateTime datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
+			if (datePromisedToBeSet != null)
+			{
+				order.setDatePromised(TimeUtil.asTimestamp(datePromisedToBeSet));
 			}
 
 			if (EmptyUtil.isNotBlank(poReference))

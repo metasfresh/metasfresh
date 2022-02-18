@@ -8,6 +8,7 @@
   "VERLUST": 10.5,
   "GTIN": 12345678,
   "METASFRESHID": "100",
+  "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf",
   "DETAIL": [
     {
       "ARTNR": "ProductValue1",

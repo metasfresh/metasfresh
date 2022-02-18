@@ -1,7 +1,7 @@
 package de.metas.manufacturing.workflows_api.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToExistingLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToExistingLU;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.jackson.Jacksonized;

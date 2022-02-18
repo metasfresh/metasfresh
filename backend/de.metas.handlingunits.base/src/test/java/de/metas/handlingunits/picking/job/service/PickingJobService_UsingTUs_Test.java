@@ -135,7 +135,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickingStepId(steps.get(0).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
-						.huQRCode(helper.huQRCodesRepository.getQRCodeByHuId(lu1).get())
+						.huQRCode(helper.huQRCodesRepository.getFirstQRCodeByHuId(lu1).get())
 						.qtyPicked(new BigDecimal("75"))
 						.build());
 		results.reportStepWithAllHUs("HUs after Picked 1");
@@ -146,7 +146,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickingStepId(steps.get(1).getId())
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
-						.huQRCode(helper.huQRCodesRepository.getQRCodeByHuId(lu2).get())
+						.huQRCode(helper.huQRCodesRepository.getFirstQRCodeByHuId(lu2).get())
 						.qtyPicked(new BigDecimal("25"))
 						.build());
 		results.reportStepWithAllHUs("HUs after Picked 2");

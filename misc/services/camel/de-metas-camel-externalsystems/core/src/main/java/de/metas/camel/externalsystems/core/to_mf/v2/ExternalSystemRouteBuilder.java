@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.InvokeExternalSystemActionCamelRequest;
+import de.metas.camel.externalsystems.common.v2.RetrieveExternalSystemInfoCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
@@ -81,6 +82,18 @@ public class ExternalSystemRouteBuilder extends RouteBuilder
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/invoke/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/${header." + HEADER_EXTERNAL_SYSTEM_REQUEST + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
+
+		from("{{" + ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO + "}}")
+				.routeId(ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO)
+				.streamCaching()
+				.log("Route invoked!")
+				.process(this::processRetrieveInfoRequest)
+				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/info")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 
 	private void processInvokeRequest(@NonNull final Exchange exchange)
@@ -98,6 +111,24 @@ public class ExternalSystemRouteBuilder extends RouteBuilder
 		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE,invokeExternalSystemActionCamelRequest.getExternalSystemConfigType());
 		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE, invokeExternalSystemActionCamelRequest.getExternalSystemChildValue());
 		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemActionCamelRequest.getCommand());
+
+		exchange.getIn().setBody(null);
+	}
+
+	private void processRetrieveInfoRequest(@NonNull final Exchange exchange)
+	{
+		final Object request = exchange.getIn().getBody();
+		if (!(request instanceof RetrieveExternalSystemInfoCamelRequest))
+		{
+			throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO
+													+ " requires the body to be instanceof " + RetrieveExternalSystemInfoCamelRequest.class.getName()
+													+ " However, it is " + (request == null ? "null" : request.getClass().getName()));
+		}
+
+		final RetrieveExternalSystemInfoCamelRequest retrieveExternalSystemInfoCamelRequest = (RetrieveExternalSystemInfoCamelRequest)request;
+
+		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE,retrieveExternalSystemInfoCamelRequest.getExternalSystemConfigType());
+		exchange.getIn().setHeader(HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE, retrieveExternalSystemInfoCamelRequest.getExternalSystemChildValue());
 
 		exchange.getIn().setBody(null);
 	}

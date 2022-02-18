@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
+import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
   return (
@@ -11,8 +12,8 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
           <td>{handlingUnitInfo.displayName}</td>
         </tr>
         <tr>
-          <th>{trl('huManager.barcode')}</th>
-          <td>{handlingUnitInfo.barcode}</td>
+          <th>{trl('huManager.qrCode')}</th>
+          <td>{toQRCodeDisplayable(handlingUnitInfo.qrCode)}</td>
         </tr>
         <tr>
           <th>{trl('huManager.locator')}</th>

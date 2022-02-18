@@ -1,5 +1,11 @@
 const translations = {
   appName: 'metasfresh mobile',
+  error: {
+    PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    network: {
+      noResponse: 'Verbindung Fehler',
+    },
+  },
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
@@ -10,7 +16,6 @@ const translations = {
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
-    PleaseTryAgain: 'Oops, das sollte nicht passieren',
     cancelText: 'Abbrechen',
   },
   login: {
@@ -50,12 +55,12 @@ const translations = {
       picked: 'Ist',
       scanHU: 'Scan HU',
       scanLocator: 'Scan Ziel Lagerort',
-      invalidLocatorBarcode: 'Invalid locator barcode',
-      invalidQtyToMove: 'Invalid qty to move',
+      invalidLocatorQRCode: 'Lagerort QR ungültig',
+      invalidQtyToMove: 'Bewegungsmenge ungültig',
     },
     confirmButton: {
       default: {
-        caption: 'Confirm',
+        caption: 'Bestätigen',
         promptQuestion: 'Bist du sicher?',
         yes: 'Ja',
         no: 'Nein',
@@ -75,13 +80,13 @@ const translations = {
         qtyRejected: 'Menge verworfen',
       },
       receipts: {
-        qtyToReceiveTarget: 'Qty to Receive Target',
-        qtyReceived: 'Qty Received',
-        qtyToReceive: 'Qty to Receive',
-        btnReceiveTarget: 'Receive target',
-        btnReceiveProducts: 'Receive products',
-        existingLU: 'Existing HU',
-        newHU: 'New HU',
+        qtyToReceiveTarget: 'Sollmenge',
+        qtyReceived: 'Produziert',
+        qtyToReceive: 'noch offen',
+        btnReceiveTarget: 'Gebinde',
+        btnReceiveProducts: 'Produzieren',
+        existingLU: 'Scan',
+        newHU: 'Neues Gebinde',
         target: 'Empf. Soll',
         picked: 'Ist',
       },

@@ -22,6 +22,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
@@ -279,6 +280,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setC_UOM_ID(request.getUomId().getRepoId());
 		bomRecord.setPP_Product_BOMVersions_ID(bomVersionsId.getRepoId());
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
+		bomRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(request.getAttributeSetInstanceId()));
 
 		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
 		bomRecord.setC_DocType_ID(getBOMDocTypeId().getRepoId());
@@ -331,6 +333,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomLineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
 		bomLineRecord.setComponentType(line.getComponentType().getCode());
 		bomLineRecord.setValidFrom(TimeUtil.asTimestamp(createBOMLineRequest.getValidFrom()));
+		bomLineRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(line.getAttributeSetInstanceId()));
 
 		if (createBOMLineRequest.getIsActive() != null)
 		{
@@ -380,6 +383,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return getLatestBOMRecordByVersion(bomVersionsId, null)
 				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
 				.map(ProductBOMId::ofRepoId);
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(final @NonNull ProductBOMVersionsId bomVersionsId)
+	{
+		return getLatestBOMRecordByVersion(bomVersionsId, null);
 	}
 
 	@NonNull
