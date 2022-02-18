@@ -134,14 +134,8 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUIdToLocator(@NonNull final HuId huId, @NonNull final LocatorId toLocatorId)
+	public HUMovementGeneratorResult moveHUs(@NonNull final HUMovementGenerateRequest request)
 	{
-		final HUMovementGenerateRequest request = HUMovementGenerateRequest.builder()
-				.toLocatorId(toLocatorId)
-				.huIdToMove(huId)
-				.movementDate(SystemTime.asInstant())
-				.build();
-
 		return new HUMovementGenerator(request).createMovement();
 	}
 

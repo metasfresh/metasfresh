@@ -22,10 +22,10 @@
 
 package de.metas.handlingunits.movement.api;
 
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.util.ISingletonService;
@@ -59,7 +59,7 @@ public interface IHUMovementBL extends ISingletonService
 	 */
 	HUMovementGeneratorResult moveHUsToWarehouse(List<I_M_HU> hus, WarehouseId warehouseToId);
 
-	HUMovementGeneratorResult moveHUIdToLocator(@NonNull HuId huId, @NonNull LocatorId toLocatorId);
+	HUMovementGeneratorResult moveHUs(@NonNull HUMovementGenerateRequest request);
 
 	HUMovementGeneratorResult moveHUsToLocator(List<I_M_HU> hus, LocatorId locatorToId);
 

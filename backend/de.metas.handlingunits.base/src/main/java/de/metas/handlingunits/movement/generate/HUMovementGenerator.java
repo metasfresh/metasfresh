@@ -206,36 +206,15 @@ public class HUMovementGenerator
 			throw new HUException("@NoSelection@ (@M_HU_ID@)");
 		}
 
-		//
-		// Determine the locator from which we move the HUs
-		this.locatorFromId = request.getFromLocatorId();
-		for (final I_M_HU hu : husToMove)
-		{
-			final LocatorId huLocatorId = IHandlingUnitsBL.extractLocatorId(hu);
-			if(locatorFromId == null)
-			{
-				locatorFromId = huLocatorId;
-			}
-			else if(!LocatorId.equals(locatorFromId, huLocatorId))
-			{
-				throw new HUException("HU's locator does not match movement's locator from."
-						+ "\n Movement Locator From: " + locatorFromId
-						+ "\n HU's Locator: " + huLocatorId);
-			}
-		}
+		assertTopLevelHUs(husToMove);
 
-		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
+		this.locatorFromId = determineFromLocatorId(husToMove);
 
 		//
 		// Iterate the HUs to move and create the movement lines for them
+		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		for (final I_M_HU hu : husToMove)
 		{
-			// We assume our HU is top level
-			if (!handlingUnitsBL.isTopLevel(hu))
-			{
-				throw new HUException("@M_HU_ID@ @TopLevel@=@N@: " + hu);
-			}
-
 			//
 			// Iterate the product storages of this HU and create/update the movement lines
 			final IHUStorage huStorage = huStorageFactory.getStorage(hu);
@@ -258,6 +237,28 @@ public class HUMovementGenerator
 		{
 			documentBL.processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
+	}
+
+	private LocatorId determineFromLocatorId(final Collection<I_M_HU> husToMove)
+	{
+		LocatorId locatorFromId = request.getFromLocatorId();
+
+		for (final I_M_HU hu : husToMove)
+		{
+			final LocatorId huLocatorId = IHandlingUnitsBL.extractLocatorId(hu);
+			if (locatorFromId == null)
+			{
+				locatorFromId = huLocatorId;
+			}
+			else if (!LocatorId.equals(locatorFromId, huLocatorId))
+			{
+				throw new HUException("HU's locator does not match movement's locator from."
+						+ "\n Movement Locator From: " + locatorFromId
+						+ "\n HU's Locator: " + huLocatorId);
+			}
+		}
+
+		return locatorFromId;
 	}
 
 	private I_M_Movement getOrCreateMovementHeader()
@@ -409,6 +410,17 @@ public class HUMovementGenerator
 
 		// NOTE: we are not saving the movement line
 		return movementLine;
+	}
+
+	private void assertTopLevelHUs(final Collection<I_M_HU> hus)
+	{
+		for (final I_M_HU hu : hus)
+		{
+			if (!handlingUnitsBL.isTopLevel(hu))
+			{
+				throw new HUException("@M_HU_ID@ @TopLevel@=@N@: " + hu);
+			}
+		}
 	}
 }
 

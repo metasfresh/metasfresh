@@ -31,6 +31,7 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
@@ -41,6 +42,7 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -319,7 +321,11 @@ public class HandlingUnitsService
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 			final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
-			huMovementBL.moveHUIdToLocator(huId, locatorQRCode.getLocatorId());
+			huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
+					.toLocatorId(locatorQRCode.getLocatorId())
+					.huIdToMove(huId)
+					.movementDate(SystemTime.asInstant())
+					.build());
 		}
 		else
 		{
