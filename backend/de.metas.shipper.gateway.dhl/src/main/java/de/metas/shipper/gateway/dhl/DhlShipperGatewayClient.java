@@ -102,7 +102,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	private final DhlClientConfig config;
 
 	private final WebServiceTemplate webServiceTemplate;
-	private final SoapHeaderWithAuth soapHeaderWithAuth;
 
 	private final de.dhl.webservice.cisbase.ObjectFactory objectFactoryCis;
 	private final de.dhl.webservices.businesscustomershipping._3.ObjectFactory objectFactory;
@@ -117,7 +116,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		objectFactory = new de.dhl.webservices.businesscustomershipping._3.ObjectFactory();
 
 		webServiceTemplate = createWebServiceTemplate();
-		soapHeaderWithAuth = new SoapHeaderWithAuth(objectFactoryCis, config);
 
 		// we're using DHL SOAP API V3
 		API_VERSION = objectFactory.createVersion();
@@ -147,7 +145,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId());
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId(), SupportedSoapAction.CREATE_SHIPMENT_ORDER);
 		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
 		{
 			final String exceptionMessage = response.getCreationState()
@@ -196,17 +194,17 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private static PackageLabels createPackageLabel(@NonNull final byte[] labelData, @NonNull final String awb, final String deliveryOrderIdAsString)
+	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, final String deliveryOrderIdAsString)
 	{
 		return PackageLabels.builder()
 				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
 				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
-							   .type(DhlPackageLabelType.GUI)
-							   .labelData(labelData)
-							   .contentType(PackageLabel.CONTENTTYPE_PDF)
-							   .fileName(awb)
-							   .build())
+						.type(DhlPackageLabelType.GUI)
+						.labelData(labelData)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.fileName(awb)
+						.build())
 				.build();
 	}
 
@@ -245,7 +243,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoIdForLogging)
+	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoIdForLogging, @NonNull final SupportedSoapAction soapAction)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
@@ -255,20 +253,20 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.config(config);
 		try
 		{
-			final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
+			final Object response = webServiceTemplate.marshalSendAndReceive(request, new SoapHeaderWithAuth(objectFactoryCis, config, soapAction));
 			databaseLogger.log(logEventBuilder
-									   .responseElement(response)
-									   .durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-									   .build());
+					.responseElement(response)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 			return response;
 		}
 		catch (final Throwable throwable)
 		{
 			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
 			databaseLogger.log(logEventBuilder
-									   .responseException(exception)
-									   .durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-									   .build());
+					.responseException(exception)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 
 			throw exception;
 		}
@@ -464,11 +462,13 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		private final ObjectFactory objectFactoryCis;
 		private final DhlClientConfig config;
+		private final SupportedSoapAction soapAction;
 
-		private SoapHeaderWithAuth(final ObjectFactory objectFactoryCis, final DhlClientConfig config)
+		private SoapHeaderWithAuth(final ObjectFactory objectFactoryCis, final DhlClientConfig config, final SupportedSoapAction soapAction)
 		{
 			this.objectFactoryCis = objectFactoryCis;
 			this.config = config;
+			this.soapAction = soapAction;
 		}
 
 		// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
@@ -488,14 +488,34 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				final SoapMessage soapMessage = (SoapMessage)message;
 				final SoapHeader header = soapMessage.getSoapHeader();
 
+				soapMessage.setSoapAction(soapAction.getValue());
+
 				final JAXBContext context = JAXBContext.newInstance(AuthentificationType.class);
 				final Marshaller marshaller = context.createMarshaller();
 				marshaller.marshal(authentification, header.getResult());
+
 			}
 			catch (final JAXBException e)
 			{
 				throw new AdempiereException("Error while setting soap header");
 			}
+		}
+	}
+
+	public enum SupportedSoapAction
+	{
+		CREATE_SHIPMENT_ORDER("urn:createShipmentOrder");
+
+		private final String value;
+
+		SupportedSoapAction(final String value)
+		{
+			this.value = value;
+		}
+
+		public String getValue()
+		{
+			return value;
 		}
 	}
 
