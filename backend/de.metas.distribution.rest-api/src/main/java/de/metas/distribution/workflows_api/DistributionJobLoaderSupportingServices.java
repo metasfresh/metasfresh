@@ -13,10 +13,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.warehouse.LocatorBarcode;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -73,7 +73,7 @@ public class DistributionJobLoaderSupportingServices
 		final LocatorId locatorId = LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID());
 		return LocatorInfo.builder()
 				.locatorId(locatorId)
-				.barcode(LocatorBarcode.ofLocatorId(locatorId))
+				.qrCode(LocatorQRCode.ofLocator(locator))
 				.caption(locator.getValue())
 				.build();
 	}

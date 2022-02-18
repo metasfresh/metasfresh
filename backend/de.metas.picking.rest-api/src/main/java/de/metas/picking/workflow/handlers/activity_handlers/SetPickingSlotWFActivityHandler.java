@@ -23,8 +23,8 @@
 package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
@@ -74,7 +74,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
 	{
 		return JsonQRCode.builder()
-				.qrCode(PickingSlotBarcode.ofPickingSlotId(pickingSlotIdAndCaption.getPickingSlotId()).getAsString())
+				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
 				.caption(pickingSlotIdAndCaption.getCaption())
 				.build();
 	}
@@ -94,8 +94,8 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	@Override
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final PickingSlotBarcode pickingSlotBarcode = PickingSlotBarcode.ofBarcodeString(request.getScannedBarcode());
+		final PickingSlotQRCode pickingSlotQRCode = PickingSlotQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode());
 		final WFProcess wfProcess = request.getWfProcess();
-		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode));
 	}
 }

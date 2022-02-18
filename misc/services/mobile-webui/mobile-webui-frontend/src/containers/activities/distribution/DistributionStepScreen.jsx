@@ -12,6 +12,7 @@ import {
 } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
@@ -47,7 +48,7 @@ const DistributionStepScreen = () => {
           },
           {
             caption: trl('activities.distribution.scanHU'),
-            value: pickFromHU.barcode,
+            value: toQRCodeDisplayable(pickFromHU.qrCode),
           },
           {
             caption: trl('general.QtyToMove'),
@@ -94,7 +95,7 @@ const DistributionStepScreen = () => {
         values: [
           {
             caption: trl('general.DropToLocator'),
-            value: dropToLocator.caption + ' (' + dropToLocator.barcode + ')',
+            value: dropToLocator.caption + ' (' + dropToLocator.qrCode + ')',
           },
           {
             caption: trl('general.QtyToMove'),
@@ -105,7 +106,9 @@ const DistributionStepScreen = () => {
     );
   };
 
-  const pickFromHUCaption = isPickedFrom ? pickFromHU.caption : trl('activities.distribution.scanHU');
+  const pickFromHUCaption = isPickedFrom
+    ? toQRCodeDisplayable(pickFromHU.qrCode)
+    : trl('activities.distribution.scanHU');
   const pickFromHUStatus = isPickedFrom ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 
   const dropToLocatorCaption = isDroppedToLocator ? dropToLocator.caption : trl('activities.distribution.scanLocator');

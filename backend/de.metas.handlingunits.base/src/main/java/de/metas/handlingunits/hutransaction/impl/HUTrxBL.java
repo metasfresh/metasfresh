@@ -22,23 +22,7 @@
 
 package de.metas.handlingunits.hutransaction.impl;
 
-import java.util.ArrayList;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -67,8 +51,21 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HUTrxBL implements IHUTrxBL
 {
@@ -113,12 +110,6 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public IHUTrxListener getHUTrxListeners()
-	{
-		return _trxListeners;
-	}
-
-	@Override
 	public List<IHUTrxListener> getHUTrxListenersList()
 	{
 		return _trxListeners.asList();
@@ -141,8 +132,7 @@ public class HUTrxBL implements IHUTrxBL
 
 	private IHUTransactionProcessor createHUTransactionProcessor(final IHUContext huContext)
 	{
-		final HUTransactionProcessor trxProcessor = new HUTransactionProcessor(huContext);
-		return trxProcessor;
+		return new HUTransactionProcessor(huContext);
 	}
 
 	@Override
@@ -158,7 +148,7 @@ public class HUTrxBL implements IHUTrxBL
 		return line.getDateTrx();
 	}
 
-	private final TrxLineTableRecordCacheLocal getTrxLineTableRecordCacheLocal(final I_M_HU_Trx_Line trxLine)
+	private TrxLineTableRecordCacheLocal getTrxLineTableRecordCacheLocal(final I_M_HU_Trx_Line trxLine)
 	{
 		Check.assumeNotNull(trxLine, "trxLine not null");
 		TrxLineTableRecordCacheLocal recordRef = InterfaceWrapperHelper.getDynAttribute(trxLine, HUTrxBL.DYNATTR_TableRecord);
@@ -199,7 +189,8 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext,
+	public void setParentHU(
+			@NonNull final IHUContext huContext,
 			@Nullable final I_M_HU_Item parentHUItem,
 			@NonNull final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
@@ -228,9 +219,9 @@ public class HUTrxBL implements IHUTrxBL
 	 * Actual processing for HU (set parent & rollup incremental)
 	 */
 	private void setParentHU0(final IHUContext huContext,
-			@Nullable final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
+							  @Nullable final I_M_HU_Item parentHUItem,
+							  @NonNull final I_M_HU hu,
+							  final boolean destroyOldParentIfEmptyStorage)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -251,6 +242,12 @@ public class HUTrxBL implements IHUTrxBL
 			//
 			// Nothing was changed: same references
 			return;
+		}
+
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
+					.setParameter("hu", hu);
 		}
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -329,6 +326,12 @@ public class HUTrxBL implements IHUTrxBL
 	@Override
 	public void extractHUFromParentIfNeeded(final I_M_HU hu)
 	{
+		extractHUFromParentIfNeeded(null, hu);
+	}
+
+	@Override
+	public void extractHUFromParentIfNeeded(@Nullable final IHUContext huContext, @NonNull final I_M_HU hu)
+	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		if (handlingUnitsBL.isTopLevel(hu))
 		{
@@ -337,24 +340,25 @@ public class HUTrxBL implements IHUTrxBL
 
 		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+		final IHUContext huContextEffective = huContext != null
+				? huContext
+				: handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
 		final I_M_HU_Item parentHUItem = null; // no parent
-		setParentHU(huContext, parentHUItem, hu);
+		setParentHU(huContextEffective, parentHUItem, hu);
 	}
 
 	@Override
 	public IHUContextProcessorExecutor createHUContextProcessorExecutor(final IHUContext huContext)
 	{
-		final HUContextProcessorExecutor executor = new HUContextProcessorExecutor(huContext);
-		return executor;
+		return new HUContextProcessorExecutor(huContext);
 	}
 
 	@Override
 	public IHUContextProcessorExecutor createHUContextProcessorExecutor(final IContextAware context)
 	{
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
-		final HUContextProcessorExecutor executor = new HUContextProcessorExecutor(huContext);
-		return executor;
+		return new HUContextProcessorExecutor(huContext);
 	}
 
 	@Override

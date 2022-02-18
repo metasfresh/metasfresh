@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 @Value
 @Builder
@@ -34,9 +34,7 @@ public class GlobalQRCode
 		}
 		catch (JsonProcessingException ex)
 		{
-			throw new AdempiereException("Failed converting payload to json", ex)
-					.appendParametersToMessage()
-					.setParameter("payload", payload);
+			throw Check.mkEx("Failed converting payload to json: " + payload, ex);
 		}
 
 		return builder()
@@ -58,7 +56,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw new AdempiereException("Invalid global QR code(1): " + string);
+				throw Check.mkEx("Invalid global QR code(1): " + string);
 			}
 			type = GlobalQRCodeType.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -71,7 +69,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw new AdempiereException("Invalid global QR code(2): " + string);
+				throw Check.mkEx("Invalid global QR code(2): " + string);
 			}
 			version = GlobalQRCodeVersion.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -97,9 +95,7 @@ public class GlobalQRCode
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AdempiereException("Failed converting payload to " + type, e)
-					.appendParametersToMessage()
-					.setParameter("payloadAsJson", payloadAsJson);
+			throw Check.mkEx("Failed converting payload to `" + type + "`: " + payloadAsJson, e);
 		}
 	}
 

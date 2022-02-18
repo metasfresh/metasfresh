@@ -27,7 +27,32 @@
   "locations": [
     {
       "metasfreshId": 2205175,
-      "name": "Location name",
+      "name": "Location name1",
+      "bpartnerName": null,
+      "active": true,
+      "address1": "address1",
+      "address2": "address2",
+      "address3": "address3",
+      "address4": "address4",
+      "postal": "postal",
+      "city": "city",
+      "gln": "gln",
+      "countryCode": "DE",
+      "shipTo": true,
+      "shipToDefault": true,
+      "billTo": true,
+      "billToDefault": true,
+      "visitorsAddress": false,
+      "changeInfo": {
+        "createdMillis": 1436877663000,
+        "createdBy": 100,
+        "lastUpdatedMillis": 1438079387000,
+        "lastUpdatedBy": 100
+      }
+    },
+    {
+      "metasfreshId": 2205176,
+      "name": "Location name2",
       "bpartnerName": null,
       "active": true,
       "address1": "address1",

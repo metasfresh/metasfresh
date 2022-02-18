@@ -32,15 +32,15 @@ BEGIN
             SELECT value, name FROM m_product WHERE m_product_id = bom.m_product_id INTO result.ProductValue, result.ProductName;
             SELECT name FROM c_uom WHERE c_uom_id = bom.c_uom_id INTO result.UOM;
             result.ValidFrom := bom.validFrom;
-            bomProductPrice := de_metas_endcustomer_fresh_reports.get_BOM_Product_Price(p_pp_product_bom_id, p_priceListId, p_onDate);
-            bomProductCost := de_metas_endcustomer_fresh_reports.get_BOM_Product_Cost(p_pp_product_bom_id, p_priceListId, p_onDate);
+            bomProductPrice := de_metas_endcustomer_fresh_reports.get_BOM_Product_Price(bom.pp_product_bom_id, p_priceListId, p_onDate);
+            bomProductCost := de_metas_endcustomer_fresh_reports.get_BOM_Product_Cost(bom.pp_product_bom_id, p_priceListId, p_onDate);
             IF bomProductPrice > 0 THEN
                 result.ProductPriceDifference := ROUND((bomProductPrice - bomProductCost) * 100 / bomProductCost, DIGITS_TO_ROUND) || '%';
             ELSE
                 result.ProductPriceDifference := '0%';
             END IF;
             result.ProductsListPriceDifferences := '';
-            FOR bomLine IN SELECT * FROM PP_PRODUCT_BOMLINE WHERE pp_product_bom_id = p_pp_product_bom_id AND isactive = 'Y' AND componenttype = 'CO'
+            FOR bomLine IN SELECT * FROM PP_PRODUCT_BOMLINE WHERE pp_product_bom_id = bom.pp_product_bom_id AND isactive = 'Y' AND componenttype = 'CO'
                 LOOP
                     bomLineProduct := (SELECT name FROM m_product WHERE m_product_id = bomLine.m_product_id);
                     bomProductPriceDifferencePct := de_metas_endcustomer_fresh_reports.get_Product_Price_Difference_Pct(bomLine.m_product_id, p_priceListId, p_onDate);

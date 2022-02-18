@@ -99,19 +99,9 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000060, SeqNo=0, Updated=now(), UpdatedBy=10
 UPDATE AD_TreeNodeMM SET Parent_ID=1000063, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541907 AND AD_Tree_ID=10
 ;
 
--- 2022-02-16T19:53:08.480Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET SQLStatement='select * from de_metas_endcustomer_fresh_reports.get_BOM_Product_Differences(@PP_Product_BOM_ID@, @M_PriceList_ID@, ''@Date@''::date )',Updated=TO_TIMESTAMP('2022-02-16 21:53:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584994
-;
-
 -- 2022-02-16T19:54:23.446Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-02-16 21:54:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542208
-;
-
--- 2022-02-16T19:56:03.186Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET SQLStatement='select * from de_metas_endcustomer_fresh_reports.get_BOM_Product_Differences(@PP_Product_BOM_ID/NULL@, @M_PriceList_ID@, ''@Date@''::date )',Updated=TO_TIMESTAMP('2022-02-16 21:56:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584994
 ;
 
 -- 2022-02-16T20:01:50.254Z

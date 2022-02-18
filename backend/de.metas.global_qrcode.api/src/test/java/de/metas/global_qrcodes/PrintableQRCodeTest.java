@@ -1,6 +1,8 @@
 package de.metas.global_qrcodes;
 
-import org.adempiere.test.AdempiereTestHelper;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +12,17 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 class PrintableQRCodeTest
 {
 	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG);}
+	static void beforeAll()
+	{
+		start(new SnapshotConfig()
+		{
+			@Override
+			public String getFilePath() {return "src/test/resources/";}
+
+			@Override
+			public SnapshotMatchingStrategy getSnapshotMatchingStrategy() {return JSONAssertMatchingStrategy.INSTANCE_STRICT;}
+		});
+	}
 
 	private PrintableQRCode newStandardPrintableQRCode()
 	{

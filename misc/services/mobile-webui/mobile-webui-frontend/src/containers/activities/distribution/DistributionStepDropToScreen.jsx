@@ -10,6 +10,7 @@ import { getStepById } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
 
 const DistributionStepDropToScreen = () => {
   const {
@@ -17,7 +18,7 @@ const DistributionStepDropToScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { caption, qtyToMove, locatorBarcode } = useSelector((state) =>
+  const { caption, qtyToMove, locatorQRCode } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
@@ -30,7 +31,7 @@ const DistributionStepDropToScreen = () => {
         values: [
           {
             caption: trl('general.DropToLocator'),
-            value: `${caption}( ${locatorBarcode} )`,
+            value: `${caption} (${toQRCodeDisplayable(locatorQRCode)})`,
           },
           {
             caption: trl('general.QtyToMove'),
@@ -67,8 +68,8 @@ const DistributionStepDropToScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      eligibleBarcode={locatorBarcode}
-      invalidBarcodeMessageKey={'activities.distribution.invalidLocatorBarcode'}
+      eligibleBarcode={toQRCodeString(locatorQRCode)}
+      invalidBarcodeMessageKey={'activities.distribution.invalidLocatorQRCode'}
       onResult={onResult}
     />
   );
@@ -80,7 +81,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   return {
     caption: step.dropToLocator.caption,
     qtyToMove: step.qtyToMove,
-    locatorBarcode: step.pickFromHU.barcode,
+    locatorQRCode: step.pickFromHU.qrCode,
   };
 };
 

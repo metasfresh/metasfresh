@@ -14,6 +14,7 @@ import { updateDistributionPickFrom } from '../../../actions/DistributionActions
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
 
 const DistributionStepPickFromScreen = () => {
   const {
@@ -21,7 +22,7 @@ const DistributionStepPickFromScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huBarcode, qtyToMove, uom, qtyRejectedReasons } = useSelector((state) =>
+  const { huQRCode, qtyToMove, uom, qtyRejectedReasons } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
@@ -35,7 +36,7 @@ const DistributionStepPickFromScreen = () => {
           {
             // eslint-disable-next-line no-undef
             caption: trl('activities.distribution.scanHU'),
-            value: huBarcode,
+            value: toQRCodeDisplayable(huQRCode),
           },
           {
             caption: trl('general.QtyToMove'),
@@ -75,7 +76,7 @@ const DistributionStepPickFromScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      eligibleBarcode={huBarcode}
+      eligibleBarcode={toQRCodeString(huQRCode)}
       qtyCaption={trl('general.QtyToMove')}
       qtyInitial={qtyToMove}
       qtyTarget={qtyToMove}
@@ -92,7 +93,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   const step = getStepByIdFromActivity(activity, lineId, stepId);
 
   return {
-    huBarcode: step.pickFromHU.barcode,
+    huQRCode: step.pickFromHU.qrCode,
     qtyToMove: step.qtyToMove,
     uom: step.uom,
     qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),

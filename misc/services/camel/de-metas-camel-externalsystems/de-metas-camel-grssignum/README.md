@@ -13,6 +13,7 @@
   * `FLAG`= `200` translates to `PushRawMaterials` route;
   * `FLAG`= `300` translates to `PushBOMs` route;
   * `FLAG`= `999` translates to `UpdateHU` route;
+  * `FLAG`= `998` translates to `ClearHU` route;
 
 **GRSSignum JsonVendor => metasfresh C_Bpartner**
 ---
@@ -154,6 +155,21 @@ GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ATTRIBUTES.key | `M_Attribute.Name` | Y | JsonHUAttributes.key  | name for a specific M_Attribute from metasfresh | 
 ATTRIBUTES.value | `M_HU_Attribute.Value` | Y | JsonHUAttributes.value  | attribute value mapped based on M_Attribute_ID identified from ATTRIBUTES.key and M_HU_ID | 
 
+**GRSSignum => metasfresh HU Clear**
+---
+
+* `JsonHUClear` - payload sent to camel http endpoint
+  * see: `de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUClear`
+  * metasfresh-json => `JsonSetClearanceStatusRequest`
+
+1. `JsonHUClear` - the columns refers to `M_HU`
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- | 
+METASFRESHID | `M_HU_ID` | Y | ---- | ---- | 
+CLEARANCE_NOTE | `ClearanceNote` | N | clearanceNote  |  | 
+CLEARANCE_STATUS | `ClearanceStatus` | N | clearanceStatus  |  | 
+
 **2. metasfresh to GRSSignum**
 ---
 
@@ -281,6 +297,8 @@ GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | `M_Warehouse.Value` | N | warehouseValue | retrieve warehouse value based on M_HU.M_Locator.M_Warehouse_ID |
 ---- | `M_Locator.Value` | N | locatorValue | retrieve locator value based on M_HU.M_Locator |
 ---- | `M_HU.M_HU_PI_Item_Product.M_Product` | Y | products | explained below as `JsonHUProduct` |
+---- | `M_HU.ClearanceStatus` | N | huClearanceStatus | ---- |
+---- | `M_HU.ClearanceNote` | N | clearanceNote | ---- |
 ---- | `M_HU.M_HU_Attribute` | Y | attributes | explained below as `JsonHUAttributes` |
 ---- | `List<JsonHU>` | Y | includedHUs | a list of all the included HUs if any |
 
@@ -303,3 +321,9 @@ GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | `M_Attribute.Name` | Y | key  | name for a specific M_Attribute from metasfresh | 
 ---- | `M_HU_Attribute.Value` | Y | value  | attribute value mapped based on M_Attribute_ID identified from ATTRIBUTES.key.M_Attribute_ID and M_HU_ID | 
 
+* `JsonClearanceStatusInfo`
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- | 
+---- | `M_HU.ClearanceStatus` | N | key  |  | 
+---- | --- | N | caption  | Translated name of the clearance status  |

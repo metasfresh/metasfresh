@@ -3,10 +3,10 @@ package de.metas.global_qrcodes;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -20,7 +20,7 @@ public final class GlobalQRCodeType
 		final String codeNorm = StringUtils.trimBlankToNull(code);
 		if (codeNorm == null)
 		{
-			throw new AdempiereException("Invalid global QR code type: `" + code + "`");
+			throw Check.mkEx("Invalid global QR code type: `" + code + "`");
 		}
 
 		return interner.intern(new GlobalQRCodeType(codeNorm));

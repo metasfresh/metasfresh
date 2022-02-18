@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de-metas-common-manufacturing
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,9 @@
  * #L%
  */
 
-package de.metas.picking.api;
+package de.metas.common.handlingunits;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-class PickingSlotBarcodeTest
+public enum JsonClearanceStatus
 {
-	@Test
-	void testToStringFromString()
-	{
-		final PickingSlotBarcode barcode = PickingSlotBarcode.ofPickingSlotId(PickingSlotId.ofRepoId(123));
-		final PickingSlotBarcode barcode2 = PickingSlotBarcode.ofBarcodeString(barcode.getAsString());
-		Assertions.assertThat(barcode2).isEqualTo(barcode);
-	}
-
+	Cleared, Locked, Quarantined;
 }
