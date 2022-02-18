@@ -1,4 +1,4 @@
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.attachment;
 
 /*
  * #%L
@@ -22,23 +22,28 @@ package de.metas.report.jasper.class_loader;
  * #L%
  */
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ISysConfigBL;
-import org.slf4j.Logger;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 import de.metas.report.PrintFormatId;
+import de.metas.report.jasper.class_loader.JasperClassLoader;
+import de.metas.report.jasper.class_loader.images.ImageUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PrintFormat;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
 
 /**
  * Logo hook: called by {@link JasperClassLoader} in order to intercept logo picture resources and provide the actual logo for current organization.
@@ -46,15 +51,11 @@ import lombok.NonNull;
  * @author cg
  *
  */
-final class AttachmentImageFileClassLoaderHook
+public final class AttachmentImageFileClassLoaderHook
 {
-	public static AttachmentImageFileClassLoaderHook newInstance()
-	{
-		return new AttachmentImageFileClassLoaderHook();
-	}
-
 	// services
 	private static final transient Logger logger = LogManager.getLogger(AttachmentImageFileClassLoaderHook.class);
+	private final AttachmentEntryService attachmentEntryService;
 
 	//
 	// Attachment image resource matchers
@@ -62,18 +63,17 @@ final class AttachmentImageFileClassLoaderHook
 	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/watermark.png";
 	private final ImmutableSet<String> resourceNameEndsWithMatchers;
 
-	private final AttachmentImageFileLoader attachmentImageFileLoader;
-
-	private AttachmentImageFileClassLoaderHook()
+	public AttachmentImageFileClassLoaderHook(@NonNull final AttachmentEntryService attachmentEntryService)
 	{
+		this.attachmentEntryService = attachmentEntryService;
+
 		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers();
-		this.attachmentImageFileLoader = AttachmentImageFileLoader.newInstance();
 	}
 
 	private static ImmutableSet<String> buildResourceNameEndsWithMatchers()
 	{
 		final String resourceNameEndsWithStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ResourceNameEndsWith, DEFAULT_ResourceNameEndsWith);
-		if (Check.isEmpty(resourceNameEndsWithStr, true))
+		if (resourceNameEndsWithStr == null || Check.isBlank(resourceNameEndsWithStr))
 		{
 			return ImmutableSet.of();
 		}
@@ -122,9 +122,36 @@ final class AttachmentImageFileClassLoaderHook
 
 	private File geImageFile(@NonNull final PrintFormatId printFormatId)
 	{
-		return attachmentImageFileLoader
-				.loadImageForPrintFormat(printFormatId)
-				.orElse(null);
+		final AttachmentEntryId attachmentEntryId = getFirstAttachmentEntryIdByPrintFormatId(printFormatId);
+		if(attachmentEntryId == null)
+		{
+			logger.warn("Cannot find image for {}, please add a file to the Print format. Returning empty PNG file", this);
+			return ImageUtils.getEmptyPNGFile();
+		}
+		else
+		{
+			final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
+			return ImageUtils.createTempPNGFile("attachmentEntry", data);
+		}
+	}
+
+	/**
+	 * get one attachment entry; does not matter if are several
+	 */
+	@Nullable
+	private AttachmentEntryId getFirstAttachmentEntryIdByPrintFormatId(@NonNull final PrintFormatId printFormatId)
+	{
+		final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormat.Table_Name, printFormatId));
+
+		if (!entries.isEmpty())
+		{
+			final AttachmentEntry entry = entries.get(0);
+			return entry.getId();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**

@@ -25,4 +25,9 @@ public class HUQRCodeGenerateForExistingHUsRequest
 	{
 		return builder().huIds(huIds).build();
 	}
+
+	public static HUQRCodeGenerateForExistingHUsRequest ofHuId(@NonNull final HuId huId)
+	{
+		return builder().huIds(ImmutableSet.of(huId)).build();
+	}
 }

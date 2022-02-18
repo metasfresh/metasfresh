@@ -22,17 +22,21 @@ package de.metas.report.jasper.class_loader;
  * #L%
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.report.PrintFormatId;
+import de.metas.report.jasper.class_loader.images.ad_image.AdImageClassLoaderHook;
+import de.metas.report.jasper.class_loader.images.attachment.AttachmentImageFileClassLoaderHook;
+import de.metas.report.jasper.class_loader.images.org.OrgImageClassLoaderHook;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
@@ -41,17 +45,15 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.report.PrintFormatId;
-import de.metas.util.Check;
-import de.metas.util.FileUtil;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Jasper class loader: basically it will resolve {@link #PLACEHOLDER} from resource names and will fetch the resources from remote HTTP servers.
@@ -70,17 +72,24 @@ public final class JasperClassLoader extends ClassLoader
 	private boolean alwaysPrependPrefix = false;
 
 	// Hooks
-	private final OrgImageClassLoaderHook imagesHook;
-	private final AttachmentImageFileClassLoaderHook imgAttachmentHook;
+	private final OrgImageClassLoaderHook orgImages;
+	private final AttachmentImageFileClassLoaderHook attachmentImages;
+	private final AdImageClassLoaderHook adImages;
 
-	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent, @Nullable final PrintFormatId printFormatId)
+	@Builder
+	private JasperClassLoader(
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final OrgId adOrgId,
+			@NonNull final ClassLoader parent,
+			@Nullable final PrintFormatId printFormatId)
 	{
 		super(parent);
 
 		this.adOrgId = adOrgId;
 		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
-		this.imagesHook = OrgImageClassLoaderHook.newInstance();
-		this.imgAttachmentHook = AttachmentImageFileClassLoaderHook.newInstance();
+		this.orgImages = OrgImageClassLoaderHook.newInstance();
+		this.attachmentImages = new AttachmentImageFileClassLoaderHook(attachmentEntryService);
+		this.adImages = new AdImageClassLoaderHook();
 		this.printFormatId = printFormatId;
 	}
 
@@ -106,7 +115,7 @@ public final class JasperClassLoader extends ClassLoader
 	protected URL findResource(final String name)
 	{
 		// guard against null
-		if (Check.isEmpty(name, true))
+		if (name == null || Check.isBlank(name))
 		{
 			return null;
 		}
@@ -140,19 +149,31 @@ public final class JasperClassLoader extends ClassLoader
 	@Override
 	public URL getResource(final String name)
 	{
-		final URL url = imagesHook.getResourceURLOrNull(adOrgId, name);
-		if (url != null)
+		if (name == null)
 		{
-			return url;
+			return null;
+		}
+
+		final URL orgImageURL = orgImages.getResourceURLOrNull(adOrgId, name);
+		if (orgImageURL != null)
+		{
+			return orgImageURL;
 		}
 
 		
-		final URL imageURL = imgAttachmentHook.getResourceURLOrNull(printFormatId, name);
-		if (imageURL != null)
+		final URL attachmentImageURL = attachmentImages.getResourceURLOrNull(printFormatId, name);
+		if (attachmentImageURL != null)
 		{
-			return imageURL;
+			return attachmentImageURL;
 		}
-		
+
+
+		final URL adImageURL = adImages.getResourceURLOrNull(name);
+		if(adImageURL != null)
+		{
+			return adImageURL;
+		}
+
 		
 		final URL resource = super.getResource(name);
 		if (isJarInJarURL(resource))

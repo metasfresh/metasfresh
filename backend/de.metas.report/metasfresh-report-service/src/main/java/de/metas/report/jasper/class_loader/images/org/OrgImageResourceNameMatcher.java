@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.org;
 
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
