@@ -119,9 +119,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 </ul>
 <p>
 <h3>Kubernetes</h3>
-<ul>
-  <li>nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}</li>
-</ul>
+this build's helm <a href="${mvnConf.deployRepoURL}/de/metas/${helmValuesGroupId}/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
 <p>
 <h3>Additional notes</h3>
 <ul>
