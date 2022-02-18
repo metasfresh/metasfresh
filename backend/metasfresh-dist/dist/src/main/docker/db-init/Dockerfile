@@ -1,4 +1,4 @@
-FROM postgres:14.2
+FROM postgres:14.2-alpine
 #FROM postgres:10.5
 #FROM postgres:9.5
 
