@@ -23,7 +23,7 @@ WHERE ad_sequence_id = 545394
 
 -- dev-note: mark all existing bom versions as completed
 UPDATE pp_product_bom
-SET docstatus='CO', docaction ='RE', updatedBy=99, updated=TO_TIMESTAMP('2021-02-16 15:53:44', 'YYYY-MM-DD HH24:MI:SS')
+SET docstatus='CO', docaction ='RE', processed = 'Y', updatedBy=99, updated=TO_TIMESTAMP('2021-02-16 15:53:44', 'YYYY-MM-DD HH24:MI:SS')
 WHERE docstatus = 'DR'
 ;
 
