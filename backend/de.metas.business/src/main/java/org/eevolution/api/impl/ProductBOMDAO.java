@@ -340,7 +340,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 			bomLineRecord.setIsActive(createBOMLineRequest.getIsActive());
 		}
 
-		if (line.getIsQtyPercentage() != null)
+		if (line.getIsQtyPercentage() != null && Boolean.TRUE.equals(line.getIsQtyPercentage()))
 		{
 			bomLineRecord.setIsQtyPercentage(line.getIsQtyPercentage());
 			bomLineRecord.setQtyBatch(line.getQty().toBigDecimal());
