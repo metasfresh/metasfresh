@@ -93,7 +93,7 @@ Map build(
                 
                 // postgres DB init container
                 final DockerConf dbInitDockerConf = reportDockerConf
-                        .withArtifactName('metasfresh-db-init-pg-14-3')
+                        .withArtifactName('metasfresh-db-init-pg-14-2')
                         .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
                 publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 

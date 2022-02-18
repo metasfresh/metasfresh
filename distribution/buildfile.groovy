@@ -61,7 +61,7 @@ Map build(final MvnConf mvnConf) {
                 valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
                 valuesData.app.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-app:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
                 valuesData.webapi.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
-                valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-3:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
+                valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
                 valuesData.db.urlMigrationScript = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 
                 writeYaml file: valuesFileDes, data: valuesData
