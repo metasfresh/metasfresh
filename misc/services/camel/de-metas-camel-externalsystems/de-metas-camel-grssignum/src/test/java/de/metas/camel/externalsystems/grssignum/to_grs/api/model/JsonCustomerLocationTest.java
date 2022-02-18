@@ -52,7 +52,8 @@ public class JsonCustomerLocationTest
 				+ "    				\"GLN\": \"test gln\",\n"
 				+ "    				\"INAKTIV\": 0,\n"
 				+ "    				\"LIEFERADRESSE\": true,\n"
-				+ "    				\"RECHNUNGSADDRESSE\": true\n"
+				+ "    				\"RECHNUNGSADDRESSE\": true,\n"
+				+ "    				\"HAUPTADDRESSE\": 1\n"
 				+ "}";
 
 		//when
@@ -97,6 +98,7 @@ public class JsonCustomerLocationTest
 				.inactive(0)
 				.shipTo(true)
 				.billTo(true)
+				.mainAddress(1)
 				.build();
 	}
 }
