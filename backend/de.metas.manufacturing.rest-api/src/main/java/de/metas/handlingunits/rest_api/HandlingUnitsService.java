@@ -42,6 +42,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
+import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
@@ -307,5 +309,10 @@ public class HandlingUnitsService
 				.key(clearanceStatus.getCode())
 				.caption(caption)
 				.build();
+	}
+
+	public void move(@NonNull final MoveHURequest request)
+	{
+		new MoveHUCommand(request).execute();
 	}
 }

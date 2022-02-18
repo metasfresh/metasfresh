@@ -41,6 +41,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
@@ -73,7 +74,7 @@ import java.util.function.Supplier;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 
-@RequestMapping(value = {HandlingUnitsRestController.HU_REST_CONTROLLER_PATH})
+@RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
@@ -237,12 +238,12 @@ public class HandlingUnitsRestController
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
-								 .stream()
-								 .map(item -> JsonDisposalReason.builder()
-										 .key(item.getValue())
-										 .caption(item.getName().translate(adLanguage))
-										 .build())
-								 .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(item -> JsonDisposalReason.builder()
+								.key(item.getValue())
+								.caption(item.getName().translate(adLanguage))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -292,5 +293,18 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("M_HU_ID") final int huId)
 	{
 		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
+	}
+
+	@PostMapping("/move")
+	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
+			@RequestBody @NonNull final JsonMoveHURequest request)
+	{
+		handlingUnitsService.move(MoveHURequest.builder()
+				.huId(request.getHuId())
+				.huQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
+
+		return getByIdSupplier(request::getHuId);
 	}
 }

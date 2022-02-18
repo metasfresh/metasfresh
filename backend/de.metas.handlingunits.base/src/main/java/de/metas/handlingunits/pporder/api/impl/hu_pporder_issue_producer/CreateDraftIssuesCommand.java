@@ -223,11 +223,7 @@ public class CreateDraftIssuesCommand
 		}
 		else
 		{
-			huTrxBL.setParentHU(huContext //
-					, null // parentHUItem
-					, hu //
-					, true // destroyOldParentIfEmptyStorage
-			);
+			huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package org.adempiere.warehouse.qrcode;
 
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +29,8 @@ public class LocatorQRCode
 
 	public static LocatorQRCode ofGlobalQRCodeJsonString(final String json) {return LocatorQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}
 
+	public static LocatorQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return LocatorQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
+
 	public static LocatorQRCode ofLocator(@NonNull final I_M_Locator locator)
 	{
 		return builder()
@@ -42,5 +45,10 @@ public class LocatorQRCode
 				.qrCode(toGlobalQRCodeJsonString())
 				.bottomText(caption)
 				.build();
+	}
+
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return LocatorQRCodeJsonConverter.isTypeMatching(globalQRCode);
 	}
 }

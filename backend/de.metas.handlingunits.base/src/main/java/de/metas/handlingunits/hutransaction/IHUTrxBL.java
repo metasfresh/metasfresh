@@ -43,7 +43,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
 
 import javax.annotation.Nullable;
 import java.util.Date;
@@ -51,36 +50,15 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
-/**
- * Service to create and "destroy" handling units (instances).
- * HUs can be created be transferring material from a {@link org.compiere.model.I_M_Transaction}.<br>
- * <br>
- * HUs can be "destroyed" by transferring material to an <code>I_M_Transaction</code> (such as a shipment, method {@link #transferHUsToOutgoing(I_M_Transaction, List)} or by transferring material to
- * existing HUs. Note that the meaning of "destroyed is currently still a bit fuzzy. It might be a flag to in {@link I_M_HU} to that may be set to "true" when the HU doesn't contain an material
- * anymore, to indicate that this instance won't be used anymore.<br>
- * <br>
- * All methods in this class create one {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} with at least two {@link de.metas.handlingunits.model.I_M_HU_Trx_Line}s. Each trx-line references either a
- * {@link de.metas.handlingunits.model.I_M_HU_Item} or an {@link org.compiere.model.I_M_TransactionAllocation}.
- */
 public interface IHUTrxBL extends ISingletonService
 {
 	/**
 	 * Transfer <code>request</code> from <code>source</code> to <code>destination</code>
-	 *
-	 * @param huContext
-	 * @param source
-	 * @param destination
-	 * @param request
 	 */
 	void transfer(IHUContext huContext, IAllocationSource source, IAllocationDestination destination, IAllocationRequest request);
 
 	/**
 	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransactionCandidate}s) included in the given {@code result}.
-	 *
-	 * @param huContext
-	 * @param result
 	 */
 	void createTrx(IHUContext huContext, IAllocationResult result);
 
@@ -90,15 +68,8 @@ public interface IHUTrxBL extends ISingletonService
 	 * Register given {@link IHUTrxListener}.
 	 * <p>
 	 * If <code>trxListener</code> was already registered then it won't be registered again.
-	 *
-	 * @param trxListener
 	 */
 	void addListener(IHUTrxListener trxListener);
-
-	/**
-	 * @return all system registered transaction listeners (wrapped by a composite)
-	 */
-	IHUTrxListener getHUTrxListeners();
 
 	/**
 	 * @return all system registered transaction listeners
@@ -106,8 +77,6 @@ public interface IHUTrxBL extends ISingletonService
 	List<IHUTrxListener> getHUTrxListenersList();
 
 	/**
-	 * @param trxLine
-	 * @param modelClass
 	 * @return the record that is referenced by the given {@code trxLine} via its {@code AD_Table_ID} and {@code Record_ID} values, or <code>null</code>.
 	 */
 	<T> T getReferencedObjectOrNull(I_M_HU_Trx_Line trxLine, Class<T> modelClass);
@@ -120,9 +89,6 @@ public interface IHUTrxBL extends ISingletonService
 	 * All reversals will be grouped in one transaction header.
 	 *
 	 * <code>trxLines</code> shall contain the transaction but also the counterpart transaction. If not, an error will be thrown.
-	 *
-	 * @param huContext
-	 * @param trxLines
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
 
@@ -131,29 +97,23 @@ public interface IHUTrxBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> Don't do transaction management (TODO: check if this can be added).
 	 *
-	 * @param huContext
 	 * @param parentHUItem                   can be <code>null</code> to indicate that the HU shall be removed from its parent. If the given item has the same <code>M_HU_Item_ID</code> as the given <code>hu</code>'s
 	 *                                       <code>M_HU_Item_Parent_ID</code>, or if both this parameter and the hu's parent item are <code>null</code>, then the method does nothing.
-	 * @param hu
 	 * @param destroyOldParentIfEmptyStorage if true, it will check if old parent is empty after removing given HU from it and if yes, it will destroy it
 	 */
 	void setParentHU(IHUContext huContext, @Nullable I_M_HU_Item parentHUItem, @NonNull I_M_HU hu, boolean destroyOldParentIfEmptyStorage);
 
 	/**
 	 * Same as calling {@link #setParentHU(IHUContext, I_M_HU_Item, I_M_HU, boolean)} with <code>destroyOldParentIfEmptyStorage</code>=<code>false</code>.
-	 *
-	 * @param huContext
-	 * @param parentHUItem
-	 * @param hu
 	 */
 	void setParentHU(IHUContext huContext, @Nullable I_M_HU_Item parentHUItem, I_M_HU hu);
 
 	/**
 	 * Take out the given HU from it's parent (if it's not already a top level HU)
-	 *
-	 * @param hu
 	 */
 	void extractHUFromParentIfNeeded(I_M_HU hu);
+
+	void extractHUFromParentIfNeeded(@Nullable IHUContext huContext, @NonNull I_M_HU hu);
 
 	IHUContextProcessorExecutor createHUContextProcessorExecutor(IHUContext huContext);
 
@@ -169,8 +129,6 @@ public interface IHUTrxBL extends ISingletonService
 
 	/**
 	 * Convenient method to process using current env and thread inherited trx.
-	 *
-	 * @param processor
 	 */
 	default void process(final Consumer<IHUContext> processor)
 	{
