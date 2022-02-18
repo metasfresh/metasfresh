@@ -69,7 +69,7 @@ Map build(final MvnConf mvnConf) {
                 String helmValuesArtifactId='helm'
                 String helmValuesClassifier='helmValues'
                 withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-                    sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes-helm/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+                    sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
                 }
 
                 final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
