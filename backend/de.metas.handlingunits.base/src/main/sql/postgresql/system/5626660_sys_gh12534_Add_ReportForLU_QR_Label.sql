@@ -92,3 +92,28 @@ UPDATE AD_Column SET AD_Reference_ID=32, IsExcludeFromZoomTargets='Y',Updated=TO
 INSERT INTO t_alter_column values('m_attributevalue','AD_Image_ID','NUMERIC(10)',null,null)
 ;
 
+-- 2022-02-18T13:41:30.906Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Paletten Etikett',Updated=TO_TIMESTAMP('2022-02-18 15:41:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584997
+;
+
+-- 2022-02-18T13:41:36.060Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paletten Etikett',Updated=TO_TIMESTAMP('2022-02-18 15:41:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584997
+;
+
+-- 2022-02-18T13:41:39.717Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Paletten Etikett',Updated=TO_TIMESTAMP('2022-02-18 15:41:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584997
+;
+
+-- 2022-02-18T13:41:54.590Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='LU Label (QR)',Updated=TO_TIMESTAMP('2022-02-18 15:41:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584997
+;
+
+-- 2022-02-18T13:42:09.929Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO M_HU_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,IsActive,IsApplyToCUs,IsApplyToLUs,IsApplyToTopLevelHUsOnly,IsApplyToTUs,IsProvideAsUserAction,M_HU_Process_ID,Updated,UpdatedBy) VALUES (0,0,584997,TO_TIMESTAMP('2022-02-18 15:42:09','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Y',540021,TO_TIMESTAMP('2022-02-18 15:42:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
