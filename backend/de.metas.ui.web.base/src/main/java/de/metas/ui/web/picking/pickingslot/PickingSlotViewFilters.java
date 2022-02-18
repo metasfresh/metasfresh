@@ -80,15 +80,7 @@ public class PickingSlotViewFilters
 
 		//
 		// Try parsing the Global QR Code, if possible
-		GlobalQRCode globalQRCode;
-		try
-		{
-			globalQRCode = GlobalQRCode.ofString(barcodeString);
-		}
-		catch (Exception ex)
-		{
-			globalQRCode = null;
-		}
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(barcodeString).orNullIfError();
 
 		//
 		// Case: valid Global QR Code
