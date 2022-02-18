@@ -184,8 +184,16 @@ public class HUTrxBL implements IHUTrxBL
 	@Override
 	public void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
 	{
-		final boolean destroyOldParentIfEmptyStorage = true;
-		setParentHU(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
+		setParentHU(huContext, parentHUItem, hu, true);
+	}
+
+	@Override
+	public void unlinkFromParentBeforeDestroy(
+			final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			final boolean destroyOldParentIfEmptyStorage)
+	{
+		setParentHU0(huContext, null, hu, destroyOldParentIfEmptyStorage, false);
 	}
 
 	@Override
@@ -195,24 +203,7 @@ public class HUTrxBL implements IHUTrxBL
 			@NonNull final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
-		// TODO: handle in HUTrx / allocation
-
-		//
-		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
-		// Afterwards, set the HU trx back to it's original one
-		//
-		final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
-		try
-		{
-			final String huTrxNameNew = huContext.getTrxName();
-			InterfaceWrapperHelper.setTrxName(hu, huTrxNameNew);
-
-			setParentHU0(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
-		}
-		finally
-		{
-			InterfaceWrapperHelper.setTrxName(hu, huTrxNameOld);
-		}
+		setParentHU0(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage, true);
 	}
 
 	/**
@@ -221,105 +212,120 @@ public class HUTrxBL implements IHUTrxBL
 	private void setParentHU0(final IHUContext huContext,
 							  @Nullable final I_M_HU_Item parentHUItem,
 							  @NonNull final I_M_HU hu,
-							  final boolean destroyOldParentIfEmptyStorage)
+							  final boolean destroyOldParentIfEmptyStorage,
+							  final boolean failIfAggregateTU)
 	{
+		//
+		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
+		// Afterwards, set the HU trx back to it's original one
+		//
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		//
-		// Make sure hu's Parent will change
-		if (parentHUItem == null)
+		final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
+		try
 		{
-			if (handlingUnitsDAO.retrieveParentItem(hu) == null)
+			InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
+
+			//
+			// Make sure hu's Parent will change
+			if (parentHUItem == null)
+			{
+				if (handlingUnitsDAO.retrieveParentItem(hu) == null)
+				{
+					//
+					// Nothing was changed: parent was null before
+					return;
+				}
+			}
+			else if (hu.getM_HU_Item_Parent_ID() == parentHUItem.getM_HU_Item_ID())
 			{
 				//
-				// Nothing was changed: parent was null before
+				// Nothing was changed: same references
 				return;
 			}
-		}
-		else if (hu.getM_HU_Item_Parent_ID() == parentHUItem.getM_HU_Item_ID())
-		{
+
+			if (failIfAggregateTU && handlingUnitsBL.isAggregateHU(hu))
+			{
+				throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
+						.setParameter("hu", hu);
+			}
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
+
 			//
-			// Nothing was changed: same references
-			return;
+			// Fire attribute storage removed on old parent
+			final IAttributeStorage parentAttributesOld;
+			final I_M_HU_Item parentHUItemOld = handlingUnitsDAO.retrieveParentItem(hu);
+
+			final I_M_HU parentHUOld;
+			if (parentHUItemOld != null)
+			{
+				parentHUOld = parentHUItemOld.getM_HU();
+				parentAttributesOld = attributeStorageFactory.getAttributeStorage(parentHUOld);
+			}
+			else
+			{
+				parentHUOld = null;
+				parentAttributesOld = NullAttributeStorage.instance;
+			}
+
+			final boolean huPureVirtual = handlingUnitsBL.isPureVirtual(hu);
+			if (!NullAttributeStorage.instance.equals(parentAttributesOld)
+					&& !huPureVirtual) // don't propagate pure-virtual HUs; they normally get automatically re-propagated (i.e WeightNet)
+			{
+				parentAttributesOld.onChildAttributeStorageRemoved(huAttributes);
+			}
+
+			//
+			// Revert rollup of the target HU's (the one we are assigning to the new parent) old parent storage
+			final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageOld = huStorageFactory.getStorage(hu);
+			huStorageOld.rollupRevert();
+
+			//
+			// Actually unlink the HU from old parent and link it to new parent
+			// NOTE: we need to do this AFTER we notify the old parent storages
+			handlingUnitsDAO.setParentItem(hu, parentHUItem);
+
+			//
+			// Rollup the target HU's (the one we are assigning to the new parent) new parent storage
+			final IHUStorage huStorageNew = huStorageFactory.getStorage(hu);
+			huStorageNew.rollup();
+
+			//
+			// Fire attribute storage added on new parent
+			final IAttributeStorage parentAttributesNew;
+			if (parentHUItem != null)
+			{
+				final I_M_HU parentHUNew = parentHUItem.getM_HU();
+				parentAttributesNew = attributeStorageFactory.getAttributeStorage(parentHUNew);
+			}
+			else
+			{
+				parentAttributesNew = NullAttributeStorage.instance;
+			}
+
+			if (!NullAttributeStorage.instance.equals(parentAttributesNew))
+			{
+				parentAttributesNew.onChildAttributeStorageAdded(huAttributes);
+			}
+
+			huContext.getTrxListeners().huParentChanged(hu, parentHUItemOld);
+
+			//
+			// If allowed,
+			// Mark old HU destroyed if that's the case
+			if (destroyOldParentIfEmptyStorage
+					&& parentHUOld != null && parentHUOld.getM_HU_ID() > 0)
+			{
+				handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
+			}
 		}
-
-		if (handlingUnitsBL.isAggregateHU(hu))
+		finally
 		{
-			throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
-					.setParameter("hu", hu);
-		}
-
-		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-
-		//
-		// Fire attribute storage removed on old parent
-		final IAttributeStorage parentAttributesOld;
-		final I_M_HU_Item parentHUItemOld = handlingUnitsDAO.retrieveParentItem(hu);
-
-		final I_M_HU parentHUOld;
-		if (parentHUItemOld != null)
-		{
-			parentHUOld = parentHUItemOld.getM_HU();
-			parentAttributesOld = attributeStorageFactory.getAttributeStorage(parentHUOld);
-		}
-		else
-		{
-			parentHUOld = null;
-			parentAttributesOld = NullAttributeStorage.instance;
-		}
-
-		final boolean huPureVirtual = handlingUnitsBL.isPureVirtual(hu);
-		if (!NullAttributeStorage.instance.equals(parentAttributesOld)
-				&& !huPureVirtual) // don't propagate pure-virtual HUs; they normally get automatically re-propagated (i.e WeightNet)
-		{
-			parentAttributesOld.onChildAttributeStorageRemoved(huAttributes);
-		}
-
-		//
-		// Revert rollup of the target HU's (the one we are assigning to the new parent) old parent storage
-		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
-		final IHUStorage huStorageOld = huStorageFactory.getStorage(hu);
-		huStorageOld.rollupRevert();
-
-		//
-		// Actually unlink the HU from old parent and link it to new parent
-		// NOTE: we need to do this AFTER we notify the old parent storages
-		handlingUnitsDAO.setParentItem(hu, parentHUItem);
-
-		//
-		// Rollup the target HU's (the one we are assigning to the new parent) new parent storage
-		final IHUStorage huStorageNew = huStorageFactory.getStorage(hu);
-		huStorageNew.rollup();
-
-		//
-		// Fire attribute storage added on new parent
-		final IAttributeStorage parentAttributesNew;
-		if (parentHUItem != null)
-		{
-			final I_M_HU parentHUNew = parentHUItem.getM_HU();
-			parentAttributesNew = attributeStorageFactory.getAttributeStorage(parentHUNew);
-		}
-		else
-		{
-			parentAttributesNew = NullAttributeStorage.instance;
-		}
-
-		if (!NullAttributeStorage.instance.equals(parentAttributesNew))
-		{
-			parentAttributesNew.onChildAttributeStorageAdded(huAttributes);
-		}
-
-		huContext.getTrxListeners().huParentChanged(hu, parentHUItemOld);
-
-		//
-		// If allowed,
-		// Mark old HU destroyed if that's the case
-		if (destroyOldParentIfEmptyStorage
-				&& parentHUOld != null && parentHUOld.getM_HU_ID() > 0)
-		{
-			handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
+			InterfaceWrapperHelper.setTrxName(hu, huTrxNameOld);
 		}
 	}
 
