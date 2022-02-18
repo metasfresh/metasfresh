@@ -109,7 +109,7 @@ Feature: create production order
       | ol_1       | o_1                   | p_1                     | 10         | olASI                                    |
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_1        | DEMAND            | SHIPMENT                  | p_1                     | 2021-04-16T21:00:00Z | -10  | -10                    | olASI                                    |
       | c_2        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      | productPlanningASI                       |
       | c_l_1      | DEMAND            | PRODUCTION                | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   | bomLineASI                               |
@@ -140,7 +140,7 @@ Feature: create production order
       | c_3        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      | bomASI                                   |
       | c_l_3      | DEMAND            | PRODUCTION                | p_2                     | 2021-04-16T21:00:00Z | -100 | 0                      | bomLineASI                               |
     And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_2                        | SUPPLY            | PRODUCTION                | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
       | c_l_2                      | SUPPLY            |                           | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
@@ -235,7 +235,7 @@ Feature: create production order
       | ol_2       | o_2                   | p_3                     | 10         | olASI                                    |
     When the order identified by o_2 is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_2        | DEMAND            | SHIPMENT                  | p_3                     | 2021-06-16T21:00:00Z | -10 | -10                    | olASI                                    |
       | c_3        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      | productPlanningASI                       |
       | c_l_1      | DEMAND            | PRODUCTION                | p_4                     | 2021-06-16T21:00:00Z | -100 | -100                   | bomLineASI                               |
@@ -281,7 +281,7 @@ Feature: create production order
       | c_4        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 10  | 12                     | bomASI                                   |
       | c_l_4      | SUPPLY            |                               | p_4                     | 2021-06-16T21:00:00Z | 120 | 0                      | bomLineASI                               |
     And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_3                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 12  | 2                      | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_4                     | 2021-06-16T21:00:00Z | 120 | -120                   | bomLineASI                               |
       | c_l_2                      | SUPPLY            |                           | p_4                     | 2021-06-16T21:00:00Z | 100 | -20                    | bomLineASI                               |
@@ -306,7 +306,7 @@ Feature: create production order
       | c_5        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 12   | 12                     | bomASI                                   |
       | c_l_5      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | -120 | 0                      | bomLineASI                               |
     And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_4                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      | bomASI                                   |
       | c_3                        | SUPPLY            | PRODUCTION                | p_3                     | 2021-06-16T21:00:00Z | 0   | -10                    | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_4                     | 2021-06-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
@@ -508,7 +508,7 @@ Feature: create production order
       | c_222      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     | bomASI                                   |
       | c_l_3      | SUPPLY            |                               | p_222                   | 2021-04-11T21:00:00Z | 100 | 0                      | bomLineASI                               |
     And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111                      | DEMAND            | SHIPMENT                  | p_111                   | 2021-04-12T21:00:00Z | 10  | 0                      | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_222                   | 2021-04-11T21:00:00Z | 100 | -100                   | bomLineASI                               |
       | c_l_2                      | SUPPLY            |                           | p_222                   | 2021-04-12T21:00:00Z | 100 | 100                    | bomLineASI                               |
@@ -532,7 +532,7 @@ Feature: create production order
       | c_333      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 10   | 10                     | bomASI                                   |
       | c_l_4      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-11T21:00:00Z | -100 | 0                      | bomLineASI                               |
     And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_222                      | SUPPLY            | PRODUCTION                | p_111                   | 2021-04-11T21:00:00Z | 0   | 0                      | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                | p_222                   | 2021-04-11T21:00:00Z | 0   | 0                      | bomLineASI                               |
       | c_l_2                      | SUPPLY            |                           | p_222                   | 2021-04-12T21:00:00Z | 100 | 100                    | bomLineASI                               |
@@ -734,7 +734,7 @@ Feature: create production order
       | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | ProductValue  | UomCode | ValidFrom                   |
       | bom_2                        | p_1                     | bv_1                                 | trackedValue6 | PCE     | 2021-04-10T12:00:00.000000Z |
     And verify that bomLine was created for bom
-      | PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty  | UomCode | IsQtyPercentage | OPT.Scrap | Line |
+      | OPT.PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty  | UomCode | IsQtyPercentage | OPT.Scrap | Line |
       | boml_3                           | bom_2                        | p_comp_1                | 20.0 | PCE     | false           |           | 1    |
       | boml_4                           | bom_2                        | p_comp_3                | 30.0 | PCE     | false           |           | 2    |
     And after not more than 30s, PP_Order_Candidates are found

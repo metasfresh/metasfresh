@@ -56,7 +56,7 @@ Feature:bom create using metasfresh api
       | bom_1                        | finishedGood_Id         | bv_1                                 | productValue1 | KGM     | 2021-10-29T11:09:47.000000Z |
 
     And verify that bomLine was created for bom
-      | PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty | UomCode | IsQtyPercentage | OPT.Scrap | Line |
+      | OPT.PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty | UomCode | IsQtyPercentage | OPT.Scrap | Line |
       | boml_1                           | bom_1                        | component_1_Id          | 5.0 | KGM     | true            | 20.15     | 1    |
 
 
@@ -92,5 +92,5 @@ Feature:bom create using metasfresh api
       | bom_2                        | finishedGood_Id         | bv_1                                 | productValue1 | KGM     | 2021-11-01T07:15:45.000000Z |
 
     And verify that bomLine was created for bom
-      | PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty  | UomCode | IsQtyPercentage | OPT.Scrap | Line |
+      | OPT.PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty  | UomCode | IsQtyPercentage | OPT.Scrap | Line |
       | boml_2                           | bom_2                        | component_2_Id          | 20.0 | KGM     | true            | 7.5       | 1    |
