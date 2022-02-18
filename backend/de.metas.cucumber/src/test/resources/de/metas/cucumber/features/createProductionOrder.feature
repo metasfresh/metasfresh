@@ -599,8 +599,8 @@ Feature: create production order
       | c_l_1_s2                   | SUPPLY            |                               | p_comp_1                | 2021-04-16T21:00:00Z | 100 | 0                      |
       | c_l_2_d                    | DEMAND            | PRODUCTION                    | p_comp_2                | 2021-04-16T21:00:00Z | 0   | 0                      |
       | c_l_2_s                    | SUPPLY            |                               | p_comp_2                | 2021-04-16T21:00:00Z | 150 | 150                    |
-      | c_l_3_d                    | DEMAND            | PRODUCTION                    | p_comp_2                | 2021-04-16T21:00:00Z | 300 | -300                   |
-      | c_l_3_s                    | SUPPLY            |                               | p_comp_2                | 2021-04-16T21:00:00Z | 300 | 0                      |
+      | c_l_3_d                    | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | 300 | -300                   |
+      | c_l_3_s                    | SUPPLY            |                               | p_comp_3                | 2021-04-16T21:00:00Z | 300 | 0                      |
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |

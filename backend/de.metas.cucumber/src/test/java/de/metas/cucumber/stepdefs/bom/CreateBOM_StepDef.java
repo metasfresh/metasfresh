@@ -51,6 +51,7 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -72,6 +73,8 @@ public class CreateBOM_StepDef
 	private final StepDefData<I_PP_Product_BOMLine> productBomLineTable;
 	private final StepDefData<I_M_Product> productTable;
 	private final TestContext testContext;
+
+	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
 
 	final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
@@ -287,6 +290,9 @@ public class CreateBOM_StepDef
 		productBOM.setName(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_Name));
 		productBOM.setValidFrom(validFrom);
 		productBOM.setIsActive(true);
+		productBOM.setC_DocType_ID(DEFAULT_C_DOCTYPE_ID);
+		productBOM.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
+		productBOM.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
 
 		saveRecord(productBOM);
 

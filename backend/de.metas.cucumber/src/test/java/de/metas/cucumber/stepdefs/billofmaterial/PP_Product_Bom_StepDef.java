@@ -121,7 +121,7 @@ public class PP_Product_Bom_StepDef
 		final BigDecimal qtyBatch = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
 		bomLine.setValidFrom(validFrom);
 
-		final Boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch, false);
+		final boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch, false);
 		if (isPercentage)
 		{
 			bomLine.setQtyBatch(qtyBatch);
