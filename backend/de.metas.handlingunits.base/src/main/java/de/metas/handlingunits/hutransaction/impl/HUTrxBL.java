@@ -52,6 +52,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -218,9 +219,9 @@ public class HUTrxBL implements IHUTrxBL
 	 * Actual processing for HU (set parent & rollup incremental)
 	 */
 	private void setParentHU0(final IHUContext huContext,
-			@Nullable final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
+							  @Nullable final I_M_HU_Item parentHUItem,
+							  @NonNull final I_M_HU hu,
+							  final boolean destroyOldParentIfEmptyStorage)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -241,6 +242,12 @@ public class HUTrxBL implements IHUTrxBL
 			//
 			// Nothing was changed: same references
 			return;
+		}
+
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
+					.setParameter("hu", hu);
 		}
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -340,7 +347,6 @@ public class HUTrxBL implements IHUTrxBL
 		final I_M_HU_Item parentHUItem = null; // no parent
 		setParentHU(huContextEffective, parentHUItem, hu);
 	}
-
 
 	@Override
 	public IHUContextProcessorExecutor createHUContextProcessorExecutor(final IHUContext huContext)
