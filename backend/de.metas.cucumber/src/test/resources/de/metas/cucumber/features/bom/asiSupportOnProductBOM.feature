@@ -276,7 +276,7 @@ Feature: ASI support in Product BOM rest-api
       | oc_finishedGood                  | olc_finishedGood | component_S2            | 25         | PCE               | CO            | bomLine_1                        | bomLineAttributeSetInstance              |
 
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111      | DEMAND            | SHIPMENT                  | product_S2              | 2022-01-08T21:00:00Z | -5  | -5                     |                                          |
       | c_222      | SUPPLY            | PRODUCTION                | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
 
@@ -417,7 +417,7 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_PO | order_PO              | product_S3              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | md_po      | SUPPLY            | PURCHASE                  | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
