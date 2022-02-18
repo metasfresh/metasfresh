@@ -30,6 +30,7 @@ import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonCustomer;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonCustomerContact;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonCustomerLocation;
 import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.ExportBPartnerRouteContext;
+import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.ExportLocationHelper;
 import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequest;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
@@ -46,6 +47,8 @@ import org.apache.camel.Processor;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.CUSTOMER_FLAG;
 
@@ -133,6 +136,12 @@ public class ExportCustomerProcessor implements Processor
 	@NonNull
 	private static List<JsonCustomerLocation> toJsonCustomerLocations(@NonNull final List<JsonResponseLocation> locations)
 	{
+		final Optional<JsonMetasfreshId> mainAddressId = ExportLocationHelper.getBPartnerMainLocation(locations)
+				.map(JsonResponseLocation::getMetasfreshId);
+
+		final Function<JsonResponseLocation,Boolean> isMainAddress = (location) -> mainAddressId
+				.map(addressId -> addressId.equals(location.getMetasfreshId())).orElse(false);
+
 		return locations.stream()
 				.map(location -> JsonCustomerLocation.builder()
 						.metasfreshId(location.getMetasfreshId())
@@ -148,6 +157,7 @@ public class ExportCustomerProcessor implements Processor
 						.inactive(location.isActive() ? 0 : 1)
 						.shipTo(location.isShipTo())
 						.billTo(location.isBillTo())
+						.mainAddress(isMainAddress.apply(location) ? 1 : 0)
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}

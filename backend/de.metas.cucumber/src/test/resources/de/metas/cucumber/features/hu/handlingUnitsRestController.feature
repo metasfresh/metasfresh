@@ -112,7 +112,7 @@ Feature: Handling unit rest controller
       | M_HU_ID.Identifier | attributes.Lot-Nummer |
       | createdTU          | LotNumberTest         |
 
-    And the metasfresh REST-API endpoint path '/api/v2/hu' receives a 'PUT' request with the payload from context and responds with '200' status code
+    And the metasfresh REST-API endpoint path '/api/v2/material/handlingunits' receives a 'PUT' request with the payload from context and responds with '200' status code
 
     And store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU in context
 
@@ -214,7 +214,7 @@ Feature: Handling unit rest controller
       | M_HU_ID.Identifier | ClearanceNote     | ClearanceStatus |
       | createdTU          | ClearedStatusNote | Cleared         |
 
-    And store HU endpointPath /api/v2/hu/:createdLU/clearance in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdLU/clearance in context
 
     And a 'PUT' request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with '200' status code
 

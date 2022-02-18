@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.grssignum.to_grs.bpartner.processor.ExportVendorProcessor;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
@@ -33,11 +32,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class ExportBPartnerProcessorTests
+public class ExportLocationHelperTests
 {
 
 	@Test
-	public void givenOneVisitorsAdrAmongMultipleAddresses_whenComputeBPartnerLocationToExport_thenReturnVisitorAddress()
+	public void givenOneVisitorsAdrAmongMultipleAddresses_whenGetBPartnerMainLocation_thenReturnVisitorAddress()
 	{
 		//given
 		final List<JsonResponseLocation> jsonResponseLocations = ImmutableList.of(
@@ -68,7 +67,7 @@ public class ExportBPartnerProcessorTests
 						.build()
 		);
 		//when
-		final Optional<JsonResponseLocation> responseLocation = ExportVendorProcessor.getVendorLocationToExport(jsonResponseLocations);
+		final Optional<JsonResponseLocation> responseLocation = ExportLocationHelper.getBPartnerMainLocation(jsonResponseLocations);
 
 		//then
 		assertThat(responseLocation).isPresent();
