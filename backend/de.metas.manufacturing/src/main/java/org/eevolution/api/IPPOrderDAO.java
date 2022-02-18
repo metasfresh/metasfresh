@@ -62,4 +62,6 @@ public interface IPPOrderDAO extends ISingletonService
 	IQueryBuilder<I_PP_Order> createQueryForPPOrderSelection(IQueryFilter<I_PP_Order> userSelectionFilter);
 
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(PPOrderId ppOrderId);
+
+	ImmutableList<I_PP_Order> getByProductBOMId(ProductBOMId productBOMId);
 }

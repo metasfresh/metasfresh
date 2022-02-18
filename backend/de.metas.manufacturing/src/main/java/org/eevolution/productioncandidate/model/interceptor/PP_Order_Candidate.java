@@ -65,16 +65,9 @@ public class PP_Order_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		ppOrderCandidateService.syncLinesWithRequiredQty(ppOrderCandidateRecord);
+		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
-		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
-
-		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
-				.ppOrderCandidate(ppOrderCandidatePojo)
-				.build();
-
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
+		fireMaterialCreatedEvent(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(
@@ -96,7 +89,7 @@ public class PP_Order_Candidate
 
 		if (!InterfaceWrapperHelper.isNew(ppOrderCandidateRecord))
 		{
-			ppOrderCandidateService.syncLinesWithRequiredQty(ppOrderCandidateRecord);
+			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 			fireMaterialUpdateEvent(ppOrderCandidateRecord);
 		}
@@ -116,6 +109,16 @@ public class PP_Order_Candidate
 
 		final Timestamp datePromised = TimeUtil.asTimestamp(recomputedDatePromised.get());
 		ppOrderCandidateRecord.setDatePromised(datePromised);
+
+		fireMaterialUpdateEvent(ppOrderCandidateRecord);
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID })
+	public void syncLinesOnBOMChanged(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
 	}
@@ -157,5 +160,17 @@ public class PP_Order_Candidate
 				.build();
 
 		materialEventService.postEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
+	}
+
+	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
+
+		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
+				.ppOrderCandidate(ppOrderCandidatePojo)
+				.build();
+
+		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
 	}
 }

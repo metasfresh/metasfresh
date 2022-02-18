@@ -1,5 +1,6 @@
 package de.metas.material.planning.pporder;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -152,6 +153,14 @@ public class PPOrderUtil
 			@NonNull final Date ppOrderStartSchedule,
 			@NonNull final I_PP_Product_BOM ppOrderProductBOM)
 	{
+		// Product BOM should be completed
+		if (!DocStatus.ofCode(ppOrderProductBOM.getDocStatus()).isCompleted())
+		{
+			throw new MrpException(StringUtils.formatMessage(
+					"Product BOM is not completed; PP_Product_BOM={}",
+					ppOrderProductBOM));
+		}
+
 		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
 		if (ppOrderProductId.getRepoId() != ppOrderProductBOM.getM_Product_ID())
 		{

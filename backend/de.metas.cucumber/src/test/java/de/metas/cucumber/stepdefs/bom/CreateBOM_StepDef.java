@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class CreateBOM_StepDef
 {
@@ -155,38 +155,56 @@ public class CreateBOM_StepDef
 	@And("verify that bomLine was created for bom")
 	public void verifyThatBomLineWasCreatedForBom(@NonNull final DataTable dataTable)
 	{
-
 		final List<Map<String, String>> bomLinesTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : bomLinesTableList)
 		{
 			final String bomIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "PP_Product_BOM_ID.Identifier");
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "M_Product_ID.Identifier");
 
-			final int line = DataTableUtil.extractIntForColumnName(dataTableRow, "Line");
-			final Boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(dataTableRow, "IsQtyPercentage");
+			final I_PP_Product_BOM bom = bomTable.get(bomIdentifier);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final I_PP_Product_BOMLine bomLine = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bom.getPP_Product_BOM_ID())
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnly(I_PP_Product_BOMLine.class);
+
+			assertThat(bomLine).isNotNull();
+
+			final int line = DataTableUtil.extractIntForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_Line);
+			final Boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage);
 			final String uomCode = DataTableUtil.extractStringForColumnName(dataTableRow, "UomCode");
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Qty");
-			final BigDecimal scrap = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Scrap");
+			final BigDecimal scrap = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_PP_Product_BOMLine.COLUMNNAME_Scrap);
 
-			final I_PP_Product_BOM bom = bomTable.get(bomIdentifier);
+			if (scrap == null)
+			{
+				assertThat(bomLine.getScrap()).isEqualTo(BigDecimal.ZERO);
+			}
+			else
+			{
+				assertThat(bomLine.getScrap()).isEqualTo(scrap);
+			}
 
-			final List<I_PP_Product_BOMLine> bomLines = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
-					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bom.getPP_Product_BOM_ID())
-					.create()
-					.list();
-
-			assertThat(bomLines.size()).isEqualTo(1);
-
-			final I_PP_Product_BOMLine bomLine = bomLines.get(0);
-			final I_M_Product product = productTable.get(productIdentifier);
 			final I_C_UOM expectedUOM = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
 
-			assertThat(bomLine.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
-			assertThat(bomLine.getQtyBOM()).isEqualTo(qty);
+			if (isQtyPercentage)
+			{
+				assertThat(bomLine.getQtyBatch()).isEqualTo(qty);
+			}
+			else
+			{
+				assertThat(bomLine.getQtyBOM()).isEqualTo(qty);
+			}
+
 			assertThat(bomLine.getC_UOM_ID()).isEqualTo(expectedUOM.getC_UOM_ID());
-			assertThat(bomLine.getScrap()).isEqualTo(scrap);
 			assertThat(bomLine.getLine()).isEqualTo(line);
 			assertThat(bomLine.isQtyPercentage()).isEqualTo(isQtyPercentage);
+
+			final String bomLineIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOMLine_ID + ".Identifier");
+
+			productBomLineTable.putOrReplace(bomLineIdentifier, bomLine);
 		}
 	}
 

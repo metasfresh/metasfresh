@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -57,5 +58,7 @@ public interface IProductBOMDAO extends ISingletonService
 
 	ProductId getBOMProductId(ProductBOMId bomId);
 
-	Optional<ProductBOMId> getLatestBOMByVersion(@NonNull final ProductBOMVersionsId bomVersionsId);
+	Optional<ProductBOMId> getLatestBOMByVersion(ProductBOMVersionsId bomVersionsId);
+
+	Optional<I_PP_Product_BOM> getPreviousVersion(I_PP_Product_BOM bomVersion, DocStatus docStatus);
 }

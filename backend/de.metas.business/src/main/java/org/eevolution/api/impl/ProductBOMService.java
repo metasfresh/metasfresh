@@ -22,6 +22,8 @@
 
 package org.eevolution.api.impl;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,6 +38,7 @@ import org.springframework.stereotype.Service;
 public class ProductBOMService
 {
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public ProductBOMService(@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
@@ -51,6 +54,10 @@ public class ProductBOMService
 		final ProductBOMVersionsId bomVersionsId = bomVersionsDAO.retrieveBOMVersionsId(productId)
 				.orElseGet(() -> bomVersionsDAO.createBOMVersions(BOMVersionsCreateRequest.of(request)));
 
-		return bomRepo.createBOM(bomVersionsId, request);
+		final I_PP_Product_BOM createdBOM = bomRepo.createBOM(bomVersionsId, request);
+
+		documentBL.processEx(createdBOM, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		return createdBOM;
 	}
 }

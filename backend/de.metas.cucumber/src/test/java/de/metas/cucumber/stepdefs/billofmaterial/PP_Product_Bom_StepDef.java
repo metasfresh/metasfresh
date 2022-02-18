@@ -25,20 +25,27 @@ package de.metas.cucumber.stepdefs.billofmaterial;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +54,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PP_Product_Bom_StepDef
 {
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
+
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_PP_Product_BOM> productBOMTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
@@ -84,6 +94,14 @@ public class PP_Product_Bom_StepDef
 		}
 	}
 
+	@And("^the PP_Product_BOM identified by (.*) is completed$")
+	public void product_BOM_is_completed(@NonNull final String productBOMIdentifier)
+	{
+		final I_PP_Product_BOM productBOM = productBOMTable.get(productBOMIdentifier);
+		productBOM.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(productBOM, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 	private void createPP_Product_BOMLine(@NonNull final Map<String, String> tableRow)
 	{
 		final String bomIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -101,9 +119,17 @@ public class PP_Product_Bom_StepDef
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_ValidFrom);
 		final BigDecimal qtyBatch = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
-		bomLine.setQtyBatch(qtyBatch);
-		bomLine.setQtyBOM(qtyBatch);
 		bomLine.setValidFrom(validFrom);
+
+		final Boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch, false);
+		if (isPercentage)
+		{
+			bomLine.setQtyBatch(qtyBatch);
+		}
+		else
+		{
+			bomLine.setQtyBOM(qtyBatch);
+		}
 
 		saveRecord(bomLine);
 
@@ -129,6 +155,10 @@ public class PP_Product_Bom_StepDef
 		productBOMRecord.setBOMUse(BOMUse.Manufacturing.getCode());
 		productBOMRecord.setValidFrom(validFrom);
 		productBOMRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+		productBOMRecord.setC_DocType_ID(DEFAULT_C_DOCTYPE_ID);
+		productBOMRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
+		productBOMRecord.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
+
 		saveRecord(productBOMRecord);
 
 		productRecord.setIsBOM(true);

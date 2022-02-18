@@ -17,6 +17,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -236,5 +237,16 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId.getRepoId())
 				.create()
 				.listImmutable(I_PP_OrderCandidate_PP_Order.class);
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_Order> getByProductBOMId(@NonNull final ProductBOMId productBOMId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
+				.create()
+				.listImmutable(I_PP_Order.class);
 	}
 }
