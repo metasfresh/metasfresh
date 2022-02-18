@@ -67,7 +67,7 @@ Map build(final MvnConf mvnConf) {
 
                 String helmValuesGroupId='de.metas.kubernetes'
                 String helmValuesArtifactId='helm'
-                String helmValuesClassifier='helmValues'
+                String helmValuesClassifier='values'
                 withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                     sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
                 }
@@ -119,7 +119,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 </ul>
 <p>
 <h3>Kubernetes</h3>
-this build's helm <a href="${mvnConf.deployRepoURL}/de/metas/${helmValuesGroupId}/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
+this build's helm <a href="${mvnConf.deployRepoURL}/de/metas/kubernetes/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
 <p>
 <h3>Additional notes</h3>
 <ul>
