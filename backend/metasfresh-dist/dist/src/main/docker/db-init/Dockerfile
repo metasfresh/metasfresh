@@ -1,4 +1,4 @@
-FROM postgres:14.2-alpine
+FROM postgres:14.2
 #FROM postgres:10.5
 #FROM postgres:9.5
 
@@ -14,7 +14,7 @@ RUN apt -y update \
     && apt -y install curl \
 # install openjdk so that we can run mg migrate from within the provisioning script
     && apt -y install libcups2 \
-    && apt -y install openjdk-8-jre-headless \
+    && apt -y install openjdk-11-jre-headless \
     && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y clean
