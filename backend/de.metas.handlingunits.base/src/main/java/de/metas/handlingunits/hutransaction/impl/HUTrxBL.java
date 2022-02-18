@@ -182,53 +182,28 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
+	public void setParentHU(@NonNull ChangeParentHURequest request)
 	{
-		setParentHU(huContext, parentHUItem, hu, true);
-	}
-
-	@Override
-	public void unlinkFromParentBeforeDestroy(
-			final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
-	{
-		setParentHU0(huContext, null, hu, destroyOldParentIfEmptyStorage, false);
-	}
-
-	@Override
-	public void setParentHU(
-			@NonNull final IHUContext huContext,
-			@Nullable final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
-			final boolean destroyOldParentIfEmptyStorage)
-	{
-		setParentHU0(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage, true);
-	}
-
-	/**
-	 * Actual processing for HU (set parent & rollup incremental)
-	 */
-	private void setParentHU0(final IHUContext huContext,
-							  @Nullable final I_M_HU_Item parentHUItem,
-							  @NonNull final I_M_HU hu,
-							  final boolean destroyOldParentIfEmptyStorage,
-							  final boolean failIfAggregateTU)
-	{
-		//
-		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
-		// Afterwards, set the HU trx back to it's original one
-		//
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
+
+		//
+		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
+		// Afterwards, set the HU trx back to it's original one
+		final I_M_HU hu = request.getHu();
 		final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
+
 		try
 		{
+			final IHUContext huContext = request.getHuContext() != null
+					? request.getHuContext()
+					: handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
 			InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
 
 			//
 			// Make sure hu's Parent will change
+			final I_M_HU_Item parentHUItem = request.getParentHUItem();
 			if (parentHUItem == null)
 			{
 				if (handlingUnitsDAO.retrieveParentItem(hu) == null)
@@ -245,7 +220,7 @@ public class HUTrxBL implements IHUTrxBL
 				return;
 			}
 
-			if (failIfAggregateTU && handlingUnitsBL.isAggregateHU(hu))
+			if (request.isFailIfAggregateTU() && handlingUnitsBL.isAggregateHU(hu))
 			{
 				throw new AdempiereException("Changing parent for the entire Aggregate TU is not allowed")
 						.setParameter("hu", hu);
@@ -317,7 +292,7 @@ public class HUTrxBL implements IHUTrxBL
 			//
 			// If allowed,
 			// Mark old HU destroyed if that's the case
-			if (destroyOldParentIfEmptyStorage
+			if (request.isDestroyOldParentIfEmptyStorage()
 					&& parentHUOld != null && parentHUOld.getM_HU_ID() > 0)
 			{
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
@@ -346,12 +321,12 @@ public class HUTrxBL implements IHUTrxBL
 
 		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
-		final IHUContext huContextEffective = huContext != null
-				? huContext
-				: handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+		setParentHU(ChangeParentHURequest.builder()
+				.huContext(huContext)
+				.parentHUItem(null)
+				.hu(hu)
+				.build());
 
-		final I_M_HU_Item parentHUItem = null; // no parent
-		setParentHU(huContextEffective, parentHUItem, hu);
 	}
 
 	@Override

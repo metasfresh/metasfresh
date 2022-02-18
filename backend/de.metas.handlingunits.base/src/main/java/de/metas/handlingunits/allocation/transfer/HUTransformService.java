@@ -265,7 +265,10 @@ public class HUTransformService
 				if (!keepCUsUnderSameParent)
 				{
 					// detach cuHU from its parent
-					setParent(cuOrAggregateHU, null,
+					setParent(
+							cuOrAggregateHU,
+							null,
+							true,
 							// before
 							localHuContext -> {
 								final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuOrAggregateHU);
@@ -547,6 +550,7 @@ public class HUTransformService
 
 			setParent(tuToAttach,
 					parentItem,
+					true,
 					localHuContext -> {
 						// before
 						final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
@@ -623,7 +627,10 @@ public class HUTransformService
 			}
 			if (!handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				setParent(sourceTuHU, null,
+				setParent(
+						sourceTuHU,
+						null,
+						true,
 						localHuContext -> {
 							final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
 							updateAllocation(oldParentLU, sourceTuHU, sourceTuHU, null, true, localHuContext);
@@ -773,7 +780,10 @@ public class HUTransformService
 				if (!keepSourceLuAsParent)
 				{
 					// move the single TU out of sourceLU
-					setParent(tu, null,
+					setParent(
+							tu,
+							null,
+							true,
 							// beforeParentChange
 							localHuContext -> {
 								final I_M_HU cu = null;
@@ -807,6 +817,7 @@ public class HUTransformService
 	private void setParent(
 			@NonNull final I_M_HU childHU,
 			@Nullable final I_M_HU_Item parentItem,
+			final boolean failIfAggregatedTU,
 			@NonNull final Consumer<IHUContext> beforeParentChange,
 			@NonNull final Consumer<IHUContext> afterParentChange)
 	{
@@ -829,9 +840,13 @@ public class HUTransformService
 							beforeParentChange.accept(localHuContext);
 
 							// Take it out from its parent
-							huTrxBL.setParentHU(localHuContext,
-									parentItem, // might be null
-									childHU);
+							huTrxBL.setParentHU(IHUTrxBL.ChangeParentHURequest.builder()
+									.huContext(localHuContext)
+									.parentHUItem(parentItem) // might be null
+									.hu(childHU)
+									.destroyOldParentIfEmptyStorage(true)
+									.failIfAggregateTU(failIfAggregatedTU)
+									.build());
 
 							afterParentChange.accept(localHuContext);
 
@@ -904,6 +919,7 @@ public class HUTransformService
 			// assign sourceTuHU to newLuHU
 			setParent(sourceTuHU,
 					newParentItemOfSourceTuHU,
+					false, // sourceTuHU might be an aggregated HU, so don't fail
 					localHuContext -> {
 						final I_M_HU oldParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
 						updateAllocation(oldParentLu, sourceTuHU, null, null, true, localHuContext);
@@ -1311,7 +1327,7 @@ public class HUTransformService
 		// iterate the child CUs and set their parent item
 		childCUs.forEach(childCU -> setParent(childCU,
 				tuMaterialItem,
-
+				true,
 				// before the newChildCU's parent item is set,
 				localHuContext -> {
 					final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
