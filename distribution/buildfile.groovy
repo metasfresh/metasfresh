@@ -54,11 +54,11 @@ Map build(final MvnConf mvnConf) {
                 echo "DONE populating artifactURLs"
 
                 // create and push kubernetes-helm values.yaml file
-                def valuesFileSrc = kubernetes-helm/values-template.yaml
-                def valuesFileDes = kubernetes-helm/values.yaml
+                def valuesFileSrc = 'kubernetes/metasfresh-helm/values.yaml'
+                def valuesFileDes = 'kubernetes/values.yaml'
                 def valuesData = readYaml file: valuesFileSrc
 
-                valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev::${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
+                valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
                 valuesData.app.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-app:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
                 valuesData.webapi.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
                 valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-9-5:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
@@ -66,7 +66,7 @@ Map build(final MvnConf mvnConf) {
                 writeYaml file: valuesFileDes, data: valuesData
 
                 String helmValuesGroupId='de.metas.kubernetes'
-                String helmValuesArtifactId='minikube'
+                String helmValuesArtifactId='helm'
                 String helmValuesClassifier='helmValues'
                 withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                     sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes-helm/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
