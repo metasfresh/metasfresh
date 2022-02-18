@@ -38,7 +38,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
@@ -130,12 +129,11 @@ public class HandlingUnitsRestController
 			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
 		return getByIdSupplier(() -> {
-			if (request.getQrCode().contains(GlobalQRCode.SEPARATOR))
+			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
+			if (globalQRCode != null)
 			{
-				final HUQRCode huQRCode = GlobalQRCode.ofString(request.getQrCode()).getPayloadAs(HUQRCode.class);
-				return huQRCodesService.getHUAssignmentByQRCode(huQRCode)
-						.map(HUQRCodeAssignment::getHuId)
-						.orElse(null);
+				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
+				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
 			}
 			else
 			{
@@ -299,12 +297,17 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
+
 		handlingUnitsService.move(MoveHURequest.builder()
 				.huId(request.getHuId())
-				.huQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.huQRCode(huQRCode)
 				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
 				.build());
 
-		return getByIdSupplier(request::getHuId);
+		// IMPORTANT: don't retrieve by ID because the ID might be different
+		// (e.g. we extracted one TU from an aggregated TU),
+		// but the QR Code is always the same.
+		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 }

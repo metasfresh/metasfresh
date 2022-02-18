@@ -258,6 +258,11 @@ public class HUMovementGenerator
 			}
 		}
 
+		if (LocatorId.equals(locatorFromId, request.getToLocatorId()))
+		{
+			throw new HUException("Moving to the same locator makes no sense");
+		}
+
 		return locatorFromId;
 	}
 

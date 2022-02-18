@@ -39,6 +39,11 @@ public class HUQRCode
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
 
+	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);
+	}
+
 	@JsonIgnore
 	public JsonRenderedHUQRCode toRenderedJson()
 	{
