@@ -1,4 +1,5 @@
 @from:cucumber
+@ignore
 Feature: Handling unit export from purchase order
 
   Background:
