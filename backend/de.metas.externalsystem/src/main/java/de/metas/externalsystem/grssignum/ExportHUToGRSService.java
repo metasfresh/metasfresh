@@ -37,8 +37,9 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.hu.ExportHUCandidate;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceType;
@@ -55,7 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.metas.handlingunits.attribute.HUAttributeConstants.ATTR_Lock_Notice;
 import static de.metas.handlingunits.trace.HUTraceType.MATERIAL_RECEIPT;
 import static de.metas.handlingunits.trace.HUTraceType.PRODUCTION_RECEIPT;
 import static de.metas.handlingunits.trace.HUTraceType.TRANSFORM_LOAD;
@@ -65,10 +65,10 @@ import static de.metas.handlingunits.trace.HUTraceType.TRANSFORM_PARENT;
 public class ExportHUToGRSService extends ExportHUToExternalSystemService
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_HU = "exportHU";
-	private static final AdMessageKey MSG_HU_ATTRIBUTE_LOCK_NOTICE = AdMessageKey.of("HUAttributeLockNotice");
+	private static final AdMessageKey MSG_HU_LOCKED_CLEARANCE_STATUS_NOTE = AdMessageKey.of("HULockedClearanceStatusNote");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	protected ExportHUToGRSService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
@@ -148,14 +148,14 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 	{
 		final HuId huId = recordReferenceToExport.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
 
-		final String huAttributeValue = msgBL.getMsg(Env.getAD_Language(), MSG_HU_ATTRIBUTE_LOCK_NOTICE);
+		final String huClearanceNote = msgBL.getMsg(Env.getAD_Language(), MSG_HU_LOCKED_CLEARANCE_STATUS_NOTE);
 
-		if (EmptyUtil.isEmpty(huAttributeValue))
+		if (EmptyUtil.isEmpty(huClearanceNote))
 		{
 			return;
 		}
 
-		huAttributesBL.updateHUAttributeRecursive(huId, ATTR_Lock_Notice, huAttributeValue, null);
+		handlingUnitsBL.setClearanceStatus(huId, ClearanceStatus.Locked, huClearanceNote);
 	}
 
 	private void exportIfAlreadyExportedOnce(@NonNull final I_M_HU_Trace huTrace)

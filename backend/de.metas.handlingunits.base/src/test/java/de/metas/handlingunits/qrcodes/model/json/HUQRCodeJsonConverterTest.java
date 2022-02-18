@@ -54,7 +54,7 @@ class HUQRCodeJsonConverterTest
 		final HUQRCode huQRCode = newStandardHUQRCode();
 
 		final GlobalQRCode globalQRCode = HUQRCodeJsonConverter.toGlobalQRCode(huQRCode);
-		final HUQRCode huQRCodeDeserialized = HUQRCodeJsonConverter.fromQRCodeString(globalQRCode.getAsString());
+		final HUQRCode huQRCodeDeserialized = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(globalQRCode.getAsString());
 
 		Assertions.assertThat(huQRCodeDeserialized).usingRecursiveComparison().isEqualTo(huQRCode);
 	}

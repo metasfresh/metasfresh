@@ -7,6 +7,7 @@ import { toastError } from '../../../../utils/toast';
 import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import QtyInputField from '../../../../components/QtyInputField';
+import { qtyInfos } from '../../../../utils/qtyInfos';
 
 const ConfirmOptionScreen = () => {
   const {
@@ -62,10 +63,10 @@ const ConfirmOptionScreen = () => {
     <div className="section pt-2">
       <pre>{JSON.stringify(optionInfo, null, 2)}</pre>
       <QtyInputField
-        qtyInitial={qtyTUs}
+        qty={qtyTUs}
         integerValuesOnly
         validateQtyEntered={validateQtyEntered}
-        onQtyChange={setQtyTUs}
+        onQtyChange={({ qty }) => setQtyTUs(qtyInfos.toNumberOrString(qty))}
         isRequestFocus={true}
       />
       <Button caption={printButtonCaption} disabled={!isValidQtyTUs} onClick={onPrintClick} />

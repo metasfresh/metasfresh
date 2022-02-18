@@ -2,6 +2,7 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -103,6 +104,7 @@ public class HUSplitBuilderCoreEngine
 			huAllocationDestination.setBPartnerId(IHandlingUnitsBL.extractBPartnerIdOrNull(huToSplit));
 			huAllocationDestination.setC_BPartner_Location_ID(huToSplit.getC_BPartner_Location_ID());
 			huAllocationDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(huToSplit.getM_Locator_ID()));
+			huAllocationDestination.setHUClearanceStatus(ClearanceStatus.ofNullableCode(huToSplit.getClearanceStatus()), huToSplit.getClearanceNote());
 		}
 
 		return this;

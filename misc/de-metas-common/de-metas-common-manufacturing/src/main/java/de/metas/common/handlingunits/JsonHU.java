@@ -68,10 +68,17 @@ public class JsonHU
 	JsonHUAttributes attributes;
 
 	@Nullable
+	JsonClearanceStatusInfo clearanceStatus;
+
+	@Nullable
+	String clearanceNote;
+
+	@Nullable
 	JsonHUType jsonHUType;
 
 	@Nullable
 	List<JsonHU> includedHUs;
+
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonHUBuilder

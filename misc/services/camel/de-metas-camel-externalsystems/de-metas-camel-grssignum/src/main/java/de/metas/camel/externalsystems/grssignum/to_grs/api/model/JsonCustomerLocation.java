@@ -72,6 +72,9 @@ public class JsonCustomerLocation
 	@JsonProperty("INAKTIV")
 	Integer inactiveBit;
 
+	@JsonProperty("HAUPTADDRESSE")
+	Integer mainAddress;
+
 	@JsonProperty("LIEFERADRESSE")
 	boolean shipTo;
 
@@ -91,6 +94,7 @@ public class JsonCustomerLocation
 			@JsonProperty("LANDESCODE") @Nullable final String countryCode,
 			@JsonProperty("GLN") @Nullable final String gln,
 			@JsonProperty("INAKTIV") final int inactive,
+			@JsonProperty("HAUPTADDRESSE") final Integer mainAddress,
 			@JsonProperty("LIEFERADRESSE") final boolean shipTo,
 			@JsonProperty("RECHNUNGSADDRESSE") final boolean billTo)
 	{
@@ -107,6 +111,7 @@ public class JsonCustomerLocation
 		this.inactiveBit = inactive;
 		this.shipTo = shipTo;
 		this.billTo = billTo;
+		this.mainAddress = mainAddress;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -12,8 +12,9 @@ import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
@@ -79,6 +80,8 @@ public class ManufacturingRestService
 				return builder.wfActivityType(ConfirmationActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case GenerateHUQRCodes:
 				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case ScanScaleDevice:
+				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			default:
 				throw new AdempiereException("Unknown type: " + jobActivity);
 		}
