@@ -92,7 +92,7 @@ public class HURouteBuilderV2 extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{" + MF_CLEAR_HU_V2_URI + "}}/${header." + HEADER_HU_ID + "}/clearance")
+				.toD("{{" + MF_CLEAR_HU_V2_URI + "}}/byId/${header." + HEADER_HU_ID + "}/clearance")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

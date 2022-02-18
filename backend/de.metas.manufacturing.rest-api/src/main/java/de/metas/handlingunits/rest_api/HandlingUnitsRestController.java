@@ -199,9 +199,9 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	@PostMapping("/byId/{id}/dispose")
+	@PostMapping("/byId/{M_HU_ID}/dispose")
 	public void disposeWholeHU(
-			@PathVariable("id") final int huRepoId,
+			@PathVariable("M_HU_ID") final int huRepoId,
 			@RequestParam("reasonCode") final String reasonCodeStr)
 	{
 		final HuId huId = HuId.ofRepoId(huRepoId);
@@ -276,9 +276,9 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	@PutMapping("/{huId}/clearance")
+	@PutMapping("/byId/{M_HU_ID}/clearance")
 	public ResponseEntity<?> setHUClearanceStatus(
-			@PathVariable("huId") final int huRepoId,
+			@PathVariable("M_HU_ID") final int huRepoId,
 			@RequestBody @NonNull final JsonSetClearanceStatusRequest request)
 	{
 		final HuId huId = HuId.ofRepoId(huRepoId);
@@ -288,8 +288,8 @@ public class HandlingUnitsRestController
 		return ResponseEntity.ok().body(null);
 	}
 
-	@GetMapping("/{huId}/allowedClearanceStatuses")
-	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("huId") final int huId)
+	@GetMapping("/byId/{M_HU_ID}/allowedClearanceStatuses")
+	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("M_HU_ID") final int huId)
 	{
 		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
 	}
