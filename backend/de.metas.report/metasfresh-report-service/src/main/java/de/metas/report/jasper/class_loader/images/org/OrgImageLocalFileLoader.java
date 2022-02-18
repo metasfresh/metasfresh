@@ -1,4 +1,4 @@
-package de.metas.report.jasper.class_loader;
+package de.metas.report.jasper.class_loader.images.org;
 
 /*
  * #%L
@@ -22,25 +22,21 @@ package de.metas.report.jasper.class_loader;
  * #L%
  */
 
-import com.google.common.base.MoreObjects;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.image.AdImageId;
-import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.report.jasper.class_loader.images.ImageUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
-import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MImage;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -54,12 +50,10 @@ import java.util.Properties;
  */
 final class OrgImageLocalFileLoader
 {
-	private static final transient Logger logger = LogManager.getLogger(OrgImageLocalFileLoader.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
-	private final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
 	private final OrgLogoResourceNameMatcher orgLogoResourceNameMatcher;
 
 	public OrgImageLocalFileLoader()
@@ -68,44 +62,9 @@ final class OrgImageLocalFileLoader
 		this.orgLogoResourceNameMatcher = new OrgLogoResourceNameMatcher(sysConfigBL);
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("emptyPNGFile", imgFileLoader.getEmptyPNGFile())
-				.toString();
-	}
-
-	// @Override
 	public Optional<File> getImageLocalFile(@NonNull final OrgResourceNameContext context)
 	{
-		final File logoFile = createAndGetLocalImageFile(context);
-		if (logoFile != null)
-		{
-			return Optional.of(logoFile);
-		}
-		else
-		{
-			logger.warn("Cannot find logo for {}, please add a logo file to the organization. Returning empty PNG file", this);
-			return Optional.of(imgFileLoader.getEmptyPNGFile());
-		}
-	}
-
-	@Nullable
-	private File createAndGetLocalImageFile(@NonNull final OrgResourceNameContext context)
-	{
-		//
-		// Retrieve the image
-		final I_AD_Image image = retrieveImage(context);
-		if (image == null || image.getAD_Image_ID() <= 0)
-		{
-			return null;
-		}
-
-		//
-		// Save the image in a temporary file, to be locally available
-		return createTempImageFile(image);
+		return retrieveImageId(context).flatMap(ImageUtils::createTempImageFile);
 	}
 
 	public boolean isLogoOrImageResourceName(final OrgResourceNameContext context)
@@ -114,42 +73,32 @@ final class OrgImageLocalFileLoader
 				|| OrgImageResourceNameMatcher.instance.matches(context.getResourceName());
 	}
 
-	@Nullable
-	private I_AD_Image retrieveImage(@NonNull final OrgResourceNameContext context)
+	private Optional<AdImageId> retrieveImageId(@NonNull final OrgResourceNameContext context)
 	{
 		final OrgId adOrgId = context.getOrgId();
 		if (adOrgId.isAny())
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		if (orgLogoResourceNameMatcher.matches(context.getResourceName()))
 		{
-			return retrieveLogoImage(adOrgId);
+			return Optional.ofNullable(retrieveLogoImageId(adOrgId));
 		}
 
 		final String imageColumnName = OrgImageResourceNameMatcher.instance.getImageColumnName(context.getResourceName()).orElse(null);
 		if (imageColumnName == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		//
-		// Get image
-		final AdImageId imageId = orgsRepo.getOrgInfoById(adOrgId)
+		return orgsRepo.getOrgInfoById(adOrgId)
 				.getImagesMap()
-				.getImageId(imageColumnName)
-				.orElse(null);
-		if (imageId == null)
-		{
-			return null;
-		}
-
-		return MImage.get(Env.getCtx(), imageId.getRepoId());
+				.getImageId(imageColumnName);
 	}
 
 	@Nullable
-	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
+	private AdImageId retrieveLogoImageId(@NonNull final OrgId adOrgId)
 	{
 		//
 		// Get Logo from Organization's BPartner
@@ -161,10 +110,10 @@ final class OrgImageLocalFileLoader
 			final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 			if (orgBPartner != null)
 			{
-				final I_AD_Image orgBPartnerLogo = orgBPartner.getLogo();
-				if (orgBPartnerLogo != null && orgBPartnerLogo.getAD_Image_ID() > 0)
+				final AdImageId orgBPartnerLogoId = AdImageId.ofRepoIdOrNull(orgBPartner.getLogo_ID());
+				if (orgBPartnerLogoId != null)
 				{
-					return orgBPartnerLogo;
+					return orgBPartnerLogoId;
 				}
 			}
 		}
@@ -175,40 +124,19 @@ final class OrgImageLocalFileLoader
 		final AdImageId logoImageId = orgInfo.getImagesMap().getLogoId().orElse(null);
 		if (logoImageId != null)
 		{
-			return MImage.get(ctx, logoImageId.getRepoId());
+			return logoImageId;
 		}
 
 		//
 		// Get Tenant level Logo
 		final ClientId adClientId = orgInfo.getClientId();
 		final I_AD_ClientInfo clientInfo = clientsRepo.retrieveClientInfo(ctx, adClientId.getRepoId());
-		I_AD_Image clientLogo = clientInfo.getLogoReport();
-		if (clientLogo == null || clientLogo.getAD_Image_ID() <= 0)
+		AdImageId clientLogoId = AdImageId.ofRepoIdOrNull(clientInfo.getLogoReport_ID());
+		if (clientLogoId == null)
 		{
-			clientLogo = clientInfo.getLogo();
+			clientLogoId = AdImageId.ofRepoIdOrNull(clientInfo.getLogo_ID());
 		}
-		if (clientLogo == null || clientLogo.getAD_Image_ID() <= 0)
-		{
-			return null;
-		}
-		return clientLogo;
+		return clientLogoId;
 
-	}
-
-	@Nullable
-	private static File createTempImageFile(final I_AD_Image image)
-	{
-		if (image == null)
-		{
-			return null;
-		}
-
-		final byte[] data = image.getBinaryData();
-		if (data == null || data.length <= 0)
-		{
-			return null;
-		}
-
-		return imgFileLoader.createTempPNGFile("image", data);
 	}
 }
