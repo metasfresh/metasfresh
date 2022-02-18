@@ -33,11 +33,6 @@ FROM  m_product_allergen pa
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<pageHeader>
-		<band splitType="Stretch">
-			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-		</band>
-	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>

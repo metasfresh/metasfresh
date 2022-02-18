@@ -1,13 +1,11 @@
 DROP FUNCTION IF EXISTS "de.metas.handlingunits".lu_label(
-    p_M_HU_ID     numeric,
-    p_ad_language character varying
+    p_M_HU_ID     numeric
 )
 ;
 
 
 CREATE OR REPLACE FUNCTION "de.metas.handlingunits".lu_label(
-    p_M_HU_ID     numeric,
-    p_ad_language character varying
+    p_M_HU_ID     numeric
 )
     RETURNS TABLE
             (
