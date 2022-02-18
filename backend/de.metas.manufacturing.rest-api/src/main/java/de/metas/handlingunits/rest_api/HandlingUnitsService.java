@@ -31,8 +31,6 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -41,11 +39,11 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
+import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
@@ -57,7 +55,6 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -314,22 +311,8 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	public void move(@NonNull final HuId huId, @NonNull final GlobalQRCode targetQRCode)
+	public void move(@NonNull final MoveHURequest request)
 	{
-		if (LocatorQRCode.isTypeMatching(targetQRCode))
-		{
-			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
-			final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-
-			huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-					.toLocatorId(locatorQRCode.getLocatorId())
-					.huIdToMove(huId)
-					.movementDate(SystemTime.asInstant())
-					.build());
-		}
-		else
-		{
-			throw new AdempiereException("Move target not handled: " + targetQRCode);
-		}
+		new MoveHUCommand(request).execute();
 	}
 }

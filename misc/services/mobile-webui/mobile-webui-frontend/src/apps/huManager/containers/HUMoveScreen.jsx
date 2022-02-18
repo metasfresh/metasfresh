@@ -29,9 +29,12 @@ const HUMoveScreen = () => {
   }, []);
 
   const onResolvedResult = ({ scannedBarcode }) => {
-    console.log('HUMoveScreen.onResolvedResult', { scannedBarcode, handlingUnitInfo });
     api
-      .moveHU({ huId: handlingUnitInfo.id, targetQRCode: scannedBarcode })
+      .moveHU({
+        huId: handlingUnitInfo.id,
+        huQRCode: handlingUnitInfo.qrCode,
+        targetQRCode: scannedBarcode,
+      })
       .then((handlingUnitInfo) => {
         dispatch(handlingUnitLoaded({ handlingUnitInfo }));
       })

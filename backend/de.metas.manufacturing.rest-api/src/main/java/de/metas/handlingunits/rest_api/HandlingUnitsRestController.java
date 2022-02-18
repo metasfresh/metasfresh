@@ -41,6 +41,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
@@ -294,14 +295,16 @@ public class HandlingUnitsRestController
 		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
 	}
 
-	@PostMapping("/byId/{huId}/moveTo")
+	@PostMapping("/move")
 	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
-			@PathVariable("huId") final int huRepoId,
-			@RequestBody @NonNull final JsonMoveToRequest request)
+			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
-		final HuId huId = HuId.ofRepoId(huRepoId);
-		final GlobalQRCode targetQRCode = GlobalQRCode.ofString(request.getTargetQRCode());
-		handlingUnitsService.move(huId, targetQRCode);
-		return getByIdSupplier(() -> huId);
+		handlingUnitsService.move(MoveHURequest.builder()
+				.huId(request.getHuId())
+				.huQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
+
+		return getByIdSupplier(request::getHuId);
 	}
 }
