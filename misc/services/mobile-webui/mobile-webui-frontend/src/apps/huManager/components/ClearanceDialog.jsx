@@ -5,10 +5,10 @@ import { trl } from '../../../utils/translations';
 
 import ClearanceStatusRadioGroup from './ClearanceStatusRadioGroup';
 
-const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onStatusChange, onCloseDialog }) => {
+const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChange, onCloseDialog }) => {
   const { clearanceStatus, clearanceNote } = handlingUnitInfo;
-  const clearanceStatusKey = clearanceStatus ? clearanceStatus.key : null;
-  const [currentStatus, setClearanceStatus] = useState(clearanceStatusKey);
+
+  const [currentStatus, setClearanceStatus] = useState(clearanceStatus || {});
   const [currentNote, setClearanceNote] = useState(clearanceNote || '');
 
   const onClearanceNoteChange = (e) => {
@@ -17,12 +17,15 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onStatusChange, 
     setClearanceNote(val);
   };
 
-  const onSelectedStatus = (statusKey) => {
-    setClearanceStatus(statusKey);
+  const onSelectedStatus = ({ key, caption }) => {
+    setClearanceStatus({ key, caption });
   };
 
   const onDialogYes = () => {
-    onStatusChange({ clearanceStatus, clearanceNote });
+    onClearanceChange({
+      clearanceStatus: { key: currentStatus.key, caption: currentStatus.caption },
+      clearanceNote: currentNote,
+    });
   };
 
   return (
@@ -39,7 +42,7 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onStatusChange, 
                   <td colSpan={2}>
                     <ClearanceStatusRadioGroup
                       clearanceStatuses={clearanceStatuses}
-                      selectedStatus={currentStatus}
+                      selectedStatus={currentStatus.key}
                       onSelectedStatus={onSelectedStatus}
                     />
                   </td>
@@ -77,7 +80,7 @@ ClearanceDialog.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
 
   // Callbacks
-  onStatusChange: PropTypes.func.isRequired,
+  onClearanceChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
 };
 

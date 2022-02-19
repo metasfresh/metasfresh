@@ -7,7 +7,7 @@ const ClearanceStatusRadioGroup = ({ clearanceStatuses, selectedStatus, onSelect
   const handleInputChanged = (event) => {
     const selectedStatusKey = event.target.name;
     setCurrentSelectedStatusKey(selectedStatusKey);
-    onSelectedStatus(selectedStatusKey);
+    onSelectedStatus({ key: selectedStatusKey, caption: event.target.value });
   };
 
   return (
@@ -20,7 +20,7 @@ const ClearanceStatusRadioGroup = ({ clearanceStatuses, selectedStatus, onSelect
                 className="mr-2"
                 type="radio"
                 name={status.key}
-                value={status.key}
+                value={status.caption}
                 onChange={handleInputChanged}
                 checked={currentSelectedStatus === status.key}
               />

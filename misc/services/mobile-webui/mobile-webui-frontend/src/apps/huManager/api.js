@@ -40,21 +40,21 @@ export const moveHU = ({ huId, huQRCode, targetQRCode }) => {
 /**
  * @returns {Promise<T>} handling unit info
  */
-export function getAllowedClearanceStatuses({ huId }) {
+export function getAllowedClearanceStatusesRequest({ huId }) {
   return axios
     .get(`${huAPIBasePath}/byId/${huId}/allowedClearanceStatuses`)
     .then(unboxAxiosResponse)
     .then((response) => response.clearanceStatuses);
 }
 
-// export function setClearanceStatus({ huId, clearanceNote, clearanceStatus }) {
-//   // const { clearanceNote, clearanceStatus } =
-// // {
-// //   "clearanceNote": "string",
-// //   "clearanceStatus": "Cleared"
-// // }
-//   return axios
-//     .put(`${huAPIBasePath}/byId/${huId}/allowedClearanceStatuses`)
-//     .then(unboxAxiosResponse)
-//     .then((response) => response.clearanceStatuses);
-// }
+export function setClearanceStatusRequest({ huId, clearanceNote, clearanceStatus }) {
+  const dataObject = {};
+  if (clearanceNote) {
+    dataObject.clearanceNote = clearanceNote;
+  }
+  if (clearanceStatus) {
+    dataObject.clearanceStatus = clearanceStatus.key;
+  }
+
+  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { ...dataObject });
+}

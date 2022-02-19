@@ -13,7 +13,24 @@ export function huManagerReducer(applicationState = {}, action) {
       };
     }
     case CHANGE_CLEARANCE_STATUS: {
-      return applicationState;
+      const { clearanceNote, clearanceStatus } = action.payload;
+      const hUI = { ...applicationState.handlingUnitInfo };
+
+      if (clearanceNote) {
+        hUI.clearanceNote = clearanceNote;
+      }
+
+      if (clearanceStatus) {
+        hUI.clearanceStatus = {
+          caption: clearanceStatus.caption,
+          key: clearanceStatus.key,
+        };
+      }
+
+      return {
+        ...applicationState,
+        handlingUnitInfo: { ...hUI },
+      };
     }
     default:
       return applicationState;

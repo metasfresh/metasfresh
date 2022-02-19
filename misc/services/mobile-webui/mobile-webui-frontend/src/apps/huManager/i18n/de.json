@@ -20,7 +20,7 @@
     },
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern",
-      "clearanceNote": "Clearance note"
+      "clearanceNote": "Freigabebescheid"
     }
   }
 }

@@ -1,3 +1,5 @@
+import { setClearanceStatusRequest } from './api';
+
 import { CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED, CHANGE_CLEARANCE_STATUS } from './actionTypes';
 
 export const clearLoadedData = () => {
@@ -13,9 +15,15 @@ export const handlingUnitLoaded = ({ handlingUnitInfo }) => {
   };
 };
 
-export const changeClearanceStatus = (status) => {
-  return {
-    type: CHANGE_CLEARANCE_STATUS,
-    payload: { status },
+export const changeClearanceStatus = ({ huId, clearanceNote, clearanceStatus }) => {
+  return (dispatch) => {
+    return setClearanceStatusRequest({ huId, clearanceNote, clearanceStatus }).then(() => {
+      dispatch({
+        type: CHANGE_CLEARANCE_STATUS,
+        payload: { clearanceNote, clearanceStatus },
+      });
+
+      return Promise.resolve();
+    });
   };
 };
