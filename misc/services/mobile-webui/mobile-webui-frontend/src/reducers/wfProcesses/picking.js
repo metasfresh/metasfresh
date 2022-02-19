@@ -50,7 +50,7 @@ const extractDraftMapKeys = (draftMap) => {
   return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
 };
 
-export const allocatePickingAlternatives = ({ draftActivityDataStored, lineId, stepId }) => {
+const allocatePickingAlternatives = ({ draftActivityDataStored, lineId, stepId }) => {
   const draftStep = draftActivityDataStored.lines[lineId].steps[stepId];
 
   //
@@ -217,7 +217,7 @@ const updateLineStatusFromSteps = ({ draftLine }) => {
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
 };
 
-export const computeLineStatusFromSteps = ({ draftLine }) => {
+const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
 
   const stepStatuses = [];
@@ -277,7 +277,7 @@ const normalizePickingLines = (lines) => {
   });
 };
 
-export const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
+const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
   //
   // Copy lines
   draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);
