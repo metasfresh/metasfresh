@@ -1,9 +1,9 @@
 {
   "HU": "HU",
   "qrCode": "QR code",
-  "locator": "Locator",
-  "product": "Product",
-  "qty": "Quantity",
+  "locator": "Lagerort",
+  "product": "Produkt",
+  "qty": "Menge",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
