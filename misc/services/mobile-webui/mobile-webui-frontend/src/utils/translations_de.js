@@ -37,7 +37,6 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
-    abortText: 'Verlassen',
     picking: {
       PickingLine: 'Pick Zeile',
       scanQRCode: 'Scan QR',
@@ -79,6 +78,9 @@ const translations = {
         qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        step: {
+          name: 'HU einfüllen',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Sollmenge',

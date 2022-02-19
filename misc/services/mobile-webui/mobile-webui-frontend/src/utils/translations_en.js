@@ -78,6 +78,9 @@ const translations = {
         qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
+        step: {
+          name: 'Issue HU',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Qty to Receive Target',

@@ -26,7 +26,7 @@ const RawMaterialIssueStepScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Issue HU', // TODO trl
+        caption: trl('activities.mfg.issues.step.name'),
         values: [
           {
             caption: trl('general.Locator'),
