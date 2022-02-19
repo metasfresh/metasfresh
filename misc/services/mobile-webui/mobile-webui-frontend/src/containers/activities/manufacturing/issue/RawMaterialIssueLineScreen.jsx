@@ -30,7 +30,7 @@ const RawMaterialIssueLineScreen = () => {
         caption: caption,
         values: [
           { caption: trl('general.Product'), value: productName },
-          { caption: trl('mfg.issues.qtyToIssue'), value: qtyToIssue + ' ' + uom },
+          { caption: trl('activities.mfg.issues.qtyToIssue'), value: qtyToIssue + ' ' + uom },
         ],
       })
     );
