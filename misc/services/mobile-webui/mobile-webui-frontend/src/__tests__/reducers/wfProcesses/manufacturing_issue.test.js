@@ -1,8 +1,8 @@
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import {
-  computeActivityStatus,
   computeLineQtyIssuedFromSteps,
   computeStepStatus,
+  updateActivityBottomUp,
 } from '../../../reducers/wfProcesses/manufacturing_issue';
 
 describe('reducers: manufacturing issue tests', () => {
@@ -36,100 +36,80 @@ describe('reducers: manufacturing issue tests', () => {
     });
   }); // computeStepStatus
 
-  describe('computeActivityStatus', () => {
+  describe('updateActivityBottomUp', () => {
     it('single step, not issued at all', () => {
-      expect(
-        computeActivityStatus({
-          draftActivity: {
-            dataStored: {
-              lines: [
-                {
-                  steps: {
-                    1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
-                  },
-                },
-              ],
+      const draftActivityDataStored = {
+        lines: [
+          {
+            steps: {
+              1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
             },
           },
-        })
-      ).toEqual(CompleteStatus.NOT_STARTED);
+        ],
+      };
+      updateActivityBottomUp({ draftActivityDataStored });
+      expect(draftActivityDataStored.completeStatus).toEqual(CompleteStatus.NOT_STARTED);
     });
 
     describe('step + alternative step', () => {
       it('nothing issued/reported', () => {
-        expect(
-          computeActivityStatus({
-            draftActivity: {
-              dataStored: {
-                lines: [
-                  {
-                    steps: {
-                      1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
-                      2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
-                    },
-                  },
-                ],
+        const draftActivityDataStored = {
+          lines: [
+            {
+              steps: {
+                1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
+                2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
               },
             },
-          })
-        ).toEqual(CompleteStatus.NOT_STARTED);
+          ],
+        };
+        updateActivityBottomUp({ draftActivityDataStored });
+        expect(draftActivityDataStored.completeStatus).toEqual(CompleteStatus.NOT_STARTED);
       });
 
       it('issued on main step', () => {
-        expect(
-          computeActivityStatus({
-            draftActivity: {
-              dataStored: {
-                lines: [
-                  {
-                    steps: {
-                      1: { qtyToIssue: 8, qtyIssued: 4, qtyRejectedReasonCode: null },
-                      2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
-                    },
-                  },
-                ],
+        const draftActivityDataStored = {
+          lines: [
+            {
+              steps: {
+                1: { qtyToIssue: 8, qtyIssued: 4, qtyRejectedReasonCode: null },
+                2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
               },
             },
-          })
-        ).toEqual(CompleteStatus.COMPLETED);
+          ],
+        };
+        updateActivityBottomUp({ draftActivityDataStored });
+        expect(draftActivityDataStored.completeStatus).toEqual(CompleteStatus.COMPLETED);
       });
 
       it('issued on alternative step', () => {
-        expect(
-          computeActivityStatus({
-            draftActivity: {
-              dataStored: {
-                lines: [
-                  {
-                    steps: {
-                      1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
-                      2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
-                    },
-                  },
-                ],
+        const draftActivityDataStored = {
+          lines: [
+            {
+              steps: {
+                1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
+                2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
               },
             },
-          })
-        ).toEqual(CompleteStatus.COMPLETED);
+          ],
+        };
+        updateActivityBottomUp({ draftActivityDataStored });
+        expect(draftActivityDataStored.completeStatus).toEqual(CompleteStatus.COMPLETED);
       });
 
       it('issued on both main step and alternative step', () => {
-        expect(
-          computeActivityStatus({
-            draftActivity: {
-              dataStored: {
-                lines: [
-                  {
-                    steps: {
-                      1: { qtyToIssue: 8, qtyIssued: 3, qtyRejectedReasonCode: null },
-                      2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
-                    },
-                  },
-                ],
+        const draftActivityDataStored = {
+          lines: [
+            {
+              steps: {
+                1: { qtyToIssue: 8, qtyIssued: 3, qtyRejectedReasonCode: null },
+                2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
               },
             },
-          })
-        ).toEqual(CompleteStatus.COMPLETED);
+          ],
+        };
+        updateActivityBottomUp({ draftActivityDataStored });
+        expect(draftActivityDataStored.completeStatus).toEqual(CompleteStatus.COMPLETED);
       });
     }); // step + alternative step;
   }); // computeActivityStatus
