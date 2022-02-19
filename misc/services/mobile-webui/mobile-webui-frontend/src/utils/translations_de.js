@@ -9,7 +9,7 @@ const translations = {
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
-    Barcode: 'Barcode',
+    QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',

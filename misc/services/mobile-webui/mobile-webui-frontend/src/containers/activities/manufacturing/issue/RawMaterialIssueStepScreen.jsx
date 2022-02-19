@@ -46,7 +46,7 @@ const RawMaterialIssueStepScreen = () => {
             hidden: !qtyRejected,
           },
           {
-            caption: trl('general.Barcode'),
+            caption: 'HU ' + trl('general.QRCode'),
             value: toQRCodeDisplayable(huQRCode),
           },
         ],

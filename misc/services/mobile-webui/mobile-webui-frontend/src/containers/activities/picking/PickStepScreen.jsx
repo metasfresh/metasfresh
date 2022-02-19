@@ -43,7 +43,7 @@ const PickStepScreen = () => {
             value: qtyToPick + ' ' + uom,
           },
           {
-            caption: trl('general.Barcode'),
+            caption: trl('general.QRCode'),
             value: toQRCodeDisplayable(pickFrom?.huQRCode),
           },
         ],
