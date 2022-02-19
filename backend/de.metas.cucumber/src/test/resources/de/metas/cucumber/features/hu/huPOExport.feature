@@ -1,11 +1,12 @@
 @from:cucumber
+@ignore
 Feature: Handling unit export from purchase order
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
-  @ignore
   Scenario: HU export from purchase order
     Given add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue | OPT.IsSyncHUsOnMaterialReceipt | OPT.IsSyncHUsOnProductionReceipt |
@@ -101,20 +102,14 @@ Feature: Handling unit export from purchase order
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_PO                        | processedTopHU         |
 
-    And store JsonHUAttributesRequest in context
-      | M_HU_ID.Identifier | attributes.LockNotice       |
-      | processedTopHU     | Erwartet Freigabe durch GRS |
-
-    And the metasfresh REST-API endpoint path '/api/v2/hu' receives a 'PUT' request with the payload from context and responds with '200' status code
-
     When store HU endpointPath /api/v2/material/handlingunits/byId/:processedTopHU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice       | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
-      | processedTopHU     | LU         | processedTU | Erwartet Freigabe durch GRS | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
-      | processedTU        | TU         |             | Erwartet Freigabe durch GRS | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 2                     | A        |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
+      | processedTopHU     | LU         | processedTU | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | processedTU        | TU         |             | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 2                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
     And update external system config:
       | ExternalSystem_Config_ID.Identifier | Type | IsActive |
       | GRSConfig_PO                        | GRS  | false    |

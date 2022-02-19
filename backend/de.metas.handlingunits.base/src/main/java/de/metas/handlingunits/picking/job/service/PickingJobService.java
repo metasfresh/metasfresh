@@ -22,7 +22,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
-import de.metas.picking.api.PickingSlotBarcode;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -170,14 +170,14 @@ public class PickingJobService
 
 	public PickingJob allocateAndSetPickingSlot(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingSlotBarcode pickingSlotBarcode)
+			@NonNull final PickingSlotQRCode pickingSlotQRCode)
 	{
 		return PickingJobAllocatePickingSlotCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
 				//
 				.pickingJob(pickingJob)
-				.pickingSlotBarcode(pickingSlotBarcode)
+				.pickingSlotQRCode(pickingSlotQRCode)
 				//
 				.build().execute();
 	}

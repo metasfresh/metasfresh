@@ -2,6 +2,7 @@ package de.metas.handlingunits.qrcodes.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
@@ -33,10 +34,30 @@ public class HUQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
+	{
+		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+	}
+
+	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);
+	}
+
 	@JsonIgnore
 	public JsonRenderedHUQRCode toRenderedJson()
 	{
 		return HUQRCodeJsonConverter.toRenderedJson(this);
+	}
+
+	public GlobalQRCode toGlobalQRCode()
+	{
+		return HUQRCodeJsonConverter.toGlobalQRCode(this);
+	}
+
+	public String toDisplayableQRCode()
+	{
+		return id.getDisplayableSuffix();
 	}
 
 	public PrintableQRCode toPrintableQRCode()
@@ -69,6 +90,6 @@ public class HUQRCode
 
 	private static String extractPrintableBottomText(final HUQRCode qrCode)
 	{
-		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.getId().getDisplayableSuffix();
+		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 }

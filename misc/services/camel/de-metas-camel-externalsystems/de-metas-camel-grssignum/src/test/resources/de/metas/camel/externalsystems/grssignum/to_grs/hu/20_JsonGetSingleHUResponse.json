@@ -17,7 +17,6 @@
     ],
     "attributes": {
       "1000004": null,
-      "LockNotice": "Erwartet Freigabe durch GRS",
       "QualityDiscountPercent": "0",
       "HU_CostPrice": "1.00",
       "HU_Expired": null,
@@ -50,6 +49,11 @@
       "HU_BestBeforeDate": null,
       "HU_ReceiptInOutLine_ID": "1000005.00"
     },
+    "clearanceStatus": {
+      "key": "Locked",
+      "caption": "Gesperrt"
+    },
+    "clearanceNote": "Locked HU",
     "jsonHUType": "CU",
     "includedHUs": []
   }

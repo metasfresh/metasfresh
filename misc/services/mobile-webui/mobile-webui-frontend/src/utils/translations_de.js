@@ -55,7 +55,7 @@ const translations = {
       picked: 'Ist',
       scanHU: 'Scan HU',
       scanLocator: 'Scan Ziel Lagerort',
-      invalidLocatorBarcode: 'Lagerort Barcode ungültig',
+      invalidLocatorQRCode: 'Lagerort QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
     },
     confirmButton: {

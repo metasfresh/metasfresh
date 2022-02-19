@@ -70,6 +70,9 @@ public class HUReportService
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED + ".C_BPartner_ID_";
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Copies";
 
+	private static final AdProcessId LU_QR_LABEL_PROCESS_ID = AdProcessId.ofRepoId(584998); // hard coded process id
+
+
 	// 895 webui
 	public static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED = "de.metas.ui.web.picking.PickingLabel.AutoPrint.Enabled";
 	public static final String SYSCONFIG_PICKING_LABEL_PROCESS_ID = "de.metas.ui.web.picking.PickingLabel.AD_Process_ID";
@@ -102,6 +105,11 @@ public class HUReportService
 		final Properties ctx = Env.getCtx();
 		final int reportProcessId = sysConfigBL.getIntValue(sysConfigName, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		return AdProcessId.ofRepoIdOrNull(reportProcessId);
+	}
+
+	public AdProcessId retrievePrintLUQRCodeLabelProcessId()
+	{
+		return LU_QR_LABEL_PROCESS_ID;
 	}
 
 	/**

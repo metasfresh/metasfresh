@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 @Value
 @Builder
@@ -20,7 +20,7 @@ public class GlobalQRCode
 
 	@NonNull String payloadAsJson;
 
-	public static final String SEPARATOR = "#";
+	private static final String SEPARATOR = "#";
 
 	public static GlobalQRCode of(
 			@NonNull final GlobalQRCodeType type,
@@ -34,9 +34,7 @@ public class GlobalQRCode
 		}
 		catch (JsonProcessingException ex)
 		{
-			throw new AdempiereException("Failed converting payload to json", ex)
-					.appendParametersToMessage()
-					.setParameter("payload", payload);
+			throw Check.mkEx("Failed converting payload to json: " + payload, ex);
 		}
 
 		return builder()
@@ -49,6 +47,11 @@ public class GlobalQRCode
 	@JsonCreator
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
+		return parse(string).orThrow();
+	}
+
+	public static GlobalQRCodeParseResult parse(@NonNull final String string)
+	{
 		String remainingString = string;
 
 		//
@@ -58,7 +61,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw new AdempiereException("Invalid global QR code(1): " + string);
+				return GlobalQRCodeParseResult.error("Invalid global QR code(1): " + string);
 			}
 			type = GlobalQRCodeType.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -71,7 +74,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw new AdempiereException("Invalid global QR code(2): " + string);
+				return GlobalQRCodeParseResult.error("Invalid global QR code(2): " + string);
 			}
 			version = GlobalQRCodeVersion.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -82,11 +85,11 @@ public class GlobalQRCode
 		final String payloadAsJson = remainingString;
 
 		//
-		return builder()
+		return GlobalQRCodeParseResult.ok(builder()
 				.type(type)
 				.version(version)
 				.payloadAsJson(payloadAsJson)
-				.build();
+				.build());
 	}
 
 	public <T> T getPayloadAs(@NonNull final Class<T> type)
@@ -97,9 +100,7 @@ public class GlobalQRCode
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AdempiereException("Failed converting payload to " + type, e)
-					.appendParametersToMessage()
-					.setParameter("payloadAsJson", payloadAsJson);
+			throw Check.mkEx("Failed converting payload to `" + type + "`: " + payloadAsJson, e);
 		}
 	}
 

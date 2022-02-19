@@ -7,7 +7,9 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptor;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
@@ -19,6 +21,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -27,6 +30,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
@@ -35,6 +39,10 @@ import org.compiere.util.NamePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
 
 /*
  * #%L
@@ -66,15 +74,17 @@ import java.util.List;
 @UtilityClass
 public final class HUEditorRowAttributesHelper
 {
-	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
+	public static ViewRowAttributesLayout createLayout(@NonNull final IAttributeStorage attributeStorage, @NonNull final I_M_HU hu)
 	{
 		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
-		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
+		final List<DocumentLayoutElementDescriptor> attributeLayoutElements = attributeStorage.getAttributeValues()
 				.stream()
 				.map(av -> createLayoutElement(av, warehouseId))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(Collectors.toList());
 
-		return ViewRowAttributesLayout.of(elements);
+		getClearanceNoteLayoutElement(hu).ifPresent(attributeLayoutElements::add);
+
+		return ViewRowAttributesLayout.of(ImmutableList.copyOf(attributeLayoutElements));
 	}
 
 	private static DocumentLayoutElementDescriptor createLayoutElement(
@@ -193,4 +203,35 @@ public final class HUEditorRowAttributesHelper
 		}
 	}
 
+	@NonNull
+	private static Optional<DocumentLayoutElementDescriptor> getClearanceNoteLayoutElement(@NonNull final I_M_HU hu)
+	{
+		if (Check.isBlank(hu.getClearanceNote()))
+		{
+			return Optional.empty();
+		}
+
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (!isDisplayedClearanceStatus)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(createClearanceNoteLayoutElement());
+	}
+
+	@NonNull
+	private static DocumentLayoutElementDescriptor createClearanceNoteLayoutElement()
+	{
+		final ITranslatableString caption = Services.get(IMsgBL.class).translatable(I_M_HU.COLUMNNAME_ClearanceNote);
+
+		return DocumentLayoutElementDescriptor.builder()
+				.setCaption(caption)
+				.setWidgetType(DocumentFieldWidgetType.Text)
+				.addField(DocumentLayoutElementFieldDescriptor
+								  .builder(I_M_HU.COLUMNNAME_ClearanceNote)
+								  .setPublicField(true))
+				.build();
+	}
 }

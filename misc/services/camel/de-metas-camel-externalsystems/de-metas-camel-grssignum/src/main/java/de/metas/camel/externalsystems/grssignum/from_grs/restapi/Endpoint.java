@@ -36,6 +36,7 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.grssignum.from_grs.attachment.BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.grssignum.from_grs.hu.ClearHURouteBuilder.CLEAR_HU_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.hu.UpdateHURouteBuilder.UPDATE_HU_ROUTE_ID;
 
 @AllArgsConstructor
@@ -45,6 +46,7 @@ public enum Endpoint
 	VENDOR(100, PushBPartnerRouteBuilder.PUSH_BPARTNERS_ROUTE_ID),
 	PRODUCT(200, PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID),
 	BOM(300, PUSH_BOM_PRODUCTS_ROUTE_ID),
+	HU_CLEARANCE(998, CLEAR_HU_ROUTE_ID),
 	HU_UPDATE(999, UPDATE_HU_ROUTE_ID),
 	ATTACHMENT(110, ATTACH_FILE_TO_BPARTNER_ROUTE_ID);
 

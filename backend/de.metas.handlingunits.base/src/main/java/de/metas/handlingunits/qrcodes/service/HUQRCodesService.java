@@ -7,7 +7,6 @@ import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -69,16 +68,10 @@ public class HUQRCodesService
 		globalQRCodeService.print(pdf);
 	}
 
-	public HuId getHuIdByQRCode(@NonNull final String qrCodeString)
+	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return getHuIdByQRCodeIfExists(qrCodeString)
-				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code " + qrCodeString));
-	}
-
-	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final String qrCodeString)
-	{
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
-		return getHuIdByQRCodeIfExists(qrCode);
+		return getHuIdByQRCodeIfExists(qrCode)
+				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code `" + qrCode.toDisplayableQRCode() + "`"));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
@@ -121,5 +114,13 @@ public class HUQRCodesService
 	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
 	{
 		huQRCodesRepository.assign(qrCode, huId);
+	}
+
+	public void assertQRCodeAssignedToHU(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	{
+		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
+		{
+			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
+		}
 	}
 }

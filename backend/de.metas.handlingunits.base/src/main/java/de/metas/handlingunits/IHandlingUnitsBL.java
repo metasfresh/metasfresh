@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -572,4 +573,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
+
+	void setClearanceStatus(final HuId huId,final ClearanceStatus status, final String clearanceNote);
+
+	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
+
+	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 }
