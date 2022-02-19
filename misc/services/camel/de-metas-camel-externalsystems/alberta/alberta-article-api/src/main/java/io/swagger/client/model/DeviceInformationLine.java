@@ -28,7 +28,7 @@ import java.util.List;
  * DeviceInformationLine
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-12-02T17:09:48.943Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2022-02-18T14:17:41.660Z[GMT]")
 public class DeviceInformationLine {
   @SerializedName("articleDescription")
   private String articleDescription = null;
@@ -397,7 +397,7 @@ public class DeviceInformationLine {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -460,7 +460,7 @@ public class DeviceInformationLine {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }

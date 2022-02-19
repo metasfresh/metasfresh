@@ -25,8 +25,14 @@
         "stars": 4,
         "pharmacyPrice": 1600.00,
         "fixedPrice": 11.00,
+        "therapyIds": [
+          "1",
+          "2",
+          "3"
+        ],
         "billableTherapies": [
-          "1"
+          "1",
+          "3"
         ],
         "packagingUnits": [
           {
