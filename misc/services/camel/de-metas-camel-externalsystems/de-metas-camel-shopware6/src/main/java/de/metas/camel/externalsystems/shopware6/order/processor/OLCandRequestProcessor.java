@@ -53,6 +53,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -67,6 +68,8 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAUL
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_ORDER_LINE_DISCOUNT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ORDER_LINE_SEQUENCE_INCREMENT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ORDER_LINE_SEQUENCE_INITIAL_VALUE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.VALUE_PREFIX;
 import static java.math.BigDecimal.ZERO;
@@ -96,7 +99,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder olCandCreateBulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
+		final ImmutableList.Builder<JsonOLCandCreateRequest> olCandCreateRequests = ImmutableList.builder();
 
 		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
@@ -143,7 +146,7 @@ public class OLCandRequestProcessor implements Processor
 
 		orderLines.stream()
 				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine, context.getJsonProductLookup()))
-				.forEach(olCandCreateBulkRequestBuilder::request);
+				.forEach(olCandCreateRequests::add);
 
 		final TaxProductIdProvider taxProductIdProvider = context.getTaxProductIdProvider();
 		if (taxProductIdProvider != null)
@@ -160,7 +163,7 @@ public class OLCandRequestProcessor implements Processor
 				if (!hasCalculatedTaxes)
 				{ // case: the order is tax-free; there is just a total shipping price
 					final BigDecimal taxRate = ZERO;
-					olCandCreateBulkRequestBuilder.request(
+					olCandCreateRequests.add(
 							olCandCreateRequestBuilder
 									.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + taxRate)
 									.line(null)
@@ -176,11 +179,12 @@ public class OLCandRequestProcessor implements Processor
 					calculatedTaxes.stream()
 							.map(tax -> processTax(taxProductIdProvider, olCandCreateRequestBuilder, tax))
 							.filter(Optional::isPresent).map(Optional::get)
-							.forEach(olCandCreateBulkRequestBuilder::request);
+							.forEach(olCandCreateRequests::add);
 				}
 			}
 		}
-		return olCandCreateBulkRequestBuilder.build();
+
+		return renumberLinesIfRequired(olCandCreateRequests.build());
 	}
 
 	@NonNull
@@ -425,5 +429,31 @@ public class OLCandRequestProcessor implements Processor
 
 			default -> throw new RuntimeCamelException("Unsupported JsonProductLookupMode " + lookup);
 		}
+	}
+
+	@NonNull
+	private JsonOLCandCreateBulkRequest renumberLinesIfRequired(@NonNull final List<JsonOLCandCreateRequest> olCandCreateRequests)
+	{
+		final boolean needsRenumbering = olCandCreateRequests
+				.stream()
+				.anyMatch(request -> request.getOrderLineGroup() != null);
+
+		if (!needsRenumbering)
+		{
+			return JsonOLCandCreateBulkRequest.builder().requests(olCandCreateRequests).build();
+		}
+
+		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder bulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
+
+		final MutableInt sequence = new MutableInt(ORDER_LINE_SEQUENCE_INITIAL_VALUE);
+
+		olCandCreateRequests
+				.stream()
+				.map(request -> request.toBuilder()
+						.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+						.build())
+				.forEach(bulkRequestBuilder::request);
+
+		return bulkRequestBuilder.build();
 	}
 }

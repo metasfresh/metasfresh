@@ -117,5 +117,5 @@ Feature: Allow order discount via API (compensation group)
 """
     And ProcessOLCands is called
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'
-      | Line | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
-      | 1    | true                    | 2                           | D                     | P                        |
+      | Line  | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
+      | 20    | true                    | 2                           | D                     | P                        |
