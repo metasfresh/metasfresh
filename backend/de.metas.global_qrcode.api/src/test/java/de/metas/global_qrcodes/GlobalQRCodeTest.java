@@ -3,9 +3,11 @@ package de.metas.global_qrcodes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GlobalQRCodeTest
 {
@@ -37,5 +39,23 @@ class GlobalQRCodeTest
 		assertThat(qrCodeDeserialized).isEqualTo(qrCode);
 		assertThat(qrCodeDeserialized.getType()).isSameAs(qrCode.getType());
 		assertThat(qrCodeDeserialized.getVersion()).isSameAs(qrCode.getVersion());
+	}
+
+	@Nested
+	class parse
+	{
+		@Test
+		void orNullIfError_invalidQRCode()
+		{
+			assertThat(GlobalQRCode.parse("blabla").orNullIfError()).isNull();
+		}
+
+		@Test
+		void orThrow_invalidQRCode()
+		{
+			assertThatThrownBy(() -> GlobalQRCode.parse("blabla").orThrow())
+					.isInstanceOf(RuntimeException.class)
+					.hasMessageContaining("blabla");
+		}
 	}
 }

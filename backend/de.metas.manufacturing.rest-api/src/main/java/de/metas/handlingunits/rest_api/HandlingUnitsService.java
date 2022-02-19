@@ -313,6 +313,10 @@ public class HandlingUnitsService
 
 	public void move(@NonNull final MoveHURequest request)
 	{
-		new MoveHUCommand(request).execute();
+		MoveHUCommand.builder()
+				.huQRCodesService(huQRCodeService)
+				.request(request)
+				.build()
+				.execute();
 	}
 }
