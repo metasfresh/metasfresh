@@ -75,7 +75,8 @@ const translations = {
       issues: {
         target: 'Zuf. Soll',
         picked: 'Ist',
-        qtyToIssue: 'Menge Soll',
+        qtyToIssueTarget: 'Menge Soll',
+        qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
       },

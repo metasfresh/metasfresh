@@ -19,9 +19,12 @@ public class JsonRawMaterialsIssueLine
 {
 	@NonNull String productName;
 	@NonNull String uom;
+
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyToIssueMin;
 	@Nullable BigDecimal qtyToIssueMax;
+	@Nullable BigDecimal qtyToIssueTolerancePerc;
+
 	@NonNull BigDecimal qtyIssued;
 
 	@NonNull List<JsonRawMaterialsIssueLineStep> steps;
@@ -36,6 +39,7 @@ public class JsonRawMaterialsIssueLine
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
 				.qtyToIssueMin(from.getQtyToIssueMin().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))
+				.qtyToIssueTolerancePerc(from.getQtyToIssueTolerance() != null ? from.getQtyToIssueTolerance().toBigDecimal() : null)
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
 				.steps(from.getSteps()
 						.stream()

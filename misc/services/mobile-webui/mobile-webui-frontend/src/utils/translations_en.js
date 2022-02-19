@@ -74,7 +74,8 @@ const translations = {
       issues: {
         target: 'To issue',
         picked: 'Issued',
-        qtyToIssue: 'Qty to issue',
+        qtyToIssueTarget: 'Qty to Issue Target',
+        qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
       },

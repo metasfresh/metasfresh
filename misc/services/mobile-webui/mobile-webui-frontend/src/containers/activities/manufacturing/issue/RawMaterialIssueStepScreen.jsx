@@ -33,15 +33,15 @@ const RawMaterialIssueStepScreen = () => {
             value: locatorName,
           },
           {
-            caption: trl('activities.mfg.issues.qtyToIssue'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyToIssueTarget'),
             value: qtyToIssue + ' ' + uom,
           },
           {
-            caption: trl('activities.mfg.issues.qtyIssued'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyIssued'),
             value: (qtyIssued || 0) + ' ' + uom,
           },
           {
-            caption: trl('activities.mfg.issues.qtyRejected'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyRejected'),
             value: qtyRejected + ' ' + uom,
             hidden: !qtyRejected,
           },

@@ -16,11 +16,8 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, productName, uom, qtyToIssue, qtyToIssueMin, qtyToIssueMax, steps } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
-  console.log('RawMaterialIssueLineScreen', { productName, uom, qtyToIssue, qtyToIssueMin, qtyToIssueMax, steps });
+  const { caption, productName, uom, qtyToIssue, qtyToIssueTolerancePerc, qtyToIssueRemaining, qtyIssued, steps } =
+    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -30,7 +27,12 @@ const RawMaterialIssueLineScreen = () => {
         caption: caption,
         values: [
           { caption: trl('general.Product'), value: productName },
-          { caption: trl('activities.mfg.issues.qtyToIssue'), value: qtyToIssue + ' ' + uom },
+          {
+            caption: trl('activities.mfg.issues.qtyToIssueTarget'),
+            value: buildQtyWithToleranceString({ qty: qtyToIssue, uom, tolerance: qtyToIssueTolerancePerc }),
+          },
+          { caption: trl('activities.mfg.issues.qtyToIssueRemaining'), value: qtyToIssueRemaining + ' ' + uom },
+          { caption: trl('activities.mfg.issues.qtyIssued'), value: qtyIssued + ' ' + uom },
         ],
       })
     );
@@ -69,16 +71,26 @@ const RawMaterialIssueLineScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const line = getLineByIdFromActivity(activity, lineId);
-  console.log('getPropsFromState', { activity, line });
   return {
     caption: activity?.caption ?? 'Issue',
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueMin: line?.qtyToIssueMin,
-    qtyToIssueMax: line?.qtyToIssueMax,
+    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
+    // qtyToIssueMin: line?.qtyToIssueMin,
+    // qtyToIssueMax: line?.qtyToIssueMax,
+    qtyToIssueRemaining: line?.qtyToIssueRemaining,
+    qtyIssued: line?.qtyIssued,
     steps: getStepsArrayFromLine(line),
   };
+};
+
+const buildQtyWithToleranceString = ({ qty, uom, tolerance }) => {
+  let result = qty + ' ' + uom;
+  if (tolerance != null) {
+    result += ' ±' + tolerance + '%';
+  }
+  return result;
 };
 
 export default RawMaterialIssueLineScreen;
