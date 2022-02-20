@@ -54,12 +54,15 @@ const HUManagerScreen = () => {
   };
 
   const onSetClearanceClick = () => {
-    toggleClearanceModal(!clearanceModalDisplayed);
+    toggleClearanceModal(true);
   };
 
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).then(() => {
-      toggleClearanceModal(!clearanceModalDisplayed);
+      toggleClearanceModal(false);
+      api
+        .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
+        .then((statuses) => setClearanceStatuses(statuses));
     });
   };
 
@@ -67,7 +70,6 @@ const HUManagerScreen = () => {
 
   useEffect(() => {
     if (handlingUnitInfo && !clearanceStatuses.length) {
-      toggleClearanceModal(false);
       api
         .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
         .then((statuses) => setClearanceStatuses(statuses));
@@ -79,7 +81,7 @@ const HUManagerScreen = () => {
       <>
         {clearanceModalDisplayed ? (
           <ClearanceDialog
-            onCloseDialog={onSetClearanceClick}
+            onCloseDialog={() => toggleClearanceModal(false)}
             onClearanceChange={onClearanceChange}
             clearanceStatuses={clearanceStatuses}
             handlingUnitInfo={handlingUnitInfo}
