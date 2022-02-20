@@ -382,7 +382,9 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas (2009 0027 G1): making sure that the default billTo
 				// and shipTo location is used
-				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
+				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
+				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
+				+ " , lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
 				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
 				// metas end
 				// 08578 take default users first.

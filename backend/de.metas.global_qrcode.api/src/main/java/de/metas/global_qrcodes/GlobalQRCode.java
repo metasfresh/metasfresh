@@ -20,7 +20,7 @@ public class GlobalQRCode
 
 	@NonNull String payloadAsJson;
 
-	public static final String SEPARATOR = "#";
+	private static final String SEPARATOR = "#";
 
 	public static GlobalQRCode of(
 			@NonNull final GlobalQRCodeType type,
@@ -47,6 +47,11 @@ public class GlobalQRCode
 	@JsonCreator
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
+		return parse(string).orThrow();
+	}
+
+	public static GlobalQRCodeParseResult parse(@NonNull final String string)
+	{
 		String remainingString = string;
 
 		//
@@ -56,7 +61,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw Check.mkEx("Invalid global QR code(1): " + string);
+				return GlobalQRCodeParseResult.error("Invalid global QR code(1): " + string);
 			}
 			type = GlobalQRCodeType.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -69,7 +74,7 @@ public class GlobalQRCode
 			int idx = remainingString.indexOf(SEPARATOR);
 			if (idx <= 0)
 			{
-				throw Check.mkEx("Invalid global QR code(2): " + string);
+				return GlobalQRCodeParseResult.error("Invalid global QR code(2): " + string);
 			}
 			version = GlobalQRCodeVersion.ofString(remainingString.substring(0, idx));
 			remainingString = remainingString.substring(idx + 1);
@@ -80,11 +85,11 @@ public class GlobalQRCode
 		final String payloadAsJson = remainingString;
 
 		//
-		return builder()
+		return GlobalQRCodeParseResult.ok(builder()
 				.type(type)
 				.version(version)
 				.payloadAsJson(payloadAsJson)
-				.build();
+				.build());
 	}
 
 	public <T> T getPayloadAs(@NonNull final Class<T> type)
