@@ -447,6 +447,6 @@ Feature: ASI support in Product BOM rest-api
       | oc_finishedGood                  | olc_finishedGood | component_S3            | 50         | PCE               | CO            | bomLine_1                        | bomLineAttributeSetInstance              |
 
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111      | DEMAND            | SHIPMENT                  | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
       | c_222      | SUPPLY            | PRODUCTION                | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
