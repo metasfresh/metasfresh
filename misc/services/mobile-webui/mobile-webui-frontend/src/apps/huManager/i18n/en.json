@@ -5,6 +5,7 @@
   "HUStatus": "Status",
   "product": "Product",
   "clearanceStatus": "Clearance Status",
+  "clearanceNote": "Clearance Note",
   "qty": "Quantity",
   "disposePendingStatus": "disposing",
   "action": {
