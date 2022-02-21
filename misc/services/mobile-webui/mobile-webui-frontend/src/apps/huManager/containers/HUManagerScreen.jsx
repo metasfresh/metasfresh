@@ -1,21 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
+
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
 import * as api from '../api';
-import { clearLoadedData, handlingUnitLoaded } from '../actions';
+import { clearLoadedData, handlingUnitLoaded, changeClearanceStatus } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import ClearanceDialog from '../components/ClearanceDialog';
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
+  const [clearanceModalDisplayed, toggleClearanceModal] = useState(false);
+  const [clearanceStatuses, setClearanceStatuses] = useState([]);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -37,7 +43,6 @@ const HUManagerScreen = () => {
     dispatch(handlingUnitLoaded({ handlingUnitInfo }));
   };
 
-  const history = useHistory();
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
   };
@@ -48,16 +53,42 @@ const HUManagerScreen = () => {
     dispatch(clearLoadedData());
   };
 
+  const onSetClearanceClick = () => {
+    toggleClearanceModal(!clearanceModalDisplayed);
+  };
+
+  const onClearanceStatusChange = (status) => {
+    dispatch(changeClearanceStatus(status));
+  };
+
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
+
+  useEffect(() => {
+    if (handlingUnitInfo && !clearanceStatuses.length) {
+      api.getAllowedClearanceStatuses({ huId: handlingUnitInfo.id }).then((statuses) => setClearanceStatuses(statuses));
+    }
+  }, [handlingUnitInfo]);
 
   if (handlingUnitInfo && handlingUnitInfo.id) {
     return (
       <>
+        {clearanceModalDisplayed ? (
+          <ClearanceDialog
+            onCloseDialog={onSetClearanceClick}
+            onStatusChange={onClearanceStatusChange}
+            clearanceStatuses={clearanceStatuses}
+            handlingUnitInfo={handlingUnitInfo}
+          />
+        ) : null}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
         <div className="pt-3 section">
           <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
           <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
+          <ButtonWithIndicator
+            caption={trl('huManager.action.setClearance.buttonCaption')}
+            onClick={onSetClearanceClick}
+          />
         </div>
       </>
     );

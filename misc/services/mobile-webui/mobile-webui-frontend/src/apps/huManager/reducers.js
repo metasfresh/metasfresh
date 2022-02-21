@@ -1,4 +1,4 @@
-import { CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED } from './actionTypes';
+import { CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED, CHANGE_CLEARANCE_STATUS } from './actionTypes';
 
 export function huManagerReducer(applicationState = {}, action) {
   switch (action.type) {
@@ -11,6 +11,9 @@ export function huManagerReducer(applicationState = {}, action) {
         ...applicationState,
         handlingUnitInfo,
       };
+    }
+    case CHANGE_CLEARANCE_STATUS: {
+      return applicationState;
     }
     default:
       return applicationState;

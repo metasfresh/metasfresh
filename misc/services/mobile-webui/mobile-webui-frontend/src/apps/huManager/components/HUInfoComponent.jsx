@@ -4,6 +4,7 @@ import { trl } from '../../../utils/translations';
 import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
+  const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
   return (
     <table className="table view-header is-size-6">
       <tbody>
@@ -22,6 +23,10 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
         <tr>
           <th>{trl('huManager.HUStatus')}</th>
           <td>{computeHUStatusCaption(handlingUnitInfo)}</td>
+        </tr>
+        <tr>
+          <th>{trl('huManager.clearanceStatus')}</th>
+          <td>{clearanceStatus}</td>
         </tr>
         {handlingUnitInfo.products.map((product) => (
           <ProductInfoRows key={product.productValue} product={product} />
