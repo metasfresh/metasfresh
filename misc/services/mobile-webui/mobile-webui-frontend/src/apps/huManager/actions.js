@@ -17,13 +17,16 @@ export const handlingUnitLoaded = ({ handlingUnitInfo }) => {
 
 export const changeClearanceStatus = ({ huId, clearanceNote, clearanceStatus }) => {
   return (dispatch) => {
-    return setClearanceStatusRequest({ huId, clearanceNote, clearanceStatus }).then(() => {
-      dispatch({
-        type: CHANGE_CLEARANCE_STATUS,
-        payload: { clearanceNote, clearanceStatus },
-      });
+    if (clearanceStatus.key) {
+      return setClearanceStatusRequest({ huId, clearanceNote, clearanceStatus: clearanceStatus.key }).then(() => {
+        dispatch({
+          type: CHANGE_CLEARANCE_STATUS,
+          payload: { clearanceNote, clearanceStatus },
+        });
 
-      return Promise.resolve();
-    });
+        return Promise.resolve();
+      });
+    }
+    return Promise.reject();
   };
 };

@@ -65,7 +65,7 @@ const HUManagerScreen = () => {
     toggleClearanceModal(true);
   };
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
-    dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).then(() => {
+    dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).finally(() => {
       toggleClearanceModal(false);
     });
   };

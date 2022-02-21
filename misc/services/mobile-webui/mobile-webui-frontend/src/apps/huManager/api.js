@@ -48,11 +48,5 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
 }
 
 export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
-  const dataObject = { clearanceNote };
-
-  if (clearanceStatus) {
-    dataObject.clearanceStatus = clearanceStatus.key;
-  }
-
-  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, dataObject);
+  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { clearanceStatus, clearanceNote });
 }
