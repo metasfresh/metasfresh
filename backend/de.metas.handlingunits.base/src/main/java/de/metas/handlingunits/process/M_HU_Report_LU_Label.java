@@ -16,6 +16,7 @@ import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
@@ -51,6 +52,7 @@ import org.springframework.core.io.ByteArrayResource;
  * It takes M_HU_IDs (LUs) from T_Selection, gets/generates QR-Codes for them
  * and then generate the PDF that will contain the QR Code and more detailed product infos.
  */
+
 public class M_HU_Report_LU_Label extends JavaProcess implements IProcessPrecondition
 {
 	private final HUReportService huReportService = HUReportService.get();
@@ -70,6 +72,7 @@ public class M_HU_Report_LU_Label extends JavaProcess implements IProcessPrecond
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 
