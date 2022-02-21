@@ -23,6 +23,7 @@ package de.metas.util;
  */
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -191,6 +192,16 @@ public final class NumberUtils
 				}
 			}
 		}
+	}
+
+	public static int asInt(@NonNull final Object value)
+	{
+		final Integer integerValue = asIntegerOrNull(value);
+		if (integerValue == null)
+		{
+			throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int");
+		}
+		return integerValue;
 	}
 
 	public static int asIntOrZero(final Object value)

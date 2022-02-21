@@ -74,6 +74,9 @@ const translations = {
       ProductName: 'Product Name',
       target: 'To issue',
       picked: 'Issued',
+      generateHUQRCodes: {
+        print: 'Print',
+      },
       issues: {
         target: 'To issue',
         picked: 'Issued',
