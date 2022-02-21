@@ -48,7 +48,6 @@ const DistributionLineScreen = () => {
               lineId={lineId}
               stepId={stepItem.id}
               productName={stepItem.productName}
-              pickFromLocator={stepItem.pickFromLocator}
               pickFromHU={stepItem.pickFromHU}
               uom={stepItem.uom}
               qtyPicked={stepItem.qtyPicked}

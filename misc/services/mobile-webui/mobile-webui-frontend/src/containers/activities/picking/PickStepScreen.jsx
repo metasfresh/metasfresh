@@ -32,7 +32,7 @@ const PickStepScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Pick HU', // TODO trl
+        caption: trl('activities.picking.PickHU'),
         values: [
           {
             caption: trl('general.Locator'),

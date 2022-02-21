@@ -5,7 +5,7 @@
   "HUStatus": "Status",
   "product": "Produkt",
   "qty": "Menge",
-  "disposePendingStatus": "disposing",
+  "disposePendingStatus": "Entsorgen",
   "clearanceStatus": "Freigabestatus",
   "clearanceNote": "Freigabebe-Notiz",
   "action": {
