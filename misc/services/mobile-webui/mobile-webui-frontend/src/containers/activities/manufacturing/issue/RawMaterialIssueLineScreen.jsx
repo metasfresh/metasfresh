@@ -85,7 +85,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-const buildQtyWithToleranceString = ({ qty, uom, tolerance }) => {
+export const buildQtyWithToleranceString = ({ qty, uom, tolerance }) => {
   let result = qty + ' ' + uom;
   if (tolerance != null) {
     result += ' ±' + tolerance + '%';

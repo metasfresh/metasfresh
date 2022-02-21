@@ -17,6 +17,7 @@ const translations = {
     QtyRejected: 'Qty Rejected',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
+    scanQRCode: 'Scan QR',
   },
   login: {
     submitButton: 'Login',
