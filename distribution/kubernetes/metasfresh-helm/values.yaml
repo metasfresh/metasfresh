@@ -6,12 +6,12 @@ app:
   resources:
     memory: 1200M
   debug:
-    suspend: "n" 
+    suspend: 'n' 
     printBashCmds: 'y'
 
 db:
   image: dockerhub.metasfresh.com/postgres:14.2
-  imageInit: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-14-2:master_LATEST
+  imageInit: nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:master_dockerimages_5.175.2_22_masterdockerimages
   urlSeedDump: https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump
   urlMigrationScript: https://repo.metasfresh.com/repository/mvn-master_dockerimages-releases/de/metas/dist/metasfresh-dist-dist/5.175.2-2%2Bmasterdockerimages/metasfresh-dist-dist-5.175.2-2%2Bmasterdockerimages-sql-only.tar.gz
   name: metasfresh

@@ -64,6 +64,11 @@ Map build(final MvnConf mvnConf) {
                 valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
                 valuesData.db.urlMigrationScript = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 
+                // fix missing quotes after readYaml
+                valuesData.app.debug.suspend = "\'n\'"
+                valuesData.app.debug.printBashCmds = "\'n\'"
+                valuesData.db.debug.printBashCmds = "\'n\'"
+
                 writeYaml file: valuesFileDes, data: valuesData
 
                 String helmValuesGroupId='de.metas.kubernetes'
