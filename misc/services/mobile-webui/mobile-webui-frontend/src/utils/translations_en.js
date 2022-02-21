@@ -42,6 +42,7 @@ const translations = {
     },
     picking: {
       PickingLine: 'Picking Line',
+      PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
       invalidQtyPicked: 'Invalid qty picked',
@@ -75,6 +76,8 @@ const translations = {
       target: 'To issue',
       picked: 'Issued',
       generateHUQRCodes: {
+        packing: 'Packing',
+        qtyTUs: 'TUs',
         print: 'Print',
       },
       issues: {

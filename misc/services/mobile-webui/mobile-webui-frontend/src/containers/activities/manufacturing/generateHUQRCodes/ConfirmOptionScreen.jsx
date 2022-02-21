@@ -25,11 +25,11 @@ const ConfirmOptionScreen = () => {
         location: url,
         values: [
           {
-            caption: 'Packing', // TODO trl
+            caption: trl('activities.mfg.generateHUQRCodes.packing'),
             value: optionInfo.caption,
           },
           {
-            caption: 'TUs', // TODO trl
+            caption: trl('activities.mfg.generateHUQRCodes.qtyTUs'),
             value: qtyTUs,
           },
         ],

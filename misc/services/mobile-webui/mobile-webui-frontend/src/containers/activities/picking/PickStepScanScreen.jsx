@@ -29,7 +29,7 @@ const PickStepScanScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Scan HU', // TODO trl
+        caption: trl('activities.picking.scanQRCode'),
         values: [],
       })
     );
