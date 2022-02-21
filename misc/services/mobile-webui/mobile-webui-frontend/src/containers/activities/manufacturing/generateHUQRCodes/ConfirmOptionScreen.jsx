@@ -8,6 +8,7 @@ import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import QtyInputField from '../../../../components/QtyInputField';
 import { qtyInfos } from '../../../../utils/qtyInfos';
+import { trl } from '../../../../utils/translations';
 
 const ConfirmOptionScreen = () => {
   const {
@@ -57,11 +58,9 @@ const ConfirmOptionScreen = () => {
   };
 
   const isValidQtyTUs = qtyTUs != null && qtyTUs > 0;
-  const printButtonCaption = isValidQtyTUs ? `Print ${qtyTUs}` : 'Print';
 
   return (
     <div className="section pt-2">
-      <pre>{JSON.stringify(optionInfo, null, 2)}</pre>
       <QtyInputField
         qty={qtyTUs}
         integerValuesOnly
@@ -69,7 +68,11 @@ const ConfirmOptionScreen = () => {
         onQtyChange={({ qty }) => setQtyTUs(qtyInfos.toNumberOrString(qty))}
         isRequestFocus={true}
       />
-      <Button caption={printButtonCaption} disabled={!isValidQtyTUs} onClick={onPrintClick} />
+      <Button
+        caption={trl('activities.mfg.generateHUQRCodes.print')}
+        disabled={!isValidQtyTUs}
+        onClick={onPrintClick}
+      />
     </div>
   );
 };
