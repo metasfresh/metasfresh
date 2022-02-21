@@ -269,7 +269,7 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		// Retrieve vendors from cache
 		if (bpartnerId > 0)
 		{
-			final List<KeyNamePair> vendorBPartnersCached = vendorsCache.getOrLoad(bpartnerId, () -> vendorsCache.get(bpartnerId));
+			final List<KeyNamePair> vendorBPartnersCached = vendorsCache.getOrLoad(bpartnerId, () -> retrieveVendorKeyNamePairs());
 			vendorBPartners.addAll(vendorBPartnersCached);
 		}
 
