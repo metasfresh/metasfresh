@@ -48,13 +48,19 @@ spec:
             secretKeyRef:
               name: metasfresh-{{ .Release.Name }}-pgadmin-secret
               key: default-password
-      # doesn't work, possible solution subpath or wrong path
-      #   volumeMounts:
-      #   - mountPath: /var/lib/pgadmin
-      #     name: data
-      # volumes:
-      # - name: data
-      #   hostPath:
-      #     path: /volumes/{{ .Release.Namespace }}/pgadmin
-      #     type: DirectoryOrCreate
+        volumeMounts:
+        - mountPath: /var/lib/pgadmin
+          name: data
+      initContainers:
+        - name: take-data-dir-ownership
+          image: busybox
+          command: ['sh', '-c', 'chown -R 5050:5050 /var/lib/pgadmin']
+          volumeMounts:
+          - mountPath: /var/lib/pgadmin
+            name: data
+      volumes:
+      - name: data
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/pgadmin
+          type: DirectoryOrCreate
         
