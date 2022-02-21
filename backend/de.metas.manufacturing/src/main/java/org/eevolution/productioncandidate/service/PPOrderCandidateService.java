@@ -22,10 +22,9 @@
 
 package org.eevolution.productioncandidate.service;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.EmptyUtil;
-import de.metas.logging.LogManager;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
@@ -38,7 +37,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -47,7 +45,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMLineId;
@@ -60,25 +57,25 @@ import org.eevolution.productioncandidate.agg.key.impl.PPOrderCandidateHeaderAgg
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
 public class PPOrderCandidateService
 {
-	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
-
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-	private final IProductBOMBL productBOMsBL = Services.get(IProductBOMBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
@@ -95,16 +92,12 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public I_PP_Order_Candidate createCandidateWithLines(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
+	public I_PP_Order_Candidate createCandidate(@NonNull final PPOrderCandidateCreateRequest ppOrderCandidateCreateRequest)
 	{
-		final I_PP_Order_Candidate ppOrderCandidateRecord = CreateOrderCandidateCommand.builder()
+		return CreateOrderCandidateCommand.builder()
 				.request(ppOrderCandidateCreateRequest)
 				.build()
 				.execute();
-
-		createPPOrderCandidateLines(ppOrderCandidateRecord);
-
-		return ppOrderCandidateRecord;
 	}
 
 	@NonNull
@@ -154,32 +147,36 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.save(ppOrderCandidate);
 	}
 
-	public void syncLinesWithRequiredQty(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
+	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID());
+		final Date dateStartSchedule = TimeUtil.asDate(ppOrderCandidateRecord.getDateStartSchedule());
 
-		final ImmutableList<I_PP_OrderLine_Candidate> orderCandidateLines = ppOrderCandidateDAO.getLinesByCandidateId(ppOrderCandidateId);
+		Check.assumeNotNull(dateStartSchedule, "PP_Order_Candidate.DateStartSchedule is never null!");
 
-		if (EmptyUtil.isEmpty(orderCandidateLines))
+		final I_PP_Product_BOM productBOM = getVerifiedBOMProduct(ppOrderCandidateRecord, dateStartSchedule);
+
+		final List<I_PP_Product_BOMLine> productBOMLines = productBOMsRepo.retrieveLines(productBOM);
+
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID());
+
+		final Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLine = getOrderLine2BOMLine(ppOrderCandidateId, productBOMLines);
+
+		final List<I_PP_Product_BOMLine> unhandledBOMLines = getUnhandledBOMLines(orderLineCandidate2BOMLine, productBOMLines);
+
+		for (final Map.Entry<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLineEntry : orderLineCandidate2BOMLine.entrySet())
 		{
-			createPPOrderCandidateLines(ppOrderCandidate);
+			final boolean isOrderLineOutdated = !orderLineCandidate2BOMLineEntry.getValue().isPresent();
+			if (isOrderLineOutdated)
+			{
+				handleOutdatedLine(orderLineCandidate2BOMLineEntry.getKey());
+			}
+			else
+			{
+				handleUpdatedLine(ppOrderCandidateRecord, orderLineCandidate2BOMLineEntry.getKey(), orderLineCandidate2BOMLineEntry.getValue().get());
+			}
 		}
-		else
-		{
-			final Quantity finishedGoodQty = Quantitys.create(ppOrderCandidate.getQtyEntered(), UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID()));
 
-			orderCandidateLines.forEach(ppOrderCandidateLine -> {
-				final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
-						.finishedGoodQty(finishedGoodQty)
-						.productBOMLineId(ProductBOMLineId.ofRepoId(ppOrderCandidateLine.getPP_Product_BOMLine_ID()))
-						.build();
-
-				final Quantity qtyRequired = orderBOMBL.getQtyRequired(request);
-
-				ppOrderCandidateLine.setQtyEntered(qtyRequired.toBigDecimal());
-				ppOrderCandidateDAO.saveLine(ppOrderCandidateLine);
-			});
-		}
+		unhandledBOMLines.forEach(productBOMLine -> createOrderLineCandidate(ppOrderCandidateRecord, productBOMLine));
 	}
 
 	@NonNull
@@ -200,43 +197,13 @@ public class PPOrderCandidateService
 		return Optional.of(dateStartSchedule.plus(durationDays, ChronoUnit.DAYS));
 	}
 
-	private void createPPOrderCandidateLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public static boolean canAssignBOMVersion(@NonNull final I_PP_Order_Candidate ppOrderCandidate, @NonNull final I_PP_Product_BOM bomVersion)
 	{
-		final Date dateStartSchedule = TimeUtil.asDate(ppOrderCandidateRecord.getDateStartSchedule());
-
-		Check.assumeNotNull(dateStartSchedule, "PP_Order_Candidate.DateStartSchedule is never null!");
-
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ProductBOMId.ofRepoId(ppOrderCandidateRecord.getPP_Product_BOM_ID()));
-
-		final ProductId orderCandidateProductId = ProductId.ofRepoId(ppOrderCandidateRecord.getM_Product_ID());
-
-		final I_PP_Product_BOM verifiedProductBOM = PPOrderUtil.verifyProductBOMAndReturnIt(
-				orderCandidateProductId,
-				dateStartSchedule,
-				productBOM);
-
-		final List<I_PP_Product_BOMLine> productBOMLines = productBOMsRepo.retrieveLines(verifiedProductBOM);
-
-		if (EmptyUtil.isEmpty(productBOMLines))
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ProductBOM has no lines! - PP_Product_BOM_ID: {}", verifiedProductBOM.getPP_Product_BOM_ID());
-			return;
-		}
-
-		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
-		{
-			if (!productBOMsBL.isValidFromTo(productBOMLine, dateStartSchedule))
-			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("BOM Line skipped - {}", productBOMLine);
-				continue;
-			}
-
-			createOrderLineCandidate(ppOrderCandidateRecord, productBOMLine);
-		}
+		return ppOrderCandidate.getDateStartSchedule().compareTo(bomVersion.getValidFrom()) >= 0
+				&& ppOrderCandidate.getQtyProcessed().signum() == 0;
 	}
 
-	@NonNull
-	private I_PP_OrderLine_Candidate createOrderLineCandidate(
+	private void createOrderLineCandidate(
 			@NonNull final I_PP_Order_Candidate orderCandidateRecord,
 			@NonNull final I_PP_Product_BOMLine bomLine)
 	{
@@ -244,6 +211,17 @@ public class PPOrderCandidateService
 
 		orderLineCandidate.setPP_Order_Candidate_ID(orderCandidateRecord.getPP_Order_Candidate_ID());
 
+		setBOMLineRelatedFields(orderLineCandidate, bomLine);
+
+		setQtyEntered(orderCandidateRecord, orderLineCandidate, bomLine);
+
+		ppOrderCandidateDAO.saveLine(orderLineCandidate);
+	}
+
+	private void setBOMLineRelatedFields(
+			@NonNull final I_PP_OrderLine_Candidate orderLineCandidate,
+			@NonNull final I_PP_Product_BOMLine bomLine)
+	{
 		orderLineCandidate.setPP_Product_BOMLine_ID(bomLine.getPP_Product_BOMLine_ID());
 		orderLineCandidate.setComponentType(bomLine.getComponentType());
 		orderLineCandidate.setM_Product_ID(bomLine.getM_Product_ID());
@@ -256,8 +234,14 @@ public class PPOrderCandidateService
 			final AttributeSetInstanceId asiCopy = attributesRepo.copyASI(asiId);
 			orderLineCandidate.setM_AttributeSetInstance_ID(asiCopy.getRepoId());
 		}
+	}
 
-		final Quantity finishedGoodQty = Quantitys.create(orderCandidateRecord.getQtyEntered(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
+	private void setQtyEntered(
+			@NonNull final I_PP_Order_Candidate orderCandidateRecord,
+			@NonNull final I_PP_OrderLine_Candidate orderLineCandidate,
+			@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		final Quantity finishedGoodQty = Quantitys.create(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
 
 		final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
 				.finishedGoodQty(finishedGoodQty)
@@ -272,10 +256,75 @@ public class PPOrderCandidateService
 
 		orderLineCandidate.setQtyEntered(qtyRequired.toBigDecimal());
 		orderLineCandidate.setC_UOM_ID(qtyRequired.getUOM().getC_UOM_ID());
+	}
 
-		ppOrderCandidateDAO.saveLine(orderLineCandidate);
+	@NonNull
+	private Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> getOrderLine2BOMLine(
+			@NonNull final PPOrderCandidateId ppOrderCandidateId,
+			@NonNull final List<I_PP_Product_BOMLine> productBOMLines)
+	{
+		final ImmutableList<I_PP_OrderLine_Candidate> orderCandidateLines = ppOrderCandidateDAO.getLinesByCandidateId(ppOrderCandidateId);
 
-		return orderLineCandidate;
+		final Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLine2BOMLine = new HashMap<>();
+
+		for (final I_PP_OrderLine_Candidate orderLineCandidate : orderCandidateLines)
+		{
+			for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
+			{
+				if (isBOMLineMatchingOrderLine(orderLineCandidate, productBOMLine))
+				{
+					orderLine2BOMLine.put(orderLineCandidate, Optional.of(productBOMLine));
+					break;
+				}
+			}
+
+			orderLine2BOMLine.putIfAbsent(orderLineCandidate, Optional.empty());
+		}
+
+		return ImmutableMap.copyOf(orderLine2BOMLine);
+	}
+
+	@NonNull
+	private List<I_PP_Product_BOMLine> getUnhandledBOMLines(
+			@NonNull final Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLine2BomLine,
+			@NonNull final List<I_PP_Product_BOMLine> bomLines)
+	{
+		final ImmutableSet<Integer> handledBOMLineIds = orderLine2BomLine.values()
+				.stream()
+				.filter(Optional::isPresent)
+				.map(bomLine -> bomLine.get().getPP_Product_BOMLine_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return bomLines.stream()
+				.filter(bomLine -> !handledBOMLineIds.contains(bomLine.getPP_Product_BOMLine_ID()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private I_PP_Product_BOM getVerifiedBOMProduct(
+			@NonNull final I_PP_Order_Candidate ppOrderCandidate,
+			@NonNull final Date dateStartSchedule)
+	{
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ProductBOMId.ofRepoId(ppOrderCandidate.getPP_Product_BOM_ID()));
+
+		final ProductId orderCandidateProductId = ProductId.ofRepoId(ppOrderCandidate.getM_Product_ID());
+
+		return PPOrderUtil.verifyProductBOMAndReturnIt(
+				orderCandidateProductId,
+				dateStartSchedule,
+				productBOM);
+	}
+
+	private boolean isBOMLineMatchingOrderLine(
+			@NonNull final I_PP_OrderLine_Candidate orderLineCandidate,
+			@NonNull final I_PP_Product_BOMLine productBOMLine)
+	{
+		final AttributeSetInstanceId orderLineCandidateASIId = AttributeSetInstanceId.ofRepoIdOrNull(orderLineCandidate.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId productBOMLineASIId = AttributeSetInstanceId.ofRepoIdOrNull(productBOMLine.getM_AttributeSetInstance_ID());
+
+		return Objects.equals(orderLineCandidate.getComponentType(), productBOMLine.getComponentType())
+				&& orderLineCandidate.getM_Product_ID() == productBOMLine.getM_Product_ID()
+				&& attributesRepo.nullSafeASIEquals(orderLineCandidateASIId, productBOMLineASIId);
 	}
 
 	@NonNull
@@ -295,5 +344,32 @@ public class PPOrderCandidateService
 	{
 		final PPOrderCandidateHeaderAggregationKeyBuilder orderCandidateKeyBuilder = mkPPOrderCandidateHeaderAggregationKeyBuilder();
 		return orderCandidateKeyBuilder.buildKey(orderCandidateRecord);
+	}
+
+	private void handleOutdatedLine(@NonNull final I_PP_OrderLine_Candidate orderCandidateLine)
+	{
+		orderCandidateLine.setQtyEntered(BigDecimal.ZERO);
+
+		ppOrderCandidateDAO.saveLine(orderCandidateLine);
+	}
+
+	private void handleUpdatedLine(
+			@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord,
+			@NonNull final I_PP_OrderLine_Candidate existingOrderCandidateLine,
+			@NonNull final I_PP_Product_BOMLine newBOMLine)
+	{
+		syncOrderLineWithBOMLine(existingOrderCandidateLine, ppOrderCandidateRecord, newBOMLine);
+	}
+
+	private void syncOrderLineWithBOMLine(
+			@NonNull final I_PP_OrderLine_Candidate orderCandidateLine,
+			@NonNull final I_PP_Order_Candidate ppOrderCandidate,
+			@NonNull final I_PP_Product_BOMLine productBOMLine)
+	{
+		setBOMLineRelatedFields(orderCandidateLine, productBOMLine);
+
+		setQtyEntered(ppOrderCandidate, orderCandidateLine, productBOMLine);
+
+		ppOrderCandidateDAO.saveLine(orderCandidateLine);
 	}
 }

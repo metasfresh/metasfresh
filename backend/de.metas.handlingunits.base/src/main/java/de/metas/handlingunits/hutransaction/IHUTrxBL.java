@@ -37,7 +37,9 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
@@ -92,21 +94,58 @@ public interface IHUTrxBL extends ISingletonService
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
 
-	/**
-	 * Link a given {@code hu} to its parent.
-	 * <p>
-	 * <b>IMPORTANT:</b> Don't do transaction management (TODO: check if this can be added).
-	 *
-	 * @param parentHUItem                   can be <code>null</code> to indicate that the HU shall be removed from its parent. If the given item has the same <code>M_HU_Item_ID</code> as the given <code>hu</code>'s
-	 *                                       <code>M_HU_Item_Parent_ID</code>, or if both this parameter and the hu's parent item are <code>null</code>, then the method does nothing.
-	 * @param destroyOldParentIfEmptyStorage if true, it will check if old parent is empty after removing given HU from it and if yes, it will destroy it
-	 */
-	void setParentHU(IHUContext huContext, @Nullable I_M_HU_Item parentHUItem, @NonNull I_M_HU hu, boolean destroyOldParentIfEmptyStorage);
+	default void unlinkFromParentBeforeDestroy(
+			final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			final boolean destroyOldParentIfEmptyStorage)
+	{
+		setParentHU(ChangeParentHURequest.builder()
+				.huContext(huContext)
+				.parentHUItem(null)
+				.hu(hu)
+				.destroyOldParentIfEmptyStorage(destroyOldParentIfEmptyStorage)
+				.failIfAggregateTU(false)
+				.build());
+	}
+
+	default void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
+	{
+		setParentHU(ChangeParentHURequest.builder()
+				.huContext(huContext)
+				.parentHUItem(parentHUItem)
+				.hu(hu)
+				.build());
+	}
+
+	@Value
+	@Builder
+	class ChangeParentHURequest
+	{
+		@Nullable IHUContext huContext;
+
+		/**
+		 * Can be <code>null</code> to indicate that the HU shall be removed from its parent.
+		 * <p>
+		 * If the given item has the same <code>M_HU_Item_ID</code> as the given <code>hu</code>'s <code>M_HU_Item_Parent_ID</code>,
+		 * or if both this parameter and the hu's parent item are <code>null</code>, then the method does nothing.
+		 */
+		@Nullable I_M_HU_Item parentHUItem;
+		@NonNull I_M_HU hu;
+
+		/**
+		 * if true, it will check if old parent is empty after removing given HU from it and if yes, it will destroy it
+		 */
+		@Builder.Default
+		boolean destroyOldParentIfEmptyStorage = true;
+
+		@Builder.Default
+		boolean failIfAggregateTU = true;
+	}
 
 	/**
-	 * Same as calling {@link #setParentHU(IHUContext, I_M_HU_Item, I_M_HU, boolean)} with <code>destroyOldParentIfEmptyStorage</code>=<code>false</code>.
+	 * Link a given {@code hu} to its parent.
 	 */
-	void setParentHU(IHUContext huContext, @Nullable I_M_HU_Item parentHUItem, I_M_HU hu);
+	void setParentHU(ChangeParentHURequest request);
 
 	/**
 	 * Take out the given HU from it's parent (if it's not already a top level HU)

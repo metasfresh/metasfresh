@@ -22,11 +22,14 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderData;
+import de.metas.material.event.pporder.PPOrderLineCandidate;
+import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -40,12 +43,20 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static org.compiere.util.TimeUtil.asInstantNonNull;
 
 @Service
 public class PPOrderCandidatePojoConverter
@@ -69,6 +80,17 @@ public class PPOrderCandidatePojoConverter
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
+	private final PPOrderCandidateDAO ppOrderCandidateDAO;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public PPOrderCandidatePojoConverter(
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	@NonNull
 	public PPOrderCandidate toPPOrderCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
@@ -91,13 +113,14 @@ public class PPOrderCandidatePojoConverter
 									 .productDescriptor(extractProductDescriptor(productId, asiId))
 									 .orderLineId(ppOrderCandidateRecord.getC_OrderLine_ID())
 									 .shipmentScheduleId(ppOrderCandidateRecord.getM_ShipmentSchedule_ID())
-									 .datePromised(TimeUtil.asInstantNonNull(ppOrderCandidateRecord.getDatePromised()))
-									 .dateStartSchedule(TimeUtil.asInstantNonNull(ppOrderCandidateRecord.getDateStartSchedule()))
+									 .datePromised(asInstantNonNull(ppOrderCandidateRecord.getDatePromised()))
+									 .dateStartSchedule(asInstantNonNull(ppOrderCandidateRecord.getDateStartSchedule()))
 									 .qtyRequired(qtyEnteredInStockUOM.toBigDecimal())
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
 									 .build())
+				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();
 	}
 
@@ -117,5 +140,55 @@ public class PPOrderCandidatePojoConverter
 				ProductId.toRepoId(productId),
 				attributesKey,
 				asiIdOrNone.getRepoId());
+	}
+
+	@NonNull
+	private List<PPOrderLineCandidate> toPPOrderLineCandidates(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final List<PPOrderLineCandidate> lines = new ArrayList<>();
+
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID());
+
+		for (final I_PP_OrderLine_Candidate ppOrderLineCandidate : ppOrderCandidateDAO.getLinesByCandidateId(ppOrderCandidateId))
+		{
+			final PPOrderLineCandidate orderLineCandidatePojo = toPPOrderLineCandidate(ppOrderLineCandidate, ppOrderCandidateRecord);
+			lines.add(orderLineCandidatePojo);
+		}
+		return lines;
+	}
+
+	private PPOrderLineCandidate toPPOrderLineCandidate(
+			@NonNull final I_PP_OrderLine_Candidate ppOrderLineCandidate,
+			@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final Optional<BOMComponentType> componentTypeOptional = BOMComponentType.optionalOfNullableCode(ppOrderLineCandidate.getComponentType());
+
+		final boolean receipt = componentTypeOptional.map(BOMComponentType::isReceipt).orElse(false);
+
+		final Instant issueOrReceiveDate = asInstantNonNull(receipt ? ppOrderCandidateRecord.getDatePromised() : ppOrderCandidateRecord.getDateStartSchedule());
+
+		return PPOrderLineCandidate.builder()
+				.ppOrderLineData(PPOrderLineData.builder()
+										 .productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineCandidate))
+										 .description(ppOrderLineCandidate.getDescription())
+										 .productBomLineId(ppOrderLineCandidate.getPP_Product_BOMLine_ID())
+										 .qtyRequired(getRequiredQtyInStockUOM(ppOrderLineCandidate).toBigDecimal())
+										 .issueOrReceiveDate(issueOrReceiveDate)
+										 .receipt(receipt)
+										 .build())
+				.ppOrderLineCandidateId(ppOrderLineCandidate.getPP_OrderLine_Candidate_ID())
+				.build();
+	}
+
+	@NonNull
+	private Quantity getRequiredQtyInStockUOM(@NonNull final I_PP_OrderLine_Candidate ppOrderLineCandidate)
+	{
+		final ProductId lineProductId = ProductId.ofRepoId(ppOrderLineCandidate.getM_Product_ID());
+
+		final I_C_UOM lineUom = uomDAO.getById(ppOrderLineCandidate.getC_UOM_ID());
+
+		final Quantity qtyRequired = Quantity.of(ppOrderLineCandidate.getQtyEntered(), lineUom);
+
+		return uomConversionBL.convertToProductUOM(qtyRequired, lineProductId);
 	}
 }

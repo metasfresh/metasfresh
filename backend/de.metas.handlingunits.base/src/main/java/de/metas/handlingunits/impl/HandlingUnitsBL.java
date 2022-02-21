@@ -94,7 +94,6 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -251,11 +250,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					final boolean destroyOldParentIfEmptyStorage = huIterator.getDepth() == IHUIterator.DEPTH_STARTING_HU;
 
 					//
-					// Take out currentHU from it's parent
-					huTrxBL.setParentHU(huContext,
-							null, // New Parent = null
-							currentHU, // HU which we are changing
-							destroyOldParentIfEmptyStorage);
+					// Take out currentHU from its parent
+					huTrxBL.unlinkFromParentBeforeDestroy(huContext, currentHU, destroyOldParentIfEmptyStorage);
 					//
 					// Mark current HU as destroyed
 					markDestroyed(huContext, currentHU);

@@ -82,7 +82,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	public HuId getHuIdByQRCode(@NonNull final JsonRenderedHUQRCode qrCode)
 	{
-		return huQRCodeService.getHuIdByQRCode(qrCode.getCode());
+		return huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(qrCode.getCode()));
 	}
 
 }

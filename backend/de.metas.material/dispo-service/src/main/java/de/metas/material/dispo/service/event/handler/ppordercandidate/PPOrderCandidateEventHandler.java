@@ -30,17 +30,23 @@ import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderHandlerUtils;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderCandidateEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderData;
+import de.metas.material.event.pporder.PPOrderLineCandidate;
+import de.metas.material.event.pporder.PPOrderLineData;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class PPOrderCandidateEventHandler
@@ -48,7 +54,9 @@ public abstract class PPOrderCandidateEventHandler
 	private final CandidateChangeService candidateChangeService;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	public PPOrderCandidateEventHandler(final CandidateChangeService candidateChangeService, final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+	public PPOrderCandidateEventHandler(
+			@NonNull final CandidateChangeService candidateChangeService,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
@@ -72,16 +80,15 @@ public abstract class PPOrderCandidateEventHandler
 
 		final MaterialDescriptor headerCandidateMaterialDescriptor = createMaterialDescriptorForPPOrderCandidate(ppOrderCandidate);
 
-		final DemandDetail headerCandidateDemandDetail = PPOrderHandlerUtils.computeDemandDetailOrNull(
+		PPOrderHandlerUtils.computeDemandDetail(
 				CandidateType.SUPPLY,
 				supplyRequiredDescriptor,
-				headerCandidateMaterialDescriptor);
+				headerCandidateMaterialDescriptor).ifPresent(builder::additionalDemandDetail);
 
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(headerCandidateProductionDetail)
-				.additionalDemandDetail(headerCandidateDemandDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				// .groupId(null) // will be set after save
 				.build();
@@ -91,6 +98,43 @@ public abstract class PPOrderCandidateEventHandler
 		return candidateChangeService.onCandidateNewOrChange(
 				headerCandidate,
 				CandidateHandler.OnNewOrChangeAdvise.attemptUpdate(attemptUpdate));
+	}
+
+	protected void createLineCandidates(
+			@NonNull final AbstractPPOrderCandidateEvent event,
+			@Nullable final MaterialDispoGroupId groupId,
+			@NonNull final Candidate headerCandidate)
+	{
+		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+
+		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
+		{
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate);
+
+			final Candidate.CandidateBuilder candidateBuilder = existingLineCandidate != null
+					? existingLineCandidate.toBuilder()
+					: Candidate.builderForClientAndOrgId(event.getPpOrderCandidate().getPpOrderData().getClientAndOrgId());
+
+			final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
+			final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+
+			final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPPOrderLineCandidate(ppOrderLineCandidate, event.getPpOrderCandidate());
+
+			candidateBuilder
+					.type(CandidateType.DEMAND)
+					.businessCase(CandidateBusinessCase.PRODUCTION)
+					.seqNo(headerCandidate.getSeqNo() + 1)
+					.businessCaseDetail(lineCandidateProductionDetail)
+					.additionalDemandDetail(headerDemandDetail)
+					.materialDescriptor(materialDescriptor);
+
+			if (groupId != null)
+			{
+				candidateBuilder.groupId(groupId);
+			}
+
+			candidateChangeService.onCandidateNewOrChange(candidateBuilder.build());
+		}
 	}
 
 	@NonNull
@@ -131,5 +175,55 @@ public abstract class PPOrderCandidateEventHandler
 				.map(ProductionDetail::cast)
 				.map(ProductionDetail::toBuilder)
 				.orElse(ProductionDetail.builder());
+	}
+
+	@Nullable
+	private Candidate retrieveExistingLineCandidateOrNull(@NonNull final PPOrderLineCandidate ppOrderLineCandidate)
+	{
+		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
+				.ppOrderCandidateLineId(ppOrderLineCandidate.getPpOrderLineCandidateId())
+				.build();
+
+		final CandidatesQuery lineCandidateQuery = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
+				.productionDetailsQuery(productionDetailsQuery)
+				.build();
+
+		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
+	}
+
+	@NonNull
+	private ProductionDetail createProductionDetailForPPOrderLineCandidate(
+			@NonNull final PPOrderLineCandidate ppOrderLineCandidate,
+			@NonNull final PPOrderCandidate ppOrderCandidate)
+	{
+		final PPOrderLineData ppOrderLineData = ppOrderLineCandidate.getPpOrderLineData();
+
+		return ProductionDetail.builder()
+				.advised(Flag.FALSE)
+				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
+				.qty(ppOrderLineData.getQtyRequired())
+				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
+				.productBomLineId(ppOrderLineData.getProductBomLineId())
+				.description(ppOrderLineData.getDescription())
+				.ppOrderLineCandidateId(ppOrderLineCandidate.getPpOrderLineCandidateId())
+				.build();
+	}
+
+	@NonNull
+	private MaterialDescriptor createMaterialDescriptorForPPOrderLineCandidate(
+			@NonNull final PPOrderLineCandidate ppOrderLineCandidate,
+			@NonNull final PPOrderCandidate ppOrderCandidate)
+	{
+		final PPOrderData ppOrderData = ppOrderCandidate.getPpOrderData();
+
+		return MaterialDescriptor.builder()
+				.date(ppOrderLineCandidate.getPpOrderLineData().getIssueOrReceiveDate())
+				.productDescriptor(ppOrderLineCandidate.getPpOrderLineData().getProductDescriptor())
+				.quantity(ppOrderLineCandidate.getPpOrderLineData().getQtyRequired())
+				.warehouseId(ppOrderData.getWarehouseId())
+				.build();
 	}
 }

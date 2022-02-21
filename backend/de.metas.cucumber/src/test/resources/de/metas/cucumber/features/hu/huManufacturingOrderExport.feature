@@ -46,6 +46,8 @@ Feature: Handling unit export from manufacturing order
       | Identifier          | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | bom_l_manufacturing | bom_manufacturing            | componentProduct_HU     | 2021-01-02 | 10       |
 
+    And the PP_Product_BOM identified by bom_manufacturing is completed
+
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540006        |

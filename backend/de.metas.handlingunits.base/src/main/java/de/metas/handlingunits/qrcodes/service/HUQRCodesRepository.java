@@ -86,6 +86,14 @@ public class HUQRCodesRepository
 		}
 	}
 
+	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
+	{
+		return queryByQRCode(qrCode.getId())
+				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
+	}
+
 	public Optional<HUQRCode> getFirstQRCodeByHuId(@NonNull final HuId huId)
 	{
 		return queryByHuId(huId)
