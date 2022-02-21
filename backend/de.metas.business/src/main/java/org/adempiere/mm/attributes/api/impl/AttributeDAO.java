@@ -855,6 +855,28 @@ public class AttributeDAO implements IAttributeDAO
 		return AttributeSetInstanceId.ofRepoId(asiTargetRecord.getM_AttributeSetInstance_ID());
 	}
 
+	@Override
+	public boolean nullSafeASIEquals(
+			@Nullable final AttributeSetInstanceId firstASIId,
+			@Nullable final AttributeSetInstanceId secondASIId)
+	{
+		if (firstASIId == null && secondASIId == null)
+		{
+			return true;
+		}
+
+		if ((firstASIId == null && secondASIId != null)
+				|| (secondASIId == null && firstASIId != null))
+		{
+			return false;
+		}
+
+		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
+		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
+
+		return firstAttributeSet.equals(secondAttributeSet);
+	}
+
 	private static final class AttributeListValueMap
 	{
 		public static AttributeListValueMap ofList(final List<AttributeListValue> list)
