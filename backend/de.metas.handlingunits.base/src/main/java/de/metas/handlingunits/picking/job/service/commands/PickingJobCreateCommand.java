@@ -92,6 +92,7 @@ public class PickingJobCreateCommand
 		{
 			final PickingJobHeaderKey headerKey = items.stream()
 					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
+					.distinct()
 					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
