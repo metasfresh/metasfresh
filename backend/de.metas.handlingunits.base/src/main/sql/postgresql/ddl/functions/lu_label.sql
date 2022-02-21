@@ -58,7 +58,7 @@ FROM M_HU tu
     AND tua_label.M_Attribute_ID = ((SELECT M_Attribute_ID
                                      FROM M_Attribute
                                      WHERE value = '1000002'))
-         JOIN m_attributevalue lv ON lv.M_Attribute_ID = tua_label.M_Attribute_ID AND lv.isactive = 'Y' and lv.value=tua_label.value
+        LEFT JOIN m_attributevalue lv ON lv.M_Attribute_ID = tua_label.M_Attribute_ID AND lv.isactive = 'Y' and lv.value=tua_label.value
 
     /** Get WeightNet attribute */
          LEFT OUTER JOIN M_HU_Attribute tua_w ON tu.M_HU_ID = tua_w.M_HU_ID
