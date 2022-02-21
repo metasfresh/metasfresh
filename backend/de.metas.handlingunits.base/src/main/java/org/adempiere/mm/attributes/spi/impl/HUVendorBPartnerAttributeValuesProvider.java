@@ -6,32 +6,37 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.compiere.util.Util;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,9 +73,20 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	private static final String SYSCONFIG_MAX_VENDORS = "org.adempiere.mm.attributes.spi.impl.HUVendorBPartnerAttributeValuesProvider.maxVendors";
 	private static final int DEFAULT_MAX_VENDORS = 20;
 
+	private static final CtxName CTXNAME_M_HU_ID = CtxNames.parse("M_HU_ID/-1");
+	private static final CtxName CTXNAME_C_BPartner_ID = CtxNames.parse("C_BPartner_ID/-1");
+	private static final CtxName CTXNAME_CurrentVendor_BPartner_ID = CtxNames.parse("CurrentVendor_BPartner_ID/-1");
+
 	private static final CCache<Integer, ImmutableList<KeyNamePair>> vendorsCache = CCache.<Integer, ImmutableList<KeyNamePair>>builder()
 			.tableName(I_C_BPartner.Table_Name)
 			.cacheName(CACHE_PREFIX)
+			.build();
+
+	private final CCache<Util.ArrayKey, List<KeyNamePair>> hu2Vendors = CCache.<Util.ArrayKey, List<KeyNamePair>>builder()
+			.cacheName(vendorsCache.getCacheName() + "#AndHU")
+			.initialCapacity(100)
+			.expireMinutes(10)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.build();
 
 	private final I_M_Attribute attribute;
@@ -130,16 +146,41 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 	@Override
 	public Evaluatee prepareContext(final IAttributeSet attributeSet)
 	{
-		return Evaluatees.empty();
+		final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
+		final int bpartnerId = hu.getC_BPartner_ID();
+		final int huId = hu.getM_HU_ID();
+
+		int currentVendorBPartnerId = -1;
+		if (attributeSet.hasAttribute(attribute))
+		{
+			currentVendorBPartnerId = attributeSet.getValueAsInt(attribute);
+		}
+
+		return Evaluatees.mapBuilder()
+				.put(CTXNAME_M_HU_ID, huId > 0 ? huId : -1)
+				.put(CTXNAME_C_BPartner_ID, bpartnerId > 0 ? bpartnerId : -1)
+				.put(CTXNAME_CurrentVendor_BPartner_ID, currentVendorBPartnerId > 0 ? currentVendorBPartnerId : -1)
+				.build();
 	}
 
 	@Override
-	public List<? extends NamePair> getAvailableValues(final Evaluatee evalCtx_NOTUSED)
+	public List<? extends NamePair> getAvailableValues(final Evaluatee evalCtx)
 	{
-		// NOTE: the only reason why we are fetching and returning the vendors instead of returning NULL,
-		// is because user needs to set it in purchase order's ASI.
+		final int huId = CTXNAME_M_HU_ID.getValueAsInteger(evalCtx);
+		final int bpartnerId = CTXNAME_C_BPartner_ID.getValueAsInteger(evalCtx);
+		final int currentVendorBPartnerId = CTXNAME_CurrentVendor_BPartner_ID.getValueAsInteger(evalCtx);
 
-		return getCachedVendors();
+		//
+		// Create the cache key based on M_HU_ID, M_HU.C_BPartner_ID and current Vendor_BPartner_ID
+		final Util.ArrayKey cacheKey = Util.ArrayKey.of(
+				huId <= 0 ? System.currentTimeMillis() : huId,      // if M_HU_ID <= 0 then make it unique
+				bpartnerId <= 0 ? -1 : bpartnerId,      // normalize
+				currentVendorBPartnerId <= 0 ? -1 : currentVendorBPartnerId // normalize
+		);
+
+		//
+		// Get from cache / Load
+		return hu2Vendors.getOrLoad(cacheKey, () -> retrieveVendorKeyNamePairs(bpartnerId, currentVendorBPartnerId));
 	}
 
 	@Nullable
@@ -202,12 +243,6 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 				.build();
 	}
 
-	private QueryLimit getMaxVendors()
-	{
-		final int maxVendorsInt = sysconfigBL.getIntValue(SYSCONFIG_MAX_VENDORS, DEFAULT_MAX_VENDORS);
-		return QueryLimit.ofInt(maxVendorsInt);
-	}
-
 	private ImmutableList<KeyNamePair> retrieveVendorKeyNamePairs()
 	{
 		return bpartnerDAO.retrieveVendors(getMaxVendors())
@@ -215,6 +250,72 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 				.map(HUVendorBPartnerAttributeValuesProvider::toKeyNamePair)
 				.sorted(Comparator.comparing(KeyNamePair::getName))
 				.collect(ImmutableList.toImmutableList());
+	}
+	private QueryLimit getMaxVendors()
+	{
+		final int maxVendorsInt = sysconfigBL.getIntValue(SYSCONFIG_MAX_VENDORS, DEFAULT_MAX_VENDORS);
+		return QueryLimit.ofInt(maxVendorsInt);
+	}
+
+	private List<KeyNamePair> retrieveVendorKeyNamePairs(final int bpartnerId,
+			final int currentVendorBPartnerId)
+	{
+		final Properties ctx = Env.getCtx();
+
+		final List<KeyNamePair> vendorBPartners = new ArrayList<>();
+		vendorBPartners.add(staticNullValue());
+
+		//
+		// Retrieve vendors from cache
+		if (bpartnerId > 0)
+		{
+			final List<KeyNamePair> vendorBPartnersCached = vendorsCache.getOrLoad(bpartnerId, () -> vendorsCache.get(bpartnerId));
+			vendorBPartners.addAll(vendorBPartnersCached);
+		}
+
+		//
+		// Make sure current vendor is in our list
+		// NOTE: we need to make sure that attribute exists because if we are about generating seed values, at this moment attribute is not there yet.
+		addVendor(vendorBPartners, ctx, currentVendorBPartnerId);
+
+		return vendorBPartners;
+	}
+
+	private static void addVendor(final List<KeyNamePair> vendorPartners, final Properties ctx, final int bpartnerId)
+	{
+		if (bpartnerId <= 0)
+		{
+			return;
+		}
+
+		//
+		// Check if our BPartner is already in the list.
+		// If yes, there is no point to add it.
+		if (vendorPartners != null)
+		{
+			for (final KeyNamePair vendor : vendorPartners)
+			{
+				if (vendor == null)
+				{
+					continue;
+				}
+				if (vendor.getKey() == bpartnerId)
+				{
+					// our bpartner is already in the list
+					return;
+				}
+			}
+		}
+
+		//
+		// Load the new BPartner and add it to our list
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+		if (bpartner == null)
+		{
+			return;
+		}
+		final KeyNamePair bpartnerKNP = toKeyNamePair(bpartner);
+		vendorPartners.add(bpartnerKNP);
 	}
 
 	private static KeyNamePair toKeyNamePair(@NonNull final I_C_BPartner bpartner)

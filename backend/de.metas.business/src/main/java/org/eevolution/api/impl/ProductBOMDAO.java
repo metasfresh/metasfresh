@@ -4,6 +4,10 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -22,6 +26,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
@@ -32,6 +37,7 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -53,6 +59,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final AtomicReference<ProductBOMVersionsDAO> productBOMVersionsDAO = new AtomicReference<>();
 
@@ -275,6 +282,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
 		bomRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(request.getAttributeSetInstanceId()));
 
+		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
+		bomRecord.setC_DocType_ID(getBOMDocTypeId().getRepoId());
+		bomRecord.setDocStatus(DocStatus.Drafted.getCode());
+		bomRecord.setDocAction(X_PP_Product_BOM.DOCACTION_Complete);
+
 		if (request.getIsActive() != null)
 		{
 			bomRecord.setIsActive(request.getIsActive());
@@ -319,7 +331,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomLineRecord.setPP_Product_BOM_ID(createBOMLineRequest.getBomId().getRepoId());
 		bomLineRecord.setM_Product_ID(line.getProductId().getRepoId());
 		bomLineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
-		bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		bomLineRecord.setComponentType(line.getComponentType().getCode());
 		bomLineRecord.setValidFrom(TimeUtil.asTimestamp(createBOMLineRequest.getValidFrom()));
 		bomLineRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(line.getAttributeSetInstanceId()));
@@ -329,9 +340,14 @@ public class ProductBOMDAO implements IProductBOMDAO
 			bomLineRecord.setIsActive(createBOMLineRequest.getIsActive());
 		}
 
-		if (line.getIsQtyPercentage() != null)
+		if (line.getIsQtyPercentage() != null && Boolean.TRUE.equals(line.getIsQtyPercentage()))
 		{
 			bomLineRecord.setIsQtyPercentage(line.getIsQtyPercentage());
+			bomLineRecord.setQtyBatch(line.getQty().toBigDecimal());
+		}
+		else
+		{
+			bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		}
 
 		if (line.getIssueMethod() != null)
@@ -377,6 +393,27 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@NonNull
+	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
+	{
+		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = queryBL
+				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, bomVersion.getPP_Product_BOM_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersion.getPP_Product_BOMVersions_ID())
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, bomVersion.getValidFrom());
+
+		if (docStatus != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, docStatus.getCode());
+		}
+
+		return queryBuilder
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.create()
+				.firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@NonNull
 	private Optional<I_PP_Product_BOM> getLatestBOMRecordByVersion(
 			final @NonNull ProductBOMVersionsId bomVersionsId,
 			final @Nullable BOMType bomType)
@@ -408,6 +445,17 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return Optionals.firstPresentOfSuppliers(
 				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.CurrentActive),
 				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.MakeToOrder));
+	}
+
+	@NonNull
+	private DocTypeId getBOMDocTypeId()
+	{
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion)
+				.adClientId(Env.getAD_Client_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query);
 	}
 
 	@Value
