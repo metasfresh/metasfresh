@@ -26,6 +26,8 @@ const ScanHUAndGetQtyComponent = ({
   const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
+    // console.log('resolveScannedBarcode', { scannedBarcode, eligibleBarcode });
+
     // If an eligible barcode was provided, make sure scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
       return {
