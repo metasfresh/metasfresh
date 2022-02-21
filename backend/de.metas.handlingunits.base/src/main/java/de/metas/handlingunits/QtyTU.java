@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -36,7 +37,6 @@ import java.math.BigDecimal;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class QtyTU implements Comparable<QtyTU>
 {
-	@JsonCreator
 	public static QtyTU ofInt(final int intValue)
 	{
 		if (intValue == 0)
@@ -56,6 +56,12 @@ public final class QtyTU implements Comparable<QtyTU>
 	public static QtyTU ofBigDecimal(@NonNull final BigDecimal bd)
 	{
 		return ofInt(bd.intValueExact());
+	}
+
+	@JsonCreator
+	public static QtyTU ofString(@NonNull final String stringValue)
+	{
+		return ofInt(NumberUtils.asInt(stringValue));
 	}
 
 	public static final QtyTU ZERO = new QtyTU(0);
