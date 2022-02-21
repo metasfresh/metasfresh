@@ -127,6 +127,8 @@ Feature: sales order
       | ppbl_67_2  | ppb_67                       | p_32                    | 4      | PCE               | CO            | 2021-04-01 | 200  |
       | ppbl_67_3  | ppb_67_1                     | p_31_1                  | 5      | PCE               | CO            | 2021-04-01 | 100  |
       | ppbl_67_4  | ppb_67_1                     | p_32                    | 2      | PCE               | CO            | 2021-04-01 | 200  |
+    And the PP_Product_BOM identified by ppb_67 is completed
+    And the PP_Product_BOM identified by ppb_67_1 is completed
     And metasfresh contains C_BPartners:
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |

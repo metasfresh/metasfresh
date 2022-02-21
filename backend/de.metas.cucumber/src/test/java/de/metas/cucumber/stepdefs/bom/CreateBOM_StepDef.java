@@ -56,6 +56,7 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -84,6 +85,8 @@ public class CreateBOM_StepDef
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 	private final TestContext testContext;
+
+	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
 
 	final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
@@ -185,29 +188,44 @@ public class CreateBOM_StepDef
 			final String bomIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "PP_Product_BOM_ID.Identifier");
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "M_Product_ID.Identifier");
 
-			final int line = DataTableUtil.extractIntForColumnName(dataTableRow, "Line");
-			final Boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(dataTableRow, "IsQtyPercentage");
+			final I_PP_Product_BOM bom = bomTable.get(bomIdentifier);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final I_PP_Product_BOMLine bomLine = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bom.getPP_Product_BOM_ID())
+					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnly(I_PP_Product_BOMLine.class);
+
+			assertThat(bomLine).isNotNull();
+
+			final int line = DataTableUtil.extractIntForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_Line);
+			final Boolean isQtyPercentage = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage);
 			final String uomCode = DataTableUtil.extractStringForColumnName(dataTableRow, "UomCode");
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Qty");
-			final BigDecimal scrap = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Scrap");
+			final BigDecimal scrap = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_PP_Product_BOMLine.COLUMNNAME_Scrap);
 
-			final I_PP_Product_BOM bom = bomTable.get(bomIdentifier);
+			if (scrap == null)
+			{
+				assertThat(bomLine.getScrap()).isEqualTo(BigDecimal.ZERO);
+			}
+			else
+			{
+				assertThat(bomLine.getScrap()).isEqualTo(scrap);
+			}
 
-			final List<I_PP_Product_BOMLine> bomLines = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
-					.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bom.getPP_Product_BOM_ID())
-					.create()
-					.list();
-
-			assertThat(bomLines.size()).isEqualTo(1);
-
-			final I_PP_Product_BOMLine bomLine = bomLines.get(0);
-			final I_M_Product product = productTable.get(productIdentifier);
 			final I_C_UOM expectedUOM = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
 
-			assertThat(bomLine.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
-			assertThat(bomLine.getQtyBOM()).isEqualTo(qty);
+			if (isQtyPercentage)
+			{
+				assertThat(bomLine.getQtyBatch()).isEqualTo(qty);
+			}
+			else
+			{
+				assertThat(bomLine.getQtyBOM()).isEqualTo(qty);
+			}
+
 			assertThat(bomLine.getC_UOM_ID()).isEqualTo(expectedUOM.getC_UOM_ID());
-			assertThat(bomLine.getScrap()).isEqualTo(scrap);
 			assertThat(bomLine.getLine()).isEqualTo(line);
 			assertThat(bomLine.isQtyPercentage()).isEqualTo(isQtyPercentage);
 
@@ -343,6 +361,9 @@ public class CreateBOM_StepDef
 		productBOM.setName(DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_Name));
 		productBOM.setValidFrom(validFrom);
 		productBOM.setIsActive(true);
+		productBOM.setC_DocType_ID(DEFAULT_C_DOCTYPE_ID);
+		productBOM.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
+		productBOM.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Drafted);
 
 		saveRecord(productBOM);
 

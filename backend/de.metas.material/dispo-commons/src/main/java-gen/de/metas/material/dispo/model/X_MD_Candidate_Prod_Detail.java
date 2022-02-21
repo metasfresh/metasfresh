@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements I_MD_Candidate_Prod_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 139057843L;
+	private static final long serialVersionUID = -150729457L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (final Properties ctx, final int MD_Candidate_Prod_Detail_ID, @Nullable final String trxName)
@@ -259,6 +259,33 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	public int getPP_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_OrderLine_Candidate getPP_OrderLine_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class);
+	}
+
+	@Override
+	public void setPP_OrderLine_Candidate(final org.eevolution.model.I_PP_OrderLine_Candidate PP_OrderLine_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class, PP_OrderLine_Candidate);
+	}
+
+	@Override
+	public void setPP_OrderLine_Candidate_ID (final int PP_OrderLine_Candidate_ID)
+	{
+		if (PP_OrderLine_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_PP_OrderLine_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_OrderLine_Candidate_ID, PP_OrderLine_Candidate_ID);
+	}
+
+	@Override
+	public int getPP_OrderLine_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_OrderLine_Candidate_ID);
 	}
 
 	@Override
