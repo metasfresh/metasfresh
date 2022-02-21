@@ -47,14 +47,12 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
     .then((response) => response.clearanceStatuses);
 }
 
-export function setClearanceStatusRequest({ huId, clearanceNote, clearanceStatus }) {
-  const dataObject = {};
-  if (clearanceNote) {
-    dataObject.clearanceNote = clearanceNote;
-  }
+export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
+  const dataObject = { clearanceNote };
+
   if (clearanceStatus) {
     dataObject.clearanceStatus = clearanceStatus.key;
   }
 
-  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { ...dataObject });
+  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, dataObject);
 }

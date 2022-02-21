@@ -16,7 +16,7 @@ export function huManagerReducer(applicationState = {}, action) {
       const { clearanceNote, clearanceStatus } = action.payload;
       const hUI = { ...applicationState.handlingUnitInfo };
 
-      if (clearanceNote) {
+      if (clearanceNote != null) {
         hUI.clearanceNote = clearanceNote;
       }
 
