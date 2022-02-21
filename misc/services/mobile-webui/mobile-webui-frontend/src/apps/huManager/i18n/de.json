@@ -7,7 +7,7 @@
   "qty": "Menge",
   "disposePendingStatus": "Entsorgen",
   "clearanceStatus": "Freigabestatus",
-  "clearanceNote": "Freigabebe-Notiz",
+  "clearanceNote": "Freigabe-Notiz",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
