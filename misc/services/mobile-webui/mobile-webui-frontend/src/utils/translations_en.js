@@ -18,6 +18,8 @@ const translations = {
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     scanQRCode: 'Scan QR',
+    Back: 'Back',
+    Home: 'Home',
   },
   login: {
     submitButton: 'Login',

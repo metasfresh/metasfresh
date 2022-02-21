@@ -7,6 +7,7 @@ import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
 import { getCaptionFromHeaders } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
+import { trl } from '../../utils/translations';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -60,7 +61,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
               <span className="icon">
                 <i className="fas fa-chevron-left" />
               </span>
-              <span>Back</span>
+              <span>{trl('general.Back')}</span>
             </button>
           </div>
           <div className="column is-half">
@@ -68,7 +69,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
               <span className="icon">
                 <i className="fas fa-home" />
               </span>
-              <span>Home</span>
+              <span>{trl('general.Home')}</span>
             </button>
           </div>
         </div>
