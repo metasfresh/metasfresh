@@ -84,10 +84,9 @@ public class HandlingUnitsService
 	@NonNull
 	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage)
 	{
-		final I_M_HU hu = Optional.ofNullable(handlingUnitsBL.getById(huId))
+		return Optional.ofNullable(handlingUnitsBL.getById(huId))
+				.map(hu -> toJson(hu, adLanguage))
 				.orElseThrow(() -> new AdempiereException("No HU found for M_HU_ID: " + huId));
-
-		return toJson(hu, adLanguage);
 	}
 
 	@NonNull

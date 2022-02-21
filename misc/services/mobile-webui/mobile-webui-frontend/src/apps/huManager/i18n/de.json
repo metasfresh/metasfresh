@@ -2,8 +2,10 @@
   "HU": "HU",
   "qrCode": "QR code",
   "locator": "Lagerort",
+  "HUStatus": "Status",
   "product": "Produkt",
   "qty": "Menge",
+  "disposePendingStatus": "disposing",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
