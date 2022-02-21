@@ -6,6 +6,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -309,6 +310,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -618,6 +620,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -927,6 +930,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -1230,6 +1234,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -1568,6 +1573,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -1912,6 +1918,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -2024,6 +2031,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -2358,6 +2366,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -2886,6 +2895,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -3195,6 +3205,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -3523,6 +3534,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -3635,6 +3647,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -3938,6 +3951,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Scan picking slot",
         "componentProps" : {
           "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -4435,6 +4449,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
@@ -4744,6 +4759,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
+          "isAlwaysAvailableToUser" : false,
           "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
