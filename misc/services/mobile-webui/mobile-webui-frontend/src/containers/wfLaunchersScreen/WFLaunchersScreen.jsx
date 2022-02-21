@@ -35,6 +35,7 @@ const WFLaunchersScreen = () => {
     if (!wsClientRef.current) {
       wsClientRef.current = ws.connectAndSubscribe({
         topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
+        debug: false,
         onWebsocketMessage: (message) => {
           const applicationLaunchers = JSON.parse(message.body);
           dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
