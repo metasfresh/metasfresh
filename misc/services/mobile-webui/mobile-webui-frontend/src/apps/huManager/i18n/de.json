@@ -6,8 +6,8 @@
   "product": "Produkt",
   "qty": "Menge",
   "disposePendingStatus": "disposing",
-  "clearanceStatus": "Clearance Status",
-  "clearanceNote": "Freigabebescheid",
+  "clearanceStatus": "Freigabestatus",
+  "clearanceNote": "Freigabebe-Notiz",
   "action": {
     "dispose": {
       "buttonCaption": "Dispose"
@@ -20,8 +20,7 @@
       "buttonCaption": "Scan again"
     },
     "setClearance": {
-      "buttonCaption": "HU-Freigabe ändern",
-      "clearanceNote": "Freigabebescheid"
+      "buttonCaption": "HU-Freigabe ändern"
     }
   }
 }
