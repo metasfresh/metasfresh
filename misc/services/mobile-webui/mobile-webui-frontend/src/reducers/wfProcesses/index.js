@@ -7,6 +7,7 @@ import { activityUserConfirmationReducer } from './confirmation';
 import { pickingReducer } from './picking';
 import { distributionReducer } from './distribution';
 import { manufacturingReducer as manufacturingIssueReducer } from './manufacturing_issue';
+import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 
@@ -101,6 +102,7 @@ const reducer = produce((draftState, action) => {
   draftState = distributionReducer({ draftState, action });
   draftState = generateHUQRCodesReducer({ draftState, action });
   draftState = manufacturingIssueReducer({ draftState, action });
+  draftState = manufacturingIssueAdjustmentReducer({ draftState, action });
   draftState = manufacturingReceiptReducer({ draftState, action });
 
   return draftState;

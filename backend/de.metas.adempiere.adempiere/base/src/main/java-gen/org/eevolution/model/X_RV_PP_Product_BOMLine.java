@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for PP_Product_BOMLine
+/** Generated Model for RV_PP_Product_BOMLine
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_Product_BOMLine, org.compiere.model.I_Persistent 
+public class X_RV_PP_Product_BOMLine extends org.compiere.model.PO implements I_RV_PP_Product_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1268706383L;
+	private static final long serialVersionUID = -854433493L;
 
     /** Standard Constructor */
-    public X_PP_Product_BOMLine (final Properties ctx, final int PP_Product_BOMLine_ID, @Nullable final String trxName)
+    public X_RV_PP_Product_BOMLine (final Properties ctx, final int RV_PP_Product_BOMLine_ID, @Nullable final String trxName)
     {
-      super (ctx, PP_Product_BOMLine_ID, trxName);
+      super (ctx, RV_PP_Product_BOMLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_PP_Product_BOMLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_RV_PP_Product_BOMLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -36,28 +36,30 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setAssay (final @Nullable BigDecimal Assay)
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
 	{
-		set_Value (COLUMNNAME_Assay, Assay);
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
 	}
 
 	@Override
-	public BigDecimal getAssay() 
+	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Assay);
-		return bd != null ? bd : BigDecimal.ZERO;
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
 	}
 
 	@Override
-	public void setBackflushGroup (final @Nullable java.lang.String BackflushGroup)
+	public void setAD_PInstance_ID (final int AD_PInstance_ID)
 	{
-		set_Value (COLUMNNAME_BackflushGroup, BackflushGroup);
+		if (AD_PInstance_ID < 1) 
+			set_Value (COLUMNNAME_AD_PInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
 	}
 
 	@Override
-	public java.lang.String getBackflushGroup() 
+	public int getAD_PInstance_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_BackflushGroup);
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
 	@Override
@@ -115,18 +117,6 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setCULabelQuanitity (final @Nullable java.lang.String CULabelQuanitity)
-	{
-		set_Value (COLUMNNAME_CULabelQuanitity, CULabelQuanitity);
-	}
-
-	@Override
-	public java.lang.String getCULabelQuanitity() 
-	{
-		return get_ValueAsString(COLUMNNAME_CULabelQuanitity);
-	}
-
-	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -139,53 +129,15 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setexpectedResult (final @Nullable BigDecimal expectedResult)
+	public void setImplosion (final boolean Implosion)
 	{
-		set_Value (COLUMNNAME_expectedResult, expectedResult);
+		set_Value (COLUMNNAME_Implosion, Implosion);
 	}
 
 	@Override
-	public BigDecimal getexpectedResult() 
+	public boolean isImplosion() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_expectedResult);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setFeature (final @Nullable java.lang.String Feature)
-	{
-		set_Value (COLUMNNAME_Feature, Feature);
-	}
-
-	@Override
-	public java.lang.String getFeature() 
-	{
-		return get_ValueAsString(COLUMNNAME_Feature);
-	}
-
-	@Override
-	public void setForecast (final @Nullable BigDecimal Forecast)
-	{
-		set_Value (COLUMNNAME_Forecast, Forecast);
-	}
-
-	@Override
-	public BigDecimal getForecast() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Forecast);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setHelp (final @Nullable java.lang.String Help)
-	{
-		set_Value (COLUMNNAME_Help, Help);
-	}
-
-	@Override
-	public java.lang.String getHelp() 
-	{
-		return get_ValueAsString(COLUMNNAME_Help);
+		return get_ValueAsBoolean(COLUMNNAME_Implosion);
 	}
 
 	@Override
@@ -198,18 +150,6 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public boolean isCritical() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCritical);
-	}
-
-	@Override
-	public void setIsEnforceTolerance (final boolean IsEnforceTolerance)
-	{
-		set_Value (COLUMNNAME_IsEnforceTolerance, IsEnforceTolerance);
-	}
-
-	@Override
-	public boolean isEnforceTolerance() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEnforceTolerance);
 	}
 
 	@Override
@@ -238,7 +178,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	/** IssueOnlyForReceived = 9 */
 	public static final String ISSUEMETHOD_IssueOnlyForReceived = "9";
 	@Override
-	public void setIssueMethod (final java.lang.String IssueMethod)
+	public void setIssueMethod (final @Nullable java.lang.String IssueMethod)
 	{
 		set_Value (COLUMNNAME_IssueMethod, IssueMethod);
 	}
@@ -250,15 +190,27 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setLeadTimeOffset (final int LeadTimeOffset)
+	public void setLevelNo (final int LevelNo)
 	{
-		set_Value (COLUMNNAME_LeadTimeOffset, LeadTimeOffset);
+		set_Value (COLUMNNAME_LevelNo, LevelNo);
 	}
 
 	@Override
-	public int getLeadTimeOffset() 
+	public int getLevelNo() 
 	{
-		return get_ValueAsInt(COLUMNNAME_LeadTimeOffset);
+		return get_ValueAsInt(COLUMNNAME_LevelNo);
+	}
+
+	@Override
+	public void setLevels (final @Nullable java.lang.String Levels)
+	{
+		set_Value (COLUMNNAME_Levels, Levels);
+	}
+
+	@Override
+	public java.lang.String getLevels() 
+	{
+		return get_ValueAsString(COLUMNNAME_Levels);
 	}
 
 	@Override
@@ -301,33 +253,6 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class);
-	}
-
-	@Override
-	public void setM_ChangeNotice(final org.compiere.model.I_M_ChangeNotice M_ChangeNotice)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class, M_ChangeNotice);
-	}
-
-	@Override
-	public void setM_ChangeNotice_ID (final int M_ChangeNotice_ID)
-	{
-		if (M_ChangeNotice_ID < 1) 
-			set_Value (COLUMNNAME_M_ChangeNotice_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ChangeNotice_ID, M_ChangeNotice_ID);
-	}
-
-	@Override
-	public int getM_ChangeNotice_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_ChangeNotice_ID);
-	}
-
-	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -340,19 +265,6 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
-	public void setoldScrap (final @Nullable BigDecimal oldScrap)
-	{
-		set_Value (COLUMNNAME_oldScrap, oldScrap);
-	}
-
-	@Override
-	public BigDecimal getoldScrap() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_oldScrap);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -371,9 +283,9 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public void setPP_Product_BOM_ID (final int PP_Product_BOM_ID)
 	{
 		if (PP_Product_BOM_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOM_ID, null);
+			set_Value (COLUMNNAME_PP_Product_BOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
+			set_Value (COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
 	}
 
 	@Override
@@ -383,12 +295,24 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
+	}
+
+	@Override
+	public void setPP_Product_BOMLine(final org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class, PP_Product_BOMLine);
+	}
+
+	@Override
 	public void setPP_Product_BOMLine_ID (final int PP_Product_BOMLine_ID)
 	{
 		if (PP_Product_BOMLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMLine_ID, null);
+			set_Value (COLUMNNAME_PP_Product_BOMLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMLine_ID, PP_Product_BOMLine_ID);
+			set_Value (COLUMNNAME_PP_Product_BOMLine_ID, PP_Product_BOMLine_ID);
 	}
 
 	@Override
@@ -398,22 +322,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setQty_Attribute_ID (final int Qty_Attribute_ID)
-	{
-		if (Qty_Attribute_ID < 1) 
-			set_Value (COLUMNNAME_Qty_Attribute_ID, null);
-		else 
-			set_Value (COLUMNNAME_Qty_Attribute_ID, Qty_Attribute_ID);
-	}
-
-	@Override
-	public int getQty_Attribute_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Qty_Attribute_ID);
-	}
-
-	@Override
-	public void setQtyBatch (final @Nullable BigDecimal QtyBatch)
+	public void setQtyBatch (final BigDecimal QtyBatch)
 	{
 		set_Value (COLUMNNAME_QtyBatch, QtyBatch);
 	}
@@ -452,32 +361,34 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public void setShowSubBOMIngredients (final boolean ShowSubBOMIngredients)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_ShowSubBOMIngredients, ShowSubBOMIngredients);
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
 	@Override
-	public boolean isShowSubBOMIngredients() 
+	public int getSeqNo() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_ShowSubBOMIngredients);
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override
-	public void setTolerance_Perc (final @Nullable BigDecimal Tolerance_Perc)
+	public void setTM_Product_ID (final int TM_Product_ID)
 	{
-		set_Value (COLUMNNAME_Tolerance_Perc, Tolerance_Perc);
+		if (TM_Product_ID < 1) 
+			set_Value (COLUMNNAME_TM_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_TM_Product_ID, TM_Product_ID);
 	}
 
 	@Override
-	public BigDecimal getTolerance_Perc() 
+	public int getTM_Product_ID() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Tolerance_Perc);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_TM_Product_ID);
 	}
 
 	@Override
-	public void setValidFrom (final java.sql.Timestamp ValidFrom)
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
@@ -498,40 +409,5 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public java.sql.Timestamp getValidTo() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
-	}
-
-	/** 
-	 * VariantGroup AD_Reference_ID=540490
-	 * Reference name: VariantGroup
-	 */
-	public static final int VARIANTGROUP_AD_Reference_ID=540490;
-	/** 01 = 01 */
-	public static final String VARIANTGROUP_01 = "01";
-	/** 02 = 02 */
-	public static final String VARIANTGROUP_02 = "02";
-	/** 03 = 03 */
-	public static final String VARIANTGROUP_03 = "03";
-	/** 04 = 04 */
-	public static final String VARIANTGROUP_04 = "04";
-	/** 05 = 05 */
-	public static final String VARIANTGROUP_05 = "05";
-	/** 06 = 06 */
-	public static final String VARIANTGROUP_06 = "06";
-	/** 07 = 07 */
-	public static final String VARIANTGROUP_07 = "07";
-	/** 08 = 08 */
-	public static final String VARIANTGROUP_08 = "08";
-	/** 09 = 09 */
-	public static final String VARIANTGROUP_09 = "09";
-	@Override
-	public void setVariantGroup (final @Nullable java.lang.String VariantGroup)
-	{
-		set_Value (COLUMNNAME_VariantGroup, VariantGroup);
-	}
-
-	@Override
-	public java.lang.String getVariantGroup() 
-	{
-		return get_ValueAsString(COLUMNNAME_VariantGroup);
 	}
 }

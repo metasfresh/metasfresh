@@ -1,20 +1,19 @@
 package org.eevolution.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-/** Generated Interface for T_BOMLine
+/** Generated Interface for RV_PP_Cost_BOMLine
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_T_BOMLine 
+public interface I_RV_PP_Cost_BOMLine 
 {
 
-	String Table_Name = "T_BOMLine";
+	String Table_Name = "RV_PP_Cost_BOMLine";
 
-//	/** AD_Table_ID=53045 */
+//	/** AD_Table_ID=53161 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -23,7 +22,7 @@ public interface I_T_BOMLine
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Client_ID();
@@ -35,7 +34,7 @@ public interface I_T_BOMLine
 	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Org_ID (int AD_Org_ID);
@@ -45,7 +44,7 @@ public interface I_T_BOMLine
 	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Org_ID();
@@ -76,7 +75,7 @@ public interface I_T_BOMLine
 
 	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
 
-	ModelColumn<I_T_BOMLine, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_T_BOMLine.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
@@ -103,8 +102,53 @@ public interface I_T_BOMLine
 
 	void setC_AcctSchema(@Nullable org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-	ModelColumn<I_T_BOMLine, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_T_BOMLine.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Component Type.
+	 * Component Type for a Bill of Material or Formula
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setComponentType (@Nullable java.lang.String ComponentType);
+
+	/**
+	 * Get Component Type.
+	 * Component Type for a Bill of Material or Formula
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getComponentType();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_ComponentType = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "ComponentType", null);
+	String COLUMNNAME_ComponentType = "ComponentType";
 
 	/**
 	 * Set Kosten.
@@ -126,7 +170,7 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getCost();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Cost = new ModelColumn<>(I_T_BOMLine.class, "Cost", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Cost = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Cost", null);
 	String COLUMNNAME_Cost = "Cost";
 
 	/**
@@ -149,7 +193,7 @@ public interface I_T_BOMLine
 	 */
 	@Nullable java.lang.String getCostingMethod();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_CostingMethod = new ModelColumn<>(I_T_BOMLine.class, "CostingMethod", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_CostingMethod = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "CostingMethod", null);
 	String COLUMNNAME_CostingMethod = "CostingMethod";
 
 	/**
@@ -172,7 +216,7 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getCostStandard();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_CostStandard = new ModelColumn<>(I_T_BOMLine.class, "CostStandard", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_CostStandard = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "CostStandard", null);
 	String COLUMNNAME_CostStandard = "CostStandard";
 
 	/**
@@ -180,12 +224,12 @@ public interface I_T_BOMLine
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Created = new ModelColumn<>(I_T_BOMLine.class, "Created", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Created = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -193,7 +237,7 @@ public interface I_T_BOMLine
 	 * User who created this records
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getCreatedBy();
@@ -220,7 +264,7 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getCurrentCostPrice();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_CurrentCostPrice = new ModelColumn<>(I_T_BOMLine.class, "CurrentCostPrice", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_CurrentCostPrice = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "CurrentCostPrice", null);
 	String COLUMNNAME_CurrentCostPrice = "CurrentCostPrice";
 
 	/**
@@ -243,8 +287,29 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getCurrentCostPriceLL();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_CurrentCostPriceLL = new ModelColumn<>(I_T_BOMLine.class, "CurrentCostPriceLL", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_CurrentCostPriceLL = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "CurrentCostPriceLL", null);
 	String COLUMNNAME_CurrentCostPriceLL = "CurrentCostPriceLL";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Description = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Zukünftiger Kostenpreis.
@@ -264,7 +329,7 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getFutureCostPrice();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_FutureCostPrice = new ModelColumn<>(I_T_BOMLine.class, "FutureCostPrice", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_FutureCostPrice = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "FutureCostPrice", null);
 	String COLUMNNAME_FutureCostPrice = "FutureCostPrice";
 
 	/**
@@ -285,7 +350,7 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getFutureCostPriceLL();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_FutureCostPriceLL = new ModelColumn<>(I_T_BOMLine.class, "FutureCostPriceLL", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_FutureCostPriceLL = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "FutureCostPriceLL", null);
 	String COLUMNNAME_FutureCostPriceLL = "FutureCostPriceLL";
 
 	/**
@@ -308,7 +373,7 @@ public interface I_T_BOMLine
 	 */
 	boolean isImplosion();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Implosion = new ModelColumn<>(I_T_BOMLine.class, "Implosion", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Implosion = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Implosion", null);
 	String COLUMNNAME_Implosion = "Implosion";
 
 	/**
@@ -331,7 +396,7 @@ public interface I_T_BOMLine
 	 */
 	boolean isActive();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_IsActive = new ModelColumn<>(I_T_BOMLine.class, "IsActive", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_IsActive = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -352,8 +417,77 @@ public interface I_T_BOMLine
 	 */
 	boolean isCostFrozen();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_IsCostFrozen = new ModelColumn<>(I_T_BOMLine.class, "IsCostFrozen", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_IsCostFrozen = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "IsCostFrozen", null);
 	String COLUMNNAME_IsCostFrozen = "IsCostFrozen";
+
+	/**
+	 * Set Is Critical Component.
+	 * Indicate that a Manufacturing Order can not begin without have this component
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCritical (boolean IsCritical);
+
+	/**
+	 * Get Is Critical Component.
+	 * Indicate that a Manufacturing Order can not begin without have this component
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCritical();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_IsCritical = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "IsCritical", null);
+	String COLUMNNAME_IsCritical = "IsCritical";
+
+	/**
+	 * Set Is Qty Percentage.
+	 * Indicate that this component is based in % Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsQtyPercentage (@Nullable BigDecimal IsQtyPercentage);
+
+	/**
+	 * Get Is Qty Percentage.
+	 * Indicate that this component is based in % Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIsQtyPercentage();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_IsQtyPercentage = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "IsQtyPercentage", null);
+	String COLUMNNAME_IsQtyPercentage = "IsQtyPercentage";
+
+	/**
+	 * Set Issue Method.
+	 * There are two methods for issue the components to Manufacturing Order
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssueMethod (boolean IssueMethod);
+
+	/**
+	 * Get Issue Method.
+	 * There are two methods for issue the components to Manufacturing Order
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean issueMethod();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_IssueMethod = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "IssueMethod", null);
+	String COLUMNNAME_IssueMethod = "IssueMethod";
 
 	/**
 	 * Set Level no.
@@ -373,7 +507,7 @@ public interface I_T_BOMLine
 	 */
 	int getLevelNo();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_LevelNo = new ModelColumn<>(I_T_BOMLine.class, "LevelNo", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_LevelNo = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "LevelNo", null);
 	String COLUMNNAME_LevelNo = "LevelNo";
 
 	/**
@@ -394,8 +528,56 @@ public interface I_T_BOMLine
 	 */
 	@Nullable java.lang.String getLevels();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Levels = new ModelColumn<>(I_T_BOMLine.class, "Levels", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Levels = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Levels", null);
 	String COLUMNNAME_Levels = "Levels";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLine (int Line);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLine();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Line = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Line", null);
+	String COLUMNNAME_Line = "Line";
+
+	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Kostenart.
@@ -421,7 +603,7 @@ public interface I_T_BOMLine
 
 	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
 
-	ModelColumn<I_T_BOMLine, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_T_BOMLine.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
@@ -448,14 +630,14 @@ public interface I_T_BOMLine
 
 	void setM_CostType(@Nullable org.compiere.model.I_M_CostType M_CostType);
 
-	ModelColumn<I_T_BOMLine, org.compiere.model.I_M_CostType> COLUMN_M_CostType_ID = new ModelColumn<>(I_T_BOMLine.class, "M_CostType_ID", org.compiere.model.I_M_CostType.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.compiere.model.I_M_CostType> COLUMN_M_CostType_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "M_CostType_ID", org.compiere.model.I_M_CostType.class);
 	String COLUMNNAME_M_CostType_ID = "M_CostType_ID";
 
 	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -465,7 +647,7 @@ public interface I_T_BOMLine
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -497,7 +679,7 @@ public interface I_T_BOMLine
 
 	void setPP_Product_BOM(@Nullable org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
 
-	ModelColumn<I_T_BOMLine, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_T_BOMLine.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
 	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
 
 	/**
@@ -524,7 +706,7 @@ public interface I_T_BOMLine
 
 	void setPP_Product_BOMLine(@Nullable org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine);
 
-	ModelColumn<I_T_BOMLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_PP_Product_BOMLine_ID = new ModelColumn<>(I_T_BOMLine.class, "PP_Product_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
+	ModelColumn<I_RV_PP_Cost_BOMLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_PP_Product_BOMLine_ID = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "PP_Product_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
 	String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
@@ -547,29 +729,31 @@ public interface I_T_BOMLine
 	 */
 	BigDecimal getQtyBOM();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_QtyBOM = new ModelColumn<>(I_T_BOMLine.class, "QtyBOM", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_QtyBOM = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "QtyBOM", null);
 	String COLUMNNAME_QtyBOM = "QtyBOM";
 
 	/**
-	 * Set Selected Product.
+	 * Set % Scrap.
+	 * Indicate the % Scrap  for calculate the Scrap Quantity
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Number
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSel_Product_ID (int Sel_Product_ID);
+	void setScrap (@Nullable BigDecimal Scrap);
 
 	/**
-	 * Get Selected Product.
+	 * Get % Scrap.
+	 * Indicate the % Scrap  for calculate the Scrap Quantity
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Number
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getSel_Product_ID();
+	BigDecimal getScrap();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Sel_Product_ID = new ModelColumn<>(I_T_BOMLine.class, "Sel_Product_ID", null);
-	String COLUMNNAME_Sel_Product_ID = "Sel_Product_ID";
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Scrap = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Scrap", null);
+	String COLUMNNAME_Scrap = "Scrap";
 
 	/**
 	 * Set SeqNo.
@@ -593,41 +777,40 @@ public interface I_T_BOMLine
 	 */
 	int getSeqNo();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_SeqNo = new ModelColumn<>(I_T_BOMLine.class, "SeqNo", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_SeqNo = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "SeqNo", null);
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Temporal BOM Line.
+	 * Set Product.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Table
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setT_BOMLine_ID (int T_BOMLine_ID);
+	void setTM_Product_ID (int TM_Product_ID);
 
 	/**
-	 * Get Temporal BOM Line.
+	 * Get Product.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Table
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getT_BOMLine_ID();
+	int getTM_Product_ID();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_T_BOMLine_ID = new ModelColumn<>(I_T_BOMLine.class, "T_BOMLine_ID", null);
-	String COLUMNNAME_T_BOMLine_ID = "T_BOMLine_ID";
+	String COLUMNNAME_TM_Product_ID = "TM_Product_ID";
 
 	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_T_BOMLine, Object> COLUMN_Updated = new ModelColumn<>(I_T_BOMLine.class, "Updated", null);
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_Updated = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
@@ -635,10 +818,54 @@ public interface I_T_BOMLine
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Valid From.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
+
+	/**
+	 * Get Valid From.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidFrom();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_ValidFrom = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/**
+	 * Set Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
+
+	/**
+	 * Get Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getValidTo();
+
+	ModelColumn<I_RV_PP_Cost_BOMLine, Object> COLUMN_ValidTo = new ModelColumn<>(I_RV_PP_Cost_BOMLine.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 }

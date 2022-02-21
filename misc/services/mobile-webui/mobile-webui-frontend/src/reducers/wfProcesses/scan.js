@@ -25,7 +25,7 @@ function reduceOnSetScannedBarcode(draftState, payload) {
   const draftActivity = draftWFProcess.activities[activityId];
 
   const draftActivityDataStored = draftActivity.dataStored;
-  draftActivityDataStored.currentValue = { qrCode: scannedBarcode, caption: scannedBarcode };
+  draftActivityDataStored.currentValue = scannedBarcode ? { qrCode: scannedBarcode, caption: scannedBarcode } : null;
   draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   updateUserEditable({ draftWFProcess });
 
@@ -44,6 +44,7 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
     draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.componentProps.isAlwaysAvailableToUser ?? false;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   },
 });

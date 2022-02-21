@@ -34,7 +34,7 @@ const ScanScreen = () => {
         history.goBack();
       })
       .catch((error) => {
-        setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null });
+        dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null }));
 
         toastError({
           axiosError: error,

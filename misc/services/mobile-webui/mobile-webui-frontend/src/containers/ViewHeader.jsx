@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { getHeaderEntries } from '../reducers/headers';
+import { getEntryItemsFromState } from '../reducers/headers';
 
 export const ViewHeader = () => {
   const entryItems = useSelector((state) => getEntryItemsFromState(state));
@@ -19,12 +19,4 @@ export const ViewHeader = () => {
       </tbody>
     </table>
   );
-};
-
-const getEntryItemsFromState = (state) => {
-  const headersEntries = getHeaderEntries(state);
-  return headersEntries
-    .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
-    .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
-    .filter((entryItem) => !entryItem.hidden);
 };

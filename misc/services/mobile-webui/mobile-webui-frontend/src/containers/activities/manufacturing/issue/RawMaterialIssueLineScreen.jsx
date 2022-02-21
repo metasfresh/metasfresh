@@ -4,7 +4,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { getLineById, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
 import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
@@ -16,22 +16,23 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { productName, steps } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
+  const { caption, productName, uom, qtyToIssue, qtyToIssueTolerancePerc, qtyToIssueRemaining, qtyIssued, steps } =
+    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Issue', // TODO: trl
+        caption: caption,
         values: [
+          { caption: trl('general.Product'), value: productName },
           {
-            caption: trl('general.Product'),
-            value: productName,
+            caption: trl('activities.mfg.issues.qtyToIssueTarget'),
+            value: buildQtyWithToleranceString({ qty: qtyToIssue, uom, tolerance: qtyToIssueTolerancePerc }),
           },
+          { caption: trl('activities.mfg.issues.qtyToIssueRemaining'), value: qtyToIssueRemaining + ' ' + uom },
+          { caption: trl('activities.mfg.issues.qtyIssued'), value: qtyIssued + ' ' + uom },
         ],
       })
     );
@@ -68,11 +69,28 @@ const RawMaterialIssueLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
   return {
+    caption: activity?.caption ?? 'Issue',
     productName: line?.productName,
+    uom: line?.uom,
+    qtyToIssue: line?.qtyToIssue,
+    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
+    // qtyToIssueMin: line?.qtyToIssueMin,
+    // qtyToIssueMax: line?.qtyToIssueMax,
+    qtyToIssueRemaining: line?.qtyToIssueRemaining,
+    qtyIssued: line?.qtyIssued,
     steps: getStepsArrayFromLine(line),
   };
+};
+
+export const buildQtyWithToleranceString = ({ qty, uom, tolerance }) => {
+  let result = qty + ' ' + uom;
+  if (tolerance != null) {
+    result += ' ±' + tolerance + '%';
+  }
+  return result;
 };
 
 export default RawMaterialIssueLineScreen;

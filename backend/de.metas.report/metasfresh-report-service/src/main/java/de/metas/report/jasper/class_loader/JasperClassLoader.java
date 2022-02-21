@@ -124,7 +124,7 @@ public final class JasperClassLoader extends ClassLoader
 		try
 		{
 			final URL url = new URL(urlStr);
-			logger.debug("URL: {} for {}", url, name);
+			logger.trace("URL: {} for {}", url, name);
 
 			if (isJarInJarURL(url))
 			{
@@ -141,7 +141,7 @@ public final class JasperClassLoader extends ClassLoader
 		//
 		catch (final MalformedURLException e)
 		{
-			logger.debug("Got invalid URL '{}' for '{}'. Returning null.", urlStr, name, e);
+			logger.trace("Got invalid URL '{}' for '{}'. Returning null.", urlStr, name, e);
 		}
 		return null;
 	}
@@ -193,7 +193,7 @@ public final class JasperClassLoader extends ClassLoader
 		//
 		// Get resource's URL
 		final URL url = getResource(name);
-		logger.debug("URL: {} for {}", url, name);
+		logger.trace("URL: {} for {}", url, name);
 
 		if (url == null)
 		{

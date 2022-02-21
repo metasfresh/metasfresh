@@ -413,6 +413,27 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
+	 * Set Enforce Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceTolerance (boolean IsEnforceTolerance);
+
+	/**
+	 * Get Enforce Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceTolerance();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsEnforceTolerance = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsEnforceTolerance", null);
+	String COLUMNNAME_IsEnforceTolerance = "IsEnforceTolerance";
+
+	/**
 	 * Set Is Qty Percentage.
 	 * Indicate that this component is based in % Quantity
 	 *
@@ -811,8 +832,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_QtyBOM = "QtyBOM";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -821,8 +841,7 @@ public interface I_PP_Order_BOMLine
 	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1050,6 +1069,27 @@ public interface I_PP_Order_BOMLine
 
 	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new ModelColumn<>(I_PP_Order_BOMLine.class, "ShowSubBOMIngredients", null);
 	String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTolerance_Perc (@Nullable BigDecimal Tolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTolerance_Perc();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Tolerance_Perc = new ModelColumn<>(I_PP_Order_BOMLine.class, "Tolerance_Perc", null);
+	String COLUMNNAME_Tolerance_Perc = "Tolerance_Perc";
 
 	/**
 	 * Get Updated.

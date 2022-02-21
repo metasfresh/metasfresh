@@ -9,7 +9,7 @@ const translations = {
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
-    Barcode: 'Barcode',
+    QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
@@ -17,6 +17,7 @@ const translations = {
     QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    scanQRCode: 'Scan QR',
   },
   login: {
     submitButton: 'Login',
@@ -37,7 +38,6 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
-    abortText: 'Verlassen',
     picking: {
       PickingLine: 'Pick Zeile',
       scanQRCode: 'Scan QR',
@@ -75,9 +75,13 @@ const translations = {
       issues: {
         target: 'Zuf. Soll',
         picked: 'Ist',
-        qtyToIssue: 'Menge Soll',
+        qtyToIssueTarget: 'Menge Soll',
+        qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        step: {
+          name: 'HU einfüllen',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Sollmenge',

@@ -26,27 +26,27 @@ const RawMaterialIssueStepScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Issue HU', // TODO trl
+        caption: trl('activities.mfg.issues.step.name'),
         values: [
           {
             caption: trl('general.Locator'),
             value: locatorName,
           },
           {
-            caption: trl('activities.mfg.issues.qtyToIssue'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyToIssueTarget'),
             value: qtyToIssue + ' ' + uom,
           },
           {
-            caption: trl('activities.mfg.issues.qtyIssued'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyIssued'),
             value: (qtyIssued || 0) + ' ' + uom,
           },
           {
-            caption: trl('activities.mfg.issues.qtyRejected'),
+            caption: 'HU ' + trl('activities.mfg.issues.qtyRejected'),
             value: qtyRejected + ' ' + uom,
             hidden: !qtyRejected,
           },
           {
-            caption: trl('general.Barcode'),
+            caption: 'HU ' + trl('general.QRCode'),
             value: toQRCodeDisplayable(huQRCode),
           },
         ],

@@ -21,7 +21,8 @@ export const connectAndSubscribe = ({ topic, onWebsocketMessage, debug = DEBUG }
   client.webSocketFactory = () => new SockJS(stompUrl);
 
   client.onConnect = (frame) => {
-    console.log('websocket connected: ', frame);
+    if (debug) console.log('websocket connected: ', frame);
+
     client.subscribe(topic, onWebsocketMessage);
   };
 
