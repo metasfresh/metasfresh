@@ -75,7 +75,7 @@ spec:
                 name: metasfresh-{{ .Release.Name }}-db-secret
                 key: password
           - name: DEBUG_PRINT_BASH_CMDS
-            value: '{{ .Values.db.debug.printBashCmds }}'
+            value: {{ .Values.db.debug.printBashCmds }}
           - name: URL_SEED_DUMP
             value: {{ .Values.db.urlSeedDump }}
           - name: URL_MIGRATION_SCRIPTS_PACKAGE

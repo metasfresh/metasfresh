@@ -6,8 +6,8 @@ app:
   resources:
     memory: 1200M
   debug:
-    suspend: 'n' 
-    printBashCmds: 'y'
+    suspend: '"n"' 
+    printBashCmds: '"n"'
 
 db:
   image: dockerhub.metasfresh.com/postgres:14.2
@@ -20,7 +20,7 @@ db:
   username: metasfresh
   password: metasfresh
   debug:
-    printBashCmds: 'y'
+    printBashCmds: '"n"'
 
 rabbitmq:
   image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management

@@ -73,7 +73,7 @@ spec:
         - name: RABBITMQ_HOST
           value: metasfresh-{{ .Release.Name }}-rabbitmq
         - name: RABBITMQ_PORT
-          value: '{{ .Values.rabbitmq.port.rabbitmq }}'
+          value: '{{ .Values.rabbitmq.port.broker }}'
         - name: RABBITMQ_USER
           valueFrom:
             secretKeyRef:

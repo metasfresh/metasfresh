@@ -65,8 +65,8 @@ Map build(final MvnConf mvnConf) {
                 valuesData.db.urlMigrationScript = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 
                 // fix missing quotes after readYaml
-                valuesData.app.debug.suspend = 'n'
-                valuesData.app.debug.printBashCmds = "n"
+                valuesData.app.debug.suspend = "\"n\""
+                valuesData.app.debug.printBashCmds = "\"n\""
                 valuesData.db.debug.printBashCmds = "\"n\""
 
                 writeYaml file: valuesFileDes, data: valuesData
