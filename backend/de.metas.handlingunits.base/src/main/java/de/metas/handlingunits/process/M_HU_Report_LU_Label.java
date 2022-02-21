@@ -22,7 +22,10 @@ import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
 import org.springframework.core.io.ByteArrayResource;
 
 /*
@@ -91,6 +94,15 @@ public class M_HU_Report_LU_Label extends JavaProcess implements IProcessPrecond
 	private void generateQrCode(@NonNull final HuId huId)
 	{
 		huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuId(huId));
+
+		try
+		{
+			DB.commit(true, ITrx.TRXNAME_ThreadInherited);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 
 	private ReportResult printLabel(@NonNull final HuId huId)
