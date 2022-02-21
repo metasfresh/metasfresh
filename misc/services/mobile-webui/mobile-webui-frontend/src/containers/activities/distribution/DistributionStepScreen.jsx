@@ -47,8 +47,8 @@ const DistributionStepScreen = () => {
             value: pickFromLocator.caption,
           },
           {
-            caption: trl('activities.distribution.scanHU'),
-            value: toQRCodeDisplayable(pickFromHU.qrCode),
+            caption: trl('general.DropToLocator'),
+            value: dropToLocator.caption,
           },
           {
             caption: trl('general.QtyToMove'),
@@ -59,8 +59,8 @@ const DistributionStepScreen = () => {
             value: qtyPicked,
           },
           {
-            caption: trl('general.DropToLocator'),
-            value: dropToLocator.caption,
+            caption: trl('activities.distribution.scanHU'),
+            value: toQRCodeDisplayable(pickFromHU.qrCode),
           },
         ],
       })
