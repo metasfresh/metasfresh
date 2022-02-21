@@ -29,6 +29,15 @@ const HUManagerScreen = () => {
     dispatch(pushHeaderEntry({ location: url }));
   }, []);
 
+  const mergeClearanceStatuses = (statuses) => {
+    const mergedStatuses = [...statuses];
+
+    if (handlingUnitInfo.clearanceStatus) {
+      mergedStatuses.push(handlingUnitInfo.clearanceStatus);
+    }
+    setClearanceStatuses(mergedStatuses);
+  };
+
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return api
       .getHUByQRCode(scannedBarcode)
@@ -52,17 +61,12 @@ const HUManagerScreen = () => {
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
   };
-
   const onSetClearanceClick = () => {
     toggleClearanceModal(true);
   };
-
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).then(() => {
       toggleClearanceModal(false);
-      api
-        .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
-        .then((statuses) => setClearanceStatuses(statuses));
     });
   };
 
@@ -72,7 +76,7 @@ const HUManagerScreen = () => {
     if (handlingUnitInfo && !clearanceStatuses.length) {
       api
         .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
-        .then((statuses) => setClearanceStatuses(statuses));
+        .then((statuses) => mergeClearanceStatuses(statuses));
     }
   }, [handlingUnitInfo]);
 

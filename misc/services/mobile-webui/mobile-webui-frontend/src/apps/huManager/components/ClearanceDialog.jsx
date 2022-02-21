@@ -36,10 +36,7 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
             <table className="table">
               <tbody>
                 <tr>
-                  <th colSpan={2}>
-                    {trl('huManager.action.setClearance.buttonCaption')}
-                    {currentStatus ? <b>: {currentStatus.caption}</b> : null}
-                  </th>
+                  <th colSpan={2}>{trl('huManager.action.setClearance.buttonCaption')}</th>
                 </tr>
                 <tr>
                   <td colSpan={2}>
