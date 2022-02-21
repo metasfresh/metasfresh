@@ -163,7 +163,9 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService.getFullHU(huId, adLanguage))
+					.result(handlingUnitsService
+							.getFullHU(huId, adLanguage)
+							.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
 					.build());
 		}
 		catch (final Exception e)

@@ -22,22 +22,20 @@
 
 package de.metas.common.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.With;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonHU.JsonHUBuilder.class)
+@Jacksonized
 public class JsonHU
 {
 	@NonNull String id;
@@ -79,9 +77,7 @@ public class JsonHU
 	@Nullable
 	List<JsonHU> includedHUs;
 
-
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonHUBuilder
-	{
-	}
+	@With
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isDisposalPending;
 }

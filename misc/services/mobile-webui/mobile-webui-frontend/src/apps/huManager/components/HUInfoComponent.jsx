@@ -19,6 +19,10 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
           <th>{trl('huManager.locator')}</th>
           <td>{handlingUnitInfo.locatorValue}</td>
         </tr>
+        <tr>
+          <th>{trl('huManager.HUStatus')}</th>
+          <td>{computeHUStatusCaption(handlingUnitInfo)}</td>
+        </tr>
         {handlingUnitInfo.products.map((product) => (
           <ProductInfoRows key={product.productValue} product={product} />
         ))}
@@ -29,6 +33,14 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
 
 HUInfoComponent.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
+};
+
+const computeHUStatusCaption = (handlingUnitInfo) => {
+  let result = handlingUnitInfo.huStatusCaption;
+  if (handlingUnitInfo.isDisposalPending) {
+    result += ' / ' + trl('huManager.disposePendingStatus');
+  }
+  return result;
 };
 
 const ProductInfoRows = ({ product }) => {
