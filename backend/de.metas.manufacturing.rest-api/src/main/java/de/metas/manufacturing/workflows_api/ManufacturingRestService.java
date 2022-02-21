@@ -13,6 +13,7 @@ import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
@@ -72,6 +73,8 @@ public class ManufacturingRestService
 		{
 			case RawMaterialsIssue:
 				return builder.wfActivityType(RawMaterialsIssueActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case RawMaterialsIssueAdjustment:
+				return builder.wfActivityType(RawMaterialsIssueAdjustmentActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case MaterialReceipt:
 				return builder.wfActivityType(MaterialReceiptActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case WorkReport:

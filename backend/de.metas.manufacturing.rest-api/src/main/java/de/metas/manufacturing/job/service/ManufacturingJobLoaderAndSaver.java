@@ -142,6 +142,7 @@ public class ManufacturingJobLoaderAndSaver
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
 			case ScanScaleDevice:
+			case RawMaterialsIssueAdjustment:
 				return prepareJobActivity(from)
 						.build();
 			default:

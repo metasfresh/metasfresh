@@ -45,15 +45,15 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		final JsonQRCode currentScaleDevice = getCurrentScaleDevice(wfProcess)
-				.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
-				.orElse(null);
-
-		final ImmutableList<JsonQRCode> availableScaleDevices = streamAvailableScaleDevices(wfProcess)
-				.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
-				.collect(ImmutableList.toImmutableList());
-
-		return SetScannedBarcodeSupportHelper.createUIComponent(currentScaleDevice, availableScaleDevices);
+		return SetScannedBarcodeSupportHelper.uiComponent()
+				.currentValue(getCurrentScaleDevice(wfProcess)
+						.map(scaleDevice -> toJsonQRCode(scaleDevice, jsonOpts.getAdLanguage()))
+						.orElse(null))
+				.validOptions(streamAvailableScaleDevices(wfProcess)
+						.map(scaleDevice1 -> toJsonQRCode(scaleDevice1, jsonOpts.getAdLanguage()))
+						.collect(ImmutableList.toImmutableList()))
+				.isAlwaysAvailableToUser(true)
+				.build();
 	}
 
 	private Optional<ScaleDevice> getCurrentScaleDevice(final @NonNull WFProcess wfProcess)
