@@ -77,6 +77,7 @@ public class M_AttributeSetInstance_StepDef
 		final I_M_AttributeSetInstance attributeSetInstance = queryBL.createQueryBuilder(I_M_AttributeSetInstance.class)
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_AttributeSetInstance.COLUMN_M_AttributeSetInstance_ID) // ..to shut up the warning
 				.create()
 				.firstNotNull(I_M_AttributeSetInstance.class);
 
