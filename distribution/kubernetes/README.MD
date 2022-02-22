@@ -10,7 +10,11 @@
 [install.sh](install.sh)
 
 ## Installation
-run "/bin/bash [install.sh](install.sh)"
+run [install.sh](install.sh)
+```
+cd <path-to-kubernetes-project>
+/bin/bash install.sh
+```
 
 ## Configuration for local use
 - get ip with "minikube ip"  
@@ -31,6 +35,22 @@ run "/bin/bash [install.sh](install.sh)"
     - Port: 5432
     - Username: db.username as set in [values.yaml](./metasfresh-helm/values.yaml)
     - Password: db.password as set in [values.yaml](./metasfresh-helm/values.yaml)
+
+## how to reset database
+delete kubernetes cluster
+```
+minikube delete
+```
+remove content of volumes
+```
+cd <path-to-kubernetes-project>/volumes
+sudo rm -r <namespace of kubernetes instance>
+cd ..
+```
+restart minikube with [install.sh](install.sh) script
+```
+/bin/bash install.sh
+```
 
 ## dev section
 ### helm
