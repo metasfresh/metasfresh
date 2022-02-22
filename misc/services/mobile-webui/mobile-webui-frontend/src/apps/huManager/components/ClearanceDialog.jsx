@@ -48,7 +48,7 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
                   </td>
                 </tr>
                 <tr>
-                  <th>{trl('huManager.action.setClearance.clearanceNote')}</th>
+                  <th>{trl('huManager.clearanceNote')}</th>
                   <td>
                     <div className="field">
                       <div className="control">
