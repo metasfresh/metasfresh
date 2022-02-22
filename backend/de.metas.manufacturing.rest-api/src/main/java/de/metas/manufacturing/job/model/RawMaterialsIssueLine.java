@@ -6,6 +6,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UOMType;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -112,5 +113,10 @@ public class RawMaterialsIssueLine
 	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
 	{
 		return steps.stream().anyMatch(step -> PPOrderIssueScheduleId.equals(step.getId(), issueScheduleId));
+	}
+
+	public boolean isWeightable()
+	{
+		return UOMType.ofNullableCodeOrOther(qtyToIssue.getUOM().getUOMType()).isWeight();
 	}
 }
