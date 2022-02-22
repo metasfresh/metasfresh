@@ -95,11 +95,11 @@ const HUManagerScreen = () => {
         <div className="pt-3 section">
           <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
           <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
-          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
           <ButtonWithIndicator
             caption={trl('huManager.action.setClearance.buttonCaption')}
             onClick={onSetClearanceClick}
           />
+          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
     );
