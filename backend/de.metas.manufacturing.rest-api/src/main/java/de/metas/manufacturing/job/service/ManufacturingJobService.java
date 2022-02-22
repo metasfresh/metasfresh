@@ -237,6 +237,11 @@ public class ManufacturingJobService
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
+		return trxManager.callInThreadInheritedTrx(() -> issueRawMaterialsInTrx(job, request));
+	}
+
+	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
+	{
 		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
 			step.assertNotIssued();
 			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);

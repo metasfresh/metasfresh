@@ -8,14 +8,7 @@ import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
 import { toQRCodeString } from '../utils/huQRCodes';
 
-export const updateManufacturingIssueQty = ({
-  wfProcessId,
-  activityId,
-  lineId,
-  stepId,
-  qtyPicked,
-  qtyRejectedReasonCode,
-}) => {
+const updateManufacturingIssueQty = ({ wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode }) => {
   return {
     type: UPDATE_MANUFACTURING_ISSUE_QTY,
     payload: {
@@ -29,7 +22,15 @@ export const updateManufacturingIssueQty = ({
   };
 };
 
-export const updateManufacturingIssue = ({ wfProcessId, activityId, lineId, stepId }) => {
+export const updateManufacturingIssue = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  qtyIssued,
+  qtyRejected,
+  qtyRejectedReasonCode,
+}) => {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -39,7 +40,7 @@ export const updateManufacturingIssue = ({ wfProcessId, activityId, lineId, step
 
     if (line) {
       const step = line.steps[stepId];
-      const { id, huQRCode, qtyIssued, qtyRejected, qtyRejectedReasonCode } = step;
+      const { id, huQRCode } = step;
 
       return postManufacturingIssueEvent({
         wfProcessId,
@@ -51,7 +52,18 @@ export const updateManufacturingIssue = ({ wfProcessId, activityId, lineId, step
           qtyRejected,
           qtyRejectedReasonCode,
         },
-      });
+      }).then(() =>
+        dispatch(
+          updateManufacturingIssueQty({
+            wfProcessId,
+            activityId,
+            lineId,
+            stepId,
+            qtyPicked: qtyIssued,
+            qtyRejectedReasonCode,
+          })
+        )
+      );
     } else {
       return Promise.reject('No line found');
     }
