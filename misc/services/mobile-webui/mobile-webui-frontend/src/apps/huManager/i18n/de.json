@@ -6,6 +6,8 @@
   "product": "Produkt",
   "qty": "Menge",
   "disposePendingStatus": "Entsorgen",
+  "clearanceStatus": "Freigabestatus",
+  "clearanceNote": "Freigabe-Notiz",
   "action": {
     "dispose": {
       "buttonCaption": "Entsorgen"
@@ -16,6 +18,9 @@
     },
     "scanAgain": {
       "buttonCaption": "Erneut scannen"
+    },
+    "setClearance": {
+      "buttonCaption": "HU-Freigabe ändern"
     }
   }
 }
