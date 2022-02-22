@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.grssignum.from_grs.hu.processor;
 
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUUpdate;
-import de.metas.common.handlingunits.JsonHUAttributes;
+import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -47,9 +47,9 @@ public class UpdateHUAttributesProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonHUAttributes toHUAttributes(@NonNull final Map<String, Object> attributes)
+	private static JsonHUAttributeCodeAndValues toHUAttributes(@NonNull final Map<String, Object> attributes)
 	{
-		final JsonHUAttributes attributesToUpdate = new JsonHUAttributes();
+		final JsonHUAttributeCodeAndValues attributesToUpdate = new JsonHUAttributeCodeAndValues();
 		attributes.forEach(attributesToUpdate::putAttribute);
 
 		return attributesToUpdate;

@@ -62,8 +62,16 @@ public class JsonHU
 	@Singular
 	List<JsonHUProduct> products;
 
+	/**
+	 * Just a simple map of attribute code and values.
+	 * In the next versions of the API it will be replaced by {@link #attributes2}.
+	 */
+	@Deprecated
 	@NonNull
-	JsonHUAttributes attributes;
+	JsonHUAttributeCodeAndValues attributes;
+
+	@NonNull
+	JsonHUAttributes attributes2;
 
 	@Nullable
 	JsonClearanceStatusInfo clearanceStatus;

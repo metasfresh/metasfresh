@@ -27,12 +27,12 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-public class JsonHUAttributesRequestTest
+public class JsonHUAttributeCodeAndValuesRequestTest
 {
 	@Test
 	void testSerializeDeserialize()
 	{
-		final JsonHUAttributes attributes = new JsonHUAttributes();
+		final JsonHUAttributeCodeAndValues attributes = new JsonHUAttributeCodeAndValues();
 		attributes.putAttribute("stringAttribute", "string value");
 		attributes.putAttribute("integerAttribute", 123);
 		attributes.putAttribute("numberAttribute", new BigDecimal("123.45"));
