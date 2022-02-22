@@ -5,7 +5,9 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
@@ -23,4 +25,20 @@ public class JsonHUAttributes
 		}
 		return result;
 	}
+
+	public static JsonHUAttributes ofJsonHUAttributeCodeAndValues(@NonNull JsonHUAttributeCodeAndValues attributeCodeAndValues)
+	{
+		final ArrayList<JsonHUAttribute> list = new ArrayList<>();
+		for (final Map.Entry<String, Object> attributeCodeAndValue : attributeCodeAndValues.getAttributes().entrySet())
+		{
+			list.add(JsonHUAttribute.builder()
+					.code(attributeCodeAndValue.getKey())
+					.caption(attributeCodeAndValue.getKey())
+					.value(attributeCodeAndValue.getValue())
+					.build());
+		}
+
+		return JsonHUAttributes.builder().list(list).build();
+	}
+
 }

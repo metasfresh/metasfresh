@@ -84,7 +84,6 @@ class JsonGetSingleHUResponseTest
 										.uom("KGM")
 										.build())
 								.attributes2(attributes)
-								.attributes(attributes.toJsonHUAttributeCodeAndValues())
 								.build())
 						.build()
 		);

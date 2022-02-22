@@ -10,7 +10,7 @@ import {
   getScaleDeviceFromActivity,
   getStepByIdFromActivity,
 } from '../../../../reducers/wfProcesses';
-import { updateManufacturingIssue, updateManufacturingIssueQty } from '../../../../actions/ManufacturingActions';
+import { updateManufacturingIssue } from '../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../utils/huQRCodes';
@@ -28,16 +28,16 @@ const RawMaterialIssueScanScreen = () => {
   const history = useHistory();
   const onResult = ({ qty = 0, reason = null }) => {
     dispatch(
-      updateManufacturingIssueQty({
+      updateManufacturingIssue({
         wfProcessId,
         activityId,
         lineId,
         stepId,
-        qtyPicked: qty,
+        qtyIssued: qty,
+        qtyRejected: qtyToIssue - qty,
         qtyRejectedReasonCode: reason,
       })
-    );
-    dispatch(updateManufacturingIssue({ wfProcessId, activityId, lineId, stepId }))
+    )
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => history.go(-1));
   };
