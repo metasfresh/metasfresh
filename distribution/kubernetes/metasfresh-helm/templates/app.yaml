@@ -59,8 +59,6 @@ spec:
           value: {{ .Values.app.debug.printBashCmds }}
         - name: DEBUG_SUSPEND
           value: {{ .Values.app.debug.suspend }}
-        - name: DB_CONNECTION_POOL_MAX_SIZE
-          value: '{{ .Values.app.dbConnectionPoolMaxSize }}'
         #db
         - name: DB_HOST
           value: metasfresh-{{ .Release.Name }}-db
@@ -78,6 +76,8 @@ spec:
             secretKeyRef:
               name: metasfresh-{{ .Release.Name }}-db-secret
               key: password
+        - name: DB_CONNECTION_POOL_MAX_SIZE
+          value: '{{ .Values.db.dbConnectionPoolMaxSize }}'
         #search
         - name: ES_HOST
           value: metasfresh-{{ .Release.Name }}-search

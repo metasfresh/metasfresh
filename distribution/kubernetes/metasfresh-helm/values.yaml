@@ -8,7 +8,6 @@ app:
   debug:
     suspend: '"n"' 
     printBashCmds: '"n"'
-  dbConnectionPoolMaxSize: 60
 
 db:
   image: dockerhub.metasfresh.com/postgres:14.2
@@ -22,6 +21,7 @@ db:
   password: metasfresh
   debug:
     printBashCmds: '"n"'
+  dbConnectionPoolMaxSize: 60
 
 rabbitmq:
   image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
