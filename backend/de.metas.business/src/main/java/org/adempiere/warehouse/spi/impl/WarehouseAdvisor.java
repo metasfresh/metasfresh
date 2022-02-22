@@ -1,15 +1,5 @@
 package org.adempiere.warehouse.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.order.OrderLineId;
@@ -17,7 +7,16 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * Default implementation of {@link IWarehouseAdvisor}.
@@ -89,7 +88,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return pickingWarehouseId;
 		}
 
-		return orgsRepo.getOrgWarehouseId(adOrgId);
+		return order.isSOTrx() ?  orgsRepo.getOrgWarehouseId(adOrgId) : orgsRepo.getOrgPOWarehouseId(adOrgId);
 	}
 
 	/**
