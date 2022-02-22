@@ -28,7 +28,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
-import de.metas.common.handlingunits.JsonHUAttributes;
+import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
@@ -318,7 +318,7 @@ public class M_HU_StepDef
 		final I_M_HU hu = huTable.get(huIdentifier);
 		assertThat(hu).isNotNull();
 
-		final JsonHUAttributes attributes = new JsonHUAttributes();
+		final JsonHUAttributeCodeAndValues attributes = new JsonHUAttributeCodeAndValues();
 		attributes.putAttribute(HU_ATTR_LOT_NUMBER, attrLotNo);
 
 		final JsonHUAttributesRequest jsonHUAttributesRequest = JsonHUAttributesRequest.builder()

@@ -4,6 +4,7 @@ import { trl } from '../../../utils/translations';
 import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
+  // console.log('HUInfoComponent', { handlingUnitInfo });
   return (
     <table className="table view-header is-size-6">
       <tbody>
@@ -26,6 +27,11 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
         {handlingUnitInfo.products.map((product) => (
           <ProductInfoRows key={product.productValue} product={product} />
         ))}
+        {handlingUnitInfo.attributes2 &&
+          handlingUnitInfo.attributes2.list &&
+          handlingUnitInfo.attributes2.list.map((attribute) => (
+            <AttributeRow key={attribute.code} caption={attribute.caption} value={attribute.value} />
+          ))}
       </tbody>
     </table>
   );
@@ -69,4 +75,23 @@ ProductInfoRows.propTypes = {
     qty: PropTypes.string.isRequired, // it's string instead of number because it comes preformatted from the backend
     uom: PropTypes.string.isRequired,
   }).isRequired,
+};
+
+const AttributeRow = ({ caption, value }) => {
+  // hide rows with empty values
+  if (value == null) {
+    return null;
+  }
+
+  return (
+    <tr>
+      <th>{caption}</th>
+      <td>{value}</td>
+    </tr>
+  );
+};
+
+AttributeRow.propTypes = {
+  caption: PropTypes.string.isRequired,
+  value: PropTypes.any,
 };

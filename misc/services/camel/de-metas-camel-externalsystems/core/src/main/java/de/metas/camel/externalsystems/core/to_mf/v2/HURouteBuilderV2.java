@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.v2.ClearHUCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetrieveHUCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.handlingunits.JsonHUAttributes;
+import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import lombok.NonNull;
@@ -75,7 +75,7 @@ public class HURouteBuilderV2 extends RouteBuilder
 				.streamCaching()
 
 				.process(this::validateHUUpdateRequest)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonHUAttributes.class))
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonHUAttributeCodeAndValues.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
