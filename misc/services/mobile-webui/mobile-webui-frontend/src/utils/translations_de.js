@@ -17,7 +17,7 @@ const translations = {
     QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
-    scanQRCode: 'Scan QR',
+    scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
   },
@@ -42,8 +42,8 @@ const translations = {
     },
     picking: {
       PickingLine: 'Pick Zeile',
-      PickHU: 'Pick HU',
-      scanQRCode: 'Scan QR',
+      PickHU: 'HU kommissionieren',
+      scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
       invalidQtyPicked: 'Falsche Menge gepickt',
       confirmDone: 'OK',
@@ -76,8 +76,8 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       generateHUQRCodes: {
-        packing: 'Packing',
-        qtyTUs: 'TUs',
+        packing: 'Verpackung',
+        qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
       },
       issues: {

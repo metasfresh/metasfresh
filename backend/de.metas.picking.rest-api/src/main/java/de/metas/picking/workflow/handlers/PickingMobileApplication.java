@@ -35,6 +35,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -195,7 +196,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.activities(ImmutableList.of(
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A1"))
-								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
+								.caption(ImmutableTranslatableString.builder()
+										.trl("de_DE", "Kommissionierplatz scannen")
+										.trl("de_CH", "Kommissionierplatz scannen")
+										.defaultValue("Scan picking slot")
+										.build())
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
