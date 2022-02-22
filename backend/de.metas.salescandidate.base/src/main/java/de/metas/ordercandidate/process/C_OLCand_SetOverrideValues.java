@@ -22,6 +22,7 @@ package de.metas.ordercandidate.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
@@ -61,7 +62,7 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 	//"No Location provided and no GLN found for the given records"
 	private final static AdMessageKey NO_GLNS = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoGLNs");
 	//"No Location with GLN: {0} found for the given business partner"
-	private final static AdMessageKey NO_LOCATION_FOR_GLN = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoGLNs");
+	private final static AdMessageKey NO_LOCATION_FOR_GLN = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoLocationForGLN");
 
 	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
 	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
@@ -77,32 +78,32 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 		final int bpartnerId = parameters.get(PARAM_BPartner).getParameterAsInt(-1);
 		if (bpartnerId > -1 && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
 		{
-			final Set<GLN> glns = createQuery().stream()
-					.map(record -> BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
-					.map(bPartnerDAO::getBPartnerLocationByIdEvenInactive)
-					.filter(Objects::nonNull)
-					.map(I_C_BPartner_Location::getGLN)
-					.filter(Objects::nonNull)
-					.map(GLN::ofString)
-					.collect(Collectors.toSet());
-			if (glns.size() > 1)
-			{
-				throw new AdempiereException(MULTIPLE_GLNS);
-			}
-			if (glns.size() == 0)
-			{
-				throw new AdempiereException(NO_GLNS);
-			}
-			final GLN gln = glns.iterator().next();
-			final Optional<BPartnerLocationId> bPartnerLocationIdByGln = bPartnerDAO.getBPartnerLocationIdByGln(BPartnerId.ofRepoId(bpartnerId), gln);
-			if (!bPartnerLocationIdByGln.isPresent())
-			{
-				throw new AdempiereException(NO_LOCATION_FOR_GLN, gln);
-			}
+			parameters.put(PARAM_Location, ProcessInfoParameter.of(PARAM_Location, getBPartnerLocationId(bpartnerId).getRepoId()));
 		}
+		params = new ProcessParams(ImmutableList.copyOf(parameters.values()));
+	}
 
-		params = new ProcessParams(parameterList);
-
+	private BPartnerLocationId getBPartnerLocationId(final int bpartnerId)
+	{
+		final Set<GLN> glns = createQuery().stream()
+				.map(record -> BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.map(bPartnerDAO::getBPartnerLocationByIdEvenInactive)
+				.filter(Objects::nonNull)
+				.map(I_C_BPartner_Location::getGLN)
+				.filter(Objects::nonNull)
+				.map(GLN::ofString)
+				.collect(Collectors.toSet());
+		if (glns.size() > 1)
+		{
+			throw new AdempiereException(MULTIPLE_GLNS);
+		}
+		if (glns.size() == 0)
+		{
+			throw new AdempiereException(NO_GLNS);
+		}
+		final GLN gln = glns.iterator().next();
+		final Optional<BPartnerLocationId> bPartnerLocationIdByGln = bPartnerDAO.getBPartnerLocationIdByGln(BPartnerId.ofRepoId(bpartnerId), gln);
+		return bPartnerLocationIdByGln.orElseThrow(() -> new AdempiereException(NO_LOCATION_FOR_GLN, gln));
 	}
 
 	@Override
