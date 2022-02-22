@@ -113,7 +113,6 @@ public class HandlingUnitsService
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
 				.attributes2(jsonHUAttributes)
-				.attributes(jsonHUAttributes.toJsonHUAttributeCodeAndValues())
 				.clearanceNote(hu.getClearanceNote())
 				.clearanceStatus(getClearanceStatusInfo(hu));
 
