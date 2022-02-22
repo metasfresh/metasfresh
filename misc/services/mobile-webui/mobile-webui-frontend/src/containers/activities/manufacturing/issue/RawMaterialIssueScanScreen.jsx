@@ -6,6 +6,7 @@ import { trl } from '../../../../utils/translations';
 import { toastError } from '../../../../utils/toast';
 import {
   getActivityById,
+  getLineByIdFromActivity,
   getQtyRejectedReasonsFromActivity,
   getScaleDeviceFromActivity,
   getStepByIdFromActivity,
@@ -20,7 +21,7 @@ const RawMaterialIssueScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, qtyToIssue, uom, qtyRejectedReasons, scaleDevice } = useSelector((state) =>
+  const { huQRCode, qtyToIssue, uom, qtyRejectedReasons, weightable, scaleDevice } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
@@ -50,7 +51,7 @@ const RawMaterialIssueScanScreen = () => {
       qtyInitial={qtyToIssue}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
-      scaleDevice={scaleDevice}
+      scaleDevice={weightable ? scaleDevice : null}
       // Callbacks:
       onResult={onResult}
     />
@@ -59,12 +60,16 @@ const RawMaterialIssueScanScreen = () => {
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
   const step = getStepByIdFromActivity(activity, lineId, stepId);
+
+  console.log('RawMaterialIssueScanScreen.getPropsFromState', { line });
 
   return {
     huQRCode: step.huQRCode,
     qtyToIssue: step.qtyToIssue,
     uom: step.uom,
+    weightable: !!line.weightable,
     qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),
     scaleDevice: getScaleDeviceFromActivity(activity),
   };

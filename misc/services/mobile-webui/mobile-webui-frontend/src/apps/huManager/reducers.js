@@ -1,4 +1,4 @@
-import { CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED } from './actionTypes';
+import { CLEAR_LOADED_DATA, HANDLING_UNIT_LOADED, CHANGE_CLEARANCE_STATUS } from './actionTypes';
 
 export function huManagerReducer(applicationState = {}, action) {
   switch (action.type) {
@@ -10,6 +10,26 @@ export function huManagerReducer(applicationState = {}, action) {
       return {
         ...applicationState,
         handlingUnitInfo,
+      };
+    }
+    case CHANGE_CLEARANCE_STATUS: {
+      const { clearanceNote, clearanceStatus } = action.payload;
+      const hUI = { ...applicationState.handlingUnitInfo };
+
+      if (clearanceNote != null) {
+        hUI.clearanceNote = clearanceNote;
+      }
+
+      if (clearanceStatus) {
+        hUI.clearanceStatus = {
+          caption: clearanceStatus.caption,
+          key: clearanceStatus.key,
+        };
+      }
+
+      return {
+        ...applicationState,
+        handlingUnitInfo: { ...hUI },
       };
     }
     default:

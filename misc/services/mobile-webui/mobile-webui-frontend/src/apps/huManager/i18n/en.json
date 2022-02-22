@@ -4,6 +4,8 @@
   "locator": "Locator",
   "HUStatus": "Status",
   "product": "Product",
+  "clearanceStatus": "Clearance Status",
+  "clearanceNote": "Clearance Note",
   "qty": "Quantity",
   "disposePendingStatus": "disposing",
   "action": {
@@ -16,6 +18,9 @@
     },
     "scanAgain": {
       "buttonCaption": "Scan again"
+    },
+    "setClearance": {
+      "buttonCaption": "Change HU clearance"
     }
   }
 }

@@ -3,7 +3,7 @@ import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
 import { toQRCodeString } from '../../utils/huQRCodes';
 
-const huAPIBasePath = `${apiBasePath}/hu`;
+const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
 export const getHUByQRCode = (qrCode) => {
   return axios
@@ -36,3 +36,17 @@ export const moveHU = ({ huId, huQRCode, targetQRCode }) => {
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
+
+/**
+ * @returns {Promise<T>} handling unit info
+ */
+export function getAllowedClearanceStatusesRequest({ huId }) {
+  return axios
+    .get(`${huAPIBasePath}/byId/${huId}/allowedClearanceStatuses`)
+    .then(unboxAxiosResponse)
+    .then((response) => response.clearanceStatuses);
+}
+
+export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
+  return axios.put(`${huAPIBasePath}/byId/${huId}/clearance`, { clearanceStatus, clearanceNote });
+}

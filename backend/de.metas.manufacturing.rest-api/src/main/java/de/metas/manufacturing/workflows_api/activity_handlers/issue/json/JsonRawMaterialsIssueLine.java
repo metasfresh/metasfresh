@@ -20,6 +20,7 @@ public class JsonRawMaterialsIssueLine
 	@NonNull String productName;
 	@NonNull String uom;
 
+	boolean isWeightable;
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyToIssueMin;
 	@Nullable BigDecimal qtyToIssueMax;
@@ -36,6 +37,7 @@ public class JsonRawMaterialsIssueLine
 		return builder()
 				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
 				.uom(from.getQtyToIssue().getUOMSymbol())
+				.isWeightable(from.isWeightable())
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
 				.qtyToIssueMin(from.getQtyToIssueMin().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))

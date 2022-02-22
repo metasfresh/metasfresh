@@ -7,7 +7,15 @@ import { toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
-const ConfirmActivity = ({ wfProcessId, activityId, caption, promptQuestion, isUserEditable, isLastActivity }) => {
+const ConfirmActivity = ({
+  wfProcessId,
+  activityId,
+  caption,
+  promptQuestion,
+  isUserEditable,
+  completeStatus,
+  isLastActivity,
+}) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const onUserConfirmed = () => {
@@ -27,6 +35,7 @@ const ConfirmActivity = ({ wfProcessId, activityId, caption, promptQuestion, isU
         caption={caption}
         promptQuestion={promptQuestion}
         isUserEditable={isUserEditable}
+        completeStatus={completeStatus}
         onUserConfirmed={onUserConfirmed}
       />
     </div>
@@ -39,6 +48,7 @@ ConfirmActivity.propTypes = {
   caption: PropTypes.string.isRequired,
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool.isRequired,
+  completeStatus: PropTypes.string.isRequired,
   isLastActivity: PropTypes.bool.isRequired,
 };
 
