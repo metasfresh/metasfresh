@@ -66,10 +66,12 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
+		final boolean isSOTrx = order.isSOTrx();
 		// task 07014: for a dropship purchase order, we take the org info's dropship warehouse. our vendor will send the good directly to our customer and it will never enter any of our physical
 		// warehouses, but none the less we own it for a certain time. That'S what the dropship warehouse is for.
 		// For a sales order, "dropship" means that the order's receiver is someone other than the partner who ordered. For this scenario, we don't need a particular dropship warehouse.
-		if (order.isDropShip() && !order.isSOTrx())
+
+		if (order.isDropShip() && !isSOTrx)
 		{
 			final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
 			if (dropShipWarehouseId == null)
@@ -88,7 +90,9 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return pickingWarehouseId;
 		}
 
-		return order.isSOTrx() ?  orgsRepo.getOrgWarehouseId(adOrgId) : orgsRepo.getOrgPOWarehouseId(adOrgId);
+		final WarehouseId orgPOWarehouseId = orgsRepo.getOrgPOWarehouseId(adOrgId);
+
+		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgsRepo.getOrgWarehouseId(adOrgId);
 	}
 
 	/**
