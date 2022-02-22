@@ -176,7 +176,10 @@ public class PPOrderCandidateService
 			}
 		}
 
-		unhandledBOMLines.forEach(productBOMLine -> createOrderLineCandidate(ppOrderCandidateRecord, productBOMLine));
+		for (final I_PP_Product_BOMLine productBOMLine : unhandledBOMLines)
+		{
+			createOrderLineCandidate(ppOrderCandidateRecord, productBOMLine);
+		}
 	}
 
 	@NonNull
