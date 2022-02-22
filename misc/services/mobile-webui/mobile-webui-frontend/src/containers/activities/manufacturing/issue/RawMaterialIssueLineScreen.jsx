@@ -9,6 +9,7 @@ import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from 
 import { manufacturingStepScreenLocation } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
+import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
 
 const RawMaterialIssueLineScreen = () => {
   const {
@@ -47,10 +48,11 @@ const RawMaterialIssueLineScreen = () => {
     <div className="section pt-2">
       {steps.length > 0 &&
         steps.map((stepItem) => {
+          console.log('stepItem', stepItem);
           return (
             <ButtonWithIndicator
               key={stepItem.id}
-              caption={stepItem.locatorName}
+              caption={stepItem.locatorName + ' - ' + toQRCodeDisplayable(stepItem.huQRCode)}
               completeStatus={stepItem.completeStatus}
               onClick={() => onButtonClick({ stepId: stepItem.id })}
             >
