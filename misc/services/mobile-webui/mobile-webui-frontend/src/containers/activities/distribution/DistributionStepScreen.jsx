@@ -24,6 +24,7 @@ const DistributionStepScreen = () => {
 
   const {
     qtyToMove,
+    uom,
     //
     // Pick From:
     pickFromLocator,
@@ -52,11 +53,11 @@ const DistributionStepScreen = () => {
           },
           {
             caption: trl('general.QtyToMove'),
-            value: qtyToMove,
+            value: qtyToMove + ' ' + uom,
           },
           {
             caption: trl('general.QtyPicked'),
-            value: qtyPicked,
+            value: qtyPicked + ' ' + uom,
           },
           {
             caption: trl('activities.distribution.scanHU'),

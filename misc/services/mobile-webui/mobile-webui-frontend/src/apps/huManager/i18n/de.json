@@ -10,14 +10,14 @@
   "clearanceNote": "Freigabe-Notiz",
   "action": {
     "dispose": {
-      "buttonCaption": "Dispose"
+      "buttonCaption": "Entsorgen"
     },
     "move": {
-      "buttonCaption": "Move",
-      "scanTarget": "Scan target"
+      "buttonCaption": "Bewegen",
+      "scanTarget": "Lagerort scannen"
     },
     "scanAgain": {
-      "buttonCaption": "Scan again"
+      "buttonCaption": "Erneut scannen"
     },
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"

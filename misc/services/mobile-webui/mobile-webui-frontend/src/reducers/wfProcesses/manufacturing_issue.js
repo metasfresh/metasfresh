@@ -95,7 +95,10 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
     }
   });
 
-  let lineStatus = CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+  let lineStatus =
+    stepStatuses.length > 0
+      ? CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses)
+      : CompleteStatus.NOT_STARTED;
 
   if (lineStatus === CompleteStatus.NOT_STARTED && hasCompletedAlternativeSteps) {
     lineStatus = CompleteStatus.COMPLETED;

@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonHU;
+import de.metas.common.handlingunits.JsonHUAttribute;
+import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
@@ -55,11 +57,13 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +102,8 @@ public class HandlingUnitsService
 
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
+		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu);
+
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
 				.huStatus(hu.getHUStatus())
@@ -106,7 +112,7 @@ public class HandlingUnitsService
 				.qrCode(toJsonHUQRCode(huId))
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
-				.attributes(getAttributes(huContext, hu))
+				.attributes2(jsonHUAttributes)
 				.clearanceNote(hu.getClearanceNote())
 				.clearanceStatus(getClearanceStatusInfo(hu));
 
@@ -126,7 +132,7 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	public void updateAttributes(@NonNull final HuId huId, @NonNull final JsonHUAttributes jsonHUAttributes)
+	public void updateAttributes(@NonNull final HuId huId, @NonNull final JsonHUAttributeCodeAndValues jsonHUAttributes)
 	{
 		final Map<String, Object> attributes = jsonHUAttributes.getAttributes();
 
@@ -183,19 +189,6 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private JsonHUAttributes toJson(final ImmutableAttributeSet huAttributes)
-	{
-		final JsonHUAttributes json = new JsonHUAttributes();
-		for (final AttributeCode attributeCode : huAttributes.getAttributeCodes())
-		{
-			final Object value = huAttributes.getValue(attributeCode);
-			json.putAttribute(attributeCode.getCode(), value);
-		}
-
-		return json;
-	}
-
-	@NonNull
 	private ImmutableList<JsonHUProduct> getProductStorage(
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -208,21 +201,36 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private JsonHUAttributes getAttributes(
+	private JsonHUAttributes toJsonHUAttributes(
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
 		final ImmutableAttributeSet huAttributes = huContext.getHUAttributeStorageFactory()
 				.getImmutableAttributeSet(hu);
 
-		final JsonHUAttributes jsonHUAttributes = toJson(huAttributes);
+		final ArrayList<JsonHUAttribute> list = new ArrayList<>();
+		for (final I_M_Attribute attribute : huAttributes.getAttributes())
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+			final Object value = huAttributes.getValue(attributeCode);
+
+			list.add(JsonHUAttribute.builder()
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.build());
+		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
-			jsonHUAttributes.putAttribute(counterAttribute.getAttributeCode(), counterAttribute.getCounter());
+			list.add(JsonHUAttribute.builder()
+					.value(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
-		return jsonHUAttributes;
+		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
 	}
 
 	@NonNull

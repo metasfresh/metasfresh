@@ -170,9 +170,11 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		final String huStatus = hu.getHUStatus();
+		if (!X_M_HU.HUSTATUS_Active.equals(huStatus) && !X_M_HU.HUSTATUS_Issued.equals(huStatus)
+		)
 		{
-			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
+			throw new HUException("HU shall be Active or Issued but it was `" + huStatus + "`")
 					.setParameter("hu", hu);
 		}
 

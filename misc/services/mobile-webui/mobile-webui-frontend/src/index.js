@@ -29,3 +29,6 @@ ReactDOM.render(
 
 setupOfflineModeDetector({ globalStore });
 setupServiceWorker();
+
+// TODO debug
+window.metasfresh_debug = true;

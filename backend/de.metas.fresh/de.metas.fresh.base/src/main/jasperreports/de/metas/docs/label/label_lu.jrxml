@@ -18,7 +18,7 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * from "de.metas.handlingunits".lu_label($P{M_HU_ID},$P{ad_language} );]]>
+		<![CDATA[SELECT * from "de.metas.handlingunits".lu_label($P{M_HU_ID});]]>
 	</queryString>
 	<field name="lotno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="lotno"/>
