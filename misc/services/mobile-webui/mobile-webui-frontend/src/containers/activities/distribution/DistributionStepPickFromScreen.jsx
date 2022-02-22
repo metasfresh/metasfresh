@@ -14,7 +14,7 @@ import { updateDistributionPickFrom } from '../../../actions/DistributionActions
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/huQRCodes';
 
 const DistributionStepPickFromScreen = () => {
   const {
@@ -22,7 +22,7 @@ const DistributionStepPickFromScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, qtyToMove, uom, qtyRejectedReasons } = useSelector((state) =>
+  const { huQRCode, qtyToMove } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
@@ -32,29 +32,18 @@ const DistributionStepPickFromScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        values: [
-          {
-            // eslint-disable-next-line no-undef
-            caption: trl('activities.distribution.scanHU'),
-            value: toQRCodeDisplayable(huQRCode),
-          },
-          {
-            caption: trl('general.QtyToMove'),
-            value: qtyToMove,
-          },
-        ],
+        caption: trl('activities.distribution.scanHU'),
       })
     );
   }, []);
 
-  const onResult = ({ qty = 0, reason = null }) => {
+  const onResult = ({ scannedBarcode }) => {
     postDistributionPickFrom({
       wfProcessId,
       activityId,
       stepId,
       pickFrom: {
-        qtyPicked: qty,
-        qtyRejectedReasonCode: reason,
+        qrCode: toQRCodeString(scannedBarcode),
       },
     })
       .then(() => {
@@ -64,8 +53,8 @@ const DistributionStepPickFromScreen = () => {
             activityId,
             lineId,
             stepId,
-            qtyPicked: qty,
-            qtyRejectedReasonCode: reason,
+            qtyPicked: qtyToMove,
+            qtyRejectedReasonCode: null,
           })
         );
 
@@ -78,11 +67,6 @@ const DistributionStepPickFromScreen = () => {
     <ScanHUAndGetQtyComponent
       eligibleBarcode={toQRCodeString(huQRCode)}
       qtyCaption={trl('general.QtyToMove')}
-      qtyInitial={qtyToMove}
-      qtyTarget={qtyToMove}
-      uom={uom}
-      qtyRejectedReasons={qtyRejectedReasons}
-      invalidQtyMessageKey={'activities.distribution.invalidQtyToMove'}
       onResult={onResult}
     />
   );

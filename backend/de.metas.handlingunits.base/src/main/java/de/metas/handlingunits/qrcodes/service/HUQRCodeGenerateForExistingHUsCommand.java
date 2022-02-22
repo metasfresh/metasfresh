@@ -48,22 +48,22 @@ public class HUQRCodeGenerateForExistingHUsCommand
 	public HUQRCodeGenerateForExistingHUsResult execute()
 	{
 		final ImmutableSet<HuId> huIds = request.getHuIds();
-		final ImmutableSetMultimap<HuId, HUQRCode> existingQRCodes = huQRCodesRepository.getQRCodeByHuIds(huIds);
+		final ImmutableSetMultimap<HuId, HUQRCode> existingQRCodesByHuId = huQRCodesRepository.getQRCodeByHuIds(huIds);
 
 		final HashMultimap<HuId, HUQRCode> result = HashMultimap.create();
 		for (final HuId huId : huIds)
 		{
-			final Set<HUQRCode> huQRCodes = existingQRCodes.containsKey(huId)
-					? existingQRCodes.get(huId)
-					: generateQRCodesAndAssign(huId);
+			final ImmutableSet<HUQRCode> existingQRCodes = existingQRCodesByHuId.get(huId);
+			result.putAll(huId, existingQRCodes);
 
-			result.putAll(huId, huQRCodes);
+			final Set<HUQRCode> newQRCodes = generateRemainingQRCodesAndAssign(huId, existingQRCodes.size());
+			result.putAll(huId, newQRCodes);
 		}
 
 		return new HUQRCodeGenerateForExistingHUsResult(result);
 	}
 
-	private Set<HUQRCode> generateQRCodesAndAssign(@NonNull final HuId huId)
+	private Set<HUQRCode> generateRemainingQRCodesAndAssign(@NonNull final HuId huId, final int alreadyGeneratedQRCodesCount)
 	{
 		final I_M_HU_PI_Version piVersion;
 		final int requiredQRCodesCount;
@@ -72,17 +72,17 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		{
 			piVersion = handlingUnitsBL.getEffectivePIVersion(hu);
 			final QtyTU qtyTUs = handlingUnitsBL.getTUsCount(hu);
-			requiredQRCodesCount = qtyTUs.toInt();
-			if (requiredQRCodesCount <= 0)
-			{
-				// shall not happen
-				throw new AdempiereException("Invalid QtyTUs count: " + qtyTUs + " for " + hu);
-			}
+			requiredQRCodesCount = qtyTUs.toInt() - alreadyGeneratedQRCodesCount;
 		}
 		else
 		{
 			piVersion = handlingUnitsBL.getPIVersion(hu);
-			requiredQRCodesCount = 1;
+			requiredQRCodesCount = 1 - alreadyGeneratedQRCodesCount;
+		}
+
+		if(requiredQRCodesCount <= 0)
+		{
+			return ImmutableSet.of();
 		}
 
 		final I_M_HU_PI pi = handlingUnitsBL.getPI(piVersion);
