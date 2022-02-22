@@ -106,6 +106,15 @@ public class HUQRCodesService
 		}
 	}
 
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return generateForExistingHUs(
+				HUQRCodeGenerateForExistingHUsRequest.builder()
+						.huIds(ImmutableSet.of(huId))
+						.build())
+				.toList();
+	}
+
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
