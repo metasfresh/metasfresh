@@ -14,17 +14,17 @@ public class HUQRCodeJsonConverter
 {
 	public static GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
 
-	public static String toJsonString(final HUQRCode qrCode)
+	public static String toGlobalQRCodeJsonString(final HUQRCode qrCode)
 	{
 		return toGlobalQRCode(qrCode).getAsString();
 	}
 
 	public static GlobalQRCode toGlobalQRCode(final HUQRCode qrCode)
 	{
-		return JsonConverterV1.toGlobalQRCode(qrCode);
+		return JsonConverterV1.toGlobalQRCode(HUQRCodeJsonConverter.GLOBAL_QRCODE_TYPE, qrCode);
 	}
 
-	public static HUQRCode fromQRCodeString(final String qrCodeString)
+	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return fromGlobalQRCode(GlobalQRCode.ofString(qrCodeString));
 	}
@@ -51,8 +51,8 @@ public class HUQRCodeJsonConverter
 	public static JsonRenderedHUQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
 	{
 		return JsonRenderedHUQRCode.builder()
-				.code(toJsonString(huQRCode))
-				.displayable(huQRCode.getId().getDisplayableSuffix())
+				.code(toGlobalQRCodeJsonString(huQRCode))
+				.displayable(huQRCode.toDisplayableQRCode())
 				.build();
 	}
 }

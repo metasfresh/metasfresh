@@ -21,7 +21,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
   const mountedRef = useRef(true);
 
   const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
-    //console.log('Resolving scanned barcode', scannedBarcode);
+    //console.log('Resolving scanned barcode', { scannedBarcode, resolveScannedBarcode });
     if (resolveScannedBarcode) {
       let resolvedResultPromise;
       try {

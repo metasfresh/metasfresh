@@ -1,15 +1,16 @@
 package de.metas.handlingunits.qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
-import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +21,17 @@ public class HUQRCodesService
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
+	@NonNull private final GlobalQRCodeService globalQRCodeService;
 
 	private static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
-	public HUQRCodesService(final @NonNull HUQRCodesRepository huQRCodesRepository) {this.huQRCodesRepository = huQRCodesRepository;}
+	public HUQRCodesService(
+			final @NonNull HUQRCodesRepository huQRCodesRepository,
+			final @NonNull GlobalQRCodeService globalQRCodeService)
+	{
+		this.huQRCodesRepository = huQRCodesRepository;
+		this.globalQRCodeService = globalQRCodeService;
+	}
 
 	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
 	{
@@ -42,35 +50,28 @@ public class HUQRCodesService
 				.execute();
 	}
 
-	public void print(final List<HUQRCode> qrCodes)
+	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes)
 	{
-		createPDF(qrCodes, true);
+		return globalQRCodeService.createPDF(
+				qrCodes.stream()
+						.map(HUQRCode::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public Resource createPDF(final List<HUQRCode> qrCodes)
+	public void print(@NonNull final List<HUQRCode> qrCodes)
 	{
-		return createPDF(qrCodes, false);
+		print(createPDF(qrCodes));
 	}
 
-	public Resource createPDF(final List<HUQRCode> qrCodes, final boolean sendToPrinter)
+	public void print(@NonNull final QRCodePDFResource pdf)
 	{
-		return HUQRCodeCreatePDFCommand.builder()
-				.qrCodes(qrCodes)
-				.sendToPrinter(sendToPrinter)
-				.build()
-				.execute();
+		globalQRCodeService.print(pdf);
 	}
 
-	public HuId getHuIdByQRCode(@NonNull final String qrCodeString)
+	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return getHuIdByQRCodeIfExists(qrCodeString)
-				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code " + qrCodeString));
-	}
-
-	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final String qrCodeString)
-	{
-		final HUQRCode qrCode = HUQRCodeJsonConverter.fromQRCodeString(qrCodeString);
-		return getHuIdByQRCodeIfExists(qrCode);
+		return getHuIdByQRCodeIfExists(qrCode)
+				.orElseThrow(() -> new AdempiereException("No HU attached to QR Code `" + qrCode.toDisplayableQRCode() + "`"));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
@@ -105,6 +106,15 @@ public class HUQRCodesService
 		}
 	}
 
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return generateForExistingHUs(
+				HUQRCodeGenerateForExistingHUsRequest.builder()
+						.huIds(ImmutableSet.of(huId))
+						.build())
+				.toList();
+	}
+
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
@@ -113,5 +123,13 @@ public class HUQRCodesService
 	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
 	{
 		huQRCodesRepository.assign(qrCode, huId);
+	}
+
+	public void assertQRCodeAssignedToHU(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	{
+		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
+		{
+			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
+		}
 	}
 }

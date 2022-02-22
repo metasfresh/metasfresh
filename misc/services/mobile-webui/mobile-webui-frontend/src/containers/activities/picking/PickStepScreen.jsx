@@ -32,7 +32,7 @@ const PickStepScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Pick HU', // TODO trl
+        caption: trl('activities.picking.PickHU'),
         values: [
           {
             caption: trl('general.Locator'),
@@ -43,7 +43,7 @@ const PickStepScreen = () => {
             value: qtyToPick + ' ' + uom,
           },
           {
-            caption: trl('general.Barcode'),
+            caption: trl('general.QRCode'),
             value: toQRCodeDisplayable(pickFrom?.huQRCode),
           },
         ],

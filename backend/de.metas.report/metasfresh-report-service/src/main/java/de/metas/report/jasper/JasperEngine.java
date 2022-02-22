@@ -1,5 +1,6 @@
 package de.metas.report.jasper;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -100,6 +101,7 @@ public class JasperEngine extends AbstractReportEngine
 			@NonNull final JRParametersCollector jrParameters,
 			@NonNull final ClassLoader jasperLoader) throws JRException
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final String reportPath = getReportPath(adProcessId, jrParameters);
 		final InputStream jasperInputStream;
 		if (reportPath.startsWith("resource:"))
@@ -140,6 +142,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		jasperReport.setProperty(JRPROPERTY_ReportPath, reportPath);
 
+		logger.debug("Created JasperReport for {} in {}", adProcessId, stopwatch.stop());
 		return jasperReport;
 	}
 
@@ -291,52 +294,60 @@ public class JasperEngine extends AbstractReportEngine
 			outputType = DEFAULT_OutputType;
 		}
 
-		if (OutputType.PDF == outputType)
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		try
 		{
-			final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
-			return ReportResult.builder()
-					.outputType(outputType)
-					.reportContentBase64(Util.encodeBase64(data))
-					.reportFilename(buildReportFilename(jasperPrint, outputType))
-					.build();
-		}
-		else if (OutputType.HTML == outputType)
-		{
-			final File file = File.createTempFile("JasperPrint", ".html");
-			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
-			// TODO: handle image links
+			if (OutputType.PDF == outputType)
+			{
+				final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
+				return ReportResult.builder()
+						.outputType(outputType)
+						.reportContentBase64(Util.encodeBase64(data))
+						.reportFilename(buildReportFilename(jasperPrint, outputType))
+						.build();
+			}
+			else if (OutputType.HTML == outputType)
+			{
+				final File file = File.createTempFile("JasperPrint", ".html");
+				JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
+				// TODO: handle image links
 
-			final ByteArrayOutputStream out = new ByteArrayOutputStream();
-			FileUtil.copy(file, out);
+				final ByteArrayOutputStream out = new ByteArrayOutputStream();
+				FileUtil.copy(file, out);
 
-			return ReportResult.builder()
-					.outputType(outputType)
-					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
-					.reportFilename(buildReportFilename(jasperPrint, outputType))
-					.build();
-		}
-		else if (OutputType.XML == outputType)
-		{
-			final ByteArrayOutputStream out = new ByteArrayOutputStream();
-			JasperExportManager.exportReportToXmlStream(jasperPrint, out);
+				return ReportResult.builder()
+						.outputType(outputType)
+						.reportContentBase64(Util.encodeBase64(out.toByteArray()))
+						.reportFilename(buildReportFilename(jasperPrint, outputType))
+						.build();
+			}
+			else if (OutputType.XML == outputType)
+			{
+				final ByteArrayOutputStream out = new ByteArrayOutputStream();
+				JasperExportManager.exportReportToXmlStream(jasperPrint, out);
 
-			return ReportResult.builder()
-					.outputType(outputType)
-					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
-					.reportFilename(buildReportFilename(jasperPrint, outputType))
-					.build();
+				return ReportResult.builder()
+						.outputType(outputType)
+						.reportContentBase64(Util.encodeBase64(out.toByteArray()))
+						.reportFilename(buildReportFilename(jasperPrint, outputType))
+						.build();
+			}
+			else if (OutputType.JasperPrint == outputType)
+			{
+				return exportAsJasperPrint(jasperPrint);
+			}
+			else if (OutputType.XLS == outputType)
+			{
+				return exportAsExcel(jasperPrint);
+			}
+			else
+			{
+				throw new RuntimeException("Output type " + outputType + " not supported");
+			}
 		}
-		else if (OutputType.JasperPrint == outputType)
+		finally
 		{
-			return exportAsJasperPrint(jasperPrint);
-		}
-		else if (OutputType.XLS == outputType)
-		{
-			return exportAsExcel(jasperPrint);
-		}
-		else
-		{
-			throw new RuntimeException("Output type " + outputType + " not supported");
+			logger.debug("Took {} to export report to {}", stopwatch.stop(), outputType);
 		}
 	}
 

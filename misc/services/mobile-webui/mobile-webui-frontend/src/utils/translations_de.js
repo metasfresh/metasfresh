@@ -9,7 +9,7 @@ const translations = {
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
-    Barcode: 'Barcode',
+    QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
@@ -17,6 +17,9 @@ const translations = {
     QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    scanQRCode: 'QR scannen',
+    Back: 'Zurück',
+    Home: 'Home',
   },
   login: {
     submitButton: 'Login',
@@ -37,10 +40,10 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
-    abortText: 'Verlassen',
     picking: {
       PickingLine: 'Pick Zeile',
-      scanQRCode: 'Scan QR',
+      PickHU: 'HU kommissionieren',
+      scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
       invalidQtyPicked: 'Falsche Menge gepickt',
       confirmDone: 'OK',
@@ -55,7 +58,7 @@ const translations = {
       picked: 'Ist',
       scanHU: 'Scan HU',
       scanLocator: 'Scan Ziel Lagerort',
-      invalidLocatorBarcode: 'Lagerort Barcode ungültig',
+      invalidLocatorQRCode: 'Lagerort QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
     },
     confirmButton: {
@@ -72,12 +75,21 @@ const translations = {
       ProductName: 'Produkt',
       target: 'Soll',
       picked: 'Ist',
+      generateHUQRCodes: {
+        packing: 'Verpackung',
+        qtyTUs: 'Anzahl TUs',
+        print: 'Drucken',
+      },
       issues: {
         target: 'Zuf. Soll',
         picked: 'Ist',
-        qtyToIssue: 'Menge Soll',
+        qtyToIssueTarget: 'Menge Soll',
+        qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        step: {
+          name: 'HU einfüllen',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Sollmenge',

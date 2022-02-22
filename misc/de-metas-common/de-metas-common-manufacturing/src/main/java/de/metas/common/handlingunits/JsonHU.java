@@ -22,22 +22,20 @@
 
 package de.metas.common.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.With;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonHU.JsonHUBuilder.class)
+@Jacksonized
 public class JsonHU
 {
 	@NonNull String id;
@@ -64,8 +62,22 @@ public class JsonHU
 	@Singular
 	List<JsonHUProduct> products;
 
+	/**
+	 * Just a simple map of attribute code and values.
+	 * In the next versions of the API it will be replaced by {@link #attributes2}.
+	 */
+	@Deprecated
 	@NonNull
-	JsonHUAttributes attributes;
+	JsonHUAttributeCodeAndValues attributes;
+
+	@NonNull
+	JsonHUAttributes attributes2;
+
+	@Nullable
+	JsonClearanceStatusInfo clearanceStatus;
+
+	@Nullable
+	String clearanceNote;
 
 	@Nullable
 	JsonHUType jsonHUType;
@@ -73,8 +85,7 @@ public class JsonHU
 	@Nullable
 	List<JsonHU> includedHUs;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonHUBuilder
-	{
-	}
+	@With
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isDisposalPending;
 }

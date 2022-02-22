@@ -4,6 +4,7 @@ Feature: Handling unit export from manufacturing order
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
   Scenario: HU export from manufacturing order
@@ -45,6 +46,8 @@ Feature: Handling unit export from manufacturing order
       | Identifier          | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | bom_l_manufacturing | bom_manufacturing            | componentProduct_HU     | 2021-01-02 | 10       |
 
+    And the PP_Product_BOM identified by bom_manufacturing is completed
+
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540006        |
@@ -85,20 +88,14 @@ Feature: Handling unit export from manufacturing order
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_manufacturing             | ppOrderTU              |
 
-    And store JsonHUAttributesRequest in context
-      | M_HU_ID.Identifier | attributes.LockNotice       |
-      | ppOrderTU          | Erwartet Freigabe durch GRS |
-
-    And the metasfresh REST-API endpoint path '/api/v2/hu' receives a 'PUT' request with the payload from context and responds with '200' status code
-
     When store HU endpointPath /api/v2/material/handlingunits/byId/:ppOrderTU in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice       | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
-      | ppOrderTU          | TU         | ppOrderCU   | Erwartet Freigabe durch GRS | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
-      | ppOrderCU          | CU         |             | Erwartet Freigabe durch GRS | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
 
     And update external system config:
       | ExternalSystem_Config_ID.Identifier | Type | IsActive |

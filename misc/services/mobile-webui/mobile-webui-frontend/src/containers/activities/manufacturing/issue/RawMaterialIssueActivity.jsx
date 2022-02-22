@@ -8,7 +8,7 @@ import { manufacturingLineScreenLocation } from '../../../../routes/manufacturin
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 
-const RawMaterialsIssueActivity = (props) => {
+const RawMaterialIssueActivity = (props) => {
   const {
     applicationId,
     wfProcessId,
@@ -52,11 +52,11 @@ const RawMaterialsIssueActivity = (props) => {
   );
 };
 
-RawMaterialsIssueActivity.propTypes = {
+RawMaterialIssueActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   activityState: PropTypes.object.isRequired,
 };
 
-export default RawMaterialsIssueActivity;
+export default RawMaterialIssueActivity;

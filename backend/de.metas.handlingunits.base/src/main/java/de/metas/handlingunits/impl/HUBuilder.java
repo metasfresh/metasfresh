@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -93,6 +94,12 @@ import java.util.stream.Collectors;
 	 * Default: {@link X_M_HU#HUSTATUS_Planning}.
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
+
+	@Nullable
+	private ClearanceStatus _huClearanceStatus;
+
+	@Nullable
+	private String _huClearanceNote;
 
 	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
@@ -219,6 +226,24 @@ import java.util.stream.Collectors;
 	public boolean isHUPlanningReceiptOwnerPM()
 	{
 		return _huPlanningReceiptOwnerPM;
+	}
+
+	@Override
+	public IHUBuilder setHUClearanceStatus(@Nullable final ClearanceStatus huClearanceStatus, @Nullable final String huClearanceNote)
+	{
+		_huClearanceStatus = huClearanceStatus;
+		_huClearanceNote = huClearanceNote;
+		return this;
+	}
+
+	public ClearanceStatus getHUClearanceStatus()
+	{
+		return _huClearanceStatus;
+	}
+
+	public String getHUClearanceNote()
+	{
+		return _huClearanceNote;
 	}
 
 	@Nullable
@@ -422,6 +447,8 @@ import java.util.stream.Collectors;
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
 
+		setClearanceStatus(hu, parentHU, getHUClearanceStatus(), getHUClearanceNote());
+
 		//
 		// Notify Storage and Attributes DAO that a new HU was created
 		// NOTE: depends on their implementation, but they have a chance to do some optimizations
@@ -463,6 +490,25 @@ import java.util.stream.Collectors;
 			piip = IHandlingUnitsBL.extractPIItemProductOrNull(parentHU);
 		}
 		return piip;
+	}
+
+	private static void setClearanceStatus(
+			@NonNull final I_M_HU hu,
+			@Nullable final I_M_HU parentHU,
+			@Nullable final ClearanceStatus configuredStatus,
+			@Nullable final String configuredNote)
+	{
+		// Copy HUClearanceStatus and HUClearanceNote from parent or use the configured one if no parent
+		if (parentHU != null)
+		{
+			hu.setClearanceStatus(parentHU.getClearanceStatus());
+			hu.setClearanceNote(parentHU.getClearanceNote());
+		}
+		else
+		{
+			hu.setClearanceStatus(configuredStatus != null ? configuredStatus.getCode() : null);
+			hu.setClearanceNote(configuredNote);
+		}
 	}
 
 	/**

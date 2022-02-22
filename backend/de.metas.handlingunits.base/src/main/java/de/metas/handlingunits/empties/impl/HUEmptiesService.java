@@ -1,11 +1,18 @@
 package de.metas.handlingunits.empties.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.empties.EmptiesMovementProducer;
+import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
+import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
+import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.inout.IInOutDAO;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,20 +26,10 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.empties.EmptiesMovementProducer;
-import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
-import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inout.IInOutDAO;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -81,7 +78,7 @@ public class HUEmptiesService implements IHUEmptiesService
 		if (lines.isEmpty())
 		{   // we did find the empties distribution network, but it contained no line to tell us what the given 'warehouse's empty-warehouse is.
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
-					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
+					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution.getName());
 		}
 
 		return lines.get(0).getM_Warehouse();
@@ -91,8 +88,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
 		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
-		return emptiesLocator;
+		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
 	}
 
 	@Override

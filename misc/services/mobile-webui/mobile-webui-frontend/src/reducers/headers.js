@@ -14,7 +14,15 @@ const launchersUrlRegExp = /\/\w+\/launchers/gi;
 
 const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 
-export const getHeaderEntries = (state) => state.headers.entries;
+const getHeaderEntries = (state) => state.headers.entries;
+
+export const getEntryItemsFromState = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries
+    .filter((headersEntry) => !headersEntry.hidden && Array.isArray(headersEntry.values))
+    .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
+    .filter((entryItem) => !entryItem.hidden);
+};
 
 export const getCaptionFromHeaders = (state) => {
   // return last known caption

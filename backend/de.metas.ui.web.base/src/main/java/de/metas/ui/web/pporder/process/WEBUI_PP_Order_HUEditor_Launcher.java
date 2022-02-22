@@ -26,10 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -39,8 +39,8 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -51,6 +51,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.List;
@@ -69,6 +70,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -166,7 +168,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 
 	private boolean isEligibleHuToIssue(final HuId huId)
 	{
-		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
+		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId) || !handlingUnitsBL.isHUHierarchyCleared(huId))
 		{
 			return false;
 		}

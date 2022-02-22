@@ -425,7 +425,6 @@ public class ModelClassGenerator
 			final int hash = s.hashCode();
 			s = s.replace(PLACEHOLDER_serialVersionUID, String.valueOf(hash));
 			sb = new StringBuilder(s);
-			System.out.println("" + fileName + ": hash=" + hash);
 		}
 
 		try
@@ -454,14 +453,11 @@ public class ModelClassGenerator
 			}
 			fw.flush();
 			fw.close();
-			float size = out.length();
-			size /= 1024;
-			log.info(out.getAbsolutePath() + " - " + size + " kB");
+			log.info("Wrote {} ({} bytes)", out.getAbsolutePath(), out.length());
 		}
 		catch (final Exception ex)
 		{
-			log.error(fileName, ex);
-			throw new RuntimeException(ex);
+			throw new RuntimeException("Failed saving " + fileName, ex);
 		}
 	}
 

@@ -12,6 +12,7 @@ import PickProductsActivity from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
 import GenerateHUQRCodesActivity from '../activities/manufacturing/generateHUQRCodes/GenerateHUQRCodesActivity';
 import RawMaterialIssueActivity from '../activities/manufacturing/issue/RawMaterialIssueActivity';
+import IssueAdjustmentActivity from '../activities/manufacturing/issue_adjustment/IssueAdjustmentActivity';
 import MaterialReceiptActivity from '../activities/manufacturing/receipt/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
 
@@ -91,6 +92,16 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
     case 'manufacturing/rawMaterialsIssue':
       return (
         <RawMaterialIssueActivity
+          key={activityItem.activityId}
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityItem.activityId}
+          activityState={activityItem}
+        />
+      );
+    case 'manufacturing/rawMaterialsIssueAdjust':
+      return (
+        <IssueAdjustmentActivity
           key={activityItem.activityId}
           applicationId={applicationId}
           wfProcessId={wfProcessId}

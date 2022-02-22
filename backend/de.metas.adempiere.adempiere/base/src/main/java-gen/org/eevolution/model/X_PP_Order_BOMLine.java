@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Order_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 78059498L;
+	private static final long serialVersionUID = 977981750L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (final Properties ctx, final int PP_Order_BOMLine_ID, @Nullable final String trxName)
@@ -242,6 +242,18 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public boolean isCritical() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCritical);
+	}
+
+	@Override
+	public void setIsEnforceTolerance (final boolean IsEnforceTolerance)
+	{
+		set_Value (COLUMNNAME_IsEnforceTolerance, IsEnforceTolerance);
+	}
+
+	@Override
+	public boolean isEnforceTolerance() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEnforceTolerance);
 	}
 
 	@Override
@@ -691,6 +703,19 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public boolean isShowSubBOMIngredients() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_ShowSubBOMIngredients);
+	}
+
+	@Override
+	public void setTolerance_Perc (final @Nullable BigDecimal Tolerance_Perc)
+	{
+		set_Value (COLUMNNAME_Tolerance_Perc, Tolerance_Perc);
+	}
+
+	@Override
+	public BigDecimal getTolerance_Perc() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Tolerance_Perc);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

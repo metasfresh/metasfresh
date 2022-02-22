@@ -1,10 +1,12 @@
 package de.metas.distribution.ddorder.movement.schedule.plan;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -19,7 +21,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,9 +33,11 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DDOrderMovePlanCreateCommand
@@ -43,6 +46,7 @@ public class DDOrderMovePlanCreateCommand
 	private final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
+	private final HUReservationService huReservationService;
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
 
@@ -64,6 +68,7 @@ public class DDOrderMovePlanCreateCommand
 			final @NonNull DDOrderMovePlanCreateRequest request)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
+		this.huReservationService = huReservationService;
 		this.ddOrder = request.getDdOrder();
 		this.failIfNotFullAllocated = request.isFailIfNotFullAllocated();
 
@@ -110,29 +115,15 @@ public class DDOrderMovePlanCreateCommand
 				final Quantity huQtyAvailable = allocableHU.getQtyAvailableToAllocate();
 				// TODO: handle/convert when HU's UOM != DD_OrderLine's UOM
 
-				final DDOrderMovePlanStep planStep;
-				if (huQtyAvailable.isGreaterThan(remainingQtyToAllocate))
-				{
-					planStep = DDOrderMovePlanStep.builder()
-							.productId(productId)
-							.pickFromLocatorId(pickFromLocatorId)
-							.dropToLocatorId(dropToLocatorId)
-							.pickFromHU(allocableHU.getHu())
-							.qtyToPick(remainingQtyToAllocate)
-							.isPickWholeHU(false)
-							.build();
-				}
-				else
-				{
-					planStep = DDOrderMovePlanStep.builder()
-							.productId(productId)
-							.pickFromLocatorId(pickFromLocatorId)
-							.dropToLocatorId(dropToLocatorId)
-							.pickFromHU(allocableHU.getHu())
-							.qtyToPick(huQtyAvailable)
-							.isPickWholeHU(true)
-							.build();
-				}
+				// TODO 2: atm we are always considering top level HUs and never break them
+				final DDOrderMovePlanStep planStep = DDOrderMovePlanStep.builder()
+						.productId(productId)
+						.pickFromLocatorId(pickFromLocatorId)
+						.dropToLocatorId(dropToLocatorId)
+						.pickFromHU(allocableHU.getTopLevelHU())
+						.qtyToPick(huQtyAvailable)
+						.isPickWholeHU(true)
+						.build();
 
 				planSteps.add(planStep);
 				allocableHU.addQtyAllocated(planStep.getQtyToPick());
@@ -182,15 +173,31 @@ public class DDOrderMovePlanCreateCommand
 						.reservationRef(Optional.empty()) // TODO introduce some DD Order Step reservation
 						.build());
 
-		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, pickFromHU -> toAllocableHU(pickFromHU, productId));
+		final ImmutableList<AllocableHU> hus = husEligibleToPick.stream()
+				.map(pickFromHU -> toAllocableHU(pickFromHU, productId))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+
 		return new AllocableHUsList(hus);
 	}
 
+	@Nullable
 	private AllocableHU toAllocableHU(@NonNull final PickFromHU pickFromHU, @NonNull final ProductId productId)
 	{
 		final HUsLoadingCache husCache = pickFromHUsSupplier.getHusCache();
-		final I_M_HU hu = husCache.getHUById(pickFromHU.getTopLevelHUId());
-		return new AllocableHU(storageFactory, hu, productId);
+		final HuId topLevelHUId = pickFromHU.getTopLevelHUId();
+
+		//
+		// Make sure our top level HU is not already reserved to somebody else
+		// TODO in future we shall check/accept if the VHU was already reserved for one of our DD_OrderLine(s)
+		final ImmutableSet<HuId> vhuIds = husCache.getVHUIds(topLevelHUId);
+		if (huReservationService.isAnyOfVHUIdsReserved(vhuIds))
+		{
+			return null;
+		}
+
+		final I_M_HU topLevelHU = husCache.getHUById(topLevelHUId);
+		return new AllocableHU(storageFactory, topLevelHU, productId);
 	}
 
 	//
@@ -210,7 +217,7 @@ public class DDOrderMovePlanCreateCommand
 		private final IHUStorageFactory storageFactory;
 
 		@Getter
-		private final I_M_HU hu;
+		private final I_M_HU topLevelHU;
 
 		private final ProductId productId;
 
@@ -219,11 +226,11 @@ public class DDOrderMovePlanCreateCommand
 
 		public AllocableHU(
 				final IHUStorageFactory storageFactory,
-				final I_M_HU hu,
+				final I_M_HU topLevelHU,
 				final ProductId productId)
 		{
 			this.storageFactory = storageFactory;
-			this.hu = hu;
+			this.topLevelHU = topLevelHU;
 			this.productId = productId;
 		}
 
@@ -240,7 +247,7 @@ public class DDOrderMovePlanCreateCommand
 			Quantity storageQty = this._storageQty;
 			if (storageQty == null)
 			{
-				storageQty = this._storageQty = storageFactory.getStorage(hu).getProductStorage(productId).getQty();
+				storageQty = this._storageQty = storageFactory.getStorage(topLevelHU).getProductStorage(productId).getQty();
 			}
 			return storageQty;
 		}

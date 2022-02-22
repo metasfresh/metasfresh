@@ -1,9 +1,7 @@
 package de.metas.handlingunits.qrcodes.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.JsonObjectMapperHolder;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -13,7 +11,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +22,6 @@ import java.util.Optional;
 public class HUQRCodesRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public Optional<HUQRCodeAssignment> getHUAssignmentByQRCode(@NonNull final HUQRCode huQRCode)
 	{
@@ -56,10 +52,18 @@ public class HUQRCodesRepository
 
 	public void createNew(@NonNull HUQRCode qrCode, @Nullable HuId huId)
 	{
+		final GlobalQRCode globalQRCode = qrCode.toGlobalQRCode();
+
 		final I_M_HU_QRCode record = InterfaceWrapperHelper.newInstance(I_M_HU_QRCode.class);
 		record.setUniqueId(qrCode.getId().getAsString());
-		record.setattributes(toJsonString(qrCode));
+		record.setDisplayableQRCode(qrCode.toDisplayableQRCode());
+		record.setRenderedQRCode(globalQRCode.getAsString());
+		// NOTE: this field is never used in our application. It's there mainly for reporting (if needed):
+		record.setattributes(globalQRCode.getPayloadAsJson());
+
+		// Assignment:
 		record.setM_HU_ID(HuId.toRepoId(huId));
+
 		InterfaceWrapperHelper.save(record);
 	}
 
@@ -82,17 +86,12 @@ public class HUQRCodesRepository
 		}
 	}
 
-	private String toJsonString(final @NonNull HUQRCode qrCode)
+	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
-		try
-		{
-			return jsonObjectMapper.writeValueAsString(qrCode);
-		}
-		catch (JsonProcessingException e)
-		{
-			throw new AdempiereException("Failed converting HUQRCode to JSON", e)
-					.setParameter("qrCode", qrCode);
-		}
+		return queryByQRCode(qrCode.getId())
+				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
 	}
 
 	public Optional<HUQRCode> getFirstQRCodeByHuId(@NonNull final HuId huId)
@@ -100,7 +99,7 @@ public class HUQRCodesRepository
 		return queryByHuId(huId)
 				.create()
 				.firstOptional(I_M_HU_QRCode.class)
-				.map(this::toHUQRCode);
+				.map(HUQRCodesRepository::toHUQRCode);
 	}
 
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
@@ -125,19 +124,11 @@ public class HUQRCodesRepository
 				.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> HuId.ofRepoId(record.getM_HU_ID()),
-						this::toHUQRCode));
+						HUQRCodesRepository::toHUQRCode));
 	}
 
-	private HUQRCode toHUQRCode(final I_M_HU_QRCode record)
+	private static HUQRCode toHUQRCode(final I_M_HU_QRCode record)
 	{
-		try
-		{
-			return jsonObjectMapper.readValue(record.getattributes(), HUQRCode.class);
-		}
-		catch (JsonProcessingException e)
-		{
-			throw new AdempiereException("Failed converting JSON to HUQRCode", e)
-					.setParameter("json", record.getattributes());
-		}
+		return HUQRCode.fromGlobalQRCodeJsonString(record.getRenderedQRCode());
 	}
 }
