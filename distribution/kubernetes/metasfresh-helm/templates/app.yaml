@@ -59,6 +59,8 @@ spec:
           value: {{ .Values.app.debug.printBashCmds }}
         - name: DEBUG_SUSPEND
           value: {{ .Values.app.debug.suspend }}
+        - name: DB_CONNECTION_POOL_MAX_SIZE
+          value: '{{ .Values.app.dbConnectionPoolMaxSize }}'
         #db
         - name: DB_HOST
           value: metasfresh-{{ .Release.Name }}-db

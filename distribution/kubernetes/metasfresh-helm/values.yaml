@@ -8,6 +8,7 @@ app:
   debug:
     suspend: '"n"' 
     printBashCmds: '"n"'
+  dbConnectionPoolMaxSize: 60
 
 db:
   image: dockerhub.metasfresh.com/postgres:14.2
