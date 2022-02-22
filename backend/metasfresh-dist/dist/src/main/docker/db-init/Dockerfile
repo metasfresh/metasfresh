@@ -1,6 +1,4 @@
 FROM postgres:14.2
-#FROM postgres:10.5
-#FROM postgres:9.5
 
 LABEL maintainer="dev@metasfresh-com"
 
@@ -29,8 +27,6 @@ ENV LC_ALL="en_US.UTF-8"
 ENV LC_CTYPE="en_US.UTF-8"
 
 COPY docker-entrypoint_init_only-14.2.sh /usr/local/bin/docker-entrypoint_init_only.sh
-#COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/docker-entrypoint_init_only.sh
-#COPY docker-entrypoint_init_only-9.5.sh /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chown postgres:postgres /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only.sh
 
