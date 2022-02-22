@@ -22,6 +22,11 @@ package de.metas.ordercandidate.process;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.impl.BPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -35,19 +40,32 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class OLCandSetOverrideValues extends JavaProcess
+public class C_OLCand_SetOverrideValues extends JavaProcess
 {
+	//"No Location provided and more than one GLN found for the given records"
+	private final static AdMessageKey MULTIPLE_GLNS = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.MultipleGLNs");
+	//"No Location provided and no GLN found for the given records"
+	private final static AdMessageKey NO_GLNS = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoGLNs");
+	//"No Location with GLN: {0} found for the given business partner"
+	private final static AdMessageKey NO_LOCATION_FOR_GLN = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoGLNs");
+
 	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
 	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
+	private final BPartnerDAO bPartnerDAO = Services.get(BPartnerDAO.class);
 
 	private IParams params = null;
 
@@ -56,12 +74,35 @@ public class OLCandSetOverrideValues extends JavaProcess
 	{
 		final List<ProcessInfoParameter> parameterList = new ArrayList<>(getProcessInfo().getParameter());
 		final Map<String, ProcessInfoParameter> parameters = parameterList.stream().collect(Collectors.toMap(ProcessInfoParameter::getParameterName, param -> param));
-
-		if (Check.isNotBlank(parameters.get(PARAM_BPartner).getParameterAsString()) && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
+		final int bpartnerId = parameters.get(PARAM_BPartner).getParameterAsInt(-1);
+		if (bpartnerId > -1 && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
 		{
-			throw new FillMandatoryException(PARAM_Location);
+			final Set<GLN> glns = createQuery().stream()
+					.map(record -> BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+					.map(bPartnerDAO::getBPartnerLocationByIdEvenInactive)
+					.filter(Objects::nonNull)
+					.map(I_C_BPartner_Location::getGLN)
+					.filter(Objects::nonNull)
+					.map(GLN::ofString)
+					.collect(Collectors.toSet());
+			if (glns.size() > 1)
+			{
+				throw new AdempiereException(MULTIPLE_GLNS);
+			}
+			if (glns.size() == 0)
+			{
+				throw new AdempiereException(NO_GLNS);
+			}
+			final GLN gln = glns.iterator().next();
+			final Optional<BPartnerLocationId> bPartnerLocationIdByGln = bPartnerDAO.getBPartnerLocationIdByGln(BPartnerId.ofRepoId(bpartnerId), gln);
+			if (!bPartnerLocationIdByGln.isPresent())
+			{
+				throw new AdempiereException(NO_LOCATION_FOR_GLN, gln);
+			}
 		}
+
 		params = new ProcessParams(parameterList);
+
 	}
 
 	@Override
@@ -74,6 +115,11 @@ public class OLCandSetOverrideValues extends JavaProcess
 
 	private Iterator<I_C_OLCand> createIterator()
 	{
+		return createQuery().iterate(I_C_OLCand.class);
+	}
+
+	private IQuery<I_C_OLCand> createQuery()
+	{
 		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
@@ -84,7 +130,6 @@ public class OLCandSetOverrideValues extends JavaProcess
 				.addColumn(I_C_OLCand.COLUMNNAME_C_OLCand_ID);
 
 		return queryBuilder.create()
-				.setRequiredAccess(Access.READ) // 04471: enqueue only those records on which user has access to
-				.iterate(I_C_OLCand.class);
+				.setRequiredAccess(Access.READ); // 04471: enqueue only those records on which user has access to
 	}
 }
