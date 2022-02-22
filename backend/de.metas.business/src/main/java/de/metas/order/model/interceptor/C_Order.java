@@ -214,6 +214,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setIncoterms(final I_C_Order order)
 	{
 		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
