@@ -7,14 +7,10 @@ metadata:
     app: metasfresh-{{ .Release.Name }}-webui
 spec:
   ports:
-  - name: webui-http
-    port: {{ .Values.webui.port.http }}
+  - name: webui
+    port: {{ .Values.webui.port.webui }}
     protocol: TCP
-    targetPort: {{ .Values.webui.port.http }}
-  - name: webui-https
-    port: {{ .Values.webui.port.https }}
-    protocol: TCP
-    targetPort: {{ .Values.webui.port.https }}
+    targetPort: {{ .Values.webui.port.webui }}
   selector:
     app: metasfresh-{{ .Release.Name }}-webui
   sessionAffinity: None
@@ -45,17 +41,23 @@ spec:
         image: {{ .Values.webui.image }}
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: {{ .Values.webui.port.http }}
-        - containerPort: {{ .Values.webui.port.https }}
+        - containerPort: {{ .Values.webui.port.webui }}
         env:
-        - name: WEBUI_API_CLIENT_PROTOCOL
-          value: {{ .Values.webui.webuiAPIClient.protocol }}
         - name: WEBUI_API_CLIENT_HOST
           value: {{ .Values.ingress.webui.url }}
+        {{ if .Values.ingress.tls.enabled }}  
+        - name: WEBUI_API_CLIENT_PROTOCOL
+          value: https
         - name: WEBUI_API_CLIENT_PORT
-          value: '{{ .Values.webui.webuiAPIClient.port }}'
+          value: '443'
+        {{ else }}
+        - name: WEBUI_API_CLIENT_PROTOCOL
+          value: http
+        - name: WEBUI_API_CLIENT_PORT
+          value: '80'
+        {{ end }}
         - name: WEBUI_API_PROXYPASS_PROTOCOL
-          value: {{ .Values.webui.webuiAPIProxypass.protocol }}
+          value: http
         - name: WEBUI_API_PROXYPASS_HOST
           value: metasfresh-{{ .Release.Name }}-webapi
         - name: WEBUI_API_PROXYPASS_PORT

@@ -47,9 +47,13 @@ spec:
         - containerPort: {{ .Values.webapi.port.webapi }}
         - containerPort: {{ .Values.webapi.port.debug }} 
         env:
+        {{ if .Values.ingress.tls.enabled }}
         - name: WEBUI_FRONTEND_URL
-          value: {{ .Values.webui.webuiAPIClient.protocol }}://{{ .Values.ingress.webui.url }}
-        - name: DB_CONNECTION_POOL_MAX_SIZE
+          value: https://{{ .Values.ingress.webui.url }}:443
+        {{ else }}
+        - name: WEBUI_FRONTEND_URL
+          value: http://{{ .Values.ingress.webui.url }}:80
+        {{ end }}
         #db
         - name: DB_HOST
           value: metasfresh-{{ .Release.Name }}-db
