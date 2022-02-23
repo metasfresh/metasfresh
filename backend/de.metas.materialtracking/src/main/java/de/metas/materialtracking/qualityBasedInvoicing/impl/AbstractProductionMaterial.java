@@ -69,7 +69,7 @@ import de.metas.util.Services;
 	@Override
 	public boolean isByProduct()
 	{
-		return getComponentType().isByProduct();
+		return getComponentType() != null && getComponentType().isByProduct();
 	}
 
 }
