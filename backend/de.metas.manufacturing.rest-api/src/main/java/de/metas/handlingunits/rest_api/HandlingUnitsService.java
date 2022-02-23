@@ -35,6 +35,7 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -67,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class HandlingUnitsService
@@ -77,6 +77,7 @@ public class HandlingUnitsService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	private final HUQRCodesService huQRCodeService;
 
@@ -88,9 +89,18 @@ public class HandlingUnitsService
 	@NonNull
 	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage)
 	{
-		return Optional.ofNullable(handlingUnitsBL.getById(huId))
-				.map(hu -> toJson(hu, adLanguage))
-				.orElseThrow(() -> new AdempiereException("No HU found for M_HU_ID: " + huId));
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if(hu == null)
+		{
+			throw new AdempiereException("No HU found for M_HU_ID: " + huId);
+		}
+
+		if(!huStatusBL.isPhysicalHU(hu))
+		{
+			throw new AdempiereException("Not a physical HU: " + huId);
+		}
+
+		return toJson(hu, adLanguage);
 	}
 
 	@NonNull

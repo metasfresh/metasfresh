@@ -34,7 +34,9 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
       }
 
       if (resolvedResultPromise) {
-        Promise.resolve(resolvedResultPromise).then((result) => handleResolvedResult(result, controls));
+        Promise.resolve(resolvedResultPromise)
+          .then((result) => handleResolvedResult(result, controls))
+          .catch((axiosError) => toastError({ axiosError }));
       }
     } else {
       handleResolvedResult({ scannedBarcode, error: null }, controls);
