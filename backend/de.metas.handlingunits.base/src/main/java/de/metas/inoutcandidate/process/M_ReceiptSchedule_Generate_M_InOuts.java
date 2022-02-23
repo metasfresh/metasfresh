@@ -196,6 +196,11 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.receiptSchedules(ImmutableList.of(receiptSchedule))
 				.printReceiptLabels(false)
+				
+				// we are already in a inside a trxItemProcessorExecutor, and processReceiptSchedules will fire up another one, but with just one item
+				// we don't want that internal processor to run with its own trx, because then we will at one point have trouble with 2 different trx-Names
+				.commitEachReceiptIndividually(false)
+				
 				.build();
 
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);

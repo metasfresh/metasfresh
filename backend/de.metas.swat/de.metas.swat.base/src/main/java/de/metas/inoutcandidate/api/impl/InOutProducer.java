@@ -224,8 +224,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param previousReceiptSchedule
-	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
