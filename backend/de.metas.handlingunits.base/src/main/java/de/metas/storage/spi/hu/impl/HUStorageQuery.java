@@ -22,34 +22,14 @@ package de.metas.storage.spi.hu.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.order.OrderLineId;
@@ -60,14 +40,33 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Attribute;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * A HU-based IStorageQuery implementation.
  * <p>
  * <b>IMPORTANT</b> this implementation will ignore HUs that are located in a <code>M_Locator</code> with {@link I_M_Locator#COLUMNNAME_IsAfterPickingLocator IsAfterPickingLocator} <code>='Y'</code>,
  * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
- *
  */
 public class HUStorageQuery implements IStorageQuery
 {
@@ -81,12 +80,14 @@ public class HUStorageQuery implements IStorageQuery
 	// services
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	private final AgeAttributesService ageAttributesService;
 	private final IHUQueryBuilder huQueryBuilder;
 	private ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 
-	/* package */ HUStorageQuery()
+	/* package */ HUStorageQuery(AgeAttributesService ageAttributesService)
 	{
+		this.ageAttributesService = ageAttributesService;
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
 
 		//
@@ -313,7 +314,18 @@ public class HUStorageQuery implements IStorageQuery
 		//
 		// Add attribute query restrictions
 		final List<Object> attributeValues = Arrays.asList(attributeValue);
-		huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+
+		if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+		{
+			final List<Object> ageValues = ageAttributesService.getSuitableValues(getBPartnerIds(), getProductIds(), attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
+		}
+		else
+		{
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		}
+
 
 		return this;
 	}

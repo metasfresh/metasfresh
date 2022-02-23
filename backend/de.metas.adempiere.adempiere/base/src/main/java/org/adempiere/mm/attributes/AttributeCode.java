@@ -34,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+
 /** aka M_Attribute.Value */
 @EqualsAndHashCode
 public final class AttributeCode implements Comparable<AttributeCode>

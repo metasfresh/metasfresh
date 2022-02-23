@@ -32,10 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.handlingunits.age.AgeAttributesService;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
@@ -55,6 +57,7 @@ import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 public class HUStorageEngine implements IStorageEngine
 {
@@ -65,6 +68,8 @@ public class HUStorageEngine implements IStorageEngine
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
 	private static final transient int DEFAULT_QueriesPerChunk = 500;
 
+	final AgeAttributesService  ageAttributesService= SpringContextHolder.instance.getBean(AgeAttributesService.class);
+
 	@VisibleForTesting
 	public HUStorageEngine()
 	{
@@ -73,7 +78,7 @@ public class HUStorageEngine implements IStorageEngine
 	@Override
 	public IStorageQuery newStorageQuery()
 	{
-		final HUStorageQuery huStorageQuery = new HUStorageQuery();
+		final HUStorageQuery huStorageQuery = new HUStorageQuery(ageAttributesService);
 		return huStorageQuery;
 	}
 

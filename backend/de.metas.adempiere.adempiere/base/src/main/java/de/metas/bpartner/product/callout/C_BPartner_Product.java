@@ -42,5 +42,8 @@ public class C_BPartner_Product
 		}
 		final I_M_Product productRecord = loadOutOfTrx(bpartnerProduct.getM_Product_ID(), I_M_Product.class);
 		bpartnerProduct.setAD_Org_ID(productRecord.getAD_Org_ID());
+
+		bpartnerProduct.setPicking_AgeTolerance_BeforeMonths(productRecord.getPicking_AgeTolerance_BeforeMonths());
+		bpartnerProduct.setPicking_AgeTolerance_AfterMonths(productRecord.getPicking_AgeTolerance_AfterMonths());
 	}
 }
