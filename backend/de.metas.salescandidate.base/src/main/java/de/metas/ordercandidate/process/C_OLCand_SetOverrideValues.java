@@ -23,6 +23,7 @@ package de.metas.ordercandidate.process;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
@@ -43,7 +44,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.ArrayList;
@@ -51,14 +51,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.metas.ordercandidate.api.impl.OLCandUpdater.PARAM_C_BPARTNER_LOCATION_MAP;
 
 public class C_OLCand_SetOverrideValues extends JavaProcess
 {
-	//"No Location provided and more than one GLN found for the given records"
-	private final static AdMessageKey MULTIPLE_GLNS = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.MultipleGLNs");
 	//"No Location provided and no GLN found for the given records"
 	private final static AdMessageKey NO_GLNS = AdMessageKey.of("de.metas.ordercandidate.process.C_OLCand_SetOverrideValues.NoGLNs");
 	//"No Location with GLN: {0} found for the given business partner"
@@ -78,32 +76,40 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 		final int bpartnerId = parameters.get(PARAM_BPartner).getParameterAsInt(-1);
 		if (bpartnerId > -1 && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
 		{
-			parameters.put(PARAM_Location, ProcessInfoParameter.of(PARAM_Location, getBPartnerLocationId(bpartnerId).getRepoId()));
+			parameters.put(PARAM_C_BPARTNER_LOCATION_MAP, ProcessInfoParameter.ofValueObject(PARAM_C_BPARTNER_LOCATION_MAP, getBPartnerLocationIdMap(bpartnerId)));
 		}
 		params = new ProcessParams(ImmutableList.copyOf(parameters.values()));
 	}
 
-	private BPartnerLocationId getBPartnerLocationId(final int bpartnerId)
+	private Map<BPartnerLocationId, BPartnerLocationId> getBPartnerLocationIdMap(final int bpartnerId)
 	{
-		final Set<GLN> glns = createQuery().stream()
-				.map(record -> BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
-				.map(bPartnerDAO::getBPartnerLocationByIdEvenInactive)
+		final Map<BPartnerLocationId, GLN> oldLocationToGlnMap = createQueryBuilder()
+				.andCollect(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID, I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
 				.filter(Objects::nonNull)
-				.map(I_C_BPartner_Location::getGLN)
-				.filter(Objects::nonNull)
-				.map(GLN::ofString)
-				.collect(Collectors.toSet());
-		if (glns.size() > 1)
-		{
-			throw new AdempiereException(MULTIPLE_GLNS);
-		}
-		if (glns.size() == 0)
+				.filter(loc -> !Check.isBlank(loc.getGLN()))
+				.collect(Collectors.toMap(param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID()), param -> GLN.ofString(param.getGLN())));
+		if (oldLocationToGlnMap.size() == 0)
 		{
 			throw new AdempiereException(NO_GLNS);
 		}
-		final GLN gln = glns.iterator().next();
-		final Optional<BPartnerLocationId> bPartnerLocationIdByGln = bPartnerDAO.getBPartnerLocationIdByGln(BPartnerId.ofRepoId(bpartnerId), gln);
-		return bPartnerLocationIdByGln.orElseThrow(() -> new AdempiereException(NO_LOCATION_FOR_GLN, gln));
+
+		final Map<GLN, BPartnerLocationId> glnToNewLocationMap = bPartnerDAO.retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId))
+				.stream()
+				.filter(loc -> !Check.isBlank(loc.getGLN()))
+				.collect(Collectors.toMap(param -> GLN.ofString(param.getGLN()), param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID())));
+		oldLocationToGlnMap.forEach((oldLocation, gln) -> {
+			if (!glnToNewLocationMap.containsKey(gln))
+			{
+				throw new AdempiereException(NO_LOCATION_FOR_GLN, gln);
+			}
+		});
+
+		return oldLocationToGlnMap.keySet()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(oldLocation -> oldLocation, oldLocation -> glnToNewLocationMap.get(oldLocationToGlnMap.get(oldLocation))));
 	}
 
 	@Override
@@ -116,10 +122,13 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 	private Iterator<I_C_OLCand> createIterator()
 	{
-		return createQuery().iterate(I_C_OLCand.class);
+		return createQueryBuilder()
+				.create()
+				.setRequiredAccess(Access.READ) // 04471: enqueue only those records on which user has access to
+				.iterate(I_C_OLCand.class);
 	}
 
-	private IQuery<I_C_OLCand> createQuery()
+	private IQueryBuilder<I_C_OLCand> createQueryBuilder()
 	{
 		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
@@ -130,7 +139,6 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 		queryBuilder.orderBy()
 				.addColumn(I_C_OLCand.COLUMNNAME_C_OLCand_ID);
 
-		return queryBuilder.create()
-				.setRequiredAccess(Access.READ); // 04471: enqueue only those records on which user has access to
+		return queryBuilder;
 	}
 }

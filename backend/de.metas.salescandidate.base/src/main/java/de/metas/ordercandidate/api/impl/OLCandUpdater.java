@@ -38,10 +38,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.Map;
 
 public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCandUpdateResult>
 {
+	/**
+	 * used to specify location overrides
+	 */
+	public static final String PARAM_C_BPARTNER_LOCATION_MAP = "C_BPARTNER_LOCATION_ID";
 	private static final Logger logger = LogManager.getLogger(OLCandUpdater.class);
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -75,8 +81,8 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 		olCand.setC_BPartner_Override_ID(bpartnerId);
 
 		// Location
-		final int bpartnerLocationId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, -1);
-		olCand.setC_BP_Location_Override_ID(bpartnerLocationId);
+		final BPartnerLocationId bpartnerLocationId = getBPartnerLocationId(olCand, params, bpartnerId);
+		olCand.setC_BP_Location_Override_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 
 		// DatePrommissed
 		final Timestamp datePromissed = params.getParameterAsTimestamp(I_C_OLCand.COLUMNNAME_DatePromised_Override);
@@ -84,7 +90,7 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 
 		//AD_User_ID
 		final UserId userId = UserId.ofRepoIdOrNull(olCand.getAD_User_ID());
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationId);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, BPartnerLocationId.toRepoId(bpartnerLocationId));
 		if (bPartnerLocationId != null && userId != null)
 		{
 			final boolean userIsValidForBpartner = bpartnerDAO.getUserIdsForBpartnerLocation(bPartnerLocationId).anyMatch(userId::equals);
@@ -97,6 +103,22 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 
 		InterfaceWrapperHelper.save(olCand);
 		result.incUpdated();
+	}
+
+	@Nullable
+	private BPartnerLocationId getBPartnerLocationId(final I_C_OLCand olCand, final IParams params, final int bpartnerId)
+	{
+		final BPartnerLocationId bpartnerLocationId;
+		if (params.hasParameter(PARAM_C_BPARTNER_LOCATION_MAP))
+		{
+			final Map<BPartnerLocationId, BPartnerLocationId> oldToNewLocationIds = (Map<BPartnerLocationId, BPartnerLocationId>)params.getParameterAsObject(PARAM_C_BPARTNER_LOCATION_MAP);
+			bpartnerLocationId = oldToNewLocationIds.get(BPartnerLocationId.ofRepoId(olCand.getC_BPartner_ID(), olCand.getC_BPartner_Location_ID()));
+		}
+		else
+		{
+			bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, -1));
+		}
+		return bpartnerLocationId;
 	}
 
 	@Override
