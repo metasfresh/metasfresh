@@ -19,6 +19,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -114,6 +115,14 @@ public class PickingJobService
 				.pickingJob(pickingJob)
 				//
 				.build().execute();
+	}
+
+	public void abortForSalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		pickingJobRepository
+				.getDraftBySalesOrderId(salesOrderId, loadingSupportingServices)
+				.ifPresent(this::abort);
 	}
 
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
