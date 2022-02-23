@@ -22,15 +22,40 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
-
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageBL;
+import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.IWorkpackageProcessorContextFactory;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IMutableQueueProcessorStatistics;
+import de.metas.async.processor.IQueueProcessorEventDispatcher;
+import de.metas.async.processor.IQueueProcessorFactory;
+import de.metas.async.processor.IQueueProcessorListener;
+import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.NullQueueProcessorListener;
+import de.metas.async.processor.impl.SyncQueueProcessorListener;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.common.util.time.SystemTime;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.exceptions.UnlockFailedException;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -46,40 +71,13 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBL;
-import de.metas.async.api.IWorkPackageBlockBuilder;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.api.IWorkpackageProcessorContextFactory;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IMutableQueueProcessorStatistics;
-import de.metas.async.processor.IQueueProcessorEventDispatcher;
-import de.metas.async.processor.IQueueProcessorFactory;
-import de.metas.async.processor.IQueueProcessorListener;
-import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
-import de.metas.async.processor.IWorkpackageProcessorFactory;
-import de.metas.async.processor.NullQueueProcessorListener;
-import de.metas.async.processor.impl.SyncQueueProcessorListener;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.UnlockFailedException;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
@@ -325,7 +323,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId, Env.CTXVALUE_AD_Role_ID_NONE));
 
 		// FRESH-314: also store #AD_PInstance_ID, we might want to access this information (currently in AD_ChangeLog)
-		Env.setContext(workPackageCtx, Env.CTXNAME_AD_PInstance_ID, workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_PInstance_ID, workPackage.getAD_PInstance_ID());
 
 		//
 		// Session: N/A
@@ -415,45 +413,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public IWorkPackageBlockBuilder newBlock()
-	{
-		if (enquingPackageProcessorId <= 0)
-		{
-			throw new IllegalStateException("Enquing not allowed");
-		}
-
-		return new WorkPackageBlockBuilder(this, dao)
-				.setC_Queue_PackageProcessor_ID(enquingPackageProcessorId)
-				.setContext(ctx);
-	}
-
-	@Override
-	public I_C_Queue_Block enqueueBlock(final Properties ctx)
-	{
-		return newBlock()
-				.setContext(ctx)
-				.build();
-	}
-
-	@Override
 	public I_C_Queue_WorkPackage enqueueWorkPackage(
-			@NonNull final I_C_Queue_Block block,
+			@NonNull final I_C_Queue_WorkPackage workPackage,
 			@NonNull final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
-		final String trxName = InterfaceWrapperHelper.getTrxName(block);
-
-		final I_C_Queue_WorkPackage workPackage = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage.class, trxName);
-
-		// Make sure we are not registering on other AD_Client_ID
-		final int blockClientId = block.getAD_Client_ID();
-		final int workPackageClientId = workPackage.getAD_Client_ID();
-		Check.assume(blockClientId == workPackageClientId, "WorkPackage's AD_Client_ID({}) shall be the same as Block's AD_Client_ID({})", workPackageClientId, blockClientId);
-
-		workPackage.setC_Queue_Block(block);
-		workPackage.setAD_Org_ID(block.getAD_Org_ID());
 		workPackage.setProcessed(false);
 		workPackage.setIsReadyForProcessing(false);
 
@@ -498,7 +463,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		//
 		// Statistics
-		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = Services.get(IWorkpackageProcessorFactory.class).getWorkpackageProcessorStatistics(block.getC_Queue_PackageProcessor());
+		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = Services.get(IWorkpackageProcessorFactory.class).getWorkpackageProcessorStatistics(workPackage.getC_Queue_PackageProcessor());
 		workpackageProcessorStatistics.incrementQueueSize();
 
 		return workPackage;
@@ -528,7 +493,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 					"Element's AD_Client_ID({}) shall be the same as WorkPackage's AD_Client_ID({})",
 					elementClientId, workPackageClientId);
 
-			element.setC_Queue_Block(workPackage.getC_Queue_Block());
 			element.setC_Queue_WorkPackage(workPackage);
 			element.setAD_Org_ID(workPackage.getAD_Org_ID());
 			element.setAD_Table_ID(adTableId);
@@ -596,8 +560,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 
-		final I_C_Queue_Block block = enqueueBlock(ctx);
-		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
+		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).initQueueWorkPackage();
+
+		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.C_Async_Batch);
 		if (asyncBatch != null)
@@ -616,8 +581,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public I_C_Queue_Element enqueueElement(final Properties ctx, final int adTableId, final int recordId)
 	{
-		final I_C_Queue_Block block = enqueueBlock(ctx);
-		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
+		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).initQueueWorkPackage();
+		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 		final I_C_Queue_Element element = enqueueElement(workPackage, adTableId, recordId);
 
 		final String trxName = ITrx.TRXNAME_None;
@@ -872,5 +837,22 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				this);
 
 		return enquingPackageProcessorInternalName;
+	}
+
+	@Override
+	public IWorkPackageBuilder newWorkPackage()
+	{
+		return newWorkPackage(ctx);
+	}
+
+	@Override
+	public IWorkPackageBuilder newWorkPackage(final Properties context)
+	{
+		if (enquingPackageProcessorId <= 0)
+		{
+			throw new IllegalStateException("Enquing not allowed");
+		}
+
+		return new WorkPackageBuilder(context, this, enquingPackageProcessorId);
 	}
 }

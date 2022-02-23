@@ -22,15 +22,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.exceptions.ConfigurationException;
@@ -42,10 +33,18 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.Properties;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
@@ -292,7 +291,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		final IWorkpackageProcessorFactory factory = getActualWorkpackageProcessorFactory();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-		final int packageProcessorId = workPackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();
+		final int packageProcessorId = workPackage.getC_Queue_PackageProcessor_ID();
 
 		return factory.getWorkpackageProcessor(ctx, packageProcessorId);
 	}

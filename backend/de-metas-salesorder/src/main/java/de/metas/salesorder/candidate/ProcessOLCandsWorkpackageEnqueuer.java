@@ -44,9 +44,7 @@ public class ProcessOLCandsWorkpackageEnqueuer
 	public void enqueue(@NonNull final ProcessOLCandsRequest request, @Nullable final AsyncBatchId processOLCandsBatchId)
 	{
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ProcessOLCandsWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+				.newWorkPackage()
 				.bindToThreadInheritedTrx()
 				.setC_Async_Batch_ID(processOLCandsBatchId)
 				.parameter(WP_PARAM_VALID_OLCANDIDS_SELECTIONID, request.getPInstanceId())

@@ -24,7 +24,6 @@ package de.metas.async.api.impl;
 
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -204,12 +203,9 @@ public class QueueDAO extends AbstractQueueDAO
 		if (packageProcessorIds != null)
 		{
 			wc.append(" AND ");
-			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID).append(" IN (")
-					.append(" SELECT ").append(I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID)
-					.append(" FROM ").append(I_C_Queue_Block.Table_Name).append(" b ")
-					.append(" WHERE ")
-					.append("b.").append(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID).append(" IN ").append(DB.buildSqlList(packageQuery.getPackageProcessorIds(), params))
-					.append(")");
+			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID)
+					.append(" IN ")
+					.append(DB.buildSqlList(packageQuery.getPackageProcessorIds(), params));
 		}
 
 		//

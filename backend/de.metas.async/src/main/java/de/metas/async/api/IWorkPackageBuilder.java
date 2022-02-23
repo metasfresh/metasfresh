@@ -8,6 +8,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,8 +47,6 @@ public interface IWorkPackageBuilder
 	/**
 	 * Creates the workpackage and marks it as ready for processing (but also see {@link #bindToTrxName(String)}).
 	 * <p>
-	 * Is this builder's parent ({@link IWorkPackageBlockBuilder}) was not yet created/stored in the DB, this method will do it on the fly.
-	 * <p>
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
 	I_C_Queue_WorkPackage build();
@@ -68,13 +67,6 @@ public interface IWorkPackageBuilder
 	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	void discard();
-
-	/**
-	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
-	 *
-	 * @return parent builder
-	 */
-	IWorkPackageBlockBuilder end();
 
 	/**
 	 * Creates or returns the existing workpackage parameters builder of this package builder.
@@ -183,4 +175,8 @@ public interface IWorkPackageBuilder
 	 * If the asyncBatchId is not set, it will be inherited.
 	 */
 	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
+
+	I_C_Queue_WorkPackage initQueueWorkPackage();
+
+	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
 }

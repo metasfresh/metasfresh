@@ -101,8 +101,7 @@ public class PMM_GenerateOrdersEnqueuer
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(Env.getCtx(), PMM_GenerateOrders.class)
-				.newBlock()
-				.newWorkpackage()
+				.newWorkPackage()
 				.setElementsLocker(elementsLocker)
 				.addElements(candidates)
 				.build();
@@ -130,7 +129,7 @@ public class PMM_GenerateOrdersEnqueuer
 		return confirmationCallback.confirmRecordsToProcess(countToProcess);
 	}
 
-	private final IQuery<I_PMM_PurchaseCandidate> createRecordsToProcessQuery()
+	private IQuery<I_PMM_PurchaseCandidate> createRecordsToProcessQuery()
 	{
 		final IQueryBuilder<I_PMM_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_PMM_PurchaseCandidate.class);
 

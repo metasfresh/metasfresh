@@ -7,12 +7,9 @@ import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -60,7 +57,7 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
-	 * {@link IWorkPackageQueue#enqueueWorkPackage(I_C_Queue_Block, IWorkpackagePrioStrategy)} with priority = <code>null</code>. 
+	 * {@link IWorkPackageQueue#enqueueWorkPackage(I_C_Queue_WorkPackage, IWorkpackagePrioStrategy)} with priority = <code>null</code>.
 	 * This is OK because we assume that there is a dedicated queue/thread
 	 * for CheckProcessedAsynBatchWorkpackageProcessor
 	 */

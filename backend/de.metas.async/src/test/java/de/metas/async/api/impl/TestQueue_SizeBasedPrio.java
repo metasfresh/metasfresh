@@ -22,12 +22,13 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.Properties;
-import java.util.function.Function;
-
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.X_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.impl.ConstantWorkpackagePrio;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -36,15 +37,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.async.api.IWorkPackageBlockBuilder;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.X_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.impl.ConstantWorkpackagePrio;
-import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.util.Services;
+import java.util.Properties;
+import java.util.function.Function;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Enqueue a number of workpackages and verify their priorities.
@@ -108,7 +105,7 @@ public class TestQueue_SizeBasedPrio
 	}
 
 	/**
-	 * Enqueues a number of packages. using {@link IWorkPackageBlockBuilder} and {@link IWorkPackageBuilder}. Also see {@link #init()}.
+	 * Enqueues a number of packages.
 	 */
 	@Test
 	public void testWithWorkPackageBuilder()
@@ -117,21 +114,19 @@ public class TestQueue_SizeBasedPrio
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
-		final IWorkPackageBlockBuilder blockBuilder = queueForEnqueuing.newBlock();
-
-		final I_C_Queue_WorkPackage wp1 = blockBuilder.newWorkpackage().build();
+		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.newWorkPackage().build();
 		assertThat(wp1.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Urgent));
 
-		final I_C_Queue_WorkPackage wp2 = blockBuilder.newWorkpackage().build();
+		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing.newWorkPackage().build();
 		assertThat(wp2.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_High));
 
-		final I_C_Queue_WorkPackage wp3 = blockBuilder.newWorkpackage().build();
+		final I_C_Queue_WorkPackage wp3 = queueForEnqueuing.newWorkPackage().build();
 		assertThat(wp3.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Medium));
 
-		final I_C_Queue_WorkPackage wp4 = blockBuilder.newWorkpackage().build();
+		final I_C_Queue_WorkPackage wp4 = queueForEnqueuing.newWorkPackage().build();
 		assertThat(wp4.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Low));
 
-		final I_C_Queue_WorkPackage wp5 = blockBuilder.newWorkpackage().build();
+		final I_C_Queue_WorkPackage wp5 = queueForEnqueuing.newWorkPackage().build();
 		assertThat(wp5.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Minor));
 	}
 }

@@ -34,7 +34,6 @@ import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.event.WorkpackageProcessedEvent;
 import de.metas.async.event.WorkpackageProcessedEvent.Status;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
@@ -87,7 +86,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -546,14 +544,13 @@ class WorkpackageProcessorTask implements Runnable
 		queueDAO.save(workPackage);
 
 		final String processorName;
-		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
-		if (queueBlock == null)
+		final I_C_Queue_PackageProcessor packageProcessor = workPackage.getC_Queue_PackageProcessor();
+		if (packageProcessor == null)
 		{
 			processorName = "<null>"; // might happen in unit tests.
 		}
 		else
 		{
-			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
 			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);

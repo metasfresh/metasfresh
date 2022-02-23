@@ -64,8 +64,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
-				.newBlock()
-				.newWorkpackage()
+				.newWorkPackage()
 				.setC_Async_Batch_ID(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()

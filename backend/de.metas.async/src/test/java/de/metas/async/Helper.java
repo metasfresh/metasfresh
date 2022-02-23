@@ -22,6 +22,27 @@ package de.metas.async;
  * #L%
  */
 
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.common.util.time.SystemTime;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.impl.PlainLockManager;
+import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,29 +51,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.slf4j.Logger;
-
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.impl.PlainLockManager;
-import de.metas.lock.spi.impl.PlainLockDatabase;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /**
  * Misc helper used when testing ASync module
@@ -138,12 +136,12 @@ public class Helper
 
 	public List<I_C_Queue_WorkPackage> createAndEnqueueWorkpackages(final IWorkPackageQueue workpackageQueue, final int count, final boolean markReadyForProcessing)
 	{
-		final I_C_Queue_Block block = workpackageQueue.enqueueBlock(ctx);
-
-		final List<I_C_Queue_WorkPackage> workpackages = new ArrayList<I_C_Queue_WorkPackage>(count);
+		final List<I_C_Queue_WorkPackage> workpackages = new ArrayList<>(count);
 		for (int i = 1; i <= count; i++)
 		{
-			final I_C_Queue_WorkPackage wp = workpackageQueue.enqueueWorkPackage(block, IWorkPackageQueue.PRIORITY_AUTO);
+			final I_C_Queue_WorkPackage workPackage = workpackageQueue.newWorkPackage().initQueueWorkPackage();
+
+			final I_C_Queue_WorkPackage wp = workpackageQueue.enqueueWorkPackage(workPackage, IWorkPackageQueue.PRIORITY_AUTO);
 			POJOWrapper.setInstanceName(wp, "workpackage-" + i);
 			if (markReadyForProcessing)
 			{

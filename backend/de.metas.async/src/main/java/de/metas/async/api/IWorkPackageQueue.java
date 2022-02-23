@@ -22,15 +22,7 @@ package de.metas.async.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -41,6 +33,12 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.exceptions.UnlockFailedException;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Future;
 
 /**
  * Use {@link IWorkPackageQueueFactory} to get an instance.
@@ -125,30 +123,17 @@ public interface IWorkPackageQueue
 	int getSkipRetryTimeoutMillis();
 
 	/**
-	 * Start creating a new block to be enqueued
-	 */
-	IWorkPackageBlockBuilder newBlock();
-
-	/**
-	 * Convenient method to quickly create and enqueue a new block to the queue.
-	 *
-	 * @return I_C_Queue_Block (created block)
-	 * @see #newBlock()
-	 */
-	I_C_Queue_Block enqueueBlock(Properties ctx);
-
-	/**
-	 * Adds a work package to to the given block.
+	 * Adds a work package to the respective queue.
 	 *
 	 * NOTE: the workpackage WILL NOT be marked as ready for processing.
 	 *
 	 * @param priority priority strategy to be used. <b>But</b> note that if the queue will also invoke {@link IWorkpackageProcessorContextFactory#getThreadInheritedPriority()} and will prefer that
 	 *            priority (if any!) over this parameter.
 	 * @return I_C_Queue_WorkPackage (created workPackage)
-	 * @deprecated Please consider using {@link #newBlock()}
+	 * @deprecated Please consider using {@link #newWorkPackage()}
 	 */
 	@Deprecated
-	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_Block block, IWorkpackagePrioStrategy priority);
+	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_WorkPackage workPackage, IWorkpackagePrioStrategy priority);
 
 	/**
 	 * Adds an element to the given <code>workPackage</code>.
@@ -167,7 +152,7 @@ public interface IWorkPackageQueue
 	void enqueueElements(I_C_Queue_WorkPackage workPackage, Iterable<TableRecordReference> models);
 
 	/**
-	 * Convenient method for quickly enqueuing an element. This method automatically creates a new {@link I_C_Queue_Block} and {@link I_C_Queue_WorkPackage}. After creating the
+	 * Convenient method for quickly enqueuing an element. This method automatically creates a new {@link I_C_Queue_WorkPackage}. After creating the
 	 * {@link I_C_Queue_Element}, the work package is marked as ready for processing.
 	 */
 	I_C_Queue_Element enqueueElement(Object modelReference);
@@ -219,4 +204,8 @@ public interface IWorkPackageQueue
 	 * @throws UnsupportedOperationException if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
 	 */
 	String getEnquingPackageProcessorInternalName();
+
+	IWorkPackageBuilder newWorkPackage();
+
+	IWorkPackageBuilder newWorkPackage(Properties ctx);
 }

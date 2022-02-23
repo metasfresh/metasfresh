@@ -22,14 +22,16 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.async.api.IWorkPackageQuery;
+import de.metas.async.exceptions.PackageItemNotAvailableException;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -38,15 +40,11 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import de.metas.async.api.IWorkPackageQuery;
-import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
@@ -211,7 +209,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
 							+"\n Package query: "+packageQuery);
 				}
-				final int packageProcessorId = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();
+				final int packageProcessorId = workpackage.getC_Queue_PackageProcessor_ID();
 				if (!packageProcessorIds.contains(packageProcessorId))
 				{
 					return false;
