@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.annotation.Nullable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -37,7 +38,11 @@ public class RabbitMQAuditEntry extends AbstractEntity
 {
 	private String queue;
 	private String direction;
+
+	public static final int CONTENT_LENGTH = 9999999;
+	@Column(length = CONTENT_LENGTH)
 	private String content;
+
 	private String eventId;
 	private String relatedEventId;
 }

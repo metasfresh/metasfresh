@@ -22,6 +22,7 @@
 
 package de.metas.procurement.webui.service;
 
+import com.google.common.base.Ascii;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
@@ -73,7 +74,7 @@ public class RabbitMQAuditService
 			final RabbitMQAuditEntry entry = new RabbitMQAuditEntry();
 			entry.setQueue(queueName);
 			entry.setDirection(direction);
-			entry.setContent(convertToString(message));
+			entry.setContent(Ascii.truncate(convertToString(message), RabbitMQAuditEntry.CONTENT_LENGTH, "..."));
 			entry.setEventId(eventId);
 			entry.setRelatedEventId(relatedEventId);
 
