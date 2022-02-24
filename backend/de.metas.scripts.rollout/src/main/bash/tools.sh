@@ -127,7 +127,7 @@ check_java_version()
         if [[ -f "/usr/bin/java" ]]; then
             local JAVA_VERSION="$(/usr/bin/java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d "." -f2)"
 			local JAVA_VERSION_NEW="$(/usr/bin/java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d "." -f1)"
-            if [[ ! ($JAVA_VERSION == "8" || $JAVA_VERSION_NEW == "11" ]]; then
+            if [[ ! ($JAVA_VERSION == "8" || $JAVA_VERSION_NEW == "11") ]]; then
                 trace check_java_version "[ERROR] JAVA-Version does not match supported version (found Java 1.${JAVA_VERSION})! Only Java 1.8 JDK supported! Check ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_server.html ' for more infos and make sure 'java -version' is 1.8.x ! NOTE: you may also need to update to Java-8 on your Clients: ' http://docs.metasfresh.org/howto_collection/Wie_aktualisiere_ich_die_Java_Version_auf_meinem_client.html '"
                 exit 1
 			else
