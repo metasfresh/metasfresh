@@ -106,8 +106,8 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 					{
 						processReceiptSchedule0(item);
 
-						counter.setValue(counter.getValue() + 1);
-						if (counter.getValue() % 100 == 0)
+						counter.setValue(counter.getValueNotNull() + 1);
+						if (counter.getValueNotNull() % 100 == 0)
 						{
 							Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} M_ReceiptSchedules", counter.getValue());
 						}
