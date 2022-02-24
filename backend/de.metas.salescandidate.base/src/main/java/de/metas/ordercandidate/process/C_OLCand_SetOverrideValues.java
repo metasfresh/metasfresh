@@ -22,12 +22,13 @@ package de.metas.ordercandidate.process;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.service.impl.BPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
@@ -38,6 +39,7 @@ import de.metas.process.ProcessParams;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -64,7 +66,7 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
 	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
-	private final BPartnerDAO bPartnerDAO = Services.get(BPartnerDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private IParams params = null;
 
@@ -83,23 +85,9 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 	private Map<BPartnerLocationId, BPartnerLocationId> getBPartnerLocationIdMap(final int bpartnerId)
 	{
-		final Map<BPartnerLocationId, GLN> oldLocationToGlnMap = createQueryBuilder()
-				.andCollect(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID, I_C_BPartner_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.filter(Objects::nonNull)
-				.filter(loc -> !Check.isBlank(loc.getGLN()))
-				.collect(Collectors.toMap(param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID()), param -> GLN.ofString(param.getGLN())));
-		if (oldLocationToGlnMap.size() == 0)
-		{
-			throw new AdempiereException(NO_GLNS);
-		}
+		final Map<BPartnerLocationId, GLN> oldLocationToGlnMap = getOldLocationIdToGlnMap();
+		final Map<GLN, BPartnerLocationId> glnToNewLocationMap = getGlnToNewLocationMap(bpartnerId);
 
-		final Map<GLN, BPartnerLocationId> glnToNewLocationMap = bPartnerDAO.retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId))
-				.stream()
-				.filter(loc -> !Check.isBlank(loc.getGLN()))
-				.collect(Collectors.toMap(param -> GLN.ofString(param.getGLN()), param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID())));
 		oldLocationToGlnMap.forEach((oldLocation, gln) -> {
 			if (!glnToNewLocationMap.containsKey(gln))
 			{
@@ -109,7 +97,35 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 		return oldLocationToGlnMap.keySet()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(oldLocation -> oldLocation, oldLocation -> glnToNewLocationMap.get(oldLocationToGlnMap.get(oldLocation))));
+				.collect(ImmutableMap.toImmutableMap(oldLocation -> oldLocation,
+						oldLocation -> glnToNewLocationMap.get(oldLocationToGlnMap.get(oldLocation))));
+	}
+
+	@NonNull
+	private Map<GLN, BPartnerLocationId> getGlnToNewLocationMap(final int bpartnerId)
+	{
+		return bPartnerDAO.retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId))
+				.stream()
+				.filter(loc -> !Check.isBlank(loc.getGLN()))
+				.collect(Collectors.toMap(param -> GLN.ofString(param.getGLN()), param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID())));
+	}
+
+	@NonNull
+	private Map<BPartnerLocationId, GLN> getOldLocationIdToGlnMap()
+	{
+		final Map<BPartnerLocationId, GLN> oldLocationToGlnMap = createQueryBuilder()
+			.andCollect(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID, I_C_BPartner_Location.class)
+			.addOnlyActiveRecordsFilter()
+			.create()
+				.stream()
+				.filter(Objects::nonNull)
+				.filter(loc -> !Check.isBlank(loc.getGLN()))
+				.collect(Collectors.toMap(param -> BPartnerLocationId.ofRepoId(param.getC_BPartner_ID(), param.getC_BPartner_Location_ID()), param -> GLN.ofString(param.getGLN())));
+		if (oldLocationToGlnMap.size() == 0)
+		{
+			throw new AdempiereException(NO_GLNS);
+		}
+		return oldLocationToGlnMap;
 	}
 
 	@Override
@@ -130,7 +146,7 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 	private IQueryBuilder<I_C_OLCand> createQueryBuilder()
 	{
-		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilterOrElseFalse();
+		final IQueryFilter<I_C_OLCand> queryFilter = getQueryFilter();
 
 		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.filter(queryFilter)
@@ -140,5 +156,11 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 				.addColumn(I_C_OLCand.COLUMNNAME_C_OLCand_ID);
 
 		return queryBuilder;
+	}
+
+	@VisibleForTesting
+	protected IQueryFilter<I_C_OLCand> getQueryFilter()
+	{
+		return getProcessInfo().getQueryFilterOrElseFalse();
 	}
 }
