@@ -22,9 +22,11 @@ package org.adempiere.util.lang;
  * #L%
  */
 
+import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
@@ -38,4 +40,10 @@ public final class Mutable<T> implements IMutable<T>
 {
 	@Nullable
 	private T value;
+
+	@NonNull
+	public T getValueNotNull()
+	{
+		return Check.assumeNotNull(value, "This mutable's value may not be null at this point");
+	}
 }
