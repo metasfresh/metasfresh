@@ -1,4 +1,4 @@
-drop table if exists public.RabbitMQ_Message_Audit;
+-- drop table if exists public.RabbitMQ_Message_Audit;
 
 -- 2022-02-24T15:21:30.065Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
