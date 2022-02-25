@@ -83,7 +83,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
+	public void pushBPartnerAndUsers(@NonNull final I_C_BPartner bpartner)
 	{
 		if (disabled.get())
 		{
