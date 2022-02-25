@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-procurement
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,23 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
+package de.metas.rabbitmq;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import org.adempiere.util.net.IHostIdentifier;
 
-import java.util.UUID;
+import javax.annotation.Nullable;
 
 @Value
-@EqualsAndHashCode(callSuper = false)
 @Builder
-@Jacksonized
-public class PutUserChangedRequest extends RequestToMetasfresh
+public class RabbitMQAuditEntry
 {
-	@Builder.Default
-	String eventId = UUID.randomUUID().toString();
-
-	@NonNull String userUUID;
-
-	String newPassword;
+	@NonNull String queueName;
+	@NonNull RabbitMQDirection direction;
+	@NonNull Object content;
+	@Nullable String eventUUID;
+	@Nullable String relatedEventUUID;
+	@Nullable IHostIdentifier host;
 }

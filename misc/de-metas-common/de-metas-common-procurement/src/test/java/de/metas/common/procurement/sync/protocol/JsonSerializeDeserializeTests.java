@@ -76,8 +76,9 @@ public class JsonSerializeDeserializeTests
 		final Object object = jsonObjectMapper.readValue(jsonString, requestSuperType);
 
 		// then
-		assertThat(object).isInstanceOf(valueType);
-		assertThat(object).isEqualTo(objectOrig);
+		assertThat(object)
+				.isInstanceOf(valueType)
+				.isEqualTo(objectOrig);
 	}
 
 	@Nested
@@ -151,19 +152,19 @@ public class JsonSerializeDeserializeTests
 		@Test
 		void GetAllBPartnersRequest() throws IOException
 		{
-			assertRequestToMetasfreshOK(GetAllBPartnersRequest.INSTANCE, GetAllBPartnersRequest.class);
+			assertRequestToMetasfreshOK(GetAllBPartnersRequest.builder().build(), GetAllBPartnersRequest.class);
 		}
 
 		@Test
 		void GetAllProductsRequest() throws IOException
 		{
-			assertRequestToMetasfreshOK(GetAllProductsRequest.INSTANCE, GetAllProductsRequest.class);
+			assertRequestToMetasfreshOK(GetAllProductsRequest.builder().build(), GetAllProductsRequest.class);
 		}
 
 		@Test
 		void GetInfoMessageRequest() throws IOException
 		{
-			assertRequestToMetasfreshOK(GetInfoMessageRequest.INSTANCE, GetInfoMessageRequest.class);
+			assertRequestToMetasfreshOK(GetInfoMessageRequest.builder().build(), GetInfoMessageRequest.class);
 		}
 
 		@Test
@@ -250,7 +251,9 @@ public class JsonSerializeDeserializeTests
 		@Test
 		void PutInfoMessageRequest() throws IOException
 		{
-			final PutInfoMessageRequest syncInfoMessageRequest = PutInfoMessageRequest.of("String");
+			final PutInfoMessageRequest syncInfoMessageRequest = PutInfoMessageRequest.builder()
+					.message("String")
+					.build();
 
 			assertRequestToProcurementWebOK(syncInfoMessageRequest, PutInfoMessageRequest.class);
 		}

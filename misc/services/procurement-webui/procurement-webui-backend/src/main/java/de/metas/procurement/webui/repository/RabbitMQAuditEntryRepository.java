@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-procurement
+ * procurement-webui-backend
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,20 +20,15 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
+package de.metas.procurement.webui.repository;
 
-import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.procurement.webui.model.RabbitMQAuditEntry;
+import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
+import javax.transaction.Transactional;
 
-@Value
-@Builder
-@Jacksonized
-public class GetInfoMessageRequest extends RequestToMetasfresh
+@Repository
+@Transactional
+public interface RabbitMQAuditEntryRepository extends AbstractRepository<RabbitMQAuditEntry>
 {
-	@Builder.Default
-	String eventId = UUID.randomUUID().toString();
 }
