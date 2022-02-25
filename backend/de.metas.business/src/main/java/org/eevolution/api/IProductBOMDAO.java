@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;

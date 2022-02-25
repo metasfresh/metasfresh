@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
 
 public class AD_EventLog_Entry_StepDef
 {
@@ -81,8 +80,7 @@ public class AD_EventLog_Entry_StepDef
 				return true;
 			};
 
-			final boolean recordFound = StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound);
-			assertThat(recordFound).isTrue();
+			StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound);
 		}
 	}
 }

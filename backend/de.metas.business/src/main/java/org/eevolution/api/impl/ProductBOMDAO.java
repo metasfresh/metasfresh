@@ -393,6 +393,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return getLatestBOMRecordByVersion(bomVersionsId, null);
 	}
 
+	@Override
 	@NonNull
 	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
 	{
