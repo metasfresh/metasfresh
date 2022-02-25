@@ -55,6 +55,15 @@ restart minikube with [install.sh](install.sh) script
 - tls.crt and tls.key need to be placed in files directory (*.metasfresh.com for wildcard domain)
   
 ## dev section
+### minikube
+dashbord of the kubernetes cluster
+```
+minikube dashboard
+```
+minikube access
+```
+minikube ssh
+```
 ### helm
 dry helm run to see generated .yaml (after first install upgrade can be used)
 ```
