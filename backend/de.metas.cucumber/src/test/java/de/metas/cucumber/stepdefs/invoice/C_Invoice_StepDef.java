@@ -137,8 +137,12 @@ public class C_Invoice_StepDef
 				.orgId(StepDefConstants.ORG_ID)
 				.value(paymentTerm)
 				.build();
+
 		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
 				.orElse(null);
+
+		assertThat(paymentTermId).isNotNull();
+		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 
 		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
 		if (Check.isNotBlank(docSubType))
@@ -152,8 +156,11 @@ public class C_Invoice_StepDef
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 		}
 
-		assertThat(paymentTermId).isNotNull();
-		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
+		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
+		if (Check.isNotBlank(bpartnerAddress))
+		{
+			assertThat(invoice.getBPartnerAddress()).isEqualTo(bpartnerAddress);
+		}
 	}
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.Check;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -35,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 
@@ -47,6 +49,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_OrderLine_StepDef
@@ -57,15 +60,18 @@ public class C_OrderLine_StepDef
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -85,6 +91,13 @@ public class C_OrderLine_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
+
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if(Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			}
 
 			saveRecord(orderLine);
 
@@ -191,5 +204,8 @@ public class C_OrderLine_StepDef
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+
+		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderLineTable.putOrReplace(olIdentifier, orderLine);
 	}
 }

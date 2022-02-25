@@ -48,8 +48,6 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
-
 /**
  * Process work packages from queue and:
  * <ul>
@@ -70,12 +68,6 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
-		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
-		{
-			return Result.SUCCESS;
-		}
-
 		final UserId userId = UserId.ofRepoIdOrNull(workpackage.getAD_User_ID());
 		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch_ID() > 0 ? workpackage.getC_Async_Batch() : null;
 

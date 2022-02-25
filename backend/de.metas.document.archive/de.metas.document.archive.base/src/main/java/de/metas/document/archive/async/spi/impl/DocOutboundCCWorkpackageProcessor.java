@@ -27,8 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
-
 /*
  * #%L
  * de.metas.document.archive.base
@@ -74,12 +72,6 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 			@NonNull final I_C_Queue_WorkPackage workpackage,
 			@NonNull final String localTrxName)
 	{
-		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
-		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
-		{
-			return Result.SUCCESS;
-		}
-
 		final List<I_AD_Archive> archives = queueDAO.retrieveItems(workpackage, I_AD_Archive.class, localTrxName);
 		for (final I_AD_Archive archive : archives)
 		{
