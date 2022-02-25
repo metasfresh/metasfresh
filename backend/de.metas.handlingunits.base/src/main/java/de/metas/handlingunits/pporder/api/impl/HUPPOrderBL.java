@@ -18,16 +18,17 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -52,6 +53,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -127,11 +129,17 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
 		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 
+		final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
+				.filterOnlyStorageRelevantAttributes();
+
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
-				.addOnlyInWarehouseIds(issueFromWarehouseIds)
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.addOnlyWithAttributes(storageRelevantAttributeSet)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();

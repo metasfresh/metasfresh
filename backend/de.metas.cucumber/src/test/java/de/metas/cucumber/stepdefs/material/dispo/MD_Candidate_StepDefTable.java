@@ -88,6 +88,9 @@ public class MD_Candidate_StepDefTable
 		@NonNull
 		Instant time;
 
+		@Nullable
+		String attributeSetInstanceId;
+
 		public CandidatesQuery createQuery()
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()

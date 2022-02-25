@@ -1,8 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import de.metas.ui.web.pattribute.ASIDocument;
 import de.metas.ui.web.pattribute.ASILayout;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
@@ -17,6 +14,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -82,7 +82,13 @@ class ASIViewRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts, final DocumentId huId)
+	{
+		return toJson(jsonOpts);
+	}
+
+
+	private JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 

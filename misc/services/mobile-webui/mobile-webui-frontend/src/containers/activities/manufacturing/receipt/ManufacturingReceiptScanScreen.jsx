@@ -7,6 +7,7 @@ import { updateManufacturingReceiptTarget } from '../../../../actions/Manufactur
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../../utils/huQRCodes';
+import { trl } from '../../../../utils/translations';
 
 const ManufacturingReceiptScanScreen = () => {
   const {
@@ -19,7 +20,7 @@ const ManufacturingReceiptScanScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Receive to HU', // TODO trl
+        caption: trl('activities.mfg.receipts.existingLU'),
       })
     );
   }, []);

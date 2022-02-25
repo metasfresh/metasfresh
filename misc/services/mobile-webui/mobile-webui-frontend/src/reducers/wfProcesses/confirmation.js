@@ -36,8 +36,15 @@ const computeActivityStatus = ({ confirmed }) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  computeActivityDataStoredInitialValue: ({ componentProps }) => {
-    const confirmed = !!componentProps.confirmed;
-    return { confirmed: confirmed, completeStatus: computeActivityStatus({ confirmed }) };
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    console.log('fromActivity: ', { fromActivity });
+
+    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.confirmed = !!fromActivity.componentProps.confirmed;
+    draftActivityDataStored.completeStatus = computeActivityStatus({
+      confirmed: draftActivityDataStored.confirmed,
+    });
+
+    return draftActivityDataStored;
   },
 });

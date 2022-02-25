@@ -22,6 +22,44 @@
 
 package de.metas.workflow.rest_api.activity_features.set_scanned_barcode;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.UIComponentType;
+import lombok.Builder;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.api.Params;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+
+@UtilityClass
 public class SetScannedBarcodeSupportHelper
 {
+	public static UIComponent createUIComponent(
+			@Nullable final JsonQRCode currentValue)
+	{
+		return uiComponent()
+				.currentValue(currentValue)
+				.build();
+	}
+
+	@Builder(builderMethodName = "uiComponent", builderClassName = "$UIComponentBuilder")
+	private static UIComponent createUIComponent(
+			@Nullable final JsonQRCode currentValue,
+			@Nullable final Collection<JsonQRCode> validOptions,
+			boolean isAlwaysAvailableToUser)
+	{
+		return UIComponent.builder()
+				.type(UIComponentType.SCAN_BARCODE)
+				.properties(Params.builder()
+						.valueObj("currentValue", currentValue)
+						.valueObj("validOptions",
+								validOptions != null && !validOptions.isEmpty()
+										? ImmutableSet.copyOf(validOptions)
+										: null)
+						.valueObj("isAlwaysAvailableToUser", isAlwaysAvailableToUser)
+						.build())
+				.build();
+	}
+
 }

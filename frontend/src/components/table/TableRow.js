@@ -133,7 +133,7 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown = (e, property, readonly) => {
+  handleKeyDown = (e, property, readonly, isAttribute) => {
     const {
       changeListenOnTrue,
       rowId,
@@ -184,6 +184,11 @@ class TableRow extends PureComponent {
         break;
       }
       case 'Tab':
+        // if ProductAttributes widget is visible, skip over Tab navigation here
+        if (isAttribute) {
+          break;
+        }
+
         // this test is for a case when user is navigating around the table
         // without activating the field. Then there's no widget (input), so the value
         // is undefined and we don't have to worry about it

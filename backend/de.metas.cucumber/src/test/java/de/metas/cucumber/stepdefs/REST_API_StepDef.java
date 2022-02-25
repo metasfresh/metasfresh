@@ -172,6 +172,27 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
+	@When("a {string} request is sent to metasfresh REST-API with endpointPath and payload from context and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_endpointPath_and_request_from_context_responds_with_code_for_payload(
+			@NonNull final String verb,
+			@NonNull final String statusCode) throws IOException
+	{
+		final String endpointPath = testContext.getEndpointPath();
+		final String payload = testContext.getRequestPayload();
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
+				.payload(payload)
+				.authToken(userAuthToken)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@Then("the metasfresh REST-API responds with")
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{

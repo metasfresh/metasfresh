@@ -23,6 +23,7 @@ package de.metas.util;
  */
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -68,6 +69,7 @@ public final class NumberUtils
 		// If after removing our scale is negative, we can safely set the scale to ZERO because we don't want to get rid of zeros before decimal point
 		if (result.scale() < 0)
 		{
+			//noinspection BigDecimalMethodWithoutRoundingCalled
 			result = result.setScale(0);
 		}
 
@@ -192,6 +194,16 @@ public final class NumberUtils
 		}
 	}
 
+	public static int asInt(@NonNull final Object value)
+	{
+		final Integer integerValue = asIntegerOrNull(value);
+		if (integerValue == null)
+		{
+			throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int");
+		}
+		return integerValue;
+	}
+
 	public static int asIntOrZero(final Object value)
 	{
 		return asInt(value, 0);
@@ -225,6 +237,10 @@ public final class NumberUtils
 		{
 			return ((RepoIdAware)value).getRepoId();
 		}
+		else if (value instanceof Integer)
+		{
+			return (Integer)value;
+		}
 		else if (value instanceof Number)
 		{
 			return ((Number)value).intValue();
@@ -252,7 +268,7 @@ public final class NumberUtils
 			final int scale)
 	{
 		final BigDecimal range = valueMax.subtract(valueMin);
-		final BigDecimal random = new BigDecimal(Math.random());
+		final BigDecimal random = BigDecimal.valueOf(Math.random());
 
 		return valueMin
 				.add(random.multiply(range))

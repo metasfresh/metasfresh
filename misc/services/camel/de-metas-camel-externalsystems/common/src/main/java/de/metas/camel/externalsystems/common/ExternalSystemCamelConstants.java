@@ -81,6 +81,10 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
 
+	public static final String MF_GET_BPARTNER_PRODUCTS_ROUTE_ID = "To-MF_GetBPartnerProducts-Route";
+
+	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID = "To-MF_LookupExternalReference-Route";
+
 	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 
 	public static final String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
@@ -112,4 +116,9 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI = "metasfresh.update-hu-attributes-v2.api.uri";
 
 	public static final String MF_PROCESS_REMOTE_HTTP_ERROR_ROUTE_ID = "Extract_HTTP_Error-Route";
+
+	public static final String MF_GET_EXTERNAL_SYSTEM_INFO = "metasfresh.external-system-info-v2.camel.uri";
+
+	public static final String MF_CLEAR_HU_V2_CAMEL_ROUTE_ID = "To-MF_clearHU_V2-Route";
+	public static final String MF_CLEAR_HU_V2_URI = "metasfresh.clear-hu-v2.api.uri";
 }

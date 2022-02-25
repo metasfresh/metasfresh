@@ -1,8 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
+import { qtyInfos } from '../utils/qtyInfos';
 
-const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered, onQtyChange, isRequestFocus }) => {
+const QtyInputField = ({
+  qty: qtyInitial,
+  uom,
+  integerValuesOnly = false,
+  isRequestFocus,
+  readonly = false,
+  validateQtyEntered,
+  onQtyChange,
+}) => {
+  //
+  // QtyInfo lifecycle:
   const [qtyInfo, setQtyInfo] = useState(
     computeQtyInfoFromString({
       qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
@@ -11,16 +22,33 @@ const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered,
       validateQtyEntered,
     })
   );
-
+  useEffect(() => {
+    setQtyInfo(
+      computeQtyInfoFromString({
+        qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+        integerValuesOnly,
+        prevQtyInfo: {
+          qty: qtyInfo?.qty ?? 0,
+          notValidMessage: qtyInfo?.notValidMessage ?? null,
+        },
+        validateQtyEntered,
+      })
+    );
+  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage]);
+  //
   // Inform parent about initial value
-  useEffect(() => forwardQtyInfoToParent(qtyInfo), []);
+  useEffect(() => forwardQtyInfoToParent(qtyInfo), [qtyInfo]);
 
+  //
+  // Request Focus
   const qtyInputRef = useRef(null);
   if (isRequestFocus) {
     useEffect(() => {
-      qtyInputRef.current.focus();
-      qtyInputRef.current.select();
-    }, [isRequestFocus]);
+      if (!readonly) {
+        qtyInputRef.current.focus();
+        qtyInputRef.current.select();
+      }
+    }, [isRequestFocus, readonly]);
   }
 
   const handleQtyEntered = (e) => {
@@ -32,13 +60,12 @@ const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered,
       validateQtyEntered,
     });
 
-    //console.log(`For e.target.value="${e.target.value}" computed: `, { qtyInputString, newQtyInfo });
     setQtyInfo(newQtyInfo);
     forwardQtyInfoToParent(newQtyInfo);
   };
 
   const forwardQtyInfoToParent = (qtyInfoToForward) => {
-    onQtyChange(qtyInfoToForward.isQtyValid ? qtyInfoToForward.qty : null);
+    onQtyChange(qtyInfoToForward);
   };
 
   return (
@@ -49,6 +76,7 @@ const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered,
           className="input"
           type="number"
           value={qtyInfo.qtyStr}
+          disabled={!!readonly}
           onChange={handleQtyEntered}
           onClick={() => qtyInputRef.current.select()}
         />
@@ -60,10 +88,11 @@ const QtyInputField = ({ qtyInitial, uom, integerValuesOnly, validateQtyEntered,
 };
 
 QtyInputField.propTypes = {
-  qtyInitial: PropTypes.number,
+  qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   uom: PropTypes.string,
   integerValuesOnly: PropTypes.bool,
   isRequestFocus: PropTypes.bool,
+  readonly: PropTypes.bool,
   //
   validateQtyEntered: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
@@ -73,24 +102,18 @@ const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyIn
   let qty = parseFloat(qtyInputString);
 
   if (isNaN(qty)) {
-    return {
-      qtyStr: qtyInputString,
-      qty: prevQtyInfo?.qty ?? 0,
-      isQtyValid: false,
-      notValidMessage: prevQtyInfo?.notValidMessage ?? null, // preserve last notValidMessage
-    };
+    return qtyInfos.invalidOf({
+      qtyInputString,
+      prevQtyInfo,
+    });
   } else {
     if (integerValuesOnly) {
       qty = Math.floor(qty);
     }
 
     const notValidMessage = validateQtyEntered ? validateQtyEntered(qty) : null;
-    return {
-      qtyStr: `${qty}`,
-      qty,
-      isQtyValid: !notValidMessage,
-      notValidMessage,
-    };
+
+    return qtyInfos.of({ qty, notValidMessage });
   }
 };
 

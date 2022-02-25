@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.grssignum.from_grs.vendor.processor;
 
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartner;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonVendor;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -41,7 +41,7 @@ public class PushBPartnersProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
-		final JsonBPartner jsonBPartner = exchange.getIn().getBody(JsonBPartner.class);
+		final JsonVendor jsonBPartner = exchange.getIn().getBody(JsonVendor.class);
 
 		final BPUpsertCamelRequest bpUpsertCamelRequest = getBPUpsertCamelRequest(jsonBPartner);
 
@@ -49,16 +49,16 @@ public class PushBPartnersProcessor implements Processor
 	}
 
 	@NonNull
-	private BPUpsertCamelRequest getBPUpsertCamelRequest(@NonNull final JsonBPartner jsonBPartner)
+	private BPUpsertCamelRequest getBPUpsertCamelRequest(@NonNull final JsonVendor jsonVendor)
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setName(jsonBPartner.getName());
-		jsonRequestBPartner.setCompanyName(jsonBPartner.getName());
-		jsonRequestBPartner.setActive(jsonBPartner.isActive());
+		jsonRequestBPartner.setName(jsonVendor.getName());
+		jsonRequestBPartner.setCompanyName(jsonVendor.getName());
+		jsonRequestBPartner.setActive(jsonVendor.isActive());
 		jsonRequestBPartner.setVendor(true);
-		jsonRequestBPartner.setCode(jsonBPartner.getBpartnerValue());
+		jsonRequestBPartner.setCode(jsonVendor.getBpartnerValue());
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.orgCode(credentials.getOrgCode())
@@ -66,7 +66,7 @@ public class PushBPartnersProcessor implements Processor
 				.build();
 
 		final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(computeBPartnerIdentifier(jsonBPartner))
+				.bpartnerIdentifier(computeBPartnerIdentifier(jsonVendor))
 				.bpartnerComposite(jsonRequestComposite)
 				.build();
 
@@ -82,13 +82,13 @@ public class PushBPartnersProcessor implements Processor
 	}
 
 	@NonNull
-	private static String computeBPartnerIdentifier(@NonNull final JsonBPartner jsonBPartner)
+	private static String computeBPartnerIdentifier(@NonNull final JsonVendor jsonVendor)
 	{
-		if (jsonBPartner.getMetasfreshId() != null && Check.isNotBlank(jsonBPartner.getMetasfreshId()))
+		if (jsonVendor.getMetasfreshId() != null && Check.isNotBlank(jsonVendor.getMetasfreshId()))
 		{
-			return jsonBPartner.getMetasfreshId();
+			return jsonVendor.getMetasfreshId();
 		}
 
-		throw new RuntimeException("Missing mandatory METASFRESHID! JsonBPartner.MKREDID: " + jsonBPartner.getBpartnerValue());
+		throw new RuntimeException("Missing mandatory METASFRESHID! JsonVendor.MKREDID: " + jsonVendor.getBpartnerValue());
 	}
 }

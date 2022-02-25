@@ -63,30 +63,33 @@ public class PP_Order_Candidate
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void postNewMaterialEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
+		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
-		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
-				.ppOrderCandidate(ppOrderCandidatePojo)
-				.build();
-
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
+		fireMaterialCreatedEvent(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
 	public void syncLinesAndMaterialDisposition(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		validateQuantities(ppOrderCandidateRecord);
+		final I_PP_Order_Candidate oldRecord = InterfaceWrapperHelper.createOld(ppOrderCandidateRecord, I_PP_Order_Candidate.class);
 
-		ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
+		final boolean qtyEnteredOrProcessedChanged = !oldRecord.getQtyEntered().equals(ppOrderCandidateRecord.getQtyEntered())
+				|| !oldRecord.getQtyProcessed().equals(ppOrderCandidateRecord.getQtyProcessed());
+
+		if (qtyEnteredOrProcessedChanged)
+		{
+			ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
+		}
+
+		validateQuantities(ppOrderCandidateRecord);
 
 		if (!InterfaceWrapperHelper.isNew(ppOrderCandidateRecord))
 		{
-			ppOrderCandidateService.syncLinesWithRequiredQty(ppOrderCandidateRecord);
+			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 			fireMaterialUpdateEvent(ppOrderCandidateRecord);
 		}
@@ -110,12 +113,30 @@ public class PP_Order_Candidate
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_PP_Order_Candidate.COLUMNNAME_QtyToProcess)
-	public void validateQtyToProcess(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID })
+	public void syncLinesOnBOMChanged(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
+
+		fireMaterialUpdateEvent(ppOrderCandidateRecord);
+	}
+
+	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final BigDecimal qtyEntered = ppOrderCandidateRecord.getQtyEntered();
 		final BigDecimal qtyProcessed = ppOrderCandidateRecord.getQtyProcessed();
 		final BigDecimal actualQtyLeftToBeProcessed = qtyEntered.subtract(qtyProcessed);
+
+		if (qtyEntered.compareTo(qtyProcessed) < 0)
+		{
+			throw new AdempiereException("QtyEntered cannot go lower than the QtyProcessed!")
+					.appendParametersToMessage()
+					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
+					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
+					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered());
+		}
 
 		if (ppOrderCandidateRecord.getQtyToProcess().compareTo(actualQtyLeftToBeProcessed) > 0)
 		{
@@ -129,21 +150,6 @@ public class PP_Order_Candidate
 		}
 	}
 
-	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
-	{
-		final BigDecimal qtyEntered = ppOrderCandidateRecord.getQtyEntered();
-		final BigDecimal qtyProcessed = ppOrderCandidateRecord.getQtyProcessed();
-
-		if (qtyEntered.compareTo(qtyProcessed) < 0)
-		{
-			throw new AdempiereException("QtyEntered cannot go lower than the QtyProcessed!")
-					.appendParametersToMessage()
-					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
-					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
-					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered());
-		}
-	}
-
 	private void fireMaterialUpdateEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
@@ -154,5 +160,17 @@ public class PP_Order_Candidate
 				.build();
 
 		materialEventService.postEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
+	}
+
+	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
+
+		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
+				.ppOrderCandidate(ppOrderCandidatePojo)
+				.build();
+
+		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
 	}
 }

@@ -312,6 +312,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		ic.setIncotermLocation(order.getIncotermLocation());
 	}
 
 	private void setC_PaymentTerm(

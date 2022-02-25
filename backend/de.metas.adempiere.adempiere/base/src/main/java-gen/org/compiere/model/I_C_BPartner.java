@@ -416,6 +416,56 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
+	 * Set Incoterms (Customer).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_Customer_ID (int C_Incoterms_Customer_ID);
+
+	/**
+	 * Get Incoterms (Customer).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_Customer_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms_Customer();
+
+	void setC_Incoterms_Customer(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms_Customer);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_Customer_ID = new ModelColumn<>(I_C_BPartner.class, "C_Incoterms_Customer_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_Customer_ID = "C_Incoterms_Customer_ID";
+
+	/**
+	 * Set Incoterms (Vendor).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_Vendor_ID (int C_Incoterms_Vendor_ID);
+
+	/**
+	 * Get Incoterms (Vendor).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_Vendor_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms_Vendor();
+
+	void setC_Incoterms_Vendor(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms_Vendor);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_Vendor_ID = new ModelColumn<>(I_C_BPartner.class, "C_Incoterms_Vendor_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_Vendor_ID = "C_Incoterms_Vendor_ID";
+
+	/**
 	 * Set Terminplan Rechnung.
 	 * Schedule for generating Invoices
 	 *

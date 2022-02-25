@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postDistributionDropTo } from '../../../api/distribution';
 import { updateDistributionDropTo } from '../../../actions/DistributionActions';
@@ -17,7 +16,7 @@ const DistributionStepDropToScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { caption, qtyToMove, locatorBarcode } = useSelector((state) =>
+  const { locatorQRCode } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
@@ -27,16 +26,6 @@ const DistributionStepDropToScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        values: [
-          {
-            caption: trl('general.DropToLocator'),
-            value: `${caption}( ${locatorBarcode} )`,
-          },
-          {
-            caption: trl('general.QtyToMove'),
-            value: qtyToMove,
-          },
-        ],
       })
     );
   }, []);
@@ -67,8 +56,8 @@ const DistributionStepDropToScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      eligibleBarcode={locatorBarcode}
-      invalidBarcodeMessageKey={'activities.distribution.invalidLocatorBarcode'}
+      eligibleBarcode={locatorQRCode}
+      invalidBarcodeMessageKey={'activities.distribution.invalidLocatorQRCode'}
       onResult={onResult}
     />
   );
@@ -78,9 +67,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   const step = getStepById(state, wfProcessId, activityId, lineId, stepId);
 
   return {
-    caption: step.dropToLocator.caption,
-    qtyToMove: step.qtyToMove,
-    locatorBarcode: step.pickFromHU.barcode,
+    locatorQRCode: step.dropToLocator.qrCode,
   };
 };
 

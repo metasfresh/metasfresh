@@ -1,21 +1,31 @@
 package de.metas.handlingunits.impl;
 
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -42,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class HandlingUnitsBLTest
 {
 	private HUTestHelper helper;
+	private IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@BeforeEach
 	void beforeEach() {helper = HUTestHelper.newInstanceOutOfTrx();}
@@ -96,6 +107,117 @@ public class HandlingUnitsBLTest
 			@NonNull final I_M_HU lu = createHU(luPI);
 			assertThat(new HandlingUnitsBL().getPackingInstructionsId(lu)).isEqualTo(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()));
 		}
+	}
 
+	@Nested
+	class setClearanceStatus
+	{
+
+		@Test
+		public void givenLU_OfA_LU_TU_CU_Hierarchy_whenSetClearanceStatus_thenUpdateAllHierarchy()
+		{
+			//given
+			final I_M_HU_Item lu = createHU(null);
+			final I_M_HU_Item tu = createHU(lu);
+			final I_M_HU_Item cu = createHU(tu);
+
+			//when
+			handlingUnitsBL.setClearanceStatus(HuId.ofRepoId(lu.getM_HU_ID()), ClearanceStatus.Locked, "LockedNote");
+
+			//then
+			final I_M_HU updatedLU = InterfaceWrapperHelper.load(lu.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU updatedTU = InterfaceWrapperHelper.load(tu.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU updatedCU = InterfaceWrapperHelper.load(cu.getM_HU_ID(), I_M_HU.class);
+
+			assertThat(updatedLU.getClearanceStatus()).isEqualTo(ClearanceStatus.Locked.getCode());
+			assertThat(updatedTU.getClearanceStatus()).isEqualTo(ClearanceStatus.Locked.getCode());
+			assertThat(updatedCU.getClearanceStatus()).isEqualTo(ClearanceStatus.Locked.getCode());
+
+			assertThat(updatedLU.getClearanceNote()).isEqualTo("LockedNote");
+			assertThat(updatedTU.getClearanceNote()).isEqualTo("LockedNote");
+			assertThat(updatedCU.getClearanceNote()).isEqualTo("LockedNote");
+		}
+
+		@Test
+		public void givenTU_OfA_LU_TU_CU_Hierarchy_whenSetClearanceStatus_thenUpdateTU_and_CU()
+		{
+			//given
+			final I_M_HU_Item lu = createHU(null);
+			final I_M_HU_Item tu = createHU(lu);
+			final I_M_HU_Item cu = createHU(tu);
+
+			//when
+			handlingUnitsBL.setClearanceStatus(HuId.ofRepoId(tu.getM_HU_ID()), ClearanceStatus.Locked, "LockedNote");
+
+			//then
+			final I_M_HU updatedLU = InterfaceWrapperHelper.load(lu.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU updatedTU = InterfaceWrapperHelper.load(tu.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU updatedCU = InterfaceWrapperHelper.load(cu.getM_HU_ID(), I_M_HU.class);
+
+			assertThat(updatedLU.getClearanceStatus()).isNull();
+			assertThat(updatedTU.getClearanceStatus()).isEqualTo(ClearanceStatus.Locked.getCode());
+			assertThat(updatedCU.getClearanceStatus()).isEqualTo(ClearanceStatus.Locked.getCode());
+
+			assertThat(updatedLU.getClearanceNote()).isNull();
+			assertThat(updatedTU.getClearanceNote()).isEqualTo("LockedNote");
+			assertThat(updatedCU.getClearanceNote()).isEqualTo("LockedNote");
+		}
+	}
+
+	@Nested
+	class isHUHierarchyCleared
+	{
+		@Test
+		public void givenTU_OfA_LU_TU_CU_Cleared_Hierarchy_whenIsHUHierarchyCleared_thenReturnTrue()
+		{
+			//given
+			final I_M_HU_Item lu = createHU(null);
+			final I_M_HU_Item tu = createHU(lu);
+			final I_M_HU_Item cu = createHU(tu);
+
+			//when
+			final boolean isWholeHierarchyCleared_LU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_TU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(tu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_CU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(cu.getM_HU_ID()));
+
+			//then
+			assertThat(isWholeHierarchyCleared_LU).isTrue();
+			assertThat(isWholeHierarchyCleared_TU).isTrue();
+			assertThat(isWholeHierarchyCleared_CU).isTrue();
+		}
+
+		@Test
+		public void givenTU_OfA_LU_TU_CU_Hierarchy_With_LockedCU_whenIsHUHierarchyCleared_thenFalse()
+		{
+			//given
+			final I_M_HU_Item lu = createHU(null);
+			final I_M_HU_Item tu = createHU(lu);
+			final I_M_HU_Item cu = createHU(tu);
+			handlingUnitsBL.setClearanceStatus(HuId.ofRepoId(cu.getM_HU_ID()), ClearanceStatus.Locked, "Locked HU");
+
+			//when
+			final boolean isWholeHierarchyCleared_LU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(lu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_TU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(tu.getM_HU_ID()));
+			final boolean isWholeHierarchyCleared_CU = handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(cu.getM_HU_ID()));
+
+			//then
+			assertThat(isWholeHierarchyCleared_LU).isFalse();
+			assertThat(isWholeHierarchyCleared_TU).isFalse();
+			assertThat(isWholeHierarchyCleared_CU).isFalse();
+		}
+	}
+
+	private static I_M_HU_Item createHU(@Nullable final I_M_HU_Item parent)
+	{
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		hu.setM_HU_Item_Parent(parent);
+		saveRecord(hu);
+
+		final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
+		item.setM_HU(hu);
+		saveRecord(item);
+
+		return item;
 	}
 }

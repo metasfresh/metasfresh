@@ -1,11 +1,5 @@
 package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.util.lang.IMutable;
-import org.compiere.Adempiere;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -18,7 +12,11 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L

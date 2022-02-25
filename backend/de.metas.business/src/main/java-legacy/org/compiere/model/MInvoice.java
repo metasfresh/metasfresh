@@ -382,6 +382,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
 			setC_Incoterms_ID(order.getC_Incoterms_ID());
+			setIncotermLocation(order.getIncotermLocation());
 			//
 			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
@@ -708,7 +709,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if (Check.isEmpty(getIncoterm()))
+		if (getC_Incoterms_ID() <= 0)
 		{
 			setIncotermLocation("");
 		}

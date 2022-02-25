@@ -17,6 +17,7 @@ const ScanHUAndGetQtyComponent = ({
   qtyInitial,
   qtyTarget,
   qtyRejectedReasons,
+  scaleDevice,
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   onResult,
@@ -25,6 +26,8 @@ const ScanHUAndGetQtyComponent = ({
   const [currentScannedBarcode, setCurrentScannedBarcode] = useState(null);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
+    // console.log('resolveScannedBarcode', { scannedBarcode, eligibleBarcode });
+
     // If an eligible barcode was provided, make sure scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
       return {
@@ -85,6 +88,8 @@ const ScanHUAndGetQtyComponent = ({
           qtyCaption={qtyCaption}
           uom={uom}
           qtyRejectedReasons={qtyRejectedReasons}
+          scaleDevice={scaleDevice}
+          //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={() => setProgressStatus(STATUS_READ_BARCODE)}
@@ -107,6 +112,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
+  scaleDevice: PropTypes.object,
   //
   // Functions
   onResult: PropTypes.func,

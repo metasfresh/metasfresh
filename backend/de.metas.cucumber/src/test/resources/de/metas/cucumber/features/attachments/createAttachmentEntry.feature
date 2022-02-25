@@ -76,8 +76,8 @@ Feature: attachment creation using metasfresh api
       | file_1          | Test.txt |
 
     And store JsonAttachmentRequest in context
-      | orgCode | Type     | Record_ID | AD_AttachmentEntry.Type | File.Identifier |
-      | 001     | BPartner | 2156425   | LocalFileURL            | file_1          |
+      | orgCode | AD_AttachmentEntry.Type | File.Identifier | targets                                                                         |
+      | 001     | LocalFileURL            | file_1          | [{"externalReferenceType":"BPartner", "externalReferenceIdentifier":"2156425"}] |
 
     When the metasfresh REST-API endpoint path 'api/v2/attachment' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -90,3 +90,25 @@ Feature: attachment creation using metasfresh api
     And validate the created attachment multiref
       | AD_AttachmentEntry_ID.Identifier | Record_ID | TableName  |
       | attachmentEntry_1                | 2156425   | C_BPartner |
+
+  @from:cucumber
+  Scenario:  Add a 'LocalFileURL' type attachment to multiple targets
+    Given an existing local file
+      | File.Identifier | FileName |
+      | file_1          | Test.txt |
+    And store JsonAttachmentRequest in context
+      | orgCode | AD_AttachmentEntry.Type | File.Identifier | targets                                                                                                                                                      |
+      | 001     | LocalFileURL            | file_1          | [{"externalReferenceType":"BPartner", "externalReferenceIdentifier":"2156425"},{"externalReferenceType":"Product", "externalReferenceIdentifier":"2005577"}] |
+
+    When the metasfresh REST-API endpoint path 'api/v2/attachment' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    Then process attachment response
+      | AD_AttachmentEntry_ID.Identifier |
+      | attachmentEntry_1                |
+    And validate the created attachment entry
+      | AD_AttachmentEntry_ID.Identifier | Type | FileName | BinaryData | ContentType | File.Identifier |
+      | attachmentEntry_1                | LU   | Test.txt | null       | text/plain  | file_1          |
+    And validate the created attachment multiref
+      | AD_AttachmentEntry_ID.Identifier | Record_ID | TableName  |
+      | attachmentEntry_1                | 2156425   | C_BPartner |
+      | attachmentEntry_1                | 2005577   | M_Product  |

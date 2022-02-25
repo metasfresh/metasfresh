@@ -3,9 +3,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -305,9 +307,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
     "4. After ABORT - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -613,9 +617,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -921,9 +927,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1223,9 +1231,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After pick - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1560,9 +1570,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After Complete - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1903,9 +1915,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -2011,9 +2025,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "10. After pick 2 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2341,9 +2360,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "13. After Complete - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2865,9 +2889,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3170,9 +3199,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3497,9 +3531,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -3605,9 +3641,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "10. After unpick - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3907,9 +3948,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "13. After ABORT - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : null
+          "currentValue" : null,
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -4400,9 +4443,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -4705,9 +4753,14 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          },
+          "isAlwaysAvailableToUser" : false,
+          "validOptions" : null
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"

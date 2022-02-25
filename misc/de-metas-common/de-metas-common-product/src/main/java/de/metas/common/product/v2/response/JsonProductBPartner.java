@@ -87,4 +87,8 @@ public class JsonProductBPartner
 	@JsonProperty("exclusionFromPurchaseReason")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String exclusionFromPurchaseReason;
+
+	@JsonProperty("productId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	JsonMetasfreshId productId;
 }

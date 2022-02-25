@@ -3,10 +3,17 @@ import PropTypes from 'prop-types';
 
 import { trl } from '../../utils/translations';
 
-import Button from './Button';
+import ButtonWithIndicator from './ButtonWithIndicator';
 import YesNoDialog from '../dialogs/YesNoDialog';
 
-const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isDangerousAction, onUserConfirmed }) => {
+const ConfirmButton = ({
+  caption,
+  promptQuestion,
+  isUserEditable,
+  isDangerousAction,
+  completeStatus,
+  onUserConfirmed,
+}) => {
   const [isDialogDisplayed, setDialogDisplayed] = useState(false);
 
   const onDialogYes = () => {
@@ -23,8 +30,9 @@ const ConfirmButton = ({ caption, promptQuestion, isUserEditable, isDangerousAct
   return (
     <>
       {isDialogDisplayed && <YesNoDialog promptQuestion={promptQuestion} onYes={onDialogYes} onNo={onDialogNo} />}
-      <Button
+      <ButtonWithIndicator
         caption={captionEffective}
+        completeStatus={completeStatus}
         disabled={!isUserEditable || isDialogDisplayed}
         isDanger={isDangerousAction}
         onClick={() => setDialogDisplayed(true)}
@@ -46,6 +54,7 @@ ConfirmButton.propTypes = {
   promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool,
   isDangerousAction: PropTypes.bool,
+  completeStatus: PropTypes.string,
   //
   onUserConfirmed: PropTypes.func.isRequired,
 };

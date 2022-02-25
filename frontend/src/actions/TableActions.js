@@ -136,6 +136,22 @@ export function clearTableData(id) {
 }
 
 /**
+ * @method setTableNavigation
+ * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
+ *
+ * @param {string} id - table id
+ */
+export function setTableNavigation(id, active) {
+  return {
+    type: types.SET_TABLE_NAVIGATION,
+    payload: {
+      id,
+      active,
+    },
+  };
+}
+
+/**
  * @method createTableData
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.

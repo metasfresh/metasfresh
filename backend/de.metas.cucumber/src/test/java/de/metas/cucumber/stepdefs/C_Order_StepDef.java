@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.util.StringUtils;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -76,8 +76,8 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
 {
@@ -127,10 +127,18 @@ public class C_Order_StepDef
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
 			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
-			if (preparationDate != null)
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+
+			final ZonedDateTime preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
+			if (preparationDateToBeSet != null)
 			{
-				order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
-				order.setDatePromised(TimeUtil.asTimestamp(preparationDate));
+				order.setPreparationDate(TimeUtil.asTimestamp(preparationDateToBeSet));
+			}
+
+			final ZonedDateTime datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
+			if (datePromisedToBeSet != null)
+			{
+				order.setDatePromised(TimeUtil.asTimestamp(datePromisedToBeSet));
 			}
 
 			if (EmptyUtil.isNotBlank(poReference))

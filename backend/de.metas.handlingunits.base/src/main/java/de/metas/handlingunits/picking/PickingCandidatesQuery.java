@@ -1,9 +1,6 @@
 package de.metas.handlingunits.picking;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
@@ -11,6 +8,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,13 +41,15 @@ public class PickingCandidatesQuery
 
 	boolean onlyNotClosedOrNotRackSystem;
 	ImmutableSet<PickingSlotId> onlyPickingSlotIds;
+	String pickingSlotBarcode;
 
 	@Builder
 	private PickingCandidatesQuery(
 			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
 			final boolean includeShippedHUs,
 			final boolean onlyNotClosedOrNotRackSystem,
-			@Nullable Set<PickingSlotId> onlyPickingSlotIds)
+			@Nullable Set<PickingSlotId> onlyPickingSlotIds,
+			final String pickingSlotBarcode)
 	{
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 
@@ -57,6 +57,7 @@ public class PickingCandidatesQuery
 
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem;
 		this.onlyPickingSlotIds = onlyPickingSlotIds != null ? ImmutableSet.copyOf(onlyPickingSlotIds) : ImmutableSet.of();
+		this.pickingSlotBarcode = pickingSlotBarcode;
 	}
 
 }
