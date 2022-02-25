@@ -63,15 +63,6 @@ ingress:
   pgadmin: 
     url: pgadmin.demouser-demo.metasfresh.com
     enabled: true
-  app: 
-    url: app-debug.demouser-demo.metasfresh.com
-    enabled: false
-  rabbitmq:
-    url: rabbitmq-management.demouser-demo.metasfresh.com
-    enabled: false
-  webapi:
-    url: webapi-debug.demouser-demo.metasfresh.com
-    enabled: false
   tls:
     enabled: false
 
