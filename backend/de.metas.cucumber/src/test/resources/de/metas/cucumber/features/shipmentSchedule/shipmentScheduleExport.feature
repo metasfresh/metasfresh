@@ -54,9 +54,13 @@ Feature: Shipment schedule export rest-api
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
 
   Scenario: Export oxid shipment candidate
-    Given update AD_SysConfig int value
-      | Name                                              | Value |
-      | de.metas.rest_api.v2.shipping.c_olcand.OxidUserId | 100   |
+    Given load AD_User:
+      | AD_User_ID.Identifier | Login      |
+      | loginUser             | metasfresh |
+
+    And update AD_SysConfig with login AD_User_ID
+      | Name                                              | AD_User_ID.Identifier |
+      | de.metas.rest_api.v2.shipping.c_olcand.OxidUserId | loginUser             |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """

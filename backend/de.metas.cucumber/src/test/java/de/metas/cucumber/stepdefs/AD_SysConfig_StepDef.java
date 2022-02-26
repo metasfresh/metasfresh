@@ -29,12 +29,22 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_AD_User;
 
 import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final StepDefData<I_AD_User> userTable;
+
+	public AD_SysConfig_StepDef(@NonNull final StepDefData<I_AD_User> userTable)
+	{
+		this.userTable = userTable;
+	}
 
 	@And("enable sys config {string}")
 	public void enable_sys_config(@NonNull final String sysConfigName)
@@ -46,6 +56,21 @@ public class AD_SysConfig_StepDef
 	public void disable_sys_config(@NonNull final String sysConfigName)
 	{
 		setSysConfigBoolValue(sysConfigName, false);
+	}
+
+	@And("update AD_SysConfig with login AD_User_ID")
+	public void set_sysConfig_login_user(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String name = DataTableUtil.extractStringForColumnName(row, I_AD_SysConfig.COLUMNNAME_Name);
+
+			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_User user = userTable.get(userIdentifier);
+			assertThat(user).isNotNull();
+
+			setSysConfigIntValue(name, user.getAD_User_ID());
+		}
 	}
 
 	@And("update AD_SysConfig int value")
