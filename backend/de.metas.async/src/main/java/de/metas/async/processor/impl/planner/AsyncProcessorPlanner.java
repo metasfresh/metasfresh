@@ -43,19 +43,21 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 {
 	private static final Logger logger = LogManager.getLogger(QueueProcessorPlanner.class);
 
-	private final ExecutorService plannerExecutorService;
-	private final ExecutorService queueProcessorExecutorService;
+	private ExecutorService plannerExecutorService;
+	private ExecutorService queueProcessorExecutorService;
 
 	public AsyncProcessorPlanner()
 	{
 		super();
 
-		this.plannerExecutorService = getPlannerThreadExecutor();
-		this.queueProcessorExecutorService = getQueueProcessorThreadExecutor();
+		this.plannerExecutorService = null;
+		this.queueProcessorExecutorService = null;
 	}
 
 	protected void startPlanner()
 	{
+		restartExecutorsIfTerminated();
+
 		isRunning.set(true);
 
 		this.plannerExecutorService.submit(this);
@@ -63,6 +65,11 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 
 	protected void shutdownPlanner()
 	{
+		if (!isRunning.get())
+		{
+			return;
+		}
+
 		shutdownExecutor(queueProcessorExecutorService);
 
 		isRunning.set(false);
@@ -87,6 +94,19 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 	protected boolean stopOnFailedRun()
 	{
 		return false;
+	}
+
+	private void restartExecutorsIfTerminated()
+	{
+		if (plannerExecutorService == null || plannerExecutorService.isTerminated())
+		{
+			plannerExecutorService = getPlannerThreadExecutor();
+		}
+
+		if (queueProcessorExecutorService == null || queueProcessorExecutorService.isTerminated())
+		{
+			queueProcessorExecutorService = getQueueProcessorThreadExecutor();
+		}
 	}
 
 	private static void shutdownExecutor(@NonNull final ExecutorService executor)
