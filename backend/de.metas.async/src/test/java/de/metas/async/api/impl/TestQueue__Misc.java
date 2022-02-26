@@ -7,7 +7,6 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,8 +42,6 @@ public class TestQueue__Misc
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 	}
 
 	@Test

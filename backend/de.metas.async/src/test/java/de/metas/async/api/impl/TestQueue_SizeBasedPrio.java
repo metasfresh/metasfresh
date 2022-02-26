@@ -31,7 +31,6 @@ import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +38,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Properties;
-import java.util.function.Function;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -67,7 +65,6 @@ public class TestQueue_SizeBasedPrio
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 
 		//
 		// Setup test data

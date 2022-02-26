@@ -7,7 +7,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -30,7 +29,6 @@ public class AsyncBatchBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 		this.ctx = Env.getCtx();
 
 		this.asyncBatchBL = (AsyncBatchBL)Services.get(IAsyncBatchBL.class);

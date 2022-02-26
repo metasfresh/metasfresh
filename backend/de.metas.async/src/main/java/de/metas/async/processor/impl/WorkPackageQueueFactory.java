@@ -35,7 +35,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ import java.util.Properties;
 
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
-	private final QueueProcessorDAO queueProcessorDAO = SpringContextHolder.instance.getBean(QueueProcessorDAO.class);
+	private final QueueProcessorDAO queueProcessorDAO = QueueProcessorDAO.getInstance();
 
 	@Override
 	public IWorkPackageQueue getQueueForPackageProcessing(final I_C_Queue_Processor processor)

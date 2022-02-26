@@ -168,8 +168,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
-
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());

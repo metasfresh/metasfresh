@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.api.impl.QueueProcessorDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
@@ -15,7 +14,6 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +68,6 @@ public class InvoiceCandDAOTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 		invoiceCandDAO = new InvoiceCandDAO();
 	}
 

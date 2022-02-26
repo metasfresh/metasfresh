@@ -31,6 +31,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -38,6 +40,18 @@ import java.util.Optional;
 @Repository
 public class QueueProcessorDAO
 {
+	public static QueueProcessorDAO getInstance()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return new QueueProcessorDAO();
+		}
+		else
+		{
+			return SpringContextHolder.instance.getBean(QueueProcessorDAO.class);
+		}
+	}
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
