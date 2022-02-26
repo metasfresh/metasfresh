@@ -33,11 +33,13 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,6 +72,7 @@ public class TestQueue_InheritPriority
 	{
 		AdempiereTestHelper.get().init();
 		NOPWorkpackageLogsRepository.registerToSpringContext();
+		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 		
 		//
 		// Setup test data
@@ -106,7 +109,8 @@ public class TestQueue_InheritPriority
 	{
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+
+		final I_C_Queue_Processor queueProcessorDef = createProcessor();
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
@@ -127,21 +131,28 @@ public class TestQueue_InheritPriority
 
 		InterfaceWrapperHelper.save(wp1);
 
-		final Helper helper = new Helper();
-		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
-
-		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
-		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
-
 		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
 
 		final IQueueProcessor processor = queueProcessorFactory.createSynchronousQueueProcessor(queueForPackageProcessing);
-		processor.run();
-		processor.shutdown();
+
+		SynchronousProcessorPlanner.executeNow(processor);
 
 		// expecting CountProcessed = two, because when we enqueue the 2nd WP in TestQueue_InheritPriority_WorkPackageProcessor (in order to verify it's prio),
 		// the second WP will also be processed
 		assertThat(processor.getStatisticsSnapshot().getCountProcessed(), is(2L));
 		assertThat(processor.getStatisticsSnapshot().getCountErrors(), is(0L));
+	}
+
+	private I_C_Queue_Processor createProcessor()
+	{
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+		final Helper helper = new Helper();
+
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
+
+		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
+		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
+
+		return queueProcessorDef;
 	}
 }

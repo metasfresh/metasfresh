@@ -29,12 +29,14 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorListener;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.exceptions.UnlockFailedException;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 
 import java.util.List;
 import java.util.Properties;
@@ -49,40 +51,9 @@ import java.util.concurrent.Future;
 public interface IWorkPackageQueue
 {
 	/**
-	 * Timeout: wait forever, until we get next item
-	 */
-	int TIMEOUT_Infinite = 0;
-
-	/**
-	 * Timeout: if we did not get the item first, don't retry at all
-	 */
-	int TIMEOUT_OneTimeOnly = -1;
-
-	/**
 	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
-
-	/**
-	 * Retrieves the oldest work package with the highest priority that is supposed to be handled by the <code>AD_Process</code> with the given adProcessId.
-	 * <p>
-	 * In addition, locks the work package so that other calling processes won't see it when selecting the next package using this method.
-	 *
-	 * Notes:
-	 * <ul>
-	 * <li>in order to process the returned package, it's recommended to use {@link #processLockedPackage(I_C_Queue_WorkPackage, IWorkpackageProcessor)}</li>
-	 * <li>the returned package's <code>ctx</code> contains the <code>#AD_Client_ID</code>, <code>#AD_Org_ID</code> and <code>#AD_User_ID</code> of the package's AD_Client_ID, AD_Org_ID and CreatedBy
-	 * respectively</li>
-	 * <li>if a package has previously been skipped then it won't be returned before the timeout of {@link #DEFAULT_RETRY_TIMEOUT_MILLIS} milliseconds has passed</li>
-	 * <li>the context which is incorporated in returned package (i.e. InterfaceWrapperHelper.getCtx(workpackage)) is not the same as the context given as argument. That context is modified in order
-	 * to have the right AD_Client_ID, AD_Org_ID and AD_User_ID.
-	 * </ul>
-	 *
-	 * @param timeoutMillis if there is no workpackage available and timeoutMillis > 0 this method will try to poll for given timeout until it will return null (nothing found)
-	 * @return {@link I_C_Queue_WorkPackage} or <code>null</code> if there either is no package or the calling process is too slow (compared with other concurrent processes also looking for work with
-	 *         the same adProcessId) to select and then lock an available package after *many* tries.
-	 */
-	I_C_Queue_WorkPackage pollAndLock(long timeoutMillis);
 
 	/**
 	 * Unlocks given package
@@ -117,10 +88,6 @@ public interface IWorkPackageQueue
 	 * However, changes make in the queue shall reflect in the returned instance.
 	 */
 	Properties getCtx();
-
-	String getPriorityFrom();
-
-	int getSkipRetryTimeoutMillis();
 
 	/**
 	 * Adds a work package to the respective queue.
@@ -208,4 +175,12 @@ public interface IWorkPackageQueue
 	IWorkPackageBuilder newWorkPackage();
 
 	IWorkPackageBuilder newWorkPackage(Properties ctx);
+
+	IQuery<I_C_Queue_WorkPackage> createQuery(Properties workPackageCtx, Integer limit);
+
+	void setupWorkPackageContext(Properties workPackageCtx,I_C_Queue_WorkPackage workPackage);
+
+	List<QueuePackageProcessorId> getQueuePackageProcessorIds();
+
+	QueueProcessorId getQueueProcessorId();
 }

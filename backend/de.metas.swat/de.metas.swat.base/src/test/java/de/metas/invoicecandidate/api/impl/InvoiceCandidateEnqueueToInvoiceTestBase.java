@@ -7,6 +7,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -167,7 +168,8 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 				.getQueueForEnqueuing(ctx, workpackageProcessorClass);
 		final IQueueProcessor workpackagesQueueProcessor = Services.get(IQueueProcessorFactory.class)
 				.createSynchronousQueueProcessor(workpackagesQueue);
-		workpackagesQueueProcessor.run();
+
+		SynchronousProcessorPlanner.executeNow(workpackagesQueueProcessor);
 
 		//
 		// Make sure all of them are processed

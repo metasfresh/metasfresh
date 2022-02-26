@@ -31,6 +31,7 @@ import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -66,6 +67,7 @@ public class TestQueue_SizeBasedPrio
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new QueueProcessorDAO());
 
 		//
 		// Setup test data
@@ -73,28 +75,23 @@ public class TestQueue_SizeBasedPrio
 
 		((SizeBasedWorkpackagePrio)SizeBasedWorkpackagePrio.INSTANCE)
 				.setAlternativeSize2constantPrio(
-				new Function<Integer, ConstantWorkpackagePrio>()
-				{
-					@Override
-					public ConstantWorkpackagePrio apply(final Integer input)
-					{
-						switch (input)
-						{
-							case 0:
-								return ConstantWorkpackagePrio.urgent();
-							case 1:
-								return ConstantWorkpackagePrio.high();
-							case 2:
-								return ConstantWorkpackagePrio.medium();
-							case 3:
-								return ConstantWorkpackagePrio.low();
-							case 4:
-								return ConstantWorkpackagePrio.minor();
-							default:
-								throw new AdempiereException("input=" + input + " shall not happen in this test");
-						}
-					}
-				});
+						input -> {
+							switch (input)
+							{
+								case 0:
+									return ConstantWorkpackagePrio.urgent();
+								case 1:
+									return ConstantWorkpackagePrio.high();
+								case 2:
+									return ConstantWorkpackagePrio.medium();
+								case 3:
+									return ConstantWorkpackagePrio.low();
+								case 4:
+									return ConstantWorkpackagePrio.minor();
+								default:
+									throw new AdempiereException("input=" + input + " shall not happen in this test");
+							}
+						});
 	}
 
 	@After

@@ -22,12 +22,13 @@ package de.metas.async.api.impl;
  * #L%
  */
 
+import de.metas.async.api.IWorkPackageQuery;
+import de.metas.util.Check;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import de.metas.async.api.IWorkPackageQuery;
-import de.metas.util.Check;
 
 public class WorkPackageQuery implements IWorkPackageQuery
 {
@@ -37,6 +38,10 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	private long skippedTimeoutMillis = 0;
 	private List<Integer> packageProcessorIds;
 	private String priorityFrom;
+
+	@Getter
+	@Setter
+	private Integer limit;
 
 	/*
 	 * (non-Javadoc)
@@ -52,7 +57,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param processed the processed to set
 	 */
-	public WorkPackageQuery setProcessed(Boolean processed)
+	public WorkPackageQuery setProcessed(final Boolean processed)
 	{
 		this.processed = processed;
 		return this;
@@ -72,7 +77,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param readyForProcessing the readyForProcessing to set
 	 */
-	public WorkPackageQuery setReadyForProcessing(Boolean readyForProcessing)
+	public WorkPackageQuery setReadyForProcessing(final Boolean readyForProcessing)
 	{
 		this.readyForProcessing = readyForProcessing;
 		return this;
@@ -92,7 +97,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param error the error to set
 	 */
-	public void setError(Boolean error)
+	public void setError(final Boolean error)
 	{
 		this.error = error;
 	}
@@ -111,7 +116,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param skippedTimeoutMillis the skippedTimeoutMillis to set
 	 */
-	public void setSkippedTimeoutMillis(long skippedTimeoutMillis)
+	public void setSkippedTimeoutMillis(final long skippedTimeoutMillis)
 	{
 		Check.assume(skippedTimeoutMillis >= 0, "skippedTimeoutMillis >= 0");
 		this.skippedTimeoutMillis = skippedTimeoutMillis;
@@ -131,7 +136,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param packageProcessorIds the packageProcessorIds to set
 	 */
-	public void setPackageProcessorIds(List<Integer> packageProcessorIds)
+	public void setPackageProcessorIds(final List<Integer> packageProcessorIds)
 	{
 		if (packageProcessorIds == null)
 		{
@@ -139,7 +144,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 		}
 		else
 		{
-			this.packageProcessorIds = new ArrayList<Integer>(packageProcessorIds);
+			this.packageProcessorIds = new ArrayList<>(packageProcessorIds);
 		}
 	}
 
@@ -157,7 +162,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param priorityFrom the priorityFrom to set
 	 */
-	public void setPriorityFrom(String priorityFrom)
+	public void setPriorityFrom(final String priorityFrom)
 	{
 		this.priorityFrom = priorityFrom;
 	}

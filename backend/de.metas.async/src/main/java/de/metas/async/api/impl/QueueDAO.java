@@ -31,6 +31,8 @@ import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -128,6 +130,7 @@ public class QueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
+	@NonNull
 	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
 	{
 		final int adTableId = element.getAD_Table_ID();
@@ -219,6 +222,7 @@ public class QueueDAO extends AbstractQueueDAO
 		return new TypedSqlQuery<>(ctx, I_C_Queue_WorkPackage.class, wc.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOnlyActiveRecords(true)
+				.setLimit(QueryLimit.ofNullableOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator.getSql());
 
 	}

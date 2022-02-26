@@ -185,7 +185,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	 *
 	 * @return true if we shall create {@link I_C_Queue_PackageProcessor} record for a given classname.
 	 */
-	private boolean isAutocreateWorkpackageProcessorRecordForClassname()
+	public boolean isAutocreateWorkpackageProcessorRecordForClassname()
 	{
 		if (Adempiere.isUnitTestMode())
 		{

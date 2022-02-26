@@ -36,6 +36,7 @@ import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +47,7 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -62,6 +64,7 @@ public class Helper
 {
 	private final Logger logger = LogManager.getLogger(getClass());
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private Properties ctx;
 
 	public Helper()
@@ -90,7 +93,15 @@ public class Helper
 	public I_C_Queue_Processor createQueueProcessor(
 			final String name, final int poolSize, final int keepAliveTimeMillis)
 	{
-		final I_C_Queue_Processor queueProcessorDef = InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor.class, ITrx.TRXNAME_None);
+		final Optional<I_C_Queue_Processor> existingProcessor = queryBL.createQueryBuilder(I_C_Queue_Processor.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_Processor.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional(I_C_Queue_Processor.class);
+
+		final I_C_Queue_Processor queueProcessorDef = existingProcessor
+				.orElseGet(() -> InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor.class, ITrx.TRXNAME_None));
+
 		queueProcessorDef.setName(name);
 		queueProcessorDef.setPoolSize(poolSize);
 		queueProcessorDef.setKeepAliveTimeMillis(keepAliveTimeMillis);
@@ -127,6 +138,18 @@ public class Helper
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueProcessorDef);
 		final String trxName = InterfaceWrapperHelper.getTrxName(queueProcessorDef);
+
+		final Optional<I_C_Queue_Processor_Assign> existingAssignment = queryBL.createQueryBuilder(I_C_Queue_Processor_Assign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessorDef.getC_Queue_PackageProcessor_ID())
+				.addEqualsFilter(I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_Processor_ID, queueProcessorDef.getC_Queue_Processor_ID())
+				.create()
+				.firstOnlyOptional(I_C_Queue_Processor_Assign.class);
+
+		if (existingAssignment.isPresent())
+		{
+			return;
+		}
 
 		final I_C_Queue_Processor_Assign assignment = InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor_Assign.class, trxName);
 		assignment.setC_Queue_Processor(queueProcessorDef);

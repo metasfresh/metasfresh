@@ -31,31 +31,34 @@ public interface IWorkPackageQuery
 	/**
 	 * @return the processed
 	 */
-	public abstract Boolean getProcessed();
+	Boolean getProcessed();
 
 	/**
 	 * @return the readyForProcessing
 	 */
-	public abstract Boolean getReadyForProcessing();
+	Boolean getReadyForProcessing();
 
 	/**
 	 * @return the error
 	 */
-	public abstract Boolean getError();
+	Boolean getError();
 
 	/**
 	 * @return the skippedTimeoutMillis
 	 */
-	public abstract long getSkippedTimeoutMillis();
+	long getSkippedTimeoutMillis();
 
 	/**
 	 * @return the packageProcessorIds
 	 */
-	public abstract List<Integer> getPackageProcessorIds();
+	List<Integer> getPackageProcessorIds();
 
 	/**
 	 * @return the priorityFrom
 	 */
-	public abstract String getPriorityFrom();
+	String getPriorityFrom();
 
+	Integer getLimit();
+
+	void setLimit(Integer limit);
 }

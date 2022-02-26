@@ -22,6 +22,7 @@ package de.metas.async.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
@@ -40,10 +41,11 @@ import de.metas.async.processor.IQueueProcessorListener;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.NullQueueProcessorListener;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
-import de.metas.common.util.time.SystemTime;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
@@ -64,13 +66,13 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -81,8 +83,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
-	private final static String SYSCONFIG_POLLINTERVAL = "de.metas.async.PollIntervallMillis";
-
 	private static final transient Logger logger = LogManager.getLogger(WorkPackageQueue.class);
 
 	private final transient IQueueDAO dao;
@@ -92,6 +92,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	private final Properties ctx;
 	private final List<Integer> packageProcessorIds;
+	private final QueueProcessorId queueProcessorId;
 	private final String priorityFrom;
 	private final int skipRetryTimeoutMillis;
 
@@ -114,8 +115,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 
-	private WorkPackageQueue(@NonNull final Properties ctx,
+	private WorkPackageQueue(
+			@NonNull final Properties ctx,
 			@NonNull final List<Integer> packageProcessorIds,
+			@NonNull final QueueProcessorId queueProcessorId,
 			final String enquingPackageProcessorInternalName,
 			final String priorityFrom,
 			final boolean forEnqueing)
@@ -127,6 +130,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		this.ctx = ctx;
 		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<>(packageProcessorIds));
+		this.queueProcessorId = queueProcessorId;
 		this.priorityFrom = priorityFrom;
 		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
@@ -142,23 +146,29 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 	}
 
-	public static WorkPackageQueue createForEnqueuing(final Properties ctx,
+	public static WorkPackageQueue createForEnqueuing(
+			@NonNull final Properties ctx,
 			final int packageProcessorId,
+			@NonNull final QueueProcessorId queueProcessorId,
 			final String enquingPackageProcessorInternalName)
 	{
 		return new WorkPackageQueue(ctx,
-				Collections.singletonList(packageProcessorId),
-				enquingPackageProcessorInternalName,
-				null,
-				true);
+									Collections.singletonList(packageProcessorId),
+									queueProcessorId,
+									enquingPackageProcessorInternalName,
+									null,
+									true);
 	}
 
-	public static WorkPackageQueue createForQueueProcessing(final Properties ctx,
-			final List<Integer> packageProcessorIds,
+	public static WorkPackageQueue createForQueueProcessing(
+			@NonNull final Properties ctx,
+			@NonNull final List<Integer> packageProcessorIds,
+			@NonNull final QueueProcessorId queueProcessorId,
 			final String priorityFrom)
 	{
 		return new WorkPackageQueue(ctx,
 				packageProcessorIds,
+				queueProcessorId,
 				null, // enquingPackageProcessorInternalName
 				priorityFrom,
 				false);
@@ -176,110 +186,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	/**
-	 * @return the priorityFrom
-	 */
-	@Override
-	public String getPriorityFrom()
-	{
-		return priorityFrom;
-	}
-
-	/**
-	 * @return the retryTimeoutMillis
-	 */
-	@Override
-	public int getSkipRetryTimeoutMillis()
-	{
-		return skipRetryTimeoutMillis;
-	}
-
-	@Override
-	public I_C_Queue_WorkPackage pollAndLock(final long timeoutMillis)
-	{
-		logger.debug("Going to obtain mainLock");
-		mainLock.lock();
-		logger.debug("Obtained mainLock");
-		try
-		{
-			return pollAndLock0(timeoutMillis);
-		}
-		finally
-		{
-			mainLock.unlock();
-		}
-	}
-
-	private I_C_Queue_WorkPackage pollAndLock0(final long timeoutMillis)
-	{
-		final Properties workPackageCtx = Env.newTemporaryCtx();
-
-		final IQuery<I_C_Queue_WorkPackage> query = createQuery(workPackageCtx);
-
-		final long startTS = de.metas.common.util.time.SystemTime.millis();
-		I_C_Queue_WorkPackage workPackage = retrieveAndLock(query);
-		if (timeoutMillis == TIMEOUT_OneTimeOnly && workPackage == null)
-		{
-			// We are running in one time only mode (synchronous mode) and we did not get the package from the first time
-			// No point to go further
-			return null;
-		}
-
-		while (workPackage == null)
-		{
-			// If we have a timeout specified, make sure we are not waiting more then that timeout
-			if (timeoutMillis != TIMEOUT_Infinite)
-			{
-				Check.assume(timeoutMillis > 0, "timeoutMillis > 0");
-
-				final long elapsedMillis = SystemTime.millis() - startTS;
-				if (elapsedMillis >= timeoutMillis)
-				{
-					logger.debug("Poll waiting time exceeded. Returning null");
-					return null;
-				}
-			}
-
-			// No workpackages were found. Sleep 1sec and then try again
-			try
-			{
-				// note: we always get the new service, because things might have changed since this method started
-				final int pollIntervalMs = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_POLLINTERVAL, 1000);
-				Thread.sleep(pollIntervalMs);
-			}
-			catch (final InterruptedException e)
-			{
-				logger.debug("Got interrupted signal. Returning null", e);
-				return null;
-			}
-
-			// Try fetching the workpackage again
-			logger.debug("Retry retrieving next workpackage");
-			workPackage = retrieveAndLock(query);
-		}
-
-		Check.assumeNotNull(workPackage, "workPackage not null");
-
-		// Successfully acquired our lock :-)
-
-		// now we have all the time in the world to add our AD_PInstance_ID
-		// to 'workPackage'. Note that this is not for locking, but to document which AD_PInstance actually did
-		// the processing
-		// workPackage.setAD_PInstance_ID(adPInstanceId);
-		// saveInLocalTrx(workPackage);
-
-		//
-		// Update context from work package
-		// NOTE: this will be the context that work package processors will use on processing
-		setupWorkpackageContext(workPackageCtx, workPackage);
-		return workPackage;
-	}
-
-	/**
 	 * Update context from work package (AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID etc).
 	 *
 	 * NOTE: this will be the context that work package processors will use on processing
 	 */
-	private void setupWorkpackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
+	public void setupWorkPackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
 	{
 		//
 		// AD_Client_ID/AD_Org_ID
@@ -328,22 +239,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 		// Session: N/A
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Session_ID, Env.CTXVALUE_AD_SESSION_ID_NONE);
-	}
-
-	private I_C_Queue_WorkPackage retrieveAndLock(final IQuery<I_C_Queue_WorkPackage> query)
-	{
-		I_C_Queue_WorkPackage workPackage = Services.get(ILockManager.class).retrieveAndLock(query, I_C_Queue_WorkPackage.class);
-		if (workPackage != null && !isValid(workPackage))
-		{
-			final I_C_Queue_WorkPackage workpackageToUnlock = workPackage;
-			unlockNoFail(workpackageToUnlock);
-			workPackage = null;
-
-			final String threadName = Thread.currentThread().getName();
-			logger.warn("Aquired {} on thread {} but is not valid. Unlocking and returning null.", workpackageToUnlock, threadName);
-
-		}
-		return workPackage;
 	}
 
 	@Override
@@ -614,11 +509,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterCommit(innerTrx));
+				.registerHandlingMethod(workpackageTrxListener::afterCommit);
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterRollback(innerTrx));
+				.registerHandlingMethod(workpackageTrxListener::afterRollback);
 
 		return callback.getFutureResult();
 	}
@@ -671,7 +566,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 					return;
 				}
 
-				final AdempiereException error = new AdempiereException("Transaction '" + trx != null ? trx.getTrxName() : "<null>" + "' was rollback");
+				final AdempiereException error = new AdempiereException("Transaction '" + (trx != null ? trx.getTrxName() : "<null>") + "' was rollback");
 				callback.cancelWithError(error);
 				hit = true;
 			}
@@ -688,8 +583,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		final SyncQueueProcessorListener callback = new SyncQueueProcessorListener();
 		markReadyForProcessing(workPackage, callback);
 
-		final Future<IWorkpackageProcessorExecutionResult> futureResult = callback.getFutureResult();
-		return futureResult;
+		return callback.getFutureResult();
 	}
 
 	@Override
@@ -737,12 +631,14 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 	}
 
-	private IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx)
+	@NonNull
+	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx, @Nullable final Integer limit)
 	{
 		//
 		// Filter out processors which were temporary blacklisted
 		final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 		final List<Integer> availablePackageProcessorIds = new ArrayList<>(packageProcessorIds);
+
 		for (final Iterator<Integer> it = availablePackageProcessorIds.iterator(); it.hasNext();)
 		{
 			final int packageProcessorId = it.next();
@@ -759,26 +655,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackageQuery.setSkippedTimeoutMillis(skipRetryTimeoutMillis);
 		workPackageQuery.setPackageProcessorIds(availablePackageProcessorIds);
 		workPackageQuery.setPriorityFrom(priorityFrom);
+		workPackageQuery.setLimit(limit);
 
 		return dao.createQuery(workPackageCtx, workPackageQuery);
-	}
-
-	private boolean isValid(final I_C_Queue_WorkPackage workPackage)
-	{
-		if (workPackage == null)
-		{
-			return false;
-		}
-		if (workPackage.isProcessed())
-		{
-			return false;
-		}
-		if (workPackage.isError())
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
@@ -790,6 +669,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// set also in thread
 		contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
 		return this;
+	}
+
+	@NonNull
+	private IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx)
+	{
+		return createQuery(workPackageCtx, null);
 	}
 
 	private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
@@ -854,5 +739,20 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 
 		return new WorkPackageBuilder(context, this, enquingPackageProcessorId);
+	}
+
+	@NonNull
+	public List<QueuePackageProcessorId> getQueuePackageProcessorIds()
+	{
+		return packageProcessorIds
+				.stream()
+				.map(QueuePackageProcessorId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public QueueProcessorId getQueueProcessorId()
+	{
+		return queueProcessorId;
 	}
 }

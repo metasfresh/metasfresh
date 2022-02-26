@@ -32,6 +32,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -127,6 +128,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
+	@NonNull
 	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
 	{
 		final int tableId = element.getAD_Table_ID();
