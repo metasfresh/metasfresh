@@ -269,8 +269,8 @@ Feature: Shipment schedule export rest-api
   """
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference |
-      | order_1    | true    | customer_so_25_02        | 2022-02-02  | shipBPLocation                        | shipUser                  | so_POReference  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference      |
+      | order_1    | true    | customer_so_25_02        | 2022-02-02  | shipBPLocation                        | shipUser                  | so_POReference_25_02 |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_1 | order_1               | product_25_02           | 1          | olASI                                    |
@@ -291,12 +291,12 @@ Feature: Shipment schedule export rest-api
     When the metasfresh REST-API endpoint path 'api/v2/shipments/shipmentCandidates' receives a 'GET' request
 
     Then validate JsonResponseShipmentCandidates
-      | M_ShipmentSchedule_ExportAudit_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product.Identifier | OPT.QtyOrdered | OPT.X12DE355 | OPT.OrderedQtyNetPrice | OPT.QtyToDeliverNetPrice | OPT.DeliveredQtyNetPrice | OPT.M_AttributeSetInstance_ID.Identifier | OPT.NrOfOLCandsWithSamePOReference | OPT.POReference |
-      | schedule_export_1                            | schedule_1                       | product_25_02        | 1              | PCE          | 10.0                   | 0.0                      | 0.0                      | olASI                                    | 0                                  | so_POReference  |
+      | M_ShipmentSchedule_ExportAudit_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product.Identifier | OPT.QtyOrdered | OPT.X12DE355 | OPT.OrderedQtyNetPrice | OPT.QtyToDeliverNetPrice | OPT.DeliveredQtyNetPrice | OPT.M_AttributeSetInstance_ID.Identifier | OPT.NrOfOLCandsWithSamePOReference | OPT.POReference      |
+      | schedule_export_1                            | schedule_1                       | product_25_02        | 1              | PCE          | 10.0                   | 0.0                      | 0.0                      | olASI                                    | 0                                  | so_POReference_25_02 |
     And validate JsonResponseShipmentCandidates.JsonCustomer
       | qualifier    | companyName | contactName | contactEmail      | contactPhone | street    | streetNo | postal | city     | countryCode | language | company |
       | shipBPartner | shipBPName  | null        | null              | null         | addr ship | 10       | 123    | shipCity | DE          | de_DE    | true    |
-      | billBPartner | billBPName  | billBPName  | bill@location.com | 654          | addr bill | 11       | 456    | billCity | DE          | de_DE    | true    |
+      | billBPartner | shipBPName  | shipBPName  | ship@location.com | 321          | addr ship | 10       | 123    | shipCity | DE          | de_DE    | true    |
 
     And validate M_ShipmentSchedule_ExportAudit:
       | M_ShipmentSchedule_ExportAudit_ID.Identifier | ExportStatus |

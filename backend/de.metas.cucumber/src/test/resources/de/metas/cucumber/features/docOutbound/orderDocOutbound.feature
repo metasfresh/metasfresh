@@ -5,7 +5,8 @@ Feature: Validate order doc outbound log creation
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And enable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
+    And disable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
+    And enable sys config 'MOCK_CUCUMBER_REPORT'
 
     And metasfresh contains M_Products:
       | Identifier        | Name              |

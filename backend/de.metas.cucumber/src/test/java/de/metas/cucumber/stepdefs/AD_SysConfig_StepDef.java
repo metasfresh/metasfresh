@@ -42,6 +42,12 @@ public class AD_SysConfig_StepDef
 		setSysConfigBoolValue(sysConfigName, true);
 	}
 
+	@And("disable sys config {string}")
+	public void disable_sys_config(@NonNull final String sysConfigName)
+	{
+		setSysConfigBoolValue(sysConfigName, false);
+	}
+
 	@And("update AD_SysConfig int value")
 	public void set_sysConfig_int_value(@NonNull final DataTable dataTable)
 	{
