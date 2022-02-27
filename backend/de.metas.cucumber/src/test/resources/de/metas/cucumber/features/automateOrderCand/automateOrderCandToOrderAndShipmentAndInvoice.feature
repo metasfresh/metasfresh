@@ -80,6 +80,61 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @from:cucumber
   @topic:orderCandidate
+  Scenario: Order candidate to shipment and invoice flow and closed order, qtyShipeed=0!
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
+  """
+{
+    "orgCode": "001",
+    "externalLineId": "1555",
+    "externalHeaderId": "1444",
+    "dataSource": "int-Shopware",
+    "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175",
+        "contactIdentifier": "2188224"
+    },
+    "dateRequired": "2021-08-20",
+    "dateOrdered": "2021-07-20",
+    "orderDocType": "SalesOrder",
+    "paymentTerm": "val-1000002",
+    "productIdentifier": 2005577,
+    "qty": 10,
+    "price": 5,
+    "currencyCode": "EUR",
+    "discount": 0,
+    "poReference": "po_ref_mock",
+    "deliveryViaRule": "S",
+    "QtyShipped": 0
+}
+"""
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "1444",
+    "inputDataSourceName": "int-Shopware",
+    "ship": true,
+    "invoice": true,
+    "closeOrder": false
+}
+"""
+
+    Then process metasfresh response
+      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
+      | order_1          |                     |                    |
+    # We expect just an order and no shipment and no invoice. Thus the empty identifiers
+
+    And validate created order
+      | Order.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1          | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
+
+    And validate the created order lines
+      | Order.Identifier | dateordered | productIdentifier.m_product_id | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | order_1          | 2021-07-20  | 2005577                        | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+    # We didn't close the order, so we expect QtyOrdered=10
+    
+  @from:cucumber
+  @topic:orderCandidate
   Scenario: Order candidate to shipment in first step and then invoice with close order
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
