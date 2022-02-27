@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -83,6 +84,12 @@ public class AD_SysConfig_StepDef
 
 			setSysConfigIntValue(name, value);
 		}
+	}
+
+	@And("reset all cache")
+	public void reset_cache()
+	{
+		CacheMgt.get().reset();
 	}
 
 	private void setSysConfigIntValue(@NonNull final String name, final int value)

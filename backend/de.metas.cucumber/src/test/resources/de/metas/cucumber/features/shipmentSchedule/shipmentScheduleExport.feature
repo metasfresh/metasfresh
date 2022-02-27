@@ -62,6 +62,8 @@ Feature: Shipment schedule export rest-api
       | Name                                              | AD_User_ID.Identifier |
       | de.metas.rest_api.v2.shipping.c_olcand.OxidUserId | loginUser             |
 
+    And reset all cache
+
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {
@@ -157,6 +159,8 @@ Feature: Shipment schedule export rest-api
       | Name                                              | Value |
       | de.metas.rest_api.v2.shipping.c_olcand.OxidUserId | -1    |
 
+    And reset all cache
+
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {
@@ -185,8 +189,7 @@ Feature: Shipment schedule export rest-api
     "poReference": "olCand_ref_96411",
     "deliveryViaRule": "S",
     "deliveryRule": "F",
-    "shipper": "ext-Shopware6-shipperTest_reference",
-    "bpartnerName": "testCandBPartnerName"
+    "shipper": "ext-Shopware6-shipperTest_reference"
 }
 """
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -228,9 +231,9 @@ Feature: Shipment schedule export rest-api
       | schedule_export_1                            | schedule_1                       | product_25_02        | olCand_ref_96411 | 1              | PCE          | shipper_test             | 10.0                   | 10.0                     | 0.0                      | 1                                  |
 
     And validate JsonResponseShipmentCandidates.JsonCustomer
-      | qualifier    | companyName | contactName          | contactEmail      | contactPhone | street    | streetNo | postal | city     | countryCode | language | company |
-      | shipBPartner | shipBPName  | testCandBPartnerName | ship@location.com | 321          | addr ship | 10       | 123    | shipCity | DE          | de_DE    | true    |
-      | billBPartner | billBPName  | billBPName           | bill@location.com | 654          | addr bill | 11       | 456    | billCity | DE          | de_DE    | true    |
+      | qualifier    | companyName | contactName | contactEmail      | contactPhone | street    | streetNo | postal | city     | countryCode | language | company |
+      | shipBPartner | shipBPName  | shipBPName  | ship@location.com | 321          | addr ship | 10       | 123    | shipCity | DE          | de_DE    | true    |
+      | billBPartner | billBPName  | billBPName  | bill@location.com | 654          | addr bill | 11       | 456    | billCity | DE          | de_DE    | true    |
 
     And validate M_ShipmentSchedule_ExportAudit:
       | M_ShipmentSchedule_ExportAudit_ID.Identifier | ExportStatus |
