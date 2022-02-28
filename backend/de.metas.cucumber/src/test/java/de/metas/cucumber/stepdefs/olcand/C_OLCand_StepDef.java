@@ -61,6 +61,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
+	public static final JsonCreateShipmentResponse EMPTY_SHIPMENT_RESPONSE = JsonCreateShipmentResponse.builder().createdShipmentIds(ImmutableList.of()).build();
+
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -115,7 +118,11 @@ public class C_OLCand_StepDef
 
 		if (shipmentIdentifier == null)
 		{
-			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(null);
+			// we expect that there are no infos about any generated shipments
+			if (compositeResponse.getShipmentResponse() != null)
+			{
+				assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
+			}
 		}
 		else
 		{
@@ -123,8 +130,12 @@ public class C_OLCand_StepDef
 		}
 
 		if (invoiceIdentifier == null)
-		{
-			assertThat(compositeResponse.getInvoiceInfoResponse()).isEqualTo(null);
+		{ 
+			// we expect that there are no infos about any generated invoice
+			if (compositeResponse.getInvoiceInfoResponse() != null)
+			{
+				assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
+			}
 		}
 		else
 		{
