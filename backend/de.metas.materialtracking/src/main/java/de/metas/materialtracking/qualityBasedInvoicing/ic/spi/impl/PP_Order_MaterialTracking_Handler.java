@@ -78,7 +78,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 		return true;
 	}
 
-	private final PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
+	private PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
 	{
 		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer()
 				.setC_ILCandHandler(getHandlerRecord())

@@ -297,14 +297,20 @@ public class OrderCandidateRestControllerService
 		if (request.getInvoice())
 		{
 			final List<I_M_InOutLine> shipmentLines = shipmentDAO.retrieveShipmentLinesForOrderId(orderIds);
+			if (!shipmentLines.isEmpty())
+			{
+				final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
-			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
+				final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
+						.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+						.collect(ImmutableList.toImmutableList());
 
-			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
-					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
-					.collect(ImmutableList.toImmutableList());
-
-			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
+				responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
+			}
+			else
+			{ 	// no shipments to invoice were created
+				responseBuilder.invoiceInfoResponse(ImmutableList.of());
+			}
 		}
 
 		asyncBatchBL.updateProcessedFromMilestones(asyncBatchId);
