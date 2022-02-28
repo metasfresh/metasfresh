@@ -57,7 +57,11 @@ restart minikube with [install.sh](install.sh) script
 ## dev section
 ### debug
 port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/#forward-a-local-port-to-a-port-on-the-pod  
-
+for example:
+```
+# kubectl port-forward -n <namespace> service/metasfresh-<namespace>-app 8788:8788
+kubectl port-forward -n dev service/metasfresh-dev-app 8788:8788
+```
 ### minikube
 dashbord of the kubernetes cluster
 ```
