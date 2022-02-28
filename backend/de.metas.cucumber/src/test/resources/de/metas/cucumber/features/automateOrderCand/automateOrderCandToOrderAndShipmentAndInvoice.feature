@@ -85,8 +85,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   """
 {
     "orgCode": "001",
-    "externalLineId": "1555",
-    "externalHeaderId": "1444",
+    "externalLineId": "1555_zeroQtyShipped",
+    "externalHeaderId": "1444_zeroQtyShipped",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "2156425",
@@ -111,7 +111,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "1444",
+    "externalHeaderId": "1444_zeroQtyShipped",
     "inputDataSourceName": "int-Shopware",
     "ship": true,
     "invoice": true,
@@ -125,8 +125,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     # We expect just an order and no shipment and no invoice. Thus the empty identifiers
 
     And validate created order
-      | Order.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
+      | Order.Identifier | externalId          | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1          | 1444_zeroQtyShipped | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
       | Order.Identifier | dateordered | productIdentifier.m_product_id | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |

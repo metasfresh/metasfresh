@@ -82,6 +82,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -296,7 +297,10 @@ public class InvoiceService
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
 
-		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+		for (Map.Entry<AsyncBatchId, List<InvoiceCandidateId>> entry : asyncBatchId2InvoiceCandIds.entrySet())
+		{
+			generateInvoicesForAsyncBatch(ImmutableSet.copyOf(entry.getValue()), entry.getKey());
+		}
 	}
 
 	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
