@@ -18,3 +18,19 @@ INSERT INTO C_PricingRule (AD_Client_ID,AD_Org_ID,C_PricingRule_ID,Classname,Cre
 UPDATE C_PricingRule SET EntityType='D',Updated=TO_TIMESTAMP('2022-02-28 01:10:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_PricingRule_ID=540017
 ;
 
+
+-- 2022-02-27T20:48:46.378Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type_Conditions/''Refund''@!''Refund'' & @Type_Conditions/''Commission''@!''Commission'' & @Type_Conditions/''MediatedCommission''@!''MediatedCommission'' & @Type_Conditions/''MarginCommission''@!''MarginCommission''',Updated=TO_TIMESTAMP('2022-02-27 22:48:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563597
+;
+
+-- 2022-02-27T23:03:10.636Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsInsertRecord='N', IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-02-28 01:03:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=545427
+;
+
+-- 2022-02-27T23:03:53.638Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2022-02-28 01:03:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=548141
+;
+

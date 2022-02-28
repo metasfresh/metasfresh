@@ -59,11 +59,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET ColumnSQL='(select DocSubType from c_doctype where c_doctype_id = C_Order.c_doctype_id )',Updated=TO_TIMESTAMP('2022-02-22 15:13:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579337
 ;
 
--- 2022-02-22T07:29:34.496Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET MandatoryLogic='@DocSubType@=''CAO''',Updated=TO_TIMESTAMP('2022-02-22 09:29:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579333
-;
-
 -- 2022-02-22T07:29:42.040Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_orderline','C_Flatrate_Term_ID','NUMERIC(10)',null,null)
