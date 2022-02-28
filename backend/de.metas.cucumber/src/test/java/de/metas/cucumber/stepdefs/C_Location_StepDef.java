@@ -22,13 +22,13 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 
 import java.util.Map;
@@ -54,21 +54,21 @@ public class C_Location_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String address1 = DataTableUtil.extractStringForColumnName(row, I_C_Location.COLUMNNAME_Address1);
-			final String postalCode = DataTableUtil.extractStringForColumnName(row, I_C_Location.COLUMNNAME_Postal);
-			final String city = DataTableUtil.extractStringForColumnName(row, I_C_Location.COLUMNNAME_City);
-			final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Location.COLUMNNAME_IsActive, true);
-
-			final I_C_Location location = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_C_Location.class)
-							.addEqualsFilter(I_C_Location.COLUMNNAME_Address1, address1)
-							.addEqualsFilter(I_C_Location.COLUMNNAME_Postal, postalCode)
-							.addEqualsFilter(I_C_Location.COLUMNNAME_City, city)
-							.create()
-							.firstOnlyOrNull(I_C_Location.class),
-					() -> newInstanceOutOfTrx(I_C_Location.class));
-
+			final I_C_Location location = newInstanceOutOfTrx(I_C_Location.class);
 			assertThat(location).isNotNull();
+
+			final String countryCode = DataTableUtil.extractStringForColumnName(row, I_C_Country.COLUMNNAME_CountryCode);
+			final I_C_Country country = queryBL.createQueryBuilder(I_C_Country.class)
+					.addEqualsFilter(I_C_Country.COLUMNNAME_CountryCode, countryCode)
+					.create()
+					.firstOnlyNotNull(I_C_Country.class);
+
+			location.setC_Country_ID(country.getC_Country_ID());
+
+			final String address1 = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_Address1);
+			final String postalCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_Postal);
+			final String city = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_City);
+			final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Location.COLUMNNAME_IsActive, true);
 
 			location.setAddress1(address1);
 			location.setPostal(postalCode);

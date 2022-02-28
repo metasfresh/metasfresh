@@ -30,8 +30,8 @@ Feature: Render invoice address
 
   Scenario: Invoice when business partner location doesn't have BPartnerName
     Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | Address1 | Postal | City           |
-      | location_1               | addr 11  | 123    | locationCity_1 |
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | location_1               | DE          | addr 11      | 123        | locationCity_1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.Name         |
       | bpLocation_1 | 1234567891133 | customer_bp_26_02        | location_1                   | true         | true         | locationNameTest |
@@ -103,8 +103,8 @@ Feature: Render invoice address
 
   Scenario: Invoice when business partner location has BPartnerName
     Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | Address1 | Postal | City           |
-      | location_2               | addr 22  | 456    | locationCity_2 |
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | location_2               | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | bpLocation_2 | 1234567891144 | customer_bp_26_02        | location_2                   | true         | true         | locationBPName   | locationName |
@@ -176,8 +176,8 @@ Feature: Render invoice address
 
   Scenario: Invoice when origin order disposition has bpartnerName
     Given metasfresh contains C_Location:
-      | C_Location_ID.Identifier | Address1 | Postal | City           |
-      | location_2               | addr 22  | 456    | locationCity_2 |
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | location_2               | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | bpLocation_2 | 1234567892266 | customer_bp_26_02        | location_2                   | true         | true         | locationBPName   | locationName |

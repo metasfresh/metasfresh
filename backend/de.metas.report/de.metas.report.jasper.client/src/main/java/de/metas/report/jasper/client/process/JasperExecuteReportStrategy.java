@@ -44,7 +44,7 @@ import javax.annotation.Nullable;
 @Component
 public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 {
-	private static final String SYS_Config_MOCK_CUCUMBER_REPORT = "MOCK_CUCUMBER_REPORT";
+	private static final String SYS_CONFIG_MOCK_REPORT_SERVICE = "de.metas.report.jasper.IsMockReportService";
 	private static final String MOCK_CUCUMBER_REPORT_FILENAME = "test_filename.pdf";
 	private static final String MOCK_CUCUMBER_REPORT_DATA = "dGVzdA==";
 
@@ -81,7 +81,7 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 		//dev-note: workaround to mock jasper reports during cucumber tests
-		if (sysConfigBL.getBooleanValue(SYS_Config_MOCK_CUCUMBER_REPORT, false))
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_MOCK_REPORT_SERVICE, false))
 		{
 			return ReportResult.builder()
 					.outputType(outputType)

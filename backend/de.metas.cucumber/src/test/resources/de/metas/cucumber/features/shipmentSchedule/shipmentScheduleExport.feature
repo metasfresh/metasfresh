@@ -36,9 +36,9 @@ Feature: Shipment schedule export rest-api
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.AD_Language |
       | customer_so_25_02 | customer_so_25_02 | ps_1                          | Y              | customer_so_25_02_cmp | de_DE           |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | Address1     | Postal | City     |
-      | shipLocation             | addr ship 10 | 123    | shipCity |
-      | billLocation             | addr bill 11 | 456    | billCity |
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | shipLocation             | DE          | addr ship 10 | 123        | shipCity |
+      | billLocation             | DE          | addr bill 11 | 456        | billCity |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | GLN              | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail         | OPT.BPartnerName | OPT.Phone |
       | shipBPLocation | ship_location123 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
