@@ -118,7 +118,11 @@ public class C_OLCand_StepDef
 
 		if (shipmentIdentifier == null)
 		{
-			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
+			// we expect that there are no infos about any generated shipments
+			if (compositeResponse.getShipmentResponse() != null)
+			{
+				assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
+			}
 		}
 		else
 		{
@@ -126,8 +130,12 @@ public class C_OLCand_StepDef
 		}
 
 		if (invoiceIdentifier == null)
-		{
-			assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
+		{ 
+			// we expect that there are no infos about any generated invoice
+			if (compositeResponse.getInvoiceInfoResponse() != null)
+			{
+				assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
+			}
 		}
 		else
 		{
