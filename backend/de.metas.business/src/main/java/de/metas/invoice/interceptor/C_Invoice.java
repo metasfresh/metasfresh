@@ -21,6 +21,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -31,6 +32,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -168,6 +170,25 @@ public class C_Invoice // 03771
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setPaymentRule(final I_C_Invoice invoice)
+	{
+		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+		final PaymentRule paymentRule;
+		if (bpartner != null)
+		{
+			paymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
+		}
+		else
+		{
+			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		}
+		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })

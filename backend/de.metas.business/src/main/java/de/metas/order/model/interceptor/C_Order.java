@@ -35,6 +35,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -68,6 +69,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -219,6 +221,25 @@ public class C_Order
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setPaymentRule(final I_C_Order order)
+	{
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		final PaymentRule paymentRule;
+		if (bpartner != null)
+		{
+			paymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
+		}
+		else
+		{
+			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		}
+		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
