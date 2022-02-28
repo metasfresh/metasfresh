@@ -25,7 +25,10 @@ package de.metas.contracts.callorder.summary.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.util.Check;
+import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
 
 public class CallOrderSummaryId implements RepoIdAware
 {
@@ -37,9 +40,15 @@ public class CallOrderSummaryId implements RepoIdAware
 		return new CallOrderSummaryId(repoId);
 	}
 
+	@Nullable
+	public static CallOrderSummaryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private CallOrderSummaryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_C_CallOrderSummary.COLUMNNAME_C_CallOrderSummary_ID);
 	}
 
 	@Override
