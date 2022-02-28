@@ -231,13 +231,13 @@ public class C_Order
 	{
 		final I_C_BPartner bpartner = order.getC_BPartner();
 		final PaymentRule paymentRule;
-		if (bpartner != null)
+		if (bpartner != null && bpartner.getPaymentRule() != null)
 		{
 			paymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
 		}
 		else
 		{
-			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+			paymentRule = Services.get(IOrderBL.class).getDefaultPaymentRule();
 		}
 		order.setPaymentRule(paymentRule.getCode());
 	}

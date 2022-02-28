@@ -61,6 +61,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -128,6 +129,8 @@ public class OrderBL implements IOrderBL
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
+
+	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -1188,5 +1191,12 @@ public class OrderBL implements IOrderBL
 		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
+	}
+
+	@Override
+	public PaymentRule getDefaultPaymentRule()
+	{
+		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
+		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 }
