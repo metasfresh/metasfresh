@@ -1,41 +1,5 @@
 package de.metas.contracts.interceptor;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -47,7 +11,6 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.AdMessageKey;
@@ -55,9 +18,23 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -66,6 +43,11 @@ public class C_Order
 	private static final Logger logger = LogManager.getLogger(C_Order.class);
 
 	private static final AdMessageKey MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = AdMessageKey.of("Order_DateOrdered_Change_Forbidden");
+
+	final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+	final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
@@ -99,19 +81,18 @@ public class C_Order
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
-			if (ol.getC_Flatrate_Conditions_ID() <= 0)
+			if (!subscriptionBL.isSubscription(ol))
 			{
 				logger.debug("Order line " + ol + " has no subscription");
 				continue;
 			}
-			handleOrderLineComplete(ol);
+			handleSubscriptionOrderLine(ol);
 		}
 	}
 
-	private void handleOrderLineComplete(final I_C_OrderLine ol)
+	private void handleSubscriptionOrderLine(@NonNull final I_C_OrderLine ol)
 	{
-		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-		if (subscriptionDAO.existsTermForOl(ol))
+		if (flatrateBL.existsTermForOrderLine(ol))
 		{
 			logger.debug("{} is already already referenced by a C_Flatrate_Term record ", ol);
 			return;
@@ -149,7 +130,7 @@ public class C_Order
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void handleReactivate(final I_C_Order order)
 	{
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
@@ -157,7 +138,7 @@ public class C_Order
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
 			{
-				logger.debug("Order line " + ol + " has no subscription");
+				logger.debug("Order line " + ol + " has no contract term assigned");
 				continue;
 			}
 			handleOrderLineReactivate(ol);
@@ -174,7 +155,7 @@ public class C_Order
 	 */
 	private void handleOrderLineReactivate(final I_C_OrderLine ol)
 	{
-		logger.info("Setting processed status of subscription order line " + ol + " back to Processed='Y'");
+		logger.info("Setting order line's processed status " + ol + " back to Processed='Y'" + " as it references a contract term");
 
 		ol.setProcessed(true);
 		InterfaceWrapperHelper.save(ol);
@@ -196,5 +177,17 @@ public class C_Order
 
 		customerRetentionRepo.updateCustomerRetentionOnOrderComplete(orderId);
 
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised)
+	public void updateOrderLineFromContract(final I_C_Order order)
+	{
+		orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(ol -> InterfaceWrapperHelper.create(ol, de.metas.contracts.order.model.I_C_OrderLine.class))
+				.filter(subscriptionBL::isSubscription)
+				.forEach(orderLineBL::updatePrices);
 	}
 }

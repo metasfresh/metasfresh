@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -636,7 +637,8 @@ public interface I_C_DocType
 	String COLUMNNAME_IsDocNoControlled = "IsDocNoControlled";
 
 	/**
-	 * Set Exclude From Commission.
+	 * Set Exclude from commission.
+	 * When activated, no commission instances will be created for the respective document types.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -645,7 +647,8 @@ public interface I_C_DocType
 	void setIsExcludeFromCommision (boolean IsExcludeFromCommision);
 
 	/**
-	 * Get Exclude From Commission.
+	 * Get Exclude from commission.
+	 * When activated, no commission instances will be created for the respective document types.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

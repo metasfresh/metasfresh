@@ -1,26 +1,27 @@
 package de.metas.contracts.flatrate.callout;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 
-import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class OrderLine extends CalloutEngine
 {
 
+	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	/**
 	 * This callout "interposes" the callout {@link CalloutOrder#amt(ICalloutField)}
 	 *
@@ -73,16 +74,15 @@ public class OrderLine extends CalloutEngine
 		}
 
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
-		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
-
-		if (subscriptionId <= 0)
-		{
-			// execute the callout
-			return true;
-		}
 
 		// don't execute the callout
-		return false;
+		if(subscriptionBL.isSubscription(ol))
+		{
+			return false;
+		}
+
+		//execute the callout
+		return true;
 	}
 
 
