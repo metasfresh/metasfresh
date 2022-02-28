@@ -54,8 +54,8 @@ Map build(final MvnConf mvnConf) {
                 echo "DONE populating artifactURLs"
 
                 // create and push kubernetes-helm values.yaml file
-                def valuesFileSrc = 'kubernetes/metasfresh-helm/values.yaml'
-                def valuesFileDes = 'kubernetes/values.yaml'
+                def valuesFileSrc = 'kubernetes/minikube/metasfresh-helm/values.yaml'
+                def valuesFileDes = 'kubernetes/minikube/values.yaml'
                 def valuesData = readYaml file: valuesFileSrc
 
                 valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
@@ -125,7 +125,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 </ul>
 <p>
 <h3>Kubernetes</h3>
-this build's helm <a href="${mvnConf.deployRepoURL}/de/metas/kubernetes/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
+this build's minikube helm <a href="${mvnConf.deployRepoURL}/de/metas/kubernetes/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
 <p>
 <h3>Additional notes</h3>
 <ul>

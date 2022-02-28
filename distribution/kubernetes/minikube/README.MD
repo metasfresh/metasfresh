@@ -55,6 +55,9 @@ restart minikube with [install.sh](install.sh) script
 - tls.crt and tls.key need to be placed in files directory (*.metasfresh.com for wildcard domain)
   
 ## dev section
+### debug
+port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/#forward-a-local-port-to-a-port-on-the-pod  
+
 ### minikube
 dashbord of the kubernetes cluster
 ```
@@ -63,7 +66,8 @@ minikube dashboard
 minikube access
 ```
 minikube ssh
-```
+```  
+
 ### helm
 dry helm run to see generated .yaml (after first install upgrade can be used)
 ```
@@ -71,6 +75,7 @@ helm install <releasename> <dir> --namespace <namespace> --create-namespace --dr
 
 helm install dev metasfresh-helm --namespace dev --create-namespace --dry-run --debug
 ```  
+
 ### kubectl
 show all pods, services, deployments and replicasets
 ```
