@@ -19,13 +19,12 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[ SELECT 
+		<![CDATA[SELECT 
   STRING_AGG(coalesce(at.name, a.name), ', '  ORDER BY at.name DESC) AS allergen
 FROM  m_product_allergen pa
          LEFT JOIN m_allergen a ON a.m_allergen_id = pa.m_allergen_id
          LEFT JOIN m_allergen_trl at ON a.m_allergen_id = at.m_allergen_id and at.ad_language = $P{ad_language}
- WHERE pa.m_product_id = $P{M_Product_ID};
- ]]>
+ WHERE pa.m_product_id = $P{M_Product_ID};]]>
 	</queryString>
 	<field name="allergen" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="allergen"/>
