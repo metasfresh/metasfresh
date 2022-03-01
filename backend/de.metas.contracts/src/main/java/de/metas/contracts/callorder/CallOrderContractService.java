@@ -156,13 +156,12 @@ public class CallOrderContractService
 
 		if (!isCallOrderContract(callOrderContract))
 		{
-			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder, callOrderLine.getLine())
-					.appendParametersToMessage()
+			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, callOrderLine.getLine(), X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder)
 					.markAsUserValidationError();
 		}
 
 		validateProduct(callOrderContract, callOrderLine);
-		validateBillPartner(callOrderContract, callOrder);
+		validateBillPartner(callOrderContract, callOrder, callOrderLine);
 
 		return flatrateTermId;
 	}
@@ -196,13 +195,14 @@ public class CallOrderContractService
 		if (!orderLineProduct.equals(contractProductId))
 		{
 			throw new AdempiereException(MSG_PRODUCTS_DO_NOT_MATCH,
-										 ProductId.toRepoId(contractProductId),
-										 orderLineProduct.getRepoId())
+										 ol.getLine(),
+										 "C_Flatrate_Term.M_Product_ID = " + ProductId.toRepoId(contractProductId) +
+										 "; C_OrderLine.M_Product_ID = " + orderLineProduct.getRepoId())
 					.markAsUserValidationError();
 		}
 	}
 
-	private void validateBillPartner(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_C_Order order)
+	private void validateBillPartner(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine)
 	{
 		final BPartnerId orderBillBPartnerId = orderBL.getBillToLocationId(order).getBpartnerId();
 		final BPartnerId contractBillPartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
@@ -210,8 +210,9 @@ public class CallOrderContractService
 		if (!contractBillPartnerId.equals(orderBillBPartnerId))
 		{
 			throw new AdempiereException(MSG_BPARTNERS_DO_NOT_MATCH,
-										 "C_Flatrate_Term.BPartner_ID = " + contractBillPartnerId.getRepoId(),
-										 "C_Order.Bill_BPartner_ID = " + orderBillBPartnerId.getRepoId())
+										 orderLine.getLine(),
+										 "C_Flatrate_Term.BPartner_ID = " + contractBillPartnerId.getRepoId() +
+										 "; C_Order.Bill_BPartner_ID = " + orderBillBPartnerId.getRepoId())
 					.markAsUserValidationError();
 		}
 	}
