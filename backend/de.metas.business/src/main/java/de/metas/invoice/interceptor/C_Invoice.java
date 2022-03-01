@@ -173,9 +173,8 @@ public class C_Invoice // 03771
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID)
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Invoice invoice)
 	{
 		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
