@@ -179,13 +179,13 @@ public class C_Invoice // 03771
 	{
 		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 		final PaymentRule paymentRule;
-		if (bpartner != null)
+		if (bpartner != null && bpartner.getPaymentRule() != null)
 		{
-			paymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
 		}
 		else
 		{
-			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+			paymentRule = invoiceBL.getDefaultPaymentRule();
 		}
 		invoice.setPaymentRule(paymentRule.getCode());
 	}
