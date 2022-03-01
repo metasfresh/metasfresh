@@ -23,9 +23,11 @@
 package de.metas.common.procurement.sync.util;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UUIDsTest
 {
@@ -46,7 +48,7 @@ public class UUIDsTest
 			UUID uuid = UUIDs.fromId(id);
 			int id2 = UUIDs.toId(uuid);
 			//System.out.println("i=" + id + ", uuid=" + uuid + ", version=" + uuid.version() + " => i=" + id2);
-			Assert.assertEquals("Invalid ID: id1=" + id + ", uuid=" + uuid + ", id2=" + id2, id, id2);
+			assertThat(id2).as("Invalid ID: id1=" + id + ", uuid=" + uuid + ", id2=" + id2).isEqualTo(id);
 		}
 	}
 }

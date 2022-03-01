@@ -22,9 +22,11 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.DesadvSettings;
+import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.desadvexport.AbstractEDIDesadvCommonBean;
@@ -88,11 +90,10 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h000.setTestFlag(testFlag);
 
 		final List<H100> h100Lines = new ArrayList<>();
-		// for (final EDIExpMInOutType xmlInOut : xmlDesadv.getEDIExpMInOut())
-		// {
+
 		final List<H100> partialH100Lines = createH100LinesFromXmlDesadv(xmlDesadv, decimalFormat);
 		h100Lines.addAll(partialH100Lines);
-		// }
+
 		h000.setH100Lines(h100Lines);
 
 		return h000;
@@ -140,8 +141,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h100.setRampeID(voidString);
 		h100.setReferenceCode(voidString);
 
-		h100.setStoreName(Util.normalize(partner.getName()));
-		h100.setStoreNumber(xmlDesadv.getCBPartnerLocationID().getGLN());
+		h100.setStoreName(Util.normalize(extractDropShipLocationName(xmlDesadv)));
+		h100.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 
 		h100.setSupplierNo(voidString);
 		h100.setTransportCode(voidString);
@@ -196,6 +197,24 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		return p050;
 	}
 
+	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
+	{
+		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
+				? xmlDesadv.getDropShipLocationID() : 
+				buyrLocation;
+		return dropShipLocation.getGLN();
+	}
+
+	private String extractDropShipLocationName(@NonNull final EDIExpDesadvType xmlDesadv)
+	{
+		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getName())
+				? xmlDesadv.getDropShipLocationID() :
+				buyrLocation;
+		return dropShipLocation.getName();
+	}
+	
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -276,7 +295,17 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDeliverQTY(formatNumber(
 				pack.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
-		p100.setDeliverUnit(xmlDesadvLine.getCUOMID().getX12DE355());
+		
+		// this is required for the only compudata user that we currently have
+		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
+		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())
+		{
+			p100.setDeliverUnit("PCE");
+		}
+		else
+		{
+			p100.setDeliverUnit(x12DE355);
+		}
 
 		// "12" => Liefermenge
 		// "11" => Teilmenge
@@ -313,7 +342,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p100.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p100.setProductionDate(EDIDesadvBean.voidDate);
-		p100.setStoreNumber(voidString);
+		p100.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 		p100.setSupplierArtNo(voidString);
 
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
@@ -368,7 +397,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setPositionNo(formatNumber(xmlDesadvLine.getLine(), decimalFormat));
 		// p102.setSellBeforeDate(EDIDesadvBean.voidDate);
 		// p102.setProductionDate(EDIDesadvBean.voidDate);
-		p102.setStoreNumber(voidString);
+		p102.setStoreNumber(extractDropShipLocationGLN(xmlDesadv));
 		p102.setSupplierArtNo(voidString);
 
 		p102.setEanArtNo(xmlDesadvLine.getEANCU());

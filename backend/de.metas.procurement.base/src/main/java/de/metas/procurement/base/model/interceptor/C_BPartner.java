@@ -1,5 +1,6 @@
 package de.metas.procurement.base.model.interceptor;
 
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,7 +68,7 @@ public class C_BPartner
 			I_C_BPartner.COLUMNNAME_AD_Language,
 			I_C_BPartner.COLUMNNAME_IsVendor } //
 			, afterCommit = true)
-	public void pushToWebUI(final I_C_BPartner bpartner)
+	public void pushToWebUI(@NonNull final I_C_BPartner bpartner)
 	{
 		Services.get(IWebuiPush.class).pushBPartnerAndUsers(bpartner);
 	}

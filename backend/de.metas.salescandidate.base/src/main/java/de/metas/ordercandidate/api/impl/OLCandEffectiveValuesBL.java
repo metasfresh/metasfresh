@@ -143,6 +143,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@NonNull
 	public UomId getRecordOrStockUOMId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		if (olCandRecord.getC_UOM_ID() > 0)
