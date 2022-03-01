@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -91,6 +92,7 @@ import java.util.Set;
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient HUReservationRepository huReservationRepository;
+	private final transient AgeAttributesService ageAttributesService;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -152,17 +154,20 @@ import java.util.Set;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
+	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull AgeAttributesService ageAttributesService)
 	{
 		this.huReservationRepository = huReservationRepository;
 
+		this.ageAttributesService = ageAttributesService;
+
 		this.locators = new HUQueryBuilder_Locator();
-		this.attributes = new HUQueryBuilder_Attributes();
+		this.attributes = new HUQueryBuilder_Attributes(ageAttributesService);
 	}
 
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
 		this.huReservationRepository = from.huReservationRepository;
+		this.ageAttributesService = from.ageAttributesService;
 
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
@@ -948,6 +953,13 @@ import java.util.Set;
 	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
 	{
 		attributes.addOnlyWithAttributes(attributeSet);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributes(BPartnerId bpartnerId, ProductId productId, ImmutableAttributeSet attributeSet)
+	{
+		attributes.addOnlyWithAttributes(bpartnerId, productId, attributeSet);
 		return this;
 	}
 

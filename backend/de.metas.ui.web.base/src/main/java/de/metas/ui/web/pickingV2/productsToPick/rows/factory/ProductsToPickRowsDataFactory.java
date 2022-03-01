@@ -337,6 +337,7 @@ public final class ProductsToPickRowsDataFactory
 		final Set<HuId> huIds = huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
+				.bpartnerId(packageable.getCustomerId())
 				.asiId(considerAttributes ? packageable.getAsiId() : null)
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
 				.build()

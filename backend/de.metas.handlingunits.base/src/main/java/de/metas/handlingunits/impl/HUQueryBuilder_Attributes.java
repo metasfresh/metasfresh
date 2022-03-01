@@ -1,11 +1,19 @@
 package de.metas.handlingunits.impl;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.IDimensionspecDAO;
+import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -16,17 +24,12 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.IDimensionspecDAO;
-import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -62,18 +65,23 @@ final class HUQueryBuilder_Attributes
 {
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final AgeAttributesService ageAttributesService;
+
 	private final HashMap<AttributeId, HUAttributeQueryFilterVO> onlyAttributes;
 	private boolean allowSql = true;
 	private String barcode;
 
-	public HUQueryBuilder_Attributes()
+	public HUQueryBuilder_Attributes(AgeAttributesService ageAttributesService)
 	{
 		onlyAttributes = new HashMap<>();
 		barcode = null;
+
+		this.ageAttributesService = ageAttributesService;
 	}
 
 	private HUQueryBuilder_Attributes(final HUQueryBuilder_Attributes from)
 	{
+		this.ageAttributesService = from.ageAttributesService;
 		onlyAttributes = deepCopy(from.onlyAttributes);
 		barcode = from.barcode;
 		allowSql = from.allowSql;
@@ -245,10 +253,31 @@ final class HUQueryBuilder_Attributes
 	{
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
+			//TODO
 			final Object value = attributeSet.getValue(attribute);
 			addOnlyWithAttribute(attribute, value);
 		}
 	}
+	public void addOnlyWithAttributes(BPartnerId bPartnerId, ProductId productId, ImmutableAttributeSet attributeSet)
+	{
+		for (final I_M_Attribute attribute : attributeSet.getAttributes())
+		{
+			final Object value = attributeSet.getValue(attribute);
+
+			if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+			{
+				final List<Object> ageValues = ageAttributesService.getSuitableValues(Collections.singleton(bPartnerId),
+																					  Collections.singleton(productId), value);
+
+				addOnlyWithAttributeInList(AttributeCode.ofString(attribute.getValue()), ageValues);
+			}
+			else
+			{
+				addOnlyWithAttribute(attribute, value);
+			}
+		}
+	}
+
 
 	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
 	{

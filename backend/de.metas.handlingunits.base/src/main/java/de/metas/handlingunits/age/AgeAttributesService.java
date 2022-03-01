@@ -112,7 +112,7 @@ public class AgeAttributesService
 
 			for (final BPartnerId bpartnerId : bPartnerIds)
 			{
-				if(bpartnerId == null)
+				if (bpartnerId == null)
 				{
 					continue;
 				}
@@ -136,7 +136,6 @@ public class AgeAttributesService
 					}
 				}
 			}
-
 		}
 
 		final int minimumValue = Integer.parseInt(attributeValue.toString()) - Picking_AgeTolerance_BeforeMonths;

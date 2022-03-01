@@ -1,7 +1,5 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.Packageable;
@@ -11,6 +9,7 @@ import de.metas.order.OrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -65,6 +64,7 @@ public class HUReservationDocumentFilterService
 		return huReservationService.prepareHUQuery()
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
+				.bpartnerId(salesOrderLine.getBPartnerId())
 				.asiId(salesOrderLine.getAsiId())
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine.getId())
 				.build();
