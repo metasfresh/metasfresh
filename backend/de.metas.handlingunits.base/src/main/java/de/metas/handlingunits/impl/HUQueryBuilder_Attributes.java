@@ -268,8 +268,9 @@ final class HUQueryBuilder_Attributes
 			{
 				final List<Object> ageValues = ageAttributesService.getSuitableValues(Collections.singleton(bPartnerId),
 																					  Collections.singleton(productId), value);
+				final String attributeValueType = attributeSet.getAttributeValueType(attribute);
 
-				addOnlyWithAttributeInList(AttributeCode.ofString(attribute.getValue()), ageValues);
+				addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
 			}
 			else
 			{

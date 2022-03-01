@@ -87,8 +87,8 @@ public class AgeAttributesService
 
 	public List<Object> getSuitableValues(final Set<BPartnerId> bPartnerIds, final Set<ProductId> productIds, final Object attributeValue)
 	{
-		int Picking_AgeTolerance_BeforeMonths = Integer.MAX_VALUE;
-		int Picking_AgeTolerance_AfterMonths = Integer.MAX_VALUE;
+		int pickingAgeTolerance_BeforeMonths = 0;
+		int pickingAgeTolerance_AfterMonths = 0;
 
 		for (final ProductId productId : productIds)
 		{
@@ -96,16 +96,13 @@ public class AgeAttributesService
 
 			final int productBefore = product.getPicking_AgeTolerance_BeforeMonths();
 
-			if (productBefore < Picking_AgeTolerance_BeforeMonths)
-			{
-				Picking_AgeTolerance_BeforeMonths = productBefore;
-			}
+			pickingAgeTolerance_BeforeMonths = productBefore;
 
 			final int productAfter = product.getPicking_AgeTolerance_AfterMonths();
 
-			if (productAfter < Picking_AgeTolerance_AfterMonths)
+			if (productAfter < pickingAgeTolerance_AfterMonths)
 			{
-				Picking_AgeTolerance_AfterMonths = productAfter;
+				pickingAgeTolerance_AfterMonths = productAfter;
 			}
 
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
@@ -123,28 +120,25 @@ public class AgeAttributesService
 				{
 					final int bpartnerProductBefore = bPartnerProduct.getPicking_AgeTolerance_BeforeMonths();
 
-					if (bpartnerProductBefore < Picking_AgeTolerance_BeforeMonths)
-					{
-						Picking_AgeTolerance_BeforeMonths = bpartnerProductBefore;
-					}
+					pickingAgeTolerance_BeforeMonths = bpartnerProductBefore;
 
 					final int bpartnerProductAfter = bPartnerProduct.getPicking_AgeTolerance_AfterMonths();
 
-					if (bpartnerProductAfter < Picking_AgeTolerance_AfterMonths)
-					{
-						Picking_AgeTolerance_AfterMonths = bpartnerProductAfter;
-					}
+					pickingAgeTolerance_AfterMonths = bpartnerProductAfter;
+
 				}
 			}
 		}
 
-		final int minimumValue = Integer.parseInt(attributeValue.toString()) - Picking_AgeTolerance_BeforeMonths;
-		final int maximumValue = Integer.parseInt(attributeValue.toString()) + Picking_AgeTolerance_AfterMonths;
+		final int minimumValue = Integer.parseInt(attributeValue.toString()) - pickingAgeTolerance_BeforeMonths;
+		final int maximumValue = Integer.parseInt(attributeValue.toString()) + pickingAgeTolerance_AfterMonths;
 
 		final List<Object> suitableValues = new ArrayList<>();
 		final List<AttributeListValue> allAgeValues = getAllAgeValues();
 
-		for (final AttributeListValue ageValue : allAgeValues)
+		for (
+				final AttributeListValue ageValue : allAgeValues)
+
 		{
 			final int ageValueInt = ageValue.getValueAsInt();
 
