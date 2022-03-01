@@ -237,7 +237,7 @@ public class C_Order
 		}
 		else
 		{
-			paymentRule = Services.get(IOrderBL.class).getDefaultPaymentRule();
+			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		}
 		order.setPaymentRule(paymentRule.getCode());
 	}

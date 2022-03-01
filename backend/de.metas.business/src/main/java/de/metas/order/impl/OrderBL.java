@@ -1192,11 +1192,4 @@ public class OrderBL implements IOrderBL
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
 	}
-
-	@Override
-	public PaymentRule getDefaultPaymentRule()
-	{
-		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
-		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
-	}
 }

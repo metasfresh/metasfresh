@@ -260,6 +260,4 @@ public interface IOrderBL extends ISingletonService
 	boolean isHaddexOrder(I_C_Order order);
 
 	void closeOrder(final OrderId orderId);
-
-	PaymentRule getDefaultPaymentRule();
 }
