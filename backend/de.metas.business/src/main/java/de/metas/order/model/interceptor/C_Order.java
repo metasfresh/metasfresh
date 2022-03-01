@@ -233,7 +233,7 @@ public class C_Order
 		final PaymentRule paymentRule;
 		if (bpartner != null && bpartner.getPaymentRule() != null)
 		{
-			paymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
 		}
 		else
 		{
