@@ -618,7 +618,7 @@ public class BPartnerQuickInputService
 				.customerPricingSystemId(customerPricingSystemId)
 				.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getC_PaymentTerm_ID()))
 				// Vendor:
-				.vendor(true)
+				.vendor(template.isVendor())
 				.vendorPricingSystemId(vendorPricingSystemId)
 				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
 				//
