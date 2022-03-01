@@ -30,12 +30,15 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -46,6 +49,8 @@ import java.util.Optional;
 @Service
 public class CallOrderDetailService
 {
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
 	private final CallOrderDetailRepo detailRepo;
 
 	public CallOrderDetailService(@NonNull final CallOrderDetailRepo detailRepo)
@@ -144,10 +149,11 @@ public class CallOrderDetailService
 	}
 
 	@NonNull
-	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId callOrderSummaryId, @NonNull final I_C_InvoiceLine invoiceLine)
+	private CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId callOrderSummaryId, @NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
-		final Quantity qtyInvoiced = Quantitys.create(invoiceLine.getQtyInvoiced(), uomId);
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine1 = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
+
+		final Quantity qtyInvoiced = invoiceLineBL.getQtyInvoicedStockUOM(invoiceLine1);
 
 		return CallOrderDetailData
 				.builder()

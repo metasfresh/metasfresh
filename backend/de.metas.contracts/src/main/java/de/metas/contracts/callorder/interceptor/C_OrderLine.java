@@ -50,11 +50,32 @@ public class C_OrderLine
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_OrderLine.COLUMNNAME_C_Flatrate_Term_ID })
+	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID })
+	public void updateCallOrderContractLine(final I_C_OrderLine orderLine)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID());
+
+		if (conditionsId != null)
+		{
+			final boolean isCallOrderContractLine = contractService.isCallOrderContractLine(orderLine);
+
+			if (isCallOrderContractLine)
+			{
+				orderLineBL.updatePrices(orderLine);
+			}
+		}
+		else
+		{
+			orderLineBL.updatePrices(orderLine);
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Flatrate_Term_ID })
 	public void updateOrderLineFromContract(final I_C_OrderLine orderLine)
 	{
 		final FlatrateTermId contractId = FlatrateTermId.ofRepoIdOrNull(orderLine.getC_Flatrate_Term_ID());
-		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID());
 
 		if (contractId != null)
 		{
@@ -65,14 +86,9 @@ public class C_OrderLine
 				orderLineBL.updatePrices(orderLine);
 			}
 		}
-		else if (conditionsId != null)
+		else
 		{
-			final boolean isCallOrderContractLine = contractService.isCallOrderContractLine(orderLine);
-
-			if (isCallOrderContractLine)
-			{
-				orderLineBL.updatePrices(orderLine);
-			}
+			orderLineBL.updatePrices(orderLine);
 		}
 	}
 }
