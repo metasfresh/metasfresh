@@ -340,7 +340,7 @@ public class CalloutOrder extends CalloutEngine
 	}
 
 	/**
-	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
+	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID/Bill_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
 	 */
 	public String bPartner(final ICalloutField calloutField)
@@ -355,59 +355,64 @@ public class CalloutOrder extends CalloutEngine
 		final boolean IsSOTrx = order.isSOTrx();
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 		final String userFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
-
 		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
-		// task FRESH-152: Joining with the BPartner Stats.
-		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
+		final StringBuilder sqlQueryBL = new StringBuilder();
 
-		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-				+ " p.SO_Description,p.IsDiscountPrinted,"
-				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
-				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
-				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
-				+ " p.AD_Org_ID "
-				+ " FROM C_BPartner p"
-				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
-				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
-				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
-				// #928
-				// Only join with Users that have the right SOTrx value (Sales Contact for SO and PurchaseContact for PO) and are set as default for that SOTrxValue
-				+ " AND c." + userFlag + "= 'Y'"
-				+ " AND c." + defaultUserFlag + " = 'Y' "
-				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
-				// metas (2009 0027 G1): making sure that the default billTo
-				// and shipTo location is used
-				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
-				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
-				+ " , lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
-				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
-				// metas end
-				// 08578 take default users first.
-				// #928: The IsDefaultContact is no longer important
-				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+		sqlQueryBL.append("select ");
+		sqlQueryBL.append("	p.AD_Language,");
+		sqlQueryBL.append("	p.C_PaymentTerm_ID,");
+		sqlQueryBL.append("	coalesce(p.M_PriceList_ID, g.M_PriceList_ID) as M_PriceList_ID,");
+		sqlQueryBL.append("	p.PaymentRule,");
+		sqlQueryBL.append("	p.POReference,");
+		sqlQueryBL.append("	p.SO_Description,");
+		sqlQueryBL.append("	p.IsDiscountPrinted,");
+		sqlQueryBL.append("	p.InvoiceRule,");
+		sqlQueryBL.append("	p.DeliveryRule,");
+		sqlQueryBL.append("	p.FreightCostRule,");
+		sqlQueryBL.append("	DeliveryViaRule,");
+		sqlQueryBL.append("	lship.C_BPartner_Location_ID,");
+		sqlQueryBL.append("	uship.AD_User_ID as shipto_User_ID,");
+		sqlQueryBL.append("	uBill.AD_User_ID as billto_User_ID,");
+		sqlQueryBL.append("	coalesce(p.PO_PriceList_ID, g.PO_PriceList_ID) as PO_PriceList_ID,");
+		sqlQueryBL.append("	p.PaymentRulePO,");
+		sqlQueryBL.append("	p.PO_PaymentTerm_ID,");
+		sqlQueryBL.append("	lbill.C_BPartner_Location_ID as Bill_Location_ID,");
+		sqlQueryBL.append("	p.SalesRep_ID,");
+		sqlQueryBL.append("	p.SO_DocTypeTarget_ID,");
+		sqlQueryBL.append("	p.AD_Org_ID");
+		sqlQueryBL.append(" from ");
+		sqlQueryBL.append("	C_BPartner p");
+		sqlQueryBL.append("   inner join C_BP_Group g on (p.C_BP_Group_ID = g.C_BP_Group_ID)");
+		sqlQueryBL.append("   left outer join C_BPartner_Location lbill on (p.C_BPartner_ID = lbill.C_BPartner_ID and lbill.IsBillTo = 'Y' and lbill.IsActive = 'Y')");
+		sqlQueryBL.append("   left outer join C_BPartner_Location lship on (p.C_BPartner_ID = lship.C_BPartner_ID and lship.IsShipTo = 'Y' and lship.IsActive = 'Y')");
+		sqlQueryBL.append("   left outer join AD_User uShip on (p.C_BPartner_ID = uShip.C_BPartner_ID) and uShip.IsActive = 'Y' and uShip.").append(userFlag).append(" = 'Y' ");
+		sqlQueryBL.append("   left outer join AD_User uBill on (p.C_BPartner_ID = uBill.C_BPartner_ID) and uBill.IsActive = 'Y' and uBill.").append(userFlag).append(" = 'Y' ");
+		sqlQueryBL.append(" where");
+		sqlQueryBL.append("	 p.C_BPartner_ID =? and p.IsActive = 'Y' ");
+		sqlQueryBL.append(" order by ");
+		sqlQueryBL.append("	 lbill.").append(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).append(" desc ,");
+		sqlQueryBL.append("	 lship.").append(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).append(" desc ,");
+		sqlQueryBL.append("	 lbill.").append(I_C_BPartner_Location.COLUMNNAME_IsBillTo).append(" desc ,");
+		sqlQueryBL.append("	 lship.").append(I_C_BPartner_Location.COLUMNNAME_IsShipTo).append(" desc ,");
+		sqlQueryBL.append("	 uship.").append(org.compiere.model.I_AD_User.COLUMNNAME_IsShipToContact_Default).append(" desc, ");
+		sqlQueryBL.append("	 ubill.").append(org.compiere.model.I_AD_User.COLUMNNAME_IsBillToContact_Default).append(" desc ");
+
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sqlQueryBL.toString(), ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				final OrgId bpartnerOrgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
-
 				if (isCopyOrgFromBPartner())
 				{
 					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null, Access.WRITE);
-
 					if (userHasOrgPermissions)
 					{
 						order.setAD_Org_ID(bpartnerOrgId.getRepoId());
@@ -487,18 +492,20 @@ public class CalloutOrder extends CalloutEngine
 				// calcLocation(ctx, WindowNo, mTab, mField, value);
 
 				// Contact - overwritten by InfoBP selection
-				BPartnerContactId contactUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("AD_User_ID"));
+				BPartnerContactId shipUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("shipto_User_ID"));
+				BPartnerContactId billUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("billto_User_ID"));
 
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
 					final BPartnerContactId tabInfoContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
 					if (tabInfoContactId != null)
 					{
-						contactUserId = tabInfoContactId;
+						shipUserId = tabInfoContactId;
 					}
 				}
-				order.setAD_User_ID(BPartnerContactId.toRepoId(contactUserId));
-				order.setBill_User_ID(BPartnerContactId.toRepoId(contactUserId));
+
+				order.setAD_User_ID(BPartnerContactId.toRepoId(shipUserId));
+				order.setBill_User_ID(BPartnerContactId.toRepoId(billUserId));
 
 				// CreditAvailable
 				if (IsSOTrx)
@@ -604,7 +611,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		catch (final SQLException ex)
 		{
-			throw new DBException(ex, sql, sqlParams);
+			throw new DBException(ex, sqlQueryBL.toString(), sqlParams);
 		}
 		finally
 		{
