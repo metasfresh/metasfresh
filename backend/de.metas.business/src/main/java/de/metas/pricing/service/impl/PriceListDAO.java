@@ -51,7 +51,6 @@ import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
