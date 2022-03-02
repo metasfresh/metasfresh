@@ -93,6 +93,7 @@ public class C_Order
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -237,7 +238,7 @@ public class C_Order
 		}
 		else
 		{
-			paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+			paymentRule = invoiceBL.getDefaultPaymentRule();
 		}
 		order.setPaymentRule(paymentRule.getCode());
 	}
