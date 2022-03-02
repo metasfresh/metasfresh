@@ -39,6 +39,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -260,14 +261,14 @@ public class OrderCandidateRestControllerService
 
 		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
 
-		if (request.getShip())
+		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{
 			final Set<InOutId> createdShipmentIds = jsonShipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
 
 			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponse(createdShipmentIds));
 		}
 
-		if (request.getInvoice())
+		if (CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
 		{
 			final List<I_M_InOutLine> shipmentLines = shipmentDAO.retrieveShipmentLinesForOrderId(orderIds);
 
@@ -282,7 +283,7 @@ public class OrderCandidateRestControllerService
 
 		asyncBatchBL.updateProcessedFromMilestones(asyncBatchId);
 
-		if (request.getCloseOrder())
+		if (CoalesceUtil.coalesceNotNull(request.getCloseOrder(), false))
 		{
 			orderIds.forEach(orderBL::closeOrder);
 		}
