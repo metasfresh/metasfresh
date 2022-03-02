@@ -116,7 +116,6 @@ Feature: Allow order discount via API (compensation group)
   "inputDataSourceName": "int-Shopware"
 }
 """
-    And ProcessOLCands is called
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'
       | Line | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
       | 1    | true                    | 2                           | D                     | P                        |
