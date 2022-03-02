@@ -172,19 +172,24 @@ class DatePicker extends Component {
     event.stopPropagation();
   };
 
-  /**
-   * @method renderDay
-   * @summary ToDo: Describe the method
-   * @param {*} props
-   * @param {*} currentDate
-   * @todo Write the documentation
-   */
-  renderDay = (props, currentDate) => {
+  renderDay = (props, day) => {
     return (
-      <td {...props} onDoubleClick={() => this.handleBlur(currentDate)}>
-        {currentDate.date()}
+      <td {...props} onDoubleClick={() => this.onDayDoubleClicked(day)}>
+        {day.date()}
       </td>
     );
+  };
+
+  onDayDoubleClicked = (day) => {
+    const selectedDate = this.picker.state.selectedDate;
+    let dateTime = day.set({
+      hour: selectedDate.get('hour'),
+      minute: selectedDate.get('minute'),
+      second: selectedDate.get('second'),
+      millisecond: 0,
+    });
+
+    this.handleBlur(dateTime);
   };
 
   /**
