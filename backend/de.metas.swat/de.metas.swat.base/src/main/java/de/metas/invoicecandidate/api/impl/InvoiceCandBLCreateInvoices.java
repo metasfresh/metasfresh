@@ -48,6 +48,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -373,6 +374,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 
+			invoice.setSalesRep_ID(UserId.toRepoId(invoiceHeader.getSalesRepId()));
+
 			setC_DocType(invoice, invoiceHeader);
 
 			final BPartnerInfo billTo = invoiceHeader.getBillTo();
@@ -392,6 +395,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
+			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
+			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 
 			if (invoiceHeader.getM_InOut_ID() > 0)

@@ -27,9 +27,12 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.process.AdProcessId;
@@ -43,22 +46,29 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_PInstance_Para;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
 import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
 {
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	private final StepDefData<I_ExternalSystem_Config> configTable;
@@ -76,8 +86,97 @@ public class ExternalSystem_Config_StepDef
 	@And("add external system parent-child pair")
 	public void new_externalSystemChild_is_created_if_missing(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			saveExternalSystemConfig(tableRow);
+		}
+	}
 
+	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
+	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
+	{
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemCode);
+		final AdProcessId adProcessId =
+				adProcessDAO.retrieveProcessIdByClassIfUnique(externalSystemType.getExternalSystemProcessClassName());
+
+		final JSONObject result = new JSONObject(testContext.getApiResponse().getContent());
+		final int pInstanceId = result.getInt("pinstanceID");
+
+		final I_AD_PInstance pInstance = instanceDAO.getById(PInstanceId.ofRepoId(pInstanceId));
+
+		assertThat(pInstance).isNotNull();
+		assertThat(pInstance.getAD_Process_ID()).isEqualTo(adProcessId.getRepoId());
+
+		final List<ProcessInfoLog> processInfoLogs = instanceDAO.retrieveProcessInfoLogs(PInstanceId.ofRepoId(pInstance.getAD_PInstance_ID()));
+
+		assertThat(processInfoLogs).isNotNull();
+	}
+
+	@And("a new metasfresh AD_PInstance_Para is stored for the external system invocation")
+	public void new_metasfresh_ad_pinstance_para_is_stored_for_external_system_process(@NonNull final DataTable dataTable) throws JSONException
+	{
+		final JSONObject result = new JSONObject(testContext.getApiResponse().getContent());
+		final int pInstanceId = result.getInt("pinstanceID");
+
+		final Map<String, I_AD_PInstance_Para> paramNameToParameter = queryBL.createQueryBuilder(I_AD_PInstance_Para.class)
+				.addInArrayFilter(I_AD_PInstance_Para.COLUMNNAME_AD_PInstance_ID, pInstanceId)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.toMap(I_AD_PInstance_Para::getParameterName, Function.identity()));
+
+		assertThat(paramNameToParameter).isNotNull();
+		assertThat(paramNameToParameter.size()).isGreaterThan(0);
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> row : tableRows)
+		{
+			final String key = DataTableUtil.extractStringForColumnName(row, "param.key");
+			final String value = DataTableUtil.extractStringForColumnName(row, "param.value");
+
+			final I_AD_PInstance_Para parameter = paramNameToParameter.get(key);
+			assertThat(parameter.getP_String()).isEqualTo(value);
+		}
+	}
+
+	@And("update external system config:")
+	public void update_externalSystem(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
+
+			final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
+			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
+
+			final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()), externalSystemType);
+
+			assertThat(childConfig).isPresent();
+
+			final boolean isActive = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_IsActive);
+
+			externalSystemConfig.setIsActive(isActive);
+
+			InterfaceWrapperHelper.save(externalSystemConfig);
+
+			switch (externalSystemType)
+			{
+				case GRSSignum:
+					final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.load(childConfig.get().getId().getRepoId(), I_ExternalSystem_Config_GRSSignum.class);
+					externalSystemConfigGrsSignum.setIsActive(isActive);
+					InterfaceWrapperHelper.saveRecord(externalSystemConfigGrsSignum);
+					break;
+				default:
+					return;
+			}
+		}
+	}
+
+	private void saveExternalSystemConfig(@NonNull final Map<String, String> tableRow)
+	{
 		final String configIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
 		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
 		final String externalSystemChildValue = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue);
@@ -140,29 +239,24 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigRabbitMQ.setIsActive(true);
 				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
 				break;
+			case GRSSignum:
+				final boolean isSyncHUsOnMaterialReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnMaterialReceipt, false);
+				final boolean isSyncHUsOnProductionReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnProductionReceipt, false);
+
+				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_GRSSignum.class);
+				externalSystemConfigGrsSignum.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+				externalSystemConfigGrsSignum.setExternalSystemValue(externalSystemChildValue);
+				externalSystemConfigGrsSignum.setBaseURL("notImportant");
+				externalSystemConfigGrsSignum.setAuthToken("notImportant");
+				externalSystemConfigGrsSignum.setTenantId("tenantId");
+				externalSystemConfigGrsSignum.setIsSyncBPartnersToRestEndpoint(true);
+				externalSystemConfigGrsSignum.setIsActive(true);
+				externalSystemConfigGrsSignum.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
+				externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
+				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
+				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 	}
-
-	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
-	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
-	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemCode);
-		final AdProcessId adProcessId =
-				adProcessDAO.retrieveProcessIdByClassIfUnique(externalSystemType.getExternalSystemProcessClassName());
-
-		final JSONObject result = new JSONObject(testContext.getApiResponse().getContent());
-		final int pInstanceId = result.getInt("pinstanceID");
-
-		final I_AD_PInstance pInstance = instanceDAO.getById(PInstanceId.ofRepoId(pInstanceId));
-
-		assertThat(pInstance).isNotNull();
-		assertThat(pInstance.getAD_Process_ID()).isEqualTo(adProcessId.getRepoId());
-
-		final List<ProcessInfoLog> processInfoLogs = instanceDAO.retrieveProcessInfoLogs(PInstanceId.ofRepoId(pInstance.getAD_PInstance_ID()));
-
-		assertThat(processInfoLogs).isNotNull();
-	}
-
 }

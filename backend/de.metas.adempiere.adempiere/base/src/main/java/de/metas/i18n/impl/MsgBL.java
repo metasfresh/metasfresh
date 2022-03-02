@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessagesTreeLoader;
 import org.compiere.util.Env;
 
 import de.metas.i18n.AdMessageKey;
@@ -149,5 +150,4 @@ public class MsgBL implements IMsgBL
 	{
 		Msg.cacheReset();
 	}
-
 }

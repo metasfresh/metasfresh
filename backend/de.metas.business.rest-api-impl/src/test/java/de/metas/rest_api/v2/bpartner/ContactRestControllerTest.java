@@ -27,8 +27,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
@@ -44,9 +44,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.user.UserId;
@@ -135,7 +136,7 @@ class ContactRestControllerTest
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository);
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -143,6 +144,7 @@ class ContactRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
+				new JobRepository(),
 				externalReferenceRestControllerService,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

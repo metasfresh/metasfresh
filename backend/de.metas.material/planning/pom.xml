@@ -101,7 +101,12 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>de.metas.material</groupId>
+            <artifactId>metasfresh-material-cockpit</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>

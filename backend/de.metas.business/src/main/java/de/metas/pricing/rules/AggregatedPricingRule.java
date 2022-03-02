@@ -1,10 +1,8 @@
-/**
- *
- */
 package de.metas.pricing.rules;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -61,7 +59,7 @@ public final class AggregatedPricingRule implements IPricingRule
 	 * Please note that calculation won't stop after first rule that matched.
 	 */
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		logger.debug("Evaluating pricing rules with pricingContext: {}", pricingCtx);
 

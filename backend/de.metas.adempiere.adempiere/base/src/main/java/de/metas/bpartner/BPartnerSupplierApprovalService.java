@@ -38,7 +38,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_SupplierApproval;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
@@ -56,15 +55,12 @@ public class BPartnerSupplierApprovalService
 	private final BPartnerSupplierApprovalRepository repo;
 	private final UserGroupRepository userGroupRepository;
 	private final IOrgDAO orgDAO;
-	private final ISysConfigBL sysConfigBL;
 	private final INotificationBL notificationBL;
 	private final IBPartnerDAO bpartnerDAO;
 	private final IMsgBL msgBL;
 
 	private static final AdMessageKey MSG_Partner_Lacks_SupplierApproval = AdMessageKey.of("C_BPartner_Lacks_Supplier_Approval");
 	private static final AdMessageKey MSG_Partner_SupplierApproval_ExpirationDate = AdMessageKey.of("C_BPartner_Supplier_Approval_WillExpire");
-
-	private static final String SYS_CONFIG_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID = "C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID";
 
 	private static final int MAX_MONTHS_UNTIL_EXPIRATION_DATE = 3;
 
@@ -73,7 +69,6 @@ public class BPartnerSupplierApprovalService
 		this.repo = repo;
 		this.userGroupRepository = userGroupRepository;
 		this.orgDAO = Services.get(IOrgDAO.class);
-		this.sysConfigBL = Services.get(ISysConfigBL.class);
 		this.notificationBL = Services.get(INotificationBL.class);
 		this.bpartnerDAO = Services.get(IBPartnerDAO.class);
 		this.msgBL = Services.get(IMsgBL.class);
@@ -195,12 +190,7 @@ public class BPartnerSupplierApprovalService
 				.TargetRecordAction
 				.of(I_C_BPartner.Table_Name, supplierApprovalRecord.getC_BPartner_ID());
 
-		final int userGroupRecordId = sysConfigBL.getIntValue(SYS_CONFIG_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID,
-															  -1,
-															  supplierApprovalRecord.getAD_Client_ID(),
-															  supplierApprovalRecord.getAD_Org_ID());
-
-		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(userGroupRecordId);
+		final UserGroupId userGroupId = orgDAO.getSupplierApprovalExpirationNotifyUserGroupID(OrgId.ofRepoId(supplierApprovalRecord.getAD_Org_ID()));
 
 		if (userGroupId == null)
 		{

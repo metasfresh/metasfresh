@@ -1,15 +1,8 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import static de.metas.quantity.Quantity.addToNullable;
-import static de.metas.util.Check.assumeNotNull;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.uom.IUOMDAO;
@@ -17,6 +10,16 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+
+import static de.metas.quantity.Quantity.addToNullable;
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -58,7 +61,17 @@ public class CountingSubRowBucket
 	private final int plantId;
 
 	// Zaehlbestand
-	private Quantity qtyOnHandEstimate;
+	private Quantity qtyStockEstimateCount;
+
+	@Nullable
+	private Instant qtyStockEstimateTime;
+
+	private Quantity qtyInventoryCount;
+
+	@Nullable
+	private Instant qtyInventoryTime;
+
+	private Quantity qtyStockCurrent;
 
 	private Quantity qtyOnHandStock;
 
@@ -73,11 +86,17 @@ public class CountingSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final I_C_UOM uom = uomDAO.getById(cockpitRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
-		qtyOnHandEstimate = addToNullable(qtyOnHandEstimate, cockpitRecord.getQtyOnHandEstimate(), uom);
+		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
+		qtyStockEstimateTime = TimeUtil.max(qtyStockEstimateTime, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime()));
+
+		qtyInventoryCount = addToNullable(qtyInventoryCount, cockpitRecord.getQtyInventoryCount(), uom);
+		qtyInventoryTime = TimeUtil.max(qtyInventoryTime, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime()));
+
+		qtyStockCurrent = addToNullable(qtyStockCurrent, cockpitRecord.getQtyStockCurrent(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
@@ -93,6 +112,7 @@ public class CountingSubRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
+	@NonNull
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
 		final MainRowBucketId productIdAndDate = assumeNotNull(
@@ -103,7 +123,11 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
-				.qtyOnHandEstimate(qtyOnHandEstimate)
+				.qtyStockEstimateCount(qtyStockEstimateCount)
+				.qtyStockEstimateTime(qtyStockEstimateTime)
+				.qtyInventoryCount(qtyInventoryCount)
+				.qtyInventoryTime(qtyInventoryTime)
+				.qtyStockCurrent(qtyStockCurrent)
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)

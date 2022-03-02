@@ -1,3 +1,4 @@
+import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
@@ -137,7 +138,7 @@ class TableContainer extends PureComponent {
 
     if (docId) {
       openModal({
-        title: 'Advanced edit',
+        title: counterpart.translate('window.advancedEdit.caption'),
         windowId,
         modalType: 'window',
         tabId,
@@ -266,6 +267,7 @@ const mapStateToProps = (state, props) => {
     collapsible: table.collapsible,
     keyProperty: table.keyProperty,
     size: table.size,
+    navigationActive: table.navigationActive,
     allowShortcut: handleShortcuts,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,

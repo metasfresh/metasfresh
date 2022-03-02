@@ -31,7 +31,7 @@ Feature: data export audit using bpartner metasfresh api
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context, expecting status='200'
     Then process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
@@ -54,7 +54,7 @@ Feature: data export audit using bpartner metasfresh api
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context, expecting status='200'
     And process bpartner endpoint response
       | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
       | bpartner_1               | bpartner_location_1               | location_1               |
@@ -75,3 +75,32 @@ Feature: data export audit using bpartner metasfresh api
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_1               | config_1                            |
+
+  Scenario: When C_BPartner is changed, a proper camel-request is sent to GRS
+    And add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
+      | config_2                            | GRS  | testGRS             |
+    And add external system config and pinstance headers
+      | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
+      | config_2                            | p_2                        |
+    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156423' receives a 'GET' request with the headers from context, expecting status='200'
+    And process bpartner endpoint response
+      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
+      | bpartner_2               | bpartner_location_2               | location_2               |
+    And after not more than 30s, there are added records in Data_Export_Audit
+      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
+      | bpartner_data_export            | C_BPartner          | bpartner_2           |                                        |
+      | bp_location_data_export         | C_BPartner_Location | bpartner_location_2  | bpartner_data_export                   |
+      | location_data_export            | C_Location          | location_2           | bp_location_data_export                |
+    And there are added records in Data_Export_Audit_Log
+      | Data_Export_Audit_ID.Identifier | Data_Export_Action       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
+      | bpartner_data_export            | Exported-Standalone      | config_2                            | p_2                        |
+      | bp_location_data_export         | Exported-AlongWithParent | config_2                            | p_2                        |
+      | location_data_export            | Exported-AlongWithParent | config_2                            | p_2                        |
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | Name2 |
+      | bpartner_2               | name2 |
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
+      | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
+      | bpartner_2               | config_2                            |

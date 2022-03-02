@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -35,17 +36,20 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -55,15 +59,18 @@ public class C_OrderLine_StepDef
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -80,18 +87,27 @@ public class C_OrderLine_StepDef
 			orderLine.setM_Product_ID(product.getM_Product_ID());
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				assertThat(attributeSetInstance).isNotNull();
+
+				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			}
+
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			saveRecord(orderLine);
 
-			orderLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
 		}
 	}
 
-	@Then("the mediated purchase order linked to order {string} has lines:")
-	public void thePurchaseOrderLinkedToOrderO_HasLines(@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
+	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
+	public void thePurchaseOrderLinkedToOrderO_HasLines(@Nullable final String docSubType, @NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
 	{
 		final I_C_Order purchaseOrder = queryBL
 				.createQueryBuilder(I_C_Order.class)
@@ -108,7 +124,10 @@ public class C_OrderLine_StepDef
 				.create().firstOnly(I_C_DocType.class);
 
 		assertThat(docType).isNotNull();
-		assertThat(docType.getDocSubType()).isEqualTo(X_C_DocType.DOCSUBTYPE_Mediated);
+		if (Check.isNotBlank(docSubType))
+		{
+			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
 
 		final List<I_C_OrderLine> purchaseOrderLines = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
@@ -148,11 +167,11 @@ public class C_OrderLine_StepDef
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
@@ -167,7 +186,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
@@ -176,7 +195,7 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);

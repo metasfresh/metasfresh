@@ -55,6 +55,7 @@ final class CurrenciesMap
 				.toString();
 	}
 
+	@NonNull
 	public Currency getById(@NonNull final CurrencyId id)
 	{
 		final Currency currency = currenciesById.get(id);

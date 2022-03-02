@@ -392,8 +392,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 																	   .salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
 																	   .customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
 																	   //
-																	   .pickingOrder(true)
-																	   //
 																	   .completeDocument(true)
 																	   //
 																	   .build());

@@ -45,6 +45,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -59,7 +60,7 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -374,7 +375,8 @@ public class ShipmentScheduleWithHUService
 			final HUsToNewCUsRequest request = HUsToNewCUsRequest
 					.builder()
 					.keepNewCUsUnderSameParent(false)
-					.onlyFromUnreservedHUs(false) // the HUs returned by the query doesn't contain HUs which are reserved to someone else
+					// FIXME: we shall consider not reserved or reserved ones too if they are reserved for us
+					.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ALL)
 					.productId(productId)
 					.qtyCU(quantityToSplit)
 					.sourceHU(sourceHURecord)

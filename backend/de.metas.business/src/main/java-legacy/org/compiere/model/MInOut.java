@@ -387,6 +387,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(order.getC_Charge_ID());
 		setChargeAmt(order.getChargeAmt());
 		//
+		setC_Incoterms_ID(order.getC_Incoterms_ID());
+		setIncotermLocation(order.getIncotermLocation());
 		setC_Project_ID(order.getC_Project_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDescription(order.getDescription());
@@ -423,7 +425,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		final IPOService poService = Services.get(IPOService.class);
 
-		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -485,6 +487,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(invoice.getC_Charge_ID());
 		setChargeAmt(invoice.getChargeAmt());
 		//
+		setC_Incoterms_ID(invoice.getC_Incoterms_ID());
+		setIncotermLocation(invoice.getIncotermLocation());
 		setC_Project_ID(invoice.getC_Project_ID());
 		setDateOrdered(invoice.getDateOrdered());
 		setDescription(invoice.getDescription());
@@ -567,6 +571,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(original.getAD_OrgTrx_ID());
 		setUser1_ID(original.getUser1_ID());
 		setUser2_ID(original.getUser2_ID());
+		setC_Incoterms_ID(original.getC_Incoterms_ID());
+		setIncotermLocation(original.getIncotermLocation());
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());
@@ -1071,7 +1077,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_Incoterm)))
+		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_C_Incoterms_ID)))
 		{
 			poService.setValue(this, I_M_InOut.COLUMNNAME_IncotermLocation, "");
 		}
@@ -2182,7 +2188,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_DescriptionBottom);
 		// metas end

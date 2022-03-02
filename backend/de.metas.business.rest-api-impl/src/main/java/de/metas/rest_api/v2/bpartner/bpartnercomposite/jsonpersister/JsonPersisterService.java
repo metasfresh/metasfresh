@@ -64,10 +64,10 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpser
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -81,7 +81,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -1225,6 +1225,18 @@ public class JsonPersisterService
 			}
 		}
 
+		// title
+		if (jsonBPartnerContact.isTitleSet())
+		{
+			contact.setTitle(StringUtils.trim(jsonBPartnerContact.getTitle()));
+		}
+
+		// phone2
+		if (jsonBPartnerContact.isPhone2Set())
+		{
+			contact.setPhone2(StringUtils.trim(jsonBPartnerContact.getPhone2()));
+		}
+
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
 	}
@@ -1694,6 +1706,18 @@ public class JsonPersisterService
 			}
 		}
 
+		if (jsonBPartnerLocation.isVisitorsAddressSet())
+		{
+			if (jsonBPartnerLocation.getVisitorsAddress() == null)
+			{
+				logger.debug("Ignoring boolean property \"visitorsAddress\" : null ");
+			}
+			else
+			{
+				locationType.visitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
+			}
+		}
+
 		return locationType.build();
 	}
 
@@ -1789,8 +1813,10 @@ public class JsonPersisterService
 													   .collect(Collectors.toSet()));
 		}
 
-		externalReferenceCreateReqs.forEach(request -> externalReferenceRestControllerService.performUpsert(request, orgCode));
-
+		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
+		{
+			externalReferenceRestControllerService.performUpsert(request, orgCode);
+		}
 	}
 
 	private void handleAlbertaInfo(

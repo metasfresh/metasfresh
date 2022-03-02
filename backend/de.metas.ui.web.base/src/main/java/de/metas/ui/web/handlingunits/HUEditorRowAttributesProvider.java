@@ -1,11 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -25,6 +20,9 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -104,7 +102,8 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.collect(ImmutableSet.toImmutableSet());
 
 		final DocumentPath documentPath = createDocumentPath(key);
-		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, rowAttributesReadonly);
+
+		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, hu, rowAttributesReadonly);
 	}
 
 	private I_M_HU extractHU(final ViewRowAttributesKey key)

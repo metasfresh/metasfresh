@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.greeting.GreetingId;
+import de.metas.job.JobId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,8 +24,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -60,6 +59,7 @@ public class BPartnerContact
 	public static final String NAME = "name";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String EMAIL = "email";
 	public static final String PHONE = "phone";
 	public static final String FAX = "fax";
@@ -67,6 +67,9 @@ public class BPartnerContact
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
 	public static final String ROLES = "roles";
+	public static final String PHONE2 = "phone2";
+	public static final String TITLE = "title";
+	public static final String JOB_ID = "jobId";
 
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String NEWSLETTER = "newsletter";
@@ -111,6 +114,10 @@ public class BPartnerContact
 
 	@JsonInclude(Include.NON_NULL)
 	@Nullable
+	private LocalDate birthday;
+
+	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String email;
 
 	@JsonInclude(Include.NON_NULL)
@@ -128,6 +135,12 @@ public class BPartnerContact
 	private String fax;
 
 	@Nullable
+	private String title;
+
+	@Nullable
+	private String phone2;
+
+	@Nullable
 	private String mobilePhone;
 
 	@Nullable
@@ -143,12 +156,12 @@ public class BPartnerContact
 
 	@Nullable
 	private OrgMappingId orgMappingId;
-
-	@Nullable
-	private LocalDate birthday;
-
+	
 	@Nullable
 	private BPartnerLocationId bPartnerLocationId;
+
+	@Nullable
+	private JobId jobId;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -174,6 +187,7 @@ public class BPartnerContact
 			@Nullable final String name,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
+			@Nullable final LocalDate birthday,
 			@Nullable final String email,
 			@Nullable final Boolean newsletter,
 			@Nullable final Boolean membershipContact,
@@ -187,9 +201,11 @@ public class BPartnerContact
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final LocalDate birthday,
+			@Nullable final String title,
+			@Nullable final String phone2,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
-			@Nullable final List<UserRole> roles)
+			@Nullable final List<UserRole> roles,
+			@Nullable final JobId jobId)
 	{
 		setId(id);
 
@@ -219,7 +235,10 @@ public class BPartnerContact
 		this.orgMappingId = orgMappingId;
 		this.bPartnerLocationId = bPartnerLocationId;
 		this.birthday = birthday;
+		this.phone2 = phone2;
+		this.title = title;
 		this.roles = roles;
+		this.jobId = jobId;
 	}
 
 	public BPartnerContact deepCopy()

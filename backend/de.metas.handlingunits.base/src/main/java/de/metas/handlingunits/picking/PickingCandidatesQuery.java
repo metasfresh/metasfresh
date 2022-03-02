@@ -1,13 +1,14 @@
 package de.metas.handlingunits.picking;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -39,21 +40,21 @@ public class PickingCandidatesQuery
 	boolean includeShippedHUs;
 
 	boolean onlyNotClosedOrNotRackSystem;
-	String pickingSlotBarcode;
+	@Nullable PickingSlotQRCode pickingSlotQRCode;
 
 	@Builder
 	private PickingCandidatesQuery(
 			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
 			final boolean includeShippedHUs,
 			final boolean onlyNotClosedOrNotRackSystem,
-			final String pickingSlotBarcode)
+			@Nullable final PickingSlotQRCode pickingSlotQRCode)
 	{
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 
 		this.includeShippedHUs = includeShippedHUs;
 
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem;
-		this.pickingSlotBarcode = pickingSlotBarcode;
+		this.pickingSlotQRCode = pickingSlotQRCode;
 	}
 
 }

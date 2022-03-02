@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -45,15 +47,19 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -63,6 +69,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class C_Order_StepDef
 {
@@ -75,13 +82,16 @@ public class C_Order_StepDef
 
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
+	private final StepDefData<I_M_PricingSystem> pricingSystemDataTable;
 
 	public C_Order_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final StepDefData<I_C_Order> orderTable,
+			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemDataTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.pricingSystemDataTable = pricingSystemDataTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -90,9 +100,13 @@ public class C_Order_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
+			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
+			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -101,9 +115,56 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+
+			final ZonedDateTime preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
+			if (preparationDateToBeSet != null)
+			{
+				order.setPreparationDate(TimeUtil.asTimestamp(preparationDateToBeSet));
+			}
+
+			final ZonedDateTime datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
+			if (datePromisedToBeSet != null)
+			{
+				order.setDatePromised(TimeUtil.asTimestamp(datePromisedToBeSet));
+			}
+
+			if (EmptyUtil.isNotBlank(poReference))
+			{
+				order.setPOReference(poReference);
+			}
+
+			if (paymentTermId > 0)
+			{
+				order.setC_PaymentTerm_ID(paymentTermId);
+			}
+
+			if(EmptyUtil.isNotBlank(pricingSystemIdentifier))
+			{
+				final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
+				assertThat(pricingSystem).isNotNull();
+				order.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+
+			}
+
+			if(EmptyUtil.isNotBlank(docBaseType))
+			{
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_DocSubType, null)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(docType).isNotNull();
+
+				order.setC_DocType_ID(docType.getC_DocType_ID());
+				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			}
+
 			saveRecord(order);
 
-			orderTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
+			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
@@ -124,6 +185,7 @@ public class C_Order_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String purchaseType = DataTableUtil.extractStringForColumnName(tableRow, "PurchaseType");
+			final boolean purchaseBomComponents = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsPurchaseBOMComponents", false);
 
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
@@ -137,6 +199,7 @@ public class C_Order_StepDef
 			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
 			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
 			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);
+			processInfoBuilder.addParameter("IsPurchaseBOMComponents", purchaseBomComponents);
 
 			processInfoBuilder
 					.buildAndPrepareExecution()
@@ -158,9 +221,11 @@ public class C_Order_StepDef
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
-					.create().firstOnly(I_C_Order.class);
+					.create()
+					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
+			assertThat(purchaseOrder).isNotNull();
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
@@ -168,7 +233,7 @@ public class C_Order_StepDef
 			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
 			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
 
-			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 		}
 	}
@@ -180,6 +245,15 @@ public class C_Order_StepDef
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
+	}
+
+	@Then("the sales order identified by {string} is not closed")
+	public void salesOrderIsNotClosed(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		assertThat(salesOrder.getDocStatus()).isNotEqualTo(IDocument.STATUS_Closed);
 	}
 
 	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")
@@ -209,7 +283,7 @@ public class C_Order_StepDef
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
 	}
 
-	@And("validate created order")
+	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
 		final Map<String, String> row = table.asMaps().get(0);
@@ -218,7 +292,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
 		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
@@ -261,7 +335,7 @@ public class C_Order_StepDef
 			final String groupCompensationType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationType);
 			final String groupCompensationAmtType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType);
 
-			final I_C_Order	orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+			final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalHeaderId)
 					.create()
 					.firstOnlyNotNull(I_C_Order.class);

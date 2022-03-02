@@ -144,6 +144,11 @@ describe.skip('MasterWindowContainer', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get('/login/isLoggedIn')
+      .reply(200, true);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .get(`/notifications/websocketEndpoint`)
       .reply(200, `/notifications/${userSessionData.userProfileId}`);
 

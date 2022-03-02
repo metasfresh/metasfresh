@@ -21,6 +21,8 @@ import {
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
 
+const EMPTY_ARRAY = [];
+
 /**
  * @file Class based component.
  * @module Filters
@@ -291,12 +293,12 @@ const mapStateToProps = (state, ownProps) => {
           unannotatedFilters: stateFilter.filterData,
           filtersActive: stateFilter.filtersActive,
         })
-      : [];
+      : EMPTY_ARRAY;
 
   const flatActiveFilterIds =
     stateFilter && stateFilter.filtersActive
       ? stateFilter.filtersActive.map((item) => item.filterId)
-      : [];
+      : EMPTY_ARRAY;
 
   return {
     allowOutsideClick,

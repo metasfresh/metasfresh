@@ -11,6 +11,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -20,8 +21,8 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
@@ -69,6 +70,7 @@ public class SalesInvoiceFactory
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 	public SalesInvoiceFactory(@NonNull final CommissionProductService commissionProductService)
 	{
@@ -127,6 +129,14 @@ public class SalesInvoiceFactory
 					logger.debug("C_InvoiceLine has M_Product_ID={}; -> return empty", invoiceLineRecord.getM_Product_ID());
 					continue;
 				}
+
+				final UomId uomId = UomId.ofRepoIdOrNull(invoiceLineRecord.getC_UOM_ID());
+				if (uomId == null)
+				{
+					logger.debug("C_InvoiceLine has C_UOM_ID={}; -> return empty", invoiceLineRecord.getC_UOM_ID());
+					continue;
+				}
+
 				if (commissionProductService.productPreventsCommissioning(productId))
 				{
 					logger.debug("C_InvoiceLine has M_Product_ID={} that prevents commissioning; -> return empty", invoiceLineRecord.getM_Product_ID());
@@ -139,17 +149,16 @@ public class SalesInvoiceFactory
 					continue;
 				}
 
-				final CommissionPoints commissionPoints = extractCommissionPoints(invoiceRecord, invoiceLineRecord)
+				final CommissionPoints invoicedCommissionPoints = extractInvoicedCommissionPoints(invoiceRecord, invoiceLineRecord)
 						.negateIf(invoiceIsCreditMemo);
 
 				final SalesInvoiceLineBuilder invoiceLine = SalesInvoiceLine.builder()
 						.id(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
-						.updated(TimeUtil.asInstant(invoiceLineRecord.getUpdated()))
-						.forecastCommissionPoints(CommissionPoints.ZERO)
-						.commissionPointsToInvoice(CommissionPoints.ZERO)
-						.invoicedCommissionPoints(commissionPoints)
-						.tradedCommissionPercent(Percent.ZERO) // we don't have this feature for invoice lines
-						.productId(productId);
+						.updated(TimeUtil.asInstantNonNull(invoiceLineRecord.getUpdated()))
+						.invoicedCommissionPoints(invoicedCommissionPoints)
+						.productId(productId)
+						.invoicedQty(invoiceLineBL.getQtyInvoicedStockUOM(invoiceLineRecord))
+						.currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
 
 				invoiceLines.add(invoiceLine.build());
 			}
@@ -163,40 +172,48 @@ public class SalesInvoiceFactory
 		final CommissionTriggerType triggerType = invoiceIsCreditMemo ? CommissionTriggerType.SalesCreditmemo : CommissionTriggerType.SalesInvoice;
 
 		return Optional.of(SalesInvoice.builder()
-				.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
-				.id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
-				.customerBPartnerId(customerBPartnerId)
-				.salesRepBPartnerId(salesRepBPartnerId)
-				.commissionDate(dateInvoiced)
-				.updated(TimeUtil.asInstant(invoiceRecord.getUpdated()))
-				.triggerType(triggerType)
-				.invoiceLines(ImmutableList.copyOf(invoiceLines))
-				.build());
+								   .orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
+								   .id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
+								   .customerBPartnerId(customerBPartnerId)
+								   .salesRepBPartnerId(salesRepBPartnerId)
+								   .commissionDate(dateInvoiced)
+								   .updated(TimeUtil.asInstantNonNull(invoiceRecord.getUpdated()))
+								   .triggerType(triggerType)
+								   .currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()))
+								   .invoiceLines(ImmutableList.copyOf(invoiceLines))
+								   .build());
 	}
 
-	private CommissionPoints extractCommissionPoints(
+	@NonNull
+	private CommissionPoints extractInvoicedCommissionPoints(
 			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final I_C_InvoiceLine invoiceLineRecord)
 	{
-		final Money forecastNetAmt = Money.of(invoiceLineRecord.getLineNetAmt(), CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
+		final Money invoicedLineAmount = Money.of(invoiceLineRecord.getLineNetAmt(), CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
 
-		final CommissionPoints forecastCommissionPoints = CommissionPoints.of(forecastNetAmt.toBigDecimal());
+		final CommissionPoints forecastCommissionPoints = CommissionPoints.of(invoicedLineAmount.toBigDecimal());
 
-		return deductTaxAmount(forecastCommissionPoints, invoiceLineRecord);
+		return deductTaxAmount(forecastCommissionPoints, invoiceLineRecord, invoiceRecord.isTaxIncluded());
 	}
 
+	@NonNull
 	private CommissionPoints deductTaxAmount(
 			@NonNull final CommissionPoints commissionPoints,
-			@NonNull final I_C_InvoiceLine invoiceLineRecord)
+			@NonNull final I_C_InvoiceLine invoiceLineRecord,
+			final boolean isTaxIncluded)
 	{
 		if (commissionPoints.isZero())
 		{
 			return commissionPoints;
 		}
 
-		final BigDecimal taxAdjustedAmount = invoiceLineRecord
-				.getLineNetAmt()
-				.subtract(invoiceLineRecord.getTaxAmtInfo());
+		BigDecimal taxAdjustedAmount = invoiceLineRecord.getLineNetAmt();
+
+		if (isTaxIncluded)
+		{
+			taxAdjustedAmount = taxAdjustedAmount.subtract(invoiceLineRecord.getTaxAmtInfo());
+		}
+
 		return CommissionPoints.of(taxAdjustedAmount);
 	}
 }

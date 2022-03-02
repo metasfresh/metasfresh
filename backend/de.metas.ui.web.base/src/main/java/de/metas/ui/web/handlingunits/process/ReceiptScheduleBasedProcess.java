@@ -63,6 +63,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
 		setAttributeLotNumber(hu, huAttributes);
 		setAttributeBBD(receiptSchedule, huAttributes);
+		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
 	private void setAttributeLotNumber(final @NonNull I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
@@ -90,6 +91,21 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 			if (bestBeforeDate != null)
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				huAttributes.saveChangesIfNeeded();
+			}
+		}
+	}
+
+	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
+	{
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
+		{
+			final int bpId = receiptSchedule.getC_BPartner_ID();
+			if (bpId > 0)
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
+				huAttributes.setSaveOnChange(true);
 				huAttributes.saveChangesIfNeeded();
 			}
 		}

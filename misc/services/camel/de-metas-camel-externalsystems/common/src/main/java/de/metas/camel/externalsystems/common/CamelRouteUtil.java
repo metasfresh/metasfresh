@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;

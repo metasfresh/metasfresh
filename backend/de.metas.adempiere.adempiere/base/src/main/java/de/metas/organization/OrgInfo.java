@@ -2,6 +2,7 @@ package de.metas.organization;
 
 import java.time.ZoneId;
 
+import de.metas.user.UserGroupId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -68,4 +69,10 @@ public class OrgInfo
 	BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
 	ZoneId timeZone;
+
+
+	@Nullable
+	UserGroupId supplierApprovalExpirationNotifyUserGroupID;
+	@Nullable
+	UserGroupId partnerCreatedFromAnotherOrgNotifyUserGroupID;
 }

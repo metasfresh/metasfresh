@@ -22,13 +22,7 @@ package de.metas.pricing;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
@@ -43,10 +37,18 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Result of a pricing calculation
- *
  */
 public interface IPricingResult
 {
@@ -88,6 +90,8 @@ public interface IPricingResult
 	Percent getDiscount();
 
 	void setDiscount(Percent discount);
+
+	boolean isDiscountCalculated();
 
 	CurrencyPrecision getPrecision();
 
@@ -155,7 +159,6 @@ public interface IPricingResult
 	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
 
 	/**
-	 *
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
 	LocalDate getPriceDate();
@@ -168,7 +171,9 @@ public interface IPricingResult
 
 	void setDiscountEditable(boolean isDiscountEditable);
 
-	/** This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.*/
+	/**
+	 * This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.
+	 */
 	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
 
 	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
@@ -180,12 +185,4 @@ public interface IPricingResult
 	IPricingResult setLoggableMessages(ImmutableList<String> singleMessages);
 
 	ImmutableList<String> getLoggableMessages();
-
-	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
-
-	BigDecimal getBaseCommissionPointsPerPriceUOM();
-
-	void setTradedCommissionPercent(Percent tradedCommissionPercent);
-
-	Percent getTradedCommissionPercent();
 }

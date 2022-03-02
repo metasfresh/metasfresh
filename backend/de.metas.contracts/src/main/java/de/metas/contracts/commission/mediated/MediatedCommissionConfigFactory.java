@@ -32,6 +32,7 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigPriority;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.ICommissionConfigFactory;
 import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig;
@@ -120,6 +121,19 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 	public boolean appliesFor(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
 		return CommissionTriggerType.MediatedOrder.equals(contractRequest.getCommissionTriggerType());
+	}
+
+	@Override
+	public boolean isFurtherSearchForConfigTypesAllowed()
+	{
+		return true;
+	}
+
+	@Override
+	@NonNull
+	public CommissionConfigPriority getPriority()
+	{
+		return CommissionConfigPriority.ZERO;
 	}
 
 	private Optional<CommissionConfig> createCommissionConfigs(

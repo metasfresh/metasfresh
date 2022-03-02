@@ -283,7 +283,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// metas: additional fields
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, C_Invoice_INCOTERMLOCATION);
 		ship.setDescriptionBottom(getDescriptionBottom());
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
@@ -360,7 +360,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -381,6 +381,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(order.getC_ConversionType_ID());
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
+			setC_Incoterms_ID(order.getC_Incoterms_ID());
+			setIncotermLocation(order.getIncotermLocation());
 			//
 			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
@@ -707,7 +709,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if (Check.isEmpty(getIncoterm()))
+		if (getC_Incoterms_ID() <= 0)
 		{
 			setIncotermLocation("");
 		}

@@ -1,17 +1,19 @@
 package de.metas.business;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import org.compiere.model.I_C_InvoiceLine;
-
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.compiere.model.I_C_InvoiceLine;
+
+import java.math.BigDecimal;
+
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -42,6 +44,9 @@ public class TestInvoiceLine
 	@NonNull
 	private final ProductId productId;
 
+	@NonNull
+	private final UomId uomId;
+
 	private I_C_InvoiceLine invoiceLineRecord;
 
 	private InvoiceLineId invoiceLineId;
@@ -54,6 +59,8 @@ public class TestInvoiceLine
 		invoiceLineRecord.setC_Invoice_ID(invoiceId.getRepoId());
 		invoiceLineRecord.setM_Product_ID(productId.getRepoId());
 		invoiceLineRecord.setExternalIds(externalIds);
+		invoiceLineRecord.setC_UOM_ID(uomId.getRepoId());
+		invoiceLineRecord.setQtyInvoiced(BigDecimal.TEN);
 		saveRecord(invoiceLineRecord);
 
 		invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { detect } from 'detect-browser';
 
 import LoginForm from '../components/app/LoginForm';
@@ -11,7 +11,7 @@ const BROWSER = detect();
  * @module Login
  * @extends Component
  */
-class Login extends Component {
+class Login extends PureComponent {
   /**
    * @method browserSupport
    * @summary Method checking if user is using a supported browser

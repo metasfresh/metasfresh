@@ -7,7 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -603,4 +603,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.create()
+				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
+	}
 }

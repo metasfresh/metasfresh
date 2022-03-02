@@ -1182,4 +1182,10 @@ public class OrderBL implements IOrderBL
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
 	}
+
+	@Override
+	public String getDocumentNoById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDocumentNo();
+	}
 }

@@ -10,7 +10,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.IdConstants;
+import de.metas.common.util.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -51,8 +51,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.NULL_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
+import static de.metas.common.util.IdConstants.NULL_REPO_ID;
+import static de.metas.common.util.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
@@ -283,27 +283,27 @@ public class CandidateRepositoryWriteService
 			previousTime = null;
 		}
 
-		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(
+		final I_MD_Candidate syncedRecord = updateOrCreateCandidateRecord(
 				oldCandidateRecord,
 				candidate,
 				preserveExistingSeqNoAndParentId);
-		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
+		save(syncedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
-		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
+		setFallBackSeqNoAndGroupIdIfNeeded(syncedRecord);
 
-		addOrReplaceProductionDetail(candidate, synchedRecord);
+		addOrReplaceProductionDetail(candidate, syncedRecord);
 
-		addOrReplaceDistributionDetail(candidate, synchedRecord);
+		addOrReplaceDistributionDetail(candidate, syncedRecord);
 
-		addOrReplaceDemandDetail(candidate, synchedRecord);
+		addOrReplaceDemandDetail(candidate, syncedRecord);
 
-		addOrReplacePurchaseDetail(candidate, synchedRecord);
+		addOrReplacePurchaseDetail(candidate, syncedRecord);
 
-		addOrReplaceTransactionDetail(candidate, synchedRecord);
+		addOrReplaceTransactionDetail(candidate, syncedRecord);
 
-		addOrReplaceStockChangeDetail(candidate, synchedRecord);
+		addOrReplaceStockChangeDetail(candidate, syncedRecord);
 
-		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, synchedRecord);
+		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, syncedRecord);
 
 		// add a log message to be shown in the event log
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
@@ -400,7 +400,7 @@ public class CandidateRepositoryWriteService
 			}
 		}
 
-		updatCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
+		updateCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -452,7 +452,7 @@ public class CandidateRepositoryWriteService
 	 * <p>
 	 * Note that we have them as physical columns for performance reasons.
 	 */
-	private void updatCandidateRecordFromDemandDetail(
+	private void updateCandidateRecordFromDemandDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
 			@Nullable final DemandDetail demandDetail)
 	{
@@ -558,6 +558,8 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
+		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(DocStatus.toCodeOrNull(productionDetail.getPpOrderDocStatus()));
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
@@ -44,6 +45,8 @@ public interface IInvoiceHeader
 
 	BPartnerId getSalesPartnerId();
 
+	UserId getSalesRepId();
+
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();
 
@@ -73,4 +76,8 @@ public interface IInvoiceHeader
 	String getExternalId();
 
 	int getC_Async_Batch_ID();
+
+	int getC_Incoterms_ID();
+
+	String getIncotermLocation();
 }

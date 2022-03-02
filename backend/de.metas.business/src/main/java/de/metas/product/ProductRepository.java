@@ -189,7 +189,11 @@ public class ProductRepository
 		bPartnerProduct.setIngredients(request.getIngredients());
 		bPartnerProduct.setShelfLifeMinPct(0); // FIXME
 		bPartnerProduct.setShelfLifeMinDays(0); // FIXME
-		bPartnerProduct.setExclusionFromSaleReason(request.getExclusionFromSalesReason());
+
+		if (request.getUsedForVendor() != null)
+		{
+			bPartnerProduct.setUsedForVendor(request.getUsedForVendor());
+		}
 
 		if (request.getDropShip() != null)
 		{
@@ -200,12 +204,27 @@ public class ProductRepository
 		if (request.getIsExcludedFromSales() != null)
 		{
 			bPartnerProduct.setIsExcludedFromSale(request.getIsExcludedFromSales());
+
+			if (request.getIsExcludedFromSales())
+			{
+				bPartnerProduct.setExclusionFromSaleReason(request.getExclusionFromSalesReason());
+			}
 		}
 
 		if (request.getCurrentVendor() != null)
 		{
 			bPartnerProduct.setIsCurrentVendor(request.getCurrentVendor());
 
+		}
+
+		if (request.getIsExcludedFromPurchase() != null)
+		{
+			bPartnerProduct.setIsExcludedFromPurchase(request.getIsExcludedFromPurchase());
+
+			if (request.getIsExcludedFromPurchase())
+			{
+				bPartnerProduct.setExclusionFromPurchaseReason(request.getExclusionFromPurchaseReason());
+			}
 		}
 
 		saveRecord(bPartnerProduct);
@@ -312,6 +331,14 @@ public class ProductRepository
 		record.setIsExcludedFromSale(bPartnerProduct.getIsExcludedFromSales() != null ? bPartnerProduct.getIsExcludedFromSales() : record.isExcludedFromSale());
 		record.setExclusionFromSaleReason(bPartnerProduct.getExclusionFromSalesReason());
 		record.setIsDropShip(bPartnerProduct.getDropShip() != null ? bPartnerProduct.getDropShip() : record.isDropShip());
+		record.setUsedForVendor(Boolean.TRUE.equals(bPartnerProduct.getUsedForVendor()));
+
+		if (bPartnerProduct.getIsExcludedFromPurchase() != null)
+		{
+			record.setIsExcludedFromPurchase(bPartnerProduct.getIsExcludedFromPurchase());
+		}
+
+		record.setExclusionFromPurchaseReason(bPartnerProduct.getExclusionFromPurchaseReason());
 
 		return record;
 	}
@@ -333,7 +360,11 @@ public class ProductRepository
 				.ingredients(record.getIngredients())
 				.currentVendor(record.isCurrentVendor())
 				.isExcludedFromSales(record.isExcludedFromSale())
+				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
+				.isExcludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
 				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
 				.build();
 	}
 }

@@ -22,14 +22,14 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;

@@ -1,12 +1,14 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_WF_Node
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_AD_WF_Node 
 {
 
@@ -106,7 +108,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
-	 * Set Bild.
+	 * Set Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -116,7 +118,7 @@ public interface I_AD_WF_Node
 	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
-	 * Get Bild.
+	 * Get Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -155,7 +157,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -165,7 +167,7 @@ public interface I_AD_WF_Node
 	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
@@ -324,7 +326,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -334,7 +336,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -886,6 +888,27 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_OverlapUnits = "OverlapUnits";
 
 	/**
+	 * Set Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Activity_Type (@Nullable java.lang.String PP_Activity_Type);
+
+	/**
+	 * Get Manufacturing Activity Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_Activity_Type();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_Activity_Type = new ModelColumn<>(I_AD_WF_Node.class, "PP_Activity_Type", null);
+	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
+
+	/**
 	 * Set Priorität.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
@@ -957,7 +980,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir
@@ -967,7 +990,7 @@ public interface I_AD_WF_Node
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir

@@ -17,7 +17,6 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -30,6 +29,7 @@ import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.util.Check;
@@ -279,6 +279,7 @@ final class BPartnerCompositeSaver
 				locationType.getBillToDefault().ifPresent(bpartnerLocationRecord::setIsBillToDefault);
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
+				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(bpartnerLocation);
@@ -497,8 +498,10 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
 
 			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
+			bpartnerContactRecord.setPhone2(bpartnerContact.getPhone2());
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
+			bpartnerContactRecord.setTitle(bpartnerContact.getTitle());
 
 			String invoiceEmailEnabled = null;
 
