@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.util.Check;
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
+@Value
 public class CallOrderSummaryId implements RepoIdAware
 {
 	int repoId;

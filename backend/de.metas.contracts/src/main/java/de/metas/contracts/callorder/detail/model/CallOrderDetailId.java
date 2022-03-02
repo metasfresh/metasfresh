@@ -26,7 +26,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
+@Value
 public class CallOrderDetailId implements RepoIdAware
 {
 	int repoId;
