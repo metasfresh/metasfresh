@@ -73,10 +73,7 @@ class DatePicker extends Component {
   };
 
   /**
-   * @method handleBlur
-   * @summary Called on doubleclick of a day field. Sets the date and closes the calendar
-   * widget
-   * @param {*} date
+   * @summary Called on doubleclick of a day field. Sets the date and closes the calendar widget
    */
   handleBlur = (date) => {
     const {
@@ -171,8 +168,8 @@ class DatePicker extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeydown = (e) => {
-    e.stopPropagation();
+  handleKeydown = (event) => {
+    event.stopPropagation();
   };
 
   /**
