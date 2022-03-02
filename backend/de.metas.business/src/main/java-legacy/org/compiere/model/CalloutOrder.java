@@ -355,7 +355,6 @@ public class CalloutOrder extends CalloutEngine
 		final boolean IsSOTrx = order.isSOTrx();
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 		final String userFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
-		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		final StringBuilder sqlQueryBL = new StringBuilder();
 
@@ -395,8 +394,10 @@ public class CalloutOrder extends CalloutEngine
 		sqlQueryBL.append("	 lship.").append(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).append(" desc ,");
 		sqlQueryBL.append("	 lbill.").append(I_C_BPartner_Location.COLUMNNAME_IsBillTo).append(" desc ,");
 		sqlQueryBL.append("	 lship.").append(I_C_BPartner_Location.COLUMNNAME_IsShipTo).append(" desc ,");
-		sqlQueryBL.append("	 uship.").append(org.compiere.model.I_AD_User.COLUMNNAME_IsShipToContact_Default).append(" desc, ");
-		sqlQueryBL.append("	 ubill.").append(org.compiere.model.I_AD_User.COLUMNNAME_IsBillToContact_Default).append(" desc ");
+		sqlQueryBL.append("	 uship.").append(I_AD_User.COLUMNNAME_IsShipToContact_Default).append(" desc, ");
+		sqlQueryBL.append("	 ubill.").append(I_AD_User.COLUMNNAME_IsBillToContact_Default).append(" desc, ");
+		sqlQueryBL.append("	 uship.").append(I_AD_User.COLUMNNAME_IsDefaultContact).append(" desc, ");
+		sqlQueryBL.append("	 ubill.").append(I_AD_User.COLUMNNAME_IsDefaultContact).append(" desc ");
 
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
@@ -498,6 +499,7 @@ public class CalloutOrder extends CalloutEngine
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
 					final BPartnerContactId tabInfoContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
+
 					if (tabInfoContactId != null)
 					{
 						shipUserId = tabInfoContactId;
@@ -528,6 +530,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// SO Description
 				final String soDescription = rs.getString("SO_Description");
+
 				if (!Check.isEmpty(soDescription, true))
 				{
 					order.setDescription(soDescription);
