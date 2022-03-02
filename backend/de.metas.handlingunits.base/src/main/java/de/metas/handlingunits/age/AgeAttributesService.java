@@ -1,49 +1,39 @@
 package de.metas.handlingunits.age;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.cache.CCache;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
-/*
- * #%L
- * metasfresh-pharma
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CCache;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class AgeAttributesService
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-	private final CCache<Integer, AgeValues> cache = CCache.<Integer, AgeValues> builder()
+	private final CCache<Integer, AgeValues> cache = CCache.<Integer, AgeValues>builder()
 			.tableName(IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE)
 			.build();
 
@@ -94,4 +84,71 @@ public class AgeAttributesService
 
 		return attributesRepo.retrieveAttributeValues(age);
 	}
+
+	public List<Object> getSuitableValues(final Set<BPartnerId> bPartnerIds, final Set<ProductId> productIds, final Object attributeValue)
+	{
+		int pickingAgeTolerance_BeforeMonths = 0;
+		int pickingAgeTolerance_AfterMonths = 0;
+
+		for (final ProductId productId : productIds)
+		{
+			final I_M_Product product = productDAO.getById(productId);
+
+			final int productBefore = product.getPicking_AgeTolerance_BeforeMonths();
+
+			pickingAgeTolerance_BeforeMonths = productBefore;
+
+			final int productAfter = product.getPicking_AgeTolerance_AfterMonths();
+
+			if (productAfter < pickingAgeTolerance_AfterMonths)
+			{
+				pickingAgeTolerance_AfterMonths = productAfter;
+			}
+
+			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
+
+			for (final BPartnerId bpartnerId : bPartnerIds)
+			{
+				if (bpartnerId == null)
+				{
+					continue;
+				}
+				final I_C_BPartner partner = partnerDAO.getById(bpartnerId);
+				final I_C_BPartner_Product bPartnerProduct = bpartnerProductDAO.retrieveBPProductForCustomer(partner, product, orgId);
+
+				if (bPartnerProduct != null)
+				{
+					final int bpartnerProductBefore = bPartnerProduct.getPicking_AgeTolerance_BeforeMonths();
+
+					pickingAgeTolerance_BeforeMonths = bpartnerProductBefore;
+
+					final int bpartnerProductAfter = bPartnerProduct.getPicking_AgeTolerance_AfterMonths();
+
+					pickingAgeTolerance_AfterMonths = bpartnerProductAfter;
+
+				}
+			}
+		}
+
+		final int minimumValue = Integer.parseInt(attributeValue.toString()) - pickingAgeTolerance_BeforeMonths;
+		final int maximumValue = Integer.parseInt(attributeValue.toString()) + pickingAgeTolerance_AfterMonths;
+
+		final List<Object> suitableValues = new ArrayList<>();
+		final List<AttributeListValue> allAgeValues = getAllAgeValues();
+
+		for (
+				final AttributeListValue ageValue : allAgeValues)
+
+		{
+			final int ageValueInt = ageValue.getValueAsInt();
+
+			if (ageValueInt >= minimumValue && ageValueInt <= maximumValue)
+			{
+				suitableValues.add(ageValue.getValue());
+			}
+		}
+
+		return suitableValues;
+	}
+
 }

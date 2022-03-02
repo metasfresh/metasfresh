@@ -28,6 +28,8 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -42,6 +44,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,12 +62,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * A HU-based IStorageQuery implementation.
  * <p>
  * <b>IMPORTANT</b> this implementation will ignore HUs that are located in a <code>M_Locator</code> with {@link I_M_Locator#COLUMNNAME_IsAfterPickingLocator IsAfterPickingLocator} <code>='Y'</code>,
  * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
- *
  */
 @EqualsAndHashCode
 @ToString
@@ -76,12 +77,14 @@ public class HUStorageQuery implements IStorageQuery
 		return (HUStorageQuery)storageQuery;
 	}
 
+	private final AgeAttributesService ageAttributesService;
 	private final IHUQueryBuilder huQueryBuilder;
 	private transient ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 
-	/* package */ HUStorageQuery()
+	/* package */ HUStorageQuery(final AgeAttributesService ageAttributesService)
 	{
+		this.ageAttributesService = ageAttributesService;
 		// services
 		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
@@ -270,6 +273,17 @@ public class HUStorageQuery implements IStorageQuery
 		// Add attribute query restrictions
 		final List<Object> attributeValues = Collections.singletonList(attributeValue);
 		huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+
+		if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+		{
+			final List<Object> ageValues = ageAttributesService.getSuitableValues(getBPartnerIds(), getProductIds(), attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
+		}
+		else
+		{
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		}
 
 		return this;
 	}
