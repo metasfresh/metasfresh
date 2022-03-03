@@ -493,21 +493,26 @@ public class CalloutOrder extends CalloutEngine
 				// calcLocation(ctx, WindowNo, mTab, mField, value);
 
 				// Contact - overwritten by InfoBP selection
-				BPartnerContactId shipUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("shipto_User_ID"));
-				BPartnerContactId billUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("billto_User_ID"));
+				BPartnerContactId shipContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("shipto_User_ID"));
+				BPartnerContactId billContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("billto_User_ID"));
 
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					final BPartnerContactId tabInfoContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
-
-					if (tabInfoContactId != null)
+					final BPartnerContactId tabInfoShipContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
+					if (tabInfoShipContactId != null)
 					{
-						shipUserId = tabInfoContactId;
+						shipContactId = tabInfoShipContactId;
+					}
+
+					final BPartnerContactId tabInfoBillContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("Bill_User_ID"));
+					if (tabInfoBillContactId != null)
+					{
+						billContactId = tabInfoBillContactId;
 					}
 				}
 
-				order.setAD_User_ID(BPartnerContactId.toRepoId(shipUserId));
-				order.setBill_User_ID(BPartnerContactId.toRepoId(billUserId));
+				order.setAD_User_ID(BPartnerContactId.toRepoId(shipContactId));
+				order.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
 
 				// CreditAvailable
 				if (IsSOTrx)
