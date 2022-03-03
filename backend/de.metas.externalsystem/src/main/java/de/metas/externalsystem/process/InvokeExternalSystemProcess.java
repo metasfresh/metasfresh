@@ -147,7 +147,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	/**
 	 * Needed so we also have a "since" when the process is run via AD_Scheduler.
-	 * This might be the process's last invocation time. Note that oftentimes, there is also a runtime-parameter with the actual valud used by the external system.
+	 * This might be the process's last invocation time. Note that oftentimes, there is also a runtime-parameter with the actual value used by the external system.
 	 */
 	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
