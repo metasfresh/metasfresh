@@ -5,10 +5,19 @@ DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_hu_update_qtycount(
 )
 ;
 
+DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_hu_update_qtycount(
+    p_M_Inventory_ID  numeric,
+    p_DryRun          char(1),
+    p_UpdateHUQtyBook char(1),
+    p_FailOnError     char(1)
+)
+;
+
 CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_hu_update_qtycount(
     p_M_Inventory_ID  numeric,
     p_DryRun          char(1) = 'N',
-    p_UpdateHUQtyBook char(1) = 'N'
+    p_UpdateHUQtyBook char(1) = 'N',
+    p_FailOnError     char(1) = 'Y'
 )
     RETURNS VOID
 AS
@@ -135,13 +144,19 @@ BEGIN
                         v_huQtyCount, v_huUomSymbol,
                         v_currentInventoryLineHU.qtycount, v_currentInventoryLineHU.uomsymbol,
                         v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol;
-                END LOOP;
+                END LOOP; -- v_currentInventoryLineHU
 
-            RAISE NOTICE '     remaining Qty to allocate=% % %',
-                v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol,
-                (CASE WHEN v_qtyToAllocateRemaining != 0 THEN '!!!' ELSE '' END);
+            IF (v_qtyToAllocateRemaining = 0) THEN
+                RAISE NOTICE '     => OK, fully allocated';
+            ELSE
+                RAISE NOTICE '     => NOK, failed to allocate % % remaining', v_qtyToAllocateRemaining, v_currentInventoryLine.uomsymbol;
+                IF (p_FailOnError = 'Y') THEN
+                ELSE
+                    RAISE EXCEPTION 'Failing on error!';
+                END IF;
+            END IF;
         END LOOP;
-END;
+END ;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE
