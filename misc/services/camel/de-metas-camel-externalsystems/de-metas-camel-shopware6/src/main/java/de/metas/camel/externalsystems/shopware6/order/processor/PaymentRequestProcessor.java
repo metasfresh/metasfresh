@@ -72,9 +72,9 @@ public class PaymentRequestProcessor implements Processor
 		final boolean isPaypalType = PaymentMethodType.PAY_PAL_PAYMENT_HANDLER.getValue().equals(paymentMethod.getShortName());
 		final boolean isPaid = TechnicalNameEnum.PAID.getValue().equals(orderTransaction.getStateMachine().getTechnicalName());
 
-		if (!isPaypalType || !isPaid)
+		if (!(isPaypalType && isPaid))
 		{
-			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping the current payment based on paid status & paypal type!"
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping sending current payment as is would have to be 'paypal' and 'paid'!"
 											 + " PaymentId = " + orderTransaction.getId()
 											 + " paidStatus = " + isPaid
 											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));
