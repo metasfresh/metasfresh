@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
@@ -80,12 +81,13 @@ public class OrderFilter implements Processor
 
 	private Optional<OrderCandidate> checkOrderState(@NonNull final OrderCandidate orderAndCustomId, @Nullable final Integer adPInstanceId)
 	{
-		final JsonStateMachine stateMachine = orderAndCustomId.getJsonOrder().getStateMachine();
+		final JsonOrder order = orderAndCustomId.getJsonOrder();
+		final JsonStateMachine stateMachine = order.getStateMachine();
 
 		if (stateMachine == null
 				|| !TechnicalNameEnum.OPEN.getValue().equals(stateMachine.getTechnicalName()))
 		{
-			processLogger.logMessage("*** Skipping the current order due to stateMachineState! StateMachineState: " + stateMachine, adPInstanceId);
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping due to StateMachineState=" + stateMachine, adPInstanceId);
 			return Optional.empty();
 		}
 
@@ -97,18 +99,19 @@ public class OrderFilter implements Processor
 			@NonNull final OrderCandidate orderAndCustomId,
 			@NonNull final ShopwareClient shopwareClient)
 	{
-		final Optional<JsonOrderTransactions> orderTransactions = shopwareClient.getOrderTransactions(orderAndCustomId.getJsonOrder().getId());
+		final JsonOrder order = orderAndCustomId.getJsonOrder();
+		final Optional<JsonOrderTransactions> orderTransactions = shopwareClient.getOrderTransactions(order.getId());
 
 		if (orderTransactions.isEmpty()
 				|| orderTransactions.get().getTransactionList().get(0) == null)
 		{
-			processLogger.logMessage("*** Skipping the current order as there are no transactions available! OrderId: " + orderAndCustomId.getJsonOrder().getId(), adPInstanceId);
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping as there are no transactions available!", adPInstanceId);
 			return Optional.empty();
 		}
 
 		if (orderTransactions.get().getTransactionList().size() > 1)
 		{
-			throw new RuntimeException("Multiple transactions returned for orderID=" + orderAndCustomId.getJsonOrder().getId());
+			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Multiple transactions returned");
 		}
 
 		final JsonOrderTransaction orderTransaction = orderTransactions.get().getTransactionList().get(0);
@@ -116,14 +119,13 @@ public class OrderFilter implements Processor
 
 		if (paymentMethod.isEmpty())
 		{
-			processLogger.logMessage("No payment method was found for id: " + orderTransaction.getId() + "; OrderId=" + orderAndCustomId.getJsonOrder().getId(), adPInstanceId);
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping because no payment method was found for transactionId=" + orderTransaction.getId(), adPInstanceId);
 			return Optional.empty();
 		}
 
 		if (!isOrderReadyForImportBasedOnTrx(orderTransaction, paymentMethod.get()))
 		{
-			processLogger.logMessage("*** Skipping the current order based on transaction status & payment method! OrderId = "
-											 + orderAndCustomId.getJsonOrder().getId()
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping based on transaction status & payment method"
 											 + " transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
 											 + " paymentType = " + paymentMethod.get().getShortName(), adPInstanceId);
 			return Optional.empty();

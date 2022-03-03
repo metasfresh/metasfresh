@@ -56,7 +56,7 @@ public class OrderCandidate
 
 		if (customIdNode == null || Check.isBlank(customIdNode.asText()))
 		{
-			throw new RuntimeException("Failed to process order: " + jsonOrder.getId() + " ;Nothing found on the given customPath: " + customPath);
+			throw new RuntimeException("Failed to process order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "); Nothing found on the given customPath: " + customPath);
 		}
 
 		return customIdNode.asText();

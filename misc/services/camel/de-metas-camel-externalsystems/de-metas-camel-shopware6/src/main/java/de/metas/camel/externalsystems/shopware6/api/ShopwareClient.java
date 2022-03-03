@@ -487,7 +487,7 @@ public class ShopwareClient
 	{
 		if (orderJson == null)
 		{
-			pInstanceLogger.logMessage("Skipping the current 'order' ; no value found for orderJson node!");
+			pInstanceLogger.logMessage("Skipping the current 'order' because orderJson is null!");
 			return Optional.empty();
 		}
 
@@ -497,7 +497,7 @@ public class ShopwareClient
 
 			if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
 			{
-				pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; jsonOrder.getOrderCustomer().getCustomerId() is null!");
+				pInstanceLogger.logMessage("Order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "): Skipping because jsonOrder.getOrderCustomer().getCustomerId() is null!");
 				return Optional.empty();
 			}
 

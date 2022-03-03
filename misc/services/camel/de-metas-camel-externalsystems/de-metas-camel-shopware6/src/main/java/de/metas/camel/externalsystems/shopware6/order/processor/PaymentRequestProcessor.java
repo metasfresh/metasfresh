@@ -67,20 +67,19 @@ public class PaymentRequestProcessor implements Processor
 	{
 		final JsonPaymentMethod paymentMethod = context.getCompositeOrderNotNull().getJsonPaymentMethod();
 		final JsonOrderTransaction orderTransaction = context.getCompositeOrderNotNull().getOrderTransaction();
+		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
 		final boolean isPaypalType = PaymentMethodType.PAY_PAL_PAYMENT_HANDLER.getValue().equals(paymentMethod.getShortName());
 		final boolean isPaid = TechnicalNameEnum.PAID.getValue().equals(orderTransaction.getStateMachine().getTechnicalName());
 
 		if (!isPaypalType || !isPaid)
 		{
-			processLogger.logMessage("*** Skipping the current payment based on paid status & paypal type!"
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping the current payment based on paid status & paypal type!"
 											 + " PaymentId = " + orderTransaction.getId()
 											 + " paidStatus = " + isPaid
 											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));
 			return Optional.empty();
 		}
-
-		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
 		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
 
