@@ -47,7 +47,7 @@ pgadmin:
   defaultPassword: metasfresh
 
 webapi:
-  image: exus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:master_dockerimages_5.175.2_36_masterdockerimages
+  image: nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:master_dockerimages_5.175.2_36_masterdockerimages
   port:
     webapi: 8080
     debug: 8789
