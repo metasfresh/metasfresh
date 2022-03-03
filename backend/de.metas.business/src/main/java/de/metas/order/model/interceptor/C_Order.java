@@ -230,17 +230,20 @@ public class C_Order
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
-		final PaymentRule paymentRule;
-		if (bpartner != null && bpartner.getPaymentRule() != null)
+		if (!InterfaceWrapperHelper.isCopying(order))
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			final I_C_BPartner bpartner = order.getC_BPartner();
+			final PaymentRule paymentRule;
+			if (bpartner != null && bpartner.getPaymentRule() != null)
+			{
+				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			}
+			else
+			{
+				paymentRule = invoiceBL.getDefaultPaymentRule();
+			}
+			order.setPaymentRule(paymentRule.getCode());
 		}
-		else
-		{
-			paymentRule = invoiceBL.getDefaultPaymentRule();
-		}
-		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
