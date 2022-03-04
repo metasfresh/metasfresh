@@ -248,7 +248,7 @@ public class InvoiceCandidateRecordService
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		if (icRecord.isInDispute())
+		if (icRecord.getQtyWithIssues_Effective().signum() != 0)
 		{
 			icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
 		}
