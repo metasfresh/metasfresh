@@ -76,4 +76,10 @@ public class LoadESRImportFileWorkpackageProcessor extends WorkpackageProcessorA
 		Services.get(IESRImportBL.class).process(esrImport);
 
 	}
+
+	@Override
+	public boolean isRunInTransaction()
+	{
+		return false;
+	}
 }
