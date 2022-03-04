@@ -177,17 +177,20 @@ public class C_Invoice // 03771
 	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Invoice invoice)
 	{
-		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-		final PaymentRule paymentRule;
-		if (bpartner != null && bpartner.getPaymentRule() != null)
+		if (!InterfaceWrapperHelper.isCopying(invoice))
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+			final PaymentRule paymentRule;
+			if (bpartner != null && bpartner.getPaymentRule() != null)
+			{
+				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			}
+			else
+			{
+				paymentRule = invoiceBL.getDefaultPaymentRule();
+			}
+			invoice.setPaymentRule(paymentRule.getCode());
 		}
-		else
-		{
-			paymentRule = invoiceBL.getDefaultPaymentRule();
-		}
-		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
