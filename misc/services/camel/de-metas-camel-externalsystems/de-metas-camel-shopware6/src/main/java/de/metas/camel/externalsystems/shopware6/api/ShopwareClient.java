@@ -53,7 +53,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -170,7 +169,8 @@ public class ShopwareClient
 	@NonNull
 	public Optional<OrderAddressDetails> getOrderAddressDetails(
 			@NonNull final String orderAddressId,
-			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String customShopwareIdJSONPath,
+			@Nullable final String customMetasfreshIdJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -195,7 +195,10 @@ public class ShopwareClient
 		{
 			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
 
-			return getOrderAddressDetails(jsonNode.get(JSON_NODE_DATA), customIdentifierJSONPath, emailJSONPath);
+			return getOrderAddressDetails(jsonNode.get(JSON_NODE_DATA),
+										  customShopwareIdJSONPath,
+										  customMetasfreshIdJSONPath,
+										  emailJSONPath);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -206,7 +209,8 @@ public class ShopwareClient
 	@NonNull
 	public List<OrderDeliveryItem> getDeliveryAddresses(
 			@NonNull final String orderId,
-			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String customShopwareIdentifierJSONPath,
+			@Nullable final String customMetasfreshIdentifierJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -244,7 +248,10 @@ public class ShopwareClient
 			for (final JsonNode deliveryNode : arrayJsonNode)
 			{
 				final Optional<OrderAddressDetails> orderAddressDetails =
-						getOrderAddressDetails(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), customIdentifierJSONPath, emailJSONPath);
+						getOrderAddressDetails(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), 
+											   customShopwareIdentifierJSONPath,
+											   customMetasfreshIdentifierJSONPath,
+											   emailJSONPath);
 
 				final JsonOrderDelivery orderDelivery = objectMapper.treeToValue(deliveryNode, JsonOrderDelivery.class);
 
@@ -521,10 +528,14 @@ public class ShopwareClient
 		}
 	}
 
+	/**
+	 * @param customShopwareIdJSONPath optional; if given, then the given JSON needs to contain the respective element
+	 */
 	@NonNull
 	private Optional<OrderAddressDetails> getOrderAddressDetails(
 			@Nullable final JsonNode orderAddressJson,
-			@Nullable final String customIdJSONPath,
+			@Nullable final String customShopwareIdJSONPath,
+			@Nullable final String customMetasfreshIdJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		if (orderAddressJson == null)
@@ -539,17 +550,26 @@ public class ShopwareClient
 			final OrderAddressDetails.OrderAddressDetailsBuilder jsonOrderAddressWithCustomId = OrderAddressDetails.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
-			if (Check.isNotBlank(customIdJSONPath))
+			if (Check.isNotBlank(customShopwareIdJSONPath))
 			{
-				final String customId = orderAddressJson.at(customIdJSONPath).asText();
+				final String customShopwareId = orderAddressJson.at(customShopwareIdJSONPath).asText();
 
-				if (!Strings.isBlank(customId))
+				if (Check.isNotBlank(customShopwareId))
 				{
-					jsonOrderAddressWithCustomId.customId(customId);
+					jsonOrderAddressWithCustomId.customShopwareId(customShopwareId);
 				}
 				else
 				{
 					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonOrderAddress.getId());
+				}
+			}
+
+			if (Check.isNotBlank(customMetasfreshIdJSONPath))
+			{
+				final String customMetasfreshId = orderAddressJson.at(customMetasfreshIdJSONPath).asText();
+				if (Check.isNotBlank(customMetasfreshId))
+				{
+					jsonOrderAddressWithCustomId.customMetasfreshId(customMetasfreshId);
 				}
 			}
 
