@@ -27,7 +27,7 @@ import java.util.Set;
 public interface IGenerateInvoiceCandidateForModelFilter
 {
 	/**
-	 * @return the classnames - like e.g. `I_C_Order.class` of thje models with which this filter can be called. 
+	 * @return the classnames - like e.g. `I_C_Order.class` - of the models with which this filter can be called. 
 	 */
 	Set<Class<?>> getSupportedTypes();
 
