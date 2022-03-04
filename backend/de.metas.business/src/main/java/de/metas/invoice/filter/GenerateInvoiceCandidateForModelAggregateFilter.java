@@ -29,18 +29,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GenerateInvoiceEligibilityAggregateFilter
+public class GenerateInvoiceCandidateForModelAggregateFilter
 {
-	private final List<IGenerateInvoiceEligibilityFilter> filterList;
+	private final List<IGenerateInvoiceCandidateForModelFilter> filterList;
 
-	public GenerateInvoiceEligibilityAggregateFilter(@NonNull final List<IGenerateInvoiceEligibilityFilter> filterList)
+	public GenerateInvoiceCandidateForModelAggregateFilter(@NonNull final List<IGenerateInvoiceCandidateForModelFilter> filterList)
 	{
 		this.filterList = filterList;
 	}
 
+	/**
+	 * @return true if an invoice candidate should be created for the given {@code model}.
+	 */
 	public boolean isEligible(@NonNull final Object model)
 	{
-		final List<IGenerateInvoiceEligibilityFilter> matchingFilters = filterList
+		final List<IGenerateInvoiceCandidateForModelFilter> matchingFilters = filterList
 				.stream()
 				.filter(eligibilityFilter -> eligibilityFilter.getSupportedTypes().contains(model.getClass()))
 				.collect(ImmutableList.toImmutableList());

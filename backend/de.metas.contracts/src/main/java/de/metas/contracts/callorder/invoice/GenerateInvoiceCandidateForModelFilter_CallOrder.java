@@ -24,7 +24,7 @@ package de.metas.contracts.callorder.invoice;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.callorder.CallOrderContractService;
-import de.metas.invoice.filter.IGenerateInvoiceEligibilityFilter;
+import de.metas.invoice.filter.IGenerateInvoiceCandidateForModelFilter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
@@ -33,12 +33,12 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 @Service
-public class GenerateInvoiceEligibilityFilter_CallOrder implements IGenerateInvoiceEligibilityFilter
+public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenerateInvoiceCandidateForModelFilter
 {
 	@NonNull
 	private final CallOrderContractService callOrderContractService;
 
-	public GenerateInvoiceEligibilityFilter_CallOrder(@NonNull final CallOrderContractService callOrderContractService)
+	public GenerateInvoiceCandidateForModelFilter_CallOrder(@NonNull final CallOrderContractService callOrderContractService)
 	{
 
 		this.callOrderContractService = callOrderContractService;

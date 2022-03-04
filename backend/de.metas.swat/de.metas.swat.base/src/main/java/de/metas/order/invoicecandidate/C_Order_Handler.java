@@ -2,7 +2,7 @@ package de.metas.order.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.filter.GenerateInvoiceEligibilityAggregateFilter;
+import de.metas.invoice.filter.GenerateInvoiceCandidateForModelAggregateFilter;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -75,7 +75,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IC_OrderLine_HandlerDAO orderLineHandlerDAO = Services.get(IC_OrderLine_HandlerDAO.class);
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		final GenerateInvoiceEligibilityAggregateFilter eligibilityAggregateFilter = SpringContextHolder.instance.getBean(GenerateInvoiceEligibilityAggregateFilter.class);
+		final GenerateInvoiceCandidateForModelAggregateFilter eligibilityAggregateFilter = SpringContextHolder.instance.getBean(GenerateInvoiceCandidateForModelAggregateFilter.class);
 
 		final I_C_Order order = request.getModel(I_C_Order.class);
 

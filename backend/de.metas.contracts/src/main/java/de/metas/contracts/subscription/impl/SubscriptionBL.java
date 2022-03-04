@@ -1178,6 +1178,6 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final I_C_Flatrate_Conditions typeConditions = flatrateDAO.getConditionsById(conditionsId);
 
-		return typeConditions.getType_Conditions().equals(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
+		return X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions.getType_Conditions());
 	}
 }

@@ -24,9 +24,15 @@ package de.metas.invoice.filter;
 
 import java.util.Set;
 
-public interface IGenerateInvoiceEligibilityFilter
+public interface IGenerateInvoiceCandidateForModelFilter
 {
-	boolean isEligible(Object model);
-
+	/**
+	 * @return the classnames - like e.g. `I_C_Order.class` of thje models with which this filter can be called. 
+	 */
 	Set<Class<?>> getSupportedTypes();
+
+	/**
+	 * @return true if an invoice candidate should be created for the given {@code model}. 
+	 */
+	boolean isEligible(Object model);
 }
