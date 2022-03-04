@@ -31,7 +31,7 @@ cd <path-to-kubernetes-project>
     - pgadmin.defaultEmail as set in [values.yaml](./metasfresh-helm/values.yaml)
     - pgadmin.defaultPassword as set in [values.yaml](./metasfresh-helm/values.yaml)
 - create server
-    - Host: name/address metasfresh-yourreleasename-db
+    - Host: name/address ```metasfresh-<releasename>-db```
     - Port: 5432
     - Username: db.username as set in [values.yaml](./metasfresh-helm/values.yaml)
     - Password: db.password as set in [values.yaml](./metasfresh-helm/values.yaml)
@@ -59,7 +59,7 @@ restart minikube with [install.sh](install.sh) script
 port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/#forward-a-local-port-to-a-port-on-the-pod  
 for example:
 ```
-# kubectl port-forward -n <namespace> service/metasfresh-<namespace>-app 8788:8788
+# kubectl port-forward -n <namespace> service/metasfresh-<releasename>-app 8788:8788
 kubectl port-forward -n dev service/metasfresh-dev-app 8788:8788
 ```
 ### minikube

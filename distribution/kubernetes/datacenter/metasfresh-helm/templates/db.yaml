@@ -17,7 +17,7 @@ spec:
 ---
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: metasfresh-{{ .Release.Name }}-db
   namespace: {{ .Release.Namespace }}
@@ -27,9 +27,8 @@ spec:
   selector:
     matchLabels:
         app: metasfresh-{{ .Release.Name }}-db
+  serviceName: metasfresh-{{ .Release.Name }}-db
   replicas: 1
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -42,31 +41,21 @@ spec:
         ports:
           - containerPort: {{ .Values.db.port.db }}
         env:
-        # - name: POSTGRES_HOST_AUTH_METHOD
-        #   value: trust
         - name: PGDATA
           value: /db/data
         args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         volumeMounts:
-        - mountPath: /etc/postgresql
-          name: postgresql-config
-        - mountPath: db
-          name: data
-        - mountPath: /var/log/postgresql
-          name: log
-        - mountPath: /etc/localtime
-          name: host-localtime
+        - name: postgresql-config
+          mountPath: /etc/postgresql
+        - name: data
+          mountPath: db         
+        - name: host-localtime
+          mountPath: /etc/localtime
           readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
+        - name: host-timezone
+          mountPath: /etc/timezone
           readOnly: true
-      initContainers:
-        - name: data-permission-fix
-          image: busybox
-          command: ['sh', '-c', 'chmod -R 777 /db']
-          volumeMounts:
-          - name: data
-            mountPath: /db             
+      initContainers:      
         - name: init-postgres
           image: {{ .Values.db.imageInit }}
           imagePullPolicy: IfNotPresent
@@ -106,31 +95,21 @@ spec:
       - name: postgresql-config
         configMap:
           name: metasfresh-{{ .Release.Namespace }}-db-configmap
-      - name: data
-        persistentVolumeClaim:
-          claimName: db-data
-      - name: log
-        hostPath:
-          path: /volumes/{{ .Release.Namespace }}/db/log
-          type: DirectoryOrCreate
       - name: host-localtime
         hostPath:
           path: /etc/localtime
       - name: host-timezone
         hostPath:
           path: /etc/timezone
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+      storageClassName: do-block-storage
 
----
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: db-data
-  namespace: {{ .Release.Namespace }}
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storageClassName: do-block-storage
