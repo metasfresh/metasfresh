@@ -1,5 +1,6 @@
 package de.metas.payment.esr.process;
 
+import de.metas.process.RunOutOfTrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -27,6 +28,7 @@ public class ESR_Complete_Process extends JavaProcess
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		if (p_ESR_Import_ID <= 0)
@@ -35,12 +37,6 @@ public class ESR_Complete_Process extends JavaProcess
 		}
 
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, get_TrxName());
-
-		// 04582: making sure we will use the trxName of this process in our business logic
-		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {} of {} is equal to the process-TrxName {}",
-				InterfaceWrapperHelper.getTrxName(esrImport),
-				esrImport,
-				get_TrxName());
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
