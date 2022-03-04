@@ -86,6 +86,7 @@ public class OrderFilter implements Processor
 
 		if (stateMachine == null
 				|| !TechnicalNameEnum.OPEN.getValue().equals(stateMachine.getTechnicalName()))
+
 		{
 			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping due to StateMachineState=" + stateMachine, adPInstanceId);
 			return Optional.empty();
@@ -146,17 +147,15 @@ public class OrderFilter implements Processor
 
 		final boolean isPaid = TechnicalNameEnum.PAID.getValue().equals(transactionStateMachine.getTechnicalName());
 		final boolean isOpen = TechnicalNameEnum.OPEN.getValue().equals(transactionStateMachine.getTechnicalName());
-
-		if (!isOpen && !isPaid)
-		{
-			return false;
-		}
+		final boolean isInProgress = TechnicalNameEnum.IN_PROGRESS.getValue().equals(transactionStateMachine.getTechnicalName());
 
 		final PaymentMethodType paymentMethodType = PaymentMethodType.ofValue(paymentMethod.getShortName());
 
 		return switch (paymentMethodType)
 				{
-					case PRE_PAYMENT, INVOICE_PAYMENT, DEBIT_PAYMENT -> isOpen;
+					// debit-payments ("SEPA") are automatically set to "inProgress" in the shop, so technically "isOpen" won't happen
+					case DEBIT_PAYMENT -> isOpen || isInProgress;
+					case PRE_PAYMENT, INVOICE_PAYMENT -> isOpen;
 					case PAY_PAL_PAYMENT_HANDLER -> isPaid;
 					default -> false;
 				};
