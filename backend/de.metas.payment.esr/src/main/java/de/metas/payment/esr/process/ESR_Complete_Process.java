@@ -28,7 +28,7 @@ public class ESR_Complete_Process extends JavaProcess
 	}
 
 	@Override
-	@RunOutOfTrx
+	@RunOutOfTrx // TODO: note for self: Check if this is enough
 	protected String doIt() throws Exception
 	{
 		if (p_ESR_Import_ID <= 0)
