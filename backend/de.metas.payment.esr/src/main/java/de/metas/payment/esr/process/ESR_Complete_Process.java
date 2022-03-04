@@ -36,7 +36,7 @@ public class ESR_Complete_Process extends JavaProcess
 			throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
 		}
 
-		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, get_TrxName());
+		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(p_ESR_Import_ID, I_ESR_Import.class);
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
