@@ -180,6 +180,12 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setCompanyName(companyName);
 		}
 
+		final String adLanguage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Language);
+		if (EmptyUtil.isNotBlank(adLanguage))
+		{
+			bPartnerRecord.setAD_Language(adLanguage);
+		}
+
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 

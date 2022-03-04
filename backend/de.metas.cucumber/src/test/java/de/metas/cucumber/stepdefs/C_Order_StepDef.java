@@ -45,6 +45,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -64,9 +65,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
@@ -85,15 +87,18 @@ public class C_Order_StepDef
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
+	private final StepDefData<I_AD_User> userTable;
 
 	public C_Order_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
+			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
+			@NonNull final StepDefData<I_AD_User> userTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.userTable = userTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -112,6 +117,26 @@ public class C_Order_StepDef
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
+
+			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if(Check.isNotBlank(bpLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
+				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			}
+
+			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if(Check.isNotBlank(userIdentifier))
+			{
+				final I_AD_User user = userTable.get(userIdentifier);
+				order.setAD_User_ID(user.getAD_User_ID());
+			}
+
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
+			if(Check.isNotBlank(poReference))
+			{
+				order.setPOReference(poReference);
+			}
 
 			saveRecord(order);
 
@@ -282,7 +307,7 @@ public class C_Order_StepDef
 		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
 		assertThat(bPartner).isNotNull();
 
-		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
 
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
@@ -306,7 +331,7 @@ public class C_Order_StepDef
 		assertThat(order.isProcessed()).isEqualTo(processed);
 		assertThat(order.getDocStatus()).isEqualTo(docStatus);
 
-		if(Check.isNotBlank(bpartnerName))
+		if (Check.isNotBlank(bpartnerName))
 		{
 			assertThat(order.getBPartnerName()).isEqualTo(bpartnerName);
 		}
@@ -317,6 +342,48 @@ public class C_Order_StepDef
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
 		assertThat(docType).isNotNull();
 		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
+
+		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(userIdentifier))
+		{
+			final I_AD_User user = userTable.get(userIdentifier);
+			assertThat(user).isNotNull();
+
+			assertThat(order.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String bpBillIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpBillIdentifier))
+		{
+			final I_C_BPartner billBPRecord = bpartnerTable.get(bpBillIdentifier);
+			assertThat(billBPRecord).isNotNull();
+
+			assertThat(order.getBill_BPartner_ID()).isEqualTo(billBPRecord.getC_BPartner_ID());
+		}
+
+		final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpBillLocationIdentifier))
+		{
+			final I_C_BPartner_Location billBPLocationRecord = bpartnerLocationTable.get(bpBillLocationIdentifier);
+			assertThat(billBPLocationRecord).isNotNull();
+
+			assertThat(order.getBill_Location_ID()).isEqualTo(billBPLocationRecord.getC_BPartner_Location_ID());
+		}
+
+		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billUserIdentifier))
+		{
+			final I_AD_User billUser = userTable.get(billUserIdentifier);
+			assertThat(billUser).isNotNull();
+
+			assertThat(order.getBill_User_ID()).isEqualTo(billUser.getAD_User_ID());
+		}
+
+		final String email = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_EMail);
+		if(Check.isNotBlank(email))
+		{
+			assertThat(order.getEMail()).isEqualTo(email);
+		}
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")

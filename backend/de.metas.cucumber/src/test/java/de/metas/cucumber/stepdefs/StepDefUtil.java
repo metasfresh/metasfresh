@@ -22,9 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -56,5 +59,11 @@ public class StepDefUtil
 	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker) throws InterruptedException
 	{
 		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 }

@@ -75,8 +75,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.ordercandidate.api.IOLCandDAO;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
@@ -84,6 +82,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.RestApiUtilsV2;
+import de.metas.rest_api.v2.shipping.custom.OxidAdaptor;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
@@ -101,7 +100,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -117,6 +115,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -128,13 +127,13 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 class ShipmentCandidateAPIService
 {
 	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
-	private final static String SYS_CONFIG_OXID_USER_ID = "de.metas.rest_api.v2.shipping.c_olcand.OxidUserId";
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	private final BPartnerCompositeRepository bPartnerCompositeRepository;
 	private final ProductRepository productRepository;
 	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
+	private final OxidAdaptor oxidAdaptor;
 
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -143,21 +142,21 @@ class ShipmentCandidateAPIService
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
-	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public ShipmentCandidateAPIService(
 			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository,
 			@NonNull final ProductRepository productRepository,
-			@NonNull final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider)
+			@NonNull final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider,
+			@NonNull final OxidAdaptor oxidAdaptor)
 	{
 		this.shipmentScheduleAuditRepository = shipmentScheduleAuditRepository;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 		this.productRepository = productRepository;
 		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
+		this.oxidAdaptor = oxidAdaptor;
 	}
 
 	/**
@@ -215,13 +214,11 @@ class ShipmentCandidateAPIService
 				{
 					final JsonAttributeSetInstance jsonAttributeSetInstance = createJsonASI(shipmentSchedule, attributesForASIs);
 
-					final JsonCustomer shipBPartner = createJsonCustomer(
-							shipmentSchedule.getShipBPartnerId(),
-							shipmentSchedule.getShipLocationId(),
-							shipmentSchedule.getShipContactId(),
-							shipmentSchedule.getOrderAndLineId(),
-							bpartnerIdToBPartner,
-							true/*isShippingBPartner*/);
+					final Optional<JsonCustomer> shipBPartnerOpt = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner, true/*isShippingBPartner*/);
+
+					Check.assume(shipBPartnerOpt.isPresent(), "Failed to create shipBPartner to export! ShipmentScheduleId: {}", shipmentSchedule.getId());
+
+					final JsonCustomer shipBPartner = shipBPartnerOpt.get();
 
 					final JsonProduct product = createJsonProduct(shipmentSchedule, shipBPartner.getLanguage(), productId2Product);
 
@@ -240,18 +237,9 @@ class ShipmentCandidateAPIService
 							.dateOrdered(shipmentSchedule.getDateOrdered())
 							.numberOfItemsForSameShipment(shipmentSchedule.getNumberOfItemsForSameShipment());
 
-					if (shipmentSchedule.getBillBPartnerId() != null && shipmentSchedule.getBillLocationId() != null)
-					{
-						final JsonCustomer billBPartner = createJsonCustomer(
-								shipmentSchedule.getBillBPartnerId(),
-								shipmentSchedule.getBillLocationId(),
-								shipmentSchedule.getBillContactId(),
-								shipmentSchedule.getOrderAndLineId(),
-								bpartnerIdToBPartner,
-								false/*isShippingBPartner*/);
+					final Optional<JsonCustomer> billBPartner = createJsonCustomer(shipmentSchedule, bpartnerIdToBPartner, false/*isShippingBPartner*/);
 
-						itemBuilder.billBPartner(billBPartner);
-					}
+					billBPartner.ifPresent(itemBuilder::billBPartner);
 
 					setOrderReferences(itemBuilder, shipmentSchedule, orderIdToOrderRecord);
 
@@ -293,14 +281,37 @@ class ShipmentCandidateAPIService
 										.build());
 	}
 
-	private JsonCustomer createJsonCustomer(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerLocationId bPartnerLocationId,
-			@Nullable final BPartnerContactId bPartnerContactId,
-			@Nullable final OrderAndLineId orderAndLineId,
+	@NonNull
+	private Optional<JsonCustomer> createJsonCustomer(
+			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final ImmutableMap<BPartnerId, BPartnerComposite> bpartnerIdToBPartner,
 			final boolean isShippingBPartner)
 	{
+		if (!isShippingBPartner
+				&& (shipmentSchedule.getBillBPartnerId() == null || shipmentSchedule.getBillLocationId() == null))
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerId bpartnerId;
+		final BPartnerLocationId bPartnerLocationId;
+		final BPartnerContactId bPartnerContactId;
+
+		if (isShippingBPartner)
+		{
+			bpartnerId = shipmentSchedule.getShipBPartnerId();
+			bPartnerLocationId = shipmentSchedule.getShipLocationId();
+			bPartnerContactId = shipmentSchedule.getShipContactId();
+		}
+		else
+		{
+			bpartnerId = shipmentSchedule.getBillBPartnerId();
+			bPartnerLocationId = shipmentSchedule.getBillLocationId();
+			bPartnerContactId = shipmentSchedule.getBillContactId();
+		}
+
+		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
+
 		final BPartnerComposite composite = bpartnerIdToBPartner.get(bpartnerId);
 		final BPartnerLocation location = composite
 				.extractLocation(bPartnerLocationId)
@@ -352,9 +363,9 @@ class ShipmentCandidateAPIService
 				.countryCode(location.getCountryCode())
 				.language(adLanguage);
 
-		if (orderAndLineId != null && isOxidOrder(orderAndLineId))
+		if (orderAndLineId != null && oxidAdaptor.isOxidOrder(orderAndLineId))
 		{
-			setAdditionalContactFields(composite, customerBuilder, bPartnerContactId);
+			setAdditionalContactFieldsForOxidOrder(shipmentSchedule, composite, customerBuilder, bPartnerContactId);
 		}
 		else if (isShippingBPartner && orderAndLineId != null)
 		{
@@ -365,7 +376,7 @@ class ShipmentCandidateAPIService
 			setAdditionalContactFields(customerBuilder, location);
 		}
 
-		return customerBuilder.build();
+		return Optional.of(customerBuilder.build());
 	}
 
 	private JsonProduct createJsonProduct(
@@ -839,7 +850,8 @@ class ShipmentCandidateAPIService
 					 bPartnerLocation.getId());
 	}
 
-	private void setAdditionalContactFields(
+	private void setAdditionalContactFieldsForOxidOrder(
+			@NonNull final ShipmentSchedule shipmentSchedule,
 			@NonNull final BPartnerComposite composite,
 			@NonNull final JsonCustomerBuilder customerBuilder,
 			@Nullable final BPartnerContactId contactId)
@@ -856,23 +868,8 @@ class ShipmentCandidateAPIService
 						.setParameter("AD_User_ID", contactId));
 
 		customerBuilder
-				.contactEmail(contact.getEmail())
+				.contactEmail(oxidAdaptor.getContactEmail(shipmentSchedule, composite))
 				.contactName(contact.getName())
 				.contactPhone(contact.getPhone());
-	}
-
-	private boolean isOxidOrder(@NonNull final OrderAndLineId orderAndLineId)
-	{
-		final int oxidUserId = sysConfigBL.getIntValue(SYS_CONFIG_OXID_USER_ID, -1);
-
-		if (oxidUserId <= 0)
-		{
-			return false;
-		}
-
-		final List<I_C_OLCand> olCands = olCandDAO.retrieveOLCands(orderAndLineId.getOrderLineId(), I_C_OLCand.class);
-
-		return olCands.size() > 0
-				&& olCands.get(0).getCreatedBy() == oxidUserId;
 	}
 }

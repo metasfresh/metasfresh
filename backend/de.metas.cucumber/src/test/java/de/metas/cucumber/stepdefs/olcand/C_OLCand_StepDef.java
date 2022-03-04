@@ -32,8 +32,8 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -42,17 +42,13 @@ import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +58,6 @@ import static org.assertj.core.api.Assertions.*;
 public class C_OLCand_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_M_InOut> shipmentTable;
@@ -85,12 +80,6 @@ public class C_OLCand_StepDef
 		this.shipmentTable = shipmentTable;
 		this.invoiceTable = invoiceTable;
 		this.testContext = testContext;
-	}
-
-	@And("enable sys config {string}")
-	public void enable_sys_config(@NonNull final String sysConfigName)
-	{
-		sysConfigBL.setValue(sysConfigName, true, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 	}
 
 	@Then("process metasfresh response")
@@ -148,7 +137,7 @@ public class C_OLCand_StepDef
 		final I_C_Order order = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
 				.create()
-				.firstOnly(I_C_Order.class);
+				.firstOnlyNotNull(I_C_Order.class);
 
 		assertThat(order).isNotNull();
 
@@ -176,7 +165,7 @@ public class C_OLCand_StepDef
 
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+			final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
 
 			for (int index = 0; index < shipments.size(); index++)
 			{
@@ -210,11 +199,5 @@ public class C_OLCand_StepDef
 		assertThat(invoice).isNotNull();
 
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
-	}
-
-	@NonNull
-	private List<String> splitIdentifiers(@NonNull final String identifiers)
-	{
-		return Arrays.asList(identifiers.split(","));
 	}
 }

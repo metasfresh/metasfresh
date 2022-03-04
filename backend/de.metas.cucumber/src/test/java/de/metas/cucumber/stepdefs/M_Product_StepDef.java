@@ -42,11 +42,13 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
@@ -58,16 +60,19 @@ public class M_Product_StepDef
 
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final StepDefData<I_M_Product_Category> productCategoryTable;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Product_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable)
+			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
+		this.productCategoryTable = productCategoryTable;
 	}
 
 	@Given("metasfresh contains M_Products:")
@@ -109,8 +114,8 @@ public class M_Product_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -169,12 +174,28 @@ public class M_Product_StepDef
 		}
 
 		productRecord.setProductType(CoalesceUtil.coalesceNotNull(productType, ProductType.Item.getCode()));
-		productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
 		productRecord.setIsStocked(isStocked);
+
+		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(productCategoryIdentifier))
+		{
+			final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
+			productCategory.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		}
+		else
+		{
+			productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
+		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Description);
+		if (Check.isNotBlank(description))
+		{
+			productRecord.setDescription(description);
+		}
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
-		productTable.put(recordIdentifier, productRecord);
+		productTable.putOrReplace(recordIdentifier, productRecord);
 	}
 }
