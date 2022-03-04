@@ -102,18 +102,20 @@ public class OLCandRequestProcessor implements Processor
 		final ImmutableList.Builder<JsonOLCandCreateRequest> olCandCreateRequests = ImmutableList.builder();
 
 		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final JsonOrder jsonOrder = orderCandidate.getJsonOrder();
 
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
+		
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
-				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderCandidate.getJsonOrder().getCurrencyId()))
-				.externalHeaderId(orderCandidate.getJsonOrder().getId())
-				.poReference(orderCandidate.getJsonOrder().getOrderNumber())
+				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), jsonOrder.getCurrencyId()))
+				.externalHeaderId(jsonOrder.getId())
+				.poReference(jsonOrder.getOrderNumber())
 				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
 				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
-				.dateOrdered(getDateOrdered(orderCandidate.getJsonOrder()))
+				.dateOrdered(getDateOrdered(jsonOrder))
 				.dateRequired(context.getDateRequired())
-				.dateCandidate(getDateCandidate(orderCandidate.getJsonOrder()))
+				.dateCandidate(getDateCandidate(jsonOrder))
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
@@ -121,6 +123,7 @@ public class OLCandRequestProcessor implements Processor
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null)
+				.email(jsonOrder.getOrderCustomer().getEmail())
 				.bpartnerName(context.getExtendedShippingLocationBPartnerName());
 
 		if (Check.isNotBlank(context.getShippingMethodId()))
@@ -137,11 +140,11 @@ public class OLCandRequestProcessor implements Processor
 
 		processShopwareConfigs(context, olCandCreateRequestBuilder);
 
-		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderCandidate.getJsonOrder().getId());
+		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, jsonOrder.getId());
 
 		if (orderLines.isEmpty())
 		{
-			throw new RuntimeException("Missing order lines! OrderId=" + orderCandidate.getJsonOrder().getId());
+			throw new RuntimeException("Missing order lines! OrderId=" + jsonOrder.getId());
 		}
 
 		orderLines.stream()

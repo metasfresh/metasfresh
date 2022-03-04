@@ -35,6 +35,8 @@ public interface Shopware6Constants
 
 	String PARAMETERS_DATE_GTE = "gte";
 
+	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
+	
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";

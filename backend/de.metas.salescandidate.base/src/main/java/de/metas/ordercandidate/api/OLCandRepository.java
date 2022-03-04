@@ -114,6 +114,9 @@ public class OLCandRepository
 		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
+		olCandPO.setEMail(request.getEmail()); // if it's blank, it might be set from the location a few lines down the road.
+		
+		// set the "normal" (buyer) bpartner's data
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
 			final BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
@@ -140,7 +143,10 @@ public class OLCandRepository
 					olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
 				}
 				olCandPO.setPhone(bPartnerLocation.getPhone());
-				olCandPO.setEMail(bPartnerLocation.getEMail());
+				if (Check.isBlank(olCandPO.getEMail()))
+				{
+					olCandPO.setEMail(bPartnerLocation.getEMail());
+				}
 			}
 		}
 
