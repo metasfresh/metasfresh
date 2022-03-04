@@ -177,7 +177,7 @@ public class C_Invoice // 03771
 	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Invoice invoice)
 	{
-		if (!InterfaceWrapperHelper.isCopying(invoice))
+		if (!InterfaceWrapperHelper.isCopying(invoice) && !InterfaceWrapperHelper.isNew(invoice))
 		{
 			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 			final PaymentRule paymentRule;
