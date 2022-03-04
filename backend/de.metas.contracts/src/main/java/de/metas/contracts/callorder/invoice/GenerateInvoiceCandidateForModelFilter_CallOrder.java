@@ -40,7 +40,6 @@ public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenera
 
 	public GenerateInvoiceCandidateForModelFilter_CallOrder(@NonNull final CallOrderContractService callOrderContractService)
 	{
-
 		this.callOrderContractService = callOrderContractService;
 	}
 
