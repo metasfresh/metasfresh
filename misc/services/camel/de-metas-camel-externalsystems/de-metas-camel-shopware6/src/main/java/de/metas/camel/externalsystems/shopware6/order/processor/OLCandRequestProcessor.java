@@ -105,7 +105,7 @@ public class OLCandRequestProcessor implements Processor
 		final JsonOrder jsonOrder = orderCandidate.getJsonOrder();
 
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
-		
+
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
 				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), jsonOrder.getCurrencyId()))
@@ -202,7 +202,7 @@ public class OLCandRequestProcessor implements Processor
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
-		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
+		final String shippingBPLocationExternalIdentifier = context.getShippingBPLocationExternalIdNotNull();
 
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
@@ -234,7 +234,7 @@ public class OLCandRequestProcessor implements Processor
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
-		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
+		final String billingBPLocationExternalIdentifier = context.getBillingBPLocationExternalIdNotNull();
 
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
@@ -331,7 +331,7 @@ public class OLCandRequestProcessor implements Processor
 				return responseItem.getMetasfreshId();
 			}
 		}
-		throw new RuntimeException("No JsonResponseUpsertItem was found for externalIdentifier=" + externalIdentifier);
+		throw new RuntimeException("No JsonResponseUpsertItem matched the externalIdentifier=" + externalIdentifier + "\nresponseUpsertItems=" + responseUpsertItems);
 	}
 
 	@Nullable
