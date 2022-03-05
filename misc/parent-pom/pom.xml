@@ -63,7 +63,9 @@
         <assertj.version>3.19.0</assertj.version>
         <xmlunit.version>2.6.4</xmlunit.version>
 
-        <mockito.version>2.7.22</mockito.version>
+        <!-- mockito 2.7.22 doesn't work with java-17-->
+        <mockito.version>4.3.1</mockito.version>
+        <!--mockito.version>2.7.22</mockito.version-->
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
