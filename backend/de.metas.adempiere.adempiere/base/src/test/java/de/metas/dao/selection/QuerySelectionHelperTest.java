@@ -93,12 +93,14 @@ public class QuerySelectionHelperTest
 							"(\n" +
 							"SELECT C_OrderLine_ID  FROM C_OrderLine\n" +
 							" WHERE (M_Product_ID=1000003)\n" +
+							" ORDER BY C_OrderLine_ID\n" +
 							")\n" +
 							"\n" +
 							"UNION DISTINCT\n" +
 							"(\n" +
 							"SELECT C_OrderLine_ID  FROM C_OrderLine\n" +
 							" WHERE (M_Product_ID=1000007)\n" +
+							" ORDER BY C_OrderLine_ID\n" +
 							")\n" +
 							"\n" +
 							" ORDER BY C_OrderLine_ID\n" +
