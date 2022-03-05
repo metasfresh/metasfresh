@@ -31,7 +31,7 @@
                   "billTo": true,
                   "bpartnerName":"company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "billingEmailAddress"
+                  "email": "billingEmailAddress@example.com"
                 }
               },
               {
@@ -47,7 +47,7 @@
                   "billTo": false,
                   "bpartnerName":"company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "emailAddress"
+                  "email": "shippingOrderAddress@example.com"
                 }
               }
             ],

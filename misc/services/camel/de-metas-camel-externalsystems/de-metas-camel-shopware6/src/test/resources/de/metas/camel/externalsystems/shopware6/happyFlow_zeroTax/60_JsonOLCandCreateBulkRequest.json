@@ -46,7 +46,8 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": null,
       "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com"
     },
     {
       "orgCode": "orgCode",
@@ -94,7 +95,8 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": null,
       "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com"
     },
     {
       "orgCode": "orgCode",
@@ -139,7 +141,8 @@
       "dateOrdered": "2021-01-12",
       "importWarningMessage": null,
       "shipper": "ext-Shopware6-shippingMethodId",
-      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName"
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com"
     }
   ]
 }
