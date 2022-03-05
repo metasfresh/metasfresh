@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 @Value
@@ -41,16 +42,13 @@ public class SalutationInfoProvider implements Serializable
 	@NonNull
 	ImmutableMap<String, String> salutationId2DisplayName;
 
-	@NonNull
-	public String getDisplayNameBySalutationIdNotNull(@NonNull final String salutationId)
+	/**
+	 * Note that the salution might have been filtered out, see {@link de.metas.camel.externalsystems.shopware6.Shopware6Constants#SALUTATION_KEY_NOT_SPECIFIED}.
+	 */
+	@Nullable
+	public String getDisplayNameBySalutationId(@NonNull final String salutationId)
 	{
 		final String displayName = salutationId2DisplayName.get(salutationId);
-
-		if (displayName == null || displayName.isBlank())
-		{
-			throw new RuntimeException("Missing salutation display name for salutationId=" + salutationId);
-		}
-
 		return displayName;
 	}
 }

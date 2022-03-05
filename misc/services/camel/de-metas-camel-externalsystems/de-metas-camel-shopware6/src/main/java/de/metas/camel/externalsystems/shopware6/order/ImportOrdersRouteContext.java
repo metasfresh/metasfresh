@@ -335,6 +335,6 @@ public class ImportOrdersRouteContext
 			return null;
 		}
 
-		return salutationInfoProvider.getDisplayNameBySalutationIdNotNull(salutationId);
+		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
 	}
 }
