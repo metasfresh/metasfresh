@@ -48,6 +48,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
+/**
+ *  Computes the price for "call order lines".
+ *
+ *  A call order line is a sales order line {@link I_C_OrderLine} attached to a "Call order contract" via {@link I_C_OrderLine#COLUMNNAME_C_Flatrate_Term_ID}
+ */
 public class CallOrderPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CallOrderPricingRule.class);

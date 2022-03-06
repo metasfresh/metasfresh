@@ -46,6 +46,9 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
+/**
+ *  Computes the price for sales order lines meant to initiate "call order contracts".
+ */
 public class CallOrderContractLinePricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CallOrderContractLinePricingRule.class);
