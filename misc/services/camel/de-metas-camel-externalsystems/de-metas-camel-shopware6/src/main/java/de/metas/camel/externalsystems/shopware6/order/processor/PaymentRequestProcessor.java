@@ -74,7 +74,7 @@ public class PaymentRequestProcessor implements Processor
 
 		if (!(isPaypalType && isPaid))
 		{
-			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping sending current payment as is would have to be 'paypal' and 'paid'!"
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Not sending current payment to metasfresh; it would have to be 'paypal' and 'paid'!"
 											 + " PaymentId = " + orderTransaction.getId()
 											 + " paidStatus = " + isPaid
 											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));

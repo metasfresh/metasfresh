@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 
-import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class CreateBPartnerUpsertReqProcessor implements Processor
@@ -76,7 +76,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
 		importOrdersRouteContext.setOrderShippingAddress(lastOrderDeliveryItem.getOrderAddressDetails().getJsonOrderAddress());
 
-		final JsonCustomerGroup jsonCustomerGroup = getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
+		final JsonCustomerGroup jsonCustomerGroup =  getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
 
 		importOrdersRouteContext.setBPartnerCustomerGroup(jsonCustomerGroup);
 

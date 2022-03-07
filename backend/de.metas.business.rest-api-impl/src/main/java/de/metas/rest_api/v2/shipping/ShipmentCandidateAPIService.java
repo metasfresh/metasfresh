@@ -58,6 +58,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
@@ -75,6 +78,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
@@ -139,9 +144,11 @@ class ShipmentCandidateAPIService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	public ShipmentCandidateAPIService(
 			@NonNull final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository,
@@ -247,6 +254,8 @@ class ShipmentCandidateAPIService
 
 					setShipperInternalName(itemBuilder, shipmentSchedule, shipperId2InternalName);
 
+					setOrderDataSource(itemBuilder, shipmentSchedule);
+
 					result.item(itemBuilder.build());
 					createExportedAuditItem(shipmentSchedule, auditBuilder);
 					status2ShipmentScheduleIds
@@ -270,6 +279,35 @@ class ShipmentCandidateAPIService
 
 			return result.build();
 		}
+	}
+
+	/**
+	 * Also see the API-doc for {@code orderDataSource} in {@link JsonResponseShipmentCandidate}.
+	 */
+	private void setOrderDataSource(
+			@NonNull final JsonResponseShipmentCandidateBuilder itemBuilder,
+			@NonNull final ShipmentSchedule shipmentSchedule)
+	{
+		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
+		if (orderAndLineId == null)
+		{
+			return; // avoid NPE
+		}
+
+		final List<I_C_OLCand> olCands = olCandDAO.retrieveOLCands(orderAndLineId.getOrderLineId(), I_C_OLCand.class);
+		for (final I_C_OLCand olCand : olCands)
+		{
+			final InputDataSourceId id = InputDataSourceId.ofRepoId(olCand.getAD_InputDataSource_ID()); // C_OLCand.AD_InputDataSource_ID is mandatory
+			final I_AD_InputDataSource byId = inputDataSourceDAO.getById(id);
+			
+			if (Check.isNotBlank(byId.getInternalName()))
+			{
+				itemBuilder.orderDataSourceInternalName(byId.getInternalName());
+				return;
+			}
+		}
+
+		itemBuilder.orderDataSourceInternalName(null); // no ad_inputdatasource found
 	}
 
 	@NonNull
@@ -327,7 +365,7 @@ class ShipmentCandidateAPIService
 					.appendParametersToMessage()
 					.setParameter("Address1", location.getAddress1())
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
-					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+					.setParameter("C_BPartner_Location_ID", location.getIdNotNull().getRepoId());
 		}
 		final BPartner bpartner = composite.getBpartner();
 
@@ -339,7 +377,7 @@ class ShipmentCandidateAPIService
 			throw new ShipmentCandidateExportException("BPartner's location needs to have a postal set")
 					.appendParametersToMessage()
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
-					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+					.setParameter("C_BPartner_Location_ID", location.getIdNotNull().getRepoId());
 		}
 		final String city = location.getCity();
 		if (EmptyUtil.isBlank(city))
@@ -347,7 +385,7 @@ class ShipmentCandidateAPIService
 			throw new ShipmentCandidateExportException("BPartner's location needs to have a city set")
 					.appendParametersToMessage()
 					.setParameter("C_BPartner_ID", composite.getBpartner().getId().getRepoId())
-					.setParameter("C_BPartner_Location_ID", location.getId().getRepoId());
+					.setParameter("C_BPartner_Location_ID", location.getIdNotNull().getRepoId());
 		}
 		final JsonCustomerBuilder customerBuilder = JsonCustomer.builder()
 				.company(bpartner.isCompany())
