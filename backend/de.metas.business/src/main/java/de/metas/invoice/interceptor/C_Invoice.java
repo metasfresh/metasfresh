@@ -176,7 +176,6 @@ public class C_Invoice // 03771
 	 * In the workflow [order => invoice] : The new invoice must inherit the payment rule from the related order.
 	 * When creating a manual invoice: The new invoice must inherit the payment rule from the BPartner.
 	 * When cloning an invoice: all should be set as in the original invoice, so the payment rule should be the same as in the old invoice.
-	 * @param invoice
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID })
