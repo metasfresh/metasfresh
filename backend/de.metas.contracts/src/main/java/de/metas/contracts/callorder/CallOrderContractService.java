@@ -40,6 +40,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,6 +50,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -63,6 +65,7 @@ public class CallOrderContractService
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -156,7 +159,7 @@ public class CallOrderContractService
 
 		if (!isCallOrderContract(callOrderContract))
 		{
-			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, callOrderLine.getLine(), X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder)
+			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, callOrderLine.getLine())
 					.markAsUserValidationError();
 		}
 
@@ -189,15 +192,21 @@ public class CallOrderContractService
 
 	private void validateProduct(@NonNull final I_C_Flatrate_Term callOrderContract, @NonNull final I_C_OrderLine ol)
 	{
-		final ProductId orderLineProduct = ProductId.ofRepoId(ol.getM_Product_ID());
+		final ProductId orderLineProductId = ProductId.ofRepoId(ol.getM_Product_ID());
 		final ProductId contractProductId = ProductId.ofRepoIdOrNull(callOrderContract.getM_Product_ID());
 
-		if (!orderLineProduct.equals(contractProductId))
+		if (!orderLineProductId.equals(contractProductId))
 		{
+			final I_M_Product orderLineProduct = productDAO.getById(orderLineProductId);
+
+			final String contractProductValue = contractProductId != null
+					? productDAO.getById(contractProductId).getValue()
+					: null;
+
 			throw new AdempiereException(MSG_PRODUCTS_DO_NOT_MATCH,
+										 orderLineProduct.getValue(),
 										 ol.getLine(),
-										 "C_Flatrate_Term.M_Product_ID = " + ProductId.toRepoId(contractProductId) +
-										 "; C_OrderLine.M_Product_ID = " + orderLineProduct.getRepoId())
+										 contractProductValue)
 					.markAsUserValidationError();
 		}
 	}
@@ -209,10 +218,13 @@ public class CallOrderContractService
 
 		if (!contractBillPartnerId.equals(orderBillBPartnerId))
 		{
+			final I_C_BPartner orderBillPartner = bPartnerDAO.getById(orderBillBPartnerId);
+			final I_C_BPartner contractPartner = bPartnerDAO.getById(contractBillPartnerId);
+
 			throw new AdempiereException(MSG_BPARTNERS_DO_NOT_MATCH,
-										 orderLine.getLine(),
-										 "C_Flatrate_Term.BPartner_ID = " + contractBillPartnerId.getRepoId() +
-										 "; C_Order.Bill_BPartner_ID = " + orderBillBPartnerId.getRepoId())
+										 orderBillPartner.getValue(),
+										 contractPartner.getValue(),
+										 orderLine.getLine())
 					.markAsUserValidationError();
 		}
 	}
