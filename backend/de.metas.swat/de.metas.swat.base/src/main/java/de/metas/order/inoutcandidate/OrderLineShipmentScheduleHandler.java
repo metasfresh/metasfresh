@@ -24,8 +24,8 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLineId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -169,6 +169,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		shipmentSchedule.setC_Order_ID(orderLine.getC_Order_ID());
 		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		shipmentSchedule.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
 
 		shipmentSchedule.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
