@@ -100,10 +100,7 @@ public class AgeAttributesService
 
 			final int productAfter = product.getPicking_AgeTolerance_AfterMonths();
 
-			if (productAfter < pickingAgeTolerance_AfterMonths)
-			{
-				pickingAgeTolerance_AfterMonths = productAfter;
-			}
+			pickingAgeTolerance_AfterMonths = productAfter;
 
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
@@ -136,8 +133,7 @@ public class AgeAttributesService
 		final List<Object> suitableValues = new ArrayList<>();
 		final List<AttributeListValue> allAgeValues = getAllAgeValues();
 
-		for (
-				final AttributeListValue ageValue : allAgeValues)
+		for (final AttributeListValue ageValue : allAgeValues)
 
 		{
 			final int ageValueInt = ageValue.getValueAsInt();
