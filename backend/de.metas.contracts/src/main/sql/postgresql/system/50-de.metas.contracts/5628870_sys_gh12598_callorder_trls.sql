@@ -20,7 +20,7 @@ UPDATE AD_Ref_List_Trl SET Name='Abrufauftrag',Updated=TO_TIMESTAMP('2022-03-06 
 
 -- 2022-03-06T19:22:01.539Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_List_Trl SET Name='Call-of order',Updated=TO_TIMESTAMP('2022-03-06 21:22:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543134
+UPDATE AD_Ref_List_Trl SET Name='Call-off order',Updated=TO_TIMESTAMP('2022-03-06 21:22:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543134
 ;
 
 -- 2022-03-06T19:23:59.901Z
@@ -100,7 +100,7 @@ UPDATE AD_Element_Trl SET Name='Abrufauftrag Übersicht', PrintName='Abrufauftra
 
 -- 2022-03-06T19:24:26.131Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Name='Call-of order overview', PrintName='Call-of order overview',Updated=TO_TIMESTAMP('2022-03-06 21:24:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580602 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Call-off order overview', PrintName='Call-off order overview',Updated=TO_TIMESTAMP('2022-03-06 21:24:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580602 AND AD_Language='en_US'
 ;
 
 -- 2022-03-06T19:24:26.133Z
@@ -217,4 +217,3 @@ UPDATE AD_Ref_List_Trl SET Description='Bei einem Abrufauftrag wird vereinbart, 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List_Trl SET Description='In the case of a call-off order, it is agreed to take delivery of a certain quantity of goods at certain conditions within a certain period of time.',Updated=TO_TIMESTAMP('2022-03-06 21:34:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543134
 ;
-
