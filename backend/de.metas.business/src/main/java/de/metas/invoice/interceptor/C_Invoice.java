@@ -172,22 +172,30 @@ public class C_Invoice // 03771
 		}
 	}
 
+	/**
+	 * In the workflow [order => invoice] : The new invoice must inherit the payment rule from the related order.
+	 * When creating a manual invoice: The new invoice must inherit the payment rule from the BPartner.
+	 * When cloning an invoice: all should be set as in the original invoice, so the payment rule should be the same as in the old invoice.
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Invoice invoice)
 	{
-		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-		final PaymentRule paymentRule;
-		if (bpartner != null && bpartner.getPaymentRule() != null)
+		if (InterfaceWrapperHelper.isUIAction(invoice) && !InterfaceWrapperHelper.isCopying(invoice))
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+			final PaymentRule paymentRule;
+			if (bpartner != null && bpartner.getPaymentRule() != null)
+			{
+				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			}
+			else
+			{
+				paymentRule = invoiceBL.getDefaultPaymentRule();
+			}
+			invoice.setPaymentRule(paymentRule.getCode());
 		}
-		else
-		{
-			paymentRule = invoiceBL.getDefaultPaymentRule();
-		}
-		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })

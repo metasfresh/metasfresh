@@ -224,23 +224,31 @@ public class C_Order
 		}
 	}
 
+	/**
+	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
+	 * @param order
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
-		final PaymentRule paymentRule;
-		if (bpartner != null && bpartner.getPaymentRule() != null)
+		if (!InterfaceWrapperHelper.isCopying(order))
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			final I_C_BPartner bpartner = order.getC_BPartner();
+			final PaymentRule paymentRule;
+			if (bpartner != null && bpartner.getPaymentRule() != null)
+			{
+				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+			}
+			else
+			{
+				paymentRule = invoiceBL.getDefaultPaymentRule();
+			}
+			order.setPaymentRule(paymentRule.getCode());
 		}
-		else
-		{
-			paymentRule = invoiceBL.getDefaultPaymentRule();
-		}
-		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
