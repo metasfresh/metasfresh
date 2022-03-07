@@ -1437,6 +1437,12 @@ public class ESRImportBL implements IESRImportBL
 		updateESRImportReconciledStatus(esrImportIds);
 	}
 
+	@Override
+	public I_ESR_Import getById(final ESRImportId esrImportId)
+	{
+		return esrImportDAO.getById(esrImportId);
+	}
+
 	private static ImmutableSet<ESRImportId> extractESRImportIds(@NonNull final List<I_ESR_ImportLine> esrImportLines)
 	{
 		return esrImportLines.stream()

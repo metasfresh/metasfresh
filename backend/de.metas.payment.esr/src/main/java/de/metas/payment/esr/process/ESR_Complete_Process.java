@@ -4,7 +4,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -14,7 +13,6 @@ import de.metas.util.Services;
 public class ESR_Complete_Process extends JavaProcess
 {
 	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
-	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 
 	ESRImportId esrImportId ;
 
@@ -28,10 +26,10 @@ public class ESR_Complete_Process extends JavaProcess
 	}
 
 	@Override
-	@RunOutOfTrx // TODO: note for self: Check if this is enough
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final I_ESR_Import esrImport = esrImportDAO.getById(esrImportId);
+		final I_ESR_Import esrImport = esrImportBL.getById(esrImportId);
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
@@ -46,7 +44,7 @@ public class ESR_Complete_Process extends JavaProcess
 	{
 		if (success)
 		{
-			final I_ESR_Import esrImport = esrImportDAO.getById(esrImportId);
+			final I_ESR_Import esrImport = esrImportBL.getById(esrImportId);
 			final boolean processed = Services.get(IESRImportBL.class).isProcessed(esrImport);
 			if (processed)
 			{
