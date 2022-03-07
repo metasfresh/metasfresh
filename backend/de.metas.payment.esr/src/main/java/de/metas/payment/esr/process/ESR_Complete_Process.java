@@ -1,30 +1,29 @@
 package de.metas.payment.esr.process;
 
-import de.metas.process.RunOutOfTrx;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class ESR_Complete_Process extends JavaProcess
 {
 	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 
-	private int p_ESR_Import_ID;
+	ESRImportId esrImportId ;
 
 	@Override
 	protected void prepare()
 	{
 		if (I_ESR_Import.Table_Name.equals(getTableName()))
 		{
-			p_ESR_Import_ID = getRecord_ID();
+			esrImportId = ESRImportId.ofRepoId(getRecord_ID());
 		}
 	}
 
@@ -32,18 +31,7 @@ public class ESR_Complete_Process extends JavaProcess
 	@RunOutOfTrx // TODO: note for self: Check if this is enough
 	protected String doIt() throws Exception
 	{
-		if (p_ESR_Import_ID <= 0)
-		{
-			throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
-		}
-
-		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, ITrx.TRXNAME_ThreadInherited);
-
-		// 04582: making sure we will use the trxName of this process in our business logic
-		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {} of {} is equal to the process-TrxName {}",
-				InterfaceWrapperHelper.getTrxName(esrImport),
-				esrImport,
-				get_TrxName());
+		final I_ESR_Import esrImport = esrImportDAO.getById(esrImportId);
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
@@ -58,7 +46,7 @@ public class ESR_Complete_Process extends JavaProcess
 	{
 		if (success)
 		{
-			final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, get_TrxName());
+			final I_ESR_Import esrImport = esrImportDAO.getById(esrImportId);
 			final boolean processed = Services.get(IESRImportBL.class).isProcessed(esrImport);
 			if (processed)
 			{
