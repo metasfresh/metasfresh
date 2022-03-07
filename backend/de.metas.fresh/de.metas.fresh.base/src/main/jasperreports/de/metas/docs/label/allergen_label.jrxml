@@ -39,14 +39,14 @@ FROM  m_product_allergen pa
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="95" y="0" width="160" height="14" uuid="d0027bdc-7133-4f78-9883-fd6581c4db12"/>
+				<reportElement positionType="Float" x="74" y="0" width="160" height="14" uuid="d0027bdc-7133-4f78-9883-fd6581c4db12"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{allergen}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="0" width="94" height="14" uuid="c96b05b2-09c4-42d7-9a69-140e7f3dd52b"/>
+				<reportElement positionType="Float" x="0" y="0" width="74" height="14" uuid="c96b05b2-09c4-42d7-9a69-140e7f3dd52b"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
