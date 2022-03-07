@@ -1,6 +1,7 @@
 package de.metas.payment.esr.process;
 
 import de.metas.process.RunOutOfTrx;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -36,7 +37,7 @@ public class ESR_Complete_Process extends JavaProcess
 			throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
 		}
 
-		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, get_TrxName());
+		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, ITrx.TRXNAME_ThreadInherited);
 
 		// 04582: making sure we will use the trxName of this process in our business logic
 		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {} of {} is equal to the process-TrxName {}",
