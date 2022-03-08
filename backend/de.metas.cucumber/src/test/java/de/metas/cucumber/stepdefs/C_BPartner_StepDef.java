@@ -30,17 +30,20 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.Env;
 
@@ -49,8 +52,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
@@ -64,7 +69,9 @@ public class C_BPartner_StepDef
 
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
+
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
@@ -144,13 +151,25 @@ public class C_BPartner_StepDef
 
 		bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
 
-		final String salesRepIdentifier = tableRow.get("OPT." + COLUMNNAME_C_BPartner_SalesRep_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String salesRepIdentifier = tableRow.get("OPT." + COLUMNNAME_C_BPartner_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (EmptyUtil.isNotBlank(salesRepIdentifier))
 		{
 			final I_C_BPartner salesRep = bPartnerTable.get(salesRepIdentifier);
 			assertThat(salesRep).as("Missing salesrep C_BPartner record for identifier=" + salesRepIdentifier).isNotNull();
 
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
+		}
+
+		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+		if (Check.isNotBlank(paymentTermValue))
+		{
+			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+					.create()
+					.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
@@ -176,7 +195,7 @@ public class C_BPartner_StepDef
 
 	private void changeBPartner(@NonNull final Map<String, String> row)
 	{
-		final String bpartner = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final String bpartner = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final String name2 = DataTableUtil.extractStringOrNullForColumnName(row, "Name2");
 
 		final I_C_BPartner bPartner = bPartnerTable.get(bpartner);
@@ -196,7 +215,7 @@ public class C_BPartner_StepDef
 		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartnerIdOptional.get().getValue());
 		assertThat(bPartnerRecord).isNotNull();
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 }

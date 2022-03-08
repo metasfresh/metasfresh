@@ -36,6 +36,7 @@ import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -43,10 +44,14 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.TimeUtil;
 
@@ -67,6 +72,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
@@ -82,15 +88,18 @@ public class C_Order_StepDef
 
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
+	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 	private final StepDefData<I_M_PricingSystem> pricingSystemDataTable;
 
 	public C_Order_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
+			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
 			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemDataTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
 	}
 
@@ -107,6 +116,7 @@ public class C_Order_StepDef
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -140,7 +150,7 @@ public class C_Order_StepDef
 				order.setC_PaymentTerm_ID(paymentTermId);
 			}
 
-			if(EmptyUtil.isNotBlank(pricingSystemIdentifier))
+			if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
 			{
 				final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
 				assertThat(pricingSystem).isNotNull();
@@ -148,11 +158,11 @@ public class C_Order_StepDef
 
 			}
 
-			if(EmptyUtil.isNotBlank(docBaseType))
+			if (EmptyUtil.isNotBlank(docBaseType))
 			{
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-						.addEqualsFilter(COLUMNNAME_DocSubType, null)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
 						.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 
@@ -162,18 +172,39 @@ public class C_Order_StepDef
 				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 			}
 
+			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bpartnerLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
+				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			}
+
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
-	@Given("^the order identified by (.*) is completed$")
-	public void order_is_completed(@NonNull final String orderIdentifier)
+	@And("^the order identified by (.*) is (reactivated|completed)$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
-		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reactivated:
+				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case completed:
+				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled C_Order action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
 	}
 
 	@Given("generate PO from SO is invoked with parameters:")
@@ -292,9 +323,18 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
-		final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
-		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
+		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer expectedBPartnerLocation = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
+				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
+
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
@@ -307,8 +347,8 @@ public class C_Order_StepDef
 		final I_C_Order order = orderTable.get(identifier);
 
 		assertThat(order.getExternalId()).isEqualTo(externalId);
-		assertThat(order.getC_BPartner_ID()).isEqualTo(bpartnerId);
-		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId);
+		assertThat(order.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
+		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocation);
 		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
 		assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
 		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
@@ -352,5 +392,25 @@ public class C_Order_StepDef
 
 			assertThat(orderLine).isPresent();
 		}
+	}
+
+	@And("^validate that (.*) is not invoiceable nor shippable$")
+	public void validate_order_not_invoiceable_nor_shippable(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final boolean isInvoiceable = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.anyMatch();
+		assertThat(isInvoiceable).isFalse();
+
+		final boolean isShippable = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.anyMatch();
+		assertThat(isShippable).isFalse();
 	}
 }

@@ -49,11 +49,11 @@ Feature: invoice rule after delivery
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1                   | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick
@@ -102,8 +102,8 @@ Feature: invoice rule after delivery
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_2                   | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_2               | p_2                     | 6           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
