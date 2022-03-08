@@ -17,7 +17,7 @@ spec:
 ---
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: metasfresh-{{ .Release.Name }}-search
   namespace: {{ .Release.Namespace }}
@@ -27,9 +27,8 @@ spec:
   selector:
     matchLabels:
       app: metasfresh-{{ .Release.Name }}-search
+  serviceName: metasfresh-{{ .Release.Name }}-search
   replicas: 1
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -46,38 +45,43 @@ spec:
               add:
               - IPC_LOCK
           env:
-          - name: CLUSTER_NAME
-            value: {{ .Values.search.clusterName }}
+          - name: cluster.name
+            value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
           - name: ES_PORT
             value: '{{ .Values.search.port.search }}'
           - name: MEM_LIMIT
             value: '{{ .Values.search.resources.memLimit }}'
           - name: discovery.type
             value: single-node
+          - name: path.data
+            value: es/data
+          - name: path.logs
+            value: es/log
           volumeMounts:
-          - mountPath: /usr/share/elasticsearch/data
-            name: data
-          - mountPath: /etc/localtime
-            name: host-localtime
+          - name: data
+            mountPath: es  
+          - name: host-localtime
+            mountPath: /etc/localtime
             readOnly: true
-          - mountPath: /etc/timezone
-            name: host-timezone
+          - name: host-timezone
+            mountPath: /etc/timezone
             readOnly: true
-      initContainers:
-      - name: take-data-dir-ownership
-        image: busybox
-        command: ['sh', '-c', 'chown 1000:0 /usr/share/elasticsearch/data']
-        volumeMounts:
-        - name: data
-          mountPath: /usr/share/elasticsearch/data
       volumes:
-      - name: data
-        hostPath:
-          path: /volumes/{{ .Release.Namespace }}/search/data
-          type: DirectoryOrCreate
       - name: host-localtime
         hostPath:
           path: /etc/localtime
       - name: host-timezone
         hostPath:
           path: /etc/timezone
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+      storageClassName: do-block-storage
+      
