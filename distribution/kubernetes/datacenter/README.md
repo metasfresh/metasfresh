@@ -31,7 +31,23 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scrip
 ./get_helm.sh
 ```
 
-### using helm
+### install nginx ingress-controller
+```
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install nginx-ingress ingress-nginx/ingress-nginx --set controller.publishService.enabled=true --namespace nginx-ingress --create-namespace
+
+```
+
+### Securing the Ingress Using Cert-Manager
+
+```
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager --version v1.7.1 --set installCRDs=true --namespace cert-manager --create-namespace
+```
+
+### using helm to deploy metasfresh
 ```
 helm install <release-name> <dir> --namespace <namespace> --create-namespace
 helm install dev metasfresh-helm --namespace dev --create-namespace

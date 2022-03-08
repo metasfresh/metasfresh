@@ -1,3 +1,4 @@
+
 app:
   image: nexus.metasfresh.com:6001/metasfresh/metasfresh-app:master_dockerimages_5.175.2_36_masterdockerimages
   port:
@@ -59,11 +60,15 @@ webui:
 
 ingress:
   webui:
-    url: demouser-demo.metasfresh.com
+    url: demouser-demo.k8s.metasfresh.com
   pgadmin: 
-    url: pgadmin.demouser-demo.metasfresh.com
+    url: pgadmin.demouser-demo.k8s.metasfresh.com
     enabled: true
   tls:
     enabled: false
+    mail: example@metasfresh.com # Email address used for ACME-letsencrypt registration
+
+deploy:
+  productionIssuer: false #only once per cluster
 
     
