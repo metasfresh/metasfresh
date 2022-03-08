@@ -12,11 +12,12 @@ spec:
     - protocol: TCP
       port: {{ .Values.pgadmin.port.pgadmin }}
       targetPort: {{ .Values.pgadmin.port.pgadmin }}
+  # type: LoadBalancer
 
 ---
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: metasfresh-{{ .Release.Name }}-pgadmin
   namespace: {{ .Release.Namespace }}
@@ -26,6 +27,7 @@ spec:
   selector:
     matchLabels:
       app: metasfresh-{{ .Release.Name }}-pgadmin
+  serviceName: metasfresh-{{ .Release.Name }}-db
   replicas: 1
   template:
     metadata:
@@ -58,9 +60,16 @@ spec:
           volumeMounts:
           - mountPath: /var/lib/pgadmin
             name: data
-      volumes:
-      - name: data
-        hostPath:
-          path: /volumes/{{ .Release.Namespace }}/pgadmin
-          type: DirectoryOrCreate
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: do-block-storage
+
         
