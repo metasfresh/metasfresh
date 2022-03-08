@@ -94,7 +94,7 @@ spec:
       volumes:
       - name: postgresql-config
         configMap:
-          name: metasfresh-{{ .Release.Namespace }}-db-configmap
+          name: metasfresh-{{ .Release.Name }}-db-configmap
       - name: host-localtime
         hostPath:
           path: /etc/localtime
