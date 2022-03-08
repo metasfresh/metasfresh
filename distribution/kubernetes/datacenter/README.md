@@ -1,4 +1,4 @@
-# access cluster via cli with docker
+## access cluster via cli with docker
 
 ### cd to directory in git repository to mount project
 ```
@@ -31,6 +31,7 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scrip
 ./get_helm.sh
 ```
 
+## initial setup of new cluster
 ### install nginx ingress-controller
 ```
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -47,7 +48,7 @@ helm repo update
 helm install cert-manager jetstack/cert-manager --version v1.7.1 --set installCRDs=true --namespace cert-manager --create-namespace
 ```
 
-### using helm to deploy metasfresh
+## using helm to deploy metasfresh
 ```
 helm install <release-name> <dir> --namespace <namespace> --create-namespace
 helm install dev metasfresh-helm --namespace dev --create-namespace
@@ -55,7 +56,7 @@ helm upgrade dev metasfresh-helm --namespace dev
 helm delete dev --namespace dev
 ```
 
-### pgadmin
+## pgadmin
 - url: ingress.pgadmin.url as set in [values.yaml](./metasfresh-helm/values.yaml)
 - login 
     - pgadmin.defaultEmail as set in [values.yaml](./metasfresh-helm/values.yaml)
@@ -66,7 +67,7 @@ helm delete dev --namespace dev
     - Username: db.username as set in [values.yaml](./metasfresh-helm/values.yaml)
     - Password: db.password as set in [values.yaml](./metasfresh-helm/values.yaml)
 
-### debug
+## debug
 port forwarding: https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/#forward-a-local-port-to-a-port-on-the-pod  
 for example:
 ```
