@@ -227,7 +227,6 @@ public class C_Order
 	/**
 	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
 	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
-	 * @param order
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -241,7 +240,9 @@ public class C_Order
 			final PaymentRule paymentRule;
 			if (bpartner != null && bpartner.getPaymentRule() != null)
 			{
-				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+				paymentRule = order.isSOTrx()
+						? PaymentRule.ofCode(bpartner.getPaymentRule())
+						: PaymentRule.ofCode(bpartner.getPaymentRulePO());
 			}
 			else
 			{

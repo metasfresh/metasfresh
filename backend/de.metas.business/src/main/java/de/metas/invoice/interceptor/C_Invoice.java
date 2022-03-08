@@ -188,7 +188,9 @@ public class C_Invoice // 03771
 			final PaymentRule paymentRule;
 			if (bpartner != null && bpartner.getPaymentRule() != null)
 			{
-				paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+				paymentRule = invoice.isSOTrx()
+						? PaymentRule.ofCode(bpartner.getPaymentRule())
+						: PaymentRule.ofCode(bpartner.getPaymentRulePO());
 			}
 			else
 			{
