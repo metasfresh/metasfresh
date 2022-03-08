@@ -32,6 +32,7 @@ import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.title.TitleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -512,7 +513,8 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
-
+			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
+			
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));

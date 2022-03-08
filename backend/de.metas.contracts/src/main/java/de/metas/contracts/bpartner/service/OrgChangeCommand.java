@@ -456,6 +456,7 @@ public class OrgChangeCommand
 
 				matchingContact.setContactType(newContactType);
 				matchingContact.setGreetingId(sourceContact.getGreetingId());
+				matchingContact.setTitleId(sourceContact.getTitleId());
 				matchingContact.setFirstName(sourceContact.getFirstName());
 				matchingContact.setLastName(sourceContact.getLastName());
 				matchingContact.setMembershipContact(sourceContact.isMembershipContact());

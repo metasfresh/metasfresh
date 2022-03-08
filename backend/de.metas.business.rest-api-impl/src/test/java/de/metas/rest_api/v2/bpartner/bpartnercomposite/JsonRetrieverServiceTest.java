@@ -38,6 +38,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -96,6 +97,7 @@ class JsonRetrieverServiceTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
+				new TitleRepository(),
 				new CurrencyRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));

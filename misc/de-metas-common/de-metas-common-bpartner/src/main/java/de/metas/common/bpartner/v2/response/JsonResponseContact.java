@@ -46,6 +46,7 @@ public class JsonResponseContact
 	public static final String BIRTHDAY = "birthday";
 	public static final String NAME = "name";
 	public static final String GREETING = "greeting";
+	public static final String TITLE = "title";
 	public static final String CODE = "code";
 	public static final String METASFRESH_BPARTNER_ID = "metasfreshBPartnerId";
 	public static final String EXTERNAL_ID = "externalId";
@@ -88,6 +89,9 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_EMPTY)
 	String greeting;
 
+	@JsonInclude(Include.NON_EMPTY)
+	String title;
+	
 	@JsonInclude(Include.NON_EMPTY)
 	String lastName;
 
@@ -168,6 +172,7 @@ public class JsonResponseContact
 			@JsonProperty(CODE) @Nullable final String code,
 			@JsonProperty(NAME) final String name,
 			@JsonProperty(GREETING) final String greeting,
+			@JsonProperty(TITLE) @Nullable final String title,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
 			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
@@ -217,6 +222,7 @@ public class JsonResponseContact
 		this.code = code;
 		this.name = name;
 		this.greeting = greeting;
+		this.title = title;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.birthday = birthday;

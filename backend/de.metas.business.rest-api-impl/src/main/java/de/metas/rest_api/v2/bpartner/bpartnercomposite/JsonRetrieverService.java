@@ -81,6 +81,8 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.title.Title;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -155,6 +157,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.BPARTNER_ID, JsonResponseContact.METASFRESH_BPARTNER_ID)
 			.put(BPartnerContact.NAME, JsonResponseContact.NAME)
 			.put(BPartnerContact.GREETING_ID, JsonResponseContact.GREETING)
+			.put(BPartnerContact.TITLE_ID, JsonResponseContact.TITLE)
 			.put(BPartnerContact.PHONE, JsonResponseContact.PHONE)
 			.put(BPartnerContact.MOBILE_PHONE, JsonResponseContact.MOBILE_PHONE)
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
@@ -211,6 +214,7 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
+	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
@@ -223,6 +227,7 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final TitleRepository titleRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
@@ -230,6 +235,7 @@ public class JsonRetrieverService
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
+		this.titleRepository = titleRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -398,6 +404,14 @@ public class JsonRetrieverService
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
 				greetingTrl = greeting.getGreeting(ad_language);
 			}
+
+			String titleTrl = null;
+			if (contact.getTitleId() != null)
+			{
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
+				titleTrl = title.getTitle();
+			}
+
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
 					.map(role -> JsonResponseContactRole.builder()
@@ -416,6 +430,7 @@ public class JsonRetrieverService
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
 					.greeting(greetingTrl)
+					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())

@@ -71,6 +71,7 @@ import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -180,6 +181,7 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
+				new TitleRepository(),
 				currencyRepository,
 				externalReferenceRestControllerService,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
