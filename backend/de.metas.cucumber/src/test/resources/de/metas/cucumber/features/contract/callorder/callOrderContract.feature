@@ -48,7 +48,12 @@ Feature: Call order contract
 
     When the order identified by order_1 is completed
 
-    Then validate that order_1 is not invoiceable nor shippable
+    Then after not more than 30s, no M_ShipmentSchedules are found:
+      | C_OrderLine_ID.Identifier |
+      | orderLine_1               |
+    And after not more than 30s, no C_Invoice_Candidates are found:
+      | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | orderLine_1               | 1000         |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
@@ -191,9 +196,9 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2            | 4              | 4                | 2                         |
-    When enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | callOrder_1           | invoiceCand_1                     | invoice_1               |
+    When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCand_1                     | invoice_1               |
 
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
@@ -238,9 +243,9 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4            | 4              | 4                | 4                         |
-    When enqueue invoice candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.InvoicesSize |
-      | callOrder_1           | invoiceCand_1                     | invoice_3               | 3                |
+    When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.InvoicesSize |
+      | invoiceCand_1                     | invoice_3               | 3                |
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |

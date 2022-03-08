@@ -132,6 +132,16 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	@And("^after not more than (.*)s, no C_Invoice_Candidates are found:$")
+	public void no_invoiceCandidates_are_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, () -> load_C_Invoice_Candidate(row));
+			assertThat(candidateFound).isFalse();
+		}
+	}
+
 	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
 	{
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);

@@ -48,10 +48,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.TimeUtil;
 
@@ -392,25 +390,5 @@ public class C_Order_StepDef
 
 			assertThat(orderLine).isPresent();
 		}
-	}
-
-	@And("^validate that (.*) is not invoiceable nor shippable$")
-	public void validate_order_not_invoiceable_nor_shippable(@NonNull final String orderIdentifier)
-	{
-		final I_C_Order order = orderTable.get(orderIdentifier);
-
-		final boolean isInvoiceable = queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.create()
-				.anyMatch();
-		assertThat(isInvoiceable).isFalse();
-
-		final boolean isShippable = queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
-				.create()
-				.anyMatch();
-		assertThat(isShippable).isFalse();
 	}
 }

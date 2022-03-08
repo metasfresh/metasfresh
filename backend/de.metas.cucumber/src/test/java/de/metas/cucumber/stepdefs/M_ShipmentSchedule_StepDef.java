@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -157,6 +158,29 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(noRecords.get())
 				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout", timeoutSec)
 				.isTrue();
+	}
+
+	@And("^after not more than (.*)s, no M_ShipmentSchedules are found:$")
+	public void no_shipmentSchedules_are_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+			final Supplier<Boolean> scheduleQueryExecutor = () -> {
+
+				final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+						.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+						.create()
+						.firstOnly(I_M_ShipmentSchedule.class);
+
+				return schedule != null;
+			};
+
+			final boolean scheduleFound = StepDefUtil.tryAndWait(timeoutSec, 500, scheduleQueryExecutor);
+			assertThat(scheduleFound).isFalse();
+		}
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
