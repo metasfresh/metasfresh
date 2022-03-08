@@ -50,6 +50,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 
@@ -82,9 +83,9 @@ public class HUStorageQuery implements IStorageQuery
 	private transient ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 
-	/* package */ HUStorageQuery(final AgeAttributesService ageAttributesService)
+	/* package */ HUStorageQuery()
 	{
-		this.ageAttributesService = ageAttributesService;
+		ageAttributesService = 	SpringContextHolder.instance.getBean(AgeAttributesService.class);
 		// services
 		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();

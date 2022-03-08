@@ -68,8 +68,6 @@ public class HUStorageEngine implements IStorageEngine
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
 	private static final transient int DEFAULT_QueriesPerChunk = 500;
 
-	final AgeAttributesService  ageAttributesService= SpringContextHolder.instance.getBean(AgeAttributesService.class);
-
 	@VisibleForTesting
 	public HUStorageEngine()
 	{
@@ -78,7 +76,7 @@ public class HUStorageEngine implements IStorageEngine
 	@Override
 	public IStorageQuery newStorageQuery()
 	{
-		final HUStorageQuery huStorageQuery = new HUStorageQuery(ageAttributesService);
+		final HUStorageQuery huStorageQuery = new HUStorageQuery();
 		return huStorageQuery;
 	}
 
