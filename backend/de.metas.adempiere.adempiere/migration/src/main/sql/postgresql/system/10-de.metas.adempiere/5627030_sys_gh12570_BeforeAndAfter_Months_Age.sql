@@ -242,3 +242,74 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 
 
+
+
+
+
+-- 2022-03-08T09:55:51.478Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2022-03-08 11:55:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579328
+;
+
+-- 2022-03-08T09:55:52.649Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_product','Picking_AgeTolerance_AfterMonths','NUMERIC(10)',null,'0')
+;
+
+-- 2022-03-08T09:55:52.656Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Product SET Picking_AgeTolerance_AfterMonths=0 WHERE Picking_AgeTolerance_AfterMonths IS NULL
+;
+
+-- 2022-03-08T09:56:00.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2022-03-08 11:56:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579329
+;
+
+-- 2022-03-08T09:56:01.481Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_product','Picking_AgeTolerance_BeforeMonths','NUMERIC(10)',null,'0')
+;
+
+-- 2022-03-08T09:56:01.487Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Product SET Picking_AgeTolerance_BeforeMonths=0 WHERE Picking_AgeTolerance_BeforeMonths IS NULL
+;
+
+
+
+
+-- 2022-03-08T09:57:08.093Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2022-03-08 11:57:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579330
+;
+
+-- 2022-03-08T09:57:08.673Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_product','Picking_AgeTolerance_AfterMonths','NUMERIC(10)',null,'0')
+;
+
+-- 2022-03-08T09:57:08.677Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner_Product SET Picking_AgeTolerance_AfterMonths=0 WHERE Picking_AgeTolerance_AfterMonths IS NULL
+;
+
+-- 2022-03-08T09:57:14.417Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2022-03-08 11:57:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579331
+;
+
+-- 2022-03-08T09:57:14.961Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_product','Picking_AgeTolerance_BeforeMonths','NUMERIC(10)',null,'0')
+;
+
+-- 2022-03-08T09:57:14.965Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_BPartner_Product SET Picking_AgeTolerance_BeforeMonths=0 WHERE Picking_AgeTolerance_BeforeMonths IS NULL
+;
+
+
+
+
+

@@ -258,7 +258,6 @@ final class HUQueryBuilder_Attributes
 	{
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
-			//TODO
 			final Object value = attributeSet.getValue(attribute);
 			addOnlyWithAttribute(attribute, value);
 		}
