@@ -90,7 +90,7 @@ public class AgeAttributesService
 		int pickingAgeTolerance_BeforeMonths = 0;
 		int pickingAgeTolerance_AfterMonths = 0;
 
-		for (final ProductId productId : productIds)
+		for (final ProductId productId : productIds) // #12570 there should be only one product here. Not sure how to decide which are the time ranges if there are more
 		{
 			final I_M_Product product = productDAO.getById(productId);
 
@@ -110,6 +110,7 @@ public class AgeAttributesService
 				{
 					continue;
 				}
+
 				final I_C_BPartner partner = partnerDAO.getById(bpartnerId);
 				final I_C_BPartner_Product bPartnerProduct = bpartnerProductDAO.retrieveBPProductForCustomer(partner, product, orgId);
 
@@ -122,7 +123,6 @@ public class AgeAttributesService
 					final int bpartnerProductAfter = bPartnerProduct.getPicking_AgeTolerance_AfterMonths();
 
 					pickingAgeTolerance_AfterMonths = bpartnerProductAfter;
-
 				}
 			}
 		}
