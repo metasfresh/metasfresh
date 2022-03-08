@@ -282,9 +282,14 @@ public class JsonOLCandCreateRequest
 	String bpartnerName;
 
 	@ApiModelProperty( //
-			value = "Translates to `C_OLCand.Email`. If omitted, it will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
+			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String email;
+
+	@ApiModelProperty( //
+			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
+	@JsonInclude(Include.NON_NULL)
+	String phone;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -334,7 +339,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
-			@JsonProperty("email") final @Nullable String email)
+			@JsonProperty("email") final @Nullable String email,
+			@JsonProperty("phone") final @Nullable String phone)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -366,6 +372,7 @@ public class JsonOLCandCreateRequest
 		this.presetDateShipped = presetDateShipped;
 		this.bpartnerName = bpartnerName;
 		this.email = email;
+		this.phone = phone;
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;

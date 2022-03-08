@@ -114,7 +114,9 @@ public class OLCandRepository
 		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		olCandPO.setEMail(request.getEmail()); // if it's blank, it might be set from the location a few lines down the road.
+		// if email and phone are blank, they might be set from the location a few lines down the road.
+		olCandPO.setEMail(request.getEmail());
+		olCandPO.setPhone(request.getPhone());
 		
 		// set the "normal" (buyer) bpartner's data
 		{
@@ -142,10 +144,13 @@ public class OLCandRepository
 				{
 					olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
 				}
-				olCandPO.setPhone(bPartnerLocation.getPhone());
 				if (Check.isBlank(olCandPO.getEMail()))
 				{
 					olCandPO.setEMail(bPartnerLocation.getEMail());
+				}
+				if (Check.isBlank(olCandPO.getPhone()))
+				{
+					olCandPO.setPhone(bPartnerLocation.getPhone());
 				}
 			}
 		}
@@ -182,7 +187,7 @@ public class OLCandRepository
 			olCandPO.setPOReference(request.getPoReference());
 		}
 
-		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
+		olCandPO.setDateCandidate(CoalesceUtil.coalesceNotNull(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
 															  .atTime(LocalTime.MAX)

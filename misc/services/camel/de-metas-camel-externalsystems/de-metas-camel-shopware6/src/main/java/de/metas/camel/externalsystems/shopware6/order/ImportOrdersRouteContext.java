@@ -327,6 +327,12 @@ public class ImportOrdersRouteContext
 		return StringUtils.trimBlankToNull(locationBPartnerName);
 	}
 
+	@NonNull
+	public JsonOrderAddress getOrderShippingAddressNotNull()
+	{
+		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
+	}
+
 	@Nullable
 	private String getSalutationDisplayNameById(@Nullable final String salutationId)
 	{

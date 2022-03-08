@@ -47,7 +47,8 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com"
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -96,7 +97,8 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com"
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -142,7 +144,8 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com"
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -188,7 +191,8 @@
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "shipper": "ext-Shopware6-shippingMethodId",
       "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com"
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     }
   ]
 }

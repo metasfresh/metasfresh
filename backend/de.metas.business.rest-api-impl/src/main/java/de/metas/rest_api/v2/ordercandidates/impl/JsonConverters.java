@@ -248,6 +248,7 @@ public class JsonConverters
 				.salesRepInternalId(salesRepInternalId)
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
+				.phone(request.getPhone())
 				;
 	}
 

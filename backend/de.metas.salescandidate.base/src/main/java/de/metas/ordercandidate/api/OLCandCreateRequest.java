@@ -130,6 +130,7 @@ public class OLCandCreateRequest
 
 	String bpartnerName;
 	String email;
+	String phone;
 	
 	@Builder
 	private OLCandCreateRequest(
@@ -179,7 +180,7 @@ public class OLCandCreateRequest
 			@Nullable final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
-			@Nullable final String email)
+			@Nullable final String email, final String phone)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -243,5 +244,6 @@ public class OLCandCreateRequest
 
 		this.bpartnerName = bpartnerName;
 		this.email = email;
+		this.phone = phone;
 	}
 }

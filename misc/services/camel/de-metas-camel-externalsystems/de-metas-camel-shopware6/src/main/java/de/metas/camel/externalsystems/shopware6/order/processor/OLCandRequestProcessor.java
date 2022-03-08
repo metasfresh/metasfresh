@@ -78,7 +78,7 @@ public class OLCandRequestProcessor implements Processor
 {
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final ImportOrdersRouteContext importOrdersRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
@@ -87,7 +87,8 @@ public class OLCandRequestProcessor implements Processor
 
 		if (bPartnerUpsertResponse == null)
 		{
-			throw new RuntimeException("No JsonResponseUpsert present! OrderId=" + importOrdersRouteContext.getOrderNotNull().getJsonOrder().getId());
+			final JsonOrder order = importOrdersRouteContext.getOrderNotNull().getJsonOrder();
+			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): No JsonResponseUpsert present!");
 		}
 
 		final JsonOLCandCreateBulkRequest olCandBulkRequest = buildOlCandRequest(importOrdersRouteContext, bPartnerUpsertResponse);
@@ -124,6 +125,7 @@ public class OLCandRequestProcessor implements Processor
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null)
 				.email(jsonOrder.getOrderCustomer().getEmail())
+				.phone(context.getOrderShippingAddressNotNull().getPhoneNumber())
 				.bpartnerName(context.getExtendedShippingLocationBPartnerName());
 
 		if (Check.isNotBlank(context.getShippingMethodId()))
@@ -141,10 +143,9 @@ public class OLCandRequestProcessor implements Processor
 		processShopwareConfigs(context, olCandCreateRequestBuilder);
 
 		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, jsonOrder.getId());
-
 		if (orderLines.isEmpty())
 		{
-			throw new RuntimeException("Missing order lines! OrderId=" + jsonOrder.getId());
+			throw new RuntimeException("Order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "): Missing order lines!");
 		}
 
 		orderLines.stream()
@@ -263,7 +264,7 @@ public class OLCandRequestProcessor implements Processor
 
 		return shopwareClient.getOrderLines(orderId)
 				.map(JsonOrderLines::filterForOrderLinesWithProductId)
-				.orElseThrow(() -> new RuntimeException("Missing order lines! OrderId=" + orderId));
+				.orElse(ImmutableList.of()); // exception will be thrown by the caller
 	}
 
 	private JsonOLCandCreateRequest processOrderLine(
