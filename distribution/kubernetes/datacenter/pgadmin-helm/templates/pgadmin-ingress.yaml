@@ -1,7 +1,9 @@
+
+{{ if .Values.ingress.pgadmin.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
+  name: pgadmin-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -10,20 +12,20 @@ spec:
   {{ if .Values.ingress.tls.enabled }}
   tls:
   - hosts:
-    - {{ .Values.ingress.webui.url }}
-    secretName: {{ .Release.Name }}-tls
+    - {{ .Values.ingress.pgadmin.url }}
+    secretName: pgadmin-tls
   {{ end }}
   rules:
-  - host: {{ .Values.ingress.webui.url }}
+  - host: {{ .Values.ingress.pgadmin.url }}
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: metasfresh-{{ .Release.Name }}-webui
+            name: metasfresh-pgadmin
             port:
-              number: {{ .Values.webui.port.webui }}
-
+              number: {{ .Values.pgadmin.port.pgadmin }}
+{{ end }}
 
   

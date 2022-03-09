@@ -40,13 +40,6 @@ search:
   resources:
     memLimit: 1073741824 #(in bytes)
 
-pgadmin:
-  image: dpage/pgadmin4
-  port:
-    pgadmin: 80
-  defaultEmail: metasfresh@metasfresh.com
-  defaultPassword: metasfresh
-
 webapi:
   image: nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:master_dockerimages_5.175.2_36_masterdockerimages
   port:
@@ -60,15 +53,7 @@ webui:
 
 ingress:
   webui:
-    url: demouser-demo.k8s.metasfresh.com
-  pgadmin: 
-    url: pgadmin.demouser-demo.k8s.metasfresh.com
-    enabled: true
+    url: demo-demouser.metasfresh.com
   tls:
-    enabled: false
-    mail: example@metasfresh.com # Email address used for ACME-letsencrypt registration
-
-deploy:
-  productionIssuer: false #only once per cluster
-
+    enabled: true
     

@@ -1,0 +1,13 @@
+pgadmin:
+  image: dpage/pgadmin4
+  port:
+    pgadmin: 80
+  defaultEmail: example@mail.com
+  defaultPassword: password
+
+ingress:
+  pgadmin: 
+    url: pgadmin.demo-demouser.metasfresh.com
+    enabled: true
+  tls:
+    enabled: true

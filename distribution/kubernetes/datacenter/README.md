@@ -50,10 +50,9 @@ helm install cert-manager jetstack/cert-manager --version v1.7.1 --set installCR
 
 ## using helm to deploy metasfresh
 ```
-helm install <release-name> <dir> --namespace <namespace> --create-namespace
-helm install dev metasfresh-helm --namespace dev --create-namespace
-helm upgrade dev metasfresh-helm --namespace dev
-helm delete dev --namespace dev
+helm install issuer cert-manager-issuer-helm --namespace cert-manager --create-namespace
+helm install dev metasfresh-helm --namespace demo --create-namespace
+helm install dev pgadmin-helm --namespace demo --create-namespace
 ```
 
 ## pgadmin

@@ -1,41 +1,41 @@
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: metasfresh-{{ .Release.Name }}-pgadmin
+  name: metasfresh-pgadmin
   namespace: {{ .Release.Namespace }}
   labels:
-    app: metasfresh-{{ .Release.Name }}-pgadmin
+    app: metasfresh-pgadmin
 spec:
   selector:
-    app: metasfresh-{{ .Release.Name }}-pgadmin
+    app: metasfresh-pgadmin
   ports:
     - protocol: TCP
       port: {{ .Values.pgadmin.port.pgadmin }}
       targetPort: {{ .Values.pgadmin.port.pgadmin }}
-  # type: LoadBalancer
 
 ---
 
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: metasfresh-{{ .Release.Name }}-pgadmin
+  name: metasfresh-pgadmin
   namespace: {{ .Release.Namespace }}
   labels:
-    app: metasfresh-{{ .Release.Name }}-pgadmin
+    app: metasfresh-pgadmin
 spec:
   selector:
     matchLabels:
-      app: metasfresh-{{ .Release.Name }}-pgadmin
-  serviceName: metasfresh-{{ .Release.Name }}-db
+      app: metasfresh-pgadmin
+  serviceName: metasfresh-pgadmin
   replicas: 1
   template:
     metadata:
       labels:
-        app: metasfresh-{{ .Release.Name }}-pgadmin
+        app: metasfresh-pgadmin
     spec:
       containers:
-      - name: metasfresh-{{ .Release.Name }}-pgadmin
+      - name: metasfresh-pgadmin
         image: {{ .Values.pgadmin.image }}
         ports:
         - containerPort: {{ .Values.pgadmin.port.pgadmin }}
@@ -43,12 +43,12 @@ spec:
         - name: PGADMIN_DEFAULT_EMAIL
           valueFrom:
             secretKeyRef:
-              name: metasfresh-{{ .Release.Name }}-pgadmin-secret
+              name: metasfresh-pgadmin-secret
               key: default-email
         - name: PGADMIN_DEFAULT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: metasfresh-{{ .Release.Name }}-pgadmin-secret
+              name: metasfresh-pgadmin-secret
               key: default-password
         volumeMounts:
         - mountPath: /var/lib/pgadmin
@@ -72,4 +72,4 @@ spec:
           storage: 1Gi
       storageClassName: do-block-storage
 
-        
+

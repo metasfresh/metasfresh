@@ -1,13 +1,14 @@
-{{ if .Values.deploy.productionIssuer }}
+
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-prod
+  namespace: {{ .Release.Namespace }}
 spec:
   acme:
     # Email address used for ACME registration
-    email: {{ .Values.ingress.tls.mail }}
-    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ .Values.mail }}
+    server: {{ .Values.server }}
     privateKeySecretRef:
       # Name of a secret used to store the ACME account private key
       name: letsencrypt-prod-private-key
@@ -16,4 +17,4 @@ spec:
     - http01:
         ingress:
           class: nginx
-{{ end }}
+
