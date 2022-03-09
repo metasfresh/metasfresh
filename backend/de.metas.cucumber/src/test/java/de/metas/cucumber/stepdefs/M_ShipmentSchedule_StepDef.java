@@ -163,7 +163,7 @@ public class M_ShipmentSchedule_StepDef
 				.isTrue();
 	}
 
-	@And("^there are no M_ShipmentSchedule for C_Order (.*)$")
+	@And("^there is no M_ShipmentSchedule for C_Order (.*)$")
 	public void validate_no_M_ShipmentSchedule_created(@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);

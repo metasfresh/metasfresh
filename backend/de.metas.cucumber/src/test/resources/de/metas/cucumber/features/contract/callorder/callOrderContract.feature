@@ -47,9 +47,9 @@ Feature: Call order contract
 
     When the order identified by order_1 is completed
 
-    And there are no C_Invoice_Candidate for C_Order order_1
+    And there is no C_Invoice_Candidate for C_Order order_1
 
-    And there are no M_ShipmentSchedule for C_Order order_1
+    And there is no M_ShipmentSchedule for C_Order order_1
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |

@@ -135,7 +135,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("^there are no C_Invoice_Candidate for C_Order (.*)$")
+	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
 	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
