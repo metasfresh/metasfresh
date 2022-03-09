@@ -27,6 +27,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
@@ -47,16 +48,27 @@ public class AD_SysConfig_StepDef
 		this.userTable = userTable;
 	}
 
-	@And("enable sys config {string}")
-	public void enable_sys_config(@NonNull final String sysConfigName)
+	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
+	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
-		setSysConfigBoolValue(sysConfigName, true);
-	}
-
-	@And("disable sys config {string}")
-	public void disable_sys_config(@NonNull final String sysConfigName)
-	{
-		setSysConfigBoolValue(sysConfigName, false);
+		switch (sysconfigType)
+		{
+			case "String":
+				sysConfigBL.setValue(sysConfigName, sysconfigValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				break;
+			case "boolean":
+				final boolean booleanValue = Boolean.parseBoolean(sysconfigValue);
+				sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				break;
+			case "int":
+				final int intValue = Integer.parseInt(sysconfigValue);
+				setSysConfigIntValue(sysConfigName, intValue);
+				break;
+			default:
+				throw new AdempiereException("Unhandled sysConfig type")
+						.appendParametersToMessage()
+						.setParameter("type:", sysconfigType);
+		}
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
@@ -74,18 +86,6 @@ public class AD_SysConfig_StepDef
 		}
 	}
 
-	@And("update AD_SysConfig int value")
-	public void set_sysConfig_int_value(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_AD_SysConfig.COLUMNNAME_Name);
-			final int value = DataTableUtil.extractIntForColumnName(row, I_AD_SysConfig.COLUMNNAME_Value);
-
-			setSysConfigIntValue(name, value);
-		}
-	}
-
 	@And("reset all cache")
 	public void reset_cache()
 	{
@@ -93,11 +93,6 @@ public class AD_SysConfig_StepDef
 	}
 
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
-	{
-		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
-	}
-
-	private void setSysConfigBoolValue(@NonNull final String name, final boolean value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 	}

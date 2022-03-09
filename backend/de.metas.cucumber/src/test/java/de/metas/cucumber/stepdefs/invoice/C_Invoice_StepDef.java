@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -30,15 +31,20 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,10 +53,16 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Trx;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -62,23 +74,27 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 public class C_Invoice_StepDef
 {
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_C_Invoice> invoiceTable;
 	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
+	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
 			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
+			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
+		this.orderTable = orderTable;
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 	}
@@ -104,6 +120,69 @@ public class C_Invoice_StepDef
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadInvoice(tableRow));
 		}
+	}
+
+	@Then("^enqueue invoice candidate of order (.*) for invoicing and after not more than (.*)s, the invoice is found$")
+	public void generateInvoice(@NonNull final String orderIdentifier, final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		final Map<String, String> row = table.asMaps().get(0);
+
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
+		//make sure the given invoice candidate is ready for processing
+		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
+		{
+			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+
+			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
+
+		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
+
+		//enqueue invoice candidate
+		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), null);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setSupplementMissingPaymentTermIds(true);
+
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setFailIfNothingEnqueued(true)
+				.setInvoicingParams(invoicingParams)
+				.enqueueSelection(invoiceCandidatesSelectionId);
+
+		//wait for the invoice to be created
+		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateRecord::isProcessed);
+
+		DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+
+		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+
+		final List<de.metas.adempiere.model.I_C_Invoice> sortedInvoices = invoices.stream()
+				.sorted(Comparator.comparing(de.metas.adempiere.model.I_C_Invoice::getCreated))
+				.collect(ImmutableList.toImmutableList());
+
+		final Integer invoicesSize = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.InvoicesSize");
+		if (invoicesSize != null)
+		{
+			assertThat(sortedInvoices.size()).isEqualTo(invoicesSize);
+		}
+		else
+		{
+			assertThat(sortedInvoices.size()).isEqualTo(1);
+		}
+
+		final I_C_Invoice invoice = sortedInvoices.get(sortedInvoices.size() - 1);
+
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceTable.put(invoiceIdentifier, invoice);
 	}
 
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
