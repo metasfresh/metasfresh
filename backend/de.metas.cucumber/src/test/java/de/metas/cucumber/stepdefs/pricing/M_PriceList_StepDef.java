@@ -92,8 +92,10 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
-		createM_PricingSystem(dataTableRow);
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			createM_PricingSystem(row);
+		}
 	}
 
 	@And("metasfresh contains M_PriceLists")
@@ -215,6 +217,28 @@ public class M_PriceList_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createM_ProductPrice(tableRow);
+		}
+	}
+
+	@And("update M_ProductPrice:")
+	public void update_M_ProductPrice(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
+			final I_M_ProductPrice productPrice = productPriceTable.get(productPriceIdentifier);
+
+			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+			productPrice.setPriceStd(priceStd);
+
+			final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+
+			saveRecord(productPrice);
+
+			productPriceTable.putOrReplace(productPriceIdentifier, productPrice);
 		}
 	}
 

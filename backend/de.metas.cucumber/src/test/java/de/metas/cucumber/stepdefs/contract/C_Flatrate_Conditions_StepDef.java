@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.common.util.EmptyUtil;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -31,38 +30,41 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.order.InvoiceRule;
-import de.metas.util.Services;
+import de.metas.util.Check;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.util.Env;
+import org.compiere.model.I_M_PricingSystem;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Name;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Type_Conditions;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
 	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
 	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
+	private final StepDefData<I_M_PricingSystem> pricingSysTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable)
+			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
+			@NonNull final StepDefData<I_M_PricingSystem> pricingSysTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;
+		this.pricingSysTable = pricingSysTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
-	public void metasfresh_contains_c_flatrate_conditions(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void metasfresh_contains_c_flatrate_conditions(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -72,10 +74,10 @@ public class C_Flatrate_Conditions_StepDef
 
 			final String type = tableRow.get(COLUMNNAME_Type_Conditions);
 			assertThat(type).as(COLUMNNAME_Type_Conditions + " is mandatory").isNotBlank();
-			
+
 			final I_C_Flatrate_Conditions flatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 
-			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(commissionSettingsIdentifier))
 			{
 				final I_C_HierarchyCommissionSettings commissionSettings = hierarchyCommissionSettingsTable.get(commissionSettingsIdentifier);
@@ -92,9 +94,25 @@ public class C_Flatrate_Conditions_StepDef
 			flatrateConditions.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 			flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 			flatrateConditions.setProcessed(true);
+
+			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(pricingSystemIdentifier))
+			{
+				final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
+				flatrateConditions.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+			}
+
+			final String onFlatrateTermExtend = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend);
+			if (Check.isNotBlank(onFlatrateTermExtend))
+			{
+				flatrateConditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
+			}
+
 			InterfaceWrapperHelper.saveRecord(flatrateConditions);
 
-			conditionsTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_Flatrate_Conditions"), flatrateConditions);
+			final String conditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			conditionsTable.put(conditionsIdentifier, flatrateConditions);
 		}
 	}
 }
