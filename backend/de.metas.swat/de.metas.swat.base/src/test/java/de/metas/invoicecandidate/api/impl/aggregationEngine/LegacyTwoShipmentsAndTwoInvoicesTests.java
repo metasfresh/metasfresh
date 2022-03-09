@@ -65,9 +65,6 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 /**
  * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEngineTestBase
 {
 	/**
