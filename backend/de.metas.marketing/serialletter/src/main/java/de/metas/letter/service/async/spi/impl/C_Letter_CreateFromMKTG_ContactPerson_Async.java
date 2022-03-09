@@ -12,6 +12,8 @@ import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
+import de.metas.location.Location;
+import de.metas.location.LocationRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.user.UserId;
@@ -54,6 +56,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 		// Services
 		final ContactPersonRepository contactRepo = SpringContextHolder.instance.getBean(ContactPersonRepository.class);
 		final LetterRepository letterRepo = SpringContextHolder.instance.getBean(LetterRepository.class);
+		final LocationRepository locationRepo = SpringContextHolder.instance.getBean(LocationRepository.class);
 		final BoilerPlateRepository boilerPlateRepo = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 		final DocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(DocumentLocationBL.class);
 
@@ -70,6 +73,8 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 				continue;
 			}
 			
+			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
+
 			// create letter
 			String subject = "";
 			String body = "";
@@ -108,6 +113,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 					DocumentLocation.builder()
 							.bpartnerId(bPartnerId)
 							.bpartnerLocationId(bpLocationId)
+							.locationId(location.getId())
 							.contactId(BPartnerContactId.of(bPartnerId,userId))
 							.build());
 
