@@ -247,6 +247,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		im11.setQty(partialQty1_32.getStockQty().toBigDecimal());
 		im11.setQtyInUOM(partialQty1_32.getUOMQtyNotNull().toBigDecimal());
 		im11.setC_UOM_ID(partialQty1_32.getUOMQtyNotNull().getUomId().getRepoId());
+		im11.setM_InOut_ID(iol11.getM_InOut_ID());
 		im11.setM_InOutLine(iol11);
 		InterfaceWrapperHelper.save(im11);
 

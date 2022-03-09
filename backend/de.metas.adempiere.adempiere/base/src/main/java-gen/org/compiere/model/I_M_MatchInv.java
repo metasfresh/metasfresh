@@ -552,4 +552,8 @@ public interface I_M_MatchInv
     public static final org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_MatchInv, org.compiere.model.I_AD_User>(I_M_MatchInv.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+
+	default void setC_Invoice_ID(int id) {} // TODO add physical column
+	default void setM_InOut_ID(int id) {} // TODO add physical column
 }
