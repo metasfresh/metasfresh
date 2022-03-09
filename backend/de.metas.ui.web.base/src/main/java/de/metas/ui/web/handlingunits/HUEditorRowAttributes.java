@@ -36,6 +36,7 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -53,7 +54,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -103,12 +103,14 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	@Getter
 	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
 
-	/* package */ HUEditorRowAttributes(
+	@Builder
+	private HUEditorRowAttributes(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
-			@NonNull final ImmutableSet<ProductId> productIDs,
+			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final I_M_HU hu,
-			final boolean readonly)
+			final boolean readonly,
+			final boolean isMaterialReceipt)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
@@ -123,8 +125,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final ImmutableSet.Builder<AttributeCode> hiddenAttributeNames = ImmutableSet.builder();
 		final ImmutableSet.Builder<AttributeCode> mandatoryAttributeNames = ImmutableSet.builder();
 
-		final Collection<I_M_Attribute> attributes = attributesStorage.getAttributes();
-		for (final I_M_Attribute attribute : attributes)
+		for (final I_M_Attribute attribute : attributesStorage.getAttributes())
 		{
 			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
@@ -140,11 +141,11 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
-			if (!attributesStorage.isDisplayedUI(productIDs, attribute))
+			if (!attributesStorage.isDisplayedUI(attribute, productIds))
 			{
 				hiddenAttributeNames.add(attributeCode);
 			}
-			if (attributesStorage.isMandatory(attribute))
+			if (attributesStorage.isMandatory(attribute, productIds, isMaterialReceipt))
 			{
 				mandatoryAttributeNames.add(attributeCode);
 			}
@@ -173,15 +174,10 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			return true;
 		}
 
-		if (AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode))
-		{
-			return true;
-		}
-
-		return false;
+		return AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode);
 	}
 
-	private boolean isWeightAttribute(@NonNull AttributeCode attributeCode)
+	private boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return Weightables.ATTR_WeightGross.equals(attributeCode)
 				|| Weightables.ATTR_WeightNet.equals(attributeCode)
@@ -203,12 +199,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		}
 
 		final String huStatus = hu.getHUStatus();
-		if (!X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return true;
-		}
-
-		return false; // not readonly
+		return !X_M_HU.HUSTATUS_Planning.equals(huStatus);// not readonly
 	}
 
 	@Override
@@ -225,12 +216,6 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public ViewRowAttributesLayout getLayout()
 	{
 		return layoutSupplier.get();
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
 	}
 
 	@Override
@@ -422,6 +407,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return attributesStorage.getValue(attributeCode);
 	}
 
+	@Nullable
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.getValueAsString(attributeCode);

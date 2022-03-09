@@ -269,6 +269,7 @@ public class OrderBL implements IOrderBL
 		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
 
+	@Nullable
 	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
 			@Nullable final BPartnerLocationAndCaptureId shipToBPLocationId,

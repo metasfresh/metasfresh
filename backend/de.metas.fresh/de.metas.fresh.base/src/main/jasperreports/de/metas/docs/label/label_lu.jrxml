@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="528"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\local.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -70,51 +70,52 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="123" splitType="Stretch">
+		<band height="121" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="6" width="128" height="20" uuid="8ebe2c93-35a4-4f24-bc63-99bca1bc1d76"/>
+				<reportElement x="21" y="13" width="128" height="20" uuid="8ebe2c93-35a4-4f24-bc63-99bca1bc1d76"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="26" width="158" height="12" uuid="990ff94b-cf88-40e3-87f0-a446821e1a56"/>
+				<reportElement x="21" y="33" width="158" height="12" uuid="990ff94b-cf88-40e3-87f0-a446821e1a56"/>
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="38" width="200" height="12" uuid="bf799176-fbe3-40bb-9ad4-9269314dff7c"/>
+				<reportElement x="21" y="45" width="200" height="12" uuid="bf799176-fbe3-40bb-9ad4-9269314dff7c"/>
 				<textElement textAlignment="Left" verticalAlignment="Bottom">
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{prod_desc}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="95" y="50" width="126" height="14" uuid="3a5398c8-1c6b-42b7-aaf6-0de7c17a883f"/>
+				<reportElement x="95" y="65" width="126" height="14" uuid="3a5398c8-1c6b-42b7-aaf6-0de7c17a883f"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyy" isBlankWhenNull="true">
-				<reportElement x="95" y="64" width="126" height="14" uuid="76020f0e-89f6-49d9-a24d-57009c4195c6"/>
+				<reportElement x="95" y="84" width="126" height="14" uuid="76020f0e-89f6-49d9-a24d-57009c4195c6"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{mhd}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="95" y="78" width="126" height="14" uuid="4ab4be41-6b4f-4976-9168-9d70a513523a"/>
+				<reportElement x="95" y="103" width="126" height="14" uuid="4ab4be41-6b4f-4976-9168-9d70a513523a"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lotno}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RealSize" hAlign="Center" onErrorType="Blank">
-				<reportElement key="image-1" x="174" y="6" width="49" height="25" uuid="e4336572-e639-4b17-87ef-f9d4b676fcaf"/>
+				<reportElement key="image-1" x="174" y="13" width="49" height="25" uuid="e4336572-e639-4b17-87ef-f9d4b676fcaf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -124,21 +125,21 @@
 				<imageExpression><![CDATA["de/metas/docs/label/AD_Image-"+$F{biolabel_image_id}+".jpg"]]></imageExpression>
 			</image>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="50" width="74" height="14" uuid="7ef19713-44e0-4dd9-89ee-53577ffc7538"/>
+				<reportElement x="21" y="65" width="74" height="14" uuid="7ef19713-44e0-4dd9-89ee-53577ffc7538"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Nettogewicht: "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="64" width="74" height="14" uuid="62ba3be6-184b-4734-98ae-d29007782d01"/>
+				<reportElement x="21" y="84" width="74" height="14" uuid="62ba3be6-184b-4734-98ae-d29007782d01"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["MHD: "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="21" y="78" width="74" height="14" uuid="063f78db-304c-4027-8c22-d7f769883c45"/>
+				<reportElement x="21" y="103" width="74" height="14" uuid="063f78db-304c-4027-8c22-d7f769883c45"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>

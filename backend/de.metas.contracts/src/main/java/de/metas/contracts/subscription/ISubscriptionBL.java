@@ -150,4 +150,6 @@ public interface ISubscriptionBL extends ISingletonService
 	 */
 	void createQtyChange(@NonNull final I_C_Flatrate_Term term,
 			@Nullable final BigDecimal newQty);
+
+	boolean isSubscription(final I_C_OrderLine ol);
 }
