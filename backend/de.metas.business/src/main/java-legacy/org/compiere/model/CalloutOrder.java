@@ -365,7 +365,10 @@ public class CalloutOrder extends CalloutEngine
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
 				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
+				+ " lship.C_BPartner_Location_ID, "
+				//+ " c.AD_User_ID,"
+				+ "	uship.AD_User_ID as shipto_User_ID,"
+				+ "	uBill.AD_User_ID as billto_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
 				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
@@ -374,23 +377,32 @@ public class CalloutOrder extends CalloutEngine
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
-				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
+				+ " LEFT OUTER JOIN AD_User uShip on (p.C_BPartner_ID = uShip.C_BPartner_ID) and uShip.IsActive='Y' and uShip." + userFlag + "='Y'"
+				+ " LEFT OUTER JOIN AD_User uBill on (p.C_BPartner_ID = uBill.C_BPartner_ID) and uBill.IsActive='Y' and uBill." + userFlag + "='Y'"
+				//+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
 				// #928
 				// Only join with Users that have the right SOTrx value (Sales Contact for SO and PurchaseContact for PO) and are set as default for that SOTrxValue
-				+ " AND c." + userFlag + "= 'Y'"
-				+ " AND c." + defaultUserFlag + " = 'Y' "
-				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
-				// metas (2009 0027 G1): making sure that the default billTo
-				// and shipTo location is used
+				//+ " AND c." + userFlag + "= 'Y'"
+				//+ " AND c." + defaultUserFlag + " = 'Y' "
+				+ " WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
+				// metas (2009 0027 G1): making sure that the default billTo and shipTo location is used
+				// metas (2022 )
 				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
-				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
-				+ " , lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
-				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
+				+ " ,lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
+				+ " ,lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
+				+ " ,lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
+
 				// metas end
 				// 08578 take default users first.
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+				// # the IsShipToContact_Default/IsBillToContact_Default are important
+				+ " ,uship." + I_AD_User.COLUMNNAME_IsShipToContact_Default + " DESC"
+				+ " ,ubill." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " DESC"
+				+ " ,uShip." + defaultUserFlag + " DESC"
+				+ " ,ubill." + defaultUserFlag + " DESC";
+
+				//+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
@@ -487,18 +499,27 @@ public class CalloutOrder extends CalloutEngine
 				// calcLocation(ctx, WindowNo, mTab, mField, value);
 
 				// Contact - overwritten by InfoBP selection
-				BPartnerContactId contactUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("AD_User_ID"));
+				BPartnerContactId shipContactUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("shipto_User_ID"));
+				BPartnerContactId billContactUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("billto_User_ID"));
 
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
 					final BPartnerContactId tabInfoContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
 					if (tabInfoContactId != null)
 					{
-						contactUserId = tabInfoContactId;
+						shipContactUserId = tabInfoContactId;
 					}
+
+					final BPartnerContactId tabInfoBillContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("Bill_User_ID"));
+					if (tabInfoBillContactId != null)
+					{
+						billContactUserId = tabInfoBillContactId;
+					}
+
 				}
-				order.setAD_User_ID(BPartnerContactId.toRepoId(contactUserId));
-				order.setBill_User_ID(BPartnerContactId.toRepoId(contactUserId));
+
+				order.setAD_User_ID(BPartnerContactId.toRepoId(shipContactUserId));
+				order.setBill_User_ID(BPartnerContactId.toRepoId(billContactUserId));
 
 				// CreditAvailable
 				if (IsSOTrx)
