@@ -17,4 +17,5 @@ docker volume rm metasfresh_postgres
 docker volume rm metasfresh_elasticsearch
 docker-compose build --pull
 docker-compose up -d
+
 ```

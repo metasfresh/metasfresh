@@ -82,7 +82,10 @@ public class OrderService
 			return ImmutableSet.of();
 		}
 
-		asyncBatchId2OLCandIds.keySet().forEach(this::generateOrdersForBatch);
+		for (final AsyncBatchId asyncBatchId : asyncBatchId2OLCandIds.keySet())
+		{
+			generateOrdersForBatch(asyncBatchId);
+		}
 
 		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
 				.stream()
