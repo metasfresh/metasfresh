@@ -69,7 +69,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Invoice_StepDef
@@ -86,7 +85,6 @@ public class C_Invoice_StepDef
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	public C_Invoice_StepDef(
@@ -103,7 +101,6 @@ public class C_Invoice_StepDef
 		this.orderTable = orderTable;
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.invoiceCandidateTable = invoiceCandidateTable;
 		this.orderLineTable = orderLineTable;
 	}
 
@@ -142,13 +139,10 @@ public class C_Invoice_StepDef
 		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
 		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
 
+		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
 
-		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandidateTable.putOrReplace(invoiceCandidateIdentifier, invoiceCandidateRecord);
-
-		//enqueue invoice candidate
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), Trx.TRXNAME_None);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), null);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);

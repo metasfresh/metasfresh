@@ -4,7 +4,6 @@ Feature: Call order contract
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
 
   @from:cucumber
   Scenario: Happy flow for call order contract and call order summary
@@ -48,20 +47,17 @@ Feature: Call order contract
 
     When the order identified by order_1 is completed
 
-    Then after not more than 30s, no M_ShipmentSchedules are found:
-      | C_OrderLine_ID.Identifier |
-      | orderLine_1               |
-    And after not more than 30s, no C_Invoice_Candidates are found:
-      | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | orderLine_1               | 1000         |
+    And there are no C_Invoice_Candidate for C_Order order_1
+
+    And there are no M_ShipmentSchedule for C_Order order_1
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | orderLine_1               | order_1               | 2022-03-03  | call_order_product      | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 |
-      | callOrder_contract_1          | callOrderConditions                 | orderLine_1                        | order_1                        | call_order_product          | PCE                   |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual |
+      | callOrder_contract_1          | callOrderConditions                 | orderLine_1                        | order_1                        | call_order_product          | PCE                   | 1000                  | 2.00            |
 
     And validate created C_CallOrderSummary:
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
@@ -93,14 +89,14 @@ Feature: Call order contract
     When the order identified by callOrder_1 is completed
 
     Then validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 2              |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 2              |
 
     When the order identified by callOrder_1 is reactivated
 
     Then validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 0              |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 0              |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
@@ -109,8 +105,8 @@ Feature: Call order contract
     When the order identified by callOrder_1 is completed
 
     Then validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -131,9 +127,9 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 2                     |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
 
     When the shipment identified by shipment_1 is reactivated
 
@@ -141,9 +137,9 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 0                     |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 0                     |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 0                     |
 
     And the shipment identified by shipment_1 is completed
 
@@ -157,10 +153,10 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 0                     |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
-      | orderDetail_shipment_2          |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
+      | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -178,11 +174,11 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 4                     |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
-      | orderDetail_shipment_2          |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
-      | orderDetail_shipment_3          |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
+      | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
+      | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |
 
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
@@ -197,8 +193,8 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2            | 4              | 4                | 2                         |
     When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | invoiceCand_1                     | invoice_1               |
+      | C_Invoice_ID.Identifier |
+      | invoice_1               |
 
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
@@ -211,12 +207,12 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM | OPT.QtyInvoicedInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 4                     | 2                    |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
-      | orderDetail_shipment_2          |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
-      | orderDetail_shipment_3          |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
+      | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
+      | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
 
     When the invoice identified by invoice_1 is reversed
 
@@ -229,13 +225,13 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM | OPT.QtyInvoicedInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 4                     | 0                    |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
-      | orderDetail_shipment_2          |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
-      | orderDetail_shipment_3          |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2                   | -2                   |
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
+      | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
+      | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2                   | -2                   |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
@@ -244,8 +240,8 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4            | 4              | 4                | 4                         |
     When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.InvoicesSize |
-      | invoiceCand_1                     | invoice_3               | 3                |
+      | C_Invoice_ID.Identifier | OPT.InvoicesSize |
+      | invoice_3               | 3                |
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
@@ -257,14 +253,11 @@ Feature: Call order contract
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | OPT.QtyDeliveredInUOM | OPT.QtyInvoicedInUOM |
       | callOrderSummary_1               | callOrder_contract_1          | orderLine_1               | order_1               | call_order_product      | 1000       | PCE               | 4                     | 4                    |
     And validate C_CallOrderDetail for callOrderSummary_1:
-      | C_CallOrderDetail_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
-      | orderDetail_order_1             | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
-      | orderDetail_shipment_1          |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
-      | orderDetail_shipment_2          |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
-      | orderDetail_shipment_3          |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2                   | -2                   |
-      | orderDetail_invoice_1           |                           |                               |                |                           |                               |                       | invoice_3                   | invoiceLine_3                   | 4                    |
-
-    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+      | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDeliveredInUOM | OPT.C_Invoice_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier | OPT.QtyInvoicedInUOM |
+      | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |                           |                               |                       |                             |                                 |                      |
+      | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
+      | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
+      | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2                   | -2                   |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_3                   | invoiceLine_3                   | 4                    |

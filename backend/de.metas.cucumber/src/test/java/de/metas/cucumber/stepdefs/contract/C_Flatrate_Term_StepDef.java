@@ -50,6 +50,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +195,7 @@ public class C_Flatrate_Term_StepDef
 				assertThat(contract.getC_Order_Term_ID()).isEqualTo(order.getC_Order_ID());
 			}
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(productIdentifier))
 			{
 				final I_M_Product product = productTable.get(productIdentifier);
@@ -202,11 +203,23 @@ public class C_Flatrate_Term_StepDef
 				assertThat(contract.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			}
 
-			final String x12de355Code = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 			if (Check.isNotBlank(x12de355Code))
 			{
 				final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 				assertThat(contract.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			}
+
+			final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_PriceActual);
+			if (priceActual != null)
+			{
+				assertThat(contract.getPriceActual()).isEqualTo(priceActual);
+			}
+
+			final BigDecimal plannedQtyPerUnit = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_PlannedQtyPerUnit);
+			if (plannedQtyPerUnit != null)
+			{
+				assertThat(contract.getPlannedQtyPerUnit()).isEqualTo(plannedQtyPerUnit);
 			}
 
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);

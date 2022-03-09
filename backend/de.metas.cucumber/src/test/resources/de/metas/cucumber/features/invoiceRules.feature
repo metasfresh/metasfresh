@@ -46,8 +46,8 @@ Feature: invoice rule after delivery
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
     Then enqueue invoice candidate of order o_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | invoice_1               | invoiceCand_1                     |
+      | C_Invoice_ID.Identifier |
+      | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
@@ -99,8 +99,8 @@ Feature: invoice rule after delivery
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_2                            | p_2                     | 6         | hu_1               |
     Then enqueue invoice candidate of order o_2 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | invoice_2               | invoiceCand_2                     |
+      | C_Invoice_ID.Identifier |
+      | invoice_2               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
       | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |

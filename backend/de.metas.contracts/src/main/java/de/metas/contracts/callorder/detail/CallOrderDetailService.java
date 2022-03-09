@@ -151,9 +151,7 @@ public class CallOrderDetailService
 	@NonNull
 	private CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId callOrderSummaryId, @NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine1 = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
-
-		final Quantity qtyInvoiced = invoiceLineBL.getQtyInvoicedStockUOM(invoiceLine1);
+		final Quantity qtyInvoiced = invoiceLineBL.getQtyInvoicedStockUOM(InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class));
 
 		return CallOrderDetailData
 				.builder()

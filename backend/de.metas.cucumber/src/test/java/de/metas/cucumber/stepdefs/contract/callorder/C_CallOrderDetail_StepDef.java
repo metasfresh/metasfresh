@@ -26,6 +26,9 @@ import de.metas.contracts.model.I_C_CallOrderDetail;
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -58,6 +61,7 @@ public class C_CallOrderDetail_StepDef
 	private final StepDefData<I_C_InvoiceLine> invoiceLineTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_CallOrderDetail_StepDef(
 			@NonNull final StepDefData<I_C_CallOrderSummary> callOrderSummaryTable,
@@ -98,6 +102,10 @@ public class C_CallOrderDetail_StepDef
 		{
 			final I_C_CallOrderDetail actualCallOrderDetail = callOrderDetails.get(callOrderDetailsIndex);
 			final Map<String, String> expectedCallOrderDetail = tableRows.get(callOrderDetailsIndex);
+
+			final String x12de355UOMCode = DataTableUtil.extractStringForColumnName(expectedCallOrderDetail, I_C_CallOrderDetail.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355UOMCode));
+			assertThat(actualCallOrderDetail.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 
 			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(expectedCallOrderDetail, "OPT." + I_C_CallOrderDetail.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orderIdentifier))

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -34,6 +35,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,6 +50,7 @@ public class C_Invoice_Candidate_StepDef
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable,
@@ -132,14 +135,19 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, no C_Invoice_Candidates are found:$")
-	public void no_invoiceCandidates_are_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("^there are no C_Invoice_Candidate for C_Order (.*)$")
+	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, () -> load_C_Invoice_Candidate(row));
-			assertThat(candidateFound).isFalse();
-		}
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+		assertThat(candidate).isNull();
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(order);
+		assertThat(invoiceCandidates).isEmpty();
 	}
 
 	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
