@@ -566,7 +566,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	/**
-	 * @param existingUnusedPacks !! the pack will be removed from this list, if found
+	 * @param existingUnusedPacks !! the pack is removed from this list, if matched. If no matching pack is found in this list, a new one is created.
 	 */
 	@NonNull
 	private I_EDI_DesadvLine_Pack findOrCreatePackRecord(
@@ -582,6 +582,8 @@ public class DesadvBL implements IDesadvBL
 				return existingUnusedPacks.remove(i);
 			}
 		}
+		
+		// no matching pack found; create one
 		return createNewPackRecord(desadvLineRecord);
 	}
 
