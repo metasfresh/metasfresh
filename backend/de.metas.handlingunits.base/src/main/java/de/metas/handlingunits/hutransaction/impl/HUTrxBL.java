@@ -24,6 +24,7 @@ package de.metas.handlingunits.hutransaction.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -41,6 +42,7 @@ import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -69,9 +71,11 @@ import java.util.Map;
 
 public class HUTrxBL implements IHUTrxBL
 {
-	private final CompositeHUTrxListener _trxListeners = new CompositeHUTrxListener();
-
 	private static final String DYNATTR_TableRecord = TrxLineTableRecordCacheLocal.class.getName();
+	
+	private final CompositeHUTrxListener _trxListeners = new CompositeHUTrxListener();
+	
+	private final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 
 	private static final class TrxLineTableRecordCacheLocal extends TableRecordCacheLocal<I_M_HU_Trx_Line>
 	{
@@ -182,11 +186,28 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
+	public boolean isTransactionBetweenHUs(@NonNull final HuId huId)
+	{
+		final List<I_M_HU_Trx_Line> trxLines = huTrxDAO.retrieveReferencingTrxLinesForHuId(huId);
+		for (final I_M_HU_Trx_Line trxLine : trxLines)
+		{
+			if (trxLine.getRecord_ID() > 0 && trxLine.getAD_Table_ID() > 0)
+			{
+				final TableRecordReference referencedRecord = TableRecordReference.ofReferenced(trxLine);
+				if (!I_M_HU.Table_Name.equals(referencedRecord.getTableName()))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	@Override
 	public void setParentHU(@NonNull ChangeParentHURequest request)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 
 		//
 		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
@@ -322,10 +343,10 @@ public class HUTrxBL implements IHUTrxBL
 		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
 		setParentHU(ChangeParentHURequest.builder()
-				.huContext(huContext)
-				.parentHUItem(null)
-				.hu(hu)
-				.build());
+							.huContext(huContext)
+							.parentHUItem(null)
+							.hu(hu)
+							.build());
 
 	}
 
@@ -375,25 +396,25 @@ public class HUTrxBL implements IHUTrxBL
 					trx.isSkipProcessing());
 
 			transactionsAggregateMap.merge(key,
-					trx,
-					(existingCand, newCand) -> {
+										   trx,
+										   (existingCand, newCand) -> {
 
-						final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
-								existingCand.getM_HU_Item(),
-								existingCand.getVHU_Item(),
-								existingCand.getProductId(),
-								existingCand.getQuantity().add(newCand.getQuantity()),
-								existingCand.getDate(),
-								existingCand.getLocatorId(),
-								existingCand.getHUStatus());
+											   final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
+																														 existingCand.getM_HU_Item(),
+																														 existingCand.getVHU_Item(),
+																														 existingCand.getProductId(),
+																														 existingCand.getQuantity().add(newCand.getQuantity()),
+																														 existingCand.getDate(),
+																														 existingCand.getLocatorId(),
+																														 existingCand.getHUStatus());
 
-						if (existingCand.isSkipProcessing())
-						{
-							mergedCandidate.setSkipProcessing();
-						}
+											   if (existingCand.isSkipProcessing())
+											   {
+												   mergedCandidate.setSkipProcessing();
+											   }
 
-						return mergedCandidate;
-					});
+											   return mergedCandidate;
+										   });
 
 		}
 
