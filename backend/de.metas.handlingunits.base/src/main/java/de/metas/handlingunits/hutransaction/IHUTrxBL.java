@@ -118,11 +118,6 @@ public interface IHUTrxBL extends ISingletonService
 				.build());
 	}
 
-	/**
-	 * @return {@code true} if the given HU has no hu-transaction-line referencing a non-HU, such as an inventory line.
-	 */
-	boolean isTransactionBetweenHUs(HuId huId);
-
 	@Value
 	@Builder
 	class ChangeParentHURequest

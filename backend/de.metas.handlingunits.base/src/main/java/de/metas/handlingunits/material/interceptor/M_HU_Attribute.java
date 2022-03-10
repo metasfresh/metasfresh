@@ -1,6 +1,7 @@
 package de.metas.handlingunits.material.interceptor;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.material.event.PostMaterialEventService;
@@ -53,6 +54,7 @@ import java.util.Objects;
 public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUTrxBL huTrxBL=Services.get(IHUTrxBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	
@@ -72,24 +74,22 @@ public class M_HU_Attribute
 	{
 		Check.assume(record.isActive(), "changing IsActive flag to false is not allowed: {}", record);
 
+		if(handlingUnitsBL.isHULoaderInProgress())
+		{
+			// don't fire attribute change events from within the HU loader, because there we don't have *real* HU-attribute-changes.
+			// It's rather e.g. HUs are split and then HU-attributes are updated from the split source.
+			// this MI on the other hand is explicitly about existing HUs where attributes such as the time-until-expiry are changed
+			return; 
+		}
+		
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
-
 		if (!attribute.isStorageRelevant())
 		{
 			return;
 		}
 
-		// Do not collect changes (i.e. send change events) that aren't "real" HU-changes.
-		// For example when an inventory is completed and the line's ASI is synched to an HU, then this shall *not* count.
-		// Otherwise, we would have a double quantity in the material dispo: 1 time for the attribute change, and one time for corresponding M_Transaction.
-		if (!huTrxBL.isTransactionBetweenHUs(HuId.ofRepoId(record.getM_HU_ID())))
-		{
-			return;
-		}
-
 		final HUAttributeChange change = extractHUAttributeChange(record, attribute);
-
 		if (Objects.equals(change.getOldAttributeKeyPartOrNull(), change.getNewAttributeKeyPartOrNull()))
 		{
 			return;
