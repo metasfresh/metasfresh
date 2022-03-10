@@ -148,3 +148,46 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Reifetoleranz beim Kommissioni
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580607,'de_CH') 
 ;
 
+
+
+
+-- 2022-03-10T17:24:59.203Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Represents the acceptable threshold (in months) that can exceed the required maturity (Age value) from the shipment schedule.', Help='Represents the acceptable threshold (in months) that can exceed the required maturity (Age value) from the shipment schedule.',Updated=TO_TIMESTAMP('2022-03-10 19:24:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580607 AND AD_Language='en_US'
+;
+
+-- 2022-03-10T17:24:59.235Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580607,'en_US') 
+;
+
+-- 2022-03-10T17:27:53.698Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Help='Represents the acceptable threshold (in months) that can be subtracted from the required maturity (Age value) from the shipment schedule.',Updated=TO_TIMESTAMP('2022-03-10 19:27:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580606 AND AD_Language='en_US'
+;
+
+-- 2022-03-10T17:27:53.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580606,'en_US') 
+;
+
+-- 2022-03-10T17:28:10.362Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Represents the acceptable threshold (in months) that can be added to the required maturity (Age value) from the shipment schedule.', Help='Represents the acceptable threshold (in months) that can be added to the required maturity (Age value) from the shipment schedule.',Updated=TO_TIMESTAMP('2022-03-10 19:28:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580607 AND AD_Language='en_US'
+;
+
+-- 2022-03-10T17:28:10.363Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580607,'en_US') 
+;
+
+-- 2022-03-10T17:28:22.784Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Represents the acceptable threshold (in months) that can be subtracted from the required maturity (Age value) from the shipment schedule.',Updated=TO_TIMESTAMP('2022-03-10 19:28:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580606 AND AD_Language='en_US'
+;
+
+-- 2022-03-10T17:28:22.786Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580606,'en_US') 
+;
+
