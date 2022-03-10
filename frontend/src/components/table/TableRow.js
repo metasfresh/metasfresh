@@ -294,9 +294,10 @@ class TableRow extends PureComponent {
    * @summary focuses and sets the cell as edited or clears the edited cell
    * if optional params are not provided
    *
-   * @param {object} e - event
+   * @param {object} [event] - event
    * @param {string} [property] - field name
    * @param {boolean} [focus] - flag if cell should be focused
+   * @param {boolean} [readonly] - true if cell is readonly
    * @param {boolean} [select] - flag if selected cell should be cleared
    * @param {boolean} [mark] - marks the text(like when you click and hold and select the text)
    */
