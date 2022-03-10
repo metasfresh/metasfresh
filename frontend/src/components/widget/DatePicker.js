@@ -31,11 +31,6 @@ class DatePicker extends Component {
     };
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   componentDidMount() {
     const {
       handleBackdropLock,
