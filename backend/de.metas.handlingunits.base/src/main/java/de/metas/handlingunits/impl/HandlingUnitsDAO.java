@@ -840,7 +840,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
 		final HUReservationRepository huReservationRepository = getHUReservationRepository();
-		return new HUQueryBuilder(huReservationRepository, SpringContextHolder.instance.getBean(AgeAttributesService.class));
+		final AgeAttributesService ageAttributesService = getAgeAttributeService();
+		return new HUQueryBuilder(huReservationRepository, ageAttributesService);
 	}
 
 	private HUReservationRepository getHUReservationRepository()
@@ -851,6 +852,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			return new HUReservationRepository();
 		}
 		return SpringContextHolder.instance.getBean(HUReservationRepository.class);
+	}
+
+	private AgeAttributesService getAgeAttributeService()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new AgeAttributesService();
+		}
+		return SpringContextHolder.instance.getBean(AgeAttributesService.class);
 	}
 
 	@Override
