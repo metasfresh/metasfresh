@@ -52,6 +52,33 @@ public interface I_M_MatchInv
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Invoice.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Invoice.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Invoice_ID();
+
+	org.compiere.model.I_C_Invoice getC_Invoice();
+
+	void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_M_MatchInv.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
 	 * Set Invoice Line.
 	 * Rechnungszeile
 	 *
