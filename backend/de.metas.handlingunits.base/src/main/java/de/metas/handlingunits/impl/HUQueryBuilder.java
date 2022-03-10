@@ -160,7 +160,7 @@ import java.util.Set;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull AgeAttributesService ageAttributesService)
+	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
 	{
 		this.huReservationRepository = huReservationRepository;
 
