@@ -240,9 +240,11 @@ class WidgetRenderer extends PureComponent {
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 {...dateProps}
-                timeFormat={false}
                 dateFormat={dateFormat || true}
+                timeFormat={false}
+                timeZone={timeZone}
                 value={widgetValue || widgetData[0].value}
+                isOpenDatePicker={isOpenDatePicker}
                 patch={(date) =>
                   onPatch(
                     widgetField,
@@ -252,10 +254,6 @@ class WidgetRenderer extends PureComponent {
                     true
                   )
                 }
-                {...{
-                  isOpenDatePicker,
-                  timeZone,
-                }}
               />
             </div>
           );
@@ -312,7 +310,7 @@ class WidgetRenderer extends PureComponent {
             <DatePicker
               {...dateProps}
               timeFormat={false}
-              dateFormat={DATE_FIELD_FORMATS[widgetType]}
+              dateFormat={DATE_FIELD_FORMATS.Timestamp}
               value={widgetValue}
               patch={(date) =>
                 onPatch(
