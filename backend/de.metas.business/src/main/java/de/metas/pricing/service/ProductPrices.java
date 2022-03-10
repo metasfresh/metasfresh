@@ -72,7 +72,7 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
-	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
+	public static ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()

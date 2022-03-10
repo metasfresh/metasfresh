@@ -245,6 +245,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return warehouseId;
 	}
 
+	@Nullable
 	@Override
 	public WarehouseId getWarehouseIdByLocatorRepoId(final int locatorId)
 	{

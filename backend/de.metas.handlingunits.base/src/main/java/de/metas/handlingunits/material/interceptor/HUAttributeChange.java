@@ -44,17 +44,17 @@ import java.time.LocalDate;
 final class HUAttributeChange
 {
 	@NonNull
-	final HuId huId;
+	HuId huId;
 	@NonNull
-	final AttributeId attributeId;
+	AttributeId attributeId;
 	@NonNull
-	final AttributeValueType attributeValueType;
+	AttributeValueType attributeValueType;
 
-	final Object valueNew;
-	final Object valueOld;
+	Object valueNew;
+	Object valueOld;
 
 	@NonNull
-	private Instant date;
+	Instant date;
 
 	public HUAttributeChange mergeWithNextChange(final HUAttributeChange nextChange)
 	{

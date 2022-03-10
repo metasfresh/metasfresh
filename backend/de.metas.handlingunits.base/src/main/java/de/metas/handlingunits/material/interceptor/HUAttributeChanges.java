@@ -54,7 +54,7 @@ final class HUAttributeChanges
 		this.huId = huId;
 	}
 
-	public void collect(@NonNull HUAttributeChange change)
+	public void collect(@NonNull final HUAttributeChange change)
 	{
 		Check.assumeEquals(huId, change.getHuId(), "Invalid HuId for {}. Expected: {}", change, huId);
 

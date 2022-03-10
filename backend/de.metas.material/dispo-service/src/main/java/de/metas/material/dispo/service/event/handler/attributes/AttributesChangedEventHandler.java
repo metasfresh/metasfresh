@@ -61,7 +61,7 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 	}
 
 	@Override
-	public void handleEvent(final AttributesChangedEvent event)
+	public void handleEvent(@NonNull final AttributesChangedEvent event)
 	{
 		final Candidate fromCandidate = createCandidate(event, CandidateType.ATTRIBUTES_CHANGED_FROM);
 
@@ -74,7 +74,7 @@ public class AttributesChangedEventHandler implements MaterialEventHandler<Attri
 		candidateChangeHandler.onCandidateNewOrChange(toCandidate);
 	}
 
-	private Candidate createCandidate(final AttributesChangedEvent event, final CandidateType type)
+	private Candidate createCandidate(@NonNull final AttributesChangedEvent event, @NonNull final CandidateType type)
 	{
 		final BigDecimal qty;
 		final AttributesKeyWithASI attributes;

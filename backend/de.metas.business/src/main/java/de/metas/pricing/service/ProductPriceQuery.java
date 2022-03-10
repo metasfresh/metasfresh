@@ -73,7 +73,7 @@ public class ProductPriceQuery
 		NONE,
 
 		/** No ASI related matching at all */
-		IGNORE;
+		IGNORE
 	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
@@ -82,6 +82,8 @@ public class ProductPriceQuery
 	private ProductId _productId;
 
 	private AttributePricing _attributePricing = AttributePricing.IGNORE;
+	
+	@Nullable
 	private I_M_AttributeSetInstance _attributePricing_asiToMatch;
 
 	private Boolean _scalePrice;
@@ -155,13 +157,13 @@ public class ProductPriceQuery
 
 	public <T extends I_M_ProductPrice> T retrieveStrictDefault(@NonNull final Class<T> type)
 	{
-		boolean strictDefault = true;
+		final boolean strictDefault = true;
 		return retrieveDefault(strictDefault, type);
 	}
 
 	public <T extends I_M_ProductPrice> T retrieveDefault(@NonNull final Class<T> type)
 	{
-		boolean strictDefault = false;
+		final boolean strictDefault = false;
 		return retrieveDefault(strictDefault, type);
 	}
 
@@ -590,8 +592,7 @@ public class ProductPriceQuery
 				return ImmutableList.of();
 			}
 
-			final List<I_M_AttributeInstance> productPriceAttributes = attributeDAO.retrieveAttributeInstances(productPriceASI);
-			return productPriceAttributes;
+			return attributeDAO.retrieveAttributeInstances(productPriceASI);
 		}
 	}
 }

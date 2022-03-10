@@ -35,7 +35,7 @@ import lombok.Value;
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class EventDescriptor
+public class EventDescriptor
 {
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{

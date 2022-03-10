@@ -271,8 +271,6 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 
 	/**
 	 * Process given {@link I_M_HU_Trx_Attribute} by calling the actual processor.
-	 *
-	 * @param huTrxAttribute
 	 */
 	private void process0(final I_M_HU_Trx_Attribute huTrxAttribute)
 	{

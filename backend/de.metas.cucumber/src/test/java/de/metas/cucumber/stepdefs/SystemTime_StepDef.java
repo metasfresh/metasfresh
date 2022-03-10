@@ -25,11 +25,12 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.time.SystemTime;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import lombok.NonNull;
 
 public class SystemTime_StepDef
 {
 	@Given("^metasfresh has date and time (.*)$")
-	public void metasfresh_has_the_local_time(String zonedDateTime)
+	public void metasfresh_has_the_local_time(@NonNull final String zonedDateTime)
 	{
 		SystemTime.setFixedTimeSource(zonedDateTime);
 	}

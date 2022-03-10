@@ -92,7 +92,7 @@ final class HUAttributeChangesCollector
 		materialEventService.postEventsNow(events);
 	}
 
-	private List<AttributesChangedEvent> createMaterialEvent(final HUAttributeChanges changes)
+	private List<AttributesChangedEvent> createMaterialEvent(@NonNull final HUAttributeChanges changes)
 	{
 		if (changes.isEmpty())
 		{
@@ -118,7 +118,7 @@ final class HUAttributeChangesCollector
 
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID());
 		final Instant date = changes.getLastChangeDate();
-		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(hu.getM_Locator_ID());
+		final WarehouseId warehouseId = Check.assumeNotNull(warehousesRepo.getWarehouseIdByLocatorRepoId(hu.getM_Locator_ID()), "There needs to be a warehouse for the M_Locator_ID={} of M_HU_ID={}", hu.getM_Locator_ID(), hu.getM_HU_ID());
 
 		final AttributesKeyWithASI oldStorageAttributes = toAttributesKeyWithASI(changes.getOldAttributesKey());
 		final AttributesKeyWithASI newStorageAttributes = toAttributesKeyWithASI(changes.getNewAttributesKey());
@@ -128,7 +128,7 @@ final class HUAttributeChangesCollector
 				.getProductStorages();
 
 		final List<AttributesChangedEvent> events = new ArrayList<>();
-		for (IHUProductStorage productStorage : productStorages)
+		for (final IHUProductStorage productStorage : productStorages)
 		{
 			events.add(AttributesChangedEvent.builder()
 					.eventDescriptor(eventDescriptor)
@@ -145,12 +145,12 @@ final class HUAttributeChangesCollector
 		return events;
 	}
 
-	private AttributesKeyWithASI toAttributesKeyWithASI(final AttributesKey attributesKey)
+	private AttributesKeyWithASI toAttributesKeyWithASI(@NonNull final AttributesKey attributesKey)
 	{
 		return attributesKeyWithASIsCache.computeIfAbsent(attributesKey, this::createAttributesKeyWithASI);
 	}
 
-	private AttributesKeyWithASI createAttributesKeyWithASI(final AttributesKey attributesKey)
+	private AttributesKeyWithASI createAttributesKeyWithASI(@NonNull final AttributesKey attributesKey)
 	{
 		final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
 		return AttributesKeyWithASI.of(attributesKey, asiId);
