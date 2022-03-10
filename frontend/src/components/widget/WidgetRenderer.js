@@ -34,7 +34,6 @@ class WidgetRenderer extends PureComponent {
     super(props);
 
     this.getClassNames = getClassNames.bind(this);
-    this.getFormattedDate = getFormattedDate.bind(this);
   }
 
   /**
@@ -247,7 +246,7 @@ class WidgetRenderer extends PureComponent {
                 patch={(date) =>
                   onPatch(
                     widgetField,
-                    this.getFormattedDate(date, DATE_FORMAT),
+                    getFormattedDate(date, DATE_FORMAT),
                     null,
                     null,
                     true
@@ -273,7 +272,7 @@ class WidgetRenderer extends PureComponent {
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, DATE_TIMEZONE_FORMAT),
+                  getFormattedDate(date, DATE_TIMEZONE_FORMAT),
                   null,
                   null,
                   true
@@ -293,11 +292,11 @@ class WidgetRenderer extends PureComponent {
               {...dateProps}
               timeFormat={TIME_FORMAT}
               dateFormat={false}
-              value={this.getFormattedDate(widgetValue, TIME_FORMAT)}
+              value={getFormattedDate(widgetValue, TIME_FORMAT)}
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, TIME_FORMAT),
+                  getFormattedDate(date, TIME_FORMAT),
                   null,
                   null,
                   true
@@ -318,7 +317,7 @@ class WidgetRenderer extends PureComponent {
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, `x`),
+                  getFormattedDate(date, `x`),
                   null,
                   null,
                   true
