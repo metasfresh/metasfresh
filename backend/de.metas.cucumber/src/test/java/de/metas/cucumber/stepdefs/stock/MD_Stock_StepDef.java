@@ -48,12 +48,11 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -98,11 +97,12 @@ public class MD_Stock_StepDef
 		Services.get(ITrxManager.class)
 				.runInNewTrx(() ->
 							 {
+								 DB.executeUpdateEx("DELETE FROM " + I_M_CostDetail.Table_Name, ITrx.TRXNAME_ThreadInherited);
 								 DB.executeUpdateEx("DELETE FROM " + I_M_Transaction.Table_Name, ITrx.TRXNAME_ThreadInherited);
 								 DB.executeUpdateEx("DELETE FROM " + I_M_InventoryLine.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_InventoryLine.Table_Name, ITrx.TRXNAME_ThreadInherited);
 								 DB.executeUpdateEx("DELETE FROM " + I_M_Inventory.Table_Name, ITrx.TRXNAME_ThreadInherited);
-								 DB.executeUpdateEx("DELETE FROM " + I_M_Cost.Table_Name, ITrx.TRXNAME_ThreadInherited);
-
+								 
 								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Demand_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
 								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Dist_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
 								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Prod_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
