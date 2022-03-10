@@ -22,6 +22,7 @@ import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -3402,7 +3403,7 @@ public abstract class PO
 
 			if (!updated) 	// Updated not explicitly set
 			{
-				final Timestamp now = new Timestamp(System.currentTimeMillis());
+				final Timestamp now = new Timestamp(SystemTime.millis());
 				set_ValueNoCheck("Updated", now);
 				sql.append(",Updated=").append(DB.TO_DATE(now, false));
 			}
