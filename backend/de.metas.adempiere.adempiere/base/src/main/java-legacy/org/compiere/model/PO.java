@@ -1231,7 +1231,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	private final boolean set_ValueNoCheck(final int index, final Object value)
+	private boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
 
@@ -2277,7 +2277,7 @@ public abstract class PO
 	{
 		final Properties ctx = getCtx();
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
-		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final Timestamp now = SystemTime.asTimestamp();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 

@@ -22,26 +22,25 @@
 
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
-import static org.compiere.util.TimeUtil.asInstant;
-import static org.compiere.util.TimeUtil.getDay;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-
-import org.adempiere.mmovement.MovementLineId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Transaction;
-import org.eevolution.api.PPCostCollectorId;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Transaction;
+import org.eevolution.api.PPCostCollectorId;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Objects;
+
+import static org.compiere.util.TimeUtil.asDate;
+import static org.compiere.util.TimeUtil.asInstant;
 
 public final class TransactionDescriptorFactory
 {
@@ -68,10 +67,10 @@ public final class TransactionDescriptorFactory
 
 	private static Instant extractTransactionDate(@NonNull final I_M_Transaction record)
 	{
-		final Timestamp movementDate = record.getMovementDate();
-		final Timestamp movementDateDay = getDay(movementDate);
+		final Date movementDate = asDate(record.getMovementDate());
+		final Date movementDateDay = asDate(movementDate);
 
-		final boolean movementDateContainsTime = !movementDate.equals(movementDateDay);
+		final boolean movementDateContainsTime = !Objects.equals(movementDate, movementDateDay);
 		if (movementDateContainsTime)
 		{
 			return asInstant(movementDate);
@@ -79,13 +78,13 @@ public final class TransactionDescriptorFactory
 
 		// try to fall back to the M_Transaction's created or update date, to get the actual movement date *and time*.
 		final Timestamp created = record.getCreated();
-		if (movementDateDay.equals(getDay(created)))
+		if (Objects.equals(movementDateDay, asDate(created)))
 		{
 			return asInstant(created);
 		}
 
 		final Timestamp updated = record.getUpdated();
-		if (movementDateDay.equals(getDay(updated)))
+		if (Objects.equals(movementDateDay, asDate(updated)))
 		{
 			return asInstant(updated);
 		}

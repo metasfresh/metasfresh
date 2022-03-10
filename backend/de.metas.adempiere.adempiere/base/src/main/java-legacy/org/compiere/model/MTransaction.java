@@ -116,7 +116,7 @@ public class MTransaction extends X_M_Transaction
 		}
 		if (MovementDate == null)
 		{
-			setMovementDate(new Timestamp(System.currentTimeMillis()));
+			setMovementDate(SystemTime.asTimestamp());
 		}
 		else
 		{

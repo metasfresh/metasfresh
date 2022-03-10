@@ -24,7 +24,27 @@ package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Attribute_Snapshot;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Item_Snapshot;
+import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.handlingunits.model.I_M_HU_Item_Storage_Snapshot;
+import de.metas.handlingunits.model.I_M_HU_Snapshot;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_Storage_Snapshot;
+import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -32,7 +52,12 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
@@ -52,10 +77,10 @@ public class MD_Stock_StepDef
 		this.productTable = productTable;
 	}
 
-	@Given("metasfresh initially has no MD_Stock data")
-	public void setupMD_Stock_Data()
+	@And("delete transactional data and stock data")
+	public void delete_Transactional_Data_And_Stock_Data()
 	{
-		truncateMDStockData();
+		clearTransactionalData();
 	}
 
 	@And("metasfresh has MD_Stock data")
@@ -68,17 +93,40 @@ public class MD_Stock_StepDef
 		}
 	}
 
-	private void truncateMDStockData()
+	private void clearTransactionalData()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE M_Transaction cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_InventoryLine cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_Inventory cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_Cost cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Stock", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_item_storage cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_storage cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_trx_line cascade", ITrx.TRXNAME_None);
+		Services.get(ITrxManager.class)
+				.runInNewTrx(() ->
+							 {
+								 DB.executeUpdateEx("DELETE FROM " + I_M_Transaction.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_InventoryLine.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_Inventory.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_Cost.Table_Name, ITrx.TRXNAME_ThreadInherited);
+
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Demand_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Dist_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Prod_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Purchase_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_StockChange_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate_Transaction_Detail.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Candidate.Table_Name, ITrx.TRXNAME_ThreadInherited);
+
+								 DB.executeUpdateEx("DELETE FROM " + I_MD_Stock.Table_Name, ITrx.TRXNAME_ThreadInherited);
+
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Attribute_Snapshot.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Attribute.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Item_Storage_Snapshot.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Item_Storage.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Storage_Snapshot.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Storage.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Trx_Line.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Trx_Attribute.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Trx_Hdr.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Item_Snapshot.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Item.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU_Snapshot.Table_Name, ITrx.TRXNAME_ThreadInherited);
+								 DB.executeUpdateEx("DELETE FROM " + I_M_HU.Table_Name, ITrx.TRXNAME_ThreadInherited);
+							 });
 	}
 
 	private void validateMD_Stock(@NonNull final Map<String, String> row)
