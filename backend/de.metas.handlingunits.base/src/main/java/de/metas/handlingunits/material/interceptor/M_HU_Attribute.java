@@ -1,6 +1,7 @@
 package de.metas.handlingunits.material.interceptor;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.util.Check;
@@ -35,12 +36,12 @@ import java.util.Objects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +53,9 @@ import java.util.Objects;
 public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+	private final IHUTrxBL huTrxBL=Services.get(IHUTrxBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	
 	private final PostMaterialEventService materialEventService;
 
 	public M_HU_Attribute(@NonNull final PostMaterialEventService materialEventService)
@@ -77,6 +80,14 @@ public class M_HU_Attribute
 			return;
 		}
 
+		// Do not collect changes (i.e. send change events) that aren't "real" HU-changes.
+		// For example when an inventory is completed and the line's ASI is synched to an HU, then this shall *not* count.
+		// Otherwise, we would have a double quantity in the material dispo: 1 time for the attribute change, and one time for corresponding M_Transaction.
+		if (!huTrxBL.isTransactionBetweenHUs(HuId.ofRepoId(record.getM_HU_ID())))
+		{
+			return;
+		}
+
 		final HUAttributeChange change = extractHUAttributeChange(record, attribute);
 
 		if (Objects.equals(change.getOldAttributeKeyPartOrNull(), change.getNewAttributeKeyPartOrNull()))
@@ -86,6 +97,7 @@ public class M_HU_Attribute
 
 		getOrCreateCollector().collect(change);
 	}
+
 
 	private HUAttributeChangesCollector getOrCreateCollector()
 	{
@@ -142,7 +154,7 @@ public class M_HU_Attribute
 				.attributeValueType(attributeValueType)
 				.valueNew(valueNew)
 				.valueOld(valueOld)
-				.date(TimeUtil.asInstant(record.getUpdated()))
+				.date(TimeUtil.asInstantNonNull(record.getUpdated()))
 				.build();
 	}
 

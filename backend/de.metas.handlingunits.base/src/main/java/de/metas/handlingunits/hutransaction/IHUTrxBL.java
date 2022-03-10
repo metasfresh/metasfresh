@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.hutransaction;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -116,6 +117,11 @@ public interface IHUTrxBL extends ISingletonService
 				.hu(hu)
 				.build());
 	}
+
+	/**
+	 * @return {@code true} if the given HU has no hu-transaction-line referencing a non-HU, such as an inventory line.
+	 */
+	boolean isTransactionBetweenHUs(HuId huId);
 
 	@Value
 	@Builder
