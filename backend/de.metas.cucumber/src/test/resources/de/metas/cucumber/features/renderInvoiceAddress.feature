@@ -9,8 +9,8 @@ Feature: Render invoice address
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
-      | Identifier        | Name              |
-      | addr_test_product | addr_test_product |
+      | Identifier         | Name               |
+      | test_product_26_02 | test_product_26_02 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_1       | pricing_system | pricing_system |
@@ -19,10 +19,10 @@ Feature: Render invoice address
       | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-02-01 |
+      | plv_so     | pl_so                     | plv_so | 2022-01-20 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
-      | pp_product | plv_so                            | addr_test_product       | 10.0     | Normal                        |
+      | pp_product | plv_so                            | test_product_26_02      | 10.0     | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
@@ -37,27 +37,33 @@ Feature: Render invoice address
       | bpLocation_1 | 1234567891133 | customer_bp_26_02        | location_1                   | true         | true         | locationNameTest |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_61081 | F                | S                   | I               |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | orderLine_1 | order_1               | addr_test_product       | 1          |
+      | orderLine_1 | order_1               | test_product_26_02      | 1          |
 
     And the order identified by order_1 is completed
 
     And validate created order
-      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
-      | order_1          | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_61081 | true      | CO        | I               |
+      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1          | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | addr_test_product       | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
-    And enqueue invoice candidate of order order_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_ID.Identifier |
-      | invoice_1               |
+    And after not more than 30s, C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCand_1                     | orderLine_1               | 1                |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_1                     |
+    And after not more than 30s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoiceCand_1                     |
     And validate created invoices
       | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                            |
-      | invoice_1          | customer_bp_26_02        | bpLocation_1                      | order_ref_61081 | 1000002     | true      | CO        | customer_bp_26_02\naddr 11\n123 locationCity_1 |
+      | invoice_1          | customer_bp_26_02        | bpLocation_1                      | order_ref_12307 | 1000002     | true      | CO        | customer_bp_26_02\naddr 11\n123 locationCity_1 |
 
   Scenario: Invoice when business partner location has BPartnerName
     Given metasfresh contains C_Location:
@@ -68,31 +74,47 @@ Feature: Render invoice address
       | bpLocation_2 | 1234567891144 | customer_bp_26_02        | location_2                   | true         | true         | locationBPName   | locationName |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_61081 | F                | S                   | I               |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | orderLine_1 | order_1               | addr_test_product       | 1          |
+      | orderLine_1 | order_1               | test_product_26_02      | 1          |
 
     And the order identified by order_1 is completed
 
     And validate created order
-      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
-      | order_1          | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_18231 | true      | CO        | I               |
+      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1          | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | addr_test_product       | 1            | 0          | 0           | 10.0  | 0        | EUR          | true      |
+      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
-    And enqueue invoice candidate of order order_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_ID.Identifier |
-      | invoice_1               |
+    And after not more than 30s, C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCand_1                     | orderLine_1               | 1                |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_1                     |
+    And after not more than 30s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoiceCand_1                     |
     And validate created invoices
       | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
-      | invoice_1          | customer_bp_26_02        | bpLocation_2                      | order_ref_18231 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
+      | invoice_1          | customer_bp_26_02        | bpLocation_2                      | order_ref_23407 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
 
   Scenario: Invoice when business partner bill location is from Switzerland
-    Given metasfresh contains C_Location:
+    Given metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_CH      | ps_1                          | CH                        | EUR                 | price_list_CH | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
+      | plv_CH     | pl_CH                     | plv_CH | 2022-01-20 |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
+      | pp_product_CH | plv_CH                            | test_product_26_02      | 10.0     | Normal                        |
+
+    And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City        | OPT.RegionName |
       | location_DE              | DE          | addr 22      | 456        | locationCity_DE |                |
       | location_CH              | CH          | addr 33      | 258        | locationCity_CH | AI             |
@@ -102,27 +124,33 @@ Feature: Render invoice address
       | bpLocation_CH | 1234567895858 | customer_bp_26_02        | location_CH                  | false        | true         | locationBPNameCH | locationNameCH |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_4575  | F                | S                   | I               |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | F                | S                   | I               | 1000002                    |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | orderLine_1 | order_1               | addr_test_product       | 1          |
+      | orderLine_1 | order_1               | test_product_26_02      | 1          |
 
     And the order identified by order_1 is completed
 
     And validate created order
       | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
-      | order_1          | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_18231 | true      | CO        | I               |
+      | order_1          | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_45607 | true      | CO        | I               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | addr_test_product       | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
-    And enqueue invoice candidate of order order_1 for invoicing and after not more than 30s, the invoice is found
-      | C_Invoice_ID.Identifier |
-      | invoice_1               |
+    And after not more than 40s, C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCand_1                     | orderLine_1               | 1                |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_1                     |
+    And after not more than 30s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoiceCand_1                     |
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                                    |
-      | invoice_1          | customer_bp_26_02        | bpLocation_CH                     | order_ref_18231 | 1000002     | true      | CO        | locationBPNameCH\naddr 33\258 locationCity_CH\nSchweiz |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                                     |
+      | invoice_1          | customer_bp_26_02        | bpLocation_CH                     | order_ref_45607 | 1000002     | true      | CO        | locationBPNameCH\naddr 33\n258 locationCity_CH\nSchweiz |
 
 
   Scenario: Invoice when origin order disposition has bpartnerName
@@ -137,7 +165,7 @@ Feature: Render invoice address
   """
 {
     "orgCode": "001",
-    "externalHeaderId": 18232,
+    "externalHeaderId": 10001,
     "externalLineId": 2222,
     "dataSource": "int-Shopware",
     "bpartner": {
@@ -148,11 +176,11 @@ Feature: Render invoice address
     "dateOrdered": "2022-02-02",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-addr_test_product",
+    "productIdentifier": "val-test_product_26_02",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,
-    "poReference": "olCand_ref_18232",
+    "poReference": "olCand_ref_10001",
     "deliveryViaRule": "S",
     "deliveryRule": "F",
     "bpartnerName": "olCandBPartnerName"
@@ -162,7 +190,7 @@ Feature: Render invoice address
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "18232",
+    "externalHeaderId": "10001",
     "inputDataSourceName": "int-Shopware",
     "ship": true,
     "invoice": true,
@@ -180,20 +208,20 @@ Feature: Render invoice address
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | addr_test_product       | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate created shipments
       | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus |
-      | shipment_1          | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_18232 | true      | CO        |
+      | shipment_1          | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        |
 
     And validate the created shipment lines
       | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_1          | addr_test_product       | 1           | true      |
+      | shipment_1          | test_product_26_02      | 1           | true      |
 
     And validate created invoices
       | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
-      | invoice_1          | customer_bp_26_02        | bpLocation_2                      | olCand_ref_18232 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
+      | invoice_1          | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | addr_test_product       | 1           | true      |
+      | invoice_1          | test_product_26_02      | 1           | true      |

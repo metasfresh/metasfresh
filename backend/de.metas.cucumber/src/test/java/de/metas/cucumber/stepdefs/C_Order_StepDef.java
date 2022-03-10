@@ -51,6 +51,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -161,6 +162,17 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(invoiceRule))
 			{
 				order.setInvoiceRule(invoiceRule);
+			}
+
+			final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+			if (de.metas.util.Check.isNotBlank(paymentTermValue))
+			{
+				final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+						.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+						.create()
+						.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+				order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 			}
 
 			final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_EMail);
@@ -424,6 +436,17 @@ public class C_Order_StepDef
 		if(Check.isNotBlank(invoiceRule))
 		{
 			assertThat(order.getInvoiceRule()).isEqualTo(invoiceRule);
+		}
+
+		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+		if (de.metas.util.Check.isNotBlank(paymentTermValue))
+		{
+			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+					.create()
+					.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+			assertThat(order.getC_PaymentTerm_ID()).isEqualTo(paymentTerm.getC_PaymentTerm_ID());
 		}
 	}
 
