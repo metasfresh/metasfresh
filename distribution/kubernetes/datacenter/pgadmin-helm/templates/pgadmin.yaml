@@ -69,7 +69,7 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.pgadmin.dataStorageSize }}
       storageClassName: do-block-storage
 
 

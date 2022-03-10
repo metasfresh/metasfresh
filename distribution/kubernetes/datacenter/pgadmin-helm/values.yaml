@@ -2,6 +2,7 @@ pgadmin:
   image: dpage/pgadmin4
   port:
     pgadmin: 80
+  dataStorageSize: 1Gi
   defaultEmail: example@mail.com
   defaultPassword: password
 
