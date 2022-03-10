@@ -393,11 +393,11 @@ public class DesadvBL implements IDesadvBL
 		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
 		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
-		
+
 		// Get the records we might already have from DesadvLineSSCC18Generator
 		// These packs will be removed from this list, and will be used and updated.
-		final LinkedList<I_EDI_DesadvLine_Pack> existingUnusedPacks = new LinkedList<>(desadvDAO.retrieveDesadvLinePacks(desadvLineRecord));
-		
+		final LinkedList<I_EDI_DesadvLine_Pack> existingUnusedPacks = new LinkedList<>(desadvDAO.retrieveDesadvLinePacks(desadvLineRecord, false/*withinOutLine*/));
+
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 		for (final I_M_HU topLevelHU : topLevelHUs)
@@ -503,7 +503,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 			final BigDecimal movementQty = qtyCUsPerCurrentLU.getStockQty().toBigDecimal();
-			
+
 			final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingUnusedPacks, desadvLineRecord, movementQty);
 
 			packRecord.setQtyItemCapacity(lutuConfigurationInStockUOM.getQtyCU());
@@ -519,13 +519,13 @@ public class DesadvBL implements IDesadvBL
 			lotNumber.ifPresent(packRecord::setLotNumber);
 
 			// SSCC18
-			if(Check.isBlank(packRecord.getIPA_SSCC18())) // if packRecord is a pre-existing record created by DesadvLineSSCC18Generator, then we need to stick with its SSCC18
+			if (Check.isBlank(packRecord.getIPA_SSCC18())) // if packRecord is a pre-existing record created by DesadvLineSSCC18Generator, then we need to stick with its SSCC18
 			{
 				final String sscc18 = computeSSCC18(OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()));
 				packRecord.setIPA_SSCC18(sscc18);
 				packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 			}
-			
+
 			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
@@ -582,7 +582,7 @@ public class DesadvBL implements IDesadvBL
 				return existingUnusedPacks.remove(i);
 			}
 		}
-		
+
 		// no matching pack found; create one
 		return createNewPackRecord(desadvLineRecord);
 	}
@@ -616,7 +616,7 @@ public class DesadvBL implements IDesadvBL
 		// note that rootHU only contains children, quantities and weights for productId
 		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId);
 
-		final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingPacks,desadvLineRecord, qtyInStockUOM.toBigDecimal());
+		final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingPacks, desadvLineRecord, qtyInStockUOM.toBigDecimal());
 
 		packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 		packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
@@ -675,7 +675,7 @@ public class DesadvBL implements IDesadvBL
 					productId,
 					qtyInStockUOM.getUomId()); // don't try to convert to the pack's UOM! it might be a TU-uom
 		}
-		
+
 		setQty(packRecord, productId, qtyCUInStockUOM, quantity);
 		saveRecord(packRecord);
 
