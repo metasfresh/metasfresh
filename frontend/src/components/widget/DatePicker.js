@@ -267,6 +267,7 @@ DatePicker.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   hasTimeZone: PropTypes.bool,
   dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  timeFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   timeZone: PropTypes.any,
   defaultValue: PropTypes.string,
   updateItems: PropTypes.func,
