@@ -54,6 +54,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -73,6 +74,16 @@ import java.util.function.Predicate;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
+	/**
+	 * Supposed to be called only from the interal HULoader.
+	 */
+	IAutoCloseable huLoaderInProgress();
+
+	/**
+	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
+	 */
+	boolean isHULoaderInProgress();
+	
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
