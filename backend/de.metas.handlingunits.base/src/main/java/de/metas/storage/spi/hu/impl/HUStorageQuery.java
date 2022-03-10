@@ -203,6 +203,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
+	@NonNull
 	private Set<ProductId> getProductIds()
 	{
 		return _productIds;
@@ -215,6 +216,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
+	@NonNull
 	private Set<BPartnerId> getBPartnerIds()
 	{
 		return huQueryBuilder.getOnlyInBPartnerIds();

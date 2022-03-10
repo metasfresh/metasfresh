@@ -131,6 +131,7 @@ import java.util.Set;
 	/**
 	 * {@code null} means "no restriction". Empty means that no HU matches.
 	 */
+	@Nullable
 	private Set<HuId> _onlyHUIds = null;
 
 	private final Set<HuId> _huIdsToExclude = new HashSet<>();
@@ -141,11 +142,13 @@ import java.util.Set;
 	private HUReservationDocRef _excludeReservedToOtherThanRef = null;
 	private boolean _excludeReserved = false;
 
+	@Nullable
 	private IQuery<I_M_HU> huSubQueryFilter = null;
 
 	/**
 	 * Other Filters to be applied
 	 */
+	@Nullable
 	private ICompositeQueryFilter<I_M_HU> otherFilters = null;
 
 	private Boolean locked = null;
@@ -982,14 +985,17 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
+	public IHUQueryBuilder addOnlyWithAttributes(@NonNull final ImmutableAttributeSet attributeSet)
 	{
 		attributes.addOnlyWithAttributes(attributeSet);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(final BPartnerId bpartnerId, final ProductId productId, final ImmutableAttributeSet attributeSet)
+	public IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableAttributeSet attributeSet)
 	{
 		attributes.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 		return this;

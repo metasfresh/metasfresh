@@ -90,7 +90,10 @@ public class AgeAttributesService
 		return attributesRepo.retrieveAttributeValues(age);
 	}
 
-	public List<Object> extractMatchingValues(@NonNull final Set<BPartnerId> bPartnerIds, @NonNull final Set<ProductId> productIds, @Nullable final Object attributeValue)
+	public List<Object> extractMatchingValues(
+			@NonNull final Set<BPartnerId> bPartnerIds, 
+			@NonNull final Set<ProductId> productIds, 
+			@Nullable final Object attributeValue)
 	{
 		if (attributeValue == null)
 		{
@@ -128,7 +131,9 @@ public class AgeAttributesService
 	}
 
 	@VisibleForTesting
-	protected AgeRange computeAgeRangeForProducts(final Set<ProductId> productIds, final Set<BPartnerId> bPartnerIds)
+	protected AgeRange computeAgeRangeForProducts(
+			@NonNull final Set<ProductId> productIds,
+			@NonNull final Set<BPartnerId> bPartnerIds)
 	{
 		if (Check.isEmpty(productIds))
 		{
@@ -166,7 +171,10 @@ public class AgeAttributesService
 				.build();
 	}
 
-	private AgeRange computeAgeRangeForProduct(final I_M_Product product, final Set<BPartnerId> bPartnerIds, final OrgId orgId)
+	private AgeRange computeAgeRangeForProduct(
+			@NonNull final I_M_Product product, 
+			@NonNull final Set<BPartnerId> bPartnerIds,
+			@NonNull final OrgId orgId)
 	{
 		int pickingAgeTolerance_BP_Product_BeforeMonths = Integer.MAX_VALUE;
 		int pickingAgeTolerance_BP_Product_AfterMonths = Integer.MAX_VALUE;
