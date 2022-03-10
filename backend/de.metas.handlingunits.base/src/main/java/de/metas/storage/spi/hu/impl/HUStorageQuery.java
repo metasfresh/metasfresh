@@ -78,14 +78,12 @@ public class HUStorageQuery implements IStorageQuery
 		return (HUStorageQuery)storageQuery;
 	}
 
-	private final AgeAttributesService ageAttributesService;
 	private final IHUQueryBuilder huQueryBuilder;
 	private transient ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 
 	/* package */ HUStorageQuery()
 	{
-		ageAttributesService = SpringContextHolder.instance.getBean(AgeAttributesService.class);
 		// services
 		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
@@ -254,6 +252,8 @@ public class HUStorageQuery implements IStorageQuery
 			final String attributeValueType,
 			@Nullable final Object attributeValue)
 	{
+		final AgeAttributesService ageAttributesService = SpringContextHolder.instance.getBean(AgeAttributesService.class);
+
 		// Skip null values because in this case user filled nothing => so we accept any value
 		if (attributeValue == null)
 		{
