@@ -263,7 +263,7 @@ final class HUQueryBuilder_Attributes
 		}
 	}
 
-	public void addOnlyWithAttributes(final BPartnerId bPartnerId, final ProductId productId, final ImmutableAttributeSet attributeSet)
+	public void addOnlyWithAttributeValuesMatchingPartnerAndProduct(final BPartnerId bPartnerId, final ProductId productId, final ImmutableAttributeSet attributeSet)
 	{
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
@@ -271,7 +271,7 @@ final class HUQueryBuilder_Attributes
 
 			if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
 			{
-				final List<Object> ageValues = ageAttributesService.getSuitableValues(Collections.singleton(bPartnerId),
+				final List<Object> ageValues = ageAttributesService.extractMatchingValues(Collections.singleton(bPartnerId),
 																					  Collections.singleton(productId), value);
 				final String attributeValueType = attributeSet.getAttributeValueType(attribute);
 

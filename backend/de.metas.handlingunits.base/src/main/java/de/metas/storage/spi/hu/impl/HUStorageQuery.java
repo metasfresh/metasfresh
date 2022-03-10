@@ -85,7 +85,7 @@ public class HUStorageQuery implements IStorageQuery
 
 	/* package */ HUStorageQuery()
 	{
-		ageAttributesService = 	SpringContextHolder.instance.getBean(AgeAttributesService.class);
+		ageAttributesService = SpringContextHolder.instance.getBean(AgeAttributesService.class);
 		// services
 		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
@@ -272,17 +272,17 @@ public class HUStorageQuery implements IStorageQuery
 
 		//
 		// Add attribute query restrictions
-		final List<Object> attributeValues = Collections.singletonList(attributeValue);
-		huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
-
 		if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
 		{
-			final List<Object> ageValues = ageAttributesService.getSuitableValues(getBPartnerIds(), getProductIds(), attributeValue);
+			// "explode" the age-attribute value to a range, using before- and after-intervals from the masterdata
+			final List<Object> ageValues = ageAttributesService.extractMatchingValues(getBPartnerIds(), getProductIds(), attributeValue);
 
 			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
 		}
 		else
 		{
+			final List<Object> attributeValues = Collections.singletonList(attributeValue);
+
 			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
 		}
 

@@ -144,7 +144,7 @@ public class PickFromHUsSupplier
 		{
 			final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(request.getAsiId());
 			// TODO: shall we consider only storage relevant attributes?
-			vhuQuery.addOnlyWithAttributes(request.getPartnerId(), request.getProductId(), attributeSet);
+			vhuQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(request.getPartnerId(), request.getProductId(), attributeSet);
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());
 		}
 

@@ -22,28 +22,7 @@ package de.metas.storage.spi.hu.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import de.metas.handlingunits.age.AgeAttributesService;
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -57,7 +36,22 @@ import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class HUStorageEngine implements IStorageEngine
 {

@@ -989,9 +989,9 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributes(final BPartnerId bpartnerId, final ProductId productId, final ImmutableAttributeSet attributeSet)
+	public IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(final BPartnerId bpartnerId, final ProductId productId, final ImmutableAttributeSet attributeSet)
 	{
-		attributes.addOnlyWithAttributes(bpartnerId, productId, attributeSet);
+		attributes.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 		return this;
 	}
 

@@ -335,7 +335,7 @@ public class HUReservationService
 	private IHUQueryBuilder createHUQuery(
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
-			@Nullable final BPartnerId bpartnerId,
+			@NonNull final BPartnerId bpartnerId,
 			@Nullable final AttributeSetInstanceId asiId,
 			@Nullable final HUReservationDocRef reservedToDocumentOrNotReservedAtAll)
 	{
@@ -352,7 +352,7 @@ public class HUReservationService
 		{
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
 
-			huQuery.addOnlyWithAttributes(bpartnerId, productId, attributeSet);
+			huQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
 		}
 

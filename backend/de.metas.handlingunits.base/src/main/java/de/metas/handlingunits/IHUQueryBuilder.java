@@ -299,7 +299,7 @@ public interface IHUQueryBuilder
 	/** Convenience method that works {@link #addOnlyWithAttribute(I_M_Attribute, Object)} for all attributes from the given {@code attributeSet}. */
 	IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet);
 
-	IHUQueryBuilder addOnlyWithAttributes(BPartnerId bpartnerId, ProductId productId, ImmutableAttributeSet attributeSet);
+	IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(BPartnerId bpartnerId, ProductId productId, ImmutableAttributeSet attributeSet);
 
 	/**
 	 * Filter only those HUs which have attribute with given <code>value</code>.

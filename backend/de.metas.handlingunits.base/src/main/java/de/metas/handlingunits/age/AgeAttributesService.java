@@ -1,5 +1,6 @@
 package de.metas.handlingunits.age;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -9,8 +10,10 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -20,7 +23,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -85,66 +90,126 @@ public class AgeAttributesService
 		return attributesRepo.retrieveAttributeValues(age);
 	}
 
-	public List<Object> getSuitableValues(final Set<BPartnerId> bPartnerIds, final Set<ProductId> productIds, final Object attributeValue)
+	public List<Object> extractMatchingValues(@NonNull final Set<BPartnerId> bPartnerIds, @NonNull final Set<ProductId> productIds, @Nullable final Object attributeValue)
 	{
-		int pickingAgeTolerance_BeforeMonths = 0;
-		int pickingAgeTolerance_AfterMonths = 0;
+		if (attributeValue == null)
+		{
+			return Collections.emptyList();
+		}
 
-		for (final ProductId productId : productIds) // #12570 there should be only one product here. Not sure how to decide which are the time ranges if there are more
+		final AgeRange ageRange = computeAgeRangeForProducts(productIds, bPartnerIds);
+
+		final List<Object> matchingValues = new ArrayList<>();
+
+		try
+		{
+			final int minimumValue = Integer.parseInt(attributeValue.toString()) - ageRange.getPickingAgeTolerance_BeforeMonths();
+			final int maximumValue = Integer.parseInt(attributeValue.toString()) + ageRange.getPickingAgeTolerance_AfterMonths();
+
+			final List<AttributeListValue> allAgeValues = getAllAgeValues();
+
+			for (final AttributeListValue ageValue : allAgeValues)
+			{
+				final int ageValueInt = ageValue.getValueAsInt();
+
+				if (ageValueInt >= minimumValue && ageValueInt <= maximumValue)
+				{
+					matchingValues.add(ageValue.getValue());
+				}
+
+			}
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Age attribute Value " + attributeValue + " could not be parsed to Int", e);
+		}
+
+		return matchingValues;
+	}
+
+	@VisibleForTesting
+	protected AgeRange computeAgeRangeForProducts(final Set<ProductId> productIds, final Set<BPartnerId> bPartnerIds)
+	{
+		if (Check.isEmpty(productIds))
+		{
+			return AgeRange.builder()
+					.pickingAgeTolerance_BeforeMonths(0)
+					.pickingAgeTolerance_AfterMonths(0)
+					.build();
+		}
+
+		int pickingAgeTolerance_BeforeMonths = Integer.MAX_VALUE;
+		int pickingAgeTolerance_AfterMonths = Integer.MAX_VALUE;
+
+		for (final ProductId productId : productIds)
 		{
 			final I_M_Product product = productDAO.getById(productId);
 
-			final int productBefore = product.getPicking_AgeTolerance_BeforeMonths();
-
-			pickingAgeTolerance_BeforeMonths = productBefore;
-
-			final int productAfter = product.getPicking_AgeTolerance_AfterMonths();
-
-			pickingAgeTolerance_AfterMonths = productAfter;
-
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-			for (final BPartnerId bpartnerId : bPartnerIds)
+			final AgeRange ageRange = computeAgeRangeForProduct(product, bPartnerIds, orgId);
+
+			if (ageRange.getPickingAgeTolerance_BeforeMonths() < pickingAgeTolerance_BeforeMonths)
 			{
-				if (bpartnerId == null)
-				{
-					continue;
-				}
+				pickingAgeTolerance_BeforeMonths = ageRange.getPickingAgeTolerance_BeforeMonths();
+			}
 
-				final I_C_BPartner partner = partnerDAO.getById(bpartnerId);
-				final I_C_BPartner_Product bPartnerProduct = bpartnerProductDAO.retrieveBPProductForCustomer(partner, product, orgId);
-
-				if (bPartnerProduct != null)
-				{
-					final int bpartnerProductBefore = bPartnerProduct.getPicking_AgeTolerance_BeforeMonths();
-
-					pickingAgeTolerance_BeforeMonths = bpartnerProductBefore;
-
-					final int bpartnerProductAfter = bPartnerProduct.getPicking_AgeTolerance_AfterMonths();
-
-					pickingAgeTolerance_AfterMonths = bpartnerProductAfter;
-				}
+			if (ageRange.getPickingAgeTolerance_AfterMonths() < pickingAgeTolerance_AfterMonths)
+			{
+				pickingAgeTolerance_AfterMonths = ageRange.getPickingAgeTolerance_AfterMonths();
 			}
 		}
 
-		final int minimumValue = Integer.parseInt(attributeValue.toString()) - pickingAgeTolerance_BeforeMonths;
-		final int maximumValue = Integer.parseInt(attributeValue.toString()) + pickingAgeTolerance_AfterMonths;
-
-		final List<Object> suitableValues = new ArrayList<>();
-		final List<AttributeListValue> allAgeValues = getAllAgeValues();
-
-		for (final AttributeListValue ageValue : allAgeValues)
-
-		{
-			final int ageValueInt = ageValue.getValueAsInt();
-
-			if (ageValueInt >= minimumValue && ageValueInt <= maximumValue)
-			{
-				suitableValues.add(ageValue.getValue());
-			}
-		}
-
-		return suitableValues;
+		return AgeRange.builder()
+				.pickingAgeTolerance_BeforeMonths(pickingAgeTolerance_BeforeMonths)
+				.pickingAgeTolerance_AfterMonths(pickingAgeTolerance_AfterMonths)
+				.build();
 	}
 
+	private AgeRange computeAgeRangeForProduct(final I_M_Product product, final Set<BPartnerId> bPartnerIds, final OrgId orgId)
+	{
+		int pickingAgeTolerance_BP_Product_BeforeMonths = Integer.MAX_VALUE;
+		int pickingAgeTolerance_BP_Product_AfterMonths = Integer.MAX_VALUE;
+
+		boolean bPartnerProductWasFound = false;
+
+		for (final BPartnerId bpartnerId : bPartnerIds)
+		{
+			if (bpartnerId == null)
+			{
+				continue;
+			}
+
+			final I_C_BPartner partner = partnerDAO.getById(bpartnerId);
+			final I_C_BPartner_Product bPartnerProduct = bpartnerProductDAO.retrieveBPProductForCustomer(partner, product, orgId);
+
+			if (bPartnerProduct != null)
+			{
+				bPartnerProductWasFound = true;
+				if (bPartnerProduct.getPicking_AgeTolerance_BeforeMonths() < pickingAgeTolerance_BP_Product_BeforeMonths)
+				{
+					pickingAgeTolerance_BP_Product_BeforeMonths = bPartnerProduct.getPicking_AgeTolerance_BeforeMonths();
+				}
+
+				if (bPartnerProduct.getPicking_AgeTolerance_AfterMonths() < pickingAgeTolerance_BP_Product_AfterMonths)
+				{
+					pickingAgeTolerance_BP_Product_AfterMonths = bPartnerProduct.getPicking_AgeTolerance_AfterMonths();
+				}
+			}
+		}
+
+		if (bPartnerProductWasFound)
+		{
+			return AgeRange.builder()
+					.pickingAgeTolerance_BeforeMonths(pickingAgeTolerance_BP_Product_BeforeMonths)
+					.pickingAgeTolerance_AfterMonths(pickingAgeTolerance_BP_Product_AfterMonths)
+					.build();
+		}
+
+		return AgeRange.builder()
+				.pickingAgeTolerance_BeforeMonths(product.getPicking_AgeTolerance_BeforeMonths())
+				.pickingAgeTolerance_AfterMonths(product.getPicking_AgeTolerance_AfterMonths())
+				.build();
+
+	}
 }

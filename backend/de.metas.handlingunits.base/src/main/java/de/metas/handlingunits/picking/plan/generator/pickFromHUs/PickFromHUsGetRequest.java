@@ -22,8 +22,7 @@ public class PickFromHUsGetRequest
 {
 	@NonNull ImmutableSet<LocatorId> pickFromLocatorIds;
 	@NonNull ProductId productId;
-	@Nullable
-	BPartnerId partnerId;
+	@NonNull BPartnerId partnerId;
 	@NonNull AttributeSetInstanceId asiId;
 	@NonNull ShipmentAllocationBestBeforePolicy bestBeforePolicy;
 	@NonNull Optional<HUReservationDocRef> reservationRef;
@@ -32,7 +31,7 @@ public class PickFromHUsGetRequest
 	private PickFromHUsGetRequest(
 			@NonNull @Singular final ImmutableSet<LocatorId> pickFromLocatorIds,
 			@NonNull final ProductId productId,
-			@Nullable final BPartnerId partnerId,
+			@NonNull final BPartnerId partnerId,
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy,
 			@NonNull final Optional<HUReservationDocRef> reservationRef)
