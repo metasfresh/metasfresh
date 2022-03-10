@@ -18,8 +18,10 @@ db:
   name: metasfresh
   port: 
     db: 5432
+  dataStorageSize: 5Gi
   username: metasfresh
   password: metasfresh
+  postgrespw: metasfresh
   debug:
     printBashCmds: '"n"'
   dbConnectionPoolMaxSize: 60

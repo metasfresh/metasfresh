@@ -43,6 +43,8 @@ spec:
         env:
         - name: PGDATA
           value: /db/data
+        - name: POSTGRES_INITDB_WALDIR
+          value: /db/log
         args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         volumeMounts:
         - name: postgresql-config
@@ -66,6 +68,8 @@ spec:
             value: '{{ .Values.db.port.db }}'
           - name: PGDATA
             value: /db/data
+          - name: POSTGRES_INITDB_WALDIR
+            value: /db/log
           - name: DB_USER
             valueFrom:
               secretKeyRef:
@@ -76,6 +80,11 @@ spec:
               secretKeyRef:
                 name: metasfresh-{{ .Release.Name }}-db-secret
                 key: password
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: metasfresh-{{ .Release.Name }}-db-secret
+                key: postgrespw
           - name: DEBUG_PRINT_BASH_CMDS
             value: {{ .Values.db.debug.printBashCmds }}
           - name: URL_SEED_DUMP
@@ -110,6 +119,6 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 5Gi
+          storage: {{ .Values.db.dataStorageSize }}
       storageClassName: do-block-storage
 
