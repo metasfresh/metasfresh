@@ -11,7 +11,7 @@ app:
     printBashCmds: '"n"'
 
 db:
-  image: dockerhub.metasfresh.com/postgres:14.2
+  image: postgres:14.2
   imageInit: nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:master_dockerimages_5.175.2_36_masterdockerimages
   urlSeedDump: https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump
   urlMigrationScript: https://repo.metasfresh.com/repository/mvn-master_dockerimages-releases/de/metas/dist/metasfresh-dist-dist/5.175.2-36%2Bmasterdockerimages/metasfresh-dist-dist-5.175.2-36%2Bmasterdockerimages-sql-only.tar.gz
@@ -27,15 +27,16 @@ db:
   dbConnectionPoolMaxSize: 60
 
 rabbitmq:
-  image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
+  image: rabbitmq:3.9.13-management
   port:
     broker: 5672
     management: 15672
+  dataStorageSize: 1Gi
   username: metasfresh
   password: metasfresh
   
 search:
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
   port: 
     search: 9200
   dataStorageSize: 5Gi

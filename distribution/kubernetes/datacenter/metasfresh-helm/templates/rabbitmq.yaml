@@ -22,7 +22,7 @@ spec:
 ---
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: metasfresh-{{ .Release.Name }}-rabbitmq
   namespace: {{ .Release.Namespace }}
@@ -32,9 +32,8 @@ spec:
   selector:
     matchLabels:
       app: metasfresh-{{ .Release.Name }}-rabbitmq
+  serviceName: metasfresh-{{ .Release.Name }}-rabbitmq
   replicas: 1
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -46,6 +45,7 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: {{ .Values.rabbitmq.port.broker }}
+          - containerPort: {{ .Values.rabbitmq.port.management }}
         env:
         - name: RABBITMQ_DEFAULT_USER
           valueFrom:
@@ -59,24 +59,42 @@ spec:
               key: password
         - name: RABBITMQ_DEFAULT_VHOST
           value: /
+        - name: RABBITMQ_MNESIA_DIR
+          value: /rabbitmq/data
+        - name: RABBITMQ_LOGS
+          value: /rabbitmq/logs
         volumeMounts:
-        - mountPath: /var/log/rabbitmq/log
-          name: log
-        - mountPath: /etc/localtime
-          name: host-localtime
+        - name: host-localtime
+          mountPath: /etc/localtime 
           readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
+        - name: host-timezone
+          mountPath: /etc/timezone          
           readOnly: true
+        - name: data
+          mountPath: rabbitmq
+      initContainers:
+      - name: take-data-dir-ownership
+        image: busybox
+        command: ['sh', '-c', 'chown 999:999 -R /rabbitmq']
+        volumeMounts:
+        - name: data
+          mountPath: rabbitmq
       volumes:
-      - name: log
-        hostPath:
-          path: /volumes/{{ .Release.Namespace }}/rabbitmq/log
-          type: DirectoryOrCreate
       - name: host-localtime
         hostPath:
           path: /etc/localtime
       - name: host-timezone
         hostPath:
           path: /etc/timezone
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.rabbitmq.dataStorageSize }}
+      storageClassName: do-block-storage
           
