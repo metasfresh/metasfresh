@@ -54,6 +54,8 @@ webui:
   image: nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:master_dockerimages_5.175.2_3_masterdockerimages
   port:
     webui: 80
+  debug:
+    CatNginxConfigFile: '"n"'
 
 ingress:
   webui:
