@@ -130,6 +130,21 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return CoalesceUtil.coalesceNotNull(loadInProgress.get(), false);
 	}
 
+	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
+
+	@Override
+	public IAutoCloseable huLoaderInProgress()
+	{
+		loadInProgress.set(true);
+		return () -> loadInProgress.set(false);
+	}
+
+	@Override
+	public boolean isHULoaderInProgress()
+	{
+		return CoalesceUtil.coalesceNotNull(loadInProgress.get(), false);
+	}
+
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
 	{

@@ -128,11 +128,6 @@ public interface IHUTrxBL extends ISingletonService
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
 	
 	/**
-	 * @return {@code true} if the given HU has no hu-transaction-line referencing a non-HU, such as an inventory line.
-	 */
-	boolean isTransactionBetweenHUs(HuId huId);
-	
-	/**
 	 * Link a given {@code hu} to its parent.
 	 * <p>
 	 * <b>IMPORTANT:</b> Don't do transaction management (TODO: check if this can be added).

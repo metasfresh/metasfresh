@@ -54,6 +54,7 @@ public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	
 	private final PostMaterialEventService materialEventService;
