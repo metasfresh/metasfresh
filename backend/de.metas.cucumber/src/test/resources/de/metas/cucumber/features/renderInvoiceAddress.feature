@@ -24,6 +24,7 @@ Feature: Render invoice address
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
       | pp_product | plv_so                            | test_product_26_02      | 10.0     | Normal                        |
 
+    # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | customer_bp_26_02 | customer_bp_26_02 | ps_1                          | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
@@ -36,6 +37,7 @@ Feature: Render invoice address
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.Name         |
       | bpLocation_1 | 1234567891133 | customer_bp_26_02        | location_1                   | true         | true         | locationNameTest |
 
+    # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | F                | S                   | I               | 1000002                    |
@@ -73,6 +75,7 @@ Feature: Render invoice address
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | bpLocation_2 | 1234567891144 | customer_bp_26_02        | location_2                   | true         | true         | locationBPName   | locationName |
 
+    # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | F                | S                   | I               | 1000002                    |
@@ -123,6 +126,7 @@ Feature: Render invoice address
       | bpLocation_DE | 1234567891144 | customer_bp_26_02        | location_DE                  | true         | false        | locationBPNameDE | locationNameDE |
       | bpLocation_CH | 1234567895858 | customer_bp_26_02        | location_CH                  | false        | true         | locationBPNameCH | locationNameCH |
 
+    # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | F                | S                   | I               | 1000002                    |

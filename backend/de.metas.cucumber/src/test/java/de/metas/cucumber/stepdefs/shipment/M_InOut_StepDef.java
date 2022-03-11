@@ -22,8 +22,10 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -49,19 +51,19 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 
 public class M_InOut_StepDef
 {
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	public M_InOut_StepDef(
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.bpartnerTable = bpartnerTable;

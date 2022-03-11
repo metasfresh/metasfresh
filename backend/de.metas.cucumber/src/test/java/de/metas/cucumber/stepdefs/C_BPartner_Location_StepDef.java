@@ -45,17 +45,17 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_BPartner_Location_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_C_Location> locationTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final C_Location_StepDefData locationTable;
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_Location_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_C_Location> locationTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final C_Location_StepDefData locationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;

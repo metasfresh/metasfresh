@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductType;
@@ -37,7 +38,6 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -58,17 +58,18 @@ public class M_Product_StepDef
 {
 	public static final ProductCategoryId PRODUCT_CATEGORY_ID = ProductCategoryId.ofRepoId(1000000);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_M_Product_Category> productCategoryTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
+
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;

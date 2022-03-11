@@ -30,8 +30,9 @@ import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipping.v2.shipment.ShipmentScheduleIdentifier;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -48,13 +49,13 @@ import java.util.Map;
 
 public class ShipmentRestController_StepDef
 {
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_Product_StepDefData productTable;
 	private final TestContext testContext;
 
 	public ShipmentRestController_StepDef(
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final TestContext testContext)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;

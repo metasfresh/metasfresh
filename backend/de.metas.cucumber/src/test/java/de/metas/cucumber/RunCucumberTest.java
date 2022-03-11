@@ -28,6 +28,10 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
+		features = {
+				"src/test/resources/de/metas/cucumber/features/procurementWebUI.feature",
+				"src/test/resources/de/metas/cucumber/features/materialDispo_stockEstimateEvent.feature"
+		},
 		glue = "de.metas.cucumber.stepdefs",
 		tags = "not @ignore", // use this tag to temporatily ignore single scenarios
 		//tags = "@dev:runThisOne", // use this tag to run only particular scenarios

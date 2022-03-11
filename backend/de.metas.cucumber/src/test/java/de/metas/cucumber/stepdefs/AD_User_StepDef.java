@@ -59,14 +59,14 @@ public class AD_User_StepDef
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_AD_User> userTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
+	private final AD_User_StepDefData userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	public AD_User_StepDef(
-			@NonNull final StepDefData<I_AD_User> userTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
 	{
 		this.userTable = userTable;
 		this.bpartnerTable = bpartnerTable;
@@ -109,14 +109,14 @@ public class AD_User_StepDef
 			final I_AD_User user = userTable.get(userIdentifier);
 			assertThat(user).isNotNull();
 
-			final String email  = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_EMail);
-			if(Check.isNotBlank(email))
+			final String email = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_EMail);
+			if (Check.isNotBlank(email))
 			{
 				user.setEMail(email);
 			}
 
-			final String phone  = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Phone);
-			if(Check.isNotBlank(phone))
+			final String phone = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Phone);
+			if (Check.isNotBlank(phone))
 			{
 				user.setPhone(phone);
 			}

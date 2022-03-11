@@ -23,8 +23,9 @@
 package de.metas.cucumber.stepdefs.externalreference;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
@@ -57,9 +58,9 @@ import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
 {
-	private final StepDefData<I_AD_User> userTable;
-	private final StepDefData<I_S_ExternalReference> externalRefTable;
-	private final StepDefData<I_M_Shipper> shipperTable;
+	private final AD_User_StepDefData userTable;
+	private final S_ExternalReference_StepDefData externalRefTable;
+	private final M_Shipper_StepDefData shipperTable;
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -67,9 +68,9 @@ public class S_ExternalReference_StepDef
 	private final ExternalSystems externalSystems;
 
 	public S_ExternalReference_StepDef(
-			@NonNull final StepDefData<I_AD_User> userTable,
-			@NonNull final StepDefData<I_S_ExternalReference> externalRefTable,
-			@NonNull final StepDefData<I_M_Shipper> shipperTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final S_ExternalReference_StepDefData externalRefTable,
+			@NonNull final M_Shipper_StepDefData shipperTable)
 	{
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;

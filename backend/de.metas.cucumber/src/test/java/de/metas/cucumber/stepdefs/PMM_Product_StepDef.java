@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -31,7 +30,6 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Product;
 
 import java.util.List;
@@ -41,13 +39,13 @@ import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product
 
 public class PMM_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productStepDefData;
-	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
+	private final M_Product_StepDefData productStepDefData;
+	private final PMM_Product_StepDefData pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PMM_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productStepDefData,
-			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
+			@NonNull final M_Product_StepDefData productStepDefData,
+			@NonNull final PMM_Product_StepDefData pmmProductStepDefData)
 	{
 		this.productStepDefData = productStepDefData;
 		this.pmmProductStepDefData = pmmProductStepDefData;

@@ -42,9 +42,9 @@ public class C_Location_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Location> locationTable;
+	private final C_Location_StepDefData locationTable;
 
-	public C_Location_StepDef(@NonNull final StepDefData<I_C_Location> locationTable)
+	public C_Location_StepDef(@NonNull final C_Location_StepDefData locationTable)
 	{
 		this.locationTable = locationTable;
 	}

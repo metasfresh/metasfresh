@@ -30,9 +30,14 @@ import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_CommissionSettingsLine_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettingsLine_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_Line_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettingsLine_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -70,29 +75,28 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Commission_Share_StepDef
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	private final StepDefData<I_C_Commission_Instance> commissionInstanceTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Flatrate_Term> contractTable;
-	private final StepDefData<I_C_CommissionSettingsLine> hierarchySettingsLineTable;
-	private final StepDefData<I_C_Commission_Share> commissionShareTable;
-	private final StepDefData<I_C_LicenseFeeSettingsLine> licenseFeeSettingsLineTable;
-	private final StepDefData<I_C_Customer_Trade_Margin_Line> customerTradeMarginLineTable;
-	private final StepDefData<I_C_MediatedCommissionSettingsLine> mediatedCommissionSettingsLineTable;
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final C_Commission_Instance_StepDefData commissionInstanceTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
+	private final C_CommissionSettingsLine_StepDefData hierarchySettingsLineTable;
+	private final C_Commission_Share_StepDefData commissionShareTable;
+	private final C_LicenseFeeSettingsLine_StepDefData licenseFeeSettingsLineTable;
+	private final C_Customer_Trade_Margin_Line_StepDefData customerTradeMarginLineTable;
+	private final C_MediatedCommissionSettingsLine_StepDefData mediatedCommissionSettingsLineTable;
+
 	public C_Commission_Share_StepDef(
-			@NonNull final StepDefData<I_C_Commission_Instance> commissionInstanceTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable,
-			@NonNull final StepDefData<I_C_CommissionSettingsLine> hierarchySettingsLineTable,
-			@NonNull final StepDefData<I_C_Commission_Share> commissionShareTable,
-			@NonNull final StepDefData<I_C_LicenseFeeSettingsLine> licenseFeeSettingsLineTable,
-			@NonNull final StepDefData<I_C_Customer_Trade_Margin_Line> customerTradeMarginLineTable,
-			@NonNull final StepDefData<I_C_MediatedCommissionSettingsLine> mediatedCommissionSettingsLineTable)
+			@NonNull final C_Commission_Instance_StepDefData commissionInstanceTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final C_CommissionSettingsLine_StepDefData hierarchySettingsLineTable,
+			@NonNull final C_Commission_Share_StepDefData commissionShareTable,
+			@NonNull final C_LicenseFeeSettingsLine_StepDefData licenseFeeSettingsLineTable,
+			@NonNull final C_Customer_Trade_Margin_Line_StepDefData customerTradeMarginLineTable,
+			@NonNull final C_MediatedCommissionSettingsLine_StepDefData mediatedCommissionSettingsLineTable)
 	{
 		this.commissionInstanceTable = commissionInstanceTable;
 		this.bPartnerTable = bPartnerTable;

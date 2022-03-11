@@ -22,9 +22,12 @@
 
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -65,18 +68,18 @@ public class C_Invoice_Candidate_StepDef
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	public C_Invoice_Candidate_StepDef(
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;

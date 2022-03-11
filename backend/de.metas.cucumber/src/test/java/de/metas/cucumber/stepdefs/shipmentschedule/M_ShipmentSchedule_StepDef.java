@@ -34,9 +34,16 @@ import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonCustomer;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidate;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -95,16 +102,16 @@ public class M_ShipmentSchedule_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_AD_User> userTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
-	private final StepDefData<I_M_Shipper> shipperTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_ShipmentSchedule_ExportAudit> shipmentScheduleExportAuditTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final AD_User_StepDefData userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_Shipper_StepDefData shipperTable;
+	private final M_Product_StepDefData productTable;
+	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final TestContext testContext;
 	private final JsonAttributeService jsonAttributeService;
 
@@ -115,16 +122,16 @@ public class M_ShipmentSchedule_StepDef
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_AD_User> userTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
-			@NonNull final StepDefData<I_M_Shipper> shipperTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule_ExportAudit> shipmentScheduleExportAuditTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			@NonNull final M_Shipper_StepDefData shipperTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final TestContext testContext)
 	{
 		this.userTable = userTable;

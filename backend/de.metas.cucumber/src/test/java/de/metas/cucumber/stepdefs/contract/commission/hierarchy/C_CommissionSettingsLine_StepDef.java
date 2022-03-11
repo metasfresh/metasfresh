@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -43,14 +42,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-public class C_CommissionSettingsLines_StepDef
+public class C_CommissionSettingsLine_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable;
-	private final StepDefData<I_C_CommissionSettingsLine> commissionSettingsLineTable;
+	private final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable;
+	private final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable;
 
-	public C_CommissionSettingsLines_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable,
-			@NonNull final StepDefData<I_C_CommissionSettingsLine> commissionSettingsLineTable)
+	public C_CommissionSettingsLine_StepDef(
+			@NonNull final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable,
+			@NonNull final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable)
 	{
 		this.commissionSettingsTable = commissionSettingsTable;
 		this.commissionSettingsLineTable = commissionSettingsLineTable;

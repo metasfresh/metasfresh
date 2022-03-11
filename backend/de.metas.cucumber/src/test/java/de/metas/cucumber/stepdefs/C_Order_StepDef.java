@@ -85,16 +85,16 @@ public class C_Order_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_AD_User> userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final AD_User_StepDefData userTable;
 
 	public C_Order_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_AD_User> userTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -103,7 +103,7 @@ public class C_Order_StepDef
 	}
 
 	@Given("metasfresh contains C_Orders:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

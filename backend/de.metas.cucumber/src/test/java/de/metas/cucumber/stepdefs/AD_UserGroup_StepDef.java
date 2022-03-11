@@ -41,9 +41,9 @@ public class AD_UserGroup_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_AD_UserGroup> userGroupTable;
+	private final AD_UserGroup_StepDefData userGroupTable;
 
-	public AD_UserGroup_StepDef(@NonNull final StepDefData<I_AD_UserGroup> userGroupTable)
+	public AD_UserGroup_StepDef(@NonNull final AD_UserGroup_StepDefData userGroupTable)
 	{
 		this.userGroupTable = userGroupTable;
 	}

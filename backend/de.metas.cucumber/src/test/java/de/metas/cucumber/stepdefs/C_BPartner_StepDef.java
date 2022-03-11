@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -64,20 +65,20 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_Product_StepDefData productTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;

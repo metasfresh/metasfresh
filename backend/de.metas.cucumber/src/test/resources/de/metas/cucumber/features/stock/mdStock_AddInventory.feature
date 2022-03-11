@@ -12,20 +12,20 @@ Feature: stock changes accordingly
     And metasfresh contains M_Product with M_Product_ID '222'
 
   Scenario: Changes stock by adding inventory
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo |
-      | 11                        | 2021-07-12T00:00:00Z | 1111       |
-      | 12                        | 2021-07-12T00:00:00Z | 2222       |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID | QtyBook | QtyCount |
-      | 11                        | 21                            | 222          | 0       | 10       |
-      | 12                        | 22                            | 222          | 10      | 16       |
-    When complete inventory with inventoryIdentifier '11'
+    And metasfresh contains M_Inventories:
+      | Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
+      | 11         | 540008         | 2021-07-12   | 1111           |
+      | 12         | 540008         | 2021-07-12   | 2222           |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBooked |
+      | 21         | 11                        | 222                     | PCE          | 10       | 0         |
+      | 22         | 12                        | 222                     | PCE          | 16       | 10        |
+    When the inventory identified by 11 is completed
     Then metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 10        |
 
-    And complete inventory with inventoryIdentifier '12'
+    And the inventory identified by 12 is completed
     And metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 16        |

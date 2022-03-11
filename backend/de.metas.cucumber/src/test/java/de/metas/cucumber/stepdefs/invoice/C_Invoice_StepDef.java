@@ -23,10 +23,12 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -66,16 +68,16 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	public C_Invoice_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
