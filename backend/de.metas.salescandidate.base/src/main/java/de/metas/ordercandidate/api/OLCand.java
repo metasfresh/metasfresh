@@ -116,7 +116,8 @@ public final class OLCand implements IProductPriceAware
 	private final Quantity qty;
 
 	@Getter
-	private final BigDecimal qtyItemCapacity;
+	@Nullable
+	private final Quantity qtyItemCapacityEff;
 
 	@Getter
 	private final DocTypeId orderDocTypeId;
@@ -147,7 +148,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final OrderLineGroup orderLineGroup,
 			@Nullable final AsyncBatchId asyncBatchId,
-			@Nullable final BigDecimal qtyShipped)
+			@Nullable final BigDecimal qtyShipped,
+			@Nullable final Quantity qtyItemCapacityEff)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -175,7 +177,7 @@ public final class OLCand implements IProductPriceAware
 				olCandRecord.getQtyEntered(),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
 
-		this.qtyItemCapacity = olCandRecord.getQtyItemCapacity();
+		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
 		this.shipperId = shipperId;
 

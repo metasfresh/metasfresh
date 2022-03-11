@@ -23,6 +23,10 @@ package de.metas.handlingunits.model.validator;
  */
 
 
+import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.quantity.Quantitys;
+import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,10 +36,16 @@ import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Check;
+import org.springframework.stereotype.Component;
 
-@Validator(I_C_Order_Line_Alloc.class)
+import java.math.BigDecimal;
+
+@Interceptor(I_C_Order_Line_Alloc.class)
+@Component
 public class C_Order_Line_Alloc
 {
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+
 	@ModelChange(
 			timings = {
 					ModelValidator.TYPE_AFTER_NEW,
@@ -53,10 +63,8 @@ public class C_Order_Line_Alloc
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(orderLine, de.metas.handlingunits.model.I_C_OrderLine.class);
 		final I_C_OLCand oc = InterfaceWrapperHelper.create(olcand, de.metas.handlingunits.model.I_C_OLCand.class);
 
-		if (oc.isManualQtyItemCapacity())
-		{
-			ol.setQtyItemCapacity(oc.getQtyItemCapacity());
-		}
+		final BigDecimal qtyItemCapacity = Quantitys.toBigDecimalOrNull(olCandEffectiveValuesBL.getQtyItemCapacity_Effective(oc));
+		ol.setQtyItemCapacity(qtyItemCapacity);
 
 		final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(oc, I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID);
 		final int piipID = valueOverrideOrValue == null ? 0 : valueOverrideOrValue;

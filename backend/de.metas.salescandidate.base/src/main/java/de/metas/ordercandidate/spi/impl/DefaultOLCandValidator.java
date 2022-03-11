@@ -135,7 +135,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
 		{
 			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
-			olCand.setQtyItemCapacity(qtyItemCapacity.toBigDecimal());
+			olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
 		}
 	}
 

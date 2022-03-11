@@ -9,6 +9,10 @@ import de.metas.util.Services;
 
 public class EDIOLCandBL implements IEDIOLCandBL
 {
+
+	private final IEDIInputDataSourceBL ediInputDataSourceBL = Services.get(IEDIInputDataSourceBL.class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@Override
 	public boolean isManualQtyItemCapacity(final I_C_OLCand olCand)
 	{
@@ -26,7 +30,7 @@ public class EDIOLCandBL implements IEDIOLCandBL
 
 		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand);
 		
-		return Services.get(IHUPackingAwareBL.class).isInfiniteCapacityTU(olCandHUPackingAware);
+		return huPackingAwareBL.isInfiniteCapacityTU(olCandHUPackingAware);
 	}
 
 	@Override
@@ -37,6 +41,6 @@ public class EDIOLCandBL implements IEDIOLCandBL
 			return false;
 		}
 		final int dataSourceId = olCand.getAD_InputDataSource_ID();
-		return Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(dataSourceId);
+		return ediInputDataSourceBL.isEDIInputDataSource(dataSourceId);
 	}
 }

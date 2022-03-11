@@ -38,10 +38,12 @@ import de.metas.util.Services;
 @Component
 public class C_OLCand
 {
+	private final IEDIOLCandBL ediOlCandBL = Services.get(IEDIOLCandBL.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setManualQtyItemCapacity(final I_C_OLCand olCand)
 	{
 		final de.metas.handlingunits.model.I_C_OLCand olc = InterfaceWrapperHelper.create(olCand, de.metas.handlingunits.model.I_C_OLCand.class);
-		olc.setIsManualQtyItemCapacity(Services.get(IEDIOLCandBL.class).isManualQtyItemCapacity(olc));
+		olc.setIsManualQtyItemCapacity(ediOlCandBL.isManualQtyItemCapacity(olc));
 	}
 }
