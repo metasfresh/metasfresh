@@ -85,7 +85,7 @@ if [ "$1" = 'postgres' ]; then
 		file_env 'POSTGRES_PASSWORD'
 		if [ "$POSTGRES_PASSWORD" ]; then
 			pass="PASSWORD '$POSTGRES_PASSWORD'"
-			authMethod=md5
+			authMethod=scram-sha-256
 		else
 			# The - option suppresses leading tabs but *not* spaces. :)
 			cat >&2 <<-'EOWARN'
