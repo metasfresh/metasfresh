@@ -1256,10 +1256,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public IContextAware createThreadContextAware(final Properties ctx)
+	public IContextAware createThreadContextAware(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		return new IContextAware()
 		{
 			@Override
