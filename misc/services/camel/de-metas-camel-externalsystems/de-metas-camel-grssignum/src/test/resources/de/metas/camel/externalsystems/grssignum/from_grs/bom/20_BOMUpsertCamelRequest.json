@@ -16,6 +16,15 @@
         "line": 1,
         "isQtyPercentage": true,
         "scrap": 10.5,
+        "attributeSetInstance":
+        {
+          "attributeInstances":[
+            {
+              "attributeCode": "1000001",
+              "valueStr": "countryCode"
+            }
+          ]
+        },
         "issueMethod": null
       }
     ]
