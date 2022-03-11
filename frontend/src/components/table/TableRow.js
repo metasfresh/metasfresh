@@ -3,17 +3,16 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { F2_KEY } from '../../constants/Constants';
 import {
-  shouldRenderColumn,
-  getIconClassName,
-  prepareWidgetData,
-  isEditableOnDemand,
-  isCellEditable,
-  tableRowPropTypes,
   getCellWidgetData,
   getDescription,
+  getIconClassName,
   getTdValue,
-  nestedSelect,
   getTooltipWidget,
+  isCellEditable,
+  isEditableOnDemand,
+  nestedSelect,
+  prepareWidgetData,
+  shouldRenderColumn,
 } from '../../utils/tableHelpers';
 import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
@@ -78,6 +77,10 @@ class TableRow extends PureComponent {
     }
   }
 
+  getFieldValue = (fieldName) => {
+    return this.props.fieldsByName?.[fieldName]?.value;
+  };
+
   /**
    * @method initPropertyEditor
    * @summary Initialize the editor for a widget field
@@ -87,23 +90,21 @@ class TableRow extends PureComponent {
   initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
 
-    const beforeEditing = fieldsByName[fieldName]
-      ? fieldsByName[fieldName].value
-      : '';
-    this.setState({ valueBeforeEditing: beforeEditing });
-
     if (cols && fieldsByName) {
       cols.map((item) => {
         const property = item.fields[0].field;
         if (property === fieldName) {
           const widgetData = prepareWidgetData(item, fieldsByName);
-          const widgetReadOnly = widgetData[0] ? widgetData[0].readonly : false;
           if (widgetData) {
+            this.setState({
+              valueBeforeEditing: this.getFieldValue(fieldName) ?? '',
+            });
+
             this.handleEditProperty({
               event: null,
               property,
               focus: true,
-              readonly: widgetReadOnly,
+              readonly: widgetData[0] ? widgetData[0].readonly : false,
               select: false,
               mark,
             });
@@ -134,14 +135,19 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown = (event, property, readonly, isAttribute) => {
+  handleKeyDown = ({ event, property, readonly, isAttributeWidget }) => {
     switch (event.key) {
       case 'Enter': {
-        this.handleKeyDown_Enter({ event, property, readonly });
+        this.handleKeyDown_Enter({
+          event,
+          property,
+          readonly,
+          isAttributeWidget,
+        });
         break;
       }
       case 'Tab': {
-        this.handleKeyDown_Tab({ event, property, isAttribute });
+        this.handleKeyDown_Tab({ event, property, isAttributeWidget });
         break;
       }
       case 'Escape': {
@@ -149,16 +155,25 @@ class TableRow extends PureComponent {
         break;
       }
       default: {
-        const inp = String.fromCharCode(event.keyCode);
-        if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
-          this.handleKeyDown_RegularChar({ event, property, readonly });
+        if (event.keyCode === F2_KEY) {
+          const { onFastInlineEdit } = this.props;
+          onFastInlineEdit();
+        } else {
+          const inp = String.fromCharCode(event.keyCode);
+          if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
+            this.handleKeyDown_RegularChar({ event, property, readonly });
+          }
         }
         break;
       }
     }
   };
 
-  handleKeyDown_Enter = ({ event, property, readonly }) => {
+  handleKeyDown_Enter = ({ event, property, readonly, isAttributeWidget }) => {
+    if (isAttributeWidget) {
+      return;
+    }
+
     const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
       this.props;
     const { edited } = this.state;
@@ -197,13 +212,13 @@ class TableRow extends PureComponent {
     );
   };
 
-  handleKeyDown_Tab = ({ event, property, isAttribute }) => {
+  handleKeyDown_Tab = ({ event, property, isAttributeWidget }) => {
     const { rowId, tabId, entity, modalVisible, tableId, updatePropertyValue } =
       this.props;
     const { edited } = this.state;
 
     // if ProductAttributes widget is visible, skip over Tab navigation here
-    if (isAttribute) {
+    if (isAttributeWidget) {
       return;
     }
 
@@ -266,18 +281,13 @@ class TableRow extends PureComponent {
   };
 
   handleKeyDown_RegularChar = ({ event, property, readonly }) => {
-    const { fieldsByName, onFastInlineEdit } = this.props;
     const { valueBeforeEditing } = this.state;
-
-    if (event.keyCode === F2_KEY) {
-      onFastInlineEdit();
-      return false;
-    }
-
-    // for disabled fields/fields without value, we don't get the field data
-    // from the backend
-    if (valueBeforeEditing === null && fieldsByName[property]) {
-      this.setState({ valueBeforeEditing: fieldsByName[property].value });
+    if (valueBeforeEditing === null) {
+      // for disabled fields/fields without value, we don't get the field data from the backend
+      const fieldValue = this.getFieldValue(property);
+      if (fieldValue !== undefined) {
+        this.setState({ valueBeforeEditing: fieldValue });
+      }
     }
 
     this.handleEditProperty({
@@ -322,7 +332,8 @@ class TableRow extends PureComponent {
   _editProperty = ({ event, property, focus, readonly, select, mark }) => {
     const { listenOnKeys, changeListenOnTrue } = this.props;
 
-    if (typeof readonly !== undefined ? !readonly : true) {
+    const isEditable = typeof readonly !== undefined ? !readonly : true;
+    if (isEditable) {
       if (this.state.edited === property && event) event.persist();
 
       // cell's widget will have the value cleared on creation
@@ -487,7 +498,6 @@ class TableRow extends PureComponent {
       focusOnFieldName,
       updateHeight,
       rowIndex,
-      fieldsByName: cells,
       hasComments,
       handleFocusAction,
       tableId,
@@ -515,16 +525,16 @@ class TableRow extends PureComponent {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit =
-              mainTable && isEditableOnDemand(item, cells);
+              mainTable && isEditableOnDemand(item, fieldsByName);
             const property = item.fields[0].field;
             const tableCellData = fieldsByName[property]
               ? fieldsByName[property]
               : undefined;
-            const isEditable = isCellEditable(item, cells);
+            const isEditable = isCellEditable(item, fieldsByName);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
             const widgetData = getCellWidgetData(
-              cells,
+              fieldsByName,
               item,
               isEditable,
               supportFieldEdit
@@ -730,6 +740,7 @@ TableRow.propTypes = {
   isSelected: PropTypes.bool,
   odd: PropTypes.number,
   caption: PropTypes.string,
+  listenOnKeys: PropTypes.bool,
   changeListenOnTrue: PropTypes.func,
   onRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,
