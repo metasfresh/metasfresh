@@ -277,6 +277,11 @@ final class HUQueryBuilder_Attributes
 		{
 			final Object value = attributeSet.getValue(attribute);
 
+			if(value == null)
+			{
+				continue;
+			}
+
 			if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
 			{
 				final List<Object> ageValues = ageAttributesService.extractMatchingValues(Collections.singleton(bPartnerId),
