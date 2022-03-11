@@ -73,7 +73,7 @@ public class M_Product
 		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE ,
 			ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
 	@CalloutMethod(columnNames = I_M_Product.COLUMNNAME_C_UOM_ID)
 	public void setUOM_ID(final I_M_Product product)
