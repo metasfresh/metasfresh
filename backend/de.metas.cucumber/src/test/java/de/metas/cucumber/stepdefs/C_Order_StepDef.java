@@ -51,6 +51,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -119,23 +120,65 @@ public class C_Order_StepDef
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
 			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if(Check.isNotBlank(bpLocationIdentifier))
+			if (Check.isNotBlank(bpLocationIdentifier))
 			{
 				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
 				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			}
 
 			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if(Check.isNotBlank(userIdentifier))
+			if (Check.isNotBlank(userIdentifier))
 			{
 				final I_AD_User user = userTable.get(userIdentifier);
 				order.setAD_User_ID(user.getAD_User_ID());
 			}
 
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
-			if(Check.isNotBlank(poReference))
+			if (Check.isNotBlank(poReference))
 			{
 				order.setPOReference(poReference);
+			}
+
+			final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bpBillLocationIdentifier))
+			{
+				final I_C_BPartner_Location billBPartnerLocation = bpartnerLocationTable.get(bpBillLocationIdentifier);
+				order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
+			}
+
+			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
+			if (Check.isNotBlank(deliveryRule))
+			{
+				order.setDeliveryRule(deliveryRule);
+			}
+
+			final String deliveryViaRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryViaRule);
+			if (Check.isNotBlank(deliveryViaRule))
+			{
+				order.setDeliveryViaRule(deliveryViaRule);
+			}
+
+			final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
+			if (Check.isNotBlank(invoiceRule))
+			{
+				order.setInvoiceRule(invoiceRule);
+			}
+
+			final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+			if (de.metas.util.Check.isNotBlank(paymentTermValue))
+			{
+				final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+						.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+						.create()
+						.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+				order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+			}
+
+			final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_EMail);
+			if(Check.isNotBlank(email))
+			{
+				order.setEMail(email);
 			}
 
 			saveRecord(order);
@@ -316,13 +359,17 @@ public class C_Order_StepDef
 		final String deliveryRule = DataTableUtil.extractStringForColumnName(row, "deliveryRule");
 		final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, "deliveryViaRule");
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "processed", false);
-		final String externalId = DataTableUtil.extractStringForColumnName(row, "externalId");
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_ExternalId);
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 		final String bpartnerName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_BPartnerName);
 
 		final I_C_Order order = orderTable.get(identifier);
 
-		assertThat(order.getExternalId()).isEqualTo(externalId);
+		if (Check.isNotBlank(externalId))
+		{
+			assertThat(order.getExternalId()).isEqualTo(externalId);
+		}
+
 		assertThat(order.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
 		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
@@ -380,9 +427,26 @@ public class C_Order_StepDef
 		}
 
 		final String email = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_EMail);
-		if(Check.isNotBlank(email))
+		if (Check.isNotBlank(email))
 		{
 			assertThat(order.getEMail()).isEqualTo(email);
+		}
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
+		if(Check.isNotBlank(invoiceRule))
+		{
+			assertThat(order.getInvoiceRule()).isEqualTo(invoiceRule);
+		}
+
+		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+		if (de.metas.util.Check.isNotBlank(paymentTermValue))
+		{
+			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+					.create()
+					.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+			assertThat(order.getC_PaymentTerm_ID()).isEqualTo(paymentTerm.getC_PaymentTerm_ID());
 		}
 	}
 

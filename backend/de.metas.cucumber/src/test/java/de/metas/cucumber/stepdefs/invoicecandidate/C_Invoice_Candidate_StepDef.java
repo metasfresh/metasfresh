@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -34,11 +35,14 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
@@ -59,22 +63,26 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class C_Invoice_Candidate_StepDef
 {
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
 	private final StepDefData<I_C_Invoice> invoiceTable;
 	private final StepDefData<I_C_BPartner> bPartnerTable;
 	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_C_OrderLine> orderLineTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
 			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
 			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
 		this.bPartnerTable = bPartnerTable;
 		this.productTable = productTable;
+		this.orderLineTable = orderLineTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -194,5 +202,42 @@ public class C_Invoice_Candidate_StepDef
 			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 			invoiceService.processInvoiceCandidates(ImmutableSet.of(invoiceCandidateId));
 		}
+	}
+
+	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
+	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> retrieveInvoiceCandidate(row));
+		}
+	}
+
+	private boolean retrieveInvoiceCandidate(@NonNull final Map<String, String> row)
+	{
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		final IQueryBuilder<I_C_Invoice_Candidate> candQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderLine.getC_Order_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+
+		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+		if (qtyToInvoice != null)
+		{
+			candQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
+		}
+
+		final I_C_Invoice_Candidate invoiceCandidate = candQueryBuilder.create()
+				.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+
+		if (invoiceCandidate == null)
+		{
+			return false;
+		}
+
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
+		return true;
 	}
 }

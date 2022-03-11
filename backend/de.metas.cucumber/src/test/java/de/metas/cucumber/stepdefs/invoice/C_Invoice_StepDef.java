@@ -62,9 +62,9 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 public class C_Invoice_StepDef
 {
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_C_Invoice> invoiceTable;
 	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;

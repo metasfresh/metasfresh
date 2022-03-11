@@ -5,8 +5,9 @@ Feature: Validate order doc outbound log creation
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And disable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
-    And enable sys config 'de.metas.report.jasper.IsMockReportService'
+    And metasfresh has date and time 2022-02-01T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
 
     And metasfresh contains M_Products:
       | Identifier        | Name              |
@@ -19,7 +20,7 @@ Feature: Validate order doc outbound log creation
       | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-01-01 |
+      | plv_so     | pl_so                     | plv_so | 2022-01-30 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName |
       | pp_product | plv_so                            | addr_test_product       | 10.0     | Normal                        |
@@ -27,66 +28,33 @@ Feature: Validate order doc outbound log creation
       | Identifier    | Name          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
       | sale_bpartner | sale_bpartner | ps_1                          | Y              |
 
-  Scenario: Create sales order and validate email from doc outbound log - from order disposition
+  Scenario: Create sales order and validate email from doc outbound log - from order
     Given metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail          |
       | bpLocation | 1111123456789 | sale_bpartner            | true         | true         | location@email.com |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name   | OPT.EMail      | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | bpUser                | bpUser | user@email.com | sale_bpartner                | bpLocation                            |
-      | bpUser                | bpUser | user@email.com | sale_bpartner                | bpLocation                            |
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | Type   | ExternalReference | OPT.AD_User_ID.Identifier |
-      | bpUser_ref                        | Shopware6      | UserID | bpUser_ref        | bpUser                    |
 
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
-  """
-{
-    "orgCode": "001",
-    "externalHeaderId": 1128101,
-    "externalLineId": 1111,
-    "dataSource": "int-Shopware",
-    "bpartner": {
-        "bpartnerIdentifier": "gln-1111123456789",
-        "bpartnerLocationIdentifier": "gln-1111123456789",
-        "contactIdentifier": "ext-Shopware6-bpUser_ref"
-    },
-    "dateRequired": "2022-02-10",
-    "dateOrdered": "2022-02-02",
-    "orderDocType": "SalesOrder",
-    "paymentTerm": "val-1000002",
-    "productIdentifier": "val-addr_test_product",
-    "qty": 1,
-    "currencyCode": "EUR",
-    "discount": 0,
-    "poReference": "olCand_ref_1128101",
-    "deliveryViaRule": "S",
-    "deliveryRule": "F"
-}
-"""
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference   | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.EMail          |
+      | order_1    | true    | sale_bpartner            | 2022-02-02  | bpLocation                            | bpUser                    | order_ref_1128101 | F                | S                   | location@email.com |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_1 | order_1               | addr_test_product       | 1          |
 
+    # change email now, to verify the mail is not coming from master data
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.EMail                   |
       | bpLocation                        | bpLocationUpdated@email.com |
 
-    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
-"""
-{
-    "externalHeaderId": "1128101",
-    "inputDataSourceName": "int-Shopware",
-    "ship": false,
-    "invoice": false,
-    "closeOrder": false
-}
-"""
-    And process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          | null                | null               |
-    Then validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference        | processed | docStatus | OPT.EMail          |
-      | order_1          | 1128101    | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_1128101 | true      | CO        | location@email.com |
+    And the order identified by order_1 is completed
 
-    And validate C_Doc_Outbound_Log:
+    Then validate created order
+      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail          |
+      | order_1          | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_1128101 | true      | CO        | location@email.com |
+
+    And after not more than 30s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
       | orderOutboundLog                 | order_1              | C_Order       | location@email.com      | sale_bpartner                | SOO             | CO            |
 
@@ -102,55 +70,21 @@ Feature: Validate order doc outbound log creation
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name             | OPT.EMail           | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | bpUser                | bpUser_secondary | secondary@email.com | sale_bpartner                | bpLocation                            |
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | Type   | ExternalReference   | OPT.AD_User_ID.Identifier |
-      | bpUserSecondary_ref               | Shopware6      | UserID | bpUserSecondary_ref | bpUser                    |
 
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
-  """
-{
-    "orgCode": "001",
-    "externalHeaderId": 2085101,
-    "externalLineId": 2222,
-    "dataSource": "int-Shopware",
-    "bpartner": {
-        "bpartnerIdentifier": "gln-2222223456789",
-        "bpartnerLocationIdentifier": "gln-2222223456789",
-        "contactIdentifier": "ext-Shopware6-bpUserSecondary_ref"
-    },
-    "dateRequired": "2022-02-10",
-    "dateOrdered": "2022-02-02",
-    "orderDocType": "SalesOrder",
-    "paymentTerm": "val-1000002",
-    "productIdentifier": "val-addr_test_product",
-    "qty": 1,
-    "currencyCode": "EUR",
-    "discount": 0,
-    "poReference": "olCand_ref_2085101",
-    "deliveryViaRule": "S",
-    "deliveryRule": "F"
-}
-"""
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference   | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_1    | true    | sale_bpartner            | 2022-02-02  | bpLocation                            | bpUser                    | order_ref_2085101 | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_1 | order_1               | addr_test_product       | 1          |
 
-    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
-"""
-{
-    "externalHeaderId": "2085101",
-    "inputDataSourceName": "int-Shopware",
-    "ship": false,
-    "invoice": false,
-    "closeOrder": false
-}
-"""
+    And the order identified by order_1 is completed
 
-    And process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          | null                | null               |
     Then validate created order
-      | Order.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference        | processed | docStatus | OPT.EMail |
-      | order_1          | 2085101    | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_2085101 | true      | CO        | null      |
+      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail |
+      | order_1          | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_2085101 | true      | CO        | null      |
 
-    And validate C_Doc_Outbound_Log:
+    And after not more than 30s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
       | orderOutboundLog                 | order_1              | C_Order       | secondary@email.com     | sale_bpartner                | SOO             | CO            |
     And validate C_Doc_Outbound_Log_Line:

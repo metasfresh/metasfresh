@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.util.Check;
@@ -70,22 +71,14 @@ public class C_Doc_Outbound_Log_StepDef
 		this.orderTable = orderTable;
 	}
 
-	@And("validate C_Doc_Outbound_Log:")
-	public void validate_C_Doc_Outbound_Log(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
+	public void validate_C_Doc_Outbound_Log(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final TableRecordReference recordReference = getTableRecordReference(row);
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> retrieveDocOutboundLog(row));
 
-			final I_C_Doc_Outbound_Log docOutboundLog = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-					.addEqualsFilter(COLUMNNAME_Record_ID, recordReference.getRecord_ID())
-					.addEqualsFilter(COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
-					.create()
-					.firstOnlyNotNull(I_C_Doc_Outbound_Log.class);
-
-			assertThat(docOutboundLog).isNotNull();
-
-			validateDocOutboundLog(row, docOutboundLog);
+			validateDocOutboundLog(row);
 		}
 	}
 
@@ -127,10 +120,11 @@ public class C_Doc_Outbound_Log_StepDef
 		}
 	}
 
-	private void validateDocOutboundLog(
-			@NonNull final Map<String, String> row,
-			@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
+	private void validateDocOutboundLog(@NonNull final Map<String, String> row)
 	{
+		final String docOutBoundIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundLogTable.get(docOutBoundIdentifier);
+
 		final String currentEmailAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailAddress);
 		if (Check.isNotBlank(currentEmailAddress))
 		{
@@ -158,9 +152,6 @@ public class C_Doc_Outbound_Log_StepDef
 		{
 			assertThat(docOutboundLog.getDocStatus()).isEqualTo(docStatus);
 		}
-
-		final String docOutBoundIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
-		docOutboundLogTable.put(docOutBoundIdentifier, docOutboundLog);
 	}
 
 	@NonNull
@@ -182,5 +173,25 @@ public class C_Doc_Outbound_Log_StepDef
 						.appendParametersToMessage()
 						.setParameter("TableName", tableName);
 		}
+	}
+
+	private boolean retrieveDocOutboundLog(@NonNull final Map<String, String> row)
+	{
+		final TableRecordReference recordReference = getTableRecordReference(row);
+
+		final I_C_Doc_Outbound_Log docOutboundLog = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addEqualsFilter(COLUMNNAME_Record_ID, recordReference.getRecord_ID())
+				.addEqualsFilter(COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
+				.create()
+				.firstOnlyOrNull(I_C_Doc_Outbound_Log.class);
+
+		if (docOutboundLog == null)
+		{
+			return false;
+		}
+
+		final String docOutBoundIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
+		docOutboundLogTable.putOrReplace(docOutBoundIdentifier, docOutboundLog);
+		return true;
 	}
 }
