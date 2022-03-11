@@ -186,6 +186,24 @@ public class HUTrxBL implements IHUTrxBL
 	}
 	
 	@Override
+	public boolean isTransactionBetweenHUs(@NonNull final HuId huId)
+	{
+		final List<I_M_HU_Trx_Line> trxLines = huTrxDAO.retrieveReferencingTrxLinesForHuId(huId);
+		for (final I_M_HU_Trx_Line trxLine : trxLines)
+		{
+			if (trxLine.getRecord_ID() > 0 && trxLine.getAD_Table_ID() > 0)
+			{
+				final TableRecordReference referencedRecord = TableRecordReference.ofReferenced(trxLine);
+				if (!I_M_HU.Table_Name.equals(referencedRecord.getTableName()))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	@Override
 	public void setParentHU(@NonNull final ChangeParentHURequest request)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);

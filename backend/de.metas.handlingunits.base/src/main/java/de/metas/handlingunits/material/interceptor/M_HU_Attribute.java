@@ -55,7 +55,7 @@ public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUTrxBL huTrxBL=Services.get(IHUTrxBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	
 	private final PostMaterialEventService materialEventService;
@@ -85,6 +85,14 @@ public class M_HU_Attribute
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
 		if (!attribute.isStorageRelevant())
+		{
+			return;
+		}
+
+		// Do not collect changes (i.e. send change events) that aren't "real" HU-changes.
+		// For example when an inventory is completed and the line's ASI is synched to an HU, then this shall *not* count.
+		// Otherwise, we would have a double quantity in the material dispo: 1 time for the attribute change, and one time for corresponding M_Transaction.
+		if (!huTrxBL.isTransactionBetweenHUs(HuId.ofRepoId(record.getM_HU_ID())))
 		{
 			return;
 		}
