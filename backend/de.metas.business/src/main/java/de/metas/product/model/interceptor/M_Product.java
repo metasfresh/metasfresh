@@ -5,6 +5,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -48,6 +50,8 @@ public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
+	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
+
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -89,11 +93,11 @@ public class M_Product
 	@Nullable
 	private AdMessageKey checkExistingUOMConversions(final I_M_Product product)
 	{
-		final IQueryBuilder<I_C_UOM_Conversion> queryBuilder = createQueryBuilder()
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		if (!queryBuilder.create().list().isEmpty())
+		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversionsOrNull(productId);
+
+		if (!conversionsMap.isEmpty())
 		{
 			return MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED;
 		}
