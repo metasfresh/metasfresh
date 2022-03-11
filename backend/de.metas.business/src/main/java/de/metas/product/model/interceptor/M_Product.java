@@ -80,10 +80,9 @@ public class M_Product
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE ,
 			ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
 	@CalloutMethod(columnNames = I_M_Product.COLUMNNAME_C_UOM_ID)
-	public void setUOM_ID(final I_M_Product product)
+	public void setUOM_ID(@NonNull final I_M_Product product)
 	{
 		final AdMessageKey errorMessage = checkExistingUOMConversions(product);
-
 		if (errorMessage != null)
 		{
 			throw new AdempiereException(errorMessage);
@@ -91,23 +90,16 @@ public class M_Product
 	}
 
 	@Nullable
-	private AdMessageKey checkExistingUOMConversions(final I_M_Product product)
+	private AdMessageKey checkExistingUOMConversions(@NonNull final I_M_Product product)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversions(productId);
-
 		if (conversionsMap.isHasRatesForNonStockingUOMs())
 		{
 			return MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED;
 		}
 
 		return null;
-	}
-
-	private IQueryBuilder<I_C_UOM_Conversion> createQueryBuilder()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_UOM_Conversion.class);
 	}
 }
