@@ -178,15 +178,15 @@ public class C_OrderLine_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
 
-		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
-		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
-		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
-		assertThat(orderLine.getDiscount()).isEqualTo(discount);
-		assertThat(orderLine.isProcessed()).isEqualTo(processed);
-		assertThat(orderLine.getM_Product_ID()).isEqualTo(productId);
-		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
-		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
+		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
+		assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
+		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualTo(price);
+		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
+		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
+		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(productId);
+		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
