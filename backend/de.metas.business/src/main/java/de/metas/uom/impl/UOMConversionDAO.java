@@ -25,6 +25,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class UOMConversionDAO implements IUOMConversionDAO
 {
 	private static final Logger logger = LogManager.getLogger(UOMConversionDAO.class);
@@ -34,15 +36,10 @@ public class UOMConversionDAO implements IUOMConversionDAO
 			.build();
 
 	@Override
+	@NonNull
 	public UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
-	}
-
-	@Override
-	public UOMConversionsMap getProductConversionsOrNull(@NonNull final ProductId productId)
-	{
-		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversionsOrNull);
 	}
 
 	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
@@ -55,36 +52,19 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(record -> toUOMConversionOrNull(record))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		return UOMConversionsMap.builder()
-				.productId(productId)
-				.rates(ImmutableList.<UOMConversionRate> builder()
-						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
-						.addAll(rates)
-						.build())
-				.build();
-	}
-
-	private UOMConversionsMap retrieveProductConversionsOrNull(@NonNull final ProductId productId)
-	{
-		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
 				.map(UOMConversionDAO::toUOMConversionOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
+		final boolean hasRatesForNonStockingUOMs = !rates.isEmpty();
+		
 		return UOMConversionsMap.builder()
 				.productId(productId)
-				.rates(ImmutableList.<UOMConversionRate>builder()
-							   .addAll(rates)
-							   .build())
+				.hasRatesForNonStockingUOMs(hasRatesForNonStockingUOMs)
+				.rates(ImmutableList.<UOMConversionRate> builder()
+						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
+						.addAll(rates)
+						.build())
 				.build();
 	}
 
@@ -97,7 +77,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_UOM_Conversion.class)
-				.map(record -> toUOMConversionOrNull(record))
+				.map(UOMConversionDAO::toUOMConversionOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
@@ -107,6 +87,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.build();
 	}
 
+	@Nullable
 	@VisibleForTesting
 	static UOMConversionRate toUOMConversionOrNull(@NonNull final I_C_UOM_Conversion record)
 	{

@@ -95,9 +95,9 @@ public class M_Product
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversionsOrNull(productId);
+		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversions(productId);
 
-		if (!conversionsMap.isEmpty())
+		if (conversionsMap.isHasRatesForNonStockingUOMs())
 		{
 			return MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED;
 		}
