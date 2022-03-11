@@ -19,9 +19,9 @@ db:
   port: 
     db: 5432
   dataStorageSize: 5Gi
-  username: metasfresh
-  password: metasfresh
-  postgrespw: metasfresh
+  username: metasfresh #replace
+  password: metasfresh #replace
+  postgrespw: metasfresh #replace
   debug:
     printBashCmds: '"n"'
   dbConnectionPoolMaxSize: 60
@@ -32,16 +32,16 @@ rabbitmq:
     broker: 5672
     management: 15672
   dataStorageSize: 1Gi
-  username: metasfresh
-  password: metasfresh
+  username: metasfresh #replace
+  password: metasfresh #replace
   
 search:
   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
   port: 
     search: 9200
   dataStorageSize: 5Gi
-  username: metasfresh
-  password: metasfresh
+  username: metasfresh #replace
+  password: metasfresh #replace
   clusterName: metasfresh
   resources:
     memLimit: 1073741824 #(in bytes)
@@ -61,7 +61,7 @@ webui:
 
 ingress:
   webui:
-    url: demo-demouser.metasfresh.com
+    url: demo-demouser.metasfresh.com #replace with your domain
   tls:
     enabled: true
     

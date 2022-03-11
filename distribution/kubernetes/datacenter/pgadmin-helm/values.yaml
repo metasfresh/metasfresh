@@ -3,12 +3,12 @@ pgadmin:
   port:
     pgadmin: 80
   dataStorageSize: 1Gi
-  defaultEmail: example@mail.com
-  defaultPassword: password
+  defaultEmail: example@mail.com #replace
+  defaultPassword: password #replace
 
 ingress:
   pgadmin: 
-    url: pgadmin.demo-demouser.metasfresh.com
+    url: pgadmin.demo-demouser.metasfresh.com #replace with your domain
     enabled: true
   tls:
     enabled: true
