@@ -9,6 +9,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.ISingletonService;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -45,7 +46,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 *
 	 * @return {@code true} iff the respective record was updated to {@code processed='Y'};
 	 */
-	boolean updateProcessed(AsyncBatchId asyncBatchId);
+	boolean updateProcessedOutOfTrx(AsyncBatchId asyncBatchId);
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
@@ -84,4 +85,8 @@ public interface IAsyncBatchBL extends ISingletonService
 	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
 
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
+
+	Duration getTimeUntilProcessedRecheck(I_C_Async_Batch asyncBatch);
+
+	boolean shouldBeManuallyMarkedAsProcessed(AsyncBatchId asyncBatchId);
 }

@@ -25,12 +25,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -39,6 +33,12 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import java.time.Duration;
+import java.util.List;
 
 /**
  * <ul>
@@ -61,46 +61,60 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		boolean hasError = false;
-
 		final List<I_C_Async_Batch> batches = queueDAO.retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
-		for (final I_C_Async_Batch asyncBatch : batches)
+
+		if (batches == null || batches.size() != 1)
 		{
-			if (asyncBatch.isProcessed() || !asyncBatch.isActive())
-			{
-				// already processed => do nothing
-				continue;
-			}
-
-			// check if keep alive time expired and if it has; set wp to error
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-			final boolean keepAliveTimeExpired = asyncBatchBL.keepAliveTimeExpired(asyncBatchId);
-			if (keepAliveTimeExpired)
-			{
-				hasError = true;
-				continue;
-			}
-
-			//
-			// Try to mark it as processed now
-			final boolean batchIsProcessed = asyncBatchBL.updateProcessed(asyncBatchId);
-			if (!batchIsProcessed)
-			{
-				final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
-				throw skipExcep;
-			}
-
+			throw new AdempiereException("There should always be just one asyncBatch enqueued for each 'CheckProcessedAsynBatchWorkpackageProcessor' instance!")
+					.appendParametersToMessage()
+					.setParameter("C_Queue_WorkPackage_ID", workpackage.getC_Queue_WorkPackage_ID());
 		}
 
-		if (hasError)
+		final I_C_Async_Batch asyncBatch = batches.get(0);
+
+		if (asyncBatch.isProcessed() || !asyncBatch.isActive())
+		{
+			// already processed => do nothing
+			return Result.SUCCESS;
+		}
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		//if it should be processed manually, there is no point in having this workpackage running forever
+		if (asyncBatchBL.shouldBeManuallyMarkedAsProcessed(asyncBatchId))
+		{
+			return Result.SUCCESS;
+		}
+
+		//
+		// check if we need to wait for a bit before trying to set the processed status
+		final Duration delayUntilCheckingProcessedState = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
+
+		if (delayUntilCheckingProcessedState.toMillis() > 0)
+		{
+			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
+		}
+
+		//
+		// try to set the processed status
+		final boolean batchIsProcessed = asyncBatchBL.updateProcessedOutOfTrx(asyncBatchId);
+		if (batchIsProcessed)
+		{
+			return Result.SUCCESS;
+		}
+
+		//
+		// check if keep alive time expired and if it has; set wp to error
+		final boolean keepAliveTimeExpired = asyncBatchBL.keepAliveTimeExpired(asyncBatchId);
+		if (keepAliveTimeExpired)
 		{
 			throw new AdempiereException("@IAsyncBatchBL.keepAliveTimeExpired@");
 		}
 
-		return Result.SUCCESS;
+		throw WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
 	}
 
-	private final int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
+	private int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.getC_Async_Batch_Type_ID() > 0)
 		{
