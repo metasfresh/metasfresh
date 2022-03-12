@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking;
 
 import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
+import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Component;
 
@@ -94,11 +95,11 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 				.groupBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, SqlSelectValue.builder()
-						.virtualColumnSql("MIN(DeliveryDate)")
+						.virtualColumnSql(ColumnSql.ofSql("MIN(DeliveryDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_DeliveryDate)
 						.build())
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, SqlSelectValue.builder()
-						.virtualColumnSql("IF_MIN(DeliveryDate, PreparationDate)")
+						.virtualColumnSql(ColumnSql.ofSql("IF_MIN(DeliveryDate, PreparationDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_PreparationDate)
 						.build())
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)
