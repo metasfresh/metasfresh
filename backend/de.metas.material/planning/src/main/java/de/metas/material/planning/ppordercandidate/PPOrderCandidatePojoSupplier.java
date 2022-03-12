@@ -90,7 +90,6 @@ public class PPOrderCandidatePojoSupplier
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final Instant demandDate = request.getDemandDate();
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
 		// BOM
@@ -116,7 +115,21 @@ public class PPOrderCandidatePojoSupplier
 		// Calculate duration & Planning dates
 		final int durationDays = productPlanningService.calculateDurationDays(mrpContext.getProductPlanning(), qtyToSupply.toBigDecimal());
 
-		final Instant dateStartSchedule = demandDate.minus(durationDays, ChronoUnit.DAYS);
+		final Instant earliestDateStartSchedule = Instant.now();
+
+		final Instant datePromised;
+		final Instant dateStartSchedule;
+
+		if (request.getDemandDate().minus(durationDays, ChronoUnit.DAYS).isBefore(earliestDateStartSchedule))
+		{
+			dateStartSchedule = earliestDateStartSchedule;
+			datePromised = dateStartSchedule.plus(durationDays, ChronoUnit.DAYS);
+		}
+		else
+		{
+			datePromised = request.getDemandDate();
+			dateStartSchedule = datePromised.minus(durationDays, ChronoUnit.DAYS);
+		}
 
 		final ProductDescriptor productDescriptor = createPPOrderCandidateProductDescriptor(mrpContext);
 
@@ -124,13 +137,14 @@ public class PPOrderCandidatePojoSupplier
 		final Quantity ppOrderCandidateQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
 		return PPOrderCandidate.builder()
+				.simulated(request.isSimulated())
 				.ppOrderData(PPOrderData.builder()
 									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.toRepoId(mrpContext.getClientId()), OrgId.toRepoIdOrAny(mrpContext.getOrgId())))
 									 .plantId(ResourceId.ofRepoId(mrpContext.getPlant_ID()))
 									 .warehouseId(mrpContext.getWarehouseId())
 									 .productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 									 .productDescriptor(productDescriptor)
-									 .datePromised(demandDate)
+									 .datePromised(datePromised)
 									 .dateStartSchedule(dateStartSchedule)
 									 .qtyRequired(ppOrderCandidateQuantity.toBigDecimal())
 									 .orderLineId(request.getMrpDemandOrderLineSOId())

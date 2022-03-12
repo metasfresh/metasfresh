@@ -234,7 +234,8 @@ public class CandidateRepositoryRetrieval
 				// if the record has a group id, then set it.
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.materialDescriptor(materialDescriptor)
-				.minMaxDescriptor(minMaxDescriptor);
+				.minMaxDescriptor(minMaxDescriptor)
+				.simulated(isSimulated(candidateRecord));
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
@@ -278,6 +279,8 @@ public class CandidateRepositoryRetrieval
 				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
 				.ppOrderDocStatus(DocStatus.ofNullableCode(productionDetailRecord.getPP_Order_DocStatus()))
 				.qty(productionDetailRecord.getPlannedQty())
+				.ppOrderCandidateId(productionDetailRecord.getPP_Order_Candidate_ID())
+				.ppOrderLineCandidateId(productionDetailRecord.getPP_OrderLine_Candidate_ID())
 				.build();
 	}
 
@@ -392,5 +395,10 @@ public class CandidateRepositoryRetrieval
 												.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
+	}
+
+	private static boolean isSimulated(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated.equals(candidateRecord.getMD_Candidate_Status());
 	}
 }

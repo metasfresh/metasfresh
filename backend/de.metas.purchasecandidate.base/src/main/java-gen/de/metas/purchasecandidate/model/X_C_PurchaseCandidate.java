@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -466560030L;
+	private static final long serialVersionUID = 1453414410L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -351,6 +351,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isRequisitionCreated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRequisitionCreated);
+	}
+
+	@Override
+	public void setIsSimulated (final boolean IsSimulated)
+	{
+		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+	}
+
+	@Override
+	public boolean isSimulated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}
 
 	@Override

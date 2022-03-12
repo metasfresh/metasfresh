@@ -1,11 +1,5 @@
 package de.metas.material.event.ddorder;
 
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_PP_Order;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -15,6 +9,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.model.I_PP_Order;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import lombok.ToString;
  * <b>or</or> if a ddOrder was actually created.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @EqualsAndHashCode(callSuper = false)
 @Getter

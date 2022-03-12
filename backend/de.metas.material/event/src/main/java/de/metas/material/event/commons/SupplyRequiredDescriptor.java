@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
@@ -58,8 +60,12 @@ public class SupplyRequiredDescriptor
 
 	int subscriptionProgressId;
 
+	boolean simulated;
+
+	BigDecimal fullDemandQty;
+
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
@@ -70,7 +76,9 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("forecastLineId") final int forecastLineId,
 			@JsonProperty("orderId") final int orderId,
 			@JsonProperty("orderLineId") final int orderLineId,
-			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId)
+			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
+			@JsonProperty("simulated") final boolean simulated,
+			@JsonProperty("fullDemandQty") final BigDecimal fullDemandQty)
 	{
 		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 		this.supplyCandidateId = supplyCandidateId;
@@ -86,5 +94,7 @@ public class SupplyRequiredDescriptor
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
 		this.subscriptionProgressId = subscriptionProgressId > 0 ? subscriptionProgressId : -1;
+		this.simulated = simulated;
+		this.fullDemandQty = fullDemandQty;
 	}
 }
