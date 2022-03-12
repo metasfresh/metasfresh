@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.product.ProductId;
@@ -12,6 +13,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
@@ -20,6 +22,7 @@ public class PickFromHUsGetRequest
 {
 	@NonNull ImmutableSet<LocatorId> pickFromLocatorIds;
 	@NonNull ProductId productId;
+	@NonNull BPartnerId partnerId;
 	@NonNull AttributeSetInstanceId asiId;
 	@NonNull ShipmentAllocationBestBeforePolicy bestBeforePolicy;
 	@NonNull Optional<HUReservationDocRef> reservationRef;
@@ -28,6 +31,7 @@ public class PickFromHUsGetRequest
 	private PickFromHUsGetRequest(
 			@NonNull @Singular final ImmutableSet<LocatorId> pickFromLocatorIds,
 			@NonNull final ProductId productId,
+			@Nullable final BPartnerId partnerId,
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy,
 			@NonNull final Optional<HUReservationDocRef> reservationRef)
@@ -36,6 +40,7 @@ public class PickFromHUsGetRequest
 
 		this.pickFromLocatorIds = pickFromLocatorIds;
 		this.productId = productId;
+		this.partnerId = partnerId;
 		this.asiId = asiId;
 		this.bestBeforePolicy = bestBeforePolicy;
 		this.reservationRef = reservationRef;

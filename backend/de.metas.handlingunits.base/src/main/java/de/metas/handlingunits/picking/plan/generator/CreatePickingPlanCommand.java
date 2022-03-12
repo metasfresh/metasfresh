@@ -282,6 +282,7 @@ public class CreatePickingPlanCommand
 		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
 				PickFromHUsGetRequest.builder()
 						.pickFromLocatorIds(getPickFromLocatorIds(packageable))
+						.partnerId(packageable.getCustomerId())
 						.productId(packageable.getProductId())
 						.asiId(packageable.getAsiId())
 						.bestBeforePolicy(getBestBeforePolicy(packageable))
