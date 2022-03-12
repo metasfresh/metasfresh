@@ -1,74 +1,76 @@
-drop function if exists de_metas_acct.Fact_Acct_EndingBalance_RebuildAll();
-create or replace function de_metas_acct.Fact_Acct_EndingBalance_RebuildAll()
-returns text
+DROP FUNCTION IF EXISTS de_metas_acct.Fact_Acct_EndingBalance_RebuildAll()
+;
+
+CREATE OR REPLACE FUNCTION de_metas_acct.Fact_Acct_EndingBalance_RebuildAll()
+    RETURNS text
+    LANGUAGE plpgsql
 AS
 $BODY$
-declare
-	v_CountInserted integer;
-begin
-	
-drop table if exists  backup.EndingBalance_bkp20162405;
+DECLARE
+    v_rowcount numeric;
+BEGIN
 
-create table backup.EndingBalance_bkp20162405 as select * from Fact_Acct_EndingBalance;
+    PERFORM backup_table('Fact_Acct_EndingBalance');
 
-drop table if exists TMP_Fact_Acct;
-create temporary table TMP_Fact_Acct as select * from Fact_Acct;
-create index on TMP_Fact_Acct (AD_Client_ID, AD_Org_ID, C_Period_ID, DateAcct, C_AcctSchema_ID, PostingType, Account_ID);
-
+    DROP TABLE IF EXISTS TMP_Fact_Acct;
+    CREATE TEMPORARY TABLE TMP_Fact_Acct AS
+    SELECT * FROM Fact_Acct;
+    CREATE INDEX ON TMP_Fact_Acct (AD_Client_ID, AD_Org_ID, C_Period_ID, DateAcct, C_AcctSchema_ID, PostingType, Account_ID);
 
 
-drop table if exists TMP_Fact_Acct_EndingBalance;
-create table TMP_Fact_Acct_EndingBalance as select * from Fact_Acct_EndingBalance limit 0;
-insert into TMP_Fact_Acct_EndingBalance
-(
-	fact_acct_id
-	, AmtAcctDr_DTD
-	, AmtAcctCr_DTD
-	, C_AcctSchema_ID
-	, Account_ID
-	, PostingType
-	, DateAcct
-	, ad_client_id
-	, ad_org_id
-	, created
-	, createdby
-	, isactive
-	, updated
-	, updatedby
-)
-select
-	fa.fact_acct_id
-	, sum(AmtAcctDr) over facts_previous as AmtAcctDr_DTD
-	, sum(AmtAcctCr) over facts_previous as AmtAcctCr_DTD
-	, fa.C_AcctSchema_ID
-	, fa.Account_ID
-	, fa.PostingType
-	, fa.DateAcct
-	, fa.ad_client_id
-	, fa.ad_org_id
-	, fa.created
-	, fa.createdby
-	, fa.isactive
-	, fa.updated
-	, fa.updatedby
-	from TMP_Fact_Acct fa
-	window facts_previous as (partition by fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.DateAcct order by Fact_Acct_ID)
-	;
+    DROP TABLE IF EXISTS TMP_Fact_Acct_EndingBalance;
+    CREATE TABLE TMP_Fact_Acct_EndingBalance AS
+    SELECT * FROM Fact_Acct_EndingBalance LIMIT 0;
+    INSERT INTO TMP_Fact_Acct_EndingBalance
+    ( fact_acct_id
+    , AmtAcctDr_DTD
+    , AmtAcctCr_DTD
+    , C_AcctSchema_ID
+    , Account_ID
+    , PostingType
+    , DateAcct
+    , ad_client_id
+    , ad_org_id
+    , created
+    , createdby
+    , isactive
+    , updated
+    , updatedby)
+    SELECT fa.fact_acct_id
+         , SUM(AmtAcctDr) OVER facts_previous AS AmtAcctDr_DTD
+         , SUM(AmtAcctCr) OVER facts_previous AS AmtAcctCr_DTD
+         , fa.C_AcctSchema_ID
+         , fa.Account_ID
+         , fa.PostingType
+         , fa.DateAcct
+         , fa.ad_client_id
+         , fa.ad_org_id
+         , fa.created
+         , fa.createdby
+         , fa.isactive
+         , fa.updated
+         , fa.updatedby
+    FROM TMP_Fact_Acct fa
+        WINDOW facts_previous AS (PARTITION BY fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.DateAcct ORDER BY Fact_Acct_ID);
 
 
---
--- WARNING: Perform the actual change:
--- truncate table Fact_Acct_EndingBalance;
-delete from Fact_Acct_EndingBalance ;
-insert into Fact_Acct_EndingBalance select * from TMP_Fact_Acct_EndingBalance;
-	
-	GET DIAGNOSTICS v_CountInserted = ROW_COUNT;
+    --
+    --
+    -- WARNING: Perform the actual change:
+    --
+    DELETE FROM Fact_Acct_EndingBalance WHERE 1 = 1;
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+    RAISE NOTICE 'Removed % rows from Fact_Acct_EndingBalance', v_rowcount;
 
-	return ''||v_CountInserted||' rows inserted into Fact_Acct_EndingBalance';
-end;
+    INSERT INTO Fact_Acct_EndingBalance SELECT * FROM TMP_Fact_Acct_EndingBalance;
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+    RAISE NOTICE 'Inserted % rows from Fact_Acct_EndingBalance', v_rowcount;
+
+    RETURN '' || v_rowcount || ' rows inserted into Fact_Acct_EndingBalance';
+END;
 $BODY$
-LANGUAGE plpgsql;
+;
 
-COMMENT ON FUNCTION de_metas_acct.Fact_Acct_EndingBalance_RebuildAll() IS 'Rebuilds Fact_Acct_EndingBalance.';
-
+COMMENT ON FUNCTION de_metas_acct.Fact_Acct_EndingBalance_RebuildAll() IS 'Rebuilds Fact_Acct_EndingBalance.'
+;
 

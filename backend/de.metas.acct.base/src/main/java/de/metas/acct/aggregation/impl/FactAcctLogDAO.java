@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -62,7 +63,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
 
 	@Override
-	public IFactAcctLogIterable tagAndRetrieve(final Properties ctx, final int limit)
+	public IFactAcctLogIterable tagAndRetrieve(final Properties ctx, final QueryLimit limit)
 	{
 		final String processingTag = UUID.randomUUID().toString();
 		updateProcessingTag(ctx, PROCESSINGTAG_NULL, processingTag, limit);
@@ -70,13 +71,12 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		return new FactAcctLogIterable(ctx, processingTag);
 	}
 
-	private final int releaseTag(final Properties ctx, final String processingTag)
+	private int releaseTag(final Properties ctx, final String processingTag)
 	{
-		final int limit = IQuery.NO_LIMIT;
-		return updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, limit);
+		return updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, QueryLimit.NO_LIMIT);
 	}
 
-	private final int updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final int limit)
+	private int updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final QueryLimit limit)
 	{
 		return retrieveForTagQuery(ctx, processingTagOld)
 				.setLimit(limit)
@@ -95,14 +95,14 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				.anyMatch();
 	}
 
-	private final IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
+	private IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct_Log.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_Fact_Acct_Log.COLUMN_ProcessingTag, processingTag);
 	}
 
-	private final Iterator<I_Fact_Acct_Log> retrieveForTag(final Properties ctx, final String processingTag)
+	private Iterator<I_Fact_Acct_Log> retrieveForTag(final Properties ctx, final String processingTag)
 	{
 		return retrieveForTagQuery(ctx, processingTag)
 				//
@@ -147,7 +147,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 	@Override
 	public I_Fact_Acct_Summary retrieveLastMatchingFactAcctSummary(final Properties ctx, final IFactAcctSummaryKey key)
 	{
-		final I_Fact_Acct_Summary factAcctSummaryExisting = createFactAcctSummaryQueryForKeyNoDateAcct(ctx, key)
+		return createFactAcctSummaryQueryForKeyNoDateAcct(ctx, key)
 				.addCompareFilter(I_Fact_Acct_Summary.COLUMN_DateAcct, Operator.LESS_OR_EQUAL, key.getDateAcct())
 				//
 				.orderBy()
@@ -156,7 +156,6 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				//
 				.create()
 				.first(I_Fact_Acct_Summary.class);
-		return factAcctSummaryExisting;
 	}
 
 	@Override
