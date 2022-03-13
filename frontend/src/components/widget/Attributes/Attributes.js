@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
-import FocusTrap from 'focus-trap-react';
 
 import {
   getAttributesInstance,
@@ -180,12 +179,6 @@ export default class Attributes extends Component {
     }
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @todo Write the documentation
-   */
   handleKeyDown = (e) => {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -347,43 +340,41 @@ export default class Attributes extends Component {
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
-      <FocusTrap active={!!dropdown}>
-        <div
-          onKeyDown={this.handleKeyDown}
-          className={classnames('attributes', {
-            'attributes-in-table': rowId,
-          })}
-        >
-          <button
-            tabIndex={tabIndex}
-            onClick={() => this.handleToggle(true)}
-            className={classnames(
-              'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-              {
-                'tag-disabled': dropdown,
-                'tag-disabled disabled': readonly,
-              }
-            )}
-          >
-            {label ? label : 'Edit'}
-          </button>
-          {dropdown && (
-            <AttributesDropdown
-              {...this.props}
-              attributeType={attributeType}
-              dataId={dataId}
-              tabIndex={tabIndex}
-              onClickOutside={this.handleCompletion}
-              data={data}
-              layout={layout}
-              handlePatch={this.handlePatch}
-              handleChange={this.handleChange}
-              attrId={attrId}
-              rowIndex={rowIndex}
-            />
+      <div
+        onKeyDown={this.handleKeyDown}
+        className={classnames('attributes', {
+          'attributes-in-table': rowId,
+        })}
+      >
+        <button
+          tabIndex={tabIndex}
+          onClick={() => this.handleToggle(true)}
+          className={classnames(
+            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+            {
+              'tag-disabled': dropdown,
+              'tag-disabled disabled': readonly,
+            }
           )}
-        </div>
-      </FocusTrap>
+        >
+          {label ? label : 'Edit'}
+        </button>
+        {dropdown && (
+          <AttributesDropdown
+            {...this.props}
+            attributeType={attributeType}
+            dataId={dataId}
+            tabIndex={tabIndex}
+            onClickOutside={this.handleCompletion}
+            data={data}
+            layout={layout}
+            handlePatch={this.handlePatch}
+            handleChange={this.handleChange}
+            attrId={attrId}
+            rowIndex={rowIndex}
+          />
+        )}
+      </div>
     );
   }
 }

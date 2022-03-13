@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
+import FocusTrap from 'focus-trap-react';
 
 import { DROPUP_START } from '../../../constants/Constants';
 
@@ -120,25 +121,22 @@ class AttributesDropdown extends PureComponent {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { rowIndex } = this.props;
 
     return (
-      <div
-        className={classnames(
-          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
-          {
-            'attributes-dropup': rowIndex > DROPUP_START,
-          }
-        )}
-      >
-        {this.renderFields()}
-      </div>
+      <FocusTrap>
+        <div
+          className={classnames(
+            'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+            {
+              'attributes-dropup': rowIndex > DROPUP_START,
+            }
+          )}
+        >
+          {this.renderFields()}
+        </div>
+      </FocusTrap>
     );
   }
 }
