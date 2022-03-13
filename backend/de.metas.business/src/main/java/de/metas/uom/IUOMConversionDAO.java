@@ -2,10 +2,12 @@ package de.metas.uom;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IUOMConversionDAO extends ISingletonService
 {
-	UOMConversionsMap getProductConversions(ProductId productId);
+	@NonNull
+	UOMConversionsMap getProductConversions(@NonNull ProductId productId);
 
 	UOMConversionsMap getGenericConversions();
 	
