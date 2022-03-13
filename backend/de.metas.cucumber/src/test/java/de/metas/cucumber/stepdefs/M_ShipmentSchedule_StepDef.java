@@ -25,9 +25,11 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -42,6 +44,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -55,7 +58,8 @@ import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 	private final StepDefData<I_C_Order> orderTable;
@@ -157,6 +161,19 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(noRecords.get())
 				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout", timeoutSec)
 				.isTrue();
+	}
+
+	@And("^there is no M_ShipmentSchedule for C_Order (.*)$")
+	public void validate_no_M_ShipmentSchedule_created(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		validateNoShipmentScheduleCreatedForOrder(orderId);
+
+		shipmentScheduleHandlerBL.createMissingCandidates(Env.getCtx());
+
+		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
@@ -275,5 +292,15 @@ public class M_ShipmentSchedule_StepDef
 
 		assertNotNull(shipmentSchedule);
 		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
+	}
+
+	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
+	{
+		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.create()
+				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
+
+		assertThat(schedule).isNull();
 	}
 }

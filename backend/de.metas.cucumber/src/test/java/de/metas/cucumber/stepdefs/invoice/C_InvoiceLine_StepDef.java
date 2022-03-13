@@ -37,7 +37,6 @@ import org.compiere.model.I_M_Product;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -46,13 +45,16 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final StepDefData<I_C_Invoice> invoiceTable;
+	final StepDefData<I_C_InvoiceLine> invoiceLineTable;
 	final StepDefData<I_M_Product> productTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final StepDefData<I_C_InvoiceLine> invoiceLineTable,
 			@NonNull final StepDefData<I_M_Product> productTable)
 	{
 		this.invoiceTable = invoiceTable;
+		this.invoiceLineTable = invoiceLineTable;
 		this.productTable = productTable;
 	}
 
@@ -93,12 +95,14 @@ public class C_InvoiceLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}
 }
