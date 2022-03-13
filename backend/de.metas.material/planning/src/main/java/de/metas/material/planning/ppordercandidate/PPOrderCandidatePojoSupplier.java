@@ -23,6 +23,7 @@
 package de.metas.material.planning.ppordercandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
@@ -115,7 +116,7 @@ public class PPOrderCandidatePojoSupplier
 		// Calculate duration & Planning dates
 		final int durationDays = productPlanningService.calculateDurationDays(mrpContext.getProductPlanning(), qtyToSupply.toBigDecimal());
 
-		final Instant earliestDateStartSchedule = Instant.now();
+		final Instant earliestDateStartSchedule = SystemTime.asInstant();
 
 		final Instant datePromised;
 		final Instant dateStartSchedule;

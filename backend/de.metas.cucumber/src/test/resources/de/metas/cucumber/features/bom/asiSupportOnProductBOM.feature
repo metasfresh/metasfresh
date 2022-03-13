@@ -27,7 +27,7 @@ Feature: ASI support in Product BOM rest-api
       | pl_SO      | ps_SO                         | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_SO     | pl_SO                     | plv_SO | 2022-01-02 |
+      | plv_SO     | pl_SO                     | plv_SO | 2021-01-01 |
 
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
