@@ -3,11 +3,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -28,7 +24,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -425,15 +421,12 @@ import java.util.Set;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
-		final String sqlColumnSql = gridFieldVO.getColumnSQL(false);
-
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(sqlColumnName)
-				.setColumnSql(sqlColumnSql)
-				.setVirtualColumn(gridFieldVO.isVirtualColumn())
+				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
@@ -487,6 +480,20 @@ import java.util.Set;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	@Nullable
+	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
+	{
+		if(gridFieldVO.isVirtualColumn())
+		{
+			final String sql = gridFieldVO.getColumnSQL(false);
+			return ColumnSql.ofSql(sql, contextTableName);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -717,8 +724,7 @@ import java.util.Set;
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(lookupDescriptor.getFieldName())
-				.setColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
-				.setVirtualColumn(true)
+				.setVirtualColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
 				.setMandatory(false)
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(DocumentFieldWidgetType.Labels.getValueClass())
