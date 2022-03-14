@@ -59,6 +59,9 @@ spec:
           value: {{ .Values.app.debug.printBashCmds }}
         - name: DEBUG_SUSPEND
           value: {{ .Values.app.debug.suspend }}
+        # This var is needed to prevent an error at startup; thx to https://stackoverflow.com/questions/69487385/elasticsearch-client-is-defaulting-to-localhost 
+        - name: SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS
+          value: metasfresh-{{ .Release.Name }}-search:{{ .Values.search.port.search }}
         #db
         - name: DB_HOST
           value: metasfresh-{{ .Release.Name }}-db

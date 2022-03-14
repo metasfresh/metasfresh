@@ -4,5 +4,5 @@ metadata:
   name: metasfresh-{{ .Release.Name }}-db-configmap
   namespace: {{ .Release.Namespace }}
 data:
-  {{ (.Files.Glob "files/postgresql.conf").AsConfig | indent 2 }}
+  {{ (.Files.Glob "configs/db/postgresql.conf").AsConfig | indent 2 }}
   

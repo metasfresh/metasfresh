@@ -48,7 +48,8 @@ spec:
         args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         volumeMounts:
         - name: postgresql-config
-          mountPath: /etc/postgresql
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
         - name: data
           mountPath: db         
         - name: host-localtime
