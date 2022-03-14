@@ -551,6 +551,10 @@ input:checked + .input-slider:before {
   margin-top: 0.1rem;
 }
 
+.input-icon-clickable {
+    cursor: pointer;
+}
+
 .input-dropdown-container {
     position: relative;
     cursor: pointer;
@@ -748,10 +752,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
         -webkit-appearance: none;
         margin: 0;
     }
-
-    .meta-icon-calendar {
-        display: none;
-    }
 }
 
 .input-flex {
@@ -845,14 +845,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 
 .lookup-widget-wrapper-bcg:hover {
     background-color: $brand-border-color;
-}
-
-.meta-icon-calendar {
-    font-size: 18px;
-    line-height: 1.2;
-    position: absolute;
-    right: 10px;
-    pointer-events: none;
 }
 
 .lookup-tooltip {

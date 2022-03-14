@@ -40,9 +40,9 @@ class TetheredDateTime extends DateTime {
     }
   };
 
+  // @Override
   updateSelectedDate = (e, close) => {
-    // we need to persist the event as it might be reused in the 300ms
-    // debounce wait
+    // we need to persist the event as it might be reused in the 300ms debounce wait
     e.persist();
 
     this.debouncedSetDate(e, close);
@@ -53,22 +53,29 @@ class TetheredDateTime extends DateTime {
       this.props.onFocusInput();
     }
 
-    // because event is debounced, currentTarget gets lost and `react-datetime`
-    // uses it to get the day value
+    // because event is debounced, currentTarget gets lost and `react-datetime` uses it to get the day value
     e.currentTarget = e.target;
 
     super.updateSelectedDate(e, close);
   };
 
+  setSelectedDateAndInputValue = ({ selectedDate, inputValue }) => {
+    this.setState({ selectedDate, inputValue });
+  };
+
+  // localMoment = (date, format, props) => {
+  //   const result = super.localMoment(date, format, props);
+  //   //console.log('localMoment', { result, date, format, props });
+  //   return result;
+  // };
+
   render() {
     const { open, className, input, inputProps, renderInput } = this.props;
     const { inputValue, selectedDate, currentView } = this.state;
 
-    const classNames = classnames('rdt', className, {
-      rdtStatic: !input,
-    });
-    let renderedInput = null;
+    const classNames = classnames('rdt', className, { rdtStatic: !input });
 
+    let renderedInput = null;
     if (input) {
       const props = {
         type: 'text',
@@ -87,15 +94,7 @@ class TetheredDateTime extends DateTime {
         <TetherComponent
           attachment="top left"
           targetAttachment="bottom left"
-          constraints={[
-            {
-              to: 'scrollParent',
-            },
-            {
-              to: 'window',
-              pin: ['bottom'],
-            },
-          ]}
+          constraints={[{ to: 'scrollParent' }, { to: 'window' }]}
           renderTarget={(ref) =>
             renderedInput && (
               <div ref={ref} key="i">
