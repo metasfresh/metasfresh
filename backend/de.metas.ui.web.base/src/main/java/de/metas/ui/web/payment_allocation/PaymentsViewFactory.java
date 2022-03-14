@@ -97,9 +97,10 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				.setIncludedViewLayout(IncludedViewLayout.builder()
-											   .openOnSelect(true)
-											   .blurWhenOpen(false)
-											   .build())
+						.openOnSelect(true)
+						.blurWhenOpen(false)
+						.closeOnDeselect(false)
+						.build())
 				.addElementsFromViewRowClass(PaymentRow.class, viewDataType)
 				.build();
 	}
