@@ -22,8 +22,6 @@
 
 package de.metas.edi.model.validator;
 
-
-
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
@@ -33,6 +31,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
@@ -48,20 +47,44 @@ import java.util.List;
 public class EDI_DesadvLine_Pack
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void onDesadvLineDelete(final I_EDI_DesadvLine_Pack desadvLinePack)
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Makes sure that the sum of all {@code EDI_DesadvLine_Pack.MovementQty}
+	 * values is not bigger than the respective {@code EDI_DesadvLine}'s {code QtyDeliveredInStockingUOM}.
+	 * Note that the business logic first sets the desadv-line's value and the desadv-line-pack's value.
+	 * Also note that we ignore packs that have no inoutline-id, because they might be there
+	 * when a SSCC-label is created before the delivery.
+	 * However they are not yet considered in the desadv-line's value.
+	 */
+	@ModelChange(
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_EDI_DesadvLine_Pack.COLUMNNAME_MovementQty, I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID })
+	public void validateMovementQtySum(final I_EDI_DesadvLine_Pack desadvLinePack)
 	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine_Pack.class)
+		if (desadvLinePack.getM_InOutLine_ID() <= 0)
+		{
+			return; // nothing to check; this pack's qty is not yet supposed to count for the line's QtyDelivered.
+		}
+
+		final BigDecimal otherLinePacksSum = queryBL.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_Pack_ID,desadvLinePack.getEDI_DesadvLine_Pack_ID())
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_ID,desadvLinePack.getEDI_DesadvLine_ID() )
+				.addNotEqualsFilter(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_Pack_ID, desadvLinePack.getEDI_DesadvLine_Pack_ID())
+				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_ID, desadvLinePack.getEDI_DesadvLine_ID())
+				.addNotEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, null)
 				.create()
 				.aggregate(I_EDI_DesadvLine_Pack.COLUMNNAME_MovementQty, IQuery.Aggregate.SUM, BigDecimal.class);
-		
-		// TODO
-		// add desadvLinePack's MovementQty
-		// fail if the sum is bigger than the EDI_DesadvLine's movementQty
-		
+
+		final BigDecimal allLinePacksSum = otherLinePacksSum.add(desadvLinePack.getMovementQty());
+		final BigDecimal lineSum = desadvLinePack.getEDI_DesadvLine().getQtyDeliveredInStockingUOM();
+
+		if (allLinePacksSum.compareTo(lineSum) > 0)
+		{
+			throw new AdempiereException("EDI_DesadvLine.QtyDeliveredInStockingUOM")
+					.appendParametersToMessage()
+					.setParameter("EDI_DesadvLine_Pack_ID", desadvLinePack.getEDI_DesadvLine_Pack_ID())
+					.setParameter("EDI_DesadvLine_ID", desadvLinePack.getEDI_DesadvLine_ID());
+		}
+
 	}
 }
