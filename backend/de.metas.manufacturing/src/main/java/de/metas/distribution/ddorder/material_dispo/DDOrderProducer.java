@@ -37,6 +37,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -75,11 +76,15 @@ public class DDOrderProducer
 	public static final ModelDynAttributeAccessor<I_DD_Order, MaterialDispoGroupId> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
 			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
+	public static final ModelDynAttributeAccessor<I_DD_Order, String> ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_TraceId", String.class);
+
 	public DDOrderProducer(final DDOrderLowLevelService ddOrderLowLevelService) {this.ddOrderLowLevelService = ddOrderLowLevelService;}
 
 	public I_DD_Order createDDOrder(
 			@NonNull final DDOrder ddOrder,
-			@NonNull final Date dateOrdered)
+			@NonNull final Date dateOrdered,
+			@Nullable final String ddOrderRequestedEventTrace)
 	{
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrder.getProductPlanningId());
 		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
@@ -88,6 +93,7 @@ public class DDOrderProducer
 
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrder.getMaterialDispoGroupId());
+		ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.setValue(ddOrderRecord, ddOrderRequestedEventTrace);
 
 		ddOrderRecord.setAD_Org_ID(ddOrder.getOrgId().getRepoId());
 		ddOrderRecord.setMRP_Generated(true);
@@ -110,6 +116,12 @@ public class DDOrderProducer
 		ddOrderRecord.setM_Shipper_ID(ddOrder.getShipperId());
 		ddOrderRecord.setIsInDispute(false);
 		ddOrderRecord.setIsInTransit(false);
+		ddOrderRecord.setIsSimulated(ddOrder.isSimulated());
+
+		if (ddOrder.isSimulated())
+		{
+			ddOrderRecord.setProcessed(true);
+		}
 
 		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 

@@ -29,6 +29,7 @@ import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentSc
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -169,7 +170,7 @@ public class MaterialEventHandlerRegistryTests
 
 		setupEventLogUserServiceOnlyInvokesHandler();
 
-		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService);
+		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService, new MaterialEventObserver());
 	}
 
 	/**

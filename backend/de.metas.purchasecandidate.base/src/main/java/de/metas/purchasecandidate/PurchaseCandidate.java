@@ -128,6 +128,8 @@ public class PurchaseCandidate
 	@Nullable
 	private CurrencyId currencyId;
 
+	private boolean simulated;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
@@ -172,7 +174,8 @@ public class PurchaseCandidate
 			final boolean isManualPrice,
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
-			@Nullable final CurrencyId currencyId)
+			@Nullable final CurrencyId currencyId,
+			final boolean simulated)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -219,6 +222,7 @@ public class PurchaseCandidate
 		this.price = price;
 		this.priceActual = priceActual;
 		this.discount = discount;
+		this.simulated = simulated;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
 
@@ -267,6 +271,7 @@ public class PurchaseCandidate
 		priceEnteredEff = from.priceEnteredEff;
 		discountEff = from.discountEff;
 		currencyId = from.currencyId;
+		simulated = from.simulated;
 	}
 
 	public PurchaseCandidate copy()
