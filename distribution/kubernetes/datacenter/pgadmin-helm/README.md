@@ -3,7 +3,7 @@
 ## install pgadmin
 customize [values.yaml](./values.yaml)
 ```
-helm install dev pgadmin-helm --namespace demo --create-namespace
+helm install pgadmin pgadmin-helm --namespace demo --create-namespace
 ```
 ## connect to db
 - url: ingress.pgadmin.url as set in [values.yaml](./values.yaml)

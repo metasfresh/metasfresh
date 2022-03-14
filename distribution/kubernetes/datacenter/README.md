@@ -4,8 +4,13 @@
 https://cloud.digitalocean.com/
 
 ### run docker with digitalocean cli
+
+Run this from within the kubernetes directory,
+to make sure that the distribution folder is mounted into the right place within the docker container.
+In the end we want to see distribution/metasfresh-helm within the digitalocean docker container.
+
 ```
-docker run -it --rm -v ${PWD}\metasfresh\distribution\datacenter:/datacenter -w /datacenter --entrypoint /bin/bash digitalocean/doctl:1.70.0
+docker run -it --rm -v ${PWD}\datacenter:/datacenter -w /datacenter --entrypoint /bin/bash digitalocean/doctl:1.70.0
 ```
 
 ### connect to cluster
@@ -38,10 +43,11 @@ install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 ### install helm
 ```
-export VERIFY_CHECKSUM=false (or install openssl)
+export VERIFY_CHECKSUM=false # (or install openssl)
 ```
 ```
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod u+x ./get_helm.sh
 ```
 ```
 ./get_helm.sh
