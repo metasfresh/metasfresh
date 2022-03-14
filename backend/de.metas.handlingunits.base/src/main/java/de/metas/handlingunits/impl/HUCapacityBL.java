@@ -25,6 +25,8 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -42,6 +44,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class HUCapacityBL implements IHUCapacityBL
 {
 
@@ -58,7 +62,7 @@ public class HUCapacityBL implements IHUCapacityBL
 	@Override
 	public Capacity getCapacity(
 			@NonNull final I_M_HU_PI_Item_Product itemDefProduct,
-			final ProductId productId,
+			@Nullable final ProductId productId,
 			@NonNull final I_C_UOM uom)
 	{
 		final ProductId productToUseId;
@@ -104,14 +108,25 @@ public class HUCapacityBL implements IHUCapacityBL
 			return Capacity.createInfiniteCapacity(productToUseId, uom);
 		}
 
-		final BigDecimal qty = itemDefProduct.getQty();
-		final I_C_UOM qtyUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productToUseId, qty, qtyUOM, uom);
+		final BigDecimal piipQty = itemDefProduct.getQty();
+		final I_C_UOM piipUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
+
+		final BigDecimal qtyToUse;
+		final I_C_UOM uomToUse;
+		if(Services.get(IUOMDAO.class).isUOMForTUs(UomId.ofRepoId(uom.getC_UOM_ID())))
+		{
+			qtyToUse = piipQty;
+			uomToUse = piipUOM;
+		}else
+		{
+
+			qtyToUse = Services.get(IUOMConversionBL.class)
+					.convertQty(productToUseId, piipQty, piipUOM, uom);
+			uomToUse = uom;
+		}
 
 		final boolean allowNegativeCapacity = false;
-
-		return Capacity.createCapacity(qtyConv, productToUseId, uom, allowNegativeCapacity);
+		return Capacity.createCapacity(qtyToUse, productToUseId, uomToUse, allowNegativeCapacity);
 	}
 
 	@Override
