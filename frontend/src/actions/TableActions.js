@@ -747,7 +747,7 @@ function handleToggleIncludedView({
     // Update included view status
     {
       const closeIncludedViewOnDeselected =
-        !!viewLayout.includedView?.closeOnDeselect;
+        viewLayout.includedView?.closeOnDeselect ?? true;
       const includedView = state.viewHandler.includedView;
       const { selected, keyProperty, rows } = getTable(state, tableId);
 
