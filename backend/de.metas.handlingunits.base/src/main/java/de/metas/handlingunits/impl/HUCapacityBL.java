@@ -48,6 +48,10 @@ import javax.annotation.Nullable;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public Capacity getCapacity(
@@ -87,7 +91,6 @@ public class HUCapacityBL implements IHUCapacityBL
 			{
 				if (piipProductId != null && !ProductId.equals(piipProductId, productId))
 				{
-					final IProductBL productBL = Services.get(IProductBL.class);
 					final String productName = productBL.getProductValueAndName(productId);
 					final String piipProductName = productBL.getProductValueAndName(piipProductId);
 					throw new HUException("CU-TU assignment "
@@ -113,15 +116,14 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final BigDecimal qtyToUse;
 		final I_C_UOM uomToUse;
-		if(Services.get(IUOMDAO.class).isUOMForTUs(UomId.ofRepoId(uom.getC_UOM_ID())))
+		if(uomDAO.isUOMForTUs(UomId.ofRepoId(uom.getC_UOM_ID())))
 		{
 			qtyToUse = piipQty;
 			uomToUse = piipUOM;
 		}else
 		{
 
-			qtyToUse = Services.get(IUOMConversionBL.class)
-					.convertQty(productToUseId, piipQty, piipUOM, uom);
+			qtyToUse = uomConversionBL.convertQty(productToUseId, piipQty, piipUOM, uom);
 			uomToUse = uom;
 		}
 
@@ -136,7 +138,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			final I_C_UOM uom,
 			final ZonedDateTime date)
 	{
-		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, productId, date);
+		final I_M_HU_PI_Item_Product itemDefProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(huItem, productId, date);
 		if (itemDefProduct == null)
 		{
 			final boolean allowNegativeCapacity = false;
