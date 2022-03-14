@@ -69,6 +69,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			@Nullable final ProductId productId,
 			@NonNull final I_C_UOM uom)
 	{
+		// first, get the productId of the product in question
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
@@ -120,9 +121,9 @@ public class HUCapacityBL implements IHUCapacityBL
 		{
 			qtyToUse = piipQty;
 			uomToUse = piipUOM;
-		}else
+		}
+		else
 		{
-
 			qtyToUse = uomConversionBL.convertQty(productToUseId, piipQty, piipUOM, uom);
 			uomToUse = uom;
 		}
