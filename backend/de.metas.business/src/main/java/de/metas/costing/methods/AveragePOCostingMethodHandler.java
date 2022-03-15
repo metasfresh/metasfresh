@@ -165,17 +165,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			if (request.getDocumentRef().isInventoryLine() && request.getQty().signum() == 0)
+			if (request.getDocumentRef().isInventoryLine() && request.isExplicitCostPrice())
 			{
 				requestEffective = request.withAmount(request.getAmt().toZero());
-				if (currentCosts.getCurrentQty().isZero())
-				{
+
 					currentCosts.setOwnCostPrice(request.getAmt());
-				}
-				else
-				{
-					// Do not change an existing positive cost price if there is also a positive qty
-				}
+
 			}
 			// In case the amount was not provided but there is a positive qty incoming
 			// use the current cost price to calculate the amount.

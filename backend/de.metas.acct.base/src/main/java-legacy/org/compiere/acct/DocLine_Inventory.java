@@ -43,6 +43,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
 
 	private BigDecimal costPrice = BigDecimal.ZERO;
+	private boolean isExplicitCostPrice = false;
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
@@ -70,6 +71,8 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		{
 			this.costPrice = inventoryLine.getCostPrice();
 		}
+
+		this.isExplicitCostPrice = inventoryLine.isExplicitCostPrice();
 		
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
@@ -100,6 +103,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
+							.isExplicitCostPrice(isExplicitCostPrice)
 							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);

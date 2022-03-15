@@ -303,6 +303,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 		inventoryLineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		inventoryLineRecord.setCostPrice(importRecord.getCostPrice());
+		inventoryLineRecord.setIsExplicitCostPrice(importRecord.isExplicitCostPrice());
 		inventoryLineRecord.setC_Charge_ID(chargeId);
 
 		//
