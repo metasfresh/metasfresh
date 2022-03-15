@@ -4,13 +4,12 @@ import classnames from 'classnames';
 import { get } from 'lodash';
 
 import {
-  DATE_FORMAT,
-  TIME_FORMAT,
-  DATE_TIMEZONE_FORMAT,
   DATE_FIELD_FORMATS,
+  DATE_FORMAT,
+  DATE_TIMEZONE_FORMAT,
+  TIME_FORMAT,
 } from '../../constants/Constants';
 import { getClassNames, getFormattedDate } from '../../utils/widgetHelpers';
-import { WidgetRendererPropTypes } from './PropTypes';
 import { withForwardedRef } from '../hoc/WithRouterAndRef';
 
 import ActionButton from './ActionButton';
@@ -28,6 +27,7 @@ import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
 import CostPrice from './CostPrice';
+import PropTypes from 'prop-types';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -635,6 +635,76 @@ class WidgetRenderer extends PureComponent {
   }
 }
 
-WidgetRenderer.propTypes = WidgetRendererPropTypes;
+WidgetRenderer.propTypes = {
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  inProgress: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  textSelected: PropTypes.bool,
+  listenOnKeys: PropTypes.bool,
+  listenOnKeysFalse: PropTypes.func,
+  listenOnKeysTrue: PropTypes.func,
+  widgetData: PropTypes.array,
+  handleFocus: PropTypes.func,
+  handlePatch: PropTypes.func,
+  handleBlur: PropTypes.func,
+  handleProcess: PropTypes.func,
+  handleChange: PropTypes.func,
+  handleBackdropLock: PropTypes.func,
+  handleZoomInto: PropTypes.func,
+  tabId: PropTypes.string,
+  viewId: PropTypes.string,
+  rowId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  windowType: PropTypes.string,
+  caption: PropTypes.string,
+  gridAlign: PropTypes.string,
+  type: PropTypes.string,
+  updated: PropTypes.bool,
+  isModal: PropTypes.bool,
+  modalVisible: PropTypes.bool.isRequired,
+  filterWidget: PropTypes.bool,
+  filterId: PropTypes.string,
+  id: PropTypes.number,
+  range: PropTypes.bool,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  subentity: PropTypes.string,
+  subentityId: PropTypes.string,
+  tabIndex: PropTypes.number,
+  dropdownOpenCallback: PropTypes.func,
+  fullScreen: PropTypes.bool,
+  widgetType: PropTypes.string,
+  fields: PropTypes.array,
+  icon: PropTypes.string,
+  entity: PropTypes.string,
+  data: PropTypes.any,
+  closeTableField: PropTypes.func,
+  attribute: PropTypes.bool,
+  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
+  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
+  onBlurWidget: PropTypes.func,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  noLabel: PropTypes.bool,
+  isOpenDatePicker: PropTypes.bool,
+  forceHeight: PropTypes.number,
+  dataEntry: PropTypes.bool,
+  lastFormField: PropTypes.bool,
+
+  //from RawWidget
+  isMultiselect: PropTypes.bool,
+  widgetField: PropTypes.string,
+  widgetProperties: PropTypes.object.isRequired,
+  showErrorBorder: PropTypes.bool,
+  isFocused: PropTypes.bool,
+  charsTyped: PropTypes.number,
+  readonly: PropTypes.bool,
+  onPatch: PropTypes.func.isRequired,
+  onListFocus: PropTypes.func.isRequired,
+  onBlurWithParams: PropTypes.func.isRequired,
+  onSetWidgetType: PropTypes.func.isRequired,
+  onHandleProcess: PropTypes.func.isRequired,
+  forwardedRef: PropTypes.any,
+};
 
 export default withForwardedRef(WidgetRenderer);
