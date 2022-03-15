@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Item;
@@ -45,14 +44,14 @@ public class M_ShipmentSchedule_ExportAudit_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_ShipmentSchedule_ExportAudit> shipmentScheduleExportAuditTable;
-	private final StepDefData<I_M_ShipmentSchedule_ExportAudit_Item> shipmentScheduleExportAuditItemTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
+	private final M_ShipmentSchedule_ExportAudit_Item_StepDefData shipmentScheduleExportAuditItemTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	public M_ShipmentSchedule_ExportAudit_StepDef(
-			@NonNull final StepDefData<I_M_ShipmentSchedule_ExportAudit> shipmentScheduleExportAuditTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule_ExportAudit_Item> shipmentScheduleExportAuditItemTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable,
+			@NonNull final M_ShipmentSchedule_ExportAudit_Item_StepDefData shipmentScheduleExportAuditItemTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentScheduleExportAuditTable = shipmentScheduleExportAuditTable;
 		this.shipmentScheduleExportAuditItemTable = shipmentScheduleExportAuditItemTable;

@@ -39,12 +39,12 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_CreditLimit_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_CreditLimit> creditLimitTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_CreditLimit_StepDefData creditLimitTable;
 
 	public C_BPartner_CreditLimit_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_CreditLimit> creditLimitTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_CreditLimit_StepDefData creditLimitTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.creditLimitTable = creditLimitTable;

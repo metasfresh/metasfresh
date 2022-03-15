@@ -44,14 +44,14 @@ public class AD_UserGroup_User_Assign_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_AD_User> userTable;
-	private final StepDefData<I_AD_UserGroup> userGroupTable;
-	private final StepDefData<I_AD_UserGroup_User_Assign> userGroupUserAssignTable;
+	private final AD_User_StepDefData userTable;
+	private final AD_UserGroup_StepDefData userGroupTable;
+	private final AD_UserGroup_User_Assign_StepDefData userGroupUserAssignTable;
 
 	public AD_UserGroup_User_Assign_StepDef(
-			@NonNull final StepDefData<I_AD_User> userTable,
-			@NonNull final StepDefData<I_AD_UserGroup> userGroupTable,
-			@NonNull final StepDefData<I_AD_UserGroup_User_Assign> userGroupUserAssignTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final AD_UserGroup_StepDefData userGroupTable,
+			@NonNull final AD_UserGroup_User_Assign_StepDefData userGroupUserAssignTable)
 	{
 		this.userTable = userTable;
 		this.userGroupTable = userGroupTable;

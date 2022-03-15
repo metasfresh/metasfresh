@@ -31,7 +31,10 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
 import de.metas.order.InvoiceRule;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -52,18 +55,18 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
-	private final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable;
-	private final StepDefData<I_C_Customer_Trade_Margin> customerTradeMarginTable;
-	private final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable;
-	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
+	private final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
+	private final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 
 	public C_Flatrate_Conditions_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable,
-			@NonNull final StepDefData<I_C_Customer_Trade_Margin> customerTradeMarginTable,
-			@NonNull final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable)
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
+			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
+			@NonNull final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable,
+			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;

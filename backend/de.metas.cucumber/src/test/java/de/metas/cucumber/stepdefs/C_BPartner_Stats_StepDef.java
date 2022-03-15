@@ -43,12 +43,12 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Stats_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 
 	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-	public C_BPartner_Stats_StepDef(@NonNull final StepDefData<I_C_BPartner> bPartnerTable)
+	public C_BPartner_Stats_StepDef(@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 	}

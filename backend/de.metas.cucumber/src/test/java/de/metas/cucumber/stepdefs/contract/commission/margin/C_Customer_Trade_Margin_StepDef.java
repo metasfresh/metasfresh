@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.contract.commission.margin;
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -45,14 +45,14 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Customer_Trade_Margin_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Customer_Trade_Margin> tradeMarginTable;
-	private final StepDefData<I_C_Customer_Trade_Margin_Line> tradeMarginLineTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Customer_Trade_Margin_StepDefData tradeMarginTable;
+	private final C_Customer_Trade_Margin_Line_StepDefData tradeMarginLineTable;
 
 	public C_Customer_Trade_Margin_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Customer_Trade_Margin> tradeMarginTable,
-			@NonNull final StepDefData<I_C_Customer_Trade_Margin_Line> tradeMarginLineTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Customer_Trade_Margin_StepDefData tradeMarginTable,
+			@NonNull final C_Customer_Trade_Margin_Line_StepDefData tradeMarginLineTable)
 	{
 		this.productTable = productTable;
 		this.tradeMarginTable = tradeMarginTable;

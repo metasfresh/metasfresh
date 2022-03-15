@@ -27,8 +27,9 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.util.Check;
@@ -52,14 +53,14 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 public class CreateBPartnerV2_StepDef
 {
 	private final BPartnerEndpointService bpartnerEndpointService;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_AD_User> userTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final AD_User_StepDefData userTable;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public CreateBPartnerV2_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_AD_User> userTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;

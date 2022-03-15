@@ -22,8 +22,9 @@
 
 package de.metas.cucumber.stepdefs.docoutbound;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -54,16 +55,16 @@ public class C_Doc_Outbound_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Doc_Outbound_Log> docOutboundLogTable;
-	private final StepDefData<I_C_Doc_Outbound_Log_Line> docOutboundLogLineTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
+	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
 
 	public C_Doc_Outbound_Log_StepDef(
-			@NonNull final StepDefData<I_C_Doc_Outbound_Log> docOutboundLogTable,
-			@NonNull final StepDefData<I_C_Doc_Outbound_Log_Line> docOutboundLogLineTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
+			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;

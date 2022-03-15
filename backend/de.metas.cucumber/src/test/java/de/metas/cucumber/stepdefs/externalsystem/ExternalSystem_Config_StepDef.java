@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
+import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -71,14 +71,14 @@ public class ExternalSystem_Config_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
-	private final StepDefData<I_ExternalSystem_Config> configTable;
-	private final StepDefData<I_AD_UserGroup> userGroupTable;
+	private final ExternalSystem_Config_StepDefData configTable;
+	private final AD_UserGroup_StepDefData userGroupTable;
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
-			@NonNull final StepDefData<I_ExternalSystem_Config> configTable,
-			@NonNull final StepDefData<I_AD_UserGroup> userGroupTable,
+			@NonNull final ExternalSystem_Config_StepDefData configTable,
+			@NonNull final AD_UserGroup_StepDefData userGroupTable,
 			@NonNull final TestContext testContext)
 	{
 		this.configTable = configTable;

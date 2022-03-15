@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -57,16 +58,16 @@ public class C_OrderLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
@@ -93,7 +94,7 @@ public class C_OrderLine_StepDef
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if(Check.isNotBlank(attributeSetInstanceIdentifier))
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
 			{
 				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
 				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());

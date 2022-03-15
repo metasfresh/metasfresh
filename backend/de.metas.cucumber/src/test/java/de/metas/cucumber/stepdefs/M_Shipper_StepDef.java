@@ -41,9 +41,9 @@ public class M_Shipper_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Shipper> shipperTable;
+	private final M_Shipper_StepDefData shipperTable;
 
-	public M_Shipper_StepDef(@NonNull final StepDefData<I_M_Shipper> shipperTable)
+	public M_Shipper_StepDef(@NonNull final M_Shipper_StepDefData shipperTable)
 	{
 		this.shipperTable = shipperTable;
 	}

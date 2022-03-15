@@ -28,10 +28,11 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class StepDefData<T>
+public abstract class StepDefData<T>
 {
 	private final Map<String, T> records = new HashMap<>();
 
@@ -91,4 +92,11 @@ public class StepDefData<T>
 	{
 		return ImmutableList.copyOf(records.values());
 	}
+
+	@NonNull
+	public Optional<T> getOptional(@NonNull final String identifier)
+	{
+		return Optional.ofNullable(records.get(identifier));
+	}
+
 }

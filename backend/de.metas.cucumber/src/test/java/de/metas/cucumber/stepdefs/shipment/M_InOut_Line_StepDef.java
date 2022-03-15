@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -45,12 +45,12 @@ public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final M_Product_StepDefData productTable;
 
 	public M_InOut_Line_StepDef(
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.productTable = productTable;

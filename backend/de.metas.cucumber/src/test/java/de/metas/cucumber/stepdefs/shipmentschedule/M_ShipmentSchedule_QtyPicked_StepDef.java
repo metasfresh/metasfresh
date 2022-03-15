@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -40,11 +39,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_ShipmentSchedule_QtyPicked_StepDef
 {
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-	public M_ShipmentSchedule_QtyPicked_StepDef(@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+	public M_ShipmentSchedule_QtyPicked_StepDef(@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}

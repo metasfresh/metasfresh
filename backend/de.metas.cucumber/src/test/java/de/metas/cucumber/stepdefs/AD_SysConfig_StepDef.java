@@ -41,9 +41,9 @@ public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final StepDefData<I_AD_User> userTable;
+	private final AD_User_StepDefData userTable;
 
-	public AD_SysConfig_StepDef(@NonNull final StepDefData<I_AD_User> userTable)
+	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
 	{
 		this.userTable = userTable;
 	}

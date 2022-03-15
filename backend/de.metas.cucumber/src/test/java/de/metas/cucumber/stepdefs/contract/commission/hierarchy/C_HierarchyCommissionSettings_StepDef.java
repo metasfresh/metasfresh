@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -48,12 +48,12 @@ public class C_HierarchyCommissionSettings_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
+	private final M_Product_StepDefData productTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 
 	public C_HierarchyCommissionSettings_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable)
 	{
 		this.productTable = productTable;
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
