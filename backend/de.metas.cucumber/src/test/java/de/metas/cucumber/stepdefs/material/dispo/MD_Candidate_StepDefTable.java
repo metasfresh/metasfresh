@@ -29,7 +29,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -71,12 +70,6 @@ public class MD_Candidate_StepDefTable
 		CandidateBusinessCase businessCase;
 
 		@NonNull
-		AttributesKey storageAttributesKey = AttributesKey.NONE;
-
-		@Nullable
-		String productIdentifier;
-
-		@NonNull
 		ProductId productId;
 
 		@NonNull
@@ -95,7 +88,6 @@ public class MD_Candidate_StepDefTable
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
-					.storageAttributesKey(storageAttributesKey)
 					.timeRangeEnd(DateAndSeqNo.builder()
 										  .date(time)
 										  .operator(DateAndSeqNo.Operator.INCLUSIVE)

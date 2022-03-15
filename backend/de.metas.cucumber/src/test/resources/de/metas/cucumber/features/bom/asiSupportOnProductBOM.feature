@@ -418,7 +418,7 @@ Feature: ASI support in Product BOM rest-api
     And the order identified by order_PO is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | md_po      | SUPPLY            | PURCHASE                  | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
+      | md_po      | SUPPLY            | PURCHASE                      | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """
@@ -448,5 +448,5 @@ Feature: ASI support in Product BOM rest-api
 
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | c_111      | DEMAND            | SHIPMENT                  | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
-      | c_222      | SUPPLY            | PRODUCTION                | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
+      | c_111      | DEMAND            | SHIPMENT                      | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
+      | c_222      | SUPPLY            | PRODUCTION                    | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
