@@ -104,7 +104,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	}
 
 	@Test
-	public void createDocument_batch_noCollectiveTransfer() throws Exception
+	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
 	{
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.collectiveTransfer(false)
@@ -149,7 +149,61 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.map(PaymentIdentification1::getEndToEndId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		assertThat(endToEndIds).isEmpty();
+		assertThat(endToEndIds).containsExactlyInAnyOrder(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.END_TO_END_ID_NOT_PROVIDED_VALUE);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
+	@Test
+	public void createDocument_batch_noCollectiveTransfer_withRef() throws Exception
+	{
+		final SEPAExportContext exportContext = SEPAExportContext.builder()
+				.collectiveTransfer(false)
+				.build();
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		createSEPAExportLine(sepaExport,
+				"001",// SEPA_MandateRefNo
+				"NL31INGB0000000044",// IBAN
+				"INGBNL2A", // BIC
+				new BigDecimal("100"), // amount
+				eur, // currency
+				"Ref123"); // reference
+		createSEPAExportLine(sepaExport,
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("30"), // amount
+				eur, // currency
+				"Ref456"); // reference
+		createSEPAExportLine(sepaExport,
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("40"), // amount
+				chf, // currency
+				"Ref789"); // reference
+
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
+				.stream()
+				.flatMap(pmtInf -> pmtInf.getCdtTrfTxInf().stream())
+				.map(CreditTransferTransactionInformation10CH::getPmtId)
+				.map(PaymentIdentification1::getEndToEndId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		assertThat(endToEndIds).containsExactlyInAnyOrder("Ref123", "Ref456", "Ref789");
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
@@ -224,6 +278,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
+		return createSEPAExportLine(sepaExport, SEPA_MandateRefNo, iban, bic, amt, currencyId, null);
+	}
+
+	private I_SEPA_Export_Line createSEPAExportLine(
+			final I_SEPA_Export sepaExport,
+			final String SEPA_MandateRefNo,
+			final String iban,
+			final String bic,
+			final BigDecimal amt,
+			final CurrencyId currencyId,
+			final String structuredRemittanceInfo)
+	{
 		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
 				.bankName("myBank")
 				.routingNo("routingNo")
@@ -243,6 +309,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		line.setAmt(amt);
 		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
+		line.setStructuredRemittanceInfo(structuredRemittanceInfo);
 
 		line.setC_BP_BankAccount(bankAccount);
 		line.setSEPA_Export(sepaExport);
