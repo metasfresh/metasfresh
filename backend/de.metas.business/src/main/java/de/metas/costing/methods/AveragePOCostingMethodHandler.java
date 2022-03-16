@@ -38,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
+import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -152,6 +153,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
 		final boolean isInboundTrx = request.getQty().signum() >= 0;
+		final boolean isExplicitCostPrice = BooleanUtils.isTrue(request.getExplicitCostPrice());
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -165,11 +167,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			if (request.getDocumentRef().isInventoryLine() && request.isExplicitCostPrice())
+
+			if (request.getDocumentRef().isInventoryLine() && request.getQty().signum() == 0 && isExplicitCostPrice)
 			{
 				requestEffective = request.withAmount(request.getAmt().toZero());
 
-					currentCosts.setOwnCostPrice(request.getAmt());
+				currentCosts.setOwnCostPrice(request.getAmt());
 
 			}
 			// In case the amount was not provided but there is a positive qty incoming
@@ -299,13 +302,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-						.costSegment(outboundSegmentAndElement.toCostSegment())
-						.amount(costElement, outboundResult.getAmt())
-						.build())
+									   .costSegment(outboundSegmentAndElement.toCostSegment())
+									   .amount(costElement, outboundResult.getAmt())
+									   .build())
 				.inboundCosts(AggregatedCostAmount.builder()
-						.costSegment(inboundSegmentAndElement.toCostSegment())
-						.amount(costElement, inboundResult.getAmt())
-						.build())
+									  .costSegment(inboundSegmentAndElement.toCostSegment())
+									  .amount(costElement, inboundResult.getAmt())
+									  .build())
 				.build();
 	}
 
