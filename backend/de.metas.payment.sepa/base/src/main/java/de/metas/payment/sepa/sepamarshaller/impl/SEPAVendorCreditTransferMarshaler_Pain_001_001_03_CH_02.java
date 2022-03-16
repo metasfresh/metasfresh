@@ -1,70 +1,14 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.payment.sepa
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -73,6 +17,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AccountIdentification4ChoiceCH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ActiveOrHistoricCurrencyAndAmount;
@@ -114,9 +59,40 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Supplier;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -148,33 +124,50 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
 	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
-	/** Title: "ISR" */
+	/**
+	 * Title: "ISR"
+	 */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
 
-	/** Title: "IS 1-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 1-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_1 = "PAYMENT_TYPE_2_1";
 
-	/** Title: "IS 2-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 2-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_2 = "PAYMENT_TYPE_2_2";
 
-	/** Title: "IBAN/postal account and IID/BIC" */
+	/**
+	 * Title: "IBAN/postal account and IID/BIC"
+	 */
 	private static final String PAYMENT_TYPE_3 = "PAYMENT_TYPE_3";
 
-	/** Title: "Foreign currency". Currently not implemented. */
+	/**
+	 * Title: "Foreign currency". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_4 = "PAYMENT_TYPE_4";
 
-	/** Title: "Foreign SEPA" */
+	/**
+	 * Title: "Foreign SEPA"
+	 */
 	private static final String PAYMENT_TYPE_5 = "PAYMENT_TYPE_5";
 
-	/** Title: "Foreign" */
+	/**
+	 * Title: "Foreign"
+	 */
 	private static final String PAYMENT_TYPE_6 = "PAYMENT_TYPE_6";
 
-	/** Title: "Bank cheque/Postcash domestic and foreign". Currently not implemented. */
+	/**
+	 * Title: "Bank cheque/Postcash domestic and foreign". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_8 = "PAYMENT_TYPE_8";
 
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
 	private final BankRepository bankRepo;
+	private final SEPAExportContext exportContext;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	private final String encoding = "UTF-8";
@@ -185,7 +178,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
 
 	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(
-			@NonNull final BankRepository bankRepo)
+			@NonNull final BankRepository bankRepo,
+			@NonNull final SEPAExportContext exportContext)
 	{
 		objectFactory = new ObjectFactory();
 		try
@@ -198,6 +192,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		}
 
 		this.bankRepo = bankRepo;
+		this.exportContext = exportContext;
 	}
 
 	private void marshal(
@@ -205,12 +200,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			@NonNull final OutputStream out)
 	{
 		// We force UTF-8 encoding.
-		Writer xmlWriter;
+		final Writer xmlWriter;
 		try
 		{
 			xmlWriter = new OutputStreamWriter(out, encoding);
 		}
-		catch (UnsupportedEncodingException e)
+		catch (final UnsupportedEncodingException e)
 		{
 			throw new AdempiereException("Could not use encoding " + encoding + ": " + e.getLocalizedMessage());
 		}
@@ -286,7 +281,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			// if we must truncate, then leave the beginning and discard the end
 			// rationale: when we are depending on this, the resp file is probably a bit only and then the "year" is more important to know that the build#
 			final String versionString = Adempiere.getBuildVersion().getFullVersion();
-			String truncatedVersionString = StringUtils.trunc(versionString.trim(), 35, TruncateAt.STRING_START);
+			final String truncatedVersionString = StringUtils.trunc(versionString.trim(), 35, TruncateAt.STRING_START);
 
 			ctctDtls.setOthr(truncatedVersionString); // 35 is the max allowed length: https://validation.iso-payments.ch/html/en/CustomerBank/pain.001/0221.htm
 			initgPty.setCtctDtls(ctctDtls);
@@ -483,9 +478,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Payment ID
 		// EndToEndId: A unique key generated by the system for each payment.
 		{
-			endToEndIdCounter++;
-			final String endToEndId = StringUtils.formatMessage("ENDTOENDID-{}", endToEndIdCounter);
-
+			final String endToEndId;
+			if (exportContext.isCollectiveTransfer())
+			{
+				endToEndIdCounter++;
+				endToEndId = StringUtils.formatMessage("ENDTOENDID-{}", endToEndIdCounter);
+			}
+			else
+			{
+				endToEndId = null;
+			}
 			final PaymentIdentification1 pmtId = objectFactory.createPaymentIdentification1();
 			pmtId.setEndToEndId(endToEndId);
 
@@ -590,7 +592,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// see if we can also export the bank's address
 				if (line.getC_BP_BankAccount_ID() > 0
 						&& bankAccount.getC_Bank_ID() > 0
-						&& bankOrNull!= null && bankOrNull.getLocationId() != null)
+						&& bankOrNull != null && bankOrNull.getLocationId() != null)
 				{
 					final I_C_Location bankLocation = locationDAO.getById(bankOrNull.getLocationId());
 					final PostalAddress6CH pstlAdr = createStructuredPstlAdr(bankLocation);
@@ -628,7 +630,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final I_C_BPartner_Location billToLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
 			if (billToLocation != null)
 			{
-				PostalAddress6CH pstlAdr;
+				final PostalAddress6CH pstlAdr;
 				if (paymentType == PAYMENT_TYPE_5 || paymentType == PAYMENT_TYPE_6)
 				{
 					pstlAdr = createUnstructuredPstlAdr(bankAccount, billToLocation.getC_Location());
@@ -975,7 +977,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	/**
-	 *
 	 * @param input
 	 * @return
 	 */
