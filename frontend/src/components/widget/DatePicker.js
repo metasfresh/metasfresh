@@ -105,7 +105,10 @@ class DatePicker extends Component {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
+        //console.log('handleBlur: patching date', { date, cache });
         patch(date);
+      } else {
+        //console.trace('handleBlur: NOT patching date', { date, cache });
       }
     } catch (error) {
       dispatch(
@@ -308,7 +311,7 @@ class DatePicker extends Component {
           onFocus={this.handleFocus}
           open={this.state.isCalendarOpen}
           onFocusInput={this.focusInput}
-          closeOnSelect={true}
+          closeOnSelect={false} // NOTE: DateTime does not work correctly for closeOnSelect=true, i.e. it calls the handleBlur with old date value
           setDebounced={this.setDebounced}
           strictParsing={true}
           {...this.props}
