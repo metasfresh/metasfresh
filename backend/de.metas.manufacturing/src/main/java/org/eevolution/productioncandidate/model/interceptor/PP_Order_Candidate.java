@@ -44,6 +44,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
+import static org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter.getMaterialDispoTraceId;
+
 @Interceptor(I_PP_Order_Candidate.class)
 @Component
 public class PP_Order_Candidate
@@ -166,8 +168,11 @@ public class PP_Order_Candidate
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
+																					  getMaterialDispoTraceId(ppOrderCandidateRecord));
+
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
+				.eventDescriptor(eventDescriptor)
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
