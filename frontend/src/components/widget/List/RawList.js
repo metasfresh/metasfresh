@@ -162,11 +162,6 @@ export class RawList extends PureComponent {
     }
   };
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClickOutside(e) {
     const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
     const { target } = e;
@@ -256,11 +251,6 @@ export class RawList extends PureComponent {
     onCloseDropdown && onCloseDropdown();
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleKeyDown = (e) => {
     const { onSelect, list, loading, readonly, isToggled, onOpenDropdown } =
       this.props;
@@ -278,11 +268,6 @@ export class RawList extends PureComponent {
     }
   };
 
-  /**
-   * @method handleTab
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleTab = (e) => {
     const { isToggled, isFocused, onCloseDropdown } = this.props;
 
@@ -296,10 +281,6 @@ export class RawList extends PureComponent {
     }
   };
 
-  /**
-   * @method handleBlur
-   * @summary ToDo: Describe the method.
-   */
   handleBlur = () => {
     const { onBlur } = this.props;
 
@@ -587,7 +568,7 @@ RawList.propTypes = {
   isMultiselect: PropTypes.bool,
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
-  wrapperElement: PropTypes.node,
+  wrapperElement: PropTypes.object,
 };
 
 RawList.defaultProps = {
