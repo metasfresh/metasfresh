@@ -34,11 +34,13 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -51,7 +53,9 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -87,7 +91,7 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage)
+	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage, final boolean getAllowedClearanceStatuses)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		if(hu == null)
@@ -100,12 +104,19 @@ public class HandlingUnitsService
 			throw new AdempiereException("Not a physical HU: " + huId);
 		}
 
-		return toJson(hu, adLanguage);
+		final LoadJsonHURequest loadJsonHURequest = LoadJsonHURequest
+				.ofHUAndLanguage(hu, adLanguage)
+				.withGetAllowedClearanceStatuses(getAllowedClearanceStatuses);
+
+		return toJson(loadJsonHURequest);
 	}
 
 	@NonNull
-	public JsonHU toJson(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
+	public JsonHU toJson(@NonNull final LoadJsonHURequest loadJsonHURequest)
 	{
+		final I_M_HU hu = loadJsonHURequest.getHu();
+		final String adLanguage = loadJsonHURequest.getAdLanguage();
+
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext();
 
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
@@ -138,7 +149,13 @@ public class HandlingUnitsService
 					.locatorValue(warehouseAndLocatorValue.getLocatorValue());
 		}
 
-		return jsonHUBuilder.includedHUs(getIncludedHUs(hu, adLanguage))
+		if(loadJsonHURequest.isGetAllowedClearanceStatuses())
+		{
+			jsonHUBuilder.allowedHUClearanceStatuses(getAllowedClearanceStatuses(hu));
+		}
+
+		return jsonHUBuilder
+				.includedHUs(getIncludedHUs(loadJsonHURequest))
 				.build();
 	}
 
@@ -154,18 +171,41 @@ public class HandlingUnitsService
 		}
 	}
 
-	public void setClearanceStatus(@NonNull final HuId huId, @NonNull final JsonSetClearanceStatusRequest updateClearanceStatusRequest)
+	public void setClearanceStatus(@NonNull final JsonSetClearanceStatusRequest request)
 	{
-		final ClearanceStatus clearanceStatus = ClearanceStatus.ofCode(updateClearanceStatusRequest.getClearanceStatus().name());
-		final String clearanceNote = updateClearanceStatusRequest.getClearanceNote();
+		final JsonSetClearanceStatusRequest.JsonHUIdentifier jsonHuIdentifier = request.getHuIdentifier();
 
-		handlingUnitsBL.setClearanceStatus(huId, clearanceStatus, clearanceNote);
+		final HuId huId = resolveHUIdentifier(jsonHuIdentifier);
+
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofCode(request.getClearanceStatus().name());
+
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+				.clearanceStatus(clearanceStatus)
+				.clearanceNote(request.getClearanceNote())
+				.build();
+
+		handlingUnitsBL.setClearanceStatusRecursively(huId, clearanceStatusInfo);
 	}
 
 	@NonNull
-	public JsonAllowedHUClearanceStatuses getAllowedStatusesForHUId(@NonNull final HuId huId)
+	public JsonAllowedHUClearanceStatuses getAllowedClearanceStatusesForHUId(@NonNull final HuId huId)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		if(hu == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("M_HU")
+					.resourceIdentifier(huId.toString())
+					.build();
+		}
+
+		return getAllowedClearanceStatuses(hu);
+	}
+
+	@NonNull
+	private JsonAllowedHUClearanceStatuses getAllowedClearanceStatuses(@NonNull final I_M_HU hu)
+	{
 		final ClearanceStatus currentClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
 
 		final ImmutableList<JsonClearanceStatusInfo> huStatuses = Arrays.stream(ClearanceStatus.values())
@@ -278,11 +318,11 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private List<JsonHU> getIncludedHUs(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
+	private List<JsonHU> getIncludedHUs(@NonNull final LoadJsonHURequest request)
 	{
-		return handlingUnitsDAO.retrieveIncludedHUs(hu)
+		return handlingUnitsDAO.retrieveIncludedHUs(request.getHu())
 				.stream()
-				.map(includedHU -> toJson(includedHU, adLanguage))
+				.map(includedHU -> toJson(request.withHu(includedHU)))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -335,5 +375,27 @@ public class HandlingUnitsService
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	@NonNull
+	private HuId resolveHUIdentifier(@NonNull final JsonSetClearanceStatusRequest.JsonHUIdentifier jsonHuIdentifier)
+	{
+		if(jsonHuIdentifier.getMetasfreshId() != null)
+		{
+			return HuId.ofRepoId(jsonHuIdentifier.getMetasfreshId().getValue());
+		}
+
+		if(Check.isNotBlank((jsonHuIdentifier.getQrCode())))
+		{
+			final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(jsonHuIdentifier.getQrCode());
+			final HuId huId = huQRCodeService.getHuIdByQRCode(huQRCode);
+
+			return HUTransformService.newInstance()
+					.extractIfAggregatedByQRCode(huId, huQRCode);
+		}
+
+		throw new AdempiereException("MetasfreshId or QRCode must be provided!")
+				.appendParametersToMessage()
+				.setParameter("huIdentifier", jsonHuIdentifier);
 	}
 }
