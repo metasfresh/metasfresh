@@ -125,7 +125,13 @@ class AttributesDropdown extends PureComponent {
     const { rowIndex } = this.props;
 
     return (
-      <FocusTrap>
+      <FocusTrap
+        focusTrapOptions={{
+          // NOTE: we have to allowOutsideClick=true
+          // because else clicking on date picker calendar navigation buttons won't work
+          allowOutsideClick: true,
+        }}
+      >
         <div
           className={classnames(
             'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
