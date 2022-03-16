@@ -130,6 +130,7 @@ class AttributesDropdown extends PureComponent {
           // NOTE: we have to allowOutsideClick=true
           // because else clicking on date picker calendar navigation buttons won't work
           allowOutsideClick: true,
+          escapeDeactivates: false,
         }}
       >
         <div
