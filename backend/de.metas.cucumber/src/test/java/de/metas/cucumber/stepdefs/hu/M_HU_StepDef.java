@@ -32,6 +32,7 @@ import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -45,6 +46,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -57,6 +59,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -97,6 +100,7 @@ public class M_HU_StepDef
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
 	private final StepDefData<I_M_Locator> locatorTable;
 	private final StepDefData<I_M_Warehouse> warehouseTable;
+	private final StepDefData<I_M_HU_QRCode> qrCodesTable;
 	private final TestContext testContext;
 
 	public M_HU_StepDef(
@@ -107,6 +111,7 @@ public class M_HU_StepDef
 			@NonNull final StepDefData<I_M_InventoryLine> inventoryLineTable,
 			@NonNull final StepDefData<I_M_Locator> locatorTable,
 			@NonNull final StepDefData<I_M_Warehouse> warehouseTable,
+			@NonNull final StepDefData<I_M_HU_QRCode> qrCodesTable,
 			@NonNull final TestContext testContext)
 	{
 		this.huTable = huTable;
@@ -116,6 +121,7 @@ public class M_HU_StepDef
 		this.inventoryLineTable = inventoryLineTable;
 		this.locatorTable = locatorTable;
 		this.warehouseTable = warehouseTable;
+		this.qrCodesTable = qrCodesTable;
 		this.testContext = testContext;
 	}
 
@@ -484,17 +490,62 @@ public class M_HU_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final String clearanceNote = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceNote);
 		final String clearanceStatus = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
+		final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU.COLUMNNAME_ClearanceNote);
 
 		final JsonClearanceStatus jsonClearanceStatus = JsonClearanceStatus.valueOf(clearanceStatus);
 
 		final JsonSetClearanceStatusRequest jsonSetClearanceStatusRequest = JsonSetClearanceStatusRequest.builder()
+				.huIdentifier(getHUIdentifier(row))
 				.clearanceStatus(jsonClearanceStatus)
 				.clearanceNote(clearanceNote)
 				.build();
 
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
+	}
+
+	@And("load M_HU by QR code:")
+	public void load_hu_by_qr_code(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
+			InterfaceWrapperHelper.refresh(qrCode);
+
+			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
+
+			assertThat(hu).isNotNull();
+
+			huTable.putOrReplace(huIdentifier, hu);
+			qrCodesTable.putOrReplace(qrCodeIdentifier, qrCode);
+		}
+	}
+
+	@NonNull
+	private JsonSetClearanceStatusRequest.JsonHUIdentifier getHUIdentifier(@NonNull final Map<String, String> row)
+	{
+		final JsonSetClearanceStatusRequest.JsonHUIdentifier.JsonHUIdentifierBuilder builder = JsonSetClearanceStatusRequest.JsonHUIdentifier.builder();
+
+		final String qrCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(qrCodeIdentifier))
+		{
+			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
+
+			return builder.qrCode(qrCode.getRenderedQRCode())
+					.build();
+		}
+
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_M_HU hu = huTable.get(huIdentifier);
+		return builder
+				.metasfreshId(JsonMetasfreshId.of(hu.getM_HU_ID()))
+				.build();
 	}
 }
