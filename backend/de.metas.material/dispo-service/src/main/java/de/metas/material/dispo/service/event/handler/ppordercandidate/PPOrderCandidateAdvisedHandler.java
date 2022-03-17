@@ -24,6 +24,7 @@ package de.metas.material.dispo.service.event.handler.ppordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -253,7 +254,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		if (thereIsEnoughStockWithoutAnyProductionSupply)
 		{
 			final ProductionTimingResult result = ProductionTimingResult.builder()
-					.datePromised(Instant.now())
+					.datePromised(SystemTime.asInstant())
 					.qtyRequired(BigDecimal.ZERO)
 					.missingQtySolvedTime(stockCandidate.getDate())
 					.build();
