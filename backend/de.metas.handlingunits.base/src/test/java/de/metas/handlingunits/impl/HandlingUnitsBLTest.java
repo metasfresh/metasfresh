@@ -150,7 +150,7 @@ public class HandlingUnitsBLTest
 
 			//when
 			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"LockedNote");
-			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(lu.getM_HU_ID()), clearanceStatusInfo);
+			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(tu.getM_HU_ID()), clearanceStatusInfo);
 
 			//then
 			final I_M_HU updatedLU = InterfaceWrapperHelper.load(lu.getM_HU_ID(), I_M_HU.class);
