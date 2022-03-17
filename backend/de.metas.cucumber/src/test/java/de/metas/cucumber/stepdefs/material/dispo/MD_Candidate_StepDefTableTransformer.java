@@ -86,7 +86,6 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
-					.productIdentifier(productIdentifier)
 					.productId(ProductId.ofRepoId(productId))
 					.time(time)
 					.qty(qty)
