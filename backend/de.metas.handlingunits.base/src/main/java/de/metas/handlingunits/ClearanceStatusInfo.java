@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,28 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.v2;
+package de.metas.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = ClearHUCamelRequest.ClearHUCamelRequestBuilder.class)
-public class ClearHUCamelRequest
+@Value
+public class ClearanceStatusInfo
 {
 	@NonNull
-	@JsonProperty("metasfreshId")
-	JsonMetasfreshId metasfreshId;
+	ClearanceStatus clearanceStatus;
+
+	@Nullable
+	String clearanceNote;
 
 	@NonNull
-	@JsonProperty("clearanceStatusRequest")
-	JsonSetClearanceStatusRequest clearanceStatusRequest;
+	public static ClearanceStatusInfo of(@NonNull final ClearanceStatus clearanceStatus, @Nullable final String clearanceNote)
+	{
+		return ClearanceStatusInfo.builder()
+				.clearanceStatus(clearanceStatus)
+				.clearanceNote(clearanceNote)
+				.build();
+	}
 }

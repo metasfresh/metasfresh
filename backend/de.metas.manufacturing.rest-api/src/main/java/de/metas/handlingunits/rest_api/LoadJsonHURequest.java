@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-manufacturing
+ * de.metas.manufacturing.rest-api
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,28 +20,34 @@
  * #L%
  */
 
-package de.metas.common.handlingunits;
+package de.metas.handlingunits.rest_api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.handlingunits.model.I_M_HU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonClearanceStatusInfo.JsonClearanceStatusInfoBuilder.class)
-public class JsonClearanceStatusInfo
+public class LoadJsonHURequest
 {
+	@With
 	@NonNull
-	@JsonProperty("key")
-	String key;
+	I_M_HU hu;
 
 	@NonNull
-	@JsonProperty("caption")
-	String caption;
+	String adLanguage;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonClearanceStatusInfoBuilder {}
+	@With
+	boolean getAllowedClearanceStatuses;
+
+	@NonNull
+	public static LoadJsonHURequest ofHUAndLanguage(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
+	{
+		return LoadJsonHURequest.builder()
+				.adLanguage(adLanguage)
+				.hu(hu)
+				.build();
+	}
 }
