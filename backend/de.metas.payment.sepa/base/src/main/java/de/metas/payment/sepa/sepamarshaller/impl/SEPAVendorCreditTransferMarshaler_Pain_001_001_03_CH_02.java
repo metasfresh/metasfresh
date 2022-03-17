@@ -117,7 +117,7 @@ import static java.math.BigDecimal.ZERO;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
-	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
+	public static final String NOTPROVIDED_VALUE = "NOTPROVIDED";
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
@@ -164,7 +164,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 * Title: "Bank cheque/Postcash domestic and foreign". Currently not implemented.
 	 */
 	private static final String PAYMENT_TYPE_8 = "PAYMENT_TYPE_8";
-	public static final String END_TO_END_ID_NOT_PROVIDED_VALUE = "NOTPROVIDED";
 
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
@@ -542,7 +541,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			else
 			{
 				// // let the bank see what it can do
-				finInstnId.setBIC(BIC_NOTPROVIDED);
+				finInstnId.setBIC(NOTPROVIDED_VALUE);
 			}
 
 			//
@@ -551,7 +550,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| Objects.equals(paymentType, PAYMENT_TYPE_4)
 					|| Objects.equals(paymentType, PAYMENT_TYPE_6))
 			{
-				final boolean hasNoBIC = Check.isEmpty(finInstnId.getBIC(), true) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
+				final boolean hasNoBIC = Check.isEmpty(finInstnId.getBIC(), true) || NOTPROVIDED_VALUE.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
 					final String bankName = getBankNameIfAny(line);
@@ -707,7 +706,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			else
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), END_TO_END_ID_NOT_PROVIDED_VALUE);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_VALUE);
 			}
 			final PaymentIdentification1 pmtId = objectFactory.createPaymentIdentification1();
 			pmtId.setEndToEndId(endToEndId);
