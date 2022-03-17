@@ -169,9 +169,12 @@ public class MD_Candidate_StepDef
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
 			mdCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
-			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 
 			setAttributeSetInstance(mdCandidateRecord, tableRow);
+
+			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
+
+			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
