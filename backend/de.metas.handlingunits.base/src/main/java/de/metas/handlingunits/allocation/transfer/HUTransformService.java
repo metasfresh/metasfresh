@@ -1161,6 +1161,9 @@ public class HUTransformService
 		return result.build();
 	}
 
+	/**
+	  * If the given HU is aggregated, split out one TU and assign the given QR-code to it. Otherwise do nothing and jsut return the given {@code huId}.
+	  */
 	@NonNull
 	public HuId extractIfAggregatedByQRCode(@NonNull final HuId huId, @NonNull final HUQRCode huQRCode)
 	{
