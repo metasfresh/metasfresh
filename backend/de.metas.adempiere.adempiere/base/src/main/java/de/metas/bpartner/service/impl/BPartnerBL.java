@@ -1,7 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -38,7 +36,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -47,7 +44,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +86,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public String getBPartnerName(final BPartnerId bpartnerId)
+	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
 	{
 		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
@@ -101,7 +97,7 @@ public class BPartnerBL implements IBPartnerBL
 		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue() + "_" + bpartner.getName());
 	}
 
-	private String toBPartnerDisplayName(final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
+	private String toBPartnerDisplayName(@Nullable final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
 	{
 		if (bpartnerId == null)
 		{
@@ -542,7 +538,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
 		return locationDAO.getCountryIdByLocationId(locationId);
@@ -562,7 +558,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public LocationId getLocationId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
 		{

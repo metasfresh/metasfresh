@@ -171,7 +171,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private final SEPAExportContext exportContext;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
-	private final String encoding = "UTF-8";
+	private static final String encoding = "UTF-8";
 
 	private int endToEndIdCounter = 0;
 	private int pmtInfCounter = 0;
@@ -655,7 +655,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 		// because it's much less complicated
-		final String reference = Check.isEmpty(line.getStructuredRemittanceInfo(), true)
+		final String reference = Check.isBlank(line.getStructuredRemittanceInfo())
 				? line.getDescription()
 				: line.getStructuredRemittanceInfo();
 		// Remittance Info
@@ -826,6 +826,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 *
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
 	 */
+	@Nullable
 	private String extractBCFromIban(
 			@Nullable final String iban,
 			@NonNull final I_SEPA_Export_Line line)
@@ -853,7 +854,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	/**
 	 * Returns true if the given IBAN is supposed to contain a swizz bank code (BC). This can be assumes if the given IBAN (stripped from spaces) starts with either "CH" or "LI".
 	 */
-	private boolean isSwizzIBAN(final String iban)
+	private boolean isSwizzIBAN(@Nullable final String iban)
 	{
 		if (Check.isEmpty(iban, true))
 		{
@@ -976,6 +977,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	@VisibleForTesting
+	@Nullable
 	static String replaceForbiddenChars(@Nullable final String input)
 	{
 		if (input == null)

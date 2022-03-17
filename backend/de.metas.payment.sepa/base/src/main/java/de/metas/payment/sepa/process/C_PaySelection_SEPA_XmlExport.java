@@ -5,7 +5,6 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAExportContext;
@@ -40,7 +39,6 @@ public class C_PaySelection_SEPA_XmlExport
 
 	//
 	// services
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
@@ -51,11 +49,6 @@ public class C_PaySelection_SEPA_XmlExport
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Process " + C_PaySelection_SEPA_XmlExport.class + "only works with context != null");
-		}
-
 		final String tableName = context.getTableName();
 		if (!I_C_PaySelection.Table_Name.equals(tableName))
 		{
@@ -88,7 +81,8 @@ public class C_PaySelection_SEPA_XmlExport
 			throw new AdempiereException(MSG_NO_SELECTION);
 		}
 
-		final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(getCtx(), recordId, I_C_PaySelection.class, getTrxName());
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(PaySelectionId.ofRepoId(recordId))
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_PaySelection_ID@ (ID=" + recordId + ")"));
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
