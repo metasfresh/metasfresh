@@ -20,23 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.grssignum.from_grs.product;
+package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import javax.annotation.Nullable;
-
-@Data
-@Builder
-public class PushRawMaterialsRouteContext
+@AllArgsConstructor
+@Getter
+public enum AttachmentTags
 {
-	@NonNull
-	private final JsonProduct jsonProduct;
+	ID("id"),
+	VALID_TO("validto"),
+	DOCUMENT_GROUP("documentgroup"),
+	DOCUMENT_TYPE("documenttype");
 
-	@Nullable
-	private JsonMetasfreshId currentBPartnerID;
+	private final String name;
 }
