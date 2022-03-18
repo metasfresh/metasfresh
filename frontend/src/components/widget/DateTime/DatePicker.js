@@ -1,32 +1,29 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
+import Moment from 'moment-timezone';
 import onClickOutside from 'react-onclickoutside';
 
-import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
   disableOutsideClick,
-} from '../../actions/WindowActions';
+} from '../../../actions/WindowActions';
 
 import TetheredDateTime from './TetheredDateTime';
-import Moment from 'moment-timezone';
-import { getCurrentActiveLocale } from '../../utils/locale';
+import { getCurrentActiveLocale } from '../../../utils/locale';
 import {
   DATE_FORMAT,
   DATE_TIMEZONE_FORMAT,
   TIME_FORMAT,
-} from '../../constants/Constants';
+} from '../../../constants/Constants';
 
-class DatePicker extends Component {
-  debouncedFn = null;
-
+class DatePicker extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       isCalendarOpen: false,
-      cache: null,
+      datePatched: null,
     };
   }
 
@@ -55,68 +52,76 @@ class DatePicker extends Component {
     }
   }
 
-  /**
-   * @method setDebounced
-   * @summary store a handle to the debounced click handler function so that it can
-   * be cancelled in case there's a double click
-   * @param {function} debounced
-   */
-  setDebounced = (debounced) => {
-    this.debouncedFn = debounced;
+  handleDateChange = (dateObj) => {
+    if (!dateObj) {
+      this.callPatchIfNeeded(null);
+    } else {
+      const dateAsMoment = this.convertToMoment(dateObj, true);
+      if (dateAsMoment && dateAsMoment.isValid()) {
+        this.callPatchIfNeeded(dateAsMoment);
+      }
+    }
   };
 
-  handleBlur = (dateObj) => {
-    this.debouncedFn && this.debouncedFn.cancel && this.debouncedFn.cancel();
-
-    //
-    // Get the most recent valid date
-    const { cache } = this.state;
-    let date = this.convertToMoment(dateObj, false);
-    if (!date || !date.isValid()) {
-      date = this.convertToMoment(cache, false);
-    }
-    if (!date || !date.isValid()) {
-      date = this.convertToMoment(this.props.value, false);
-    }
-    if (!date || !date.isValid()) {
-      date = null;
-    }
-
-    //
-    // Update picker's selectedDate and inputValue
-    // (just in case we didn't pick the date that is coming from picker because it wasn't valid)
+  resetPickerSelectedDateAndInputValueToLastPatchedDate = () => {
     if (this.picker) {
-      const inputValue =
-        date && date.isValid()
-          ? date.format(this.getMomentDisplayFormat())
+      const { datePatched } = this.state;
+
+      let inputValue, selectedDate;
+      if (!datePatched) {
+        inputValue = '';
+        selectedDate = null;
+      } else if (Moment.isMoment(datePatched)) {
+        inputValue = datePatched.isValid()
+          ? datePatched.format(this.getMomentDisplayFormat())
           : '';
+        selectedDate = datePatched;
+      } else {
+        inputValue = `${datePatched}`;
+        selectedDate = this.convertToMoment(datePatched, true);
+      }
 
-      this.picker.setSelectedDateAndInputValue({
-        selectedDate: date,
-        inputValue,
-      });
+      // console.log('resetPickerSelectedDateAndInputValueToLastPatchedDate', {
+      //   datePatched,
+      //   selectedDate,
+      //   inputValue,
+      // });
+
+      this.picker.setSelectedDateAndInputValue({ selectedDate, inputValue });
     }
+  };
 
-    //
-    // Patch the date (i.e. send it to backend)
-    const { patch, dispatch, field, handleChange } = this.props;
+  callPatchIfNeeded = (date) => {
+    const { patch, field, handleChange } = this.props;
+    const { datePatched } = this.state;
     try {
-      if (!this.isSameMoment(date, cache)) {
+      if (!this.isSameMoment(date, datePatched)) {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
-        //console.log('handleBlur: patching date', { date, cache });
-        patch(date);
-      } else {
-        //console.trace('handleBlur: NOT patching date', { date, cache });
+        // console.log('callPatchIfNeeded: patching date', { date, datePatched });
+        patch && patch(date);
       }
+      //else { console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', { date, datePatched }); }
     } catch (error) {
-      dispatch(
-        addNotification(field, `${field} has an invalid date.`, 5000, 'error')
-      );
+      console.log(`callPatchIfNeeded: error patching field ${field}`, {
+        date,
+        datePatched,
+        error,
+      });
     }
 
-    this.handleClose();
+    this.setState({ datePatched: date });
+  };
+
+  handleBlur = (/*dateObj*/) => {
+    // NOTE: for some reason `dateObj` is not always the up-to-date value of the date
+    // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
+
+    this.closeCalendarAndResetToLastPatchedDate();
+
+    const { dispatch } = this.props;
+    dispatch(allowOutsideClick());
 
     const { handleBackdropLock } = this.props;
     handleBackdropLock && handleBackdropLock(false);
@@ -136,16 +141,24 @@ class DatePicker extends Component {
     if (!value) {
       return null;
     } else if (Moment.isMoment(value)) {
-      return this.normalizeMomentFormat(value);
+      const moment = value;
+      if (moment.isValid()) {
+        return this.normalizeMomentFormat(moment);
+      } else {
+        return moment;
+      }
     } else {
       MomentTZ.locale(getCurrentActiveLocale());
 
       let moment = MomentTZ(value, this.getMomentDisplayFormat(value), strict);
+      //console.log('convertToMoment1:', { value, moment });
       if (moment && moment.isValid()) {
         return this.normalizeMomentFormat(moment);
       }
 
-      return MomentTZ(value, this.getMomentNormalizedFormat(), strict);
+      moment = MomentTZ(value, this.getMomentNormalizedFormat(), strict);
+      //console.log('convertToMoment2:', { value, moment });
+      return moment;
     }
   };
 
@@ -157,10 +170,17 @@ class DatePicker extends Component {
 
     let momentNorm = MomentTZ(normalizedString, format);
 
-    const { timeFormat, timeZone } = this.props;
-    if (timeFormat) {
+    const { dateFormat, timeFormat, timeZone } = this.props;
+    if (dateFormat && timeFormat && timeZone) {
       momentNorm = momentNorm.tz(timeZone, true);
     }
+
+    // console.log('normalizeMomentFormat:', {
+    //   moment,
+    //   moment_toDate: moment.toDate(),
+    //   normalizedString,
+    //   momentNorm,
+    // });
 
     return momentNorm;
   };
@@ -208,113 +228,110 @@ class DatePicker extends Component {
   handleFocus = () => {
     const { dispatch } = this.props;
 
-    this.setState({
-      cache: this.props.value,
-      isCalendarOpen: true,
-    });
+    this.setState({ datePatched: this.props.value });
+
+    this.openCalendarIfEditable();
+
     dispatch(disableOutsideClick());
   };
 
-  handleClose = () => {
-    const { dispatch } = this.props;
-
-    this.setState({ isCalendarOpen: false }); // close the calendar
-    dispatch(allowOutsideClick());
-  };
-
   handleClickOutside = () => {
-    // Because this method is called when clicking outside an date field,
+    // Because this method is called when clicking outside a date field,
     // for all the date fields from the page,
-    // we have narrow this down to the current date field.
+    // we have to narrow this down to the current date field.
     // For that reason we check the isCalendarOpen to see if it has the calendar open.
-    const { isCalendarOpen } = this.state;
-    if (!isCalendarOpen) {
-      return;
-    }
 
-    this.handleBlur(this.picker.state.selectedDate);
+    const { isCalendarOpen } = this.state;
+    if (isCalendarOpen) {
+      this.handleBlur(this.picker.state.selectedDate, 'click-outside');
+    }
   };
 
   handleKeydown = (event) => {
     event.stopPropagation();
   };
 
-  renderCalendarDay = (props, day) => {
-    return (
-      <td {...props} onDoubleClick={() => this.onDayDoubleClicked(day)}>
-        {day.date()}
-      </td>
-    );
+  renderCalendarDay = (dayProps, currentDate /*, selected*/) => {
+    return <td {...dayProps}>{currentDate.date()}</td>;
   };
 
-  onDayDoubleClicked = (day) => {
-    let dateTime = day;
-
-    // Preserve the time from current selected date+time.
-    const { timeFormat } = this.props;
-    if (timeFormat) {
-      const selectedDate = this.picker.state.selectedDate;
-      if (selectedDate) {
-        dateTime = dateTime.set({
-          hour: selectedDate.get('hour'),
-          minute: selectedDate.get('minute'),
-          second: selectedDate.get('second'),
-          millisecond: 0,
-        });
-      }
-    }
-
-    this.handleBlur(dateTime);
-  };
-
-  focusInput = () => {
-    this.inputElement && this.inputElement.focus();
-  };
+  focusInput = () => this.inputElement && this.inputElement.focus();
 
   toggleCalendarOpenClosed = () => {
-    this.setState({ isCalendarOpen: !this.state.isCalendarOpen });
+    const { isCalendarOpen } = this.state;
+    if (isCalendarOpen) {
+      this.closeCalendarAndResetToLastPatchedDate();
+    } else {
+      this.openCalendarIfEditable();
+    }
   };
 
+  setIsCalendarOpen = (isCalendarOpen) => this.setState({ isCalendarOpen });
+
+  openCalendarIfEditable = () => {
+    if (!this.isReadonly()) {
+      this.setIsCalendarOpen(true);
+    }
+  };
+
+  closeCalendarAndResetToLastPatchedDate = () => {
+    this.setIsCalendarOpen(false);
+    this.resetPickerSelectedDateAndInputValueToLastPatchedDate();
+  };
+
+  isReadonly = () => !!this.props?.inputProps?.disabled;
+
   renderInput = ({ className, ...props }) => {
-    const valueOrig = props.value;
-    const valueAsMoment = this.convertToMoment(valueOrig, true);
-    const valueAsDisplayString =
-      valueAsMoment && valueAsMoment.isValid()
-        ? valueAsMoment.format(this.getMomentDisplayFormat())
-        : `${valueOrig}`;
+    const dateString = this.renderInputDateString(props.value);
+
+    const onClick = (event) => {
+      props.onClick && props.onClick(event);
+      this.openCalendarIfEditable();
+    };
 
     return (
       <div className={className}>
         <input
           {...props}
-          value={valueAsDisplayString}
           className="form-control"
           ref={(input) => (this.inputElement = input)}
+          value={dateString}
+          onClick={onClick}
         />
       </div>
     );
   };
 
-  setPicker = (picker) => {
-    this.picker = picker;
+  renderInputDateString = (valueOrig) => {
+    const valueAsMoment = this.convertToMoment(valueOrig, true);
+
+    return valueAsMoment && valueAsMoment.isValid()
+      ? valueAsMoment.format(this.getMomentDisplayFormat())
+      : `${valueOrig}`;
   };
 
   render() {
+    const { dateFormat, timeFormat } = this.props;
+    const { isCalendarOpen } = this.state;
+
+    const isTimeOnly = !dateFormat && timeFormat;
+
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
-          ref={this.setPicker}
+          {...this.props}
+          ref={(picker) => (this.picker = picker)}
+          closeOnSelect={true}
           closeOnTab={true}
+          open={isCalendarOpen}
+          setDebounced={this.setDebounced}
+          strictParsing={!isTimeOnly}
           renderDay={this.renderCalendarDay}
           renderInput={this.renderInput}
-          onBlur={this.handleBlur}
           onFocus={this.handleFocus}
-          open={this.state.isCalendarOpen}
           onFocusInput={this.focusInput}
-          closeOnSelect={false} // NOTE: DateTime does not work correctly for closeOnSelect=true, i.e. it calls the handleBlur with old date value
-          setDebounced={this.setDebounced}
-          strictParsing={true}
-          {...this.props}
+          onBlur={this.handleBlur}
+          onChange={this.handleDateChange}
         />
         <div>
           <i
@@ -347,15 +364,16 @@ DatePicker.propTypes = {
   handleBackdropLock: PropTypes.func,
   patch: PropTypes.func,
   field: PropTypes.string,
-  value: PropTypes.any,
+  value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   isOpenDatePicker: PropTypes.bool,
-  hasTimeZone: PropTypes.bool,
   dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   timeFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-  timeZone: PropTypes.any,
+  hasTimeZone: PropTypes.bool,
+  timeZone: PropTypes.string,
   defaultValue: PropTypes.string,
   updateItems: PropTypes.func,
   isFilterActive: PropTypes.bool,
+  inputProps: PropTypes.object.isRequired,
 };
 
 export default connect()(onClickOutside(DatePicker));
