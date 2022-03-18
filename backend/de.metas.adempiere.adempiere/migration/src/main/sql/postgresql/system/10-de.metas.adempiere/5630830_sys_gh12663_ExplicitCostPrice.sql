@@ -285,3 +285,70 @@ UPDATE AD_Menu SET   Name = 'Sind Explizite Kosten', Description = NULL, WEBUI_N
 
 
 
+
+
+-- 2022-03-18T15:41:15.866Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Explizite Kosten', PrintName='Explizite Kosten',Updated=TO_TIMESTAMP('2022-03-18 17:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580714 AND AD_Language='de_DE'
+;
+
+-- 2022-03-18T15:41:15.868Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580714,'de_DE') 
+;
+
+-- 2022-03-18T15:41:15.874Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580714,'de_DE') 
+;
+
+-- 2022-03-18T15:41:15.876Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsExplicitCostPrice', Name='Explizite Kosten', Description=NULL, Help=NULL WHERE AD_Element_ID=580714
+;
+
+-- 2022-03-18T15:41:15.877Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsExplicitCostPrice', Name='Explizite Kosten', Description=NULL, Help=NULL, AD_Element_ID=580714 WHERE UPPER(ColumnName)='ISEXPLICITCOSTPRICE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-03-18T15:41:15.878Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsExplicitCostPrice', Name='Explizite Kosten', Description=NULL, Help=NULL WHERE AD_Element_ID=580714 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-03-18T15:41:15.879Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Explizite Kosten', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580714) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580714)
+;
+
+-- 2022-03-18T15:41:15.888Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Explizite Kosten', Name='Explizite Kosten' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580714)
+;
+
+-- 2022-03-18T15:41:15.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Explizite Kosten', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580714
+;
+
+-- 2022-03-18T15:41:15.891Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Explizite Kosten', Description=NULL, Help=NULL WHERE AD_Element_ID = 580714
+;
+
+-- 2022-03-18T15:41:15.892Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Explizite Kosten', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580714
+;
+
+-- 2022-03-18T15:41:21.242Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Explizite Kosten', PrintName='Explizite Kosten',Updated=TO_TIMESTAMP('2022-03-18 17:41:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580714 AND AD_Language='de_CH'
+;
+
+-- 2022-03-18T15:41:21.245Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580714,'de_CH') 
+;
+
