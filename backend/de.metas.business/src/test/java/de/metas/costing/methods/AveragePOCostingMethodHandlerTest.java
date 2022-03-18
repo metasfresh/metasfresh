@@ -272,7 +272,7 @@ public class AveragePOCostingMethodHandlerTest
 	}
 
 	@Test
-	public void inventoryWithNoQtyAndPrice_NoExplicitCostPrice()
+	public void inventoryWithoutQtyAndWithPrice_NoExplicitCostPrice()
 	{
 		assertThat(getCurrentCostOrNull(orgId1)).isNull();
 

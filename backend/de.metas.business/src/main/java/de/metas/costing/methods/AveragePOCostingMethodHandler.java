@@ -169,13 +169,14 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			if (request.getDocumentRef().isInventoryLine() && request.getQty().signum() == 0)
+			final CostAmount requestAmt = request.getAmt();
+			if (request.getDocumentRef().isInventoryLine() && requestQty.signum() == 0)
 			{
-				requestEffective = request.withAmount(request.getAmt().toZero());
+				requestEffective = request.withAmount(requestAmt.toZero());
 
 				if (currentCosts.getCurrentQty().isZero() && isInventoryExplicitCostPrice)
 				{
-					currentCosts.setOwnCostPrice(request.getAmt());
+					currentCosts.setOwnCostPrice(requestAmt);
 				}
 				else
 				{
@@ -188,8 +189,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			else
 			{
 				final CostPrice price = currentCosts.getCostPrice();
-				final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
-				if (request.getAmt().isZero() && !request.isReversal())
+				final Quantity qty = utils.convertToUOM(requestQty, price.getUomId(), request.getProductId());
+				if (requestAmt.isZero() && !request.isReversal())
 				{
 					final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 					requestEffective = request.withAmountAndQty(amt, qty);
@@ -207,7 +208,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
+			final Quantity qty = utils.convertToUOM(requestQty, price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
