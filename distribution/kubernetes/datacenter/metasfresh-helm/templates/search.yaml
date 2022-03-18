@@ -45,16 +45,6 @@ spec:
               add:
               - IPC_LOCK
           env:
-          - name: ELASTICSEARCH_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: metasfresh-{{ .Release.Name }}-search-secret
-                key: username
-          - name: ELASTICSEARCH_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: metasfresh-{{ .Release.Name }}-search-secret
-                key: password
           - name: cluster.name
             value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
           - name: ES_PORT

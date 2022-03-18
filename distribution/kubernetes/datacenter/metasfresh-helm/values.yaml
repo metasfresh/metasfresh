@@ -40,8 +40,6 @@ search:
   port: 
     search: 9200
   dataStorageSize: 5Gi
-  username: metasfresh #replace
-  password: metasfresh #replace
   clusterName: metasfresh
   resources:
     memLimit: 1073741824 #(in bytes)
