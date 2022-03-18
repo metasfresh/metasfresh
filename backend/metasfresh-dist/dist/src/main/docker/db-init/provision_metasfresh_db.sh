@@ -128,12 +128,12 @@ apply_migration_scripts_from_artifact()
 	
 	tar -xf $OUTPUT_FILE
 	
-	cat >dist/settings.properties <<EOL
+	cat >dist/install/settings.properties <<EOL
 METASFRESH_DB_SERVER=${db_host}
-METASFRESH_db_port=${db_port}
-METASFRESH_db_name=${db_name}
+METASFRESH_DB_PORT=${db_port}
+METASFRESH_DB_NAME=${db_name}
 METASFRESH_DB_USER=${db_user}
-METASFRESH_db_password=${db_password}
+METASFRESH_DB_PASSWORD=${db_password}
 EOL
 
 	echo "Running mg migrate... "
