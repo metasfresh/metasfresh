@@ -155,7 +155,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity requestQty = request.getQty();
 		final boolean isInboundTrx = requestQty.signum() >= 0;
 
-		final boolean isInventoryExplicitCostPrice = request.getDocumentRef().isInventoryLine() && BooleanUtils.isTrue(request.getExplicitCostPrice());
+		final boolean isInventoryExplicitCostPrice = BooleanUtils.isTrue(request.getExplicitCostPrice());
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -169,15 +169,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			final CostAmount requestAmt = request.getAmt();
-
-			if (isInventoryExplicitCostPrice && requestQty.signum() == 0)
+			if (request.getDocumentRef().isInventoryLine() && request.getQty().signum() == 0)
 			{
-				requestEffective = request.withAmount(requestAmt.toZero());
+				requestEffective = request.withAmount(request.getAmt().toZero());
 
-				if (currentCosts.getCurrentQty().isZero())
+				if (currentCosts.getCurrentQty().isZero() && isInventoryExplicitCostPrice)
 				{
-					currentCosts.setOwnCostPrice(requestAmt);
+					currentCosts.setOwnCostPrice(request.getAmt());
 				}
 				else
 				{
@@ -189,11 +187,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			// In case of reversals, always consider the Amt.
 			else
 			{
-				final CostPrice currentCostPrice = currentCosts.getCostPrice();
-				final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
-				if (requestAmt.isZero() && !request.isReversal())
+				final CostPrice price = currentCosts.getCostPrice();
+				final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
+				if (request.getAmt().isZero() && !request.isReversal())
 				{
-					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+					final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 					requestEffective = request.withAmountAndQty(amt, qty);
 				}
 				else
@@ -209,7 +207,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final Quantity qty = utils.convertToUOM(requestQty, price.getUomId(), request.getProductId());
+			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
