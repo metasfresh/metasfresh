@@ -73,7 +73,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		}
 
 		this.isExplicitCostPrice = inventoryLine.isExplicitCostPrice();
-		
+
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
@@ -103,7 +103,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
-							.explicitCostPrice(isExplicitCostPrice)
+							.isExplicitCostPrice(isExplicitCostPrice)
 							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
