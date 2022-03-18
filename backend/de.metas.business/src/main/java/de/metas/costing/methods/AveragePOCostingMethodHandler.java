@@ -155,7 +155,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity requestQty = request.getQty();
 		final boolean isInboundTrx = requestQty.signum() >= 0;
 
-		final boolean isInventoryExplicitCostPrice = BooleanUtils.isTrue(request.getExplicitCostPrice());
+		final boolean isInventoryExplicitCostPrice = request.isExplicitCostPrice();
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);

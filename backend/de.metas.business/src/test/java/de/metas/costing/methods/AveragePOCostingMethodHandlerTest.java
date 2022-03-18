@@ -303,7 +303,7 @@ public class AveragePOCostingMethodHandlerTest
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
 								.amt(CostAmount.of(100, euroCurrencyId))
-								.explicitCostPrice(true)
+								.isExplicitCostPrice(true)
 								.qty(Quantity.of(0, eachUOM))
 								.build())
 				.get();
@@ -327,7 +327,7 @@ public class AveragePOCostingMethodHandlerTest
 					costDetailCreateRequest()
 							.documentRef(CostingDocumentRef.ofInventoryLineId(1))
 							.amt(CostAmount.of(10, euroCurrencyId))
-							.explicitCostPrice(true)
+							.isExplicitCostPrice(true)
 							.qty(Quantity.of(0, eachUOM))
 							.build())
 					.get();
@@ -346,7 +346,7 @@ public class AveragePOCostingMethodHandlerTest
 					costDetailCreateRequest()
 							.documentRef(CostingDocumentRef.ofInventoryLineId(2))
 							.amt(CostAmount.of(15, euroCurrencyId))
-							.explicitCostPrice(true)
+							.isExplicitCostPrice(true)
 							.qty(Quantity.of(0, eachUOM))
 							.build())
 					.get();
@@ -417,7 +417,7 @@ public class AveragePOCostingMethodHandlerTest
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
 								.amt(CostAmount.of(10, euroCurrencyId))
-								.explicitCostPrice(true)
+								.isExplicitCostPrice(true)
 								.qty(Quantity.of(0, eachUOM))
 								.build())
 						.get();
@@ -498,7 +498,7 @@ public class AveragePOCostingMethodHandlerTest
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
 								.amt(CostAmount.of(10, euroCurrencyId))
-								.explicitCostPrice(true)
+								.isExplicitCostPrice(true)
 								.qty(Quantity.of(0, eachUOM))
 								.build())
 						.get();
@@ -706,7 +706,7 @@ public class AveragePOCostingMethodHandlerTest
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
 								.amt(CostAmount.of(13, euroCurrencyId))
-								.explicitCostPrice(true)
+								.isExplicitCostPrice(true)
 								.qty(Quantity.of(0, eachUOM))
 								.build());
 
