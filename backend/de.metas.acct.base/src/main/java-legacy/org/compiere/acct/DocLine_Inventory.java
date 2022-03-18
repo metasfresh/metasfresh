@@ -103,7 +103,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
-							.isExplicitCostPrice(isExplicitCostPrice)
+							.explicitCostPrice(isExplicitCostPrice)
 							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);

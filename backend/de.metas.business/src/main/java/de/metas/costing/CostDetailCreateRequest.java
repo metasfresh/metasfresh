@@ -80,7 +80,7 @@ public class CostDetailCreateRequest
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
 			@NonNull final LocalDate date,
 			@Nullable final String description,
-			@Nullable Boolean explicitCostPrice)
+			@Nullable final Boolean explicitCostPrice)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
