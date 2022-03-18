@@ -415,6 +415,11 @@ public class ProductionSimulationRowsLoader
 
 		for (final Candidate candidate : candidates)
 		{
+			if (candidate.isSimulated() && candidate.getQuantity().signum() == 0)
+			{
+				continue;
+			}
+
 			if (CandidateType.STOCK.equals(candidate.getType()))
 			{
 				continue;
