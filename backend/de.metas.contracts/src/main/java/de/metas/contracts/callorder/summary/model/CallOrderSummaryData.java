@@ -23,6 +23,7 @@
 package de.metas.contracts.callorder.summary.model;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -75,4 +76,7 @@ public class CallOrderSummaryData
 	AttributeSetInstanceId attributeSetInstanceId;
 
 	boolean isActive;
+
+	@NonNull
+	SOTrx soTrx;
 }

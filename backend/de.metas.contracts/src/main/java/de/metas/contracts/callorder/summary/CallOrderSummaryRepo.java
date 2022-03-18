@@ -27,6 +27,7 @@ import de.metas.contracts.callorder.summary.model.CallOrderSummary;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryData;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.contracts.model.I_C_CallOrderSummary;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -103,6 +104,7 @@ public class CallOrderSummaryRepo
 		record.setQtyInvoicedInUOM(callOrderSummaryData.getQtyInvoiced());
 
 		record.setPOReference(callOrderSummaryData.getPoReference());
+		record.setIsSOTrx(callOrderSummaryData.getSoTrx().toBoolean());
 
 		if (callOrderSummaryData.getAttributeSetInstanceId() != null)
 		{
@@ -134,6 +136,7 @@ public class CallOrderSummaryRepo
 				.qtyInvoiced(record.getQtyInvoicedInUOM())
 				.poReference(record.getPOReference())
 				.isActive(record.isActive())
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.build();
 	}
 }

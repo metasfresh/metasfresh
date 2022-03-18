@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.invoice.filter;
+package de.metas.inoutcandidate.filter;
 
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -29,21 +29,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GenerateInvoiceCandidateForModelAggregateFilter
+public class GenerateReceiptScheduleForModelAggregateFilter
 {
-	private final List<IGenerateInvoiceCandidateForModelFilter> filterList;
+	private final List<IGenerateReceiptScheduleForModelFilter> filterList;
 
-	public GenerateInvoiceCandidateForModelAggregateFilter(@NonNull final List<IGenerateInvoiceCandidateForModelFilter> filterList)
+	public GenerateReceiptScheduleForModelAggregateFilter(@NonNull final List<IGenerateReceiptScheduleForModelFilter> filterList)
 	{
 		this.filterList = filterList;
 	}
 
 	/**
-	 * @return true if an invoice candidate should be created for the given {@code model}.
+	 * @return true if an receipt schedule should be created for the given {@code model}.
 	 */
 	public boolean isEligible(@NonNull final Object model)
 	{
-		final List<IGenerateInvoiceCandidateForModelFilter> matchingFilters = filterList
+		final List<IGenerateReceiptScheduleForModelFilter> matchingFilters = filterList
 				.stream()
 				.filter(eligibilityFilter -> eligibilityFilter.applies(model))
 				.collect(ImmutableList.toImmutableList());

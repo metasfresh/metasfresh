@@ -56,6 +56,7 @@ public class CallOrderDetailRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	public CallOrderDetail getById(@NonNull final CallOrderDetailId detailId)
 	{
 		return ofRecord(InterfaceWrapperHelper.load(detailId, I_C_CallOrderDetail.class));

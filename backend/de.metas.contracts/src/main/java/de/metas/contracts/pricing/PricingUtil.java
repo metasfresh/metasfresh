@@ -22,6 +22,7 @@
 
 package de.metas.contracts.pricing;
 
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -39,34 +40,36 @@ import javax.annotation.Nullable;
 public class PricingUtil
 {
 	@NonNull
-	public static IEditablePricingContext copyCtxOverridePriceList(
+	public static IEditablePricingContext copyCtxOverridePriceListAndRefObject(
 			@NonNull final IPricingContext pricingCtx,
-			@NonNull final I_M_PriceList subscriptionPriceList)
+			@NonNull final I_M_PriceList priceList)
 	{
-		final IEditablePricingContext subscriptionPricingCtx = pricingCtx.copy();
+		final IEditablePricingContext newPricingContext = pricingCtx.copy();
 
-		// don't set a ReferencedObject, so contract related pricing rule's 'applies()' method will return false
-		subscriptionPricingCtx.setReferencedObject(null);
+		newPricingContext.setReferencedObject(null);
 
-		// set the price list from subscription's M_Pricing_Systen
-		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
-		subscriptionPricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(subscriptionPriceList.getM_PricingSystem_ID()));
-		subscriptionPricingCtx.setPriceListVersionId(null);
+		newPricingContext.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		newPricingContext.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
+		newPricingContext.setPriceListVersionId(null);
 
-		return subscriptionPricingCtx;
+		final SOTrx soTrx = SOTrx.ofBoolean(priceList.isSOPriceList());
+		newPricingContext.setSOTrx(soTrx);
+
+		return newPricingContext;
 	}
 
 	@Nullable
 	public static I_M_PriceList retrievePriceListForConditionsAndCountry(
 			@NonNull final CountryId countryId,
-			@NonNull final PricingSystemId pricingSystemId)
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final SOTrx soTrx)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
 				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, pricingSystemId.getRepoId())
-				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
+				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, soTrx.toBoolean())
 				.orderBy()
 					.addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID)
 				.endOrderBy()

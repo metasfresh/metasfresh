@@ -20,22 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.callorder.invoice;
+package de.metas.contracts.callorder.receiptschedule;
 
 import de.metas.contracts.callorder.CallOrderContractService;
-import de.metas.invoice.filter.IGenerateInvoiceCandidateForModelFilter;
+import de.metas.inoutcandidate.filter.IGenerateReceiptScheduleForModelFilter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenerateInvoiceCandidateForModelFilter
+public class GenerateReceiptScheduleForModelFilter_CallOrder implements IGenerateReceiptScheduleForModelFilter
 {
 	@NonNull
 	private final CallOrderContractService callOrderContractService;
 
-	public GenerateInvoiceCandidateForModelFilter_CallOrder(@NonNull final CallOrderContractService callOrderContractService)
+	public GenerateReceiptScheduleForModelFilter_CallOrder(final @NonNull CallOrderContractService callOrderContractService)
 	{
 		this.callOrderContractService = callOrderContractService;
 	}
@@ -45,12 +45,12 @@ public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenera
 	{
 		if (!applies(model))
 		{
-			throw new AdempiereException("GenerateInvoiceEligibilityFilter_CallOrder called for an unsupported model type!")
+			throw new AdempiereException("GenerateReceiptScheduleForModelFilter_CallOrder called for an unsupported model type!")
 					.appendParametersToMessage()
 					.setParameter("model", model);
 		}
 
-		//dev-note: see de.metas.contracts.callorder.invoice.GenerateInvoiceCandidateForModelFilter_CallOrder.applies()
+		//dev-note: see de.metas.contracts.callorder.receiptschedule.GenerateReceiptScheduleForModelFilter_CallOrder.applies
 		final I_C_OrderLine orderLine = (I_C_OrderLine)model;
 
 		final boolean isCallOrderContractLine = callOrderContractService.isCallOrderContractLine(orderLine);

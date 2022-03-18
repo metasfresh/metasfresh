@@ -22,8 +22,13 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -33,6 +38,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Trx;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,6 +59,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable,
@@ -150,6 +159,38 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(invoiceCandidates).isEmpty();
 	}
 
+	@And("^process invoice candidates and wait (.*)s for C_Invoice_Candidate to be processed$")
+	public void process_invoice_cand(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidateTable.get(invoiceCandIdentifier);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
+
+			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+			invoicingParams.setIgnoreInvoiceSchedule(false);
+			invoicingParams.setSupplementMissingPaymentTermIds(true);
+
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(invoicingParams)
+					.enqueueSelection(invoiceCandidatesSelectionId);
+
+			//wait for the invoice to be created
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate));
+
+			DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+		}
+	}
+
 	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
 	{
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -169,8 +210,13 @@ public class C_Invoice_Candidate_StepDef
 		}
 
 		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandidateTable.put(invoiceCandIdentifier, invoiceCandidate.get());
+		invoiceCandidateTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
 
 		return true;
+	}
+
+	private boolean isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		return invoiceCandidate.isProcessed();
 	}
 }
