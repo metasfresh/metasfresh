@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import onClickOutsideHOC from 'react-onclickoutside';
 import classnames from 'classnames';
 import FocusTrap from 'focus-trap-react';
 
@@ -27,7 +27,7 @@ class AttributesDropdown extends PureComponent {
    * @todo Write the documentation
    */
   handleClickOutside = () => {
-    const { onClickOutside } = this.props;
+    const { onCompletion } = this.props;
 
     // we need to wait for fetching all of PATCH fields on blur
     // to complete on updated instance
@@ -38,83 +38,81 @@ class AttributesDropdown extends PureComponent {
 
       if (intervalsLeft === 0) {
         window.clearInterval(requestsInterval);
-        onClickOutside();
+        onCompletion();
       }
     }, 10);
   };
 
   /**
-   * @method handlePatch
-   * @summary ToDo: Describe the method
-   * @param {*} prop
+   * @method handleWidgetPatch
+   * @param {string} fieldName
    * @param {*} value
-   * @param {*} id
-   * @todo Write the documentation
+   * @param {number} idx
    */
-  handlePatch = (prop, value, id) => {
-    const { handlePatch, attrId } = this.props;
+  handleWidgetPatch = (fieldName, value, idx) => {
+    const { onFieldPatch, attrId } = this.props;
     const { patchCallbacks } = this.state;
-    const updatedCallbacks = patchCallbacks.set(id, true);
+    const updatedCallbacks = patchCallbacks.set(idx, true);
 
-    return new Promise((res) => {
+    return new Promise((resolve) => {
       this.setState(
         {
           patchCallbacks: updatedCallbacks,
         },
         () => {
-          return handlePatch(prop, value, attrId, () => {
-            this.state.patchCallbacks.delete(id);
+          return onFieldPatch(fieldName, value, attrId, () => {
+            this.state.patchCallbacks.delete(idx);
 
-            res();
+            resolve();
           });
         }
       );
     });
   };
 
-  /**
-   * @method renderFields
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   renderFields = () => {
     const {
       tabIndex,
       layout,
       data,
       attributeType,
-      handleChange,
       attrId,
+      isModal,
+      onFieldChange,
       disableOnClickOutside,
       enableOnClickOutside,
-      isModal,
     } = this.props;
 
+    console.log('renderFields', { props: this.props });
+
     if (layout) {
-      return layout.map((item, idx) => {
-        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
+      return layout.map((elementLayout, elementIndex) => {
+        const widgetData = elementLayout.fields.map(
+          (elem) => data[elem.field] || -1
+        );
+
         return (
           <WidgetWrapper
+            key={elementIndex}
             dataSource="attributes-dropdown"
             entity={attributeType}
-            widgetType={item.widgetType}
-            fields={item.fields}
+            type={elementLayout.type}
+            caption={elementLayout.caption}
+            widgetType={elementLayout.widgetType}
+            fields={elementLayout.fields}
             dataId={attrId}
             widgetData={widgetData}
-            gridAlign={item.gridAlign}
-            key={idx}
-            autoFocus={idx === 0}
-            type={item.type}
-            caption={item.caption}
-            handlePatch={(prop, value) => this.handlePatch(prop, value, idx)}
-            handleChange={handleChange}
-            disableOnClickOutside={disableOnClickOutside}
+            gridAlign={elementLayout.gridAlign}
+            autoFocus={elementIndex === 0}
+            handlePatch={(fieldName, value) =>
+              this.handleWidgetPatch(fieldName, value, elementIndex)
+            }
+            handleChange={onFieldChange}
             enableOnClickOutside={enableOnClickOutside}
+            disableOnClickOutside={disableOnClickOutside}
             attributeWidget={true}
-            {...{
-              tabIndex,
-              isModal,
-            }}
+            tabIndex={tabIndex}
+            isModal={isModal}
           />
         );
       });
@@ -150,35 +148,38 @@ class AttributesDropdown extends PureComponent {
 
 /**
  * @typedef {object} Props Component props
+ *
+ * @prop {string} [attributeType] i.e. pattribute, address
+ * @prop {*} [attrId] the ID of the temporary editing instance
+ * @prop {array} [layout] array of element layouts
+ * @prop {number} [rowIndex] row index within the table
  * @prop {number} [tabIndex]
+ * @prop {object} [data]
  * @prop {bool} [isModal]
- * @prop {object} data
- * @prop {string} attributeType
- * @prop {func} handleChange
- * @prop {*} attrId
- * @prop {array} layout
- * @prop {func} [onClickOutside]
- * @prop {func} handlePatch
- * @prop {func} disableOnClickOutside
- * @prop {func} enableOnClickOutside
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
- * @prop {bool} modalVisible
- * @prop {string} timeZone
+ *
+ * @prop {func} [onFieldChange]
+ * @prop {func} [onFieldPatch]
+ * @prop {func} [onCompletion]
+ *
+ * @prop {func} [enableOnClickOutside]
+ * @prop {func} [disableOnClickOutside]
  */
 AttributesDropdown.propTypes = {
-  tabIndex: PropTypes.number,
-  isModal: PropTypes.bool,
-  data: PropTypes.object.isRequired,
   attributeType: PropTypes.string.isRequired,
-  handleChange: PropTypes.func.isRequired,
-  attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   layout: PropTypes.array,
-  onClickOutside: PropTypes.func,
-  handlePatch: PropTypes.func.isRequired,
-  disableOnClickOutside: PropTypes.func.isRequired,
+  rowIndex: PropTypes.number,
+  tabIndex: PropTypes.number,
+  data: PropTypes.object.isRequired,
+  isModal: PropTypes.bool,
+  //
+  onFieldChange: PropTypes.func.isRequired,
+  onFieldPatch: PropTypes.func.isRequired,
+  onCompletion: PropTypes.func.isRequired,
+
+  // wired by onClickOutside:
   enableOnClickOutside: PropTypes.func.isRequired,
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  disableOnClickOutside: PropTypes.func.isRequired,
 };
 
-export default onClickOutside(AttributesDropdown);
+export default onClickOutsideHOC(AttributesDropdown);

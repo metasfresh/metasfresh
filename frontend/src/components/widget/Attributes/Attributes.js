@@ -30,19 +30,14 @@ export default class Attributes extends Component {
     super(props);
 
     this.state = {
-      dropdown: false,
       layout: null,
       data: null,
       loading: false,
+      isDropdownOpen: false,
     };
   }
 
-  /**
-   * @method handleInit
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleInit = () => {
+  loadDropdownData = () => {
     const {
       docType,
       dataId,
@@ -82,56 +77,29 @@ export default class Attributes extends Component {
         fieldName: fieldName,
       };
     } else {
-      // eslint-disable-next-line no-console
-      console.error('Unknown entity: ' + entity);
+      console.error('Unknown entity: ', entity);
     }
 
-    this.setState(
-      {
-        loading: true,
-      },
-      () => {
-        return getAttributesInstance(attributeType, templateId, source)
-          .then((response) => {
-            const { id, fieldsByName } = response.data;
-
-            this.setState({
-              data: parseToDisplay(fieldsByName),
-            });
-
-            return getLayout(attributeType, id);
-          })
-          .then((response) => {
-            const { elements } = response.data;
-
-            this.setState({
-              layout: elements,
-              loading: false,
-            });
-          })
-          .then(() => {
-            this.setState({
-              dropdown: true,
-            });
-          })
-          .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error('Attributes handleInit error: ', error.message);
-            this.setState({
-              loading: false,
-            });
-          });
-      }
-    );
+    this.setState({ loading: true }, () => {
+      return getAttributesInstance(attributeType, templateId, source)
+        .then((response) => {
+          const { id, fieldsByName } = response.data;
+          this.setState({ data: parseToDisplay(fieldsByName) });
+          return getLayout(attributeType, id);
+        })
+        .then((response) => {
+          const { elements } = response.data;
+          this.setState({ layout: elements });
+        })
+        .then(() => this.setState({ loading: false, isDropdownOpen: true }))
+        .catch((error) =>
+          console.error('Attributes handleInit error: ', error.message)
+        )
+        .finally(() => this.setState({ loading: false }));
+    });
   };
 
-  /**
-   * @method handleToggle
-   * @summary ToDo: Describe the method
-   * @param {bool} show
-   * @todo Write the documentation
-   */
-  handleToggle = (show) => {
+  showHideDropdown = (show) => {
     const {
       handleBackdropLock,
       updateHeight,
@@ -142,7 +110,7 @@ export default class Attributes extends Component {
       dataId,
       tabId,
     } = this.props;
-    const { loading, dropdown } = this.state;
+    const { loading, isDropdownOpen } = this.state;
 
     // this is limited to tables only
     if (rowIndex != null) {
@@ -150,11 +118,11 @@ export default class Attributes extends Component {
       setTableNavigation(tableId, !show);
     }
 
-    !dropdown &&
+    !isDropdownOpen &&
       !isModal &&
       rowIndex < DROPUP_START &&
       updateHeight(DROPDOWN_OFFSET_BIG);
-    dropdown &&
+    isDropdownOpen &&
       !isModal &&
       rowIndex < DROPUP_START &&
       updateHeight(DROPDOWN_OFFSET_SMALL);
@@ -162,9 +130,9 @@ export default class Attributes extends Component {
     if (!loading) {
       this.setState(
         {
-          data: null,
           layout: null,
-          dropdown: null,
+          data: null,
+          isDropdownOpen: false,
         },
         () => {
           //Method is disabling outside click in parents
@@ -172,7 +140,7 @@ export default class Attributes extends Component {
           handleBackdropLock && handleBackdropLock(!!show);
 
           if (show) {
-            this.handleInit();
+            this.loadDropdownData();
           }
         }
       );
@@ -180,24 +148,23 @@ export default class Attributes extends Component {
   };
 
   handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
+    console.log('handleKeyDown', { key: e.key, altKey: e.altKey, e });
+    if (e.key === 'Enter' && e.altKey) {
+      e.stopPropagation();
+      e.preventDefault();
+      this.handleCompletion();
+    } else if (e.key === 'Escape') {
+      e.stopPropagation();
       e.preventDefault();
       this.handleCompletion();
     }
   };
 
-  /**
-   * @method handleChange
-   * @summary ToDo: Describe the method
-   * @param {*} field
-   * @param {*} value
-   * @todo Write the documentation
-   */
-  handleChange = async (field, value) => {
-    const { dropdown, data } = this.state;
-    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+  handleFieldChange = async (field, value) => {
+    const { isDropdownOpen, data } = this.state;
+    // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
     value =
-      dropdown && data[field].widgetType === 'Date'
+      isDropdownOpen && data[field].widgetType === 'Date'
         ? await formatDateWithZeros(value)
         : value;
 
@@ -208,16 +175,7 @@ export default class Attributes extends Component {
     }));
   };
 
-  /**
-   * @method handlePatch
-   * @summary ToDo: Describe the method
-   * @param {*} prop
-   * @param {*} value
-   * @param {*} id
-   * @param {func} cb
-   * @todo Write the documentation
-   */
-  handlePatch = (prop, value, id, cb) => {
+  handleFieldPatch = (fieldName, value, attrId, callback) => {
     const { attributeType } = this.props;
     const { data, loading } = this.state;
 
@@ -225,8 +183,8 @@ export default class Attributes extends Component {
       return patchRequest({
         entity: attributeType,
         docType: null,
-        docId: id,
-        property: prop,
+        docId: attrId,
+        property: fieldName,
         value,
       }).then((response) => {
         if (response.data && response.data.length) {
@@ -244,23 +202,20 @@ export default class Attributes extends Component {
                 },
               }),
               () => {
-                cb && cb();
+                callback && callback();
               }
             );
           });
           return Promise.resolve(true);
+        } else {
+          return Promise.resolve(false);
         }
-        return Promise.resolve(false);
       });
+    } else {
+      return Promise.resolve(true);
     }
-    return Promise.resolve(true);
   };
 
-  /**
-   * @method handleCompletion
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleCompletion = () => {
     const { data, loading } = this.state;
     const { disconnected } = this.props;
@@ -276,26 +231,20 @@ export default class Attributes extends Component {
         /** we are treating the inlineTab differently - we don't show this confirm dialog  */
         if (disconnected === 'inlineTab') {
           /** TODO: here we might use a prompt explaining that the settings were not saved */
-          this.handleToggle(false);
+          this.showHideDropdown(false);
         } else {
           /** the generic case  */
           if (window.confirm('Do you really want to leave?')) {
-            this.handleToggle(false);
+            this.showHideDropdown(false);
           }
         }
-        return;
+      } else {
+        this.doCompleteRequest();
+        this.showHideDropdown(false);
       }
-
-      this.doCompleteRequest();
-      this.handleToggle(false);
     }
   };
 
-  /**
-   * @method doCompleteRequest
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   doCompleteRequest = () => {
     const { attributeType, patch, openModal, closeModal } = this.props;
     const { data } = this.state;
@@ -326,15 +275,15 @@ export default class Attributes extends Component {
   render() {
     const {
       widgetData,
-      dataId,
       rowId,
       attributeType,
       tabIndex,
       readonly,
       rowIndex,
+      isModal,
     } = this.props;
 
-    const { dropdown, data, layout } = this.state;
+    const { isDropdownOpen, data, layout } = this.state;
     const { value } = widgetData;
     const label = value ? value.caption : '';
     const attrId = data && data.ID ? data.ID.value : -1;
@@ -348,30 +297,30 @@ export default class Attributes extends Component {
       >
         <button
           tabIndex={tabIndex}
-          onClick={() => this.handleToggle(true)}
+          onClick={() => this.showHideDropdown(true)}
           className={classnames(
             'btn btn-block tag tag-lg tag-block tag-secondary pointer',
             {
-              'tag-disabled': dropdown,
+              'tag-disabled': isDropdownOpen,
               'tag-disabled disabled': readonly,
             }
           )}
         >
           {label ? label : 'Edit'}
         </button>
-        {dropdown && (
+        {isDropdownOpen && (
           <AttributesDropdown
-            {...this.props}
             attributeType={attributeType}
-            dataId={dataId}
-            tabIndex={tabIndex}
-            onClickOutside={this.handleCompletion}
-            data={data}
-            layout={layout}
-            handlePatch={this.handlePatch}
-            handleChange={this.handleChange}
             attrId={attrId}
+            layout={layout}
             rowIndex={rowIndex}
+            tabIndex={tabIndex}
+            data={data}
+            isModal={isModal}
+            //
+            onFieldChange={this.handleFieldChange}
+            onFieldPatch={this.handleFieldPatch}
+            onCompletion={this.handleCompletion}
           />
         )}
       </div>
@@ -379,45 +328,29 @@ export default class Attributes extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} patch
- * @prop {func} handleBackdropLock
- * @prop {bool} [isModal]
- * @prop {*} widgetData
- * @prop {*} dataId
- * @prop {*} rowId
- * @prop {*} attributeType
- * @prop {*} tabIndex
- * @prop {*} readonly
- * @prop {*} onBlur
- * @prop {*} docType
- * @prop {*} tabId
- * @prop {*} viewId
- * @prop {*} fieldName
- * @prop {*} entity
- * @todo Check props. Which proptype? Required or optional?
- */
 Attributes.propTypes = {
+  entity: PropTypes.string.isRequired,
+  docType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // i.e. windowId or processId
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tabId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  viewId: PropTypes.string,
+  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
+  //
+  fieldName: PropTypes.string,
+  attributeType: PropTypes.string.isRequired,
+  widgetType: PropTypes.string,
+  widgetData: PropTypes.object,
+  //
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  tabIndex: PropTypes.number,
+  readonly: PropTypes.bool,
+  isModal: PropTypes.bool,
+  //
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
-  isModal: PropTypes.bool,
-  widgetData: PropTypes.any,
-  dataId: PropTypes.any,
-  rowId: PropTypes.any,
-  attributeType: PropTypes.any,
-  tabIndex: PropTypes.any,
-  readonly: PropTypes.any,
-  onBlur: PropTypes.any,
-  docType: PropTypes.any,
-  tabId: PropTypes.any,
-  viewId: PropTypes.any,
-  fieldName: PropTypes.any,
-  entity: PropTypes.any,
+  onBlur: PropTypes.func,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
-  widgetType: PropTypes.string,
-  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
   openModal: PropTypes.func,
   closeModal: PropTypes.func,
   setTableNavigation: PropTypes.func,
