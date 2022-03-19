@@ -48,6 +48,9 @@ import java.util.List;
  * #L%
  */
 
+/**
+ * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.pattribute.ASIRestController} because on frontend side they are handled by the same code.
+ */
 @Api
 @RestController
 @RequestMapping(value = AddressRestController.ENDPOINT)
