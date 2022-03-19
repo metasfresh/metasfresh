@@ -22,12 +22,14 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Check;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -82,7 +84,7 @@ import java.util.Set;
 	@Nullable
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
-		final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter = SpringContextHolder.instance.getBean(GenerateReceiptScheduleForModelAggregateFilter.class);
+		final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter = getModelAggregateFilter();
 
 		if (!modelAggregateFilter.isEligible(model))
 		{
@@ -145,4 +147,13 @@ import java.util.Set;
 		}
 	}
 
+	private GenerateReceiptScheduleForModelAggregateFilter getModelAggregateFilter()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			SpringContextHolder.registerJUnitBean(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		}
+
+		return SpringContextHolder.instance.getBean(GenerateReceiptScheduleForModelAggregateFilter.class);
+	}
 }
