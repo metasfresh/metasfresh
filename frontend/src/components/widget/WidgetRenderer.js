@@ -192,10 +192,10 @@ class WidgetRenderer extends PureComponent {
     };
 
     const attributesProps = {
+      value: widgetData[0].value,
       entity,
       fields,
       dataId,
-      widgetData: widgetData[0],
       docType: windowType,
       tabId,
       rowId,

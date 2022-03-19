@@ -50,7 +50,7 @@ class AttributesDropdown extends PureComponent {
    * @param {number} idx
    */
   handleWidgetPatch = (fieldName, value, idx) => {
-    const { onFieldPatch, attrId } = this.props;
+    const { onFieldPatch, editingInstanceId } = this.props;
     const { patchCallbacks } = this.state;
     const updatedCallbacks = patchCallbacks.set(idx, true);
 
@@ -60,7 +60,7 @@ class AttributesDropdown extends PureComponent {
           patchCallbacks: updatedCallbacks,
         },
         () => {
-          return onFieldPatch(fieldName, value, attrId, () => {
+          return onFieldPatch(fieldName, value, editingInstanceId, () => {
             this.state.patchCallbacks.delete(idx);
 
             resolve();
@@ -70,58 +70,77 @@ class AttributesDropdown extends PureComponent {
     });
   };
 
-  renderFields = () => {
+  handleKeyDown = (e) => {
+    if ((e.key === 'Enter' && e.altKey) || e.key === 'Escape') {
+      const { onCompletion } = this.props;
+
+      e.stopPropagation();
+      e.preventDefault();
+      onCompletion();
+    }
+  };
+
+  renderFieldsPanel = () => {
+    const { layout, rowIndex } = this.props;
+
+    if (layout) {
+      return (
+        <div
+          className={classnames(
+            'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+            { 'attributes-dropup': rowIndex > DROPUP_START }
+          )}
+          onKeyDown={this.handleKeyDown}
+        >
+          {layout.map(this.renderField)}
+        </div>
+      );
+    }
+  };
+
+  renderField = (elementLayout, elementIndex) => {
     const {
       tabIndex,
-      layout,
       data,
       attributeType,
-      attrId,
+      editingInstanceId,
       isModal,
       onFieldChange,
       disableOnClickOutside,
       enableOnClickOutside,
     } = this.props;
 
-    console.log('renderFields', { props: this.props });
+    const widgetData = elementLayout.fields.map(
+      (elem) => data[elem.field] || -1
+    );
 
-    if (layout) {
-      return layout.map((elementLayout, elementIndex) => {
-        const widgetData = elementLayout.fields.map(
-          (elem) => data[elem.field] || -1
-        );
-
-        return (
-          <WidgetWrapper
-            key={elementIndex}
-            dataSource="attributes-dropdown"
-            entity={attributeType}
-            type={elementLayout.type}
-            caption={elementLayout.caption}
-            widgetType={elementLayout.widgetType}
-            fields={elementLayout.fields}
-            dataId={attrId}
-            widgetData={widgetData}
-            gridAlign={elementLayout.gridAlign}
-            autoFocus={elementIndex === 0}
-            handlePatch={(fieldName, value) =>
-              this.handleWidgetPatch(fieldName, value, elementIndex)
-            }
-            handleChange={onFieldChange}
-            enableOnClickOutside={enableOnClickOutside}
-            disableOnClickOutside={disableOnClickOutside}
-            attributeWidget={true}
-            tabIndex={tabIndex}
-            isModal={isModal}
-          />
-        );
-      });
-    }
+    return (
+      <WidgetWrapper
+        key={elementIndex}
+        dataSource="attributes-dropdown"
+        entity={attributeType}
+        type={elementLayout.type}
+        caption={elementLayout.caption}
+        widgetType={elementLayout.widgetType}
+        fields={elementLayout.fields}
+        dataId={editingInstanceId}
+        widgetData={widgetData}
+        gridAlign={elementLayout.gridAlign}
+        autoFocus={elementIndex === 0}
+        handlePatch={(fieldName, value) =>
+          this.handleWidgetPatch(fieldName, value, elementIndex)
+        }
+        handleChange={onFieldChange}
+        enableOnClickOutside={enableOnClickOutside}
+        disableOnClickOutside={disableOnClickOutside}
+        attributeWidget={true}
+        tabIndex={tabIndex}
+        isModal={isModal}
+      />
+    );
   };
 
   render() {
-    const { rowIndex } = this.props;
-
     return (
       <FocusTrap
         focusTrapOptions={{
@@ -131,16 +150,7 @@ class AttributesDropdown extends PureComponent {
           escapeDeactivates: false,
         }}
       >
-        <div
-          className={classnames(
-            'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
-            {
-              'attributes-dropup': rowIndex > DROPUP_START,
-            }
-          )}
-        >
-          {this.renderFields()}
-        </div>
+        {this.renderFieldsPanel()}
       </FocusTrap>
     );
   }
@@ -150,7 +160,7 @@ class AttributesDropdown extends PureComponent {
  * @typedef {object} Props Component props
  *
  * @prop {string} [attributeType] i.e. pattribute, address
- * @prop {*} [attrId] the ID of the temporary editing instance
+ * @prop {string|number} [editingInstanceId] the ID of the temporary editing instance
  * @prop {array} [layout] array of element layouts
  * @prop {number} [rowIndex] row index within the table
  * @prop {number} [tabIndex]
@@ -166,7 +176,8 @@ class AttributesDropdown extends PureComponent {
  */
 AttributesDropdown.propTypes = {
   attributeType: PropTypes.string.isRequired,
-  attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  editingInstanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   layout: PropTypes.array,
   rowIndex: PropTypes.number,
   tabIndex: PropTypes.number,

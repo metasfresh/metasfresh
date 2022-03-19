@@ -2,23 +2,19 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
+import * as api from '../../../api/attributes';
 import {
-  getAttributesInstance,
-  getLayout,
-  patchRequest,
-  completeRequest,
-} from '../../../api';
-import {
-  parseToDisplay,
   formatDateWithZeros,
+  parseToDisplay,
 } from '../../../utils/documentListHelper';
-import AttributesDropdown from './AttributesDropdown';
 import {
-  DROPUP_START,
   DROPDOWN_OFFSET_BIG,
-  DROPDOWN_OFFSET_SMALL,
+  DROPUP_OFFSET_SMALL,
+  DROPUP_START,
 } from '../../../constants/Constants';
 import { getTableId } from '../../../reducers/tables';
+
+import AttributesDropdown from './AttributesDropdown';
 
 /**
  * @file Class based component.
@@ -46,14 +42,14 @@ export default class Attributes extends Component {
       viewId,
       fieldName,
       attributeType,
-      widgetData,
+      value,
       entity,
     } = this.props;
 
     const templateId =
-      widgetData.value && widgetData.value.key
-        ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
-        : parseInt(widgetData.value, 10); // assume 'value' is string or int
+      value && value.key
+        ? parseInt(value.key, 10) // assume 'value' is a key/caption lookup value
+        : parseInt(value, 10); // assume 'value' is string or int
 
     let source;
     if (entity === 'window') {
@@ -81,11 +77,12 @@ export default class Attributes extends Component {
     }
 
     this.setState({ loading: true }, () => {
-      return getAttributesInstance(attributeType, templateId, source)
+      return api
+        .createAttributesEditingInstance(attributeType, templateId, source)
         .then((response) => {
           const { id, fieldsByName } = response.data;
           this.setState({ data: parseToDisplay(fieldsByName) });
-          return getLayout(attributeType, id);
+          return api.getAttributesLayout(attributeType, id);
         })
         .then((response) => {
           const { elements } = response.data;
@@ -93,7 +90,10 @@ export default class Attributes extends Component {
         })
         .then(() => this.setState({ loading: false, isDropdownOpen: true }))
         .catch((error) =>
-          console.error('Attributes handleInit error: ', error.message)
+          console.error(
+            'Failed creating a new editing attributes instance: ',
+            error.message
+          )
         )
         .finally(() => this.setState({ loading: false }));
     });
@@ -101,6 +101,7 @@ export default class Attributes extends Component {
 
   showHideDropdown = (show) => {
     const {
+      readonly,
       handleBackdropLock,
       updateHeight,
       rowIndex,
@@ -111,6 +112,11 @@ export default class Attributes extends Component {
       tabId,
     } = this.props;
     const { loading, isDropdownOpen } = this.state;
+
+    // Do nothing if readonly. Shall not happen
+    if (readonly) {
+      return;
+    }
 
     // this is limited to tables only
     if (rowIndex != null) {
@@ -125,7 +131,7 @@ export default class Attributes extends Component {
     isDropdownOpen &&
       !isModal &&
       rowIndex < DROPUP_START &&
-      updateHeight(DROPDOWN_OFFSET_SMALL);
+      updateHeight(DROPUP_OFFSET_SMALL);
 
     if (!loading) {
       this.setState(
@@ -147,19 +153,6 @@ export default class Attributes extends Component {
     }
   };
 
-  handleKeyDown = (e) => {
-    console.log('handleKeyDown', { key: e.key, altKey: e.altKey, e });
-    if (e.key === 'Enter' && e.altKey) {
-      e.stopPropagation();
-      e.preventDefault();
-      this.handleCompletion();
-    } else if (e.key === 'Escape') {
-      e.stopPropagation();
-      e.preventDefault();
-      this.handleCompletion();
-    }
-  };
-
   handleFieldChange = async (field, value) => {
     const { isDropdownOpen, data } = this.state;
     // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
@@ -175,42 +168,43 @@ export default class Attributes extends Component {
     }));
   };
 
-  handleFieldPatch = (fieldName, value, attrId, callback) => {
+  handleFieldPatch = (fieldName, value, editingInstanceId, callback) => {
     const { attributeType } = this.props;
     const { data, loading } = this.state;
 
     if (!loading && data) {
-      return patchRequest({
-        entity: attributeType,
-        docType: null,
-        docId: attrId,
-        property: fieldName,
-        value,
-      }).then((response) => {
-        if (response.data && response.data.length) {
-          const fields = response.data[0].fieldsByName;
+      return api
+        .patchAttributes({
+          attributeType,
+          instanceId: editingInstanceId,
+          fieldName,
+          value,
+        })
+        .then((response) => {
+          if (response.data && response.data.length) {
+            const fields = response.data[0].fieldsByName;
 
-          Object.keys(fields).map((fieldName) => {
-            this.setState(
-              (prevState) => ({
-                data: {
-                  ...prevState.data,
-                  [fieldName]: {
-                    ...prevState.data[fieldName],
-                    value,
+            Object.keys(fields).map((fieldName) => {
+              this.setState(
+                (prevState) => ({
+                  data: {
+                    ...prevState.data,
+                    [fieldName]: {
+                      ...prevState.data[fieldName],
+                      value,
+                    },
                   },
-                },
-              }),
-              () => {
-                callback && callback();
-              }
-            );
-          });
-          return Promise.resolve(true);
-        } else {
-          return Promise.resolve(false);
-        }
-      });
+                }),
+                () => {
+                  callback && callback();
+                }
+              );
+            });
+            return Promise.resolve(true);
+          } else {
+            return Promise.resolve(false);
+          }
+        });
     } else {
       return Promise.resolve(true);
     }
@@ -248,52 +242,69 @@ export default class Attributes extends Component {
   doCompleteRequest = () => {
     const { attributeType, patch, openModal, closeModal } = this.props;
     const { data } = this.state;
-    const attrId = data && data.ID ? data.ID.value : -1;
+    const editingInstanceId = data && data.ID ? data.ID.value : -1;
 
-    completeRequest(attributeType, attrId).then((response) => {
-      patch(response.data).then(({ triggerActions }) => {
-        // post PATCH actions if we have `triggerActions` present
-        if (triggerActions) {
-          closeModal();
-          triggerActions.forEach((itemTriggerAction) => {
-            let {
-              selectedDocumentPath: { documentId },
-              processId,
-            } = itemTriggerAction;
+    api
+      .completeAttributesEditing(attributeType, editingInstanceId)
+      .then((response) => {
+        patch(response.data).then(({ triggerActions }) => {
+          // post PATCH actions if we have `triggerActions` present
+          if (triggerActions) {
+            closeModal();
+            triggerActions.forEach((itemTriggerAction) => {
+              let {
+                selectedDocumentPath: { documentId },
+                processId,
+              } = itemTriggerAction;
 
-            openModal({
-              windowId: processId,
-              modalType: 'process',
-              viewDocumentIds: [`${documentId}`],
+              openModal({
+                windowId: processId,
+                modalType: 'process',
+                viewDocumentIds: [`${documentId}`],
+              });
             });
-          });
-        }
+          }
+        });
       });
-    });
+  };
+
+  renderDropdownIfNeeded = () => {
+    const { isDropdownOpen } = this.state;
+    if (!isDropdownOpen) {
+      return null;
+    }
+
+    const { attributeType, tabIndex, rowIndex, isModal } = this.props;
+
+    const { layout, data } = this.state;
+    const editingInstanceId = data && data.ID ? data.ID.value : -1;
+
+    return (
+      <AttributesDropdown
+        attributeType={attributeType}
+        editingInstanceId={editingInstanceId}
+        layout={layout}
+        data={data}
+        rowIndex={rowIndex}
+        tabIndex={tabIndex}
+        isModal={isModal}
+        //
+        onFieldChange={this.handleFieldChange}
+        onFieldPatch={this.handleFieldPatch}
+        onCompletion={this.handleCompletion}
+      />
+    );
   };
 
   render() {
-    const {
-      widgetData,
-      rowId,
-      attributeType,
-      tabIndex,
-      readonly,
-      rowIndex,
-      isModal,
-    } = this.props;
+    const { value, rowId, tabIndex, readonly } = this.props;
 
-    const { isDropdownOpen, data, layout } = this.state;
-    const { value } = widgetData;
-    const label = value ? value.caption : '';
-    const attrId = data && data.ID ? data.ID.value : -1;
+    const { isDropdownOpen } = this.state;
+    const caption = value?.caption || '';
 
     return (
       <div
-        onKeyDown={this.handleKeyDown}
-        className={classnames('attributes', {
-          'attributes-in-table': rowId,
-        })}
+        className={classnames('attributes', { 'attributes-in-table': rowId })}
       >
         <button
           tabIndex={tabIndex}
@@ -306,41 +317,26 @@ export default class Attributes extends Component {
             }
           )}
         >
-          {label ? label : 'Edit'}
+          {caption ? caption : 'Edit'}
         </button>
-        {isDropdownOpen && (
-          <AttributesDropdown
-            attributeType={attributeType}
-            attrId={attrId}
-            layout={layout}
-            rowIndex={rowIndex}
-            tabIndex={tabIndex}
-            data={data}
-            isModal={isModal}
-            //
-            onFieldChange={this.handleFieldChange}
-            onFieldPatch={this.handleFieldPatch}
-            onCompletion={this.handleCompletion}
-          />
-        )}
+        {this.renderDropdownIfNeeded()}
       </div>
     );
   }
 }
 
 Attributes.propTypes = {
-  entity: PropTypes.string.isRequired,
+  entity: PropTypes.string.isRequired, // i.e. window, documentView, process
   docType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // i.e. windowId or processId
   dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   tabId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   viewId: PropTypes.string,
   disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
-  //
   fieldName: PropTypes.string,
+  //
+  value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]), // lookup value, e.g. { key: 1234, caption: 'ASI description' }, { key: 333, caption: 'Location Description'  }, ""
   attributeType: PropTypes.string.isRequired,
-  widgetType: PropTypes.string,
-  widgetData: PropTypes.object,
   //
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   tabIndex: PropTypes.number,
