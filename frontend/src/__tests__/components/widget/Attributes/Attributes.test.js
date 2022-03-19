@@ -33,45 +33,29 @@ describe('Attributes component', () => {
       jest.clearAllMocks();
     });
 
-    it('toggle triggers init', done => {
+    it('toggle triggers init', (done) => {
       const props = fixtures.data1.widgetProps;
       const patchFn = jest.fn();
       const setTableNavigationFn = jest.fn();
       const wrapper = shallow(<Attributes {...props} patch={patchFn} setTableNavigation={setTableNavigationFn} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleToggle');
-      const spyInit = jest.spyOn(wrapper.instance(), 'handleInit');
+      const spy_showHideDropdown = jest.spyOn(wrapper.instance(), 'showHideDropdown');
+      const spy_loadDropdownData = jest.spyOn(wrapper.instance(), 'loadDropdownData');
 
       wrapper.find('button').simulate('click');
-      expect(spy).toHaveBeenCalled();
-      expect(spyInit).toHaveBeenCalled();
+
+      expect(spy_showHideDropdown).toHaveBeenCalled();
+      expect(spy_loadDropdownData).toHaveBeenCalled();
 
       wrapper.update();
 
-      setTimeout(function() {
+      setTimeout(() => {
         try {
-          expect(wrapper.state().dropdown).toBe(true);
+          expect(wrapper.state().isDropdownOpen).toBe(true);
           done();
         } catch (e) {
           done.fail(e);
         }
       }, 1000);
-    });
-
-    it.skip('keydown triggers onHandleKeyDown', () => {
-      const props = fixtures.data1.widgetProps;
-      const patchFn = jest.fn();
-      const handleCompletion = jest.fn();
-      const wrapper = shallow(<Attributes {...props} patch={patchFn} />);
-      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
-
-      const completionSpy = jest
-        .spyOn(wrapper.instance(), 'handleCompletion')
-        .mockImplementation(() => handleCompletion);
-
-      wrapper.find('.attributes').simulate('keyDown', { keyCode: 27 });
-
-      expect(spy).toHaveBeenCalled();
-      expect(completionSpy).toHaveBeenCalled();
     });
   });
 });

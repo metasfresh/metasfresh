@@ -3,6 +3,7 @@
     {
         "widgetProps":
         {
+            "value": "",
             "attributeType": "address",
             "fields":
             [
@@ -13,22 +14,6 @@
                 }
             ],
             "dataId": "1",
-            "widgetData":
-            {
-                "field": "C_Location_ID",
-                "value": "",
-                "readonly": false,
-                "mandatory": true,
-                "displayed": true,
-                "widgetType": "Address",
-                "validStatus":
-                {
-                    "valid": false,
-                    "initialValue": true,
-                    "reason": "Mandatory field C_Location_ID not filled",
-                    "fieldName": "C_Location_ID"
-                }
-            },
             "docType": "123",
             "tabId": "8",
             "rowId": "2",
