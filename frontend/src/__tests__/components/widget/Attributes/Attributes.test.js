@@ -20,12 +20,7 @@ describe('Attributes component', () => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .post('/address')
-      .reply(200, fixtures.data1.instanceData);
-
-    nock(config.API_URL)
-      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/address/${fixtures.data1.instanceData.id}/layout`)
-      .reply(200, fixtures.data1.layout);
+      .reply(200, fixtures.data1.newInstanceResponse);
   });
 
   describe('handlers test', () => {
@@ -33,7 +28,7 @@ describe('Attributes component', () => {
       jest.clearAllMocks();
     });
 
-    it('toggle triggers init', (done) => {
+    it('click on button', (done) => {
       const props = fixtures.data1.widgetProps;
       const patchFn = jest.fn();
       const setTableNavigationFn = jest.fn();
@@ -52,8 +47,8 @@ describe('Attributes component', () => {
         try {
           expect(wrapper.state().isDropdownOpen).toBe(true);
           done();
-        } catch (e) {
-          done.fail(e);
+        } catch (error) {
+          done(error);
         }
       }, 1000);
     });
