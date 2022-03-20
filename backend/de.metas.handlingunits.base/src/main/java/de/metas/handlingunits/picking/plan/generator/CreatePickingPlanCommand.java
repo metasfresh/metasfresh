@@ -272,7 +272,7 @@ public class CreatePickingPlanCommand
 		}
 	}
 
-	private ImmutableList<PickingPlanLine> createLinesFromEligibleHUs(final AllocablePackageable packageable)
+	private ImmutableList<PickingPlanLine> createLinesFromEligibleHUs(@NonNull final AllocablePackageable packageable)
 	{
 		if (packageable.isAllocated())
 		{

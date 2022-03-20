@@ -23,6 +23,8 @@
 package de.metas.common.handlingunits;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +36,10 @@ import javax.annotation.Nullable;
 public class JsonSetClearanceStatusRequest
 {
 	@NonNull
+	@JsonProperty("huIdentifier")
+	JsonHUIdentifier huIdentifier;
+
+	@NonNull
 	@JsonProperty("clearanceStatus")
 	JsonClearanceStatus clearanceStatus;
 
@@ -43,11 +49,44 @@ public class JsonSetClearanceStatusRequest
 
 	@Builder
 	public JsonSetClearanceStatusRequest(
+			@JsonProperty("huIdentifier") @NonNull final JsonSetClearanceStatusRequest.JsonHUIdentifier jsonHuIdentifier,
 			@JsonProperty("clearanceStatus") @NonNull final JsonClearanceStatus clearanceStatus,
 			@JsonProperty("clearanceNote") @Nullable final String clearanceNote)
 	{
+		this.huIdentifier = jsonHuIdentifier;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;
 	}
 
+	@Value
+	public static class JsonHUIdentifier
+	{
+		@Nullable
+		@JsonProperty("metasfreshId")
+		JsonMetasfreshId metasfreshId;
+
+		@Nullable
+		@JsonProperty("qrCode")
+		String qrCode;
+
+		@Builder
+		public JsonHUIdentifier(
+				@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
+				@JsonProperty("qrCode") @Nullable final String qrCode)
+		{
+			Check.assume(qrCode == null || metasfreshId == null, "metasfreshId and qrCode cannot be set at the same time!");
+			Check.assume(qrCode != null || metasfreshId != null, "metasfreshId or qrCode must be set!");
+
+			this.metasfreshId = metasfreshId;
+			this.qrCode = qrCode;
+		}
+
+		@NonNull
+		public static JsonHUIdentifier ofJsonMetasfreshId(@NonNull final JsonMetasfreshId metasfreshId)
+		{
+			return JsonHUIdentifier.builder()
+					.metasfreshId(metasfreshId)
+					.build();
+		}
+	}
 }

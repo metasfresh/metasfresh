@@ -199,7 +199,7 @@ public class PickingJobCreateCommand
 		ProductId productId;
 	}
 
-	private static PickingJobLineKey extractPickingJobLineKey(@NonNull Packageable item) {return PickingJobLineKey.builder().productId(item.getProductId()).build();}
+	private static PickingJobLineKey extractPickingJobLineKey(@NonNull final Packageable item) {return PickingJobLineKey.builder().productId(item.getProductId()).build();}
 
 	private PickingJobCreateRepoRequest.Line createLineRequest(@NonNull final Collection<Packageable> itemsForProduct)
 	{

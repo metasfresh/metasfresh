@@ -164,25 +164,30 @@ public class MD_Candidate_StepDef
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
-			mdCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 			mdCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 			mdCandidateRecord.setMD_Candidate_Type(tableRow.getType().getCode());
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
 			mdCandidateRecord.setDateProjected(TimeUtil.asTimestamp(tableRow.getTime()));
+
+			setAttributeSetInstance(mdCandidateRecord, tableRow);
+
+			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
+
 			mdCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
+
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			final I_MD_Candidate mdStockCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdStockCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdStockCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
-			mdStockCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
-			mdStockCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 			mdStockCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 			mdStockCandidateRecord.setMD_Candidate_Type(CandidateType.STOCK.getCode());
 			mdStockCandidateRecord.setSeqNo(mdCandidateRecord.getMD_Candidate_ID());
 			final boolean isDemand = CandidateType.DEMAND.equals(tableRow.getType()) || CandidateType.INVENTORY_DOWN.equals(tableRow.getType());
+
+			setAttributeSetInstance(mdStockCandidateRecord, tableRow);
+
 			if (isDemand)
 			{
 				mdStockCandidateRecord.setMD_Candidate_Parent_ID(mdCandidateRecord.getMD_Candidate_ID());
@@ -311,6 +316,21 @@ public class MD_Candidate_StepDef
 		assertThat(candidateRecord).isNull();
 	}
 
+	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
+	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		validate_md_candidates(timeoutSec, table);
+
+		final int storedCandidatesSize = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.create()
+				.count();
+
+		// expected count is twice the number of rows bc we integrated the stock md_candidate as a column in step def
+		final int expectedCandidateAndStocks = table.getRows().size() * 2;
+
+		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
+	}
+
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(
 			final int timeoutSec,
@@ -338,6 +358,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoRecord.isSimulated()).isEqualTo(tableRow.isSimulated());
 
 			final String attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
@@ -451,6 +472,38 @@ public class MD_Candidate_StepDef
 					.orElse(AttributesKey.NONE);
 
 			assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
+		}
+	}
+
+	private void setAttributeSetInstance(
+			@NonNull final I_MD_Candidate mdCandidateRecord,
+			@NonNull final MaterialDispoTableRow tableRow)
+	{
+		if (Check.isNotBlank(tableRow.getAttributeSetInstanceId()))
+		{
+			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(tableRow.getAttributeSetInstanceId());
+			assertThat(attributeSetInstance).isNotNull();
+
+			mdCandidateRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+
+			final AttributesKey storageAttributesKey = AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			if (AttributesKey.NONE.equals(storageAttributesKey)
+					|| AttributesKey.ALL.equals(storageAttributesKey)
+					|| AttributesKey.OTHER.equals(storageAttributesKey))
+			{
+				// discard the given attributeSetInstanceId if it is not about a "real" ASI.
+				mdCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+			}
+
+			mdCandidateRecord.setStorageAttributesKey(storageAttributesKey.getAsString());
+		}
+		else
+		{
+			mdCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+			mdCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 		}
 	}
 }

@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -1098,10 +1099,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setClearanceStatus(
+	public void setClearanceStatusRecursively(
 			@NonNull final HuId huId,
-			@NonNull final ClearanceStatus clearanceStatus,
-			@Nullable final String clearanceNote)
+			@NonNull final ClearanceStatusInfo clearanceStatusInfo)
 	{
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 
@@ -1110,13 +1110,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			throw new AdempiereException("Hu with ID: " + huId.getRepoId() + " does not exist!");
 		}
 
-		hu.setClearanceStatus(clearanceStatus.getCode());
-		hu.setClearanceNote(clearanceNote);
+		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
+		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
 
 		handlingUnitsRepo.saveHU(hu);
 
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
-				.forEach(includedHU -> setClearanceStatus(HuId.ofRepoId(includedHU.getM_HU_ID()), clearanceStatus, clearanceNote));
+				.forEach(includedHU -> setClearanceStatusRecursively(HuId.ofRepoId(includedHU.getM_HU_ID()), clearanceStatusInfo));
 	}
 
 	@Override

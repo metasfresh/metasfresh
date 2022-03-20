@@ -31,7 +31,7 @@ public class PickingJobStepPickFromMap
 	@Getter
 	private final PickingJobProgress progress;
 
-	public static PickingJobStepPickFromMap ofList(@NonNull List<PickingJobStepPickFrom> pickFroms)
+	public static PickingJobStepPickFromMap ofList(@NonNull final List<PickingJobStepPickFrom> pickFroms)
 	{
 		return new PickingJobStepPickFromMap(Maps.uniqueIndex(pickFroms, PickingJobStepPickFrom::getPickFromKey));
 	}
