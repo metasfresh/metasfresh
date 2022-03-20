@@ -77,7 +77,7 @@ export default class Attributes extends PureComponent {
           this.setState({
             editingInstanceId: id,
             layout: layout.elements,
-            fieldsByName: this.mergeFieldsByNames({}, fieldsByName),
+            fieldsByName: mergeFieldsByNames({}, fieldsByName),
             isDropdownOpen: true,
           });
         })
@@ -148,7 +148,7 @@ export default class Attributes extends PureComponent {
   mergeFieldsByNameIntoState = (fieldsByNameToMerge, callback = null) => {
     this.setState(
       (prevState) => ({
-        fieldsByName: this.mergeFieldsByNames(
+        fieldsByName: mergeFieldsByNames(
           prevState.fieldsByName,
           fieldsByNameToMerge
         ),
@@ -157,25 +157,6 @@ export default class Attributes extends PureComponent {
         callback && callback();
       }
     );
-  };
-
-  mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
-    const result = existingFieldsByName ? { ...existingFieldsByName } : {};
-
-    Object.keys(fieldsByNameToMerge).forEach((fieldName) => {
-      // Skip pseudo-field "ID". We already have editingInstanceId in our state.
-      if (fieldName === 'ID') {
-        return;
-      }
-
-      const fieldData = fieldsByNameToMerge[fieldName];
-      result[fieldName] = {
-        ...result[fieldName],
-        ...fieldData,
-      };
-    });
-
-    return result;
   };
 
   handleFieldChange = (fieldName, value) => {
@@ -357,4 +338,23 @@ Attributes.propTypes = {
   openModal: PropTypes.func,
   closeModal: PropTypes.func,
   setTableNavigation: PropTypes.func,
+};
+
+const mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
+  const result = existingFieldsByName ? { ...existingFieldsByName } : {};
+
+  Object.keys(fieldsByNameToMerge).forEach((fieldName) => {
+    // Skip pseudo-field "ID". We already have editingInstanceId in our state.
+    if (fieldName === 'ID') {
+      return;
+    }
+
+    const fieldData = fieldsByNameToMerge[fieldName];
+    result[fieldName] = {
+      ...result[fieldName],
+      ...fieldData,
+    };
+  });
+
+  return result;
 };
