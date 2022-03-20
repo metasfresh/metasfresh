@@ -201,7 +201,7 @@ class WidgetRenderer extends PureComponent {
       rowId,
       fieldName: widgetField,
       handleBackdropLock,
-      patch: (option) => onPatch(widgetField, option),
+      patch: (value) => onPatch(widgetField, value),
       isModal,
       openModal,
       closeModal,
