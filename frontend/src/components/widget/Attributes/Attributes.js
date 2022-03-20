@@ -353,7 +353,6 @@ Attributes.propTypes = {
   //
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
-  onBlur: PropTypes.func,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   openModal: PropTypes.func,
   closeModal: PropTypes.func,
