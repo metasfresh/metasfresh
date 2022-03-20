@@ -1,5 +1,5 @@
-import { get, patch, post } from 'axios';
-import { createPatchRequestPayload } from '../utils';
+import { patch, post } from 'axios';
+import { createPatchRequestPayload, toSingleFieldPatchRequest } from '../utils';
 
 /**
  * @summary Creates a new editing instance
@@ -16,24 +16,6 @@ export function createAttributesEditingInstance(
     templateId: templateId,
     source: source,
   });
-}
-
-/**
- * @param {string} attributeType 'pattribute' or 'address'
- * @param {string} instanceId editing instance ID
- */
-export function getAttributesLayout(attributeType, instanceId) {
-  return get(`${config.API_URL}/${attributeType}/${instanceId}/layout`);
-}
-
-/**
- * @summary Completes the attributes editing and returns the ID of the new immutable instance (i.e. the M_AttributeSetInstance_ID or C_Location_ID)
- * @param {string} attributeType - i.e. 'pattribute' or 'address'
- * @param {string} instanceId editing instance ID
- * @return {object} key and caption
- */
-export function completeAttributesEditing(attributeType, instanceId) {
-  return post(`${config.API_URL}/${attributeType}/${instanceId}/complete`);
 }
 
 export function patchAttributes({
@@ -56,4 +38,30 @@ export function patchAttributes({
 
     return Promise.resolve(rawResponse);
   });
+}
+
+/**
+ * @summary Completes the attributes editing and returns the ID of the new immutable instance (i.e. the M_AttributeSetInstance_ID or C_Location_ID)
+ * @param {string} [attributeType] - i.e. 'pattribute' or 'address'
+ * @param {string} [instanceId] editing instance ID
+ * @param {object} [fieldsByName] - e.g. { 'FieldName': { value: 123 } }
+ * @return {object} key and caption
+ */
+export function completeAttributesEditing(
+  attributeType,
+  instanceId,
+  fieldsByName = null
+) {
+  const requestBody = { events: [] };
+  if (fieldsByName) {
+    Object.keys(fieldsByName).forEach((fieldName) => {
+      const value = fieldsByName[fieldName].value;
+      requestBody.events.push(toSingleFieldPatchRequest(fieldName, value));
+    });
+  }
+
+  return post(
+    `${config.API_URL}/${attributeType}/${instanceId}/complete`,
+    requestBody
+  );
 }

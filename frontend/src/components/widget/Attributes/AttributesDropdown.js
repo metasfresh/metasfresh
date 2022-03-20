@@ -8,66 +8,15 @@ import { DROPUP_START } from '../../../constants/Constants';
 
 import WidgetWrapper from '../../../containers/WidgetWrapper';
 
-/**
- * @file Class based component.
- * @module AttributesDropdown
- * @extends Component
- */
 class AttributesDropdown extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      patchCallbacks: new Map(),
-    };
-  }
-
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleClickOutside = () => {
     const { onCompletion } = this.props;
-
-    // we need to wait for fetching all of PATCH fields on blur
-    // to complete on updated instance
-    // TODO: Figure out if it would be possible to rewrite this
-    // using Promise.all somehow
-    const requestsInterval = window.setInterval(() => {
-      const intervalsLeft = this.state.patchCallbacks.size;
-
-      if (intervalsLeft === 0) {
-        window.clearInterval(requestsInterval);
-        onCompletion();
-      }
-    }, 10);
+    onCompletion();
   };
 
-  /**
-   * @method handleWidgetPatch
-   * @param {string} fieldName
-   * @param {*} value
-   * @param {number} idx
-   */
-  handleWidgetPatch = (fieldName, value, idx) => {
+  handleWidgetPatch = (fieldName, value) => {
     const { onFieldPatch, editingInstanceId } = this.props;
-    const { patchCallbacks } = this.state;
-    const updatedCallbacks = patchCallbacks.set(idx, true);
-
-    return new Promise((resolve) => {
-      this.setState(
-        {
-          patchCallbacks: updatedCallbacks,
-        },
-        () => {
-          return onFieldPatch(fieldName, value, editingInstanceId, () => {
-            this.state.patchCallbacks.delete(idx);
-
-            resolve();
-          });
-        }
-      );
-    });
+    onFieldPatch(fieldName, value, editingInstanceId);
   };
 
   handleKeyDown = (e) => {
@@ -101,7 +50,7 @@ class AttributesDropdown extends PureComponent {
   renderField = (elementLayout, elementIndex) => {
     const {
       tabIndex,
-      data,
+      fieldsByName,
       attributeType,
       editingInstanceId,
       isModal,
@@ -111,7 +60,7 @@ class AttributesDropdown extends PureComponent {
     } = this.props;
 
     const widgetData = elementLayout.fields.map(
-      (elem) => data[elem.field] || -1
+      (fieldLayout) => fieldsByName[fieldLayout.field] || -1
     );
 
     return (
@@ -164,7 +113,7 @@ class AttributesDropdown extends PureComponent {
  * @prop {array} [layout] array of element layouts
  * @prop {number} [rowIndex] row index within the table
  * @prop {number} [tabIndex]
- * @prop {object} [data]
+ * @prop {object} [fieldsByName]
  * @prop {bool} [isModal]
  *
  * @prop {func} [onFieldChange]
@@ -181,7 +130,7 @@ AttributesDropdown.propTypes = {
   layout: PropTypes.array,
   rowIndex: PropTypes.number,
   tabIndex: PropTypes.number,
-  data: PropTypes.object.isRequired,
+  fieldsByName: PropTypes.object.isRequired,
   isModal: PropTypes.bool,
   //
   onFieldChange: PropTypes.func.isRequired,

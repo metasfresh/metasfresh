@@ -1,12 +1,9 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 
 import * as api from '../../../api/attributes';
-import {
-  formatDateWithZeros,
-  parseToDisplay,
-} from '../../../utils/documentListHelper';
+import { formatDateWithZeros } from '../../../utils/documentListHelper';
 import {
   DROPDOWN_OFFSET_BIG,
   DROPUP_OFFSET_SMALL,
@@ -16,18 +13,14 @@ import { getTableId } from '../../../reducers/tables';
 
 import AttributesDropdown from './AttributesDropdown';
 
-/**
- * @file Class based component.
- * @module Attributes
- * @extends Component
- */
-export default class Attributes extends Component {
+export default class Attributes extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
       layout: null,
-      data: null,
+      editingInstanceId: null,
+      fieldsByName: null,
       loading: false,
       isDropdownOpen: false,
     };
@@ -80,15 +73,14 @@ export default class Attributes extends Component {
       return api
         .createAttributesEditingInstance(attributeType, templateId, source)
         .then((response) => {
-          const { id, fieldsByName } = response.data;
-          this.setState({ data: parseToDisplay(fieldsByName) });
-          return api.getAttributesLayout(attributeType, id);
+          const { id, layout, fieldsByName } = response.data;
+          this.setState({
+            editingInstanceId: id,
+            layout: layout.elements,
+            fieldsByName: this.mergeFieldsByNames({}, fieldsByName),
+            isDropdownOpen: true,
+          });
         })
-        .then((response) => {
-          const { elements } = response.data;
-          this.setState({ layout: elements });
-        })
-        .then(() => this.setState({ loading: false, isDropdownOpen: true }))
         .catch((error) =>
           console.error(
             'Failed creating a new editing attributes instance: ',
@@ -137,7 +129,7 @@ export default class Attributes extends Component {
       this.setState(
         {
           layout: null,
-          data: null,
+          fieldsByName: null,
           isDropdownOpen: false,
         },
         () => {
@@ -153,26 +145,57 @@ export default class Attributes extends Component {
     }
   };
 
-  handleFieldChange = async (field, value) => {
-    const { isDropdownOpen, data } = this.state;
+  mergeFieldsByNameIntoState = (fieldsByNameToMerge, callback = null) => {
+    this.setState(
+      (prevState) => ({
+        fieldsByName: this.mergeFieldsByNames(
+          prevState.fieldsByName,
+          fieldsByNameToMerge
+        ),
+      }),
+      () => {
+        callback && callback();
+      }
+    );
+  };
+
+  mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
+    const result = existingFieldsByName ? { ...existingFieldsByName } : {};
+
+    Object.keys(fieldsByNameToMerge).forEach((fieldName) => {
+      // Skip pseudo-field "ID". We already have editingInstanceId in our state.
+      if (fieldName === 'ID') {
+        return;
+      }
+
+      const fieldData = fieldsByNameToMerge[fieldName];
+      result[fieldName] = {
+        ...result[fieldName],
+        ...fieldData,
+      };
+    });
+
+    return result;
+  };
+
+  handleFieldChange = async (fieldName, value) => {
+    const { isDropdownOpen, fieldsByName } = this.state;
     // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
     value =
-      isDropdownOpen && data[field].widgetType === 'Date'
+      isDropdownOpen && fieldsByName[fieldName].widgetType === 'Date'
         ? await formatDateWithZeros(value)
         : value;
 
-    this.setState((prevState) => ({
-      data: Object.assign({}, prevState.data, {
-        [field]: Object.assign({}, prevState.data[field], { value }),
-      }),
-    }));
+    this.mergeFieldsByNameIntoState({ [fieldName]: { value } });
   };
 
-  handleFieldPatch = (fieldName, value, editingInstanceId, callback) => {
+  handleFieldPatch = (fieldName, value, editingInstanceId, callback = null) => {
     const { attributeType } = this.props;
-    const { data, loading } = this.state;
+    const { fieldsByName, loading } = this.state;
 
-    if (!loading && data) {
+    if (!loading && fieldsByName) {
+      this.mergeFieldsByNameIntoState({ [fieldName]: { value } });
+
       return api
         .patchAttributes({
           attributeType,
@@ -182,24 +205,9 @@ export default class Attributes extends Component {
         })
         .then((response) => {
           if (response.data && response.data.length) {
-            const fields = response.data[0].fieldsByName;
+            const fieldsByName = response.data[0].fieldsByName;
+            this.mergeFieldsByNameIntoState(fieldsByName, callback);
 
-            Object.keys(fields).map((fieldName) => {
-              this.setState(
-                (prevState) => ({
-                  data: {
-                    ...prevState.data,
-                    [fieldName]: {
-                      ...prevState.data[fieldName],
-                      value,
-                    },
-                  },
-                }),
-                () => {
-                  callback && callback();
-                }
-              );
-            });
             return Promise.resolve(true);
           } else {
             return Promise.resolve(false);
@@ -211,18 +219,20 @@ export default class Attributes extends Component {
   };
 
   handleCompletion = () => {
-    const { data, loading } = this.state;
+    const { fieldsByName, loading } = this.state;
     const { disconnected } = this.props;
 
-    if (!loading && data) {
-      const mandatory = Object.keys(data).filter(
-        (fieldName) => data[fieldName].mandatory
+    if (!loading && fieldsByName) {
+      const mandatoryFieldNames = Object.keys(fieldsByName).filter(
+        (fieldName) => fieldsByName[fieldName].mandatory
       );
-      const valid = !mandatory.filter((field) => !data[field].value).length;
+      const valid = !mandatoryFieldNames.filter(
+        (fieldName) => !fieldsByName[fieldName].value
+      ).length;
 
       //there are required values that are not set. just close
-      if (mandatory.length && !valid) {
-        /** we are treating the inlineTab differently - we don't show this confirm dialog  */
+      if (mandatoryFieldNames.length && !valid) {
+        /** we are treating the inlineTab differently - we don't show this confirmation dialog  */
         if (disconnected === 'inlineTab') {
           /** TODO: here we might use a prompt explaining that the settings were not saved */
           this.showHideDropdown(false);
@@ -241,11 +251,10 @@ export default class Attributes extends Component {
 
   doCompleteRequest = () => {
     const { attributeType, patch, openModal, closeModal } = this.props;
-    const { data } = this.state;
-    const editingInstanceId = data && data.ID ? data.ID.value : -1;
+    const { editingInstanceId, fieldsByName } = this.state;
 
     api
-      .completeAttributesEditing(attributeType, editingInstanceId)
+      .completeAttributesEditing(attributeType, editingInstanceId, fieldsByName)
       .then((response) => {
         patch(response.data).then(({ triggerActions }) => {
           // post PATCH actions if we have `triggerActions` present
@@ -276,15 +285,14 @@ export default class Attributes extends Component {
 
     const { attributeType, tabIndex, rowIndex, isModal } = this.props;
 
-    const { layout, data } = this.state;
-    const editingInstanceId = data && data.ID ? data.ID.value : -1;
+    const { layout, editingInstanceId, fieldsByName } = this.state;
 
     return (
       <AttributesDropdown
         attributeType={attributeType}
         editingInstanceId={editingInstanceId}
         layout={layout}
-        data={data}
+        fieldsByName={fieldsByName}
         rowIndex={rowIndex}
         tabIndex={tabIndex}
         isModal={isModal}
