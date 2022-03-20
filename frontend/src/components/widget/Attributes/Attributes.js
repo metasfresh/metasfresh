@@ -178,12 +178,12 @@ export default class Attributes extends PureComponent {
     return result;
   };
 
-  handleFieldChange = async (fieldName, value) => {
+  handleFieldChange = (fieldName, value) => {
     const { isDropdownOpen, fieldsByName } = this.state;
     // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
     value =
       isDropdownOpen && fieldsByName[fieldName].widgetType === 'Date'
-        ? await formatDateWithZeros(value)
+        ? formatDateWithZeros(value)
         : value;
 
     this.mergeFieldsByNameIntoState({ [fieldName]: { value } });
