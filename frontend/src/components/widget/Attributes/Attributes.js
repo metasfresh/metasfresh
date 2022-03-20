@@ -116,9 +116,8 @@ const Attributes = ({
     }
   };
 
-  const mergeFieldsByNameIntoState = (fieldsByNameToMerge, callback = null) => {
+  const mergeFieldsByNameIntoState = (fieldsByNameToMerge) => {
     setFieldsByName(mergeFieldsByNames(fieldsByName, fieldsByNameToMerge));
-    callback && callback();
   };
 
   const handleFieldChange = (fieldName, value) => {
@@ -131,12 +130,7 @@ const Attributes = ({
     mergeFieldsByNameIntoState({ [fieldName]: { value } });
   };
 
-  const handleFieldPatch = (
-    fieldName,
-    value,
-    editingInstanceId,
-    callback = null
-  ) => {
+  const handleFieldPatch = (fieldName, value, editingInstanceId) => {
     if (!isLoading && fieldsByName) {
       mergeFieldsByNameIntoState({ [fieldName]: { value } });
 
@@ -147,9 +141,7 @@ const Attributes = ({
           fieldName,
           value,
         })
-        .then((fieldsByName) => {
-          mergeFieldsByNameIntoState(fieldsByName, callback);
-        });
+        .then((fieldsByName) => mergeFieldsByNameIntoState(fieldsByName));
     } else {
       return Promise.resolve();
     }
@@ -195,7 +187,7 @@ const Attributes = ({
     if (triggerActions) {
       closeModal();
       triggerActions.forEach((itemTriggerAction) => {
-        let {
+        const {
           selectedDocumentPath: { documentId },
           processId,
         } = itemTriggerAction;
@@ -226,7 +218,7 @@ const Attributes = ({
       >
         {buttonCaption}
       </button>
-      {isDropdownOpen && fieldsByName && (
+      {isDropdownOpen && layout && fieldsByName && (
         <AttributesDropdown
           attributeType={attributeType}
           editingInstanceId={editingInstanceId}
