@@ -3,19 +3,12 @@ import { shallow } from 'enzyme';
 import nock from 'nock';
 import Attributes from '../../../../components/widget/Attributes/Attributes';
 import fixtures from '../../../../../test_setup/fixtures/attributes.json';
+import AttributesDropdown
+  from '../../../../components/widget/Attributes/AttributesDropdown';
 
 nock.enableNetConnect();
 
 describe('Attributes component', () => {
-  describe('renders', () => {
-    it('without errors', () => {
-      const props = fixtures.data1.widgetProps;
-      const patchFn = jest.fn();
-
-      shallow(<Attributes {...props} patch={patchFn} />);
-    });
-  });
-
   beforeEach(() => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -23,29 +16,28 @@ describe('Attributes component', () => {
       .reply(200, fixtures.data1.newInstanceResponse);
   });
 
-  describe('handlers test', () => {
+  describe('renders', () => {
+    it('without errors', () => {
+      shallow(<Attributes {...(fixtures.data1.widgetProps)} patch={jest.fn()} />);
+    });
+  });
+
+  describe('click on button, expect dropdown to be rendered', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
 
     it('click on button', (done) => {
-      const props = fixtures.data1.widgetProps;
-      const patchFn = jest.fn();
-      const setTableNavigationFn = jest.fn();
-      const wrapper = shallow(<Attributes {...props} patch={patchFn} setTableNavigation={setTableNavigationFn} />);
-      const spy_showHideDropdown = jest.spyOn(wrapper.instance(), 'showHideDropdown');
-      const spy_loadDropdownData = jest.spyOn(wrapper.instance(), 'loadDropdownData');
+      const wrapper = shallow(<Attributes {...(fixtures.data1.widgetProps)} patch={jest.fn()} />);
 
+      expect(wrapper.find(AttributesDropdown)).toHaveLength(0);
       wrapper.find('button').simulate('click');
-
-      expect(spy_showHideDropdown).toHaveBeenCalled();
-      expect(spy_loadDropdownData).toHaveBeenCalled();
-
-      wrapper.update();
 
       setTimeout(() => {
         try {
-          expect(wrapper.state().isDropdownOpen).toBe(true);
+          wrapper.update();
+          expect(wrapper.find(AttributesDropdown)).toHaveLength(1);
+
           done();
         } catch (error) {
           done(error);

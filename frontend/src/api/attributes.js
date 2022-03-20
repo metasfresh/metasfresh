@@ -6,6 +6,7 @@ import { createPatchRequestPayload, toSingleFieldPatchRequest } from '../utils';
  * @param {string} [attributeType] 'pattribute' or 'address'
  * @param {string|number} [templateId] original instance ID that we are editing; it might be null
  * @param {object} [source] source document/row/field that we are editing
+ * @return attributes document, i.e. { id, layout, fieldsByName }
  */
 export function createAttributesEditingInstance(
   attributeType,
@@ -15,41 +16,40 @@ export function createAttributesEditingInstance(
   return post(`${config.API_URL}/${attributeType}`, {
     templateId: templateId,
     source: source,
-  });
+  }).then((axiosResponse) => axiosResponse.data);
 }
 
+/**
+ * @return {object} fieldsByName
+ */
 export function patchAttributes({
   attributeType,
-  instanceId,
+  editingInstanceId,
   fieldName,
   value,
 }) {
   const payload = createPatchRequestPayload(fieldName, value);
 
   return patch(
-    `${config.API_URL}/${attributeType}/${instanceId}`,
+    `${config.API_URL}/${attributeType}/${editingInstanceId}`,
     payload
-  ).then((rawResponse) => {
-    // this is fixed on the FE because the BE is not consistent in sending the `documents` key with every PATCH request
-    // this differs when patch is done within processes for example
-    if (!rawResponse.data.documents) {
-      rawResponse.data.documents = rawResponse.data;
-    }
-
-    return Promise.resolve(rawResponse);
-  });
+  ).then((axiosResponse) =>
+    axiosResponse.data && axiosResponse.data.length
+      ? axiosResponse.data[0].fieldsByName
+      : {}
+  );
 }
 
 /**
  * @summary Completes the attributes editing and returns the ID of the new immutable instance (i.e. the M_AttributeSetInstance_ID or C_Location_ID)
  * @param {string} [attributeType] - i.e. 'pattribute' or 'address'
- * @param {string} [instanceId] editing instance ID
+ * @param {string} [editingInstanceId]
  * @param {object} [fieldsByName] - e.g. { 'FieldName': { value: 123 } }
- * @return {object} key and caption
+ * @return {object} created lookup value, e.g. { key: 1234, caption: 'bla bla' }
  */
 export function completeAttributesEditing(
   attributeType,
-  instanceId,
+  editingInstanceId,
   fieldsByName = null
 ) {
   const requestBody = { events: [] };
@@ -61,7 +61,7 @@ export function completeAttributesEditing(
   }
 
   return post(
-    `${config.API_URL}/${attributeType}/${instanceId}/complete`,
+    `${config.API_URL}/${attributeType}/${editingInstanceId}/complete`,
     requestBody
-  );
+  ).then((response) => response.data);
 }

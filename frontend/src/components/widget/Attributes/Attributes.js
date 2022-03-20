@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { useState } from 'react';
 import classnames from 'classnames';
 
 import * as api from '../../../api/attributes';
@@ -13,98 +13,75 @@ import { getTableId } from '../../../reducers/tables';
 
 import AttributesDropdown from './AttributesDropdown';
 
-export default class Attributes extends PureComponent {
-  constructor(props) {
-    super(props);
+/**
+ * @component
+ */
+const Attributes = ({
+  entity,
+  docType,
+  dataId,
+  tabId,
+  rowId,
+  viewId,
+  disconnected,
+  fieldName,
+  //
+  value,
+  attributeType,
+  //
+  rowIndex,
+  tabIndex,
+  readonly,
+  isModal,
+  //
+  patch,
+  handleBackdropLock,
+  updateHeight,
+  openModal,
+  closeModal,
+  setTableNavigation,
+}) => {
+  const [layout, setLayout] = useState(null);
+  const [editingInstanceId, setEditingInstanceId] = useState(null);
+  const [fieldsByName, setFieldsByName] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    this.state = {
-      layout: null,
-      editingInstanceId: null,
-      fieldsByName: null,
-      loading: false,
-      isDropdownOpen: false,
-    };
-  }
+  const loadDropdownData = () => {
+    const templateId =
+      value && value.key
+        ? parseInt(value.key, 10) // assume 'value' is a key/buttonCaption lookup value
+        : parseInt(value, 10); // assume 'value' is string or int
 
-  loadDropdownData = () => {
-    const {
+    const source = computeEditingSource({
+      entity,
       docType,
       dataId,
       tabId,
       rowId,
       viewId,
       fieldName,
-      attributeType,
-      value,
-      entity,
-    } = this.props;
-
-    const templateId =
-      value && value.key
-        ? parseInt(value.key, 10) // assume 'value' is a key/caption lookup value
-        : parseInt(value, 10); // assume 'value' is string or int
-
-    let source;
-    if (entity === 'window') {
-      source = {
-        windowId: docType,
-        documentId: dataId,
-        tabId: tabId,
-        rowId: rowId,
-        fieldName: fieldName,
-      };
-    } else if (entity === 'documentView') {
-      source = {
-        viewId: viewId,
-        rowId: rowId,
-        fieldName: fieldName,
-      };
-    } else if (entity === 'process') {
-      source = {
-        processId: docType,
-        documentId: dataId,
-        fieldName: fieldName,
-      };
-    } else {
-      console.error('Unknown entity: ', entity);
-    }
-
-    this.setState({ loading: true }, () => {
-      return api
-        .createAttributesEditingInstance(attributeType, templateId, source)
-        .then((response) => {
-          const { id, layout, fieldsByName } = response.data;
-          this.setState({
-            editingInstanceId: id,
-            layout: layout.elements,
-            fieldsByName: mergeFieldsByNames({}, fieldsByName),
-            isDropdownOpen: true,
-          });
-        })
-        .catch((error) =>
-          console.error(
-            'Failed creating a new editing attributes instance: ',
-            error.message
-          )
-        )
-        .finally(() => this.setState({ loading: false }));
     });
+
+    setIsLoading(true);
+    return api
+      .createAttributesEditingInstance(attributeType, templateId, source)
+      .then(({ id, layout, fieldsByName }) => {
+        setEditingInstanceId(id);
+        setLayout(layout.elements);
+        setFieldsByName(mergeFieldsByNames({}, fieldsByName));
+        setIsDropdownOpen(true);
+      })
+      .catch((error) =>
+        console.error(
+          'Failed creating a new editing attributes instance: ',
+          error.message
+        )
+      )
+      .finally(() => setIsLoading(false));
   };
 
-  showHideDropdown = (show) => {
-    const {
-      readonly,
-      handleBackdropLock,
-      updateHeight,
-      rowIndex,
-      isModal,
-      setTableNavigation,
-      docType,
-      dataId,
-      tabId,
-    } = this.props;
-    const { loading, isDropdownOpen } = this.state;
-
+  const showHideDropdown = (show) => {
     // Do nothing if readonly. Shall not happen
     if (readonly) {
       return;
@@ -125,85 +102,61 @@ export default class Attributes extends PureComponent {
       rowIndex < DROPUP_START &&
       updateHeight(DROPUP_OFFSET_SMALL);
 
-    if (!loading) {
-      this.setState(
-        {
-          layout: null,
-          fieldsByName: null,
-          isDropdownOpen: false,
-        },
-        () => {
-          //Method is disabling outside click in parents
-          //elements if there is some
-          handleBackdropLock && handleBackdropLock(!!show);
+    if (!isLoading) {
+      setLayout(null);
+      setFieldsByName(null);
+      setIsDropdownOpen(false);
 
-          if (show) {
-            this.loadDropdownData();
-          }
-        }
-      );
+      //Method is disabling outside click in parents elements if there is some
+      handleBackdropLock && handleBackdropLock(!!show);
+
+      if (show) {
+        loadDropdownData();
+      }
     }
   };
 
-  mergeFieldsByNameIntoState = (fieldsByNameToMerge, callback = null) => {
-    this.setState(
-      (prevState) => ({
-        fieldsByName: mergeFieldsByNames(
-          prevState.fieldsByName,
-          fieldsByNameToMerge
-        ),
-      }),
-      () => {
-        callback && callback();
-      }
-    );
+  const mergeFieldsByNameIntoState = (fieldsByNameToMerge, callback = null) => {
+    setFieldsByName(mergeFieldsByNames(fieldsByName, fieldsByNameToMerge));
+    callback && callback();
   };
 
-  handleFieldChange = (fieldName, value) => {
-    const { isDropdownOpen, fieldsByName } = this.state;
+  const handleFieldChange = (fieldName, value) => {
     // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
     value =
       isDropdownOpen && fieldsByName[fieldName].widgetType === 'Date'
         ? formatDateWithZeros(value)
         : value;
 
-    this.mergeFieldsByNameIntoState({ [fieldName]: { value } });
+    mergeFieldsByNameIntoState({ [fieldName]: { value } });
   };
 
-  handleFieldPatch = (fieldName, value, editingInstanceId, callback = null) => {
-    const { attributeType } = this.props;
-    const { fieldsByName, loading } = this.state;
-
-    if (!loading && fieldsByName) {
-      this.mergeFieldsByNameIntoState({ [fieldName]: { value } });
+  const handleFieldPatch = (
+    fieldName,
+    value,
+    editingInstanceId,
+    callback = null
+  ) => {
+    if (!isLoading && fieldsByName) {
+      mergeFieldsByNameIntoState({ [fieldName]: { value } });
 
       return api
         .patchAttributes({
           attributeType,
-          instanceId: editingInstanceId,
+          editingInstanceId,
           fieldName,
           value,
         })
-        .then((response) => {
-          if (response.data && response.data.length) {
-            const fieldsByName = response.data[0].fieldsByName;
-            this.mergeFieldsByNameIntoState(fieldsByName, callback);
-
-            return Promise.resolve(true);
-          } else {
-            return Promise.resolve(false);
-          }
+        .then((fieldsByName) => {
+          mergeFieldsByNameIntoState(fieldsByName, callback);
         });
     } else {
-      return Promise.resolve(true);
+      return Promise.resolve();
     }
   };
 
-  handleCompletion = () => {
-    const { fieldsByName, loading } = this.state;
-    const { disconnected } = this.props;
-
-    if (!loading && fieldsByName) {
+  const handleCompletion = () => {
+    if (!isLoading && fieldsByName) {
       const mandatoryFieldNames = Object.keys(fieldsByName).filter(
         (fieldName) => fieldsByName[fieldName].mandatory
       );
@@ -216,103 +169,81 @@ export default class Attributes extends PureComponent {
         /** we are treating the inlineTab differently - we don't show this confirmation dialog  */
         if (disconnected === 'inlineTab') {
           /** TODO: here we might use a prompt explaining that the settings were not saved */
-          this.showHideDropdown(false);
+          showHideDropdown(false);
         } else {
           /** the generic case  */
           if (window.confirm('Do you really want to leave?')) {
-            this.showHideDropdown(false);
+            showHideDropdown(false);
           }
         }
       } else {
-        this.doCompleteRequest();
-        this.showHideDropdown(false);
+        doCompleteRequest();
+        showHideDropdown(false);
       }
     }
   };
 
-  doCompleteRequest = () => {
-    const { attributeType, patch, openModal, closeModal } = this.props;
-    const { editingInstanceId, fieldsByName } = this.state;
-
+  const doCompleteRequest = () => {
     api
       .completeAttributesEditing(attributeType, editingInstanceId, fieldsByName)
-      .then((response) => {
-        patch(response.data).then(({ triggerActions }) => {
-          // post PATCH actions if we have `triggerActions` present
-          if (triggerActions) {
-            closeModal();
-            triggerActions.forEach((itemTriggerAction) => {
-              let {
-                selectedDocumentPath: { documentId },
-                processId,
-              } = itemTriggerAction;
+      .then((createdLookupValue) => patch(createdLookupValue))
+      .then(handleAfterPatchTriggerActions);
+  };
 
-              openModal({
-                windowId: processId,
-                modalType: 'process',
-                viewDocumentIds: [`${documentId}`],
-              });
-            });
-          }
+  const handleAfterPatchTriggerActions = ({ triggerActions }) => {
+    // post PATCH actions if we have `triggerActions` present
+    if (triggerActions) {
+      closeModal();
+      triggerActions.forEach((itemTriggerAction) => {
+        let {
+          selectedDocumentPath: { documentId },
+          processId,
+        } = itemTriggerAction;
+
+        openModal({
+          windowId: processId,
+          modalType: 'process',
+          viewDocumentIds: [`${documentId}`],
         });
       });
-  };
-
-  renderDropdownIfNeeded = () => {
-    const { isDropdownOpen } = this.state;
-    if (!isDropdownOpen) {
-      return null;
     }
-
-    const { attributeType, tabIndex, rowIndex, isModal } = this.props;
-
-    const { layout, editingInstanceId, fieldsByName } = this.state;
-
-    return (
-      <AttributesDropdown
-        attributeType={attributeType}
-        editingInstanceId={editingInstanceId}
-        layout={layout}
-        fieldsByName={fieldsByName}
-        rowIndex={rowIndex}
-        tabIndex={tabIndex}
-        isModal={isModal}
-        //
-        onFieldChange={this.handleFieldChange}
-        onFieldPatch={this.handleFieldPatch}
-        onCompletion={this.handleCompletion}
-      />
-    );
   };
 
-  render() {
-    const { value, rowId, tabIndex, readonly } = this.props;
+  const buttonCaption = value?.caption || 'Edit';
 
-    const { isDropdownOpen } = this.state;
-    const caption = value?.caption || '';
-
-    return (
-      <div
-        className={classnames('attributes', { 'attributes-in-table': rowId })}
+  return (
+    <div className={classnames('attributes', { 'attributes-in-table': rowId })}>
+      <button
+        tabIndex={tabIndex}
+        onClick={() => showHideDropdown(true)}
+        className={classnames(
+          'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+          {
+            'tag-disabled': isDropdownOpen,
+            'tag-disabled disabled': readonly,
+          }
+        )}
       >
-        <button
+        {buttonCaption}
+      </button>
+      {isDropdownOpen && fieldsByName && (
+        <AttributesDropdown
+          attributeType={attributeType}
+          editingInstanceId={editingInstanceId}
+          layout={layout}
+          fieldsByName={fieldsByName}
+          rowIndex={rowIndex}
           tabIndex={tabIndex}
-          onClick={() => this.showHideDropdown(true)}
-          className={classnames(
-            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-            {
-              'tag-disabled': isDropdownOpen,
-              'tag-disabled disabled': readonly,
-            }
-          )}
-        >
-          {caption ? caption : 'Edit'}
-        </button>
-        {this.renderDropdownIfNeeded()}
-      </div>
-    );
-  }
-}
+          isModal={isModal}
+          //
+          onFieldChange={handleFieldChange}
+          onFieldPatch={handleFieldPatch}
+          onCompletion={handleCompletion}
+        />
+      )}
+    </div>
+  );
+};
 
 Attributes.propTypes = {
   entity: PropTypes.string.isRequired, // i.e. window, documentView, process
@@ -340,6 +271,40 @@ Attributes.propTypes = {
   setTableNavigation: PropTypes.func,
 };
 
+const computeEditingSource = ({
+  entity,
+  docType,
+  dataId,
+  tabId,
+  rowId,
+  fieldName,
+  viewId,
+}) => {
+  if (entity === 'window') {
+    return {
+      windowId: docType,
+      documentId: dataId,
+      tabId: tabId,
+      rowId: rowId,
+      fieldName: fieldName,
+    };
+  } else if (entity === 'documentView') {
+    return {
+      viewId: viewId,
+      rowId: rowId,
+      fieldName: fieldName,
+    };
+  } else if (entity === 'process') {
+    return {
+      processId: docType,
+      documentId: dataId,
+      fieldName: fieldName,
+    };
+  } else {
+    throw 'Unknown entity: ' + entity;
+  }
+};
+
 const mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
   const result = existingFieldsByName ? { ...existingFieldsByName } : {};
 
@@ -358,3 +323,5 @@ const mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
 
   return result;
 };
+
+export default Attributes;
