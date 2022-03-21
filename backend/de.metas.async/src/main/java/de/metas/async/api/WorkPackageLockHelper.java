@@ -37,18 +37,16 @@ public class WorkPackageLockHelper
 
 	public static boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
 	{
-		boolean success;
 		try
 		{
 			unlock(workPackage);
-			success = true;
+			return true;
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Got exception while unlocking " + workPackage, e);
-			success = false;
+			logger.warn("Got exception while unlocking " + workPackage, e, workPackage);
+			return false;
 		}
-		return success;
 	}
 
 	private static void unlock(final I_C_Queue_WorkPackage workPackage)

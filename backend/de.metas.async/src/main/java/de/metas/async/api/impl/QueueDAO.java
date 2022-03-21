@@ -208,7 +208,7 @@ public class QueueDAO extends AbstractQueueDAO
 			wc.append(" AND ");
 			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID)
 					.append(" IN ")
-					.append(DB.buildSqlList(packageQuery.getPackageProcessorIds(), params));
+					.append(DB.buildSqlList(packageProcessorIds, params));
 		}
 
 		//
