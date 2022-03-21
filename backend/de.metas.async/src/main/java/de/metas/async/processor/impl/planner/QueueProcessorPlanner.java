@@ -85,7 +85,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 			{
 				final boolean successfulRun = runOnce();
 
-				if (!successfulRun && stopOnFailedRun())
+				if (!successfulRun && isStopOnFailedRun())
 				{
 					logger.warn("*** QueueProcessorPlanner.run() -> last run was not successful & planner = {} has stopOnFailedRun policy; Shutting down...", this.getClass().getName());
 					shutdown();
@@ -107,7 +107,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 			{
 				logger.warn("*** QueueProcessorPlanner.run() caught an unexpected error!", throwable);
 
-				if (stopOnFailedRun())
+				if (isStopOnFailedRun())
 				{
 					logger.error("*** QueueProcessorPlanner.run() caught an unexpected error!"
 										 + " Planner = " + this.getClass().getName() + " has stopOnFailedRun policy; Shutting down...", throwable);
@@ -362,5 +362,5 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 	protected abstract Set<Class<? extends AbstractQueueProcessor>> getSupportedQueueProcessors();
 
-	protected abstract boolean stopOnFailedRun();
+	protected abstract boolean isStopOnFailedRun();
 }

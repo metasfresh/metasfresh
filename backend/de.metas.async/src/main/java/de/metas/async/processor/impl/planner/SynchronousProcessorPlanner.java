@@ -66,7 +66,7 @@ public class SynchronousProcessorPlanner extends QueueProcessorPlanner
 	}
 
 	@Override
-	protected boolean stopOnFailedRun()
+	protected boolean isStopOnFailedRun()
 	{
 		return true;
 	}

@@ -43,16 +43,8 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 {
 	private static final Logger logger = LogManager.getLogger(QueueProcessorPlanner.class);
 
-	private ExecutorService plannerExecutorService;
-	private ExecutorService queueProcessorExecutorService;
-
-	public AsyncProcessorPlanner()
-	{
-		super();
-
-		this.plannerExecutorService = null;
-		this.queueProcessorExecutorService = null;
-	}
+	private ExecutorService plannerExecutorService = null;
+	private ExecutorService queueProcessorExecutorService = null;
 
 	protected void startPlanner()
 	{
@@ -91,7 +83,7 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 	}
 
 	@Override
-	protected boolean stopOnFailedRun()
+	protected boolean isStopOnFailedRun()
 	{
 		return false;
 	}
