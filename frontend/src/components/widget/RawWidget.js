@@ -17,6 +17,8 @@ import PropTypes from 'prop-types';
  * @extends Component
  */
 export class RawWidget extends PureComponent {
+  mounted = false;
+
   constructor(props) {
     super(props);
 
@@ -48,6 +50,12 @@ export class RawWidget extends PureComponent {
     if (textSelected) {
       rawWidget.current.select();
     }
+
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   /**
@@ -161,14 +169,9 @@ export class RawWidget extends PureComponent {
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
-      this.setState(
-        {
-          isFocused: true,
-        },
-        () => {
-          handleFocus && handleFocus();
-        }
-      );
+      if (this.mounted) {
+        this.setState({ isFocused: true }, () => handleFocus && handleFocus());
+      }
     }, 0);
   };
 
@@ -411,10 +414,9 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: this logic should be removed and adapted below after widgetType === 'MultiListValue' is added
-    const isMultiselect =
+    const isMultiselect = !!(
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
-        ? true
-        : false;
+    );
 
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
@@ -466,9 +468,7 @@ export class RawWidget extends PureComponent {
    */
   isScanQRbuttonPanel = () => {
     const { barcodeScannerType, layoutType } = this.props;
-    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
-      ? true
-      : false;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel';
   };
 
   /**
@@ -701,6 +701,8 @@ RawWidget.propTypes = {
   rowId: PropTypes.string,
   dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   windowType: PropTypes.string,
+  fieldName: PropTypes.string,
+  widgetField: PropTypes.string,
   caption: PropTypes.string,
   gridAlign: PropTypes.string,
   type: PropTypes.string,
@@ -734,6 +736,18 @@ RawWidget.propTypes = {
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
   lastFormField: PropTypes.bool,
+  maxLength: PropTypes.number,
+  isFilterActive: PropTypes.bool,
+  isEdited: PropTypes.bool,
+  barcodeScannerType: PropTypes.string,
+  layoutType: PropTypes.string,
+  description: PropTypes.string,
+  captionElement: PropTypes.string,
+  fieldFormGroupClass: PropTypes.string,
+  fieldLabelClass: PropTypes.string,
+  fieldInputClass: PropTypes.string,
+  enableOnClickOutside: PropTypes.func,
+  disableOnClickOutside: PropTypes.func,
 };
 RawWidget.defaultProps = {
   tabIndex: 0,
