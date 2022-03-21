@@ -11,3 +11,5 @@ INSERT INTO t_alter_column values('c_queue_workpackage','C_Queue_PackageProcesso
 INSERT INTO t_alter_column values('c_queue_workpackage','C_Queue_PackageProcessor_ID',null,'NOT NULL',null)
 ;
 
+alter table dlm.c_queue_workpackage_archived alter column c_queue_packageprocessor_id set not null
+;

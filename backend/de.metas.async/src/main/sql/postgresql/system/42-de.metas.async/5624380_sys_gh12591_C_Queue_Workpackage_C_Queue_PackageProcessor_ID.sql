@@ -11,3 +11,6 @@ UPDATE AD_Column SET ColumnSQL='',Updated=TO_TIMESTAMP('2022-02-04 12:16:30','YY
 ALTER TABLE C_Queue_WorkPackage ADD CONSTRAINT CQueuePackageProcessor_CQueueWorkPackage FOREIGN KEY (C_Queue_PackageProcessor_ID) REFERENCES public.C_Queue_PackageProcessor DEFERRABLE INITIALLY DEFERRED
 ;
 
+alter table dlm.c_queue_workpackage_archived ADD c_queue_packageprocessor_id NUMERIC(10) DEFAULT NULL
+;
+
