@@ -51,14 +51,14 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
 	private static final Logger logger = LogManager.getLogger(AbstractQueueProcessor.class);
 
-	private final IWorkPackageQueue queue;
-
+	private final ReentrantLock mainLock = new ReentrantLock();
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private IWorkpackageProcessorFactory workpackageProcessorFactory = null;
-	private final QueueProcessorStatistics statistics;
 
+	private final IWorkPackageQueue queue;
+	private final QueueProcessorStatistics statistics;
 	private final IWorkpackageLogsRepository logsRepository;
 
-	private final ReentrantLock mainLock = new ReentrantLock();
 
 	public AbstractQueueProcessor(
 			@NonNull final IWorkPackageQueue queue,
@@ -233,6 +233,6 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 
 	private IQueueProcessorEventDispatcher getEventDispatcher()
 	{
-		return Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
+		return queueProcessorFactory.getQueueProcessorEventDispatcher();
 	}
 }

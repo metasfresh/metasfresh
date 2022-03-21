@@ -238,6 +238,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		workpackageParam.setP_Date(null);
 	}
 
+	@Nullable
 	private static PInstanceId extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
 	{
 		//
