@@ -190,11 +190,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 	private boolean runOnce()
 	{
-		final List<IQueueProcessor> availableProcessors = queueProcessors
-				.values()
-				.stream()
-				.filter(IQueueProcessor::isAvailableToWork)
-				.collect(ImmutableList.toImmutableList());
+		final List<IQueueProcessor> availableProcessors = getQueueProcessorsAvailableToWork();
 
 		if (availableProcessors.isEmpty())
 		{
@@ -232,9 +228,9 @@ public abstract class QueueProcessorPlanner implements Runnable
 				continue;
 			}
 
-			final Optional<IQueueProcessor> queueProcessorOptional = getAvailableQueueProcessorForWorkPackage(workPackage);
+			final IQueueProcessor queueProcessor = getAvailableQueueProcessorForWorkPackage(workPackage).orElse(null);
 
-			if (!queueProcessorOptional.isPresent())
+			if (queueProcessor == null)
 			{
 				logger.warn("*** processWorkPackages: No available QueueProcessor found for workPackageId: {}, c_queue_workpackage.c_queue_packageprocessor_id: {}",
 							workPackage.getC_Queue_WorkPackage_ID(), workPackage.getC_Queue_PackageProcessor_ID());
@@ -243,8 +239,6 @@ public abstract class QueueProcessorPlanner implements Runnable
 				handledAllWorkPackages = false;
 				continue;
 			}
-
-			final IQueueProcessor queueProcessor = queueProcessorOptional.get();
 
 			final Optional<I_C_Queue_WorkPackage> workPackageWithOwnCtx = getWorkPackageWithOwnContext(queueProcessor, workPackage, ctx);
 
@@ -330,6 +324,16 @@ public abstract class QueueProcessorPlanner implements Runnable
 	private Integer getPollInterval()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_POLLINTERVAL_MILLIS, SYSCONFIG_POLLINTERVAL_DEFAULT_MS);
+	}
+
+	@NonNull
+	private List<IQueueProcessor> getQueueProcessorsAvailableToWork()
+	{
+		return queueProcessors
+				.values()
+				.stream()
+				.filter(IQueueProcessor::isAvailableToWork)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static boolean isValid(final I_C_Queue_WorkPackage workPackage)
