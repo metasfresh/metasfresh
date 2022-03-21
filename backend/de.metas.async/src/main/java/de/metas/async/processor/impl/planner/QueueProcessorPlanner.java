@@ -24,6 +24,7 @@ package de.metas.async.processor.impl.planner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.async.api.WorkPackageLockHelper;
+import de.metas.async.api.impl.WorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.QueuePackageProcessorId;
@@ -36,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -240,18 +242,9 @@ public abstract class QueueProcessorPlanner implements Runnable
 				continue;
 			}
 
-			final Optional<I_C_Queue_WorkPackage> workPackageWithOwnCtx = getWorkPackageWithOwnContext(queueProcessor, workPackage, ctx);
+			setupNewCtxForWorkPackage(workPackage, ctx);
 
-			if (!workPackageWithOwnCtx.isPresent())
-			{
-				logger.warn("*** processWorkPackages: Couldn't assign a new Ctx to C_Queue_WorkPackage: {}", workPackage.getC_Queue_WorkPackage_ID());
-
-				WorkPackageLockHelper.unlockNoFail(workPackage);
-				handledAllWorkPackages = false;
-				continue;
-			}
-
-			final boolean successfullyHandled = handleWorkPackageProcessing(queueProcessor, workPackageWithOwnCtx.get());
+			final boolean successfullyHandled = handleWorkPackageProcessing(queueProcessor, workPackage);
 
 			handledAllWorkPackages = handledAllWorkPackages && successfullyHandled;
 		}
@@ -292,22 +285,6 @@ public abstract class QueueProcessorPlanner implements Runnable
 				.filter(processor -> processor.getAssignedPackageProcessorIds().contains(packageProcessorId))
 				.filter(IQueueProcessor::isAvailableToWork)
 				.findFirst();
-	}
-
-	@NonNull
-	private Optional<I_C_Queue_WorkPackage> getWorkPackageWithOwnContext(@NonNull final IQueueProcessor queueProcessor, @NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Properties commonCtx)
-	{
-		final Properties newCtx = Env.copyCtx(commonCtx);
-
-		final Optional<I_C_Queue_WorkPackage> workPackageWithOwnCtx = queryBL
-				.createQueryBuilder(I_C_Queue_WorkPackage.class, newCtx)
-				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
-				.create()
-				.firstOnlyOptional(I_C_Queue_WorkPackage.class);
-
-		workPackageWithOwnCtx.ifPresent(wp -> queueProcessor.getQueue().setupWorkPackageContext(newCtx, wp));
-
-		return workPackageWithOwnCtx;
 	}
 
 	private void validateQueueProcessorAssignment(@NonNull final IQueueProcessor queueProcessor)
@@ -352,6 +329,15 @@ public abstract class QueueProcessorPlanner implements Runnable
 		}
 
 		return true;
+	}
+
+	private static void setupNewCtxForWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Properties commonCtx)
+	{
+		final Properties newCtx = Env.copyCtx(commonCtx);
+
+		InterfaceWrapperHelper.setCtx(workPackage, newCtx);
+
+		WorkPackageQueue.setupWorkPackageContext(newCtx, workPackage);
 	}
 
 	protected abstract boolean handleWorkPackageProcessing(@NonNull final IQueueProcessor queueProcessor, @NonNull final I_C_Queue_WorkPackage workPackage);

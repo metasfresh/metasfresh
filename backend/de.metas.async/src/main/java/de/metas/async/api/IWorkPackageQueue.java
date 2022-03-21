@@ -180,8 +180,6 @@ public interface IWorkPackageQueue
 
 	IQuery<I_C_Queue_WorkPackage> createQuery(Properties workPackageCtx, QueryLimit limit);
 
-	void setupWorkPackageContext(Properties workPackageCtx,I_C_Queue_WorkPackage workPackage);
-
 	Set<QueuePackageProcessorId> getQueuePackageProcessorIds();
 
 	QueueProcessorId getQueueProcessorId();

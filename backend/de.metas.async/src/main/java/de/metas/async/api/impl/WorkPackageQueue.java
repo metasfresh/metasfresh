@@ -190,7 +190,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	 *
 	 * NOTE: this will be the context that work package processors will use on processing
 	 */
-	public void setupWorkPackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
+	public static void setupWorkPackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
 	{
 		//
 		// AD_Client_ID/AD_Org_ID
