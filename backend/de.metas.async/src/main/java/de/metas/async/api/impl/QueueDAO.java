@@ -31,6 +31,7 @@ import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -46,6 +47,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +58,8 @@ import java.util.Properties;
 
 public class QueueDAO extends AbstractQueueDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(QueueDAO.class);
+
 	public QueueDAO()
 	{
 		//
@@ -205,6 +209,11 @@ public class QueueDAO extends AbstractQueueDAO
 		final List<Integer> packageProcessorIds = packageQuery.getPackageProcessorIds();
 		if (packageProcessorIds != null)
 		{
+			if (packageProcessorIds.isEmpty())
+			{
+				logger.warn("There were no package processor Ids set in the package query. This could be a possible development error! Package query: {}", packageQuery);
+			}
+
 			wc.append(" AND ");
 			wc.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID)
 					.append(" IN ")

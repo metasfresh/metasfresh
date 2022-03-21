@@ -34,6 +34,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
@@ -277,7 +278,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, -1)
 				.create();
 
-		final int numberOfWorkPackagesPerProcessor = 1;
+		final QueryLimit numberOfWorkPackagesPerProcessor = QueryLimit.ONE;
 
 		for (final IQueueProcessor queueProcessor : queueProcessors)
 		{
