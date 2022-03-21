@@ -3,12 +3,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
 import Moment from 'moment-timezone';
-import onClickOutside from 'react-onclickoutside';
-
-import {
-  allowOutsideClick,
-  disableOutsideClick,
-} from '../../../actions/WindowActions';
+import onClickOutsideHOC from 'react-onclickoutside';
 
 import TetheredDateTime from './TetheredDateTime';
 import { getCurrentActiveLocale } from '../../../utils/locale';
@@ -52,11 +47,6 @@ class DatePicker extends PureComponent {
     }
   }
 
-  componentWillUnmount() {
-    const { dispatch } = this.props;
-    dispatch(allowOutsideClick());
-  }
-
   handleDateChange = (dateObj) => {
     if (!dateObj) {
       this.callPatchIfNeeded(null);
@@ -85,12 +75,6 @@ class DatePicker extends PureComponent {
         inputValue = `${datePatched}`;
         selectedDate = this.convertToMoment(datePatched, true);
       }
-
-      // console.log('resetPickerSelectedDateAndInputValueToLastPatchedDate', {
-      //   datePatched,
-      //   selectedDate,
-      //   inputValue,
-      // });
 
       this.picker.setSelectedDateAndInputValue({ selectedDate, inputValue });
     }
@@ -177,13 +161,6 @@ class DatePicker extends PureComponent {
       momentNorm = momentNorm.tz(timeZone, true);
     }
 
-    // console.log('normalizeMomentFormat:', {
-    //   moment,
-    //   moment_toDate: moment.toDate(),
-    //   normalizedString,
-    //   momentNorm,
-    // });
-
     return momentNorm;
   };
 
@@ -233,6 +210,7 @@ class DatePicker extends PureComponent {
     this.openCalendarIfEditable();
   };
 
+  // called by onClickOutsideHOC
   handleClickOutside = () => {
     // Because this method is called when clicking outside a date field,
     // for all the date fields from the page,
@@ -241,7 +219,7 @@ class DatePicker extends PureComponent {
 
     const { isCalendarOpen } = this.state;
     if (isCalendarOpen) {
-      this.handleBlur(this.picker.state.selectedDate, 'click-outside');
+      this.handleBlur();
     }
   };
 
@@ -266,13 +244,6 @@ class DatePicker extends PureComponent {
 
   setIsCalendarOpen = (isCalendarOpen) => {
     this.setState({ isCalendarOpen });
-
-    const { dispatch } = this.props;
-    if (isCalendarOpen) {
-      dispatch(disableOutsideClick());
-    } else {
-      dispatch(allowOutsideClick());
-    }
   };
 
   openCalendarIfEditable = () => {
@@ -383,4 +354,4 @@ DatePicker.propTypes = {
   inputProps: PropTypes.object.isRequired,
 };
 
-export default connect()(onClickOutside(DatePicker));
+export default connect()(onClickOutsideHOC(DatePicker));

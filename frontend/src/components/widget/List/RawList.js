@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -296,7 +296,7 @@ export class RawList extends PureComponent {
     this.props.onFocus();
   }
 
-  render() {
+  renderSingleSelect = () => {
     const {
       rank,
       readonly,
@@ -315,11 +315,12 @@ export class RawList extends PureComponent {
       isToggled,
       isFocused,
       clearable,
-      isMultiselect,
       compositeWidgetData, // for composite lookups - all the widgets data
       field,
       listHash,
       wrapperElement,
+      enableOnClickOutside,
+      disableOnClickOutside,
     } = this.props;
 
     let value = '';
@@ -327,7 +328,7 @@ export class RawList extends PureComponent {
     const widgetData =
       compositeWidgetData &&
       compositeWidgetData.filter((itemWidgetData) => {
-        return itemWidgetData.field == field;
+        return itemWidgetData.field === field;
       })[0];
     const widgetDataValidStatus =
       widgetData && widgetData.validStatus
@@ -356,7 +357,6 @@ export class RawList extends PureComponent {
       : placeholder;
 
     let width = this.dropdown ? this.dropdown.offsetWidth : 0;
-
     if (wrapperElement) {
       const wrapperWidth = wrapperElement.offsetWidth;
       const offset = this.dropdown.offsetLeft;
@@ -364,7 +364,7 @@ export class RawList extends PureComponent {
       width = wrapperWidth - offset;
     }
 
-    const classicDropdown = (
+    return (
       <TetherComponent
         attachment="top left"
         targetAttachment="bottom left"
@@ -470,13 +470,19 @@ export class RawList extends PureComponent {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
+              onMount={() => disableOnClickOutside && disableOnClickOutside()}
+              onUnmount={() => enableOnClickOutside && enableOnClickOutside()}
             />
           )
         }
       />
     );
+  };
 
-    const multiSelectDropdown = (
+  renderMultiSelectDropdown = () => {
+    const { listHash } = this.props;
+
+    return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
@@ -488,13 +494,14 @@ export class RawList extends PureComponent {
         selectedItems={this.props.selected}
       />
     );
+  };
 
-    return (
-      <React.Fragment>
-        {isMultiselect && multiSelectDropdown}
-        {!isMultiselect && classicDropdown}
-      </React.Fragment>
-    );
+  render() {
+    const { isMultiselect } = this.props;
+
+    return isMultiselect
+      ? this.renderMultiSelectDropdown()
+      : this.renderSingleSelect();
   }
 }
 
@@ -531,6 +538,8 @@ export class RawList extends PureComponent {
  * @prop {func} onSelect
  * @prop {func} onOpenDropdown
  * @prop {func} onCloseDropdown
+ * @prop {func} enableOnClickOutside - callback to be used to enable click outside for parent component
+ * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
 RawList.propTypes = {
   filter: PropTypes.object,
@@ -569,6 +578,8 @@ RawList.propTypes = {
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
   wrapperElement: PropTypes.object,
+  enableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
+  disableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
 };
 
 RawList.defaultProps = {
@@ -576,4 +587,4 @@ RawList.defaultProps = {
   clearable: true,
 };
 
-export default onClickOutside(RawList);
+export default onClickOutsideHOC(RawList);
