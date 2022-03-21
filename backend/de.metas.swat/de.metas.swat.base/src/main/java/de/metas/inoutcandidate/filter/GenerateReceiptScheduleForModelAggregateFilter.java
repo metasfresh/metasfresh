@@ -33,17 +33,6 @@ import java.util.List;
 @Service
 public class GenerateReceiptScheduleForModelAggregateFilter
 {
-	@NonNull
-	public static GenerateReceiptScheduleForModelAggregateFilter getInstance()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of());
-		}
-
-		return SpringContextHolder.instance.getBean(GenerateReceiptScheduleForModelAggregateFilter.class);
-	}
-
 	private final List<IGenerateReceiptScheduleForModelFilter> filterList;
 
 	public GenerateReceiptScheduleForModelAggregateFilter(@NonNull final List<IGenerateReceiptScheduleForModelFilter> filterList)

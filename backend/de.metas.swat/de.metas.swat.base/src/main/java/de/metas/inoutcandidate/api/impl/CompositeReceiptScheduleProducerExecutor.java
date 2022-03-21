@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -59,11 +60,15 @@ import java.util.Set;
 
 	private final List<IReceiptScheduleProducer> producers = new ArrayList<IReceiptScheduleProducer>();
 
-	public CompositeReceiptScheduleProducerExecutor()
+	private final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter;
+	
+	public CompositeReceiptScheduleProducerExecutor(@NonNull final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter)
 	{
-		super();
+		this.modelAggregateFilter = modelAggregateFilter;
 	}
 
+	
+	
 	public void addReceiptScheduleProducer(final IReceiptScheduleProducer producer)
 	{
 		Check.assumeNotNull(producer, "producer not null");
@@ -81,8 +86,6 @@ import java.util.Set;
 	@Nullable
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
-		final GenerateReceiptScheduleForModelAggregateFilter modelAggregateFilter = GenerateReceiptScheduleForModelAggregateFilter.getInstance();
-
 		if (!modelAggregateFilter.isEligible(model))
 		{
 			return null;

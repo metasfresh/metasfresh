@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
@@ -44,14 +45,16 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+
 		orderReceiptScheduleProducer = createReceiptScheduleProducer();
 	}
 
 	protected IReceiptScheduleProducer createReceiptScheduleProducer()
 	{
-		final IReceiptScheduleProducer rsProducer = Services.get(IReceiptScheduleProducerFactory.class)
-				.createProducer(I_C_Order.Table_Name, false); // async=false
-		return rsProducer;
+		return Services.get(IReceiptScheduleProducerFactory.class)
+				.createProducer(I_C_Order.Table_Name, false);
 	}
 
 	protected void assertOrderMatches(final I_M_ReceiptSchedule rc, final I_C_Order fromOrder)
