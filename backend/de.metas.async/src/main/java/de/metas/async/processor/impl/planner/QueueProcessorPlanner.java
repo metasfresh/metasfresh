@@ -83,7 +83,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 		{
 			try
 			{
-				final boolean successfulRun = run0();
+				final boolean successfulRun = runOnce();
 
 				if (!successfulRun && stopOnFailedRun())
 				{
@@ -188,7 +188,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 		}
 	}
 
-	private boolean run0()
+	private boolean runOnce()
 	{
 		final List<IQueueProcessor> availableProcessors = queueProcessors
 				.values()
