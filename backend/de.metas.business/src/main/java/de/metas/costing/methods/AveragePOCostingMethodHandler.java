@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
-import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -152,14 +151,16 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
-		final Quantity requestQty = request.getQty();
-		final boolean isInboundTrx = requestQty.signum() >= 0;
-
-		final boolean isInventoryExplicitCostPrice = request.isExplicitCostPrice();
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
-		// final CostPrice currentCostPrice = currentCosts.getCostPrice();
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final Quantity requestQty = request.getQty();
+		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
+
+		final boolean isInboundTrx = requestQty.signum() >= 0;
 
 		final CostDetailCreateRequest requestEffective;
 
@@ -170,45 +171,50 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			// Seed/initial costs import
 			final CostAmount requestAmt = request.getAmt();
-			if (request.getDocumentRef().isInventoryLine() && requestQty.signum() == 0)
-			{
-				requestEffective = request.withAmount(requestAmt.toZero());
 
-				if (currentCosts.getCurrentQty().isZero() && isInventoryExplicitCostPrice)
+			if (request.getDocumentRef().isInventoryLine())
+			{
+				final CostAmount effectiveAmt = explicitCostPrice != null
+						? explicitCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision())
+						: currentCosts.getCostPrice().multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+
+				requestEffective = request.withAmount(effectiveAmt);
+
+				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
-					currentCosts.setOwnCostPrice(requestAmt);
+					currentCosts.setOwnCostPrice(explicitCostPrice);
 				}
 				else
 				{
 					// Do not change an existing positive cost price if there is also a positive qty
 				}
 			}
+
 			// In case the amount was not provided but there is a positive qty incoming
 			// use the current cost price to calculate the amount.
 			// In case of reversals, always consider the Amt.
+
 			else
 			{
-				final CostPrice price = currentCosts.getCostPrice();
-				final Quantity qty = utils.convertToUOM(requestQty, price.getUomId(), request.getProductId());
 				if (requestAmt.isZero() && !request.isReversal())
 				{
-					final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 					requestEffective = request.withAmountAndQty(amt, qty);
 				}
 				else
 				{
 					requestEffective = request.withQty(qty);
 				}
-
-				currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 			}
+
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		}
+
 		//
 		// Outbound transactions (qty < 0)
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final Quantity qty = utils.convertToUOM(requestQty, price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 

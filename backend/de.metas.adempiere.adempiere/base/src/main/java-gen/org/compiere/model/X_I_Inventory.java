@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1455804752L;
+	private static final long serialVersionUID = 2100316678L;
 
     /** Standard Constructor */
     public X_I_Inventory (final Properties ctx, final int I_Inventory_ID, @Nullable final String trxName)
@@ -249,6 +249,29 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
+	/** 
+	 * ExplicitCostPrice AD_Reference_ID=541571
+	 * Reference name: ExplicitCostPrice
+	 */
+	public static final int EXPLICITCOSTPRICE_AD_Reference_ID=541571;
+	/** Yes = Y */
+	public static final String EXPLICITCOSTPRICE_Yes = "Y";
+	/** No = N */
+	public static final String EXPLICITCOSTPRICE_No = "N";
+	/** Auto = A */
+	public static final String EXPLICITCOSTPRICE_Auto = "A";
+	@Override
+	public void setExplicitCostPrice (final java.lang.String ExplicitCostPrice)
+	{
+		set_Value (COLUMNNAME_ExplicitCostPrice, ExplicitCostPrice);
+	}
+
+	@Override
+	public java.lang.String getExplicitCostPrice() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExplicitCostPrice);
+	}
+
 	@Override
 	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
 	{
@@ -379,18 +402,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.sql.Timestamp getInventoryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_InventoryDate);
-	}
-
-	@Override
-	public void setIsExplicitCostPrice (final boolean IsExplicitCostPrice)
-	{
-		set_Value (COLUMNNAME_IsExplicitCostPrice, IsExplicitCostPrice);
-	}
-
-	@Override
-	public boolean isExplicitCostPrice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsExplicitCostPrice);
 	}
 
 	@Override

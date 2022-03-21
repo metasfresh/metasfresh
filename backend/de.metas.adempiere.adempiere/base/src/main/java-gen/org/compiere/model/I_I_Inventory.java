@@ -403,6 +403,27 @@ public interface I_I_Inventory
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Explizite Kosten.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExplicitCostPrice (java.lang.String ExplicitCostPrice);
+
+	/**
+	 * Get Explizite Kosten.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getExplicitCostPrice();
+
+	ModelColumn<I_I_Inventory, Object> COLUMN_ExplicitCostPrice = new ModelColumn<>(I_I_Inventory.class, "ExplicitCostPrice", null);
+	String COLUMNNAME_ExplicitCostPrice = "ExplicitCostPrice";
+
+	/**
 	 * Set External Header ID.
 	 *
 	 * <br>Type: String
@@ -644,27 +665,6 @@ public interface I_I_Inventory
 
 	ModelColumn<I_I_Inventory, Object> COLUMN_IsActive = new ModelColumn<>(I_I_Inventory.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set IsExplicitCostPrice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsExplicitCostPrice (boolean IsExplicitCostPrice);
-
-	/**
-	 * Get IsExplicitCostPrice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isExplicitCostPrice();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_IsExplicitCostPrice = new ModelColumn<>(I_I_Inventory.class, "IsExplicitCostPrice", null);
-	String COLUMNNAME_IsExplicitCostPrice = "IsExplicitCostPrice";
 
 	/**
 	 * Set Lot Blocked.
