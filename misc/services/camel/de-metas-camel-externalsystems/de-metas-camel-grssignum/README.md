@@ -53,7 +53,7 @@ ARTNRID  | `S_ExternalReference`.`externalReference` -> `M_Product_ID` | Y |  Js
 KRED  | ----- | ---- |  JsonRequestProduct.bpartnerProductItem List | see details below |
 ---- | ---- | ---- | syncAdvise | manually set as `CREATE_OR_MERGE` | 
 
-2. `JsonVendorProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
+2. `JsonBPartnerProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
 
 * if provided, then upserts a `C_BPartner_Product` for the given `M_Product_Id` following the below mappings:
 
@@ -76,22 +76,21 @@ GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 ROHKREDDATA.ATTACHMENT | - | N | `JsonAttachmentRequest.JsonAttachment` | see details below |
 
-
 4. `JsonAttachment` - all `metasfresh-column` values refer to `AD_AttachmentEntry` columns
 
 * metasfresh-json => `JsonAttachmentRequest`
 
-* if provided, then creates an `AD_AttachmentEntry` linked to `JsonProduct.ARTNRID` and `JsonVendorProduct.METASFRESHID` following the below mappings:
+* if provided, then creates an `AD_AttachmentEntry` linked to `JsonProduct.ARTNRID` and `JsonBPartnerProduct.METASFRESHID` following the below mappings:
 
 GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note | 
 ---- | ---- | ---- | ---- | ---- |
-ATTACHMENT.ID | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | - |
+ATTACHMENT.ID | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `id` tag |
 ATTACHMENT.FileName | `AD_AttachmentEntry.FileName` | Y | `JsonAttachment.fileName` | `FileName` = `relative path to the working directory` => `JsonAttachment.fileName` = `path.getFileName()` `path` - computed from `FileName` |
 ATTACHMENT.FileName | `AD_AttachmentEntry.Data` | N | `JsonAttachment.data` | `FileName` = `relative path to the working directory` => `JsonAttachment.data` = `path.toUri()`, `path` - computed from `FileName` |
-ATTACHMENT.ValidUntil | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | - | 
-ATTACHMENT.DocumentType | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | - |
-ATTACHMENT.DocumentGroup | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | - |
-- | `AD_AttachmentMultiref.Record_ID` | N | `JsonExternalReferenceTarget.externalReferenceIdentifier` | computed for both `JsonProduct.ARTNRID` and `JsonVendorProduct.METASFRESHID`|
+ATTACHMENT.ValidUntil | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `validto` tag | 
+ATTACHMENT.DocumentType | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `documenttype` tag |
+ATTACHMENT.DocumentGroup | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `documentgroup` tag |
+ ---- | `AD_AttachmentMultiref.Record_ID` | N | `JsonExternalReferenceTarget.externalReferenceIdentifier` | computed for both `JsonProduct.ARTNRID` and `JsonBPartnerProduct.METASFRESHID`|
 
 **GRSSignum => metasfresh BOMs**
 ---
