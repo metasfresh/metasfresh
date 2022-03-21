@@ -35,37 +35,46 @@ spec:
         app: metasfresh-{{ .Release.Name }}-search
     spec:
       containers:       
-        - name: metasfresh-{{ .Release.Name }}-search
-          image: {{ .Values.search.image }}
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: {{ .Values.search.port.search }}
-          securityContext:
-            capabilities:
-              add:
-              - IPC_LOCK
-          env:
-          - name: cluster.name
-            value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
-          - name: ES_PORT
-            value: '{{ .Values.search.port.search }}'
-          - name: MEM_LIMIT
-            value: '{{ .Values.search.resources.memLimit }}'
-          - name: discovery.type
-            value: single-node
-          - name: path.data
-            value: es/data
-          - name: path.logs
-            value: es/log
-          volumeMounts:
-          - name: data
-            mountPath: es  
-          - name: host-localtime
-            mountPath: /etc/localtime
-            readOnly: true
-          - name: host-timezone
-            mountPath: /etc/timezone
-            readOnly: true
+      - name: metasfresh-{{ .Release.Name }}-search
+        image: {{ .Values.search.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.search.port.search }}
+        securityContext:
+          capabilities:
+            add:
+            - IPC_LOCK
+        env:
+        - name: cluster.name
+          value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
+        - name: ES_PORT
+          value: '{{ .Values.search.port.search }}'
+        - name: MEM_LIMIT
+          value: '{{ .Values.search.resources.memLimit }}'
+        - name: discovery.type
+          value: single-node
+        - name: path.data
+          value: /es/data
+        - name: path.logs
+          value: /es/log
+        volumeMounts:
+        - name: data
+          mountPath: es  
+        - name: host-localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: host-timezone
+          mountPath: /etc/timezone
+          readOnly: true
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /es"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: es
       volumes:
       - name: host-localtime
         hostPath:
