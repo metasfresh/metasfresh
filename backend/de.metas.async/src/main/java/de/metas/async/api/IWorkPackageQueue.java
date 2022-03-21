@@ -34,6 +34,7 @@ import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.exceptions.UnlockFailedException;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -176,7 +177,7 @@ public interface IWorkPackageQueue
 
 	IWorkPackageBuilder newWorkPackage(Properties ctx);
 
-	IQuery<I_C_Queue_WorkPackage> createQuery(Properties workPackageCtx, Integer limit);
+	IQuery<I_C_Queue_WorkPackage> createQuery(Properties workPackageCtx, QueryLimit limit);
 
 	void setupWorkPackageContext(Properties workPackageCtx,I_C_Queue_WorkPackage workPackage);
 
