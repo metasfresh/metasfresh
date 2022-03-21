@@ -100,12 +100,12 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 	{
 		if (plannerExecutorService == null || plannerExecutorService.isTerminated())
 		{
-			plannerExecutorService = getPlannerThreadExecutor();
+			plannerExecutorService = createPlannerThreadExecutor();
 		}
 
 		if (queueProcessorExecutorService == null || queueProcessorExecutorService.isTerminated())
 		{
-			queueProcessorExecutorService = getQueueProcessorThreadExecutor();
+			queueProcessorExecutorService = createQueueProcessorThreadExecutor();
 		}
 	}
 
@@ -136,7 +136,7 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 	}
 
 	@NonNull
-	private static ThreadPoolExecutor getPlannerThreadExecutor()
+	private static ThreadPoolExecutor createPlannerThreadExecutor()
 	{
 		final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
 				.setThreadNamePrefix("QueueProcessorPlanner")
@@ -154,7 +154,7 @@ public class AsyncProcessorPlanner extends QueueProcessorPlanner
 	}
 
 	@NonNull
-	private static ThreadPoolExecutor getQueueProcessorThreadExecutor()
+	private static ThreadPoolExecutor createQueueProcessorThreadExecutor()
 	{
 		final ThreadFactory threadFactory = CustomizableThreadFactory.builder()
 				.setThreadNamePrefix("QueueProcessor")

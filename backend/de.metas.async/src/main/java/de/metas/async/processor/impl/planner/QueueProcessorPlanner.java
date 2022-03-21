@@ -55,9 +55,11 @@ public abstract class QueueProcessorPlanner implements Runnable
 	private static final Logger logger = LogManager.getLogger(QueueProcessorPlanner.class);
 
 	private final static String SYSCONFIG_POLLINTERVAL = "de.metas.async.PollIntervallMillis";
+	private final static int SYSCONFIG_POLLINTERVAL_DEFAULT_MS = 1000;
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 	protected final ConcurrentHashMap<QueueProcessorId, IQueueProcessor> queueProcessors;
@@ -85,13 +87,13 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 				if (!successfulRun && stopOnFailedRun())
 				{
-					logger.warn("*** QueueProcessorPlanner.run() -> last run was not successful & planner = " + this.getClass().getName() + " has stopOnFailedRun policy; Shutting down...");
+					logger.warn("*** QueueProcessorPlanner.run() -> last run was not successful & planner = {} has stopOnFailedRun policy; Shutting down...", this.getClass().getName());
 					shutdown();
 				}
 				else
 				{
-					// note: we always get the new service, because things might have changed since this method started
-					final int pollIntervalMs = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_POLLINTERVAL, 1000);
+					// note: we always get the new value, because things might have changed since this method started
+					final int pollIntervalMs = getPollInterval();
 
 					Thread.sleep(pollIntervalMs);
 				}
@@ -329,6 +331,12 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 			throw new AdempiereException("QueueProcessorPlanner can only take: [" + supportedClassNames + "]! but received: " + queueProcessor.getClass().getName());
 		}
+	}
+
+	@NonNull
+	private Integer getPollInterval()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_POLLINTERVAL, SYSCONFIG_POLLINTERVAL_DEFAULT_MS);
 	}
 
 	private static boolean isValid(final I_C_Queue_WorkPackage workPackage)
