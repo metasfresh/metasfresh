@@ -222,7 +222,7 @@ public class QueueDAO extends AbstractQueueDAO
 		return new TypedSqlQuery<>(ctx, I_C_Queue_WorkPackage.class, wc.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
 				.setOnlyActiveRecords(true)
-				.setLimit(QueryLimit.ofNullableOrNoLimit(packageQuery.getLimit()))
+				.setLimit(QueryLimit.getQueryLimitOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator.getSql());
 
 	}

@@ -58,6 +58,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -632,7 +633,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@NonNull
-	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx, @Nullable final Integer limit)
+	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx, @Nullable final QueryLimit limit)
 	{
 		//
 		// Filter out processors which were temporary blacklisted

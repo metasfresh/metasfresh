@@ -23,6 +23,8 @@ package de.metas.async.api;
  */
 
 
+import org.adempiere.ad.dao.QueryLimit;
+
 import java.util.List;
 
 public interface IWorkPackageQuery
@@ -58,7 +60,7 @@ public interface IWorkPackageQuery
 	 */
 	String getPriorityFrom();
 
-	Integer getLimit();
+	QueryLimit getLimit();
 
-	void setLimit(Integer limit);
+	void setLimit(QueryLimit limit);
 }

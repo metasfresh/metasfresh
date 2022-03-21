@@ -26,6 +26,7 @@ import de.metas.async.api.IWorkPackageQuery;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
+import org.adempiere.ad.dao.QueryLimit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 
 	@Getter
 	@Setter
-	private Integer limit;
+	private QueryLimit limit;
 
 	/*
 	 * (non-Javadoc)
