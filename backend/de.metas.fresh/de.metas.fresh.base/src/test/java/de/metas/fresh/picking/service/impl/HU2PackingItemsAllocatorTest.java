@@ -38,8 +38,12 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -113,6 +117,9 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		huDefIFCO = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefPalet = createHuDefPalet(helper, huDefIFCO);
 
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
 	}
 

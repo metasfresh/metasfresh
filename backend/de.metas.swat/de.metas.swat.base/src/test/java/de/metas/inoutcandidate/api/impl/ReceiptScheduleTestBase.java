@@ -98,9 +98,6 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new InOutLineDimensionFactory());
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
-
-		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
-		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 		
 		//
 		// Mimic ModelValidator behaviour
@@ -151,6 +148,9 @@ public abstract class ReceiptScheduleTestBase
 	{
 		AdempiereTestHelper.get().init(); // need to init this now
 
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		// this is already done by HUTestHelper.init()
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
 		ReceiptScheduleValidator.registerRSAggregationKeyDependencies(); // also, for our tests, we just need this, and not the whole MI!
