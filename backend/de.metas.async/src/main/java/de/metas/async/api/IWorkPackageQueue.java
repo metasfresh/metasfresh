@@ -41,6 +41,7 @@ import org.compiere.model.IQuery;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -181,7 +182,7 @@ public interface IWorkPackageQueue
 
 	void setupWorkPackageContext(Properties workPackageCtx,I_C_Queue_WorkPackage workPackage);
 
-	List<QueuePackageProcessorId> getQueuePackageProcessorIds();
+	Set<QueuePackageProcessorId> getQueuePackageProcessorIds();
 
 	QueueProcessorId getQueueProcessorId();
 }

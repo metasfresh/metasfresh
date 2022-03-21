@@ -22,6 +22,7 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.impl.QueueProcessorDAO;
@@ -29,6 +30,7 @@ import de.metas.async.api.impl.WorkPackageQueue;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Check;
@@ -36,7 +38,6 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,11 +50,12 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 	{
 		final List<I_C_Queue_PackageProcessor> packageProcessors = Services.get(IQueueDAO.class)
 				.retrieveWorkpackageProcessors(processor);
-		final List<Integer> packageProcessorIds = new ArrayList<>(packageProcessors.size());
-		for (final I_C_Queue_PackageProcessor packageProcessor : packageProcessors)
-		{
-			packageProcessorIds.add(packageProcessor.getC_Queue_PackageProcessor_ID());
-		}
+
+		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = packageProcessors
+				.stream()
+				.map(I_C_Queue_PackageProcessor::getC_Queue_PackageProcessor_ID)
+				.map(QueuePackageProcessorId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String priorityFrom = processor.getPriority();
@@ -95,7 +97,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 
 		return WorkPackageQueue.createForEnqueuing(
 				ctx,
-				packageProcessor.getC_Queue_PackageProcessor_ID(),
+				QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID()),
 				queueProcessorId,
 				internalNameToUse);
 	}

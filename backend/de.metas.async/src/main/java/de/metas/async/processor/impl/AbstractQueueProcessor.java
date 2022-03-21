@@ -22,7 +22,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.WorkPackageLockHelper;
@@ -189,7 +188,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 
 	@NonNull
 	public Set<QueuePackageProcessorId> getAssignedPackageProcessorIds() {
-		return ImmutableSet.copyOf(getQueue().getQueuePackageProcessorIds());
+		return getQueue().getQueuePackageProcessorIds();
 	}
 
 	@Override

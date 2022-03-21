@@ -22,7 +22,7 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
@@ -74,11 +74,9 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -93,7 +91,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final transient IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private final Properties ctx;
-	private final List<Integer> packageProcessorIds;
+	private final ImmutableSet<QueuePackageProcessorId> packageProcessorIds;
 	private final QueueProcessorId queueProcessorId;
 	private final String priorityFrom;
 	private final int skipRetryTimeoutMillis;
@@ -119,7 +117,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	private WorkPackageQueue(
 			@NonNull final Properties ctx,
-			@NonNull final List<Integer> packageProcessorIds,
+			@NonNull final ImmutableSet<QueuePackageProcessorId> packageProcessorIds,
 			@NonNull final QueueProcessorId queueProcessorId,
 			final String enquingPackageProcessorInternalName,
 			final String priorityFrom,
@@ -131,14 +129,14 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		dao = Services.get(IQueueDAO.class);
 
 		this.ctx = ctx;
-		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<>(packageProcessorIds));
+		this.packageProcessorIds = packageProcessorIds;
 		this.queueProcessorId = queueProcessorId;
 		this.priorityFrom = priorityFrom;
 		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
 		if (forEnqueing)
 		{
-			enquingPackageProcessorId = packageProcessorIds.get(0);
+			enquingPackageProcessorId = packageProcessorIds.iterator().next().getRepoId();
 			this.enquingPackageProcessorInternalName = enquingPackageProcessorInternalName;
 		}
 		else
@@ -150,12 +148,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	public static WorkPackageQueue createForEnqueuing(
 			@NonNull final Properties ctx,
-			final int packageProcessorId,
+			@NonNull final QueuePackageProcessorId packageProcessorId,
 			@NonNull final QueueProcessorId queueProcessorId,
 			final String enquingPackageProcessorInternalName)
 	{
 		return new WorkPackageQueue(ctx,
-									Collections.singletonList(packageProcessorId),
+									ImmutableSet.of(packageProcessorId),
 									queueProcessorId,
 									enquingPackageProcessorInternalName,
 									null,
@@ -164,7 +162,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	public static WorkPackageQueue createForQueueProcessing(
 			@NonNull final Properties ctx,
-			@NonNull final List<Integer> packageProcessorIds,
+			@NonNull final ImmutableSet<QueuePackageProcessorId> packageProcessorIds,
 			@NonNull final QueueProcessorId queueProcessorId,
 			final String priorityFrom)
 	{
@@ -295,18 +293,16 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
 	{
-		boolean success = false;
 		try
 		{
 			unlock(workPackage);
-			success = true;
+			return true;
 		}
 		catch (final Exception e)
 		{
-			success = false;
 			logger.warn("Got exception while unlocking " + workPackage, e);
+			return false;
 		}
-		return success;
 	}
 
 	@Override
@@ -638,16 +634,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		//
 		// Filter out processors which were temporary blacklisted
-		final List<Integer> availablePackageProcessorIds = new ArrayList<>(packageProcessorIds);
-
-		for (final Iterator<Integer> it = availablePackageProcessorIds.iterator(); it.hasNext();)
-		{
-			final int packageProcessorId = it.next();
-			if (workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessorId))
-			{
-				it.remove();
-			}
-		}
+		final Set<QueuePackageProcessorId> availablePackageProcessorIds = packageProcessorIds
+				.stream()
+				.filter(packageProcessorId -> !workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessorId.getRepoId()))
+				.collect(ImmutableSet.toImmutableSet());
 
 		final WorkPackageQuery workPackageQuery = new WorkPackageQuery();
 		workPackageQuery.setProcessed(false);
@@ -743,12 +733,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@NonNull
-	public List<QueuePackageProcessorId> getQueuePackageProcessorIds()
+	public Set<QueuePackageProcessorId> getQueuePackageProcessorIds()
 	{
-		return packageProcessorIds
-				.stream()
-				.map(QueuePackageProcessorId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
+		return packageProcessorIds;
 	}
 
 	@Override

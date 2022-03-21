@@ -23,13 +23,14 @@ package de.metas.async.api.impl;
  */
 
 import de.metas.async.api.IWorkPackageQuery;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 import org.adempiere.ad.dao.QueryLimit;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Set;
 
 public class WorkPackageQuery implements IWorkPackageQuery
 {
@@ -37,7 +38,8 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	private Boolean readyForProcessing;
 	private Boolean error;
 	private long skippedTimeoutMillis = 0;
-	private List<Integer> packageProcessorIds;
+	@Nullable
+	private Set<QueuePackageProcessorId> packageProcessorIds;
 	private String priorityFrom;
 
 	@Getter
@@ -129,7 +131,8 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	 * @see de.metas.async.api.IWorkPackageQuery#getPackageProcessorIds()
 	 */
 	@Override
-	public List<Integer> getPackageProcessorIds()
+	@Nullable
+	public Set<QueuePackageProcessorId> getPackageProcessorIds()
 	{
 		return packageProcessorIds;
 	}
@@ -137,16 +140,9 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param packageProcessorIds the packageProcessorIds to set
 	 */
-	public void setPackageProcessorIds(final List<Integer> packageProcessorIds)
+	public void setPackageProcessorIds(@Nullable final Set<QueuePackageProcessorId> packageProcessorIds)
 	{
-		if (packageProcessorIds == null)
-		{
-			this.packageProcessorIds = null;
-		}
-		else
-		{
-			this.packageProcessorIds = new ArrayList<>(packageProcessorIds);
-		}
+		this.packageProcessorIds = packageProcessorIds;
 	}
 
 	/*

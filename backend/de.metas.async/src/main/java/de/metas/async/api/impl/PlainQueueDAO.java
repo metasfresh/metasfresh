@@ -29,6 +29,7 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
@@ -139,7 +141,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 		{
 			item = db.lookup(tableId, recordId, clazz);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 			throw new PackageItemNotAvailableException(tableName, recordId);
@@ -203,7 +205,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 			}
 
 			// Only work packages for given process
-			final List<Integer> packageProcessorIds = packageQuery.getPackageProcessorIds();
+			final Set<QueuePackageProcessorId> packageProcessorIds = packageQuery.getPackageProcessorIds();
 			if (packageProcessorIds != null)
 			{
 				if (packageProcessorIds.isEmpty())
@@ -211,7 +213,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
 							+"\n Package query: "+packageQuery);
 				}
-				final int packageProcessorId = workpackage.getC_Queue_PackageProcessor_ID();
+				final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workpackage.getC_Queue_PackageProcessor_ID());
 				if (!packageProcessorIds.contains(packageProcessorId))
 				{
 					return false;

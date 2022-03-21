@@ -22,10 +22,10 @@ package de.metas.async.api;
  * #L%
  */
 
-
+import de.metas.async.processor.QueuePackageProcessorId;
 import org.adempiere.ad.dao.QueryLimit;
 
-import java.util.List;
+import java.util.Set;
 
 public interface IWorkPackageQuery
 {
@@ -53,7 +53,7 @@ public interface IWorkPackageQuery
 	/**
 	 * @return the packageProcessorIds
 	 */
-	List<Integer> getPackageProcessorIds();
+	Set<QueuePackageProcessorId> getPackageProcessorIds();
 
 	/**
 	 * @return the priorityFrom
