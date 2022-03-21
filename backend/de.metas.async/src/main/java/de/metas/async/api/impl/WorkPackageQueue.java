@@ -675,7 +675,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@NonNull
 	private IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx)
 	{
-		return createQuery(workPackageCtx, null);
+		return createQuery(workPackageCtx, QueryLimit.NO_LIMIT);
 	}
 
 	private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
