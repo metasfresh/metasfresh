@@ -30,9 +30,12 @@ import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
+
 public class DhlShipmentOrderDAO implements IDhlShipmentOrderDAO
 {
 	@Override
+	@Nullable
 	public DhlCustomDeliveryDataDetail getByIdOrNull(@NonNull final DhlShipmentOrderId id)
 	{
 		final I_DHL_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.load(id, I_DHL_ShipmentOrder.class);

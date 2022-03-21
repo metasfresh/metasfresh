@@ -34,7 +34,7 @@ import lombok.NonNull;
 import org.compiere.util.MimeType;
 import org.springframework.core.io.ByteArrayResource;
 
-public class DhlLabel_Download extends JavaProcess implements IProcessPrecondition
+public class DHL_ShipmentOrder_DhlLabel_Download extends JavaProcess implements IProcessPrecondition
 {
 	private final transient IDhlShipmentOrderDAO dhlShipmentOrderDAO = Services.get(IDhlShipmentOrderDAO.class);
 
