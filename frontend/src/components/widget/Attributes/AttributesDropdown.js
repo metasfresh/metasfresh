@@ -7,6 +7,7 @@ import { DROPUP_START } from '../../../constants/Constants';
 import { useOnClickOutsideWithControls } from '../../../hooks/useOnClickOutsideWithControls';
 
 import WidgetWrapper from '../../../containers/WidgetWrapper';
+import { shallowEqual, useSelector } from 'react-redux';
 
 /**
  * @component
@@ -24,11 +25,18 @@ const AttributesDropdown = ({
   onFieldPatch,
   onCompletion,
 }) => {
+  const { allowOutsideClick } = useSelector(
+    (state) => getPropsFromState({ state }),
+    shallowEqual
+  );
+
   const {
     clickOutsideComponentRef,
     enableOnClickOutside,
     disableOnClickOutside,
-  } = useOnClickOutsideWithControls(onCompletion);
+  } = useOnClickOutsideWithControls(() => {
+    allowOutsideClick && onCompletion();
+  });
 
   const handleKeyDown = (event) => {
     if ((event.key === 'Enter' && event.altKey) || event.key === 'Escape') {
@@ -118,6 +126,12 @@ AttributesDropdown.propTypes = {
   onFieldChange: PropTypes.func.isRequired,
   onFieldPatch: PropTypes.func.isRequired,
   onCompletion: PropTypes.func.isRequired,
+};
+
+const getPropsFromState = ({ state }) => {
+  return {
+    allowOutsideClick: !!state.windowHandler.allowOutsideClick,
+  };
 };
 
 export default AttributesDropdown;

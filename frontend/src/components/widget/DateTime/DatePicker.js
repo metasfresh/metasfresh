@@ -52,6 +52,11 @@ class DatePicker extends PureComponent {
     }
   }
 
+  componentWillUnmount() {
+    const { dispatch } = this.props;
+    dispatch(allowOutsideClick());
+  }
+
   handleDateChange = (dateObj) => {
     if (!dateObj) {
       this.callPatchIfNeeded(null);
@@ -119,9 +124,6 @@ class DatePicker extends PureComponent {
     // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
 
     this.closeCalendarAndResetToLastPatchedDate();
-
-    const { dispatch } = this.props;
-    dispatch(allowOutsideClick());
 
     const { handleBackdropLock } = this.props;
     handleBackdropLock && handleBackdropLock(false);
@@ -226,13 +228,9 @@ class DatePicker extends PureComponent {
   };
 
   handleFocus = () => {
-    const { dispatch } = this.props;
-
     this.setState({ datePatched: this.props.value });
 
     this.openCalendarIfEditable();
-
-    dispatch(disableOutsideClick());
   };
 
   handleClickOutside = () => {
@@ -266,7 +264,16 @@ class DatePicker extends PureComponent {
     }
   };
 
-  setIsCalendarOpen = (isCalendarOpen) => this.setState({ isCalendarOpen });
+  setIsCalendarOpen = (isCalendarOpen) => {
+    this.setState({ isCalendarOpen });
+
+    const { dispatch } = this.props;
+    if (isCalendarOpen) {
+      dispatch(disableOutsideClick());
+    } else {
+      dispatch(allowOutsideClick());
+    }
+  };
 
   openCalendarIfEditable = () => {
     if (!this.isReadonly()) {
