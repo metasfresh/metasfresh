@@ -449,6 +449,52 @@ public class AveragePOCostingMethodHandlerTest
 		}
 	}
 
+
+	@Test
+	public void initCost_Then_Init_Qty()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+									.amt(CostAmount.of(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
+									.qty(Quantity.of(0, eachUOM))
+									.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+
+		// Initial inventory with Price=0 and Qty=10
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+									.amt(CostAmount.of(0, euroCurrencyId))
+									.qty(Quantity.of(10, eachUOM))
+									.build())
+					.get();
+
+			// The amount is the current explicit cost multiplied by the existing qty
+			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			// The cost price was not changed because it was not explicit
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+	}
+
 	@Nested
 	public class scenarios
 	{
