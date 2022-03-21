@@ -54,7 +54,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 {
 	private static final Logger logger = LogManager.getLogger(QueueProcessorPlanner.class);
 
-	private final static String SYSCONFIG_POLLINTERVAL = "de.metas.async.PollIntervallMillis";
+	private final static String SYSCONFIG_POLLINTERVAL_MILLIS = "de.metas.async.PollIntervallMillis";
 	private final static int SYSCONFIG_POLLINTERVAL_DEFAULT_MS = 1000;
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
@@ -336,7 +336,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 	@NonNull
 	private Integer getPollInterval()
 	{
-		return sysConfigBL.getIntValue(SYSCONFIG_POLLINTERVAL, SYSCONFIG_POLLINTERVAL_DEFAULT_MS);
+		return sysConfigBL.getIntValue(SYSCONFIG_POLLINTERVAL_MILLIS, SYSCONFIG_POLLINTERVAL_DEFAULT_MS);
 	}
 
 	private static boolean isValid(final I_C_Queue_WorkPackage workPackage)
