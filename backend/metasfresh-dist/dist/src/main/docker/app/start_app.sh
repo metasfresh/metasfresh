@@ -23,7 +23,7 @@ rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
 # elastic search
 es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
-es_enable${ES_ENABLE:-UNSET}
+es_enable=${ES_ENABLE:-UNSET}
 
 # metasfresh-admin
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
