@@ -1218,6 +1218,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build and add UNION SQL queries
 		if (unions != null)
 		{
+			final boolean useOrderByClauseInUnions = Check.isBlank(getOrderBy());
+
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
@@ -1228,7 +1230,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 						selectClause,
 						null/* don't assume the union-query's from-clause is identical! */,
 						null/* groupByClause */,
-						true/* useOrderByClause */);
+						useOrderByClauseInUnions);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
