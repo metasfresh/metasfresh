@@ -90,6 +90,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
+	private final transient IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private final Properties ctx;
 	private final List<Integer> packageProcessorIds;
@@ -359,7 +360,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		//
 		// Statistics
-		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = Services.get(IWorkpackageProcessorFactory.class).getWorkpackageProcessorStatistics(workPackage.getC_Queue_PackageProcessor());
+		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = workpackageProcessorFactory.getWorkpackageProcessorStatistics(workPackage.getC_Queue_PackageProcessor());
 		workpackageProcessorStatistics.incrementQueueSize();
 
 		return workPackage;
@@ -637,7 +638,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		//
 		// Filter out processors which were temporary blacklisted
-		final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 		final List<Integer> availablePackageProcessorIds = new ArrayList<>(packageProcessorIds);
 
 		for (final Iterator<Integer> it = availablePackageProcessorIds.iterator(); it.hasNext();)
