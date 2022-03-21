@@ -132,20 +132,13 @@ public abstract class QueueProcessorPlanner implements Runnable
 		queueProcessors.put(queueProcessor.getQueueProcessorId(), queueProcessor);
 	}
 
-	public boolean removeQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
+	public void removeQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
 	{
-		final Optional<IQueueProcessor> processorOpt = getQueueProcessor(queueProcessorId);
-
-		if (!processorOpt.isPresent())
-		{
-			return true;
-		}
-
-		processorOpt.get().shutdownExecutor();
-
-		queueProcessors.remove(processorOpt.get().getQueueProcessorId());
-
-		return true;
+		getQueueProcessor(queueProcessorId)
+				.ifPresent(queueProcessor -> {
+					queueProcessor.shutdownExecutor();
+					queueProcessors.remove(queueProcessor.getQueueProcessorId());
+				});
 	}
 
 	@NonNull
