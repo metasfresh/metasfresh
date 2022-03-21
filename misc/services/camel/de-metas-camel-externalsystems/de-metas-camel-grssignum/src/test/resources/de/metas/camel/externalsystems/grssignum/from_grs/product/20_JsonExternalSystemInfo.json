@@ -1,9 +1,0 @@
-{
-  "externalSystemConfigId": 1,
-  "orgCode": "orgCode",
-  "externalSystemChildConfigValue": "childConfigValue",
-  "externalSystemName": "GRSSignum",
-  "parameters": {
-      "BasePathForExportDirectories": "/basePath"
-  }
-}
