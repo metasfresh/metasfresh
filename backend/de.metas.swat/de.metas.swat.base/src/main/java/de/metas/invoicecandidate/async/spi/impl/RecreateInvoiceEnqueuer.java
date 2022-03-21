@@ -54,6 +54,6 @@ public class RecreateInvoiceEnqueuer
 				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch)
 				.parameter(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, pInstanceId)
-				.build();
+				.buildAndEnqueue();
 	}
 }

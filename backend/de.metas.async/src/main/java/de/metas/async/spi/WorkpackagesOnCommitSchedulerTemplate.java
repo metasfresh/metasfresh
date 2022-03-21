@@ -398,7 +398,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					.parameters(parameters)
 					.addElements(modelsToEnqueue)
 					.setC_Async_Batch_ID(asyncBatchId)
-					.build();
+					.buildAndEnqueue();
 		}
 
 		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageQueue workPackageQueue)

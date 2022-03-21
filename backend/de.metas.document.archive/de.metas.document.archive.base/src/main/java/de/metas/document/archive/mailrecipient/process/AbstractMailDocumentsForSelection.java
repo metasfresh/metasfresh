@@ -98,7 +98,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 					.setAD_PInstance_ID(pinstanceId)
 					// .bindToThreadInheritedTrx() // let's start as soon as the workpackage is created
 					.addElement(docOutboundLogLine)
-					.build();
+					.buildAndEnqueue();
 
 			counter.setValue(counter.getValue() + 1);
 		});

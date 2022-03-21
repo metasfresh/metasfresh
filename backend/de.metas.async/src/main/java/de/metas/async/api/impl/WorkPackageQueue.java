@@ -456,7 +456,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 
-		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).initQueueWorkPackage();
+		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).buildWithPackageProcessor();
 
 		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 
@@ -477,7 +477,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public I_C_Queue_Element enqueueElement(final Properties ctx, final int adTableId, final int recordId)
 	{
-		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).initQueueWorkPackage();
+		final I_C_Queue_WorkPackage workPackage = newWorkPackage(ctx).buildWithPackageProcessor();
 		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 		final I_C_Queue_Element element = enqueueElement(workPackage, adTableId, recordId);
 

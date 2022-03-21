@@ -162,7 +162,7 @@ public class Helper
 		final List<I_C_Queue_WorkPackage> workpackages = new ArrayList<>(count);
 		for (int i = 1; i <= count; i++)
 		{
-			final I_C_Queue_WorkPackage workPackage = workpackageQueue.newWorkPackage().initQueueWorkPackage();
+			final I_C_Queue_WorkPackage workPackage = workpackageQueue.newWorkPackage().buildWithPackageProcessor();
 
 			final I_C_Queue_WorkPackage wp = workpackageQueue.enqueueWorkPackage(workPackage, IWorkPackageQueue.PRIORITY_AUTO);
 			POJOWrapper.setInstanceName(wp, "workpackage-" + i);

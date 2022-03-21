@@ -51,6 +51,6 @@ public class ProcessOLCandsWorkpackageEnqueuer
 				.parameter(WP_PARAM_SHIP, request.isShip())
 				.parameter(WP_PARAM_INVOICE, request.isInvoice())
 				.parameter(WP_PARAM_CLOSE_ORDER, request.isCloseOrder())
-				.build();
+				.buildAndEnqueue();
 	}
 }

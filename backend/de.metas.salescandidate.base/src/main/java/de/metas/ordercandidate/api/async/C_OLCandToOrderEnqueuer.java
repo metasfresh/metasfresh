@@ -47,7 +47,7 @@ public class C_OLCandToOrderEnqueuer
 				.newWorkPackage()
 				.parameter(OLCandProcessor_ID, olCandProcessorId)
 				.setC_Async_Batch_ID(asyncBatchId)
-				.build();
+				.buildAndEnqueue();
 
 		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
 	}

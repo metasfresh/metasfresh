@@ -120,7 +120,7 @@ public class TestQueue_InheritPriority
 
 		final I_C_Queue_WorkPackage workPackage = queueForEnqueuing
 				.newWorkPackage()
-				.initQueueWorkPackage();
+				.buildWithPackageProcessor();
 		// creating the WP with this method because this is still the code under test and it is also still called by the modern builder API.
 		@SuppressWarnings("deprecation")
 		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.enqueueWorkPackage(workPackage, priorityToForward);

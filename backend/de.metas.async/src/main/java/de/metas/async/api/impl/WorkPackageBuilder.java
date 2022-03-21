@@ -89,7 +89,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public I_C_Queue_WorkPackage build()
+	public I_C_Queue_WorkPackage buildAndEnqueue()
 	{
 		// Add parameter "ElementsLockOwner" if we are are locking
 		final ILockCommand elementsLocker = getElementsLockerOrNull();
@@ -105,7 +105,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		// Create the workpackage
 		final IWorkPackageQueue workpackageQueue = getWorkpackageQueue();
 
-		final I_C_Queue_WorkPackage workPackage = initQueueWorkPackage();
+		final I_C_Queue_WorkPackage workPackage = buildWithPackageProcessor();
 		final String originalWorkPackageTrxName = getTrxName(workPackage);
 
 		final IWorkpackagePrioStrategy workpackagePriority = getPriority();
@@ -172,7 +172,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@NonNull
-	public I_C_Queue_WorkPackage initQueueWorkPackage()
+	public I_C_Queue_WorkPackage buildWithPackageProcessor()
 	{
 		final I_C_Queue_WorkPackage newWorkPackage = InterfaceWrapperHelper.create(_ctx, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
 

@@ -324,7 +324,7 @@ public class PrintJobBL implements IPrintJobBL
 				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	/**

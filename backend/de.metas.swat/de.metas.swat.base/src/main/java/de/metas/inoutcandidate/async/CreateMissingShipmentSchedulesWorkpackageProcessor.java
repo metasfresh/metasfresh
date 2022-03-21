@@ -81,7 +81,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 				.newWorkPackage()
 				.setC_Async_Batch_ID(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
-				.build();
+				.buildAndEnqueue();
 	}
 
 	// services

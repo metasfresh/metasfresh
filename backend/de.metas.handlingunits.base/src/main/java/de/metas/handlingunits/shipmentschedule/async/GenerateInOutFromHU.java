@@ -93,7 +93,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
 				.end()
 				.addElements(hus)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Override

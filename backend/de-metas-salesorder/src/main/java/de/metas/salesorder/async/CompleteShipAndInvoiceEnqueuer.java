@@ -45,6 +45,6 @@ public class CompleteShipAndInvoiceEnqueuer
 				.newWorkPackage()
 				.bindToTrxName(trxName)
 				.parameter(WP_PARAM_C_Order_ID, orderId)
-				.build();
+				.buildAndEnqueue();
 	}
 }

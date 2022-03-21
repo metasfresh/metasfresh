@@ -118,7 +118,7 @@ public class StorageBL implements IStorageBL
 					.setParameter(M_Storage_Add.WP_PARAM_diffQtyReserved, diffQtyReserved)
 					.setParameter(M_Storage_Add.WP_PARAM_diffQtyOrdered, diffQtyOrdered)
 				.end()
-				.build(); // @formatter:on
+				.buildAndEnqueue(); // @formatter:on
 	}
 
 	@Override

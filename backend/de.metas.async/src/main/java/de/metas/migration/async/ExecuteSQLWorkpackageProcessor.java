@@ -97,7 +97,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 						.setParameter(PARAM_AFTER_FINISH_SQL, params.getParameterAsString(PARAM_AFTER_FINISH_SQL))
 						.end()
 						// Build & enqueue
-						.build();
+						.buildAndEnqueue();
 
 				loggable.addLog("New workpackage enqueued: {0}", nextWorkpackage);
 			}

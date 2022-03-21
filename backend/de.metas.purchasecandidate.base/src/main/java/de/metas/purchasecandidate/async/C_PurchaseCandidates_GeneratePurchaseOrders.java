@@ -110,7 +110,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					.addElements(candidateRecordReferences)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.parameter(DOC_TYPE_ID, docTypeId)
-					.build();
+					.buildAndEnqueue();
 		}
 	}
 

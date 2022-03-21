@@ -140,7 +140,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 					.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
 					.addElement(ediDocument)
 					.bindToThreadInheritedTrx()
-					.build();
+					.buildAndEnqueue();
 
 			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 

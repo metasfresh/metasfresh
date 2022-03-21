@@ -195,7 +195,7 @@ import java.util.Properties;
 
 		//
 		// Mark the workpackage as ready for processing (when trxName will be commited)
-		group.build();
+		group.buildAndEnqueue();
 	}
 
 	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(@NonNull final PInstanceId adPInstanceId)

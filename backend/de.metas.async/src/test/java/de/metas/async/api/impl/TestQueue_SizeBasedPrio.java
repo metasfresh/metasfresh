@@ -108,19 +108,19 @@ public class TestQueue_SizeBasedPrio
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
-		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.newWorkPackage().build();
+		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
 		assertThat(wp1.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Urgent));
 
-		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing.newWorkPackage().build();
+		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
 		assertThat(wp2.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_High));
 
-		final I_C_Queue_WorkPackage wp3 = queueForEnqueuing.newWorkPackage().build();
+		final I_C_Queue_WorkPackage wp3 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
 		assertThat(wp3.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Medium));
 
-		final I_C_Queue_WorkPackage wp4 = queueForEnqueuing.newWorkPackage().build();
+		final I_C_Queue_WorkPackage wp4 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
 		assertThat(wp4.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Low));
 
-		final I_C_Queue_WorkPackage wp5 = queueForEnqueuing.newWorkPackage().build();
+		final I_C_Queue_WorkPackage wp5 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
 		assertThat(wp5.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Minor));
 	}
 }

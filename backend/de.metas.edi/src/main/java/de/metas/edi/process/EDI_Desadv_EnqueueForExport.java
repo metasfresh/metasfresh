@@ -138,7 +138,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 				.setAD_PInstance_ID(getPinstanceId())
 				.bindToTrxName(trxName)
 				.addElement(desadv)
-				.build();
+				.buildAndEnqueue();
 
 		desadv.setEDI_ExportStatus(X_EDI_Desadv.EDI_EXPORTSTATUS_Enqueued);
 		InterfaceWrapperHelper.save(desadv);

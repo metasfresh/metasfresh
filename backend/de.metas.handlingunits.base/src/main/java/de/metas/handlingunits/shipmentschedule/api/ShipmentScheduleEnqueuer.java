@@ -285,7 +285,7 @@ public class ShipmentScheduleEnqueuer
 		if (noSchedsAreToRecompute)
 		{
 			// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
-			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.build();
+			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.buildAndEnqueue();
 			result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
 		}
 		else

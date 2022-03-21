@@ -119,7 +119,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.newWorkPackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
 				.parameters(invoicingParams.asMap())
-				.build();
+				.buildAndEnqueue();
 
 		return MSG_OK;
 	}

@@ -75,7 +75,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 				.end()
 				//
 				// Build & enqueue
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Test

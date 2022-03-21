@@ -104,7 +104,7 @@ public class PMM_GenerateOrdersEnqueuer
 				.newWorkPackage()
 				.setElementsLocker(elementsLocker)
 				.addElements(candidates)
-				.build();
+				.buildAndEnqueue();
 
 		return candidates.size();
 	}

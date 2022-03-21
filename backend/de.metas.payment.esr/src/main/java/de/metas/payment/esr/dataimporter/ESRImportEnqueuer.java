@@ -190,7 +190,7 @@ public class ESRImportEnqueuer
 					.newWorkPackage()
 					.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 					.addElement(esrImport)
-					.build();
+					.buildAndEnqueue();
 		}
 
 	}

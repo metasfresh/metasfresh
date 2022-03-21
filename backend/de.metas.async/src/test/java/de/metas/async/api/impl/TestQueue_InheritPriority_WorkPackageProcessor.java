@@ -72,7 +72,7 @@ public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpack
 						TestQueue_InheritPriority_WorkPackageProcessor.class);
 		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing
 				.newWorkPackage()
-				.build();
+				.buildAndEnqueue();
 
 		// this is the actual test!
 		assertThat("wp2 did not inherit wp1's prio", wp2.getPriority(), is(expectedPriority.getPrioriy(queueForEnqueuing)));

@@ -115,7 +115,7 @@ class ConcatenatePDFsCommand
 				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch)
 				.addElements(printingQueues)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()

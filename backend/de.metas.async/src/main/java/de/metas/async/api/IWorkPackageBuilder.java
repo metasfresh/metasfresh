@@ -49,17 +49,17 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
-	I_C_Queue_WorkPackage build();
+	I_C_Queue_WorkPackage buildAndEnqueue();
 
 	@NonNull
 	default QueueWorkPackageId buildAndGetId()
 	{
-		final I_C_Queue_WorkPackage workpackage = build();
+		final I_C_Queue_WorkPackage workpackage = buildAndEnqueue();
 		return QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
 	}
 
 	/**
-	 * This is the sibling of {@link #build()}, but it doesn't build/enqueue the work package. Instead it discards it.
+	 * This is the sibling of {@link #buildAndEnqueue()}, but it doesn't build/enqueue the work package. Instead it discards it.
 	 * Note that this method also marks the package builder as "build", so no more elements can be added after this method was called.
 	 *
 	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
@@ -165,7 +165,7 @@ public interface IWorkPackageBuilder
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 * @return Lock aquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
 	 * Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();
@@ -176,7 +176,7 @@ public interface IWorkPackageBuilder
 	 */
 	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
 
-	I_C_Queue_WorkPackage initQueueWorkPackage();
+	I_C_Queue_WorkPackage buildWithPackageProcessor();
 
 	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
 }

@@ -93,7 +93,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		}
 
 		// Build & enqueue
-		return wpBuilder.build();
+		return wpBuilder.buildAndEnqueue();
 	}
 
 	@Override

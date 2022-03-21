@@ -208,7 +208,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final I_C_Queue_WorkPackage queueWorkpackage = queue
 				.newWorkPackage()
 				.setPriority(prio)
-				.build();
+				.buildAndEnqueue();
 
 		// Make sure that the watch processor is not in the same batch (because it will affect the counter which we are checking...)
 		queueWorkpackage.setC_Async_Batch(null);

@@ -84,7 +84,7 @@ public class PPOrderCandidateEnqueuer
 				.newWorkPackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
 				.setElementsLocker(elementsLocker)
-				.build();
+				.buildAndEnqueue();
 
 		final Result result = new Result();
 		result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));

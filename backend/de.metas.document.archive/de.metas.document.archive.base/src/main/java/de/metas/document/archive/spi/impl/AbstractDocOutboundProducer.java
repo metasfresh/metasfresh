@@ -181,6 +181,6 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 					.addElement(model)
 					.setC_Async_Batch(asyncBatch)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-					.build();
+					.buildAndEnqueue();
 	}
 }
