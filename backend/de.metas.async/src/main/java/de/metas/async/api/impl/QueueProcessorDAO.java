@@ -89,6 +89,8 @@ public class QueueProcessorDAO
 	@NonNull
 	private QueueProcessorId autoGenerateQueueProcessorForPackage(@NonNull final I_C_Queue_PackageProcessor packageProcessor)
 	{
+		Adempiere.assertUnitTestMode();
+
 		final I_C_Queue_Processor queueProcessor = InterfaceWrapperHelper.newInstance(I_C_Queue_Processor.class);
 		queueProcessor.setName("Auto-generated for " + packageProcessor.getClass().getCanonicalName());
 		queueProcessor.setKeepAliveTimeMillis(1000);
