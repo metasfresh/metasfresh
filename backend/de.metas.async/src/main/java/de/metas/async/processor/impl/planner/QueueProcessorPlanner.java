@@ -230,7 +230,8 @@ public abstract class QueueProcessorPlanner implements Runnable
 				continue;
 			}
 
-			final IQueueProcessor queueProcessor = getAvailableQueueProcessorForWorkPackage(workPackage).orElse(null);
+			final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
+			final IQueueProcessor queueProcessor = getAvailableQueueProcessorForWorkPackage(packageProcessorId).orElse(null);
 
 			if (queueProcessor == null)
 			{
@@ -275,10 +276,8 @@ public abstract class QueueProcessorPlanner implements Runnable
 	}
 
 	@NonNull
-	private Optional<IQueueProcessor> getAvailableQueueProcessorForWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage)
+	private Optional<IQueueProcessor> getAvailableQueueProcessorForWorkPackage(@NonNull final QueuePackageProcessorId packageProcessorId)
 	{
-		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
-
 		return queueProcessors
 				.values()
 				.stream()

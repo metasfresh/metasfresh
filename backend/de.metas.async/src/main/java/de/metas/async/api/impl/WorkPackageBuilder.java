@@ -91,74 +91,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	@Override
 	public I_C_Queue_WorkPackage buildAndEnqueue()
 	{
-		// Add parameter "ElementsLockOwner" if we are are locking
-		final ILockCommand elementsLocker = getElementsLockerOrNull();
-		if (elementsLocker != null)
-		{
-			parameters().setParameter(IWorkpackageProcessor.PARAMETERNAME_ElementsLockOwner, elementsLocker.getOwner().getOwnerName());
-		}
-
 		// Mark as built.
 		// From now one, any changes are prohibited.
 		markAsBuilt();
 
 		// Create the workpackage
-		final IWorkPackageQueue workpackageQueue = getWorkpackageQueue();
-
 		final I_C_Queue_WorkPackage workPackage = buildWithPackageProcessor();
-		final String originalWorkPackageTrxName = getTrxName(workPackage);
 
-		final IWorkpackagePrioStrategy workpackagePriority = getPriority();
-
-		try (final IAutoCloseable temporary = () -> setTrxName(workPackage, originalWorkPackageTrxName))
-		{
-			// Fact: the workpackage trxName is used when creating the workpackage and its elements.
-			// Therefore we temporarily set it to be our _trxName.
-			// Otherways, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
-			setTrxName(workPackage, _trxName);
-
-			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
-			final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(
-					workPackage,
-					workpackagePriority);
-
-			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
-			{
-				// Set the Async batch if provided
-				// TODO: optimize this and set everything in one shot and then save it.
-				if (asyncBatchSet)
-				{
-					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-				}
-
-				if (userInChargeId != null)
-				{
-					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
-				}
-
-				// Create workpackage parameters
-				if (_parametersBuilder != null)
-				{
-					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
-					_parametersBuilder.build();
-				}
-
-				createWorkpackageElements(workpackageQueue, workpackage);
-
-				//
-				// Lock enqueued workpackage elements
-				if (elementsLocker != null)
-				{
-					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
-				}
-
-				//
-				// Actually mark the workpackage as ready for processing
-				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
-				workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
-			}
-			return workpackage;
-		}
+		return enqueue(workPackage);
 	}
 
 	private void createWorkpackageElements(
@@ -348,5 +288,72 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	{
 		this.adPInstanceId = adPInstanceId;
 		return this;
+	}
+
+	@NonNull
+	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage)
+	{
+		// Add parameter "ElementsLockOwner" if we are are locking
+		final ILockCommand elementsLocker = getElementsLockerOrNull();
+		if (elementsLocker != null)
+		{
+			parameters().setParameter(IWorkpackageProcessor.PARAMETERNAME_ElementsLockOwner, elementsLocker.getOwner().getOwnerName());
+		}
+
+		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
+
+		final IWorkpackagePrioStrategy workPackagePriority = getPriority();
+
+		final String originalWorkPackageTrxName = getTrxName(workPackage);
+
+		try (final IAutoCloseable temporary = () -> setTrxName(workPackage, originalWorkPackageTrxName))
+		{
+			// Fact: the workpackage trxName is used when creating the workpackage and its elements.
+			// Therefore we temporarily set it to be our _trxName.
+			// Otherways, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
+			setTrxName(workPackage, _trxName);
+
+			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
+			final I_C_Queue_WorkPackage workpackage = workPackageQueue.enqueueWorkPackage(
+					workPackage,
+					workPackagePriority);
+
+			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
+			{
+				// Set the Async batch if provided
+				// TODO: optimize this and set everything in one shot and then save it.
+				if (asyncBatchSet)
+				{
+					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+				}
+
+				if (userInChargeId != null)
+				{
+					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+				}
+
+				// Create workpackage parameters
+				if (_parametersBuilder != null)
+				{
+					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
+					_parametersBuilder.build();
+				}
+
+				createWorkpackageElements(workPackageQueue, workpackage);
+
+				//
+				// Lock enqueued workpackage elements
+				if (elementsLocker != null)
+				{
+					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
+				}
+
+				//
+				// Actually mark the workpackage as ready for processing
+				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
+				workPackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
+			}
+			return workpackage;
+		}
 	}
 }
