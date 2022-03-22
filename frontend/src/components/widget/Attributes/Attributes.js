@@ -88,8 +88,13 @@ const Attributes = ({
     }
 
     // this is limited to tables only
-    if (rowIndex != null) {
-      const tableId = getTableId({ windowId: docType, docId: dataId, tabId });
+    if (rowIndex != null && setTableNavigation) {
+      const tableId = getTableId({
+        windowId: docType,
+        viewId,
+        docId: dataId,
+        tabId,
+      });
       setTableNavigation(tableId, !show);
     }
 
