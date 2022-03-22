@@ -42,10 +42,10 @@ public interface IOLCandWithUOMForTUsCapacityProvider
 	boolean isProviderNeededForOLCand(@NonNull I_C_OLCand olCand);
 
 	/**
-	 * Assumes that {@link #isProviderNeededForOLCand(I_C_OLCand)} was called and returned {@code true} before.
+	 * Assume that {@link #isProviderNeededForOLCand(I_C_OLCand)} was called and returned {@code true} before.
 	 *
 	 * @param olCand shall not be changed by this method.
-	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Throw a user-friendly exception if the capacity can't be found.
+	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Might also be {@link Quantity#isInfinite()}. Throw a user-friendly exception if the capacity can't be found.
 	 */
 	@NonNull
 	Quantity computeQtyItemCapacity(@NonNull I_C_OLCand olCand);

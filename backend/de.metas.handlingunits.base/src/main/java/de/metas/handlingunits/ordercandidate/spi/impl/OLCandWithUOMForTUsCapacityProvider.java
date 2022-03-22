@@ -94,6 +94,10 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 
 		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
 		// note that the product's stocking UOM is never a TU-UOM
+		if (capacity.isInfiniteCapacity())
+		{
+			return Quantity.infinite(capacity.getC_UOM());
+		}
 		return uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId);
 	}
 

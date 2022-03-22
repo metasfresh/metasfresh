@@ -80,7 +80,7 @@ public class EDI_DesadvLine_Pack
 
 		if (allLinePacksSum.compareTo(lineSum) > 0)
 		{
-			throw new AdempiereException("EDI_DesadvLine.QtyDeliveredInStockingUOM")
+			throw new AdempiereException("EDI_DesadvLine.QtyDeliveredInStockingUOM=" + lineSum + ",but the sum of all EDI_DesadvLine_Pack.MovementQtys=" + allLinePacksSum)
 					.appendParametersToMessage()
 					.setParameter("EDI_DesadvLine_Pack_ID", desadvLinePack.getEDI_DesadvLine_Pack_ID())
 					.setParameter("EDI_DesadvLine_ID", desadvLinePack.getEDI_DesadvLine_ID());

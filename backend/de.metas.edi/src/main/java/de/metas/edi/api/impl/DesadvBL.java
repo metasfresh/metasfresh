@@ -392,6 +392,10 @@ public class DesadvBL implements IDesadvBL
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
+		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
+		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true/* add */);
+		InterfaceWrapperHelper.save(desadvLineRecord);
+		
 		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
 
 		// Get the records we might already have from DesadvLineSSCC18Generator
@@ -410,9 +414,6 @@ public class DesadvBL implements IDesadvBL
 		{
 			addPackRecordsToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd, existingUnusedPacks);
 		}
-
-		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true/* add */);
-		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
