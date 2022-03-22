@@ -91,6 +91,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	@Override
 	public I_C_Queue_WorkPackage buildAndEnqueue()
 	{
+		// Add parameter "ElementsLockOwner" if we are are locking
+		final ILockCommand elementsLocker = getElementsLockerOrNull();
+		if (elementsLocker != null)
+		{
+			parameters().setParameter(IWorkpackageProcessor.PARAMETERNAME_ElementsLockOwner, elementsLocker.getOwner().getOwnerName());
+		}
+
 		// Mark as built.
 		// From now one, any changes are prohibited.
 		markAsBuilt();
@@ -98,7 +105,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		// Create the workpackage
 		final I_C_Queue_WorkPackage workPackage = buildWithPackageProcessor();
 
-		return enqueue(workPackage);
+		return enqueue(workPackage, elementsLocker);
 	}
 
 	private void createWorkpackageElements(
@@ -291,15 +298,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@NonNull
-	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage)
+	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
 	{
-		// Add parameter "ElementsLockOwner" if we are are locking
-		final ILockCommand elementsLocker = getElementsLockerOrNull();
-		if (elementsLocker != null)
-		{
-			parameters().setParameter(IWorkpackageProcessor.PARAMETERNAME_ElementsLockOwner, elementsLocker.getOwner().getOwnerName());
-		}
-
 		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
 
 		final IWorkpackagePrioStrategy workPackagePriority = getPriority();
