@@ -263,14 +263,21 @@ public abstract class QueueProcessorPlanner implements Runnable
 
 		final QueryLimit numberOfWorkPackagesPerProcessor = QueryLimit.ONE;
 
-		for (final IQueueProcessor queueProcessor : queueProcessors)
+		final List<IQuery<I_C_Queue_WorkPackage>> queueProcessorSpecificQueries = queueProcessors
+				.stream()
+				.map(IQueueProcessor::getQueue)
+				.map(queue -> queue.createQuery(ctx, numberOfWorkPackagesPerProcessor))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(lockManager::addNotLockedClause)
+				.collect(ImmutableList.toImmutableList());
+
+		if (queueProcessorSpecificQueries.isEmpty())
 		{
-			final IQuery<I_C_Queue_WorkPackage> workPackageQuery = queueProcessor.getQueue().createQuery(ctx, numberOfWorkPackagesPerProcessor);
-
-			final IQuery<I_C_Queue_WorkPackage> nonLockedWorkPackageQuery = lockManager.addNotLockedClause(workPackageQuery);
-
-			queueProcessorWPQueriesAggregator.addUnion(nonLockedWorkPackageQuery, true);
+			return ImmutableList.of();
 		}
+
+		queueProcessorWPQueriesAggregator.addUnions(queueProcessorSpecificQueries, true);
 
 		return lockManager.retrieveAndLockMultipleRecords(queueProcessorWPQueriesAggregator, I_C_Queue_WorkPackage.class);
 	}

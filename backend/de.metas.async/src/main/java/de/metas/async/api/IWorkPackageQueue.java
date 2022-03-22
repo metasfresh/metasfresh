@@ -40,6 +40,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -178,7 +179,7 @@ public interface IWorkPackageQueue
 
 	IWorkPackageBuilder newWorkPackage(Properties ctx);
 
-	IQuery<I_C_Queue_WorkPackage> createQuery(Properties workPackageCtx, QueryLimit limit);
+	Optional<IQuery<I_C_Queue_WorkPackage>> createQuery(Properties workPackageCtx, QueryLimit limit);
 
 	Set<QueuePackageProcessorId> getQueuePackageProcessorIds();
 

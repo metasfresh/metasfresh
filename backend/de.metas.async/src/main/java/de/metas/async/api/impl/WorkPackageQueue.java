@@ -75,6 +75,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -247,8 +248,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		mainLock.lock();
 		try
 		{
-			final IQuery<I_C_Queue_WorkPackage> query = createQuery(ctx);
-			return query.count();
+			return createQuery(ctx)
+					.map(IQuery::count)
+					.orElse(0);
 		}
 		finally
 		{
@@ -630,7 +632,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@NonNull
-	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx, @Nullable final QueryLimit limit)
+	public Optional<IQuery<I_C_Queue_WorkPackage>> createQuery(final Properties workPackageCtx, @Nullable final QueryLimit limit)
 	{
 		//
 		// Filter out processors which were temporary blacklisted
@@ -638,6 +640,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				.stream()
 				.filter(packageProcessorId -> !workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessorId.getRepoId()))
 				.collect(ImmutableSet.toImmutableSet());
+
+		if (availablePackageProcessorIds.isEmpty())
+		{
+			return Optional.empty();
+		}
 
 		final WorkPackageQuery workPackageQuery = new WorkPackageQuery();
 		workPackageQuery.setProcessed(false);
@@ -648,7 +655,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackageQuery.setPriorityFrom(priorityFrom);
 		workPackageQuery.setLimit(limit);
 
-		return dao.createQuery(workPackageCtx, workPackageQuery);
+		return Optional.of(dao.createQuery(workPackageCtx, workPackageQuery));
 	}
 
 	@Override
@@ -663,7 +670,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@NonNull
-	private IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx)
+	private Optional<IQuery<I_C_Queue_WorkPackage>> createQuery(final Properties workPackageCtx)
 	{
 		return createQuery(workPackageCtx, QueryLimit.NO_LIMIT);
 	}

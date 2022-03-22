@@ -142,6 +142,11 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	 */
 	public void setPackageProcessorIds(@Nullable final Set<QueuePackageProcessorId> packageProcessorIds)
 	{
+		if (packageProcessorIds != null)
+		{
+			Check.assumeNotEmpty(packageProcessorIds, "packageProcessorIds cannot be empty!");
+		}
+
 		this.packageProcessorIds = packageProcessorIds;
 	}
 
