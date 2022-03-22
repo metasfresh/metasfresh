@@ -46,6 +46,8 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	@NonNull
 	String redirectUrl;
 	@NonNull
+	String refreshToken;
+	@NonNull
 	ApiMode apiMode;
 
 	@Builder
@@ -56,6 +58,7 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 			@NonNull final String appId,
 			@NonNull final String certId,
 			@NonNull final String devId,
+			@NonNull final String refreshToken,
 			@NonNull final String redirectUrl,
 			@NonNull final ApiMode apiMode)
 	{
@@ -66,6 +69,7 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 		this.certId = certId;
 		this.devId = devId;
 		this.redirectUrl = redirectUrl;
+		this.refreshToken = refreshToken;
 		this.apiMode = apiMode;
 	}
 
