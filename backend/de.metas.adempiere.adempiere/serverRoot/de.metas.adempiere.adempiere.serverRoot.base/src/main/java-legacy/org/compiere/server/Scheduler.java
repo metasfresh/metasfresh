@@ -37,6 +37,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -463,7 +464,7 @@ public class Scheduler extends AdempiereServer
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
-				.setInvokedByScheduler(true)
+				.setInvokedBySchedulerId(AdSchedulerId.ofRepoId(adScheduler.getAD_Scheduler_ID()))
 				.build();
 	}
 

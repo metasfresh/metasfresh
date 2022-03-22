@@ -70,8 +70,6 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private Timestamp p_PaymentDateTo = null;
 	private static final String PARAM_IsSOTrx = "IsSOTrx";
 	private Boolean p_isSOTrx = null;
-	private static final String PARAM_IsRunByScheduler = "IsRunByScheduler";
-	private  boolean  p_isRunByScheduler = false;
 	//
 	private static final String PARAM_AllocDateTrx = "DateTrx";
 	private Timestamp p_AllocDateTrx = null;
@@ -99,7 +97,6 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		{
 			p_AllocDateTrx = Env.getDate(getCtx());
 		}
-		p_isRunByScheduler = params.getParameterAsBool(PARAM_IsRunByScheduler);
 	}
 
 	@Override
@@ -180,7 +177,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false);
 
-		if (!p_isRunByScheduler)
+		if (!getProcessInfo().isInvokedByScheduler())
 		{
 			// user selection..if any
 			final IQueryFilter<I_C_Payment> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
