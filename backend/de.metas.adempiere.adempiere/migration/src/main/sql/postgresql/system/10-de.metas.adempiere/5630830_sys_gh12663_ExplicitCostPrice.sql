@@ -566,3 +566,134 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=691417
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,691417,0,481,543224,605255,'F',TO_TIMESTAMP('2022-03-21 16:27:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Explizite Kosten',229,0,0,TO_TIMESTAMP('2022-03-21 16:27:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+-- 2022-03-21T15:08:08.430Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='The cost price is considered if it''s not null and its value is greater than 0.',Updated=TO_TIMESTAMP('2022-03-21 17:08:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543149
+;
+
+-- 2022-03-21T15:10:51.241Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='The cost price is considered if it''s not null and its value is greater than 0.',Updated=TO_TIMESTAMP('2022-03-21 17:10:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-21T16:01:25.539Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataType='S', StartNo=8,Updated=TO_TIMESTAMP('2022-03-21 18:01:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541711
+;
+
+-- 2022-03-22T09:57:58.169Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='The cost price is considered if a value greater than 0 is specified.',Updated=TO_TIMESTAMP('2022-03-22 11:57:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T09:58:21.736Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Der Kostenpreis wird berücksichtigt, wenn ein Wert größer als 0 vorhanden ist.',Updated=TO_TIMESTAMP('2022-03-22 11:58:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T09:58:29.508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird berücksichtigt, wenn ein Wert größer als 0 vorhanden ist.',Updated=TO_TIMESTAMP('2022-03-22 11:58:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T09:58:35.571Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird berücksichtigt, wenn ein Wert größer als 0 vorhanden ist.',Updated=TO_TIMESTAMP('2022-03-22 11:58:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T10:07:18.083Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Der Kostenpreis wird nicht berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:07:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:07:23.205Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird nicht berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:07:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:07:41.472Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='The cost price is not considered.',Updated=TO_TIMESTAMP('2022-03-22 12:07:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:07:57.278Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird nicht berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:07:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:08:20.449Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Der Kostenpreis wird berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:08:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:25.693Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:08:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:35.074Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Der Kostenpreis wird berücksichtigt.',Updated=TO_TIMESTAMP('2022-03-22 12:08:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:37.030Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='The cost price is considered.',Updated=TO_TIMESTAMP('2022-03-22 12:08:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:40.136Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:08:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:43.642Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:08:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:46.357Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:08:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543147
+;
+
+-- 2022-03-22T10:08:58.203Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:08:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:08:58.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:08:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:09:00.429Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:09:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543148
+;
+
+-- 2022-03-22T10:09:10.270Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:09:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T10:09:10.705Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:09:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543149
+;
+
+-- 2022-03-22T10:09:11.788Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-03-22 12:09:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543149
+;
+
