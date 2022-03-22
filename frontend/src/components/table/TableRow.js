@@ -24,6 +24,8 @@ import PropTypes from 'prop-types';
  * @extends PureComponent
  */
 class TableRow extends PureComponent {
+  mounted = false;
+
   constructor(props) {
     super(props);
 
@@ -75,6 +77,12 @@ class TableRow extends PureComponent {
       // eslint-disable-next-line react/no-find-dom-node
       ReactDOM.findDOMNode(this.autofocusCell).focus();
     }
+
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   getFieldValue = (fieldName) => {
@@ -426,18 +434,16 @@ class TableRow extends PureComponent {
    * @summary sets a flag to render row as edited to visualize an edit
    */
   updateRow = () => {
-    this.setState(
-      {
-        updatedRow: true,
-      },
-      () => {
-        setTimeout(() => {
-          this.setState({
-            updatedRow: false,
-          });
-        }, 1000);
-      }
-    );
+    this.setState({ updatedRow: true }, () => {
+      // wait one second before resetting the flag.
+      // this will produce a visual fade effect
+      // letting the user know the row has been updated
+      setTimeout(() => {
+        if (this.mounted) {
+          this.setState({ updatedRow: false });
+        }
+      }, 1000);
+    });
   };
 
   /**
