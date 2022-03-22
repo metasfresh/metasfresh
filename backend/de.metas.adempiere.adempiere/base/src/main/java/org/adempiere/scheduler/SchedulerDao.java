@@ -24,6 +24,7 @@ package org.adempiere.scheduler;
 
 import de.metas.common.util.Check;
 import de.metas.process.AdProcessId;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -53,6 +54,12 @@ public class SchedulerDao
 		}
 
 		return Optional.of(records.get(0));
+	}
+
+	@NonNull
+	public I_AD_Scheduler getById(@NonNull final AdSchedulerId adSchedulerId)
+	{
+		return InterfaceWrapperHelper.load(adSchedulerId, I_AD_Scheduler.class);
 	}
 
 	public void save(@NonNull final I_AD_Scheduler scheduler)

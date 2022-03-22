@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,39 +20,45 @@
  * #L%
  */
 
-package de.metas.scheduler.eventbus;
+package de.metas.scheduler;
 
-import de.metas.scheduler.SchedulerSearchKey;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
-@Jacksonized
-public class ManageSchedulerRequest
+public class AdSchedulerId implements RepoIdAware
 {
-	@NonNull SchedulerSearchKey schedulerSearchKey;
-	@NonNull Advice schedulerAdvice;
-	@NonNull ClientId clientId;
+	@JsonCreator
+	public static AdSchedulerId ofRepoId(final int repoId)
+	{
+		return new AdSchedulerId(repoId);
+	}
+
 	@Nullable
-	SupervisorAdvice supervisorAdvice;
-
-	public enum Advice
+	public static AdSchedulerId ofRepoIdOrNull(final int repoId)
 	{
-		ENABLE,
-		DISABLE,
-		RESTART,
-		RUN_ONCE,
+		return repoId > 0 ? new AdSchedulerId(repoId) : null;
 	}
 
-	public enum SupervisorAdvice
+	int repoId;
+
+	private AdSchedulerId(final int repoId)
 	{
-		ENABLE,
-		DISABLE,
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Scheduler_ID");
 	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final AdSchedulerId id) { return id != null ? id.getRepoId() : -1; }
 }

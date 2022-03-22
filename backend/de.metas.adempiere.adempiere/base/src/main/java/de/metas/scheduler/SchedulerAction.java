@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,39 +20,34 @@
  * #L%
  */
 
-package de.metas.scheduler.eventbus;
+package de.metas.scheduler;
 
-import de.metas.scheduler.SchedulerSearchKey;
-import lombok.Builder;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-import org.adempiere.service.ClientId;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-@Jacksonized
-public class ManageSchedulerRequest
+public enum SchedulerAction implements ReferenceListAwareEnum
 {
-	@NonNull SchedulerSearchKey schedulerSearchKey;
-	@NonNull Advice schedulerAdvice;
-	@NonNull ClientId clientId;
-	@Nullable
-	SupervisorAdvice supervisorAdvice;
+	// AD_Reference_ID = 541532
+	ENABLE("E"),
+	DISABLE("D"),
+	RESTART("R"),
+	RUN_ONCE("O")
+	;
 
-	public enum Advice
+	private static final ReferenceListAwareEnums.ValuesIndex<SchedulerAction> index = ReferenceListAwareEnums.index(values());
+
+	@Getter
+	private final String code;
+
+	SchedulerAction(@NonNull final String code)
 	{
-		ENABLE,
-		DISABLE,
-		RESTART,
-		RUN_ONCE,
+		this.code = code;
 	}
 
-	public enum SupervisorAdvice
+	public static SchedulerAction ofCode(@NonNull final String code)
 	{
-		ENABLE,
-		DISABLE,
+		return index.ofCode(code);
 	}
 }
