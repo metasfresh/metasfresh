@@ -22,24 +22,8 @@ package de.metas.payment.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -48,9 +32,29 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * task 09373
+ * Mass write-off payments.
+ * This process is meant to be used in AD_Scheduler.
+ *
+ * @implSpec task 09373
  */
 public class C_Payment_DiscountAllocation_Process extends JavaProcess
 {
@@ -83,32 +87,24 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	{
 		final IRangeAwareParams params = getParameterAsIParams();
 		p_OpenAmt = params.getParameterAsBigDecimal(PARAM_OpenAmt);
-		if(p_OpenAmt==null)
-		{
-			throw new FillMandatoryException(PARAM_OpenAmt);
-		}
-
 		p_PaymentDateFrom = params.getParameterAsTimestamp(PARAM_PaymentDate);
 		p_PaymentDateTo = params.getParameter_ToAsTimestamp(PARAM_PaymentDate);
 		p_isSOTrx = params.getParameterAsBool(PARAM_IsSOTrx);
-
-		p_AllocDateTrx = params.getParameterAsTimestamp(PARAM_AllocDateTrx);
-		if (p_AllocDateTrx == null)
-		{
-			p_AllocDateTrx = Env.getDate(getCtx());
-		}
+		p_AllocDateTrx = CoalesceUtil.coalesceSuppliers(
+				() -> params.getParameterAsTimestamp(PARAM_AllocDateTrx),
+				() -> Env.getDate(getCtx()));
 	}
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final Iterator<I_C_Payment> iterator = createIterator();
-		if (!iterator.hasNext())
+		if (p_OpenAmt == null)
 		{
-			addLog("@NoSelection@");
+			throw new FillMandatoryException(PARAM_OpenAmt);
 		}
 
+		final Iterator<I_C_Payment> iterator = retrievePayments();
 		while (iterator.hasNext())
 		{
 			final I_C_Payment payment = iterator.next();
@@ -166,7 +162,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		});
 	}
 
-	private Iterator<I_C_Payment> createIterator()
+	private Iterator<I_C_Payment> retrievePayments()
 	{
 
 		//
@@ -188,6 +184,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		{
 			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, p_isSOTrx);
 		}
+
 		if (p_PaymentDateFrom != null)
 		{
 			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.GREATER_OR_EQUAL, p_PaymentDateFrom);
@@ -197,10 +194,16 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			queryBuilder.addCompareFilter(I_C_Payment.COLUMNNAME_DateTrx, Operator.LESS_OR_EQUAL, p_PaymentDateTo);
 		}
 
-		return queryBuilder
-				.orderBy().addColumn(I_C_Payment.COLUMNNAME_C_Payment_ID)
-				.endOrderBy()
-				.create()
-				.iterate(I_C_Payment.class);
+		final IQuery<I_C_Payment> query = queryBuilder
+				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.create();
+
+		final Iterator<I_C_Payment> iterator = query.iterate(I_C_Payment.class);
+		if (!iterator.hasNext())
+		{
+			addLog("No payments found (" + query + ")");
+		}
+
+		return iterator;
 	}
 }
