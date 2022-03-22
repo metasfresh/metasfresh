@@ -24,6 +24,7 @@ package de.metas.adempiere.scheduler;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.ManageSchedulerRequestHandler;
 import de.metas.user.UserId;
@@ -39,6 +40,7 @@ import org.compiere.model.MScheduler;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerGroup;
 import org.compiere.server.AdempiereServerMgr;
+import org.compiere.server.Scheduler;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -82,6 +84,9 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 				activateScheduler(scheduler);
 				startScheduler(scheduler);
 				break;
+			case RUN_ONCE:
+				runOnce(AdSchedulerId.ofRepoId(scheduler.getAD_Scheduler_ID()));
+				break;
 			default:
 				throw new AdempiereException("Unsupported scheduler advice!")
 						.appendParametersToMessage()
@@ -89,7 +94,7 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 		}
 	}
 
-	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.Advice supervisorAdvice)
+	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.SupervisorAdvice supervisorAdvice)
 	{
 		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
 
@@ -100,10 +105,18 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 
 		final I_AD_User user = userDAO.getById(supervisorId);
 
-		final boolean activateUser = supervisorAdvice.equals(ManageSchedulerRequest.Advice.ENABLE)
-				|| supervisorAdvice.equals(ManageSchedulerRequest.Advice.RESTART);
+		switch (supervisorAdvice)
+		{
 
-		user.setIsActive(activateUser);
+			case ENABLE:
+				user.setIsActive(true);
+				break;
+			case DISABLE:
+				user.setIsActive(false);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SupervisorAdvice: " + supervisorAdvice);
+		}
 
 		userDAO.save(user);
 	}
@@ -139,15 +152,30 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 
 	private void stopScheduler(@NonNull final I_AD_Scheduler adScheduler)
 	{
-		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), null);
+		final AdSchedulerId adSchedulerId = AdSchedulerId.ofRepoId(adScheduler.getAD_Scheduler_ID());
+		final String serverId = MScheduler.computeServerID(adSchedulerId);
 
 		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 
-		adempiereServerMgr.stop(schedulerModel.getServerID());
+		adempiereServerMgr.stop(serverId);
 
-		adempiereServerMgr.removeServerWithId(schedulerModel.getServerID());
+		adempiereServerMgr.removeServerWithId(serverId);
 
 		AdempiereServerGroup.get().dump();
+	}
+
+	private void runOnce(@NonNull final AdSchedulerId adSchedulerId)
+	{
+		final String serverId = MScheduler.computeServerID(adSchedulerId);
+		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
+		final AdempiereServer server = adempiereServerMgr.getServer(serverId);
+		if (server == null)
+		{
+			throw new AdempiereException("No scheduler found for " + adSchedulerId);
+		}
+
+		final Scheduler scheduler = Scheduler.cast(server);
+		scheduler.runNow();
 	}
 
 	@NonNull

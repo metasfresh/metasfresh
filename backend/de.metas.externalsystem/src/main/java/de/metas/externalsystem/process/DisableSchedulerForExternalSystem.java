@@ -99,7 +99,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
 													 .schedulerAdvice(ManageSchedulerRequest.Advice.DISABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .supervisorAdvice(ManageSchedulerRequest.SupervisorAdvice.DISABLE)
 													 .build());
 		return MSG_OK;
 	}

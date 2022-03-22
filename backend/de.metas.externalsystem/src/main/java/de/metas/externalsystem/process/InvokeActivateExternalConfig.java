@@ -70,7 +70,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
 													 .schedulerAdvice(ManageSchedulerRequest.Advice.ENABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .supervisorAdvice(ManageSchedulerRequest.SupervisorAdvice.ENABLE)
 													 .build());
 		return MSG_OK;
 	}
