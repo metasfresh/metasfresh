@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
@@ -43,6 +45,9 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		receiptScheduleProducer = Services.get(IReceiptScheduleProducerFactory.class);
 	}
 

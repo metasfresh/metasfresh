@@ -72,7 +72,7 @@ public class C_CallOrderSummary_StepDef
 	}
 
 	@And("^validate (created|updated) C_CallOrderSummary:$")
-	public void validate_call_order_summary(@NonNull final String action, @NonNull final DataTable dataTable)
+	public void validate_call_order_summary(@NonNull final String action_UNUSED, @NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
@@ -130,5 +130,8 @@ public class C_CallOrderSummary_StepDef
 		{
 			assertThat(summary.getQtyInvoicedInUOM()).isEqualTo(qtyInvoiced);
 		}
+
+		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, I_C_CallOrderSummary.COLUMNNAME_IsSOTrx);
+		assertThat(summary.isSOTrx()).isEqualTo(soTrx);
 	}
 }

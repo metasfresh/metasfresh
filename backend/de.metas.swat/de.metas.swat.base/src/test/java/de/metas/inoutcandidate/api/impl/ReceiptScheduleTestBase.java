@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
@@ -33,7 +34,9 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
@@ -95,7 +98,7 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new InOutLineDimensionFactory());
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
-
+		
 		//
 		// Mimic ModelValidator behaviour
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
@@ -145,6 +148,9 @@ public abstract class ReceiptScheduleTestBase
 	{
 		AdempiereTestHelper.get().init(); // need to init this now
 
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		// this is already done by HUTestHelper.init()
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
 		ReceiptScheduleValidator.registerRSAggregationKeyDependencies(); // also, for our tests, we just need this, and not the whole MI!

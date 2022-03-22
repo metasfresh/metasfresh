@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,9 +20,9 @@
  * #L%
  */
 
-package de.metas.invoice.filter;
+package de.metas.inoutcandidate.filter;
 
-public interface IGenerateInvoiceCandidateForModelFilter
+public interface IGenerateReceiptScheduleForModelFilter
 {
 	/**
 	 * @return true, if the filter applies to the given {@code model}.
@@ -30,7 +30,7 @@ public interface IGenerateInvoiceCandidateForModelFilter
 	boolean applies(Object model);
 
 	/**
-	 * @return true if an invoice candidate should be created for the given {@code model}. 
+	 * @return true if an receipt schedule should be created for the given {@code model}.
 	 */
 	boolean isEligible(Object model);
 }

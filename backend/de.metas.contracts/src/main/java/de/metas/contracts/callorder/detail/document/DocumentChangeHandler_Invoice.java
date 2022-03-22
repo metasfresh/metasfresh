@@ -89,6 +89,8 @@ public class DocumentChangeHandler_Invoice implements DocumentChangeHandler<I_C_
 			return;
 		}
 
+		callOrderContractService.validateCallOrderInvoiceLine(invoiceLine, flatrateTermId);
+
 		final UpsertCallOrderDetailRequest request = UpsertCallOrderDetailRequest.builder()
 				.callOrderContractId(flatrateTermId)
 				.invoiceLine(invoiceLine)

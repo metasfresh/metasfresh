@@ -74,6 +74,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
 			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
+			.skipServiceInterface(de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
 			.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class, "spring component")
 			.skipServiceInterface(de.metas.notification.INotificationRepository.class, "spring component")
@@ -83,6 +84,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
+			
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
 			//
 			;

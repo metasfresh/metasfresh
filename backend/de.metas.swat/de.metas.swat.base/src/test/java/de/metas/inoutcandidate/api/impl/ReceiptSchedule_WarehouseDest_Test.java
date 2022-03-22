@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
@@ -8,6 +9,7 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
@@ -44,6 +46,9 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
 		createLocator(warehouseForIssues);
+
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}

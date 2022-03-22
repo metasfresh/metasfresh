@@ -28,6 +28,8 @@ import de.metas.contracts.callorder.summary.model.CallOrderSummary;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryData;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -39,6 +41,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +51,7 @@ import java.math.BigDecimal;
 public class CallOrderSummaryService
 {
 	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final CallOrderSummaryRepo summaryRepo;
 
@@ -64,13 +68,17 @@ public class CallOrderSummaryService
 
 	public void createSummaryForOrderLine(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
+		final OrderId orderId = OrderId.ofRepoId(ol.getC_Order_ID());
+		final I_C_Order order = orderBL.getById(orderId);
+
 		final CallOrderSummaryData callOrderSummaryData = CallOrderSummaryData.builder()
-				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))
+				.orderId(orderId)
 				.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.uomId(UomId.ofRepoId(ol.getC_UOM_ID()))
 				.qtyEntered(ol.getQtyEntered())
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(ol.getM_AttributeSetInstance_ID()))
 				.build();
 

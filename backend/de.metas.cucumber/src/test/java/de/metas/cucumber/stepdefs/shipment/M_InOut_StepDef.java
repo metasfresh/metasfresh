@@ -233,8 +233,8 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
-	@And("^the shipment identified by (.*) is (completed|reactivated|reversed)$")
-	public void shipment_action(@NonNull final String shipmentIdentifier, @NonNull final String action)
+	@And("^the (shipment|material receipt) identified by (.*) is (completed|reactivated|reversed)$")
+	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
 	{
 		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
 
@@ -259,8 +259,8 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("load shipment:")
-	public void loadM_shipment(@NonNull final DataTable dataTable)
+	@And("load M_InOut:")
+	public void loadM_InOut(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

@@ -61,7 +61,7 @@ public class C_Order
 		}
 		else
 		{
-			handleSalesOrderComplete(order);
+			handleOrderComplete(order);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class C_Order
 		orderDocumentChangeHandler.onReactivate(order);
 	}
 
-	private void handleSalesOrderComplete(@NonNull final I_C_Order order)
+	private void handleOrderComplete(@NonNull final I_C_Order order)
 	{
 		orderDAO.retrieveOrderLines(order, I_C_OrderLine.class)
 				.stream()

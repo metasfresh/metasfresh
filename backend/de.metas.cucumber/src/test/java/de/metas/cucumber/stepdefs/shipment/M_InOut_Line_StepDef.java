@@ -65,8 +65,8 @@ public class M_InOut_Line_StepDef
 		this.productTable = productTable;
 	}
 
-	@And("validate the created shipment lines")
-	public void validate_created_shipment_lines(@NonNull final DataTable table)
+	@And("^validate the created (shipment|material receipt) lines$")
+	public void validate_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
