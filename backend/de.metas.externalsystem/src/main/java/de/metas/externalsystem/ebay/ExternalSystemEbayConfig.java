@@ -22,14 +22,19 @@
 
 package de.metas.externalsystem.ebay;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.pricing.PriceListId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
+public class ExternalSystemEbayConfig implements IExternalSystemChildConfig 
 {
 	@NonNull
 	ExternalSystemEbayConfigId id;
@@ -44,23 +49,28 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 	@NonNull
 	String devId;
 	@NonNull
-	String redirectUrl;
-	@NonNull
 	String refreshToken;
 	@NonNull
+	List<ExternalSystemEbayConfigMapping> externalSystemEbayConfigMappingList;
+	@NonNull
 	ApiMode apiMode;
+	@Nullable
+	PriceListId priceListId;
+	@NonNull
+	Boolean isActive;
 
 	@Builder
-	public ExternalSystemEbayConfig(
-			@NonNull final ExternalSystemEbayConfigId id,
+	public ExternalSystemEbayConfig(@NonNull final ExternalSystemEbayConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
-			@NonNull final String appId,
-			@NonNull final String certId,
+			@NonNull final String appId, 
+			@NonNull final String certId, 
 			@NonNull final String devId,
 			@NonNull final String refreshToken,
-			@NonNull final String redirectUrl,
-			@NonNull final ApiMode apiMode)
+			@NonNull final List<ExternalSystemEbayConfigMapping> externalSystemEbayConfigMappingList,
+			@NonNull final ApiMode apiMode, 
+			@Nullable final PriceListId priceListId, 
+			@NonNull final Boolean isActive) 
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -68,15 +78,17 @@ public class ExternalSystemEbayConfig implements IExternalSystemChildConfig
 		this.appId = appId;
 		this.certId = certId;
 		this.devId = devId;
-		this.redirectUrl = redirectUrl;
 		this.refreshToken = refreshToken;
+		this.externalSystemEbayConfigMappingList = externalSystemEbayConfigMappingList;
 		this.apiMode = apiMode;
+		this.priceListId = priceListId;
+		this.isActive = isActive;
 	}
 
 	@NonNull
-	public static ExternalSystemEbayConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
+	public static ExternalSystemEbayConfig cast(@NonNull final IExternalSystemChildConfig childConfig) 
 	{
-		return (ExternalSystemEbayConfig)childConfig;
+		return (ExternalSystemEbayConfig) childConfig;
 	}
 
 }
