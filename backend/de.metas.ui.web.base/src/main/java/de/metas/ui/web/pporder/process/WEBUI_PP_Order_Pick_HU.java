@@ -144,7 +144,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	{
 		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
 
-		// TODO refine to a better picking logic OR  implement a best matching HUs strategy
+		// TODO refine OR  implement a best matching HUs strategy (based on received Qty)
 
 		for (final HuId huId : distinctHuIds)
 		{
