@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
@@ -298,6 +299,12 @@ public final class ProcessInfoParameter implements Serializable
 	public ZonedDateTime getParameter_ToAsZonedDateTime()
 	{
 		return TimeUtil.asZonedDateTime(m_Parameter_To);
+	}
+
+	@Nullable
+	public Instant getParameterAsInstant()
+	{
+		return TimeUtil.asInstant(m_Parameter);
 	}
 
 	@Nullable

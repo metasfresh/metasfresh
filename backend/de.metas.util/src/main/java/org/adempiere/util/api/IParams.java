@@ -24,6 +24,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -65,13 +66,18 @@ public interface IParams
 	Boolean getParameterAsBoolean(String parameterName, @Nullable Boolean defaultValue);
 
 	/** @return timestamp value or <code>null</code> if parameter is missing */
+	@Nullable
 	Timestamp getParameterAsTimestamp(String parameterName);
 
 	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	LocalDate getParameterAsLocalDate(String parameterName);
 
-	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	ZonedDateTime getParameterAsZonedDateTime(String parameterName);
+
+	@Nullable
+	Instant getParameterAsInstant(String parameterName);
 
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
 	BigDecimal getParameterAsBigDecimal(String parameterName);

@@ -24,6 +24,7 @@ package de.metas.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -276,6 +277,14 @@ public class ProcessParams implements IRangeAwareParams
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsZonedDateTime() : null;
+	}
+
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
 	}
 
 	/**

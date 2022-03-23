@@ -24,6 +24,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -106,6 +107,13 @@ import javax.annotation.Nullable;
 
 	@Override
 	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
 	{
 		return null;
 	}

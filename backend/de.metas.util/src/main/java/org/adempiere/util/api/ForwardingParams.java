@@ -2,6 +2,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -105,6 +106,13 @@ public class ForwardingParams implements IParams
 	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
 	{
 		return params.getParameterAsZonedDateTime(parameterName);
+	}
+
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		return params.getParameterAsInstant(parameterName);
 	}
 
 	@Override
