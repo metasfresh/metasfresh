@@ -425,8 +425,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
       | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID | UOM.X12DE355 |
-      | inventory_1               | inventoryLine_1               | productIdentifier_1     | 0       | 100      | 2005577          | PCE          |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |
     And the inventory identified by inventory_1 is completed
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
@@ -501,8 +501,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
       | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID | UOM.X12DE355 |
-      | inventory_1               | inventoryLine_1               | productIdentifier_2     | 0       | 100      | 2005577          | PCE          |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |
     And the inventory identified by inventory_1 is completed
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code

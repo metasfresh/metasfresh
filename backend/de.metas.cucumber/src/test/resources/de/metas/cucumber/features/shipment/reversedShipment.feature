@@ -27,8 +27,8 @@ Feature: reversed shipment
       | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_1 | hu_endcustomer | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 0123456789011 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
       | inv_1                     | 2021-04-01T00:00:00Z | 540008         |

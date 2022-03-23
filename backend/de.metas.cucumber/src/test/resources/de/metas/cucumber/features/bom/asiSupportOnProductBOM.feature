@@ -33,8 +33,8 @@ Feature: ASI support in Product BOM rest-api
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_SO | customer_SO | customer_SO | Y              | ps_SO                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | customerLocation_SO | customerSO01 | customer_SO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | customerLocation_SO | customerSO01 | customer_SO              | Y                   | Y                   |
 
   @from:cucumber
   Scenario: Create sales order with different ASI, on complete no production candidate is found
@@ -395,8 +395,8 @@ Feature: ASI support in Product BOM rest-api
       | Identifier  | Name        | Value         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | supplier_PO | supplier_PO | supplier_PO_1 | Y            | N              | ps_PO                         | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | supplierLocation_PO | supplierP101 | supplier_PO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | supplierLocation_PO | supplierP101 | supplier_PO              | Y                   | Y                   |
 
     And metasfresh contains M_AttributeSetInstance with identifier "po_AttributeSetInstance":
   """
