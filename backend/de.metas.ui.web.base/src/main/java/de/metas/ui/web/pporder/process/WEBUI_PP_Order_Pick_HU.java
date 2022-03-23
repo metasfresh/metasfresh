@@ -142,9 +142,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		// create selection
-		final Set<HuId> distinctHuIds = retrieveSelectedHuIds(); // do we  need a selection
-		//DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
 
 		// TODO refine to a better picking logic OR  implement a best matching HUs strategy
 
