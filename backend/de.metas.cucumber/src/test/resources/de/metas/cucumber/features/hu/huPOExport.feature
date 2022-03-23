@@ -58,8 +58,8 @@ Feature: Handling unit export from purchase order
       | Identifier  | Name        | Value       | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | supplier_PO | supplier_PO | supplier_PO | Y            | N              | ps_PO                         | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | supplierLocation_PO | supplierPO01 | supplier_PO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | supplierLocation_PO | supplierPO01 | supplier_PO              | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
       | order_PO   | N       | supplier_PO              | 2022-01-05  | po_ref          | 1000012              | POO             | ps_PO                             |

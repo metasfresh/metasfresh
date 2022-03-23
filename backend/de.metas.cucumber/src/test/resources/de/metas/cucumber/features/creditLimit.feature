@@ -30,8 +30,8 @@ Feature: credit limit
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | cl_bPLocation | endcustomer_1            | true                | true         |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | l_1                                   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -50,7 +50,7 @@ Feature: credit limit
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-17   |
     And metasfresh contains M_InventoriesLines:
-      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBooked |
+      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0         |
     And the inventory identified by i_1 is completed
 

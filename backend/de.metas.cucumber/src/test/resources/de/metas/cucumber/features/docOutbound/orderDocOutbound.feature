@@ -51,8 +51,8 @@ Feature: Validate order doc outbound log creation
     And the order identified by order_1 is completed
 
     Then validate the created orders
-      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail          |
-      | order_1          | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_1128101 | true      | CO        | location@email.com |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail          |
+      | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_1128101 | true      | CO        | location@email.com |
 
     And after not more than 30s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
@@ -81,8 +81,8 @@ Feature: Validate order doc outbound log creation
     And the order identified by order_1 is completed
 
     Then validate the created orders
-      | Order.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail |
-      | order_1          | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_2085101 | true      | CO        | null      |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus | OPT.EMail |
+      | order_1               | sale_bpartner            | bpLocation                        | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_2085101 | true      | CO        | null      |
 
     And after not more than 30s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |

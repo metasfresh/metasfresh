@@ -204,7 +204,7 @@ public class M_Inventory_StepDef
 		inventoryLine.setM_Product_ID(productId);
 
 		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));
-		inventoryLine.setQtyBook(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyBooked"));
+		inventoryLine.setQtyBook(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyBook"));
 		inventoryLine.setIsCounted(true);
 
 		final String uomX12DE355Code = DataTableUtil.extractStringForColumnName(tableRow, "UOM.X12DE355");

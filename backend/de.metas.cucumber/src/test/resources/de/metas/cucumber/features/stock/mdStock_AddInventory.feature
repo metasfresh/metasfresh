@@ -19,9 +19,9 @@ Feature: stock changes accordingly
       | 11                        | 540008         | 2021-07-12   | 1111           |
       | 12                        | 540008         | 2021-07-12   | 2222           |
     And metasfresh contains M_InventoriesLines:
-      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBooked |
-      | 21                            | 11                        | 222                     | PCE          | 10       | 0         |
-      | 22                            | 12                        | 222                     | PCE          | 16       | 10        |
+      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
+      | 21                            | 11                        | 222                     | PCE          | 10       | 0       |
+      | 22                            | 12                        | 222                     | PCE          | 16       | 10      |
     When the inventory identified by 11 is completed
     Then metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
