@@ -24,9 +24,12 @@ package de.metas.payment.process;
 
 import com.google.common.base.Stopwatch;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -44,11 +47,11 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,7 +62,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @implSpec task 09373
  */
-public class C_Payment_DiscountAllocation_Process extends JavaProcess
+public class C_Payment_MassWriteOff extends JavaProcess
 {
 	public static final AdMessageKey MSG_AllocationCreated = AdMessageKey.of("MSG_AllocationCreated");
 
@@ -79,7 +82,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private SOTrx p_SOTrx = null;
 	//
 	private static final String PARAM_AllocDateTrx = "DateTrx";
-	private Timestamp p_AllocDateTrx = null;
+	private Instant p_AllocDateTrx = null;
 
 	// status
 	private final AtomicInteger counterSkipped = new AtomicInteger(0);
@@ -94,8 +97,8 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		p_PaymentDateTo = params.getParameter_ToAsTimestamp(PARAM_PaymentDate);
 		p_SOTrx = SOTrx.ofNullableBoolean(params.getParameterAsBoolean(PARAM_IsSOTrx, null));
 		p_AllocDateTrx = CoalesceUtil.coalesceSuppliers(
-				() -> params.getParameterAsTimestamp(PARAM_AllocDateTrx),
-				() -> Env.getDate(getCtx()));
+				() -> params.getParameterAsInstant(PARAM_AllocDateTrx),
+				SystemTime::asInstant);
 	}
 
 	@Override
@@ -123,10 +126,10 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private void paymentWriteOff(final I_C_Payment payment)
 	{
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
-		final BigDecimal paymentOpenAmt = paymentDAO.getAvailableAmount(paymentId);
+		final Money paymentOpenAmt = Money.of(paymentDAO.getAvailableAmount(paymentId), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
 
 		// Skip this payment if the open amount is above given limit
-		if (paymentOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
+		if (paymentOpenAmt.toBigDecimal().abs().compareTo(p_OpenAmt.abs()) > 0)
 		{
 			counterSkipped.incrementAndGet();
 			return;
@@ -139,7 +142,9 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		}
 
 		@SuppressWarnings("UnnecessaryLocalVariable")
-		final BigDecimal amtToWriteOff = paymentOpenAmt;
+		final Money amtToWriteOff = paymentOpenAmt;
+
+		final String writeOffDescription = getProcessInfo().getTitle();
 
 		trxManager.assertThreadInheritedTrxNotExists();
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
@@ -147,7 +152,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			@Override
 			public void run(final String localTrxName)
 			{
-				final I_C_AllocationHdr allocationHdr = paymentBL.paymentWriteOff(payment, amtToWriteOff, p_AllocDateTrx);
+				final I_C_AllocationHdr allocationHdr = paymentBL.paymentWriteOff(payment, amtToWriteOff, p_AllocDateTrx, writeOffDescription);
 
 				// Make sure the payment was fully allocated
 				InterfaceWrapperHelper.refresh(payment, localTrxName);
