@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_MatchInv;
@@ -65,11 +66,17 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 /**
  * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEngineTestBase
 {
+	@Override
+	public void init()
+	{
+		super.init();
+
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+	}
+
 	/**
 	 * 06630 (Invoice Rule: "Nach Lieferung")<br>
 	 * <br>
@@ -247,6 +254,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		im11.setQty(partialQty1_32.getStockQty().toBigDecimal());
 		im11.setQtyInUOM(partialQty1_32.getUOMQtyNotNull().toBigDecimal());
 		im11.setC_UOM_ID(partialQty1_32.getUOMQtyNotNull().getUomId().getRepoId());
+		im11.setM_InOut_ID(iol11.getM_InOut_ID());
 		im11.setM_InOutLine(iol11);
 		InterfaceWrapperHelper.save(im11);
 

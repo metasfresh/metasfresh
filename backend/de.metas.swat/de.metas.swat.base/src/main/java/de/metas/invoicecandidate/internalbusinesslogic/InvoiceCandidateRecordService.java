@@ -227,7 +227,14 @@ public class InvoiceCandidateRecordService
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
+		if (icRecord.getQtyWithIssues_Effective().signum() != 0)
+		{
+			icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
+		}
+		else
+		{
+			icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
+		}
 		icRecord.setQtyToInvoice(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
 
 		icRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQtyNotNull().toBigDecimal());

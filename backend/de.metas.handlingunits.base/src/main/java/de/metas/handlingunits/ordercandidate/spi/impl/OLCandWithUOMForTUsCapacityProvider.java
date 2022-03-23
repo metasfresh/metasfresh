@@ -61,7 +61,7 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 		{
 			return false; // nothing to do
 		}
-		if (!isNull(olCand, I_C_OLCand.COLUMNNAME_QtyItemCapacity))
+		if (!isNull(olCand, I_C_OLCand.COLUMNNAME_QtyItemCapacityInternal))
 		{
 			return false; // already set; nothing to do
 		}
@@ -77,6 +77,7 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 		return true;
 	}
 
+	@NonNull
 	@Override
 	public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 	{
@@ -92,14 +93,16 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 		}
 
 		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
-		final Quantity capacityInProductUOM = uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId);
-
-		return capacityInProductUOM;
+		// note that the product's stocking UOM is never a TU-UOM
+		if (capacity.isInfiniteCapacity())
+		{
+			return Quantity.infinite(capacity.getC_UOM());
+		}
+		return uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId);
 	}
 
 	private UomId extractUomId(@NonNull final I_C_OLCand olCand)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
-		return uomId;
+		return UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
 	}
 }

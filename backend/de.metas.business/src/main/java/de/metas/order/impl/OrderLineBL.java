@@ -125,6 +125,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
+	
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -518,9 +519,9 @@ public class OrderLineBL implements IOrderLineBL
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
-		
+
 		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
 		// if null, then get date promised from order
 		if (date == null)
@@ -579,13 +580,20 @@ public class OrderLineBL implements IOrderLineBL
 		}
 	}
 
-	private BigDecimal computeQtyOrderedUsingQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	private BigDecimal extractQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
 			throw new AdempiereException(TranslatableStrings.constant("for TU-UOMs, we must have qtyItemCapacity"));// TODO: nice user message
 		}
+		return qtyItemCapacity;
+	}
+	
+	private BigDecimal computeQtyOrderedUsingQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final BigDecimal qtyItemCapacity = extractQtyItemCapacity(orderLine);
+		
 		return orderLine.getQtyEntered().multiply(qtyItemCapacity);
 	}
 
@@ -625,29 +633,48 @@ public class OrderLineBL implements IOrderLineBL
 
 	@Override
 	public Quantity convertQtyToUOM(
-			@NonNull final Quantity quantity,
+			@NonNull final Quantity sourceQuantity,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
-		if (uomId == null || uomId.equals(quantity.getUomId()))
+		final UomId targetUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (targetUomId == null || targetUomId.equals(sourceQuantity.getUomId()))
 		{
-			return quantity;
+			return sourceQuantity;
 		}
 
-		if (uomDAO.isUOMForTUs(quantity.getUomId()))
-		{
-			final BigDecimal qtyOrdered = computeQtyOrderedUsingQtyItemCapacity(orderLine);
-
-			// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
-			final Quantity qtyInQtockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
-			assume(!uomDAO.isUOMForTUs(qtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", qtyInQtockUOM, orderLine);
-
-			final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
-			return uomConversionBL.convertQuantityTo(qtyInQtockUOM, conversionCtx, uomId);
-		}
-
+		final boolean targetIsTUUom = uomDAO.isUOMForTUs(targetUomId);
+		final boolean sourceIsTUUom = uomDAO.isUOMForTUs(sourceQuantity.getUomId());
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
-		return uomConversionBL.convertQuantityTo(quantity, conversionCtx, UomId.ofRepoId(orderLine.getC_UOM_ID()));
+
+		if (sourceIsTUUom && targetIsTUUom)
+		{
+			return sourceQuantity;
+		}
+		else if (!sourceIsTUUom && !targetIsTUUom)
+		{
+			return uomConversionBL.convertQuantityTo(sourceQuantity, conversionCtx, targetUomId);
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		final BigDecimal itemCapacityInStockUOM = extractQtyItemCapacity(orderLine);
+		
+		if (sourceIsTUUom)
+		{
+			// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
+			final Quantity targetQtyInQtockUOM = Quantitys.create(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
+			assume(!uomDAO.isUOMForTUs(targetQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", targetQtyInQtockUOM, orderLine);
+
+			return uomConversionBL.convertQuantityTo(targetQtyInQtockUOM, conversionCtx, targetUomId);
+		}
+
+		// sourceIsTUUom is  false and targetIsTUUom is true at this point
+		
+		// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
+		final Quantity sourceQtyInQtockUOM = uomConversionBL.convertToProductUOM(sourceQuantity, productId);
+		assume(!uomDAO.isUOMForTUs(sourceQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", sourceQtyInQtockUOM, orderLine);
+
+		return sourceQtyInQtockUOM.divide(itemCapacityInStockUOM);
 	}
 
 	@Override
