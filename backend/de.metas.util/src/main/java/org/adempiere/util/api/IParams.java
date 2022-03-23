@@ -35,10 +35,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
 
 /**
- * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Generic readonly parameters.
  */
 public interface IParams
 {
@@ -63,6 +60,9 @@ public interface IParams
 
 	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);
+
+	@Nullable
+	Boolean getParameterAsBoolean(String parameterName, @Nullable Boolean defaultValue);
 
 	/** @return timestamp value or <code>null</code> if parameter is missing */
 	Timestamp getParameterAsTimestamp(String parameterName);

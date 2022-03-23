@@ -1,21 +1,19 @@
 package de.metas.process;
 
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.Check;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
 
 /**
  * Immutable Process Parameter
@@ -246,26 +244,24 @@ public final class ProcessInfoParameter implements Serializable
 
 	public boolean getParameterAsBoolean()
 	{
-		final boolean defaultValue = false;
-		return toBoolean(m_Parameter, defaultValue);
+		return StringUtils.toBoolean(m_Parameter);
 	}
 
+	@Nullable
 	public Boolean getParameterAsBooleanOrNull()
 	{
-		final Boolean defaultValue = null;
-		return toBoolean(m_Parameter, defaultValue);
+		return StringUtils.toBoolean(m_Parameter, null);
+	}
+
+	@Nullable
+	public Boolean getParameterAsBoolean(@Nullable Boolean defaultValue)
+	{
+		return StringUtils.toBoolean(m_Parameter, defaultValue);
 	}
 
 	public boolean getParameter_ToAsBoolean()
 	{
-		final boolean defaultValue = false;
-		return toBoolean(m_Parameter_To, defaultValue);
-	}
-
-	@Nullable
-	private static Boolean toBoolean(final Object value, @Nullable final Boolean defaultValue)
-	{
-		return DisplayType.toBoolean(value, defaultValue);
+		return StringUtils.toBoolean(m_Parameter_To);
 	}
 
 	@Nullable

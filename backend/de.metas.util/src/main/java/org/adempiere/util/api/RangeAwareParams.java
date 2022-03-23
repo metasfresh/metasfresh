@@ -14,6 +14,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -115,6 +117,13 @@ public class RangeAwareParams implements IRangeAwareParams
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return values.getParameterAsBool(parameterName);
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return values.getParameterAsBoolean(parameterName, defaultValue);
 	}
 
 	@Override

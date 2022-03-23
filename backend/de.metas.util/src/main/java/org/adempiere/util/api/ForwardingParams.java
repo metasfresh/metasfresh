@@ -12,6 +12,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -109,6 +111,13 @@ public class ForwardingParams implements IParams
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return params.getParameterAsBoolean(parameterName, defaultValue);
 	}
 
 	@Override

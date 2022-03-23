@@ -33,6 +33,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.util.lang.RepoIdAware;
 
+import javax.annotation.Nullable;
+
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.
  *
@@ -81,6 +83,13 @@ import de.metas.util.lang.RepoIdAware;
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return false;
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return defaultValue;
 	}
 
 	@Override
