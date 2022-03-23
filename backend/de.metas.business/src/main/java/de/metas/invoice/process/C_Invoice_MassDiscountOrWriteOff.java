@@ -25,10 +25,13 @@ package de.metas.invoice.process;
 import com.google.common.base.Stopwatch;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationBL.InvoiceDiscountAndWriteOffRequest;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
@@ -42,7 +45,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.util.TrxRunnableAdapter;
 
 import java.math.BigDecimal;
@@ -57,7 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @implNote See task 09135.
  */
-public class C_Invoice_DiscountAllocation_Process extends JavaProcess
+public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 {
 	public static final AdMessageKey MSG_AllocationLinesCreated = AdMessageKey.of("MSG_AllocationLinesCreated");
 
@@ -115,8 +117,8 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 
 	private void invoiceDiscount(@NonNull final I_C_Invoice invoice)
 	{
-		final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(invoice, true);
-
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final Money invoiceOpenAmt = Money.of(allocationDAO.retrieveOpenAmt(invoice, true), currencyId);
 		if (invoiceOpenAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has OpenAmt=0 but IsPaid=N.");
@@ -133,13 +135,13 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 			return;
 		}
 
-		if (invoiceOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
+		if (invoiceOpenAmt.toBigDecimal().abs().compareTo(p_OpenAmt.abs()) > 0)
 		{
 			counterSkipped.incrementAndGet();
 			return;
 		}
 
-		final BigDecimal discountAmount = invoice.isSOTrx()
+		final Money discountAmt = invoice.isSOTrx()
 				? invoiceOpenAmt
 				: invoiceOpenAmt.negate();
 
@@ -147,31 +149,22 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName)
+			public void run(final String localTrxName_NOTUSED)
 			{
-				final boolean ignoreIfNotHandled = true;
-				InterfaceWrapperHelper.setTrxName(invoice, localTrxName, ignoreIfNotHandled);
-
-				final I_C_AllocationHdr allocationHdr = allocationBL.newBuilder()
-						.orgId(invoice.getAD_Org_ID())
-						.currencyId(invoice.getC_Currency_ID())
-						.dateAcct(invoice.getDateAcct())
-						.dateTrx(invoice.getDateInvoiced())
-						.addLine()
-						.orgId(invoice.getAD_Org_ID())
-						.bpartnerId(invoice.getC_BPartner_ID())
-						.invoiceId(invoice.getC_Invoice_ID())
-						.discountAmt(discountAmount)
-						.writeOffAmt(BigDecimal.ZERO)
-						.lineDone()
-						.create(true); // complete=true
+				allocationBL.invoiceDiscountAndWriteOff(
+						InvoiceDiscountAndWriteOffRequest.builder()
+								.invoice(invoice)
+								.useInvoiceDate(true)
+								.discountAmt(discountAmt)
+								.description(getProcessInfo().getTitle())
+								.build());
 
 				// Make sure it was fully allocated
 				InterfaceWrapperHelper.refresh(invoice);
-				Check.errorIf(!invoice.isPaid(), "C_Invoice {} still has IsPaid='N' after having created {} with discountAmt={}", invoice, allocationHdr, discountAmount);
+				Check.errorIf(!invoice.isPaid(), "C_Invoice {} still has IsPaid='N' after having allocating discountAmt={}", invoice, discountAmt);
 
 				// Log the success and increase the counter
-				addLog("@Processed@: @C_Invoice_ID@ " + invoice.getDocumentNo() + "; @DiscountAmt@=" + discountAmount);
+				addLog("@Processed@: @C_Invoice_ID@ " + invoice.getDocumentNo() + "; @DiscountAmt@=" + discountAmt);
 				counterProcessed.incrementAndGet();
 			}
 
