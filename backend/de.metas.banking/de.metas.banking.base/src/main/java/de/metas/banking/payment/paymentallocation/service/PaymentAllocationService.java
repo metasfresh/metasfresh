@@ -30,6 +30,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
@@ -194,6 +195,14 @@ public class PaymentAllocationService
 
 		final SOTrx soTrx = SOTrx.ofBoolean(paymentAllocationPayableItem.isSOTrx());
 
+		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
+				.soTrx(soTrx)
+				.isSOTrxAdjusted(false)
+				.isCreditMemo(false) // we assume it's not a credit memo
+				.isCreditMemoAdjusted(false) // we assume it's not a credit memo
+				.build()
+				.intern();
+
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
@@ -205,7 +214,7 @@ public class PaymentAllocationService
 										   .discountAmt(discountAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
-										   .negateIf(soTrx.isPurchase()))
+										   .convertToRealAmounts(invoiceAmtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
