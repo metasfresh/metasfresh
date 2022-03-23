@@ -33,6 +33,7 @@ import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -66,6 +67,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -74,6 +76,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_Pick_HU.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
@@ -116,7 +119,6 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		return filler.getPickingSlotValues(context);
 	}
 
-	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -141,18 +143,21 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	protected String doIt()
 	{
 		// create selection
-		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
-		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds(); // do we  need a selection
+		//DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
 
-		for (final HuId huId:distinctHuIds)
-		{
-			I_M_HU mHu = handlingUnitsBL.getById(huId);
-		}
+		// TODO refine to a better picking logic OR  implement a best matching HUs strategy
 
-		// pick
 		for (final HuId huId : distinctHuIds)
 		{
-			pickHU(huId);
+			// get shipment schedule & compare Quantity Ordered / Picked (stock UOM) ; based on same UOM
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
+			final BigDecimal qtyOrdered = shipmentSchedule.getQtyToDeliver();
+			final BigDecimal qtyPicked = shipmentSchedule.getQtyPickList();
+			if(qtyPicked.compareTo(qtyOrdered) < 0)
+			{
+				pickHU(huId);
+			}
 		}
 
 		// invalidate view in order to be refreshed
