@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.serverRoot.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
  * #L%
  */
 
-package de.metas.adempiere.scheduler;
+package de.metas.scheduler;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.scheduler.AdSchedulerId;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.ManageSchedulerRequestHandler;
 import de.metas.user.UserId;
@@ -33,7 +32,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.scheduler.SchedulerDao;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MScheduler;
@@ -48,15 +46,15 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class SchedulerService implements ManageSchedulerRequestHandler
+public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(SchedulerService.class);
+	private static final Logger logger = LogManager.getLogger(AdSchedulerManageRequestHandler.class);
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	private final SchedulerDao schedulerDao;
 
-	public SchedulerService(@NonNull final SchedulerDao schedulerDao)
+	public AdSchedulerManageRequestHandler(@NonNull final SchedulerDao schedulerDao)
 	{
 		this.schedulerDao = schedulerDao;
 	}
