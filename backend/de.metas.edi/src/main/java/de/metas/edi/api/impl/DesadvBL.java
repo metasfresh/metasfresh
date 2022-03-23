@@ -395,7 +395,7 @@ public class DesadvBL implements IDesadvBL
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
 		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
-		
+
 		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
 
 		// Get the records we might already have from DesadvLineSSCC18Generator
@@ -489,13 +489,20 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final Quantity qtyCUsPerTUInStockUOM;
-		if (lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
-			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
+			// we use the capacity which the goods were ordered in
+			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+		}
+		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			// we make an educated guess, based on the packing-instruction's information
+			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
 		}
 		else
 		{
-			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
+			// we just don't have the info. So we assume that everything was put into one TU
+			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
 		}
 
 		StockQtyAndUOMQty remainingQty = qtyToAdd;
@@ -507,7 +514,7 @@ public class DesadvBL implements IDesadvBL
 
 			final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingUnusedPacks, desadvLineRecord, movementQty);
 
-			packRecord.setQtyItemCapacity(lutuConfigurationInStockUOM.getQtyCU());
+			packRecord.setQtyItemCapacity(qtyCUsPerTUInStockUOM.toBigDecimal()); // CuPerTU
 			packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 			packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 
