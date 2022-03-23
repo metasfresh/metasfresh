@@ -193,6 +193,7 @@ public class DesadvLineSSCC18Generator
 		desadvLineSSCC.setEDI_Desadv_ID(desadvLine.getEDI_Desadv_ID());
 		desadvLineSSCC.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
 		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
+		desadvLineSSCC.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 		desadvLineSSCC.setC_UOM_ID(desadvLine.getC_UOM_ID());
 		desadvLineSSCC.setQtyCU(luQtys.getQtyCUsPerTU());
 		desadvLineSSCC.setQtyTU(luQtys.getQtyTUsPerLU().intValueExact());

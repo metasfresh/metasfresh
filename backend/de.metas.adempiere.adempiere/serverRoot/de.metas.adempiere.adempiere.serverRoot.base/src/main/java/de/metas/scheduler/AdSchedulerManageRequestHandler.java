@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.serverRoot.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.adempiere.scheduler;
+package de.metas.scheduler;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
@@ -32,13 +32,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.scheduler.SchedulerDao;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MScheduler;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerGroup;
 import org.compiere.server.AdempiereServerMgr;
+import org.compiere.server.Scheduler;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -46,15 +46,15 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class SchedulerService implements ManageSchedulerRequestHandler
+public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(SchedulerService.class);
+	private static final Logger logger = LogManager.getLogger(AdSchedulerManageRequestHandler.class);
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	private final SchedulerDao schedulerDao;
 
-	public SchedulerService(@NonNull final SchedulerDao schedulerDao)
+	public AdSchedulerManageRequestHandler(@NonNull final SchedulerDao schedulerDao)
 	{
 		this.schedulerDao = schedulerDao;
 	}
@@ -62,37 +62,56 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 	@Override
 	public void handleRequest(final ManageSchedulerRequest request)
 	{
-		final I_AD_Scheduler scheduler = schedulerDao.getSchedulerByProcessIdIfUnique(request.getAdProcessId())
-				.orElseThrow(() -> new AdempiereException("No scheduler found for process")
-						.appendParametersToMessage()
-						.setParameter("adProcessId", request.getAdProcessId()));
+		final I_AD_Scheduler scheduler = getScheduler(request);
 
-		Optional.ofNullable(request.getSupervisorAdvice())
-				.ifPresent(supervisorAdvice -> handleSupervisor(scheduler, supervisorAdvice));
+		Optional.ofNullable(request.getSupervisorAction())
+				.ifPresent(supervisorAction -> handleSupervisor(scheduler, supervisorAction));
 
-		if (ManageSchedulerRequest.Advice.ENABLE.equals(request.getSchedulerAdvice()))
+		switch (request.getSchedulerAction())
 		{
-			activateScheduler(scheduler);
-			startScheduler(scheduler);
-		}
-		else
-		{
-			deactivateScheduler(scheduler);
-			stopScheduler(scheduler);
+			case ENABLE:
+				activateScheduler(scheduler);
+				startScheduler(scheduler);
+				break;
+			case DISABLE:
+				deactivateScheduler(scheduler);
+				stopScheduler(scheduler);
+				break;
+			case RESTART:
+				stopScheduler(scheduler);
+				activateScheduler(scheduler);
+				startScheduler(scheduler);
+				break;
+			case RUN_ONCE:
+				runOnce(AdSchedulerId.ofRepoId(scheduler.getAD_Scheduler_ID()));
+				break;
+			default:
+				throw new AdempiereException("Unsupported scheduler action: " + request);
 		}
 	}
 
-	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.Advice supervisorAdvice)
+	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.SupervisorAction supervisorAction)
 	{
 		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
-
 		if (supervisorId == null)
 		{
 			return;
 		}
 
 		final I_AD_User user = userDAO.getById(supervisorId);
-		user.setIsActive(ManageSchedulerRequest.Advice.ENABLE.equals(supervisorAdvice));
+
+		switch (supervisorAction)
+		{
+
+			case ENABLE:
+				user.setIsActive(true);
+				break;
+			case DISABLE:
+				user.setIsActive(false);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SupervisorAdvice: " + supervisorAction);
+		}
 
 		userDAO.save(user);
 	}
@@ -128,14 +147,52 @@ public class SchedulerService implements ManageSchedulerRequestHandler
 
 	private void stopScheduler(@NonNull final I_AD_Scheduler adScheduler)
 	{
-		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), null);
+		final AdSchedulerId adSchedulerId = AdSchedulerId.ofRepoId(adScheduler.getAD_Scheduler_ID());
+		final String serverId = MScheduler.computeServerID(adSchedulerId);
 
 		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 
-		adempiereServerMgr.stop(schedulerModel.getServerID());
+		adempiereServerMgr.stop(serverId);
 
-		adempiereServerMgr.removeServerWithId(schedulerModel.getServerID());
+		adempiereServerMgr.removeServerWithId(serverId);
 
 		AdempiereServerGroup.get().dump();
 	}
+
+	private void runOnce(@NonNull final AdSchedulerId adSchedulerId)
+	{
+		final String serverId = MScheduler.computeServerID(adSchedulerId);
+		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
+		final AdempiereServer server = adempiereServerMgr.getServer(serverId);
+		if (server == null)
+		{
+			throw new AdempiereException("No scheduler found for " + adSchedulerId);
+		}
+
+		final Scheduler scheduler = Scheduler.cast(server);
+		scheduler.runNow();
+	}
+
+	@NonNull
+	private I_AD_Scheduler getScheduler(@NonNull final ManageSchedulerRequest request)
+	{
+		if (request.getSchedulerSearchKey().getAdProcessId() != null)
+		{
+			return schedulerDao.getSchedulerByProcessIdIfUnique(request.getSchedulerSearchKey().getAdProcessId())
+					.orElseThrow(() -> new AdempiereException("No scheduler found for process")
+							.appendParametersToMessage()
+							.setParameter("adProcessId", request.getSchedulerSearchKey().getAdProcessId()));
+		}
+		else if (request.getSchedulerSearchKey().getAdSchedulerId() != null)
+		{
+			return schedulerDao.getById(request.getSchedulerSearchKey().getAdSchedulerId());
+		}
+		else
+		{
+			throw new AdempiereException("Missing scheduler search key!")
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
+	}
+
 }
