@@ -47,6 +47,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
+import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -64,6 +65,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -71,6 +73,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -120,6 +123,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	}
 
 
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -127,6 +131,11 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		if (!eligibleView.isAccepted())
 		{
 			return eligibleView;
+		}
+
+		if (!getView().getPlanningStatus().isComplete())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("PPOrder is not complete");
 		}
 
 		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
