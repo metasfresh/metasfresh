@@ -35,6 +35,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -163,6 +164,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 				null,  // tableName=null => get it from the given model class
 				ITrx.TRXNAME_None)
 				.addFilter(new QueueFilter(packageQuery))
+				.setLimit(QueryLimit.getQueryLimitOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator);
 	}
 

@@ -257,7 +257,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 	private List<I_C_Queue_WorkPackage> pollAndLockWorkPackages(@NonNull final Properties ctx, @NonNull final List<IQueueProcessor> queueProcessors)
 	{
 		final IQuery<I_C_Queue_WorkPackage> queueProcessorWPQueriesAggregator = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
-				//dev-note: workaround to be able to union multiple queries without applying 'limit' and 'order by'  to the end result
+				//dev-note: workaround to be able to union multiple queries without applying 'limit' and 'order by' to the end result
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, -1)
 				.create();
 
