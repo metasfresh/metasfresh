@@ -1,10 +1,17 @@
 package de.metas.allocation.api;
 
+import de.metas.money.Money;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 public interface IAllocationBL extends ISingletonService
 {
@@ -41,4 +48,20 @@ public interface IAllocationBL extends ISingletonService
 	 * @return <code>true</code> if the given allocationHdr is the reversal of another allocationHdr.
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);
+
+	@Value
+	@Builder
+	class InvoiceDiscountAndWriteOffRequest
+	{
+		@NonNull org.compiere.model.I_C_Invoice invoice;
+
+		boolean useInvoiceDate;
+		@Nullable Instant dateTrx;
+
+		@Nullable Money discountAmt;
+		@Nullable Money writeOffAmt;
+		@Nullable String description;
+	}
+
+	void invoiceDiscountAndWriteOff(InvoiceDiscountAndWriteOffRequest request);
 }
