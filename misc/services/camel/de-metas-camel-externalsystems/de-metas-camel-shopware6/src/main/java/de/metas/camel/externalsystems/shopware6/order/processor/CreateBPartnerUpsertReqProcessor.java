@@ -56,10 +56,12 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
-		final String bPartnerLocationIdJSONPath = importOrdersRouteContext.getBpLocationCustomJsonPath();
-
+		final String bPartnerLocationShopwareIdJSONPath = importOrdersRouteContext.getBpLocationCustomJsonPath();
+		final String bPartnerLocationMetasfreshIdJSONPath = "/customFields/metasfreshLocationId"; // TODO: replace with request parameter that comes from the external system config
+		
 		final List<OrderDeliveryItem> orderDeliveryItems = shopwareClient.getDeliveryAddresses(orderCandidate.getJsonOrder().getId(),
-																							   bPartnerLocationIdJSONPath,
+																							   bPartnerLocationShopwareIdJSONPath,
+																							   bPartnerLocationMetasfreshIdJSONPath,
 																							   importOrdersRouteContext.getEmailJsonPath());
 
 		if (CollectionUtils.isEmpty(orderDeliveryItems))
@@ -74,7 +76,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
 		importOrdersRouteContext.setOrderShippingAddress(lastOrderDeliveryItem.getOrderAddressDetails().getJsonOrderAddress());
 
-		final JsonCustomerGroup jsonCustomerGroup = getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
+		final JsonCustomerGroup jsonCustomerGroup =  getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
 
 		importOrdersRouteContext.setBPartnerCustomerGroup(jsonCustomerGroup);
 
@@ -86,7 +88,8 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.shippingAddress(lastOrderDeliveryItem.getOrderAddressDetails())
 				.orgCode(orgCode)
 				.externalBPartnerId(importOrdersRouteContext.getEffectiveCustomerId())
-				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
+				.bPartnerLocationIdentifierCustomShopwarePath(bPartnerLocationShopwareIdJSONPath)
+				.bPartnerLocationIdentifierCustomMetasfreshPath(bPartnerLocationMetasfreshIdJSONPath)
 				.emailCustomPath(importOrdersRouteContext.getEmailJsonPath())
 				.matchingShopware6Mapping(importOrdersRouteContext.getMatchingShopware6Mapping())
 				.build();

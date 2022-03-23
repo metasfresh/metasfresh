@@ -25,7 +25,8 @@ package de.metas.cucumber.stepdefs.productplanning;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -52,15 +53,15 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 public class PP_Product_Planning_StepDef
 {
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
-	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
+	private final PP_Product_Planning_StepDefData productPlanningTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable,
-			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
+			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;

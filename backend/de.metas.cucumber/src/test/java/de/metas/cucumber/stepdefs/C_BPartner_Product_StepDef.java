@@ -43,14 +43,14 @@ import static org.assertj.core.api.Assertions.*;
 public class C_BPartner_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<BPartnerProduct> bpartnerProductTable;
+	private final BPartnerProductStepDefData bpartnerProductTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
 	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 	public C_BPartner_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<BPartnerProduct> bpartnerProductTable,
+			@NonNull final BPartnerProductStepDefData bpartnerProductTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
 		this.productTable = productTable;

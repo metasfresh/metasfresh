@@ -317,14 +317,21 @@ public class ImportOrdersRouteContext
 				.map(s -> s + separator)
 				.orElse("");
 
-		final String locationBPartnerName = prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
-				+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+		final String locationBPartnerName = 
+				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
+				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
 				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
 				+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
 				+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
 				+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
 
 		return StringUtils.trimBlankToNull(locationBPartnerName);
+	}
+
+	@NonNull
+	public JsonOrderAddress getOrderShippingAddressNotNull()
+	{
+		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
 	}
 
 	@Nullable
@@ -335,6 +342,6 @@ public class ImportOrdersRouteContext
 			return null;
 		}
 
-		return salutationInfoProvider.getDisplayNameBySalutationIdNotNull(salutationId);
+		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
 	}
 }

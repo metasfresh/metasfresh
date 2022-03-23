@@ -258,4 +258,6 @@ public interface IOrderBL extends ISingletonService
 	Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull I_C_Order orderRecord);
 
 	String getDocumentNoById(OrderId orderId);
+
+	String getLocationEmail(OrderId ofRepoId);
 }

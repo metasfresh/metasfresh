@@ -37,7 +37,7 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
@@ -73,13 +73,13 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
+	private final M_HU_StepDefData huTable;
+	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable)
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;

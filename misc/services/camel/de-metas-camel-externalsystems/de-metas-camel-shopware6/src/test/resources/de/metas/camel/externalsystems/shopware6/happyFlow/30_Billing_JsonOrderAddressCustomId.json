@@ -16,7 +16,7 @@
     "salutationId": "billingSalutationId",
     "id": "billingAddressId",
     "customFields": {
-      "deliveryNotificationEmailAddress": "billingEmailAddress"
+      "deliveryNotificationEmailAddress": "billingEmailAddress@example.com"
     }
   }
 }

@@ -54,6 +54,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -117,8 +118,8 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
@@ -320,10 +321,22 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	public static class MockGetOrdersProcessor implements Processor
 	{
 		private final JsonExternalSystemRequest externalSystemRequest;
+		private final String jsonOrderLinesPath;
 
-		public MockGetOrdersProcessor(final JsonExternalSystemRequest externalSystemRequest)
+		public MockGetOrdersProcessor(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+		{
+			this(externalSystemRequest, null);
+		}
+
+		public MockGetOrdersProcessor(
+				@NonNull final JsonExternalSystemRequest externalSystemRequest,
+				@Nullable final String jsonOrderLinesPath)
 		{
 			this.externalSystemRequest = externalSystemRequest;
+
+			this.jsonOrderLinesPath = (Check.isNotBlank(jsonOrderLinesPath))
+					? jsonOrderLinesPath
+					: JSON_ORDER_LINES;
 		}
 
 		@Override
@@ -430,7 +443,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.getCountryDetails(any(String.class));
 
 			//4. mock orderLines
-			final InputStream orderLinesIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_LINES);
+			final InputStream orderLinesIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(jsonOrderLinesPath);
 			final JsonOrderLines orderLines = mapper.readValue(orderLinesIS, JsonOrderLines.class);
 
 			Mockito.doReturn(ResponseEntity.ok(orderLines))

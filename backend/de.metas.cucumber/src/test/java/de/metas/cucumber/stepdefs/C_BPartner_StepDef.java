@@ -28,21 +28,25 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.product.IProductDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -51,9 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
@@ -71,19 +75,20 @@ public class C_BPartner_StepDef
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	private final C_BPartner_StepDefData bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final M_Product_StepDefData productTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
 	public C_BPartner_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.bPartnerTable = bPartnerTable;
@@ -219,6 +224,24 @@ public class C_BPartner_StepDef
 		if (EmptyUtil.isNotBlank(companyName))
 		{
 			bPartnerRecord.setCompanyName(companyName);
+		}
+
+		final String adLanguage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Language);
+		if (EmptyUtil.isNotBlank(adLanguage))
+		{
+			bPartnerRecord.setAD_Language(adLanguage);
+		}
+
+		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+		if (Check.isNotBlank(paymentTermValue))
+		{
+			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
+					.create()
+					.firstOnlyNotNull(I_C_PaymentTerm.class);
+
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);

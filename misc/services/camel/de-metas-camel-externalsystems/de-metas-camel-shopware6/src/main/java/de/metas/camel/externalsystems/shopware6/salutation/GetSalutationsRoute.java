@@ -41,8 +41,10 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SALUTATION_KEY_NOT_SPECIFIED;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -74,7 +76,7 @@ public class GetSalutationsRoute extends RouteBuilder
 				.id(GET_SALUTATION_ROUTE_ID)
 				.streamCaching()
 				.policy(jcachePolicy)
-				.log("Route invoked. Results will be cached")
+				.log("Route invoked. Salutations will be cached")
 				.process(this::getAndAttachSalutations);
 	}
 
@@ -95,6 +97,7 @@ public class GetSalutationsRoute extends RouteBuilder
 				.map(JsonSalutation::getSalutationList)
 				.map(salutationList -> salutationList
 						.stream()
+						.filter(salutationItem -> salutationItem!= null && !Objects.equals(salutationItem.getSalutationKey(), SALUTATION_KEY_NOT_SPECIFIED))
 						.collect(ImmutableMap.toImmutableMap(JsonSalutationItem::getId, JsonSalutationItem::getDisplayName)))
 				.orElseGet(ImmutableMap::of);
 

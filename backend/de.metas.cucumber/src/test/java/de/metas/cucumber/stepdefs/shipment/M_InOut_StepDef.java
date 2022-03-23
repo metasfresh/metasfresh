@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -65,27 +65,27 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Loc
 
 public class M_InOut_StepDef
 {
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable)
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentTable = shipmentTable;
-		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
 
 	@And("validate the created shipments")

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,33 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipmentschedule;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.shipping.v2.JsonProduct;
+import de.metas.common.shipping.v2.shipmentcandidate.JsonCustomer;
+import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidate;
+import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -34,7 +56,11 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.rest_api.v2.attributes.JsonAttributeService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -44,14 +70,24 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -61,38 +97,78 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
+	private static final String SHIP_BPARTNER = "shipBPartner";
+	private static final String BILL_BPARTNER = "billBPartner";
+
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final C_OrderLine_StepDefData orderLineTable;
+	private final AD_User_StepDefData userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_Shipper_StepDefData shipperTable;
+	private final M_Product_StepDefData productTable;
+	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_InOut_StepDefData shipmentTable;
+	private final TestContext testContext;
+	private final JsonAttributeService jsonAttributeService;
+
+	final ObjectMapper mapper = new ObjectMapper()
+			.findAndRegisterModules()
+			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_InOut_StepDefData shipmentTable)
+			@NonNull final M_Shipper_StepDefData shipperTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final TestContext testContext)
 	{
-		this.orderLineTable = orderLineTable;
+		this.userTable = userTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.orderTable = orderTable;
+		this.orderLineTable = orderLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
+		this.shipperTable = shipperTable;
+		this.productTable = productTable;
+		this.shipmentScheduleExportAuditTable = shipmentScheduleExportAuditTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.shipmentTable = shipmentTable;
+		this.testContext = testContext;
+
+		this.jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
 	}
 
 	/**
 	 * Match the shipment scheds and load them with their identifier into the shipmentScheduleTable.
 	 */
-	@And("^after not more than (.*)s, M_ShipmentSchedules are found:$")
+	@Then("^after not more than (.*)s, M_ShipmentSchedules are found:$")
 	public void thereAreShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		// create query per table row; run the queries repeatedly until they succeed or the timeout is exceeded
@@ -124,7 +200,7 @@ public class M_ShipmentSchedule_StepDef
 			final I_M_ShipmentSchedule record = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
 					.create()
 					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
 
@@ -233,6 +309,155 @@ public class M_ShipmentSchedule_StepDef
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, shipmentScheduleWasRecomputed);
 		}
+	}
+
+	@And("validate M_ShipmentSchedule:")
+	public void validate_M_ShipmentSchedule(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			validateSchedule(row);
+		}
+	}
+
+	@And("validate JsonResponseShipmentCandidates.JsonCustomer")
+	public void validate_JsonCustomer(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final JsonResponseShipmentCandidates jsonResponseShipmentCandidates = mapper.readValue(testContext.getApiResponse().getContent(), JsonResponseShipmentCandidates.class);
+		assertThat(jsonResponseShipmentCandidates).isNotNull();
+
+		final List<JsonResponseShipmentCandidate> items = jsonResponseShipmentCandidates.getItems();
+		assertThat(items.size()).isEqualTo(1);
+
+		final JsonResponseShipmentCandidate item = items.get(0);
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String qualifier = DataTableUtil.extractStringForColumnName(row, "qualifier");
+
+			if (qualifier.equals(SHIP_BPARTNER))
+			{
+				validateJsonCustomer(item.getShipBPartner(), row);
+			}
+			else if (qualifier.equals(BILL_BPARTNER))
+			{
+				validateJsonCustomer(item.getBillBPartner(), row);
+			}
+		}
+	}
+
+	@And("validate JsonResponseShipmentCandidates")
+	public void validate_JsonResponseShipmentCandidates(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final JsonResponseShipmentCandidates jsonResponseShipmentCandidates = mapper.readValue(testContext.getApiResponse().getContent(), JsonResponseShipmentCandidates.class);
+		assertThat(jsonResponseShipmentCandidates).isNotNull();
+
+		final List<JsonResponseShipmentCandidate> items = jsonResponseShipmentCandidates.getItems();
+		assertThat(items.size()).isEqualTo(1);
+
+		final JsonResponseShipmentCandidate item = items.get(0);
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final I_M_ShipmentSchedule_ExportAudit scheduleExportAudit = queryBL.createQueryBuilder(I_M_ShipmentSchedule_ExportAudit.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_TransactionIdAPI, jsonResponseShipmentCandidates.getTransactionKey())
+				.create()
+				.firstOnlyNotNull(I_M_ShipmentSchedule_ExportAudit.class);
+
+		final String scheduleExportAuditIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID + "." + TABLECOLUMN_IDENTIFIER);
+		shipmentScheduleExportAuditTable.put(scheduleExportAuditIdentifier, scheduleExportAudit);
+
+		final String scheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(scheduleIdentifier);
+		assertThat(item.getId().getValue()).isEqualTo(schedule.getM_ShipmentSchedule_ID());
+
+		//product
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.Table_Name + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+
+		final JsonProduct jsonProduct = item.getProduct();
+
+		assertThat(jsonProduct.getProductNo()).isEqualTo(product.getValue());
+		assertThat(jsonProduct.getName()).isEqualTo(product.getName());
+		assertThat(jsonProduct.getDescription()).isEqualTo(product.getDescription());
+		assertThat(jsonProduct.isStocked()).isEqualTo(product.isStocked());
+
+		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Shipper.Table_Name + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipperIdentifier))
+		{
+			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+			assertThat(item.getShipperInternalSearchKey()).isEqualTo(shipper.getInternalName());
+		}
+
+		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_POReference);
+		if (Check.isNotBlank(poReference))
+		{
+			assertThat(item.getPoReference()).isEqualTo(poReference);
+		}
+
+		final BigDecimal orderedQty = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
+		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (orderedQty != null)
+		{
+			assertThat(item.getOrderedQty()).isNotEmpty();
+			assertThat(item.getOrderedQty().get(0).getQty()).isEqualTo(orderedQty);
+			assertThat(item.getOrderedQty().get(0).getUomCode()).isEqualTo(uomCode);
+		}
+
+		final int numberOfItemsForSameShipment = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_NrOfOLCandsWithSamePOReference);
+		if (numberOfItemsForSameShipment > 0)
+		{
+			assertThat(item.getNumberOfItemsForSameShipment()).isEqualTo(numberOfItemsForSameShipment);
+		}
+
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMN_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(asiIdentifier))
+		{
+			final JsonAttributeSetInstance jsonAttributeSetInstance = item.getAttributeSetInstance();
+
+			final AttributeSetInstanceId actualASI = jsonAttributeService.computeAttributeSetInstanceFromJson(jsonAttributeSetInstance)
+					.orElse(null);
+			assertThat(actualASI).isNotNull();
+
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(asiIdentifier);
+			assertThat(expectedASI).isNotNull();
+
+			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(actualASI).orElse(AttributesKey.NONE);
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(actualAttributesKeys).isEqualTo(expectedAttributesKeys);
+		}
+
+		final BigDecimal orderedQtyNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.OrderedQtyNetPrice");
+		if (orderedQtyNetPrice != null)
+		{
+			assertThat(item.getOrderedQtyNetPrice()).isEqualTo(orderedQtyNetPrice);
+		}
+
+		final BigDecimal qtyToDeliverNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.QtyToDeliverNetPrice");
+		if (qtyToDeliverNetPrice != null)
+		{
+			assertThat(item.getQtyToDeliverNetPrice()).isEqualTo(qtyToDeliverNetPrice);
+		}
+
+		final BigDecimal deliveredQtyNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.DeliveredQtyNetPrice");
+		if (deliveredQtyNetPrice != null)
+		{
+			assertThat(item.getDeliveredQtyNetPrice()).isEqualTo(deliveredQtyNetPrice);
+		}
+	}
+
+	@And("deactivate all M_ShipmentSchedule records")
+	public void deactivate_M_ShipmentSchedule()
+	{
+		final ICompositeQueryUpdater<I_M_ShipmentSchedule> updater = queryBL
+				.createCompositeQueryUpdater(I_M_ShipmentSchedule.class)
+				.addSetColumnValue(I_M_ShipmentSchedule.COLUMNNAME_IsActive, false);
+
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.update(updater);
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
@@ -439,5 +664,113 @@ public class M_ShipmentSchedule_StepDef
 			}
 			return shipmentScheduleRecord;
 		}
+	}
+
+	private void validateSchedule(@NonNull final Map<String, String> row)
+	{
+		final String scheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(scheduleIdentifier);
+		InterfaceWrapperHelper.refresh(schedule);
+		assertThat(schedule).isNotNull();
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+		assertThat(schedule.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
+
+		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner_Location bpLocation = bpartnerLocationTable.get(bpLocationIdentifier);
+		assertThat(schedule.getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+
+		final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner billBP = bpartnerTable.get(billBPIdentifier);
+		assertThat(schedule.getBill_BPartner_ID()).isEqualTo(billBP.getC_BPartner_ID());
+
+		final String billBPLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner_Location billBPLocation = bpartnerLocationTable.get(billBPLocationIdentifier);
+		assertThat(schedule.getBill_Location_ID()).isEqualTo(billBPLocation.getC_BPartner_Location_ID());
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(schedule.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+
+		final String exportStatus = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
+		assertThat(schedule.getExportStatus()).isEqualTo(exportStatus);
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderIdentifier))
+		{
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			assertThat(schedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+		}
+
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderLineIdentifier))
+		{
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+			assertThat(schedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		}
+
+		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(userIdentifier))
+		{
+			final I_AD_User user = userTable.get(userIdentifier);
+			assertThat(schedule.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billUserIdentifier))
+		{
+			final I_AD_User billUser = userTable.get(billUserIdentifier);
+			assertThat(schedule.getBill_User_ID()).isEqualTo(billUser.getAD_User_ID());
+		}
+
+		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipperIdentifier))
+		{
+			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+			assertThat(schedule.getM_Shipper_ID()).isEqualTo(shipper.getM_Shipper_ID());
+		}
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+
+			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(actualAttributesKeys).isEqualTo(expectedAttributesKeys);
+		}
+	}
+
+	private void validateJsonCustomer(
+			@NonNull final JsonCustomer jsonCustomer,
+			@NonNull final Map<String, String> row)
+	{
+		final String companyName = DataTableUtil.extractStringForColumnName(row, "companyName");
+		final String contactName = DataTableUtil.extractStringOrNullForColumnName(row, "contactName");
+		final String contactEmail = DataTableUtil.extractStringOrNullForColumnName(row, "contactEmail");
+		final String contactPhone = DataTableUtil.extractStringOrNullForColumnName(row, "contactPhone");
+		final String street = DataTableUtil.extractStringForColumnName(row, "street");
+		final String streetNo = DataTableUtil.extractStringForColumnName(row, "streetNo");
+		final String postal = DataTableUtil.extractStringForColumnName(row, "postal");
+		final String city = DataTableUtil.extractStringForColumnName(row, "city");
+		final String countryCode = DataTableUtil.extractStringForColumnName(row, "countryCode");
+		final String language = DataTableUtil.extractStringForColumnName(row, "language");
+		final boolean isCompany = DataTableUtil.extractBooleanForColumnName(row, "company");
+
+		assertThat(jsonCustomer.getStreet()).isEqualTo(street);
+		assertThat(jsonCustomer.getStreetNo()).isEqualTo(streetNo);
+		assertThat(jsonCustomer.getPostal()).isEqualTo(postal);
+		assertThat(jsonCustomer.getCity()).isEqualTo(city);
+		assertThat(jsonCustomer.getCountryCode()).isEqualTo(countryCode);
+		assertThat(jsonCustomer.getContactName()).isEqualTo(contactName);
+		assertThat(jsonCustomer.getContactEmail()).isEqualTo(contactEmail);
+		assertThat(jsonCustomer.getContactPhone()).isEqualTo(contactPhone);
+		assertThat(jsonCustomer.getLanguage()).isEqualTo(language);
+		assertThat(jsonCustomer.isCompany()).isEqualTo(isCompany);
+		assertThat(jsonCustomer.getCompanyName()).isEqualTo(companyName);
 	}
 }

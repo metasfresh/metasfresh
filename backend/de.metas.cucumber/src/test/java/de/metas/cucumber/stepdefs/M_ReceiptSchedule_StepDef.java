@@ -54,21 +54,21 @@ public class M_ReceiptSchedule_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable;
+	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_BPartner_StepDefData bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_M_Warehouse> warehouseTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_Product_StepDefData productTable;
 
 	public M_ReceiptSchedule_StepDef(
-			@NonNull final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable,
+			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_M_Warehouse> warehouseTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.receiptScheduleTable = receiptScheduleTable;

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO implements I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -120952676L;
+	private static final long serialVersionUID = 1579835381L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_RabbitMQ_HTTP (final Properties ctx, final int ExternalSystem_Config_RabbitMQ_HTTP_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setBPartnerCreatedByUserGroup_ID (final int BPartnerCreatedByUserGroup_ID)
+	{
+		if (BPartnerCreatedByUserGroup_ID < 1)
+			set_Value (COLUMNNAME_BPartnerCreatedByUserGroup_ID, null);
+		else
+			set_Value (COLUMNNAME_BPartnerCreatedByUserGroup_ID, BPartnerCreatedByUserGroup_ID);
+	}
+
+	@Override
+	public int getBPartnerCreatedByUserGroup_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_BPartnerCreatedByUserGroup_ID);
 	}
 
 	@Override
@@ -86,6 +101,18 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	public String getExternalSystemValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setIsAutoSendWhenCreatedByUserGroup (final boolean IsAutoSendWhenCreatedByUserGroup)
+	{
+		set_Value (COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, IsAutoSendWhenCreatedByUserGroup);
+	}
+
+	@Override
+	public boolean isAutoSendWhenCreatedByUserGroup() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendWhenCreatedByUserGroup);
 	}
 
 	@Override

@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.productionorder;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -42,16 +42,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
-
 public class PP_OrderCandidate_PP_Order_StepDef
 {
-	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
-	private final StepDefData<I_PP_Order> ppOrderTable;
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	private final PP_Order_StepDefData ppOrderTable;
 
 	public PP_OrderCandidate_PP_Order_StepDef(
-			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
-			@NonNull final StepDefData<I_PP_Order> ppOrderTable)
+			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable)
 	{
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.ppOrderTable = ppOrderTable;

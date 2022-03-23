@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Warehouse_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -42,9 +42,9 @@ public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Warehouse> warehouseTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
-	public M_Warehouse_StepDef(@NonNull final StepDefData<I_M_Warehouse> warehouseTable)
+	public M_Warehouse_StepDef(@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.warehouseTable = warehouseTable;
 	}

@@ -49,7 +49,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.api.model.salutation.JsonSalutation;
 import de.metas.camel.externalsystems.shopware6.api.model.unit.JsonUnits;
 import de.metas.common.util.Check;
-import de.metas.common.util.EmptyUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -171,7 +170,8 @@ public class ShopwareClient
 	@NonNull
 	public Optional<OrderAddressDetails> getOrderAddressDetails(
 			@NonNull final String orderAddressId,
-			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String customShopwareIdJSONPath,
+			@Nullable final String customMetasfreshIdJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -196,7 +196,10 @@ public class ShopwareClient
 		{
 			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
 
-			return getOrderAddressDetails(jsonNode.get(JSON_NODE_DATA), customIdentifierJSONPath, emailJSONPath);
+			return getOrderAddressDetails(jsonNode.get(JSON_NODE_DATA),
+										  customShopwareIdJSONPath,
+										  customMetasfreshIdJSONPath,
+										  emailJSONPath);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -207,7 +210,8 @@ public class ShopwareClient
 	@NonNull
 	public List<OrderDeliveryItem> getDeliveryAddresses(
 			@NonNull final String orderId,
-			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String customShopwareIdentifierJSONPath,
+			@Nullable final String customMetasfreshIdentifierJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -245,7 +249,10 @@ public class ShopwareClient
 			for (final JsonNode deliveryNode : arrayJsonNode)
 			{
 				final Optional<OrderAddressDetails> orderAddressDetails =
-						getOrderAddressDetails(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), customIdentifierJSONPath, emailJSONPath);
+						getOrderAddressDetails(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS),
+											   customShopwareIdentifierJSONPath,
+											   customMetasfreshIdentifierJSONPath,
+											   emailJSONPath);
 
 				final JsonOrderDelivery orderDelivery = objectMapper.treeToValue(deliveryNode, JsonOrderDelivery.class);
 
@@ -511,7 +518,7 @@ public class ShopwareClient
 	{
 		if (orderJson == null)
 		{
-			pInstanceLogger.logMessage("Skipping the current 'order' ; no value found for orderJson node!");
+			pInstanceLogger.logMessage("Skipping the current 'order' because orderJson is null!");
 			return Optional.empty();
 		}
 
@@ -521,7 +528,7 @@ public class ShopwareClient
 
 			if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
 			{
-				pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; jsonOrder.getOrderCustomer().getCustomerId() is null!");
+				pInstanceLogger.logMessage("Order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "): Skipping because jsonOrder.getOrderCustomer().getCustomerId() is null!");
 				return Optional.empty();
 			}
 
@@ -545,10 +552,14 @@ public class ShopwareClient
 		}
 	}
 
+	/**
+	 * @param customShopwareIdJSONPath optional; if given, then the given JSON needs to contain the respective element
+	 */
 	@NonNull
 	private Optional<OrderAddressDetails> getOrderAddressDetails(
 			@Nullable final JsonNode orderAddressJson,
-			@Nullable final String customIdJSONPath,
+			@Nullable final String customShopwareIdJSONPath,
+			@Nullable final String customMetasfreshIdJSONPath,
 			@Nullable final String emailJSONPath)
 	{
 		if (orderAddressJson == null)
@@ -563,17 +574,26 @@ public class ShopwareClient
 			final OrderAddressDetails.OrderAddressDetailsBuilder jsonOrderAddressWithCustomId = OrderAddressDetails.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
-			if (Check.isNotBlank(customIdJSONPath))
+			if (Check.isNotBlank(customShopwareIdJSONPath))
 			{
-				final String customId = orderAddressJson.at(customIdJSONPath).asText();
+				final String customShopwareId = orderAddressJson.at(customShopwareIdJSONPath).asText();
 
-				if (EmptyUtil.isNotBlank(customId))
+				if (Check.isNotBlank(customShopwareId))
 				{
-					jsonOrderAddressWithCustomId.customId(customId);
+					jsonOrderAddressWithCustomId.customShopwareId(customShopwareId);
 				}
 				else
 				{
 					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonOrderAddress.getId());
+				}
+			}
+
+			if (Check.isNotBlank(customMetasfreshIdJSONPath))
+			{
+				final String customMetasfreshId = orderAddressJson.at(customMetasfreshIdJSONPath).asText();
+				if (Check.isNotBlank(customMetasfreshId))
+				{
+					jsonOrderAddressWithCustomId.customMetasfreshId(customMetasfreshId);
 				}
 			}
 

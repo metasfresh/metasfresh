@@ -27,8 +27,8 @@ Feature: credit limit
       | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | cl_Endcustomer | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | cl_bPLocation | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | l_1        | cl_bPLocation | endcustomer_1            | true                | true         |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |

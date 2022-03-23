@@ -34,13 +34,13 @@ Feature: Handling unit rest controller
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-01-02T00:00:00Z | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        |
-    And complete inventory with inventoryIdentifier 'huProduct_inventory'
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-01-02T00:00:00Z | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
+    And the inventory identified by huProduct_inventory is completed
 
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -154,13 +154,13 @@ Feature: Handling unit rest controller
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-01-02T00:00:00Z | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        |
-    And complete inventory with inventoryIdentifier 'huProduct_inventory'
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-01-02T00:00:00Z | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
+    And the inventory identified by huProduct_inventory is completed
 
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |

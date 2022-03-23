@@ -53,7 +53,7 @@
         "id": "shippingAddressId",
         "salutationId": "salutationId",
         "customFields": {
-          "deliveryNotificationEmailAddress": "emailAddress"
+          "deliveryNotificationEmailAddress": "shippingOrderAddress@example.com"
         }
       },
       "shippingCosts": {

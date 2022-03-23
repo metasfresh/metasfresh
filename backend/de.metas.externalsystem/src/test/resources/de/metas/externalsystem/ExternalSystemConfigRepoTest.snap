@@ -184,10 +184,12 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
+	  "isAutoSendWhenCreatedByUserGroup" : false,
+	  "syncBPartnerToRabbitMQ" : true,
+	  "autoSendWhenCreatedByUserGroup" : false,
+	  "autoSendBPartnerEnabled" : false,
+	   "sendBPartnerAllowed" : true
+    }
   }
 ]
 
@@ -201,7 +203,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "remoteUrl" : "remoteURL",
     "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
-    "syncBPartnerToRabbitMQ" : true
+    "isAutoSendWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true,
+    "autoSendWhenCreatedByUserGroup" : false,
+    "autoSendBPartnerEnabled" : false,
+    "sendBPartnerAllowed" : true
   }
 ]
 
@@ -220,8 +226,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
+	  "isSyncBPartnerToRabbitMQ" : true,
+	  "isAutoSendWhenCreatedByUserGroup" : true,
+	  "userGroupId" : 1,
+	  "syncBPartnerToRabbitMQ" : true,
+	  "autoSendWhenCreatedByUserGroup" : true,
+	  "autoSendBPartnerEnabled" : true,
+	  "sendBPartnerAllowed" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

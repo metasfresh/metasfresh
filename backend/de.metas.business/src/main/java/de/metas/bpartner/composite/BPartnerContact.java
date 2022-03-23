@@ -11,6 +11,7 @@ import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.greeting.GreetingId;
 import de.metas.job.JobId;
+import de.metas.title.TitleId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -66,6 +67,7 @@ public class BPartnerContact
 	public static final String MOBILE_PHONE = "mobilePhone";
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
+	public static final String TITLE_ID = "titleId";
 	public static final String ROLES = "roles";
 	public static final String BPARTNER_LOCATION_ID = "bPartnerLocationId";
 	public static final String EMAIL2 = "email2";
@@ -153,6 +155,9 @@ public class BPartnerContact
 	private GreetingId greetingId;
 
 	@Nullable
+	private TitleId titleId;
+
+	@Nullable
 	private BPartnerContactType contactType;
 
 	private final RecordChangeLog changeLog;
@@ -206,6 +211,7 @@ public class BPartnerContact
 			@Nullable final String mobilePhone,
 			@Nullable final String description,
 			@Nullable final GreetingId greetingId,
+			@Nullable final TitleId titleId,
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
@@ -232,6 +238,7 @@ public class BPartnerContact
 		this.mobilePhone = mobilePhone;
 		this.description = description;
 		this.greetingId = greetingId;
+		this.titleId = titleId;
 
 		this.contactType = contactType;
 		this.active = active != null ? active : true;

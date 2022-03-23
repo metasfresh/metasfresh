@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.util.Services;
@@ -50,13 +49,13 @@ public class M_HU_Storage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_HU_Storage> huStorageTable;
+	private final M_HU_StepDefData huTable;
+	private final M_HU_Storage_StepDefData huStorageTable;
 	private final M_Product_StepDefData productTable;
 
 	public M_HU_Storage_StepDef(
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_M_HU_Storage> huStorageTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_HU_Storage_StepDefData huStorageTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.huTable = huTable;

@@ -25,12 +25,10 @@ package de.metas.cucumber.stepdefs.pricing;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -56,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
@@ -63,13 +62,12 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class M_PriceList_StepDef
 {
-	private final OrgId defaultOrgId = StepDefConstants.ORG_ID;
 	private final CurrencyRepository currencyRepository;
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-	private final StepDefData<I_M_PriceList> priceListTable;
-	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
-	private final StepDefData<I_M_ProductPrice> productPriceTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_PriceList_StepDefData priceListTable;
+	private final M_PriceList_Version_StepDefData priceListVersionTable;
+	private final M_ProductPrice_StepDefData productPriceTable;
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -77,10 +75,10 @@ public class M_PriceList_StepDef
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
-			@NonNull final StepDefData<I_M_PriceList> priceListTable,
-			@NonNull final StepDefData<I_M_PriceList_Version> priceListVersionTable,
-			@NonNull final StepDefData<I_M_ProductPrice> productPriceTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_PriceList_StepDefData priceListTable,
+			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
+			@NonNull final M_ProductPrice_StepDefData productPriceTable)
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -119,7 +117,7 @@ public class M_PriceList_StepDef
 
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
 
-		m_pricingSystem.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_pricingSystem.setAD_Org_ID(ORG_ID.getRepoId());
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
@@ -148,7 +146,7 @@ public class M_PriceList_StepDef
 
 		final I_M_PriceList m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 
-		m_priceList.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_priceList.setAD_Org_ID(ORG_ID.getRepoId());
 		m_priceList.setM_PricingSystem_ID(pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID());
 		m_priceList.setC_Currency_ID(currencyId.getRepoId());
 		m_priceList.setName(name);
@@ -200,7 +198,7 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Description);
 
 		final I_M_PriceList_Version m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
-		m_priceList_Version.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		m_priceList_Version.setAD_Org_ID(ORG_ID.getRepoId());
 		m_priceList_Version.setM_PriceList_ID(priceListTable.get(priceListIdentifier).getM_PriceList_ID());
 		m_priceList_Version.setName(name);
 		m_priceList_Version.setDescription(description);
