@@ -64,10 +64,10 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 	{
 		final I_AD_Scheduler scheduler = getScheduler(request);
 
-		Optional.ofNullable(request.getSupervisorAdvice())
-				.ifPresent(supervisorAdvice -> handleSupervisor(scheduler, supervisorAdvice));
+		Optional.ofNullable(request.getSupervisorAction())
+				.ifPresent(supervisorAction -> handleSupervisor(scheduler, supervisorAction));
 
-		switch (request.getSchedulerAdvice())
+		switch (request.getSchedulerAction())
 		{
 			case ENABLE:
 				activateScheduler(scheduler);
@@ -86,16 +86,13 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 				runOnce(AdSchedulerId.ofRepoId(scheduler.getAD_Scheduler_ID()));
 				break;
 			default:
-				throw new AdempiereException("Unsupported scheduler advice!")
-						.appendParametersToMessage()
-						.setParameter("Advice", request.getSchedulerAdvice());
+				throw new AdempiereException("Unsupported scheduler action: " + request);
 		}
 	}
 
-	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.SupervisorAdvice supervisorAdvice)
+	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.SupervisorAction supervisorAction)
 	{
 		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
-
 		if (supervisorId == null)
 		{
 			return;
@@ -103,7 +100,7 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 
 		final I_AD_User user = userDAO.getById(supervisorId);
 
-		switch (supervisorAdvice)
+		switch (supervisorAction)
 		{
 
 			case ENABLE:
@@ -113,7 +110,7 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 				user.setIsActive(false);
 				break;
 			default:
-				throw new AdempiereException("Unsupported SupervisorAdvice: " + supervisorAdvice);
+				throw new AdempiereException("Unsupported SupervisorAdvice: " + supervisorAction);
 		}
 
 		userDAO.save(user);
