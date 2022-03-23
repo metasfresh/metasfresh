@@ -5,7 +5,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -472,7 +471,8 @@ class OLCandOrderFactory
 			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
-			currentOrderLine.setQtyItemCapacity(candidate.getQtyItemCapacity());
+
+			currentOrderLine.setQtyItemCapacity(Quantitys.toBigDecimalOrNull(candidate.getQtyItemCapacityEff()));
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);
