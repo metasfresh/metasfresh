@@ -22,9 +22,11 @@ package de.metas.payment.process;
  * #L%
  */
 
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -47,6 +49,7 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -73,7 +76,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private Timestamp p_PaymentDateFrom = null;
 	private Timestamp p_PaymentDateTo = null;
 	private static final String PARAM_IsSOTrx = "IsSOTrx";
-	private Boolean p_isSOTrx = null;
+	private SOTrx p_SOTrx = null;
 	//
 	private static final String PARAM_AllocDateTrx = "DateTrx";
 	private Timestamp p_AllocDateTrx = null;
@@ -89,7 +92,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		p_OpenAmt = params.getParameterAsBigDecimal(PARAM_OpenAmt);
 		p_PaymentDateFrom = params.getParameterAsTimestamp(PARAM_PaymentDate);
 		p_PaymentDateTo = params.getParameter_ToAsTimestamp(PARAM_PaymentDate);
-		p_isSOTrx = params.getParameterAsBool(PARAM_IsSOTrx);
+		p_SOTrx = SOTrx.ofNullableBoolean(params.getParameterAsBoolean(PARAM_IsSOTrx, null));
 		p_AllocDateTrx = CoalesceUtil.coalesceSuppliers(
 				() -> params.getParameterAsTimestamp(PARAM_AllocDateTrx),
 				() -> Env.getDate(getCtx()));
@@ -99,6 +102,8 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		if (p_OpenAmt == null)
 		{
 			throw new FillMandatoryException(PARAM_OpenAmt);
@@ -111,6 +116,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			paymentWriteOff(payment);
 		}
 
+		addLog("WriteOff " + counterProcessed.get() + " payments, Skipped " + counterSkipped.intValue() + " payments. Took " + stopwatch);
 		return msgBL.getMsg(getCtx(), MSG_AllocationCreated, new Object[] { counterProcessed.intValue() });
 	}
 
@@ -135,7 +141,8 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		@SuppressWarnings("UnnecessaryLocalVariable")
 		final BigDecimal amtToWriteOff = paymentOpenAmt;
 
-		trxManager.runInNewTrx(new TrxRunnableAdapter()
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
@@ -164,13 +171,14 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 
 	private Iterator<I_C_Payment> retrievePayments()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		//
 		// Create the selection which we might need to update
 		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Payment.class, this)
+				.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Client_ID, getClientId())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false);
 
 		if (!getProcessInfo().isInvokedByScheduler())
@@ -180,9 +188,9 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			queryBuilder.filter(userSelectionFilter);
 		}
 
-		if (p_isSOTrx != null)
+		if (p_SOTrx != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, p_isSOTrx);
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, p_SOTrx.toBoolean());
 		}
 
 		if (p_PaymentDateFrom != null)
@@ -197,13 +205,19 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		final IQuery<I_C_Payment> query = queryBuilder
 				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.create();
+		addLog("Using query: " + query);
 
-		final Iterator<I_C_Payment> iterator = query.iterate(I_C_Payment.class);
-		if (!iterator.hasNext())
+		final int count = query.count();
+		if (count > 0)
 		{
-			addLog("No payments found (" + query + ")");
+			final Iterator<I_C_Payment> iterator = query.iterate(I_C_Payment.class);
+			addLog("Found " + count + " payments to evaluate. Took " + stopwatch);
+			return iterator;
 		}
-
-		return iterator;
+		else
+		{
+			addLog("No payments found. Took " + stopwatch);
+			return Collections.emptyIterator();
+		}
 	}
 }
