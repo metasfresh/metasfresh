@@ -22,6 +22,7 @@
 
 package de.metas.scheduler.eventbus;
 
+import de.metas.scheduler.SchedulerAction;
 import de.metas.scheduler.SchedulerSearchKey;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,20 +38,12 @@ import javax.annotation.Nullable;
 public class ManageSchedulerRequest
 {
 	@NonNull SchedulerSearchKey schedulerSearchKey;
-	@NonNull Advice schedulerAdvice;
+	@NonNull SchedulerAction schedulerAction;
 	@NonNull ClientId clientId;
 	@Nullable
-	SupervisorAdvice supervisorAdvice;
+	SupervisorAction supervisorAction;
 
-	public enum Advice
-	{
-		ENABLE,
-		DISABLE,
-		RESTART,
-		RUN_ONCE,
-	}
-
-	public enum SupervisorAdvice
+	public enum SupervisorAction
 	{
 		ENABLE,
 		DISABLE,

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.adempiere.scheduler;
+package de.metas.scheduler;
 
 import de.metas.common.util.Check;
 import de.metas.process.AdProcessId;
