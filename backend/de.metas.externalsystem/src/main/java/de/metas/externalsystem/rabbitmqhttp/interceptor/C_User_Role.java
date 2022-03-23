@@ -25,7 +25,7 @@ package de.metas.externalsystem.rabbitmqhttp.interceptor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.user.role.UserRoleId;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
-import de.metas.externalsystem.rabbitmqhttp.RabbitMQExternalSystemService;
+import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,12 +46,12 @@ public class C_User_Role
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	private final RabbitMQExternalSystemService rabbitMQExternalSystemService;
+	private final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService;
 	private final UserRoleRepository userRoleRepository;
 
-	public C_User_Role(@NonNull final RabbitMQExternalSystemService rabbitMQExternalSystemService, final UserRoleRepository userRoleRepository)
+	public C_User_Role(@NonNull final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService, final UserRoleRepository userRoleRepository)
 	{
-		this.rabbitMQExternalSystemService = rabbitMQExternalSystemService;
+		this.exportBPartnerToRabbitMQService = exportBPartnerToRabbitMQService;
 		this.userRoleRepository = userRoleRepository;
 	}
 
@@ -68,6 +68,6 @@ public class C_User_Role
 			return;
 		}
 
-		trxManager.runAfterCommit(() -> bpartnerIds.forEach(rabbitMQExternalSystemService::enqueueBPartnerSync));
+		trxManager.runAfterCommit(() -> bpartnerIds.forEach(exportBPartnerToRabbitMQService::enqueueBPartnerSync));
 	}
 }
