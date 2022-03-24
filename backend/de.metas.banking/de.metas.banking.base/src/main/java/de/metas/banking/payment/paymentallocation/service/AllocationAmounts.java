@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.invoice.InvoiceAmtMultiplier;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
@@ -57,11 +58,11 @@ public class AllocationAmounts
 		return builder().payAmt(payAmt).build();
 	}
 
-	private final CurrencyId currencyId;
-	private final Money payAmt;
-	private final Money discountAmt;
-	private final Money writeOffAmt;
-	private final Money invoiceProcessingFee;
+	CurrencyId currencyId;
+	Money payAmt;
+	Money discountAmt;
+	Money writeOffAmt;
+	Money invoiceProcessingFee;
 
 	@Builder(toBuilder = true)
 	private AllocationAmounts(
@@ -207,7 +208,12 @@ public class AllocationAmounts
 				.build();
 	}
 
-	public AllocationAmounts negateIf(final boolean condition)
+	public AllocationAmounts convertToRealAmounts(@NonNull final InvoiceAmtMultiplier invoiceAmtMultiplier)
+	{
+		return negateIf(invoiceAmtMultiplier.isNegateToConvertToRealValue());
+	}
+
+	private AllocationAmounts negateIf(final boolean condition)
 	{
 		return condition ? negate() : this;
 	}
