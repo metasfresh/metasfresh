@@ -19,6 +19,7 @@ url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+add_pg_stat_statements_extension=${ADD_PG_STAT_STATEMENTS_EXTENSION:-n}
 
 echo "URL_SEED_DUMP=${url_seed_dump}" >> $PGDATA/provision_metasfresh_db.info
 echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}" >> $PGDATA/provision_metasfresh_db.info
@@ -35,6 +36,7 @@ echo_variable_values()
  echo "URL_SEED_DUMP=${url_seed_dump}"
  echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}"
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
+ echo "ADD_PG_STAT_STATEMENTS_EXTENSION=${add_pg_stat_statements_extension}"
  echo ""
 }
 
@@ -145,19 +147,21 @@ EOL
 	echo "=========="
 }
 
-activate_pg_stat_statements_extension() 
+activate_extensions() 
 {
-	echo "==========================================="
-	echo " activate pg_stat_statements extension ..."
-	echo "==========================================="
-	psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
+	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
+		# needs shared_preload_libraries = 'pg_stat_statements'	in postgresql.conf
+		echo "==========================================="
+		echo " activate pg_stat_statements extension ..."
+		echo "==========================================="
+		psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
 CREATE EXTENSION pg_stat_statements;
 EOSQL
-	echo "==========="
-	echo " ... done!"
-	echo "==========="
+		echo "==========="
+		echo " ... done!"
+		echo "==========="
+	fi
 }
-
 # start printing all bash commands from here onwards, if activated
 if [ "$debug_print_bash_cmds" != "n" ];
 then
@@ -169,6 +173,6 @@ echo_variable_values
 create_role_if_not_exists
 create_db_and_import_seed_dump_if_not_exists
 apply_migration_scripts_from_artifact
-activate_pg_stat_statements_extension
+activate_extensions
 
 echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info
