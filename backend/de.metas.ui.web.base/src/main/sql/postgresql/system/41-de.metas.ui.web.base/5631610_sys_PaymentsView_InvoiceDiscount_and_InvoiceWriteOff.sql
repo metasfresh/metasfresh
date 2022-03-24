@@ -1,6 +1,9 @@
 -- 2022-03-23T16:50:00.672Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585029,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceDiscount','N',TO_TIMESTAMP('2022-03-23 18:50:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Skonto','json','N','N','Java',TO_TIMESTAMP('2022-03-23 18:50:00','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_InvoiceDiscount')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,
+                        IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value)
+                        VALUES ('3',0,0,585029,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceDiscount','N',TO_TIMESTAMP('2022-03-23 18:50:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y',
+                                'Y',0,'Skonto','json','N','N','Java',TO_TIMESTAMP('2022-03-23 18:50:00','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_InvoiceDiscount')
 ;
 
 -- 2022-03-23T16:50:00.677Z
@@ -35,7 +38,10 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 -- 2022-03-23T16:51:44.433Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585030,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceWriteOff','N',TO_TIMESTAMP('2022-03-23 18:51:44','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Abschreiben','json','N','N','Java',TO_TIMESTAMP('2022-03-23 18:51:44','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_InvoiceWriteOff')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,
+                        IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value)
+                        VALUES ('3',0,0,585030,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceWriteOff','N',TO_TIMESTAMP('2022-03-23 18:51:44','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y',
+                                'Y',0,'Abschreiben','json','N','N','Java',TO_TIMESTAMP('2022-03-23 18:51:44','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_InvoiceWriteOff')
 ;
 
 -- 2022-03-23T16:51:44.434Z

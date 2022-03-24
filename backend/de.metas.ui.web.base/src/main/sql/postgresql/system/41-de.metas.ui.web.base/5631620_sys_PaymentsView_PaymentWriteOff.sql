@@ -1,6 +1,9 @@
 -- 2022-03-23T16:55:54.598Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585031,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_PaymentWriteOff','N',TO_TIMESTAMP('2022-03-23 18:55:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y','N','Y',0,'Abschreiben','json','N','N','xls','Java',TO_TIMESTAMP('2022-03-23 18:55:54','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_PaymentWriteOff')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,
+                        IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value)
+                        VALUES ('3',0,0,585031,'Y','de.metas.ui.web.payment_allocation.process.PaymentsView_PaymentWriteOff','N',TO_TIMESTAMP('2022-03-23 18:55:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment','Y','N','N','N','Y','N','N','N','Y',
+                                'Y',0,'Abschreiben','json','N','N','xls','Java',TO_TIMESTAMP('2022-03-23 18:55:54','YYYY-MM-DD HH24:MI:SS'),100,'PaymentsView_PaymentWriteOff')
 ;
 
 -- 2022-03-23T16:55:54.599Z
