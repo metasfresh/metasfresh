@@ -70,6 +70,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 
@@ -221,6 +222,15 @@ public class C_Invoice_StepDef
 					.firstOnlyNotNull(I_C_DocType.class);
 
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
+
+		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
+
+		if (Check.isNotBlank(expectedDocTypeName))
+		{
+			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+
+			assertThat(actualInvoiceDocType.getName()).isEqualTo(expectedDocTypeName);
 		}
 
 		assertThat(paymentTermId).isNotNull();
