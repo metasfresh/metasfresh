@@ -39,6 +39,9 @@ spec:
         - name: metasfresh-{{ .Release.Name }}-search
           image: {{ .Values.search.image }}
           imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: {{ .Values.search.resources.limits.memory }}
           ports:
             - containerPort: {{ .Values.search.port.search }}
           securityContext:
@@ -50,8 +53,6 @@ spec:
             value: {{ .Values.search.clusterName }}
           - name: ES_PORT
             value: '{{ .Values.search.port.search }}'
-          - name: MEM_LIMIT
-            value: '{{ .Values.search.resources.memLimit }}'
           - name: discovery.type
             value: single-node
           volumeMounts:

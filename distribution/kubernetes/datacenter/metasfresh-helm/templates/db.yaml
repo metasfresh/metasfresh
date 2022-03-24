@@ -45,11 +45,7 @@ spec:
           value: /db/data
         - name: POSTGRES_INITDB_WALDIR
           value: /db/log
-        args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         volumeMounts:
-        - name: postgresql-config
-          mountPath: /etc/postgresql/postgresql.conf
-          subPath: postgresql.conf
         - name: data
           mountPath: db         
         - name: host-localtime
@@ -101,6 +97,15 @@ spec:
             readOnly: true
           - name: data
             mountPath: db
+        - name: inject-postgres-config
+          image: busybox
+          command: ['sh', '-c', 'cp -f /tmp/postgresql.conf /var/lib/postgresql/data/postgresql.conf']
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: data
+          - name: postgresql-config
+            mountPath: /tmp/postgresql.conf
+            subPath: postgresql.conf
       volumes:
       - name: postgresql-config
         configMap:
@@ -121,5 +126,5 @@ spec:
       resources:
         requests:
           storage: {{ .Values.db.dataStorageSize }}
-      storageClassName: do-block-storage
+      storageClassName: {{ .Values.storageClassName }}
 

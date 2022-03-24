@@ -70,6 +70,6 @@ spec:
       resources:
         requests:
           storage: {{ .Values.pgadmin.dataStorageSize }}
-      storageClassName: do-block-storage
+      storageClassName: {{ .Values.storageClassName }}
 
 

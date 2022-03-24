@@ -38,6 +38,9 @@ spec:
       - name: metasfresh-{{ .Release.Name }}-search
         image: {{ .Values.search.image }}
         imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: {{ .Values.search.resources.limits.memory }}
         ports:
           - containerPort: {{ .Values.search.port.search }}
         securityContext:
@@ -49,8 +52,8 @@ spec:
           value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
         - name: ES_PORT
           value: '{{ .Values.search.port.search }}'
-        - name: MEM_LIMIT
-          value: '{{ .Values.search.resources.memLimit }}'
+        # - name: MEM_LIMIT
+        #   value: '{{ .Values.search.resources.memLimit }}'
         - name: discovery.type
           value: single-node
         - name: path.data
@@ -75,6 +78,11 @@ spec:
         volumeMounts:
         - name: data
           mountPath: es
+      - name: increase-vm-max-map
+        image: busybox
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
       volumes:
       - name: host-localtime
         hostPath:
@@ -92,5 +100,5 @@ spec:
       resources:
         requests:
           storage: {{ .Values.search.dataStorageSize }}
-      storageClassName: do-block-storage
+      storageClassName: {{ .Values.storageClassName }}
       

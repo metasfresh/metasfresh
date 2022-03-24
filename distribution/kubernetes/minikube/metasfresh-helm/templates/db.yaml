@@ -41,10 +41,7 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: {{ .Values.db.port.db }}
-        args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         volumeMounts:
-        - mountPath: /etc/postgresql
-          name: postgresql-config
         - mountPath: /var/lib/postgresql/data
           name: data
         - mountPath: /var/log/postgresql
@@ -74,6 +71,11 @@ spec:
               secretKeyRef:
                 name: metasfresh-{{ .Release.Name }}-db-secret
                 key: password
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: metasfresh-{{ .Release.Name }}-db-secret
+                key: postgrespw
           - name: DEBUG_PRINT_BASH_CMDS
             value: {{ .Values.db.debug.printBashCmds }}
           - name: URL_SEED_DUMP
@@ -89,6 +91,15 @@ spec:
             readOnly: true
           - mountPath: /var/lib/postgresql/data
             name: data
+        - name: inject-postgres-config
+          image: busybox
+          command: ['sh', '-c', 'cp -f /tmp/postgresql.conf /var/lib/postgresql/data/postgresql.conf']
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: data
+          - name: postgresql-config
+            mountPath: /tmp/postgresql.conf
+            subPath: postgresql.conf
       volumes:
       - name: postgresql-config
         configMap:

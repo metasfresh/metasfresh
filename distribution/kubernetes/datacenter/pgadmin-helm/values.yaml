@@ -1,3 +1,5 @@
+storageClassName: do-block-storage #storage class for persistent volumes
+
 pgadmin:
   image: dpage/pgadmin4
   port:

@@ -96,5 +96,5 @@ spec:
       resources:
         requests:
           storage: {{ .Values.rabbitmq.dataStorageSize }}
-      storageClassName: do-block-storage
+      storageClassName: {{ .Values.storageClassName }}
           

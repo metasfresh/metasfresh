@@ -86,6 +86,8 @@ spec:
           value: metasfresh-{{ .Release.Name }}-search
         - name: ES_PORT
           value: '{{ .Values.search.port.search }}'
+        - name: ES_ENABLE
+          value: 'y'
         #rabbitmq
         - name: RABBITMQ_HOST
           value: metasfresh-{{ .Release.Name }}-rabbitmq
