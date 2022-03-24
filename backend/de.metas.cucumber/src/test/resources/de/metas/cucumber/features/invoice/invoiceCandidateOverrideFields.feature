@@ -1554,7 +1554,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 40             | 0            |
+      | p_1                     | 8           | true      | 10               | 10              | 40.00          | 0            |
 
   @from:cucumber
   Scenario: we can invoice a service product, less than ordered, without shipping (310)
