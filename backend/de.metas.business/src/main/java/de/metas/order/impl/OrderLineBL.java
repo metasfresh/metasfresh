@@ -599,36 +599,11 @@ public class OrderLineBL implements IOrderLineBL
 
 	@Override
 	public Quantity convertQtyToPriceUOM(
-			@NonNull final Quantity quantity,
+			@NonNull final Quantity sourceQuantity,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
-		if (priceUOMId == null || priceUOMId.equals(quantity.getUomId()))
-		{
-			return quantity;
-		}
-
-		if (Objects.equals(quantity.getUomId(), priceUOMId))
-		{
-			return quantity;
-		}
-
-		if (uomDAO.isUOMForTUs(quantity.getUomId()))
-		{
-			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is originally coming from order line's CU-TU (M_HU_PI_Item_Product)
-			// therefore we take the detour via qtyOrdered
-			// IMPORTANT: we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
-			// and we don't want this to be our concern here
-			final BigDecimal qtyOrdered = computeQtyOrderedUsingQtyItemCapacity(orderLine);
-
-			final Quantity qtyInQtockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
-			assume(!uomDAO.isUOMForTUs(qtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", qtyInQtockUOM, orderLine);
-
-			return convertQtyToPriceUOM(qtyInQtockUOM, orderLine);
-		}
-
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
-		return uomConversionBL.convertQuantityTo(quantity, conversionCtx, priceUOMId);
+		final UomId targetUomId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		return convertToTargetUOM(sourceQuantity, orderLine, targetUomId);
 	}
 
 	@Override
@@ -636,7 +611,15 @@ public class OrderLineBL implements IOrderLineBL
 			@NonNull final Quantity sourceQuantity,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final UomId targetUomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		final UomId targetUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		return convertToTargetUOM(sourceQuantity, orderLine, targetUomId);
+	}
+	
+	private Quantity convertToTargetUOM(
+			final @NonNull Quantity sourceQuantity, 
+			final @NonNull org.compiere.model.I_C_OrderLine orderLine, 
+			final @Nullable UomId targetUomId)
+	{
 		if (targetUomId == null || targetUomId.equals(sourceQuantity.getUomId()))
 		{
 			return sourceQuantity;
@@ -658,25 +641,27 @@ public class OrderLineBL implements IOrderLineBL
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
 		final BigDecimal itemCapacityInStockUOM = extractQtyItemCapacity(orderLine);
-		
+
 		if (sourceIsTUUom)
 		{
-			// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
+			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is originally coming from order line's CU-TU (M_HU_PI_Item_Product)
+			// therefore we take the detour via qtyOrdered
+			// IMPORTANT: we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
+			// and we don't want this to be our concern here
 			final Quantity targetQtyInQtockUOM = Quantitys.create(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
 			assume(!uomDAO.isUOMForTUs(targetQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", targetQtyInQtockUOM, orderLine);
 
 			return uomConversionBL.convertQuantityTo(targetQtyInQtockUOM, conversionCtx, targetUomId);
 		}
 
-		// sourceIsTUUom is  false and targetIsTUUom is true at this point
-		
-		// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
+		// sourceIsTUUom is false and targetIsTUUom is true at this point
+		// like in above we need to take the detour via qtyOrdered; see comment there
 		final Quantity sourceQtyInQtockUOM = uomConversionBL.convertToProductUOM(sourceQuantity, productId);
 		assume(!uomDAO.isUOMForTUs(sourceQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", sourceQtyInQtockUOM, orderLine);
 
 		return sourceQtyInQtockUOM.divide(itemCapacityInStockUOM);
 	}
-
+	
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
