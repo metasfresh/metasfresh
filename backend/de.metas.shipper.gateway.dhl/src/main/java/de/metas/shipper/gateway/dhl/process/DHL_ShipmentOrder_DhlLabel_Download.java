@@ -49,6 +49,16 @@ public class DHL_ShipmentOrder_DhlLabel_Download extends JavaProcess implements 
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
+		final DhlShipmentOrderId shipmentOrderId = DhlShipmentOrderId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
+		if (shipmentOrderId == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No shipment order selected");
+		}
+		final DhlCustomDeliveryDataDetail dhlShipmentOrder = dhlShipmentOrderDAO.getByIdOrNull(shipmentOrderId);
+		if (dhlShipmentOrder == null || dhlShipmentOrder.getPdfLabelData() == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No label available");
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
