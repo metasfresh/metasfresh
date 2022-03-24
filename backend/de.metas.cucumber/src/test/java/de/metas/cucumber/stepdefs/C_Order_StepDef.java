@@ -133,6 +133,11 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			if (paymentTermId > 0)
+			{
+				order.setC_PaymentTerm_ID(paymentTermId);
+			}
+
 			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bpLocationIdentifier))
 			{

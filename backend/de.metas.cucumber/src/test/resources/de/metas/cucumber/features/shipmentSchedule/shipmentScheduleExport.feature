@@ -106,13 +106,13 @@ Feature: Shipment schedule export rest-api
 """
     And process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1          | null                | null               |
+      | order_1               | null                  | null                    |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
       | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_45201 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -197,13 +197,13 @@ Feature: Shipment schedule export rest-api
 """
     And process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1          | null                | null               |
+      | order_1               | null                  | null                    |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
       | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_96411 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |

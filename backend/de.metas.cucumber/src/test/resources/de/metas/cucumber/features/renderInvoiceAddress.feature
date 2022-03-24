@@ -51,8 +51,8 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 30s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
@@ -89,8 +89,8 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 30s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
@@ -140,8 +140,8 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
       | order_1               | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_45607 | true      | CO        | I               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 40s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
@@ -204,15 +204,15 @@ Feature: Render invoice address
 
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1          | shipment_1          | invoice_1          |
+      | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus |
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1          | 2022-02-02  | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus |
