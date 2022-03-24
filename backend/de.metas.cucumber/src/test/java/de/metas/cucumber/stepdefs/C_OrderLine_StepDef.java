@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -49,6 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -58,15 +60,18 @@ public class C_OrderLine_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -82,6 +87,15 @@ public class C_OrderLine_StepDef
 			final I_M_Product product = productTable.get(productIdentifier);
 			orderLine.setM_Product_ID(product.getM_Product_ID());
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
+
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+				assertThat(attributeSetInstance).isNotNull();
+
+				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			}
 
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);

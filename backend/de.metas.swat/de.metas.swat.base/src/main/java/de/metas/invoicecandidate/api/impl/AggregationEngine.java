@@ -372,6 +372,7 @@ public final class AggregationEngine
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
+			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
@@ -381,7 +382,7 @@ public final class AggregationEngine
 				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
-
+			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
 			// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.

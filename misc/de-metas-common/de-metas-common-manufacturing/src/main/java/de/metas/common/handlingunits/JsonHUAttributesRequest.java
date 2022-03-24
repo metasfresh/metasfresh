@@ -36,12 +36,12 @@ public class JsonHUAttributesRequest
 	String huId;
 
 	@JsonProperty("attributes")
-	JsonHUAttributes attributes;
+	JsonHUAttributeCodeAndValues attributes;
 
 	@Builder
 	public JsonHUAttributesRequest(
 			@NonNull @JsonProperty("id") final String huId,
-			@NonNull @JsonProperty("attributes") final JsonHUAttributes attributes)
+			@NonNull @JsonProperty("attributes") final JsonHUAttributeCodeAndValues attributes)
 	{
 		this.huId = huId;
 		this.attributes = attributes;

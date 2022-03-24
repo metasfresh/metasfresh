@@ -47,6 +47,7 @@ import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
@@ -59,6 +60,8 @@ import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
 import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.common.product.v2.response.JsonProductBPartner;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -68,7 +71,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -85,7 +88,6 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -99,6 +101,7 @@ import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.TableRecordUtil;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -217,6 +220,7 @@ public class JsonRetrieverService
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	private final transient BPartnerQueryService bPartnerQueryService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -621,6 +625,27 @@ public class JsonRetrieverService
 				.findAny());
 	}
 
+	@NonNull
+	public JsonResponseProductBPartner getJsonResponseProductBPartner(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bPartnerExternalIdentifier)
+	{
+		final BPartnerId bPartnerId = resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)
+				.orElseThrow(() -> new AdempiereException("No BPartner could be found for the given external BPartner identifier!")
+						.appendParametersToMessage()
+						.setParameter("externalBPartnerIdentifier", bPartnerExternalIdentifier.getRawValue())
+						.setParameter("orgId", orgId));
+
+		final List<JsonProductBPartner> productBPartners = partnerProductDAO.retrieveByBPartnerId(bPartnerId)
+				.stream()
+				.map(this::toJsonProductBPartner)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonResponseProductBPartner.builder()
+				.bPartnerProducts(productBPartners)
+				.build();
+	}
+
 	/**
 	 * Visible to verify that caching actually works the way we expect it to (=> performance)
 	 */
@@ -813,6 +838,34 @@ public class JsonRetrieverService
 				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
 				.name(job.getName())
 				.active(job.isActive())
+				.build();
+	}
+
+	@NonNull
+	private JsonProductBPartner toJsonProductBPartner(final I_C_BPartner_Product record)
+	{
+		return JsonProductBPartner.builder()
+				.bpartnerId(JsonMetasfreshId.of(record.getC_BPartner_ID()))
+				.productId(JsonMetasfreshId.of(record.getM_Product_ID()))
+				//
+				.productNo(record.getProductNo())
+				.productName(record.getProductName())
+				.productDescription(record.getProductDescription())
+				.productCategory(record.getProductCategory())
+				//
+				.ean(record.getUPC())
+				//
+				.vendor(record.isUsedForVendor())
+				.currentVendor(record.isUsedForVendor() && record.isCurrentVendor())
+				.customer(record.isUsedForCustomer())
+				//
+				.leadTimeInDays(record.getDeliveryTime_Promised())
+				//
+				.excludedFromSale(record.isExcludedFromSale())
+				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
+				.excludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				//
 				.build();
 	}
 }

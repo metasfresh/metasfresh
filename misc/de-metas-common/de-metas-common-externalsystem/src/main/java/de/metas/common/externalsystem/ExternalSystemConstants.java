@@ -44,6 +44,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_PRODUCT_LOOKUP = "ProductLookup";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";
+	public static final String PARAM_JSON_EXPORT_DIRECTORY_SETTINGS = "JsonExportDirectorySettings";
 
 	public static final String PARAM_NORMAL_VAT_RATES = "NormalVAT_Rates";
 	public static final String PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID = "M_FreightCost_NormalVAT_Product_ID";

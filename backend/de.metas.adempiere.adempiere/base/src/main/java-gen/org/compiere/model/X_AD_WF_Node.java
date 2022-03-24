@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -462114033L;
+	private static final long serialVersionUID = -636683421L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -677,6 +677,10 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_ActivityConfirmation = "AC";
 	/** Generate HU QR Codes = GenerateHUQRCodes */
 	public static final String PP_ACTIVITY_TYPE_GenerateHUQRCodes = "GenerateHUQRCodes";
+	/** ScanScaleDevice = ScanScaleDevice */
+	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
+	/** RawMaterialsIssueAdjustment = MIA */
+	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
 	@Override
 	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
 	{

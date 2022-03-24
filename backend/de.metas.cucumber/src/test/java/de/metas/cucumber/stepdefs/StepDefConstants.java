@@ -51,6 +51,6 @@ public class StepDefConstants
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
-	public static final String HU_ATTR_LockNotice = "LockNotice";
+	public static final String HU_ATTR_LOT_NUMBER = "Lot-Nummer";
 	public static final int MANAGEMENT_CREDIT_LIMIT_TYPE_ID = 540001;
 }

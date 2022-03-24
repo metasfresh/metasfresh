@@ -22,6 +22,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -45,6 +46,8 @@ import java.util.Objects;
 
 public class PickingJobCreateCommand
 {
+	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -92,6 +95,7 @@ public class PickingJobCreateCommand
 		{
 			final PickingJobHeaderKey headerKey = items.stream()
 					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
+					.distinct()
 					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
@@ -135,7 +139,9 @@ public class PickingJobCreateCommand
 
 		if (items.isEmpty())
 		{
-			throw new AdempiereException("Absolutely nothing to pick")
+			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+					.markAsUserValidationError()
+					.setParameter("detail", "Absolutely nothing to pick")
 					.setParameter("query", query);
 		}
 
@@ -207,7 +213,9 @@ public class PickingJobCreateCommand
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("Not all materials are available")
+			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+					.markAsUserValidationError()
+					.setParameter("detail", "Not all materials are available")
 					.setParameter("itemsForProduct", itemsForProduct)
 					.setParameter("plan", plan);
 		}
@@ -235,7 +243,8 @@ public class PickingJobCreateCommand
 			}
 			case UNALLOCABLE:
 			{
-				throw new AdempiereException("Not all items are available to be picked")
+				throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+						.markAsUserValidationError()
 						.setParameter("planLine", planLine);
 			}
 			default:

@@ -9,7 +9,7 @@ const COMPONENT_TYPE = 'manufacturing/rawMaterialsIssue';
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
     case types.UPDATE_MANUFACTURING_ISSUE_QTY: {
-      return reduceOnUpdateQtyPicked(draftState, action.payload);
+      return reduceOnUpdateQtyIssued(draftState, action.payload);
     }
 
     default: {
@@ -18,7 +18,7 @@ export const manufacturingReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
+const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
 
   const draftWFProcess = draftState[wfProcessId];
@@ -28,7 +28,7 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
-  updateStepStatusAndRollup({
+  updateStepAndRollup({
     draftWFProcess,
     activityId,
     lineId,
@@ -38,15 +38,18 @@ const reduceOnUpdateQtyPicked = (draftState, payload) => {
   return draftState;
 };
 
-const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
+const updateStepAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.completeStatus = computeStepStatus({ draftStep });
+  updateStep({ draftStep });
   console.log(`Update step [${activityId} ${lineId} ${stepId} ]: completeStatus=${draftStep.completeStatus}`);
 
   //
   // Rollup:
-  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
+  updateLineFromStepsAndRollup({ draftWFProcess, activityId, lineId });
+};
+
+const updateStep = ({ draftStep }) => {
+  draftStep.completeStatus = computeStepStatus({ draftStep });
 };
 
 // @VisibleForTesting
@@ -55,15 +58,20 @@ export const computeStepStatus = ({ draftStep }) => {
   return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
 };
 
-const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
+const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
-  draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
+  updateLineFromSteps({ draftLine });
   console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
-  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
+  updateActivityFromLinesAndRollup({ draftWFProcess, activityId });
+};
+
+const updateLineFromSteps = ({ draftLine }) => {
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+  draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
+  draftLine.qtyToIssueRemaining = Math.max(draftLine.qtyToIssue - draftLine.qtyIssued, 0);
 };
 
 const computeLineStatusFromSteps = ({ draftLine }) => {
@@ -87,7 +95,10 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
     }
   });
 
-  let lineStatus = CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses);
+  let lineStatus =
+    stepStatuses.length > 0
+      ? CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses)
+      : CompleteStatus.NOT_STARTED;
 
   if (lineStatus === CompleteStatus.NOT_STARTED && hasCompletedAlternativeSteps) {
     lineStatus = CompleteStatus.COMPLETED;
@@ -106,34 +117,31 @@ const extractDraftMapKeys = (draftMap) => {
   return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
 };
 
-const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
+const updateActivityFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
   const draftActivity = draftWFProcess.activities[activityId];
-  updateActivityStatusFromLines({ draftActivityDataStored: draftActivity.dataStored });
+  updateActivityFromLines({ draftActivityDataStored: draftActivity.dataStored });
 
   //
   // Rollup:
   updateUserEditable({ draftWFProcess });
 };
 
-const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
+const updateActivityFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
 };
 
 // @VisibleForTesting
-export const computeActivityStatus = ({ draftActivity }) => {
-  const draftActivityDataStored = draftActivity.dataStored;
+export const updateActivityBottomUp = ({ draftActivityDataStored }) => {
   if (draftActivityDataStored.lines) {
     draftActivityDataStored.lines.forEach((line) => {
       if (line.steps) {
-        Object.values(line.steps).forEach((step) => {
-          step.completeStatus = computeStepStatus({ draftStep: step });
-        });
-
-        line.completeStatus = computeLineStatusFromSteps({ draftLine: line });
+        Object.values(line.steps).forEach((step) => updateStep({ draftStep: step }));
       }
+      updateLineFromSteps({ draftLine: line });
     });
   }
-  return computeActivityStatusFromLines({ draftActivityDataStored });
+
+  updateActivityFromLines({ draftActivityDataStored });
 };
 
 const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
@@ -154,7 +162,13 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
 const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
-      ...line,
+      productName: line.productName,
+      uom: line.uom,
+      weightable: line.weightable,
+      qtyToIssue: line.qtyToIssue,
+      qtyToIssueMin: line.qtyToIssueMin,
+      qtyToIssueMax: line.qtyToIssueMax,
+      qtyToIssueTolerancePerc: line.qtyToIssueTolerancePerc,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;
@@ -166,8 +180,9 @@ const normalizeLines = (lines) => {
 registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state
-  computeActivityStatus,
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
+    draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
+    updateActivityBottomUp({ draftActivityDataStored });
   },
 });

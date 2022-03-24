@@ -22,12 +22,16 @@
 
 package de.metas.externalsystem.grssignum;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExportDirectorySettings;
+import de.metas.common.util.Check;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -37,10 +41,13 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.bpartner.ExportBPartnerToExternalSystem;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -75,6 +82,9 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, grsSignumConfig.getValue());
 		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN, grsSignumConfig.getAuthToken());
 		parameters.put(ExternalSystemConstants.PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId()));
+
+		getJsonExportDirectorySettings(grsSignumConfig).ifPresent(settings -> parameters
+				.put(ExternalSystemConstants.PARAM_JSON_EXPORT_DIRECTORY_SETTINGS, settings));
 
 		return parameters;
 	}
@@ -122,5 +132,42 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 							.filter(grsConfig -> (grsConfig.isAutoSendVendors() && isVendor) || (grsConfig.isAutoSendCustomers() && isCustomer))
 							.map(IExternalSystemChildConfig::getId)
 							.collect(ImmutableSet.toImmutableSet()));
+	}
+
+	@NonNull
+	private static Optional<String> getJsonExportDirectorySettings(@NonNull final ExternalSystemGRSSignumConfig grsSignumConfig)
+	{
+		if (!grsSignumConfig.isCreateBPartnerFolders())
+		{
+			return Optional.empty();
+		}
+
+		if (Check.isBlank(grsSignumConfig.getBPartnerExportDirectories()) || Check.isBlank(grsSignumConfig.getBasePathForExportDirectories()))
+		{
+			throw new AdempiereException("BPartnerExportDirectories and BasePathForExportDirectories must be set!")
+					.appendParametersToMessage()
+					.setParameter("ExternalSystem_Config_GRSSignum_ID", grsSignumConfig.getId());
+		}
+
+		final List<String> directories = Arrays
+				.stream(grsSignumConfig.getBPartnerExportDirectories().split(","))
+				.filter(Check::isNotBlank)
+				.collect(ImmutableList.toImmutableList());
+
+		final JsonExportDirectorySettings exportDirectorySettings = JsonExportDirectorySettings.builder()
+				.basePath(grsSignumConfig.getBasePathForExportDirectories())
+				.directories(directories)
+				.build();
+		try
+		{
+			final String serializedExportDirectorySettings = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(exportDirectorySettings);
+
+			return Optional.of(serializedExportDirectorySettings);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 }

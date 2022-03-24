@@ -1,19 +1,16 @@
 package de.metas.manufacturing.job.service;
 
 import de.metas.dao.ValueRestriction;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuId;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceId;
+import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.manufacturing.job.model.CurrentReceivingHU;
@@ -22,26 +19,22 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.ScaleDevice;
+import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToLU;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -50,15 +43,13 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -71,15 +62,21 @@ public class ManufacturingJobService
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
+	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
+	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
+			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
+			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
+		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
+		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
 
 		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -240,6 +237,11 @@ public class ManufacturingJobService
 
 	public ManufacturingJob issueRawMaterials(@NonNull final ManufacturingJob job, @NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
+		return trxManager.callInThreadInheritedTrx(() -> issueRawMaterialsInTrx(job, request));
+	}
+
+	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
+	{
 		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
 			step.assertNotIssued();
 			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
@@ -283,108 +285,67 @@ public class ManufacturingJobService
 			final @NonNull BigDecimal qtyToReceiveBD,
 			final @NonNull ZonedDateTime date)
 	{
-		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		return ReceiveGoodsCommand.builder()
+				.handlingUnitsDAO(handlingUnitsDAO)
+				.ppOrderBL(ppOrderBL)
+				.ppOrderBOMBL(ppOrderBOMBL)
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+				//
+				.ppOrderId(ppOrderId)
+				.coProductBOMLineId(coProductBOMLineId)
+				.aggregateToLU(aggregateToLU)
+				.qtyToReceiveBD(qtyToReceiveBD)
+				.date(date)
+				//
+				.build().execute();
+	}
 
-		final I_PP_Order_BOMLine coProductLine;
-		final LocatorId locatorId;
-		final UomId uomId;
-		final IPPOrderReceiptHUProducer huProducer;
-		if (coProductBOMLineId != null)
+	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
+	{
+		if (!DeviceId.equals(job.getCurrentScaleDeviceId(), currentScaleDeviceId))
 		{
-			coProductLine = ppOrderBOMBL.getOrderBOMLineById(coProductBOMLineId);
-			locatorId = LocatorId.ofRepoId(coProductLine.getM_Warehouse_ID(), coProductLine.getM_Locator_ID());
-			uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
-			huProducer = ppOrderBL.receivingByOrCoProduct(coProductBOMLineId);
+			final ManufacturingJob jobChanged = job.withCurrentScaleDevice(currentScaleDeviceId);
+			newSaver().saveHeader(jobChanged);
+			return jobChanged;
 		}
 		else
 		{
-			coProductLine = null;
-			locatorId = LocatorId.ofRepoId(ppOrder.getM_Warehouse_ID(), ppOrder.getM_Locator_ID());
-			uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
-			huProducer = ppOrderBL.receivingMainProduct(ppOrderId);
+			return job;
 		}
+	}
 
-		final HUPIItemProductId tuPIItemProductId = aggregateToLU.getTUPIItemProductId()
-				.orElseGet(() -> HUPIItemProductId.ofRepoIdOrNone(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()));
+	public Optional<ScaleDevice> getCurrentScaleDevice(final ManufacturingJob job)
+	{
+		final DeviceId currentScaleDeviceId = job.getCurrentScaleDeviceId();
+		return currentScaleDeviceId != null
+				? getScaleDevice(currentScaleDeviceId)
+				: Optional.empty();
+	}
 
-		final Quantity qtyToReceive = Quantitys.create(qtyToReceiveBD, uomId);
+	private Optional<ScaleDevice> getScaleDevice(@NonNull final DeviceId currentScaleDeviceId)
+	{
+		return deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessorById(currentScaleDeviceId)
+				.map(this::toScaleDevice);
+	}
 
-		final List<I_M_HU> tusOrVhus = huProducer
-				.movementDate(date)
-				.locatorId(locatorId)
-				.receiveTUs(qtyToReceive, tuPIItemProductId);
-
-		final HuId luId = aggregateTUsToLU(tusOrVhus, aggregateToLU);
-
-		//
-		// Remember current receiving LU.
-		// We will need it later too.
-		if (coProductLine != null)
-		{
-			coProductLine.setCurrent_Receiving_LU_HU_ID(luId.getRepoId());
-			coProductLine.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
-			ppOrderBOMBL.save(coProductLine);
-		}
-		else
-		{
-			ppOrder.setCurrent_Receiving_LU_HU_ID(luId.getRepoId());
-			ppOrder.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
-			ppOrderBL.save(ppOrder);
-		}
-
-		return CurrentReceivingHU.builder()
-				.tuPIItemProductId(tuPIItemProductId)
-				.aggregateToLUId(luId)
+	private ScaleDevice toScaleDevice(@NonNull final DeviceAccessor deviceAccessor)
+	{
+		return ScaleDevice.builder()
+				.deviceId(deviceAccessor.getId())
+				.caption(deviceAccessor.getDisplayName())
+				.websocketEndpoint(deviceWebsocketNamingStrategy.toWebsocketEndpoint(deviceAccessor.getId()))
 				.build();
 	}
 
-	private HuId aggregateTUsToLU(
-			final @NonNull List<I_M_HU> tusOrVhus,
-			final @NonNull JsonAggregateToLU aggregateToLU)
+	public Stream<ScaleDevice> streamAvailableScaleDevices(@NonNull final ManufacturingJob job)
 	{
-		Check.assumeNotEmpty(tusOrVhus, "at least one TU shall be received from manufacturing order");
-
-		I_M_HU lu = null;
-		I_M_HU_PI_Item luPIItem = null;
-		if (aggregateToLU.getExistingLU() != null)
-		{
-			final JsonRenderedHUQRCode qrCode = aggregateToLU.getExistingLU().getHuQRCode();
-			final HuId luId = loadingAndSavingSupportServices.getHuIdByQRCode(qrCode);
-			lu = handlingUnitsDAO.getById(luId);
-		}
-		else
-		{
-			if (aggregateToLU.getNewLU() == null)
-			{
-				throw new AdempiereException("LU packing materials spec needs to be provided when no actual LU is specified.");
-			}
-			luPIItem = handlingUnitsDAO.getPackingInstructionItemById(aggregateToLU.getNewLU().getLuPIItemId());
-		}
-
-		for (final I_M_HU tu : tusOrVhus)
-		{
-			if (lu == null)
-			{
-				final List<I_M_HU> createdLUs = HUTransformService.newInstance()
-						.tuToNewLUs(
-								tu,
-								QtyTU.ONE.toBigDecimal(),
-								Objects.requireNonNull(luPIItem),
-								true);
-				lu = CollectionUtils.singleElement(createdLUs);
-			}
-			else
-			{
-				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
-			}
-		}
-
-		if (lu == null)
-		{
-			// shall not happen
-			throw new AdempiereException("No LU was created");
-		}
-
-		return HuId.ofRepoId(lu.getM_HU_ID());
+		return deviceAccessorsHubFactory
+				.getDefaultDeviceAccessorsHub()
+				.getDeviceAccessors(Weightables.ATTR_WeightGross)
+				.stream(job.getWarehouseId())
+				.map(this::toScaleDevice);
 	}
+
 }

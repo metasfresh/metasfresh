@@ -7,6 +7,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
@@ -28,8 +29,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -39,7 +38,6 @@ import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -65,7 +63,6 @@ import de.metas.test.SnapshotFunctionFactory;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -87,6 +84,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -148,7 +146,7 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(huQRCodesRepository)
+						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
 				)
 		);
 
@@ -352,7 +350,7 @@ public class PickingJobTestHelper
 
 	public HUQRCode getQRCode(final HuId huId)
 	{
-		return huQRCodesRepository.getQRCodeByHuId(huId).orElseThrow(() -> new AdempiereException("No QRCode found for HU " + huId));
+		return huQRCodesRepository.getFirstQRCodeByHuId(huId).orElseThrow(() -> new AdempiereException("No QRCode found for HU " + huId));
 	}
 
 	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull String qrCodeId)
@@ -377,7 +375,7 @@ public class PickingJobTestHelper
 		final HUQRCode huQRCode = HUQRCode.builder()
 				.id(qrCodeId)
 				.packingInfo(HUQRCodePackingInfo.builder()
-						.huUnitType(HUQRCodeUnitType.ofCode(piVersion.getHU_UnitType()))
+						.huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
 						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
 						.caption(pi.getName())
 						.build())
@@ -389,14 +387,9 @@ public class PickingJobTestHelper
 				.attributes(ImmutableList.of())
 				.build();
 
-		huQRCodesRepository.createNew(huQRCode, HUQRCodeAssignment.ofHuId(huId, huQRCode.getId()));
+		huQRCodesRepository.createNew(huQRCode, huId);
 
 		return huQRCode;
-	}
-
-	public PickingJobStep extractSingleStep(final PickingJob pickingJob)
-	{
-		return CollectionUtils.singleElement(pickingJob.streamSteps().collect(ImmutableList.toImmutableList()));
 	}
 
 	public TestRecorder newTestRecorder()

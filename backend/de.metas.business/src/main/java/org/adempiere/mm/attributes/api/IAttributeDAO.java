@@ -249,4 +249,6 @@ public interface IAttributeDAO extends ISingletonService
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 
 	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
+
+	boolean nullSafeASIEquals(AttributeSetInstanceId firstASIId,AttributeSetInstanceId secondASIId);
 }

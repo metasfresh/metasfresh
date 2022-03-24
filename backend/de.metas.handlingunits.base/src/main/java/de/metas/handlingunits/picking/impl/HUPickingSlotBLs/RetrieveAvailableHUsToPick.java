@@ -161,6 +161,12 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(vhu.getM_HU_ID())))
+		{
+			return;
+		}
+
 		// What was the purpose if this check?
 		// At any rate, it caused the problem that if you selected a top-level VHU as source-HU,
 		// you could never pick from it because it was not added to 'vhus'.

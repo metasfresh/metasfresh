@@ -74,6 +74,8 @@ public class ProductionDetailsQuery
 
 	int ppOrderLineId;
 
+	int ppOrderCandidateLineId;
+
 	/**
 	 * Convenience method that uses this instance to kickstart an return a builder.
 	 *
@@ -131,6 +133,11 @@ public class ProductionDetailsQuery
 			if (ppOrderCandidateId > 0)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
+				doFilter = true;
+			}
+			if (ppOrderCandidateLineId > 0)
+			{
+				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID, ppOrderCandidateLineId);
 				doFilter = true;
 			}
 			else if (ppOrderLineId == NO_PP_ORDER_LINE_ID)

@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotQuery.PickingSlotQueryBuilder;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -49,11 +50,9 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -62,7 +61,7 @@ import java.util.List;
  * Browse Picking slots
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/518
+ * @implNote task https://github.com/metasfresh/metasfresh/issues/518
  */
 @ViewFactory(windowId = PickingSlotsClearingViewFactory.WINDOW_ID_STRING)
 public class PickingSlotsClearingViewFactory implements IViewFactory
@@ -71,10 +70,11 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	@Autowired
-	private PickingSlotViewRepository pickingSlotRepo;
+	private final PickingSlotViewRepository pickingSlotRepo;
 
 	private final CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotsClearingViewFactory.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
+
+	public PickingSlotsClearingViewFactory(@NonNull final PickingSlotViewRepository pickingSlotRepo) {this.pickingSlotRepo = pickingSlotRepo;}
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
@@ -96,7 +96,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
-		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotsClearingViewFilters.createFilterDescriptorsProvider());
+		return filterDescriptorsProviderCache.getOrLoad(0, PickingSlotsClearingViewFilters::createFilterDescriptorsProvider);
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				.build();
 	}
 
-	private static final PickingSlotQuery createPickingSlotQuery(@NonNull final DocumentFilterList filters)
+	private static PickingSlotQuery createPickingSlotQuery(@NonNull final DocumentFilterList filters)
 	{
 		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
 
@@ -130,10 +130,10 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 			queryBuilder.assignedToBPartnerId(bpartnerId);
 		}
 
-		final String barcode = PickingSlotsClearingViewFilters.getPickingSlotBarcode(filters);
-		if (!Check.isEmpty(barcode, true))
+		final PickingSlotQRCode qrCode = PickingSlotsClearingViewFilters.getPickingSlotQRCode(filters);
+		if (qrCode != null)
 		{
-			queryBuilder.barcode(barcode);
+			queryBuilder.qrCode(qrCode);
 		}
 
 		return queryBuilder.build();

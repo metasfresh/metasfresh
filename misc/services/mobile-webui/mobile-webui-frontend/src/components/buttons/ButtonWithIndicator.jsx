@@ -4,11 +4,15 @@ import cx from 'classnames';
 
 import * as CompleteStatus from '../../constants/CompleteStatus';
 
-const ButtonWithIndicator = ({ caption, showWarningSign, completeStatus, disabled, onClick, children }) => {
+const ButtonWithIndicator = ({ caption, showWarningSign, isDanger, completeStatus, disabled, onClick, children }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
   return (
-    <button className="button is-outlined is-fullwidth complete-btn" disabled={!!disabled} onClick={onClick}>
+    <button
+      className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger })}
+      disabled={!!disabled}
+      onClick={onClick}
+    >
       <div className="full-size-btn">
         <div className="left-btn-side">
           {showWarningSign && (
@@ -49,6 +53,7 @@ const getIndicatorClassName = (completeStatus) => {
 ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
+  isDanger: PropTypes.bool,
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,
   children: PropTypes.node,

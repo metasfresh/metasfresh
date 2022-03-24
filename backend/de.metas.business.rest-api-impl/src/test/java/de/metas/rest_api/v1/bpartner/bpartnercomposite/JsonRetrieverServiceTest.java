@@ -30,7 +30,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;

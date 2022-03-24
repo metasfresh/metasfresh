@@ -41,6 +41,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
+
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
 	private final M_Product_StepDefData productTable;
@@ -62,7 +65,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		{
 			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
-			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
+			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
@@ -77,15 +80,17 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
 
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
-					.productIdentifier(productIdentifier)
 					.productId(ProductId.ofRepoId(productId))
 					.time(time)
 					.qty(qty)
 					.atp(atp)
+					.attributeSetInstanceId(attributeSetInstanceIdentifier)
 					.build();
 			materialDispoTableBuilder.row(identifier, tableRow);
 		}

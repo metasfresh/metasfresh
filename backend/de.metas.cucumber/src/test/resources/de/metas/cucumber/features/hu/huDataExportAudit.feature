@@ -48,13 +48,13 @@ Feature: Handling unit data export audit
       | inventory_line                | createdCU          |
 
   Scenario: The request is good and HU data export audit is created
-    Given store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    Given store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
-      | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
+      | createdCU          | CU         |             | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
     And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
@@ -71,13 +71,13 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
-      | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
+      | createdCU          | CU         |             | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
     And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
@@ -97,13 +97,13 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/hu/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | attributes.LockNotice | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
-      | createdCU          | CU         |             | null                  | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus |
+      | createdCU          | CU         |             | huAuditProduct       | huAuditProduct        | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
 
     And after not more than 10s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |

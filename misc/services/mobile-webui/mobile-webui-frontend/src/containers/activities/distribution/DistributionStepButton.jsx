@@ -6,6 +6,7 @@ import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
+import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 const DistributionStepButton = ({
   applicationId,
@@ -13,7 +14,7 @@ const DistributionStepButton = ({
   activityId,
   lineId,
   stepId,
-  pickFromLocator,
+  pickFromHU,
   uom,
   qtyPicked,
   completeStatus,
@@ -25,7 +26,11 @@ const DistributionStepButton = ({
   };
 
   return (
-    <ButtonWithIndicator caption={pickFromLocator.caption} completeStatus={completeStatus} onClick={handleClick}>
+    <ButtonWithIndicator
+      caption={toQRCodeDisplayable(pickFromHU.qrCode)}
+      completeStatus={completeStatus}
+      onClick={handleClick}
+    >
       <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} applicationId={applicationId} />
     </ButtonWithIndicator>
   );
@@ -38,7 +43,6 @@ DistributionStepButton.propTypes = {
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
   productName: PropTypes.string.isRequired,
-  pickFromLocator: PropTypes.object.isRequired,
   pickFromHU: PropTypes.object,
   uom: PropTypes.string,
   qtyPicked: PropTypes.number,

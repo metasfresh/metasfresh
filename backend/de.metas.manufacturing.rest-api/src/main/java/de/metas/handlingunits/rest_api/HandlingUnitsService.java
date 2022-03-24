@@ -23,12 +23,19 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
+import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonHU;
+import de.metas.common.handlingunits.JsonHUAttribute;
+import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributes;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -38,6 +45,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
+import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
@@ -49,13 +58,16 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class HandlingUnitsService
@@ -65,10 +77,11 @@ public class HandlingUnitsService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 	private final HUQRCodesService huQRCodeService;
 
-	public HandlingUnitsService(
-			final @NonNull HUQRCodesService huQRCodeService)
+	public HandlingUnitsService(final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.huQRCodeService = huQRCodeService;
 	}
@@ -76,8 +89,16 @@ public class HandlingUnitsService
 	@NonNull
 	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage)
 	{
-		final I_M_HU hu = Optional.ofNullable(handlingUnitsBL.getById(huId))
-				.orElseThrow(() -> new AdempiereException("No HU found for M_HU_ID: " + huId));
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if(hu == null)
+		{
+			throw new AdempiereException("No HU found for M_HU_ID: " + huId);
+		}
+
+		if(!huStatusBL.isPhysicalHU(hu))
+		{
+			throw new AdempiereException("Not a physical HU: " + huId);
+		}
 
 		return toJson(hu, adLanguage);
 	}
@@ -91,6 +112,8 @@ public class HandlingUnitsService
 
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
+		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu);
+
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
 				.huStatus(hu.getHUStatus())
@@ -99,7 +122,9 @@ public class HandlingUnitsService
 				.qrCode(toJsonHUQRCode(huId))
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
-				.attributes(getAttributes(huContext, hu));
+				.attributes2(jsonHUAttributes)
+				.clearanceNote(hu.getClearanceNote())
+				.clearanceStatus(getClearanceStatusInfo(hu));
 
 		if (isAggregatedTU)
 		{
@@ -117,24 +142,7 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	@Nullable
-	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
-	{
-		return huQRCodeService.getQRCodeByHuIdIfExists(huId)
-				.map(HandlingUnitsService::toJsonHUQRCode)
-				.orElse(null);
-	}
-
-	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
-	{
-		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
-		return JsonHUQRCode.builder()
-				.code(rendered.getCode())
-				.displayable(rendered.getDisplayable())
-				.build();
-	}
-
-	public void updateAttributes(@NonNull final HuId huId, @NonNull final JsonHUAttributes jsonHUAttributes)
+	public void updateAttributes(@NonNull final HuId huId, @NonNull final JsonHUAttributeCodeAndValues jsonHUAttributes)
 	{
 		final Map<String, Object> attributes = jsonHUAttributes.getAttributes();
 
@@ -144,6 +152,30 @@ public class HandlingUnitsService
 
 			huAttributesBL.updateHUAttributeRecursive(huId, attributeCode, attribute.getValue(), null);
 		}
+	}
+
+	public void setClearanceStatus(@NonNull final HuId huId, @NonNull final JsonSetClearanceStatusRequest updateClearanceStatusRequest)
+	{
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofCode(updateClearanceStatusRequest.getClearanceStatus().name());
+		final String clearanceNote = updateClearanceStatusRequest.getClearanceNote();
+
+		handlingUnitsBL.setClearanceStatus(huId, clearanceStatus, clearanceNote);
+	}
+
+	@NonNull
+	public JsonAllowedHUClearanceStatuses getAllowedStatusesForHUId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final ClearanceStatus currentClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
+
+		final ImmutableList<JsonClearanceStatusInfo> huStatuses = Arrays.stream(ClearanceStatus.values())
+				.filter(availableStatus -> !availableStatus.equals(currentClearanceStatus))
+				.map(this::getClearanceStatusInfo)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonAllowedHUClearanceStatuses.builder()
+				.clearanceStatuses(huStatuses)
+				.build();
 	}
 
 	@NonNull
@@ -167,19 +199,6 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private JsonHUAttributes toJson(final ImmutableAttributeSet huAttributes)
-	{
-		final JsonHUAttributes json = new JsonHUAttributes();
-		for (final AttributeCode attributeCode : huAttributes.getAttributeCodes())
-		{
-			final Object value = huAttributes.getValue(attributeCode);
-			json.putAttribute(attributeCode.getCode(), value);
-		}
-
-		return json;
-	}
-
-	@NonNull
 	private ImmutableList<JsonHUProduct> getProductStorage(
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -192,21 +211,36 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private JsonHUAttributes getAttributes(
+	private JsonHUAttributes toJsonHUAttributes(
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
 		final ImmutableAttributeSet huAttributes = huContext.getHUAttributeStorageFactory()
 				.getImmutableAttributeSet(hu);
 
-		final JsonHUAttributes jsonHUAttributes = toJson(huAttributes);
+		final ArrayList<JsonHUAttribute> list = new ArrayList<>();
+		for (final I_M_Attribute attribute : huAttributes.getAttributes())
+		{
+			final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+			final Object value = huAttributes.getValue(attributeCode);
+
+			list.add(JsonHUAttribute.builder()
+					.code(attributeCode.getCode())
+					.caption(attribute.getName())
+					.value(value)
+					.build());
+		}
 
 		for (final ExtractCounterAttributesCommand.CounterAttribute counterAttribute : extractCounterAttributes(huAttributes))
 		{
-			jsonHUAttributes.putAttribute(counterAttribute.getAttributeCode(), counterAttribute.getCounter());
+			list.add(JsonHUAttribute.builder()
+					.value(counterAttribute.getAttributeCode())
+					.caption(counterAttribute.getAttributeCode())
+					.value(counterAttribute.getCounter())
+					.build());
 		}
 
-		return jsonHUAttributes;
+		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
 	}
 
 	@NonNull
@@ -250,5 +284,56 @@ public class HandlingUnitsService
 				.stream()
 				.map(includedHU -> toJson(includedHU, adLanguage))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
+	{
+		return huQRCodeService.getFirstQRCodeByHuIdIfExists(huId)
+				.map(HandlingUnitsService::toJsonHUQRCode)
+				.orElse(null);
+	}
+
+	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
+	{
+		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
+		return JsonHUQRCode.builder()
+				.code(rendered.getCode())
+				.displayable(rendered.getDisplayable())
+				.build();
+	}
+
+	@Nullable
+	private JsonClearanceStatusInfo getClearanceStatusInfo(@NonNull final I_M_HU hu)
+	{
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
+
+		if (clearanceStatus == null)
+		{
+			return null;
+		}
+
+		return getClearanceStatusInfo(clearanceStatus);
+	}
+
+	@NonNull
+	private JsonClearanceStatusInfo getClearanceStatusInfo(@NonNull final ClearanceStatus clearanceStatus)
+	{
+		final String caption = handlingUnitsBL.getClearanceStatusCaption(clearanceStatus)
+				.translate(Env.getAD_Language());
+
+		return JsonClearanceStatusInfo.builder()
+				.key(clearanceStatus.getCode())
+				.caption(caption)
+				.build();
+	}
+
+	public void move(@NonNull final MoveHURequest request)
+	{
+		MoveHUCommand.builder()
+				.huQRCodesService(huQRCodeService)
+				.request(request)
+				.build()
+				.execute();
 	}
 }

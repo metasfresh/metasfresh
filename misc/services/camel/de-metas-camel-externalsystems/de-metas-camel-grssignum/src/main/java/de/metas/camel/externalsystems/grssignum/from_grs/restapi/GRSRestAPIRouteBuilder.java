@@ -189,6 +189,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
 				.orgCode(request.getOrgCode())
+				.externalSystemValue(request.getExternalSystemChildConfigValue())
 				.build();
 	}
 

@@ -26,10 +26,15 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -38,23 +43,29 @@ import org.eevolution.model.X_PP_Product_Planning;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
+import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Planning_StepDef
 {
 	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
 	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable,
-			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable)
+			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productPlanningTable = productPlanningTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
@@ -77,6 +88,8 @@ public class PP_Product_Planning_StepDef
 
 		final boolean isCreatePlan = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Product_Planning.COLUMNNAME_IsCreatePlan);
 
+		final boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant, false);
+
 		final I_PP_Product_Planning productPlanningRecord = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class);
 		productPlanningRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productPlanningRecord.setAD_Org_ID(productRecord.getAD_Org_ID());
@@ -85,6 +98,21 @@ public class PP_Product_Planning_StepDef
 		productPlanningRecord.setAD_Workflow_ID(WORKFLOW_ID.getRepoId());
 		productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		productPlanningRecord.setIsCreatePlan(isCreatePlan);
+		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(attributeSetInstance).isNotNull();
+
+			final AttributesKey ppAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			productPlanningRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			productPlanningRecord.setStorageAttributesKey(ppAttributesKeys.getAsString());
+		}
+
 		InterfaceWrapperHelper.save(productPlanningRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_Planning.Table_Name);

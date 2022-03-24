@@ -419,6 +419,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
 	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_Agg_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg.class);
@@ -2404,5 +2416,44 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
+	}
+
+	/**
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = PE */
+	public static final String PAYMENTRULE_PayPalExtern = "PE";
+	/** Credit Card Extern = CE */
+	public static final String PAYMENTRULE_CreditCardExtern = "CE";
+	/** Instant Bank Transfer = BE */
+	public static final String PAYMENTRULE_InstantBankTransfer = "BE";
+	@Override
+	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
+	{
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	@Override
+	public java.lang.String getPaymentRule()
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
 }

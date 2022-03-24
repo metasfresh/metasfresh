@@ -45,6 +45,8 @@ public class InvoiceHeaderImplBuilder
 
 	private BPartnerInfo billTo;
 
+	private String paymentRule;
+
 	private int Sales_BPartner_ID;
 
 	private int SalesRep_User_ID;
@@ -68,6 +70,8 @@ public class InvoiceHeaderImplBuilder
 	private int C_Async_Batch_ID;
 
 	private int C_Incoterms_ID;
+
+	private String incotermLocation;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -119,6 +123,9 @@ public class InvoiceHeaderImplBuilder
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
+		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		return invoiceHeader;
 	}
@@ -146,6 +153,16 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Incoterms_ID(final int incoterms_id)
 	{
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
 	public I_C_DocType getC_DocTypeInvoice()
@@ -188,6 +205,16 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		return _dateAcct;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)

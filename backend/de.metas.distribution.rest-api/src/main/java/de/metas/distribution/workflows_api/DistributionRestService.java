@@ -11,12 +11,10 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -131,8 +129,7 @@ public class DistributionRestService
 
 			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
 					.scheduleId(scheduleId)
-					.qtyPicked(Quantity.of(event.getPickFrom().getQtyPicked(), uom))
-					.qtyNotPickedReason(QtyRejectedReasonCode.ofNullableCode(event.getPickFrom().getQtyRejectedReasonCode()).orElse(null))
+					//.huQRCode(StringUtils.trimBlankToOptional(event.getPickFrom().getQrCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
 					.build());
 
 			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);

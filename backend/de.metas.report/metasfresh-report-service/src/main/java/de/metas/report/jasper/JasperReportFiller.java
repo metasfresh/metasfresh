@@ -23,6 +23,7 @@ package de.metas.report.jasper;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,6 +76,7 @@ final class JasperReportFiller
 			@Nullable final Connection connection,
 			@NonNull final ClassLoader jasperLoader)
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Thread currentThread = Thread.currentThread();
 		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
 
@@ -110,6 +112,8 @@ final class JasperReportFiller
 		{
 			// restore the original class loader
 			currentThread.setContextClassLoader(classLoaderOld);
+
+			logger.debug("Filled {} in {}", jasperReport, stopwatch.stop());
 		}
 	}
 

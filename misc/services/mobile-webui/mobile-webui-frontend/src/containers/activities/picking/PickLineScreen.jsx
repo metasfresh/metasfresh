@@ -24,7 +24,7 @@ const PickLineScreen = () => {
     dispatch(
       pushHeaderEntry({
         location: url,
-        caption: 'Pick product', // TODO trl
+        caption: trl('activities.picking.PickingLine'),
         values: [
           {
             caption: trl('activities.picking.PickingLine'),

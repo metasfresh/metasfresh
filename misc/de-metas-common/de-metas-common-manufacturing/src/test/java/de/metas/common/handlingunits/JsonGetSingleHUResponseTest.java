@@ -22,6 +22,7 @@
 
 package de.metas.common.handlingunits;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.JsonTestHelper;
 import org.junit.jupiter.api.Test;
 
@@ -32,11 +33,30 @@ class JsonGetSingleHUResponseTest
 	@Test
 	void testSerializeDeserialize()
 	{
-		final JsonHUAttributes attributes = new JsonHUAttributes();
-		attributes.putAttribute("stringAttribute", "string value");
-		attributes.putAttribute("integerAttribute", 123);
-		attributes.putAttribute("numberAttribute", new BigDecimal("123.45"));
-		attributes.putAttribute("booleanAttribute", true);
+		final JsonHUAttributes attributes = JsonHUAttributes.builder()
+				.list(ImmutableList.of(
+						JsonHUAttribute.builder()
+								.code("StringAttribute")
+								.caption("string attribute caption")
+								.value("string value")
+								.build(),
+						JsonHUAttribute.builder()
+								.code("IntegerAttribute")
+								.caption("integer attribute caption")
+								.value(123)
+								.build(),
+						JsonHUAttribute.builder()
+								.code("BigDecimalAttribute")
+								.caption("BigDecimal attribute caption")
+								.value(new BigDecimal("123.45"))
+								.build(),
+						JsonHUAttribute.builder()
+								.code("BooleanAttribute")
+								.caption("Boolean attribute caption")
+								.value(true)
+								.build()
+				))
+				.build();
 
 		JsonTestHelper.testSerializeDeserialize(
 				JsonGetSingleHUResponse.builder()
@@ -63,7 +83,7 @@ class JsonGetSingleHUResponseTest
 										.qty("44")
 										.uom("KGM")
 										.build())
-								.attributes(attributes)
+								.attributes2(attributes)
 								.build())
 						.build()
 		);

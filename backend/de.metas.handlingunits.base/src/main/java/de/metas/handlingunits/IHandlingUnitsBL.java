@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -54,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -73,6 +75,16 @@ import java.util.function.Predicate;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
+	/**
+	 * Supposed to be called only from the interal HULoader.
+	 */
+	IAutoCloseable huLoaderInProgress();
+
+	/**
+	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
+	 */
+	boolean isHULoaderInProgress();
+	
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
@@ -572,4 +584,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
+
+	void setClearanceStatus(final HuId huId,final ClearanceStatus status, final String clearanceNote);
+
+	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
+
+	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 }

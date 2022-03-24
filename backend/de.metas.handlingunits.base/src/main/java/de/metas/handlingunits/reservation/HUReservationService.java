@@ -325,6 +325,11 @@ public class HUReservationService
 		return huReservationRepository.getEntriesByVHUIds(vhuIds);
 	}
 
+	public boolean isAnyOfVHUIdsReserved(@NonNull final Collection<HuId> vhuIds)
+	{
+		return !huReservationRepository.getEntriesByVHUIds(vhuIds).isEmpty();
+	}
+
 	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "AvailableHUQueryBuilder")
 	private IHUQueryBuilder createHUQuery(
 			@NonNull final WarehouseId warehouseId,

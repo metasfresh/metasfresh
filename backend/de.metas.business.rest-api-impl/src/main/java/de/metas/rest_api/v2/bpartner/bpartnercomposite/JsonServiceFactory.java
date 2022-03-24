@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;

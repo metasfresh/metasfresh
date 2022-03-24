@@ -51,23 +51,6 @@ export class RawWidget extends PureComponent {
     }
   }
 
-  // in some cases we initially have no widgetData when RawWidgets are created
-  // (Selection attributes) so we have to update the `cachedValue` to the
-  // value from widgetData, once it's available
-  static getDerivedStateFromProps(props, state) {
-    if (typeof state.cachedValue === 'undefined') {
-      const cachedValue = RawWidget.getCachedValue(props);
-
-      if (cachedValue) {
-        return {
-          cachedValue,
-        };
-      }
-    }
-
-    return null;
-  }
-
   /**
    * @method getCachedValue
    * @summary extract cached value from widget props

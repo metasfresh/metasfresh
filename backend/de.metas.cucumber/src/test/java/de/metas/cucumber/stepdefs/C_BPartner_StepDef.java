@@ -30,7 +30,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -53,7 +53,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;

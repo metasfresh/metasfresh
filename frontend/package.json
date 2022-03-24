@@ -144,6 +144,7 @@
     "d3": "6.7.0",
     "deep-unfreeze": "0.1.1",
     "detect-browser": "5.3.0",
+    "focus-trap-react": "^8.9.1",
     "google-map-react": "2.1.10",
     "history": "4.10.1",
     "immer": "9.0.12",

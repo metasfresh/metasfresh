@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO implements I_ExternalSystem_Config_GRSSignum, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1588297937L;
+	private static final long serialVersionUID = -1896949101L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_GRSSignum (final Properties ctx, final int ExternalSystem_Config_GRSSignum_ID, @Nullable final String trxName)
@@ -47,6 +47,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	}
 
 	@Override
+	public void setBasePathForExportDirectories (final @Nullable java.lang.String BasePathForExportDirectories)
+	{
+		set_Value (COLUMNNAME_BasePathForExportDirectories, BasePathForExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBasePathForExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BasePathForExportDirectories);
+	}
+
+	@Override
 	public void setBaseURL (final java.lang.String BaseURL)
 	{
 		set_Value (COLUMNNAME_BaseURL, BaseURL);
@@ -56,6 +68,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public java.lang.String getBaseURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
+	}
+
+	@Override
+	public void setBPartnerExportDirectories (final @Nullable java.lang.String BPartnerExportDirectories)
+	{
+		set_Value (COLUMNNAME_BPartnerExportDirectories, BPartnerExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBPartnerExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerExportDirectories);
 	}
 
 	@Override
@@ -146,6 +170,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public boolean isAutoSendVendors() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendVendors);
+	}
+
+	@Override
+	public void setIsCreateBPartnerFolders (final boolean IsCreateBPartnerFolders)
+	{
+		set_Value (COLUMNNAME_IsCreateBPartnerFolders, IsCreateBPartnerFolders);
+	}
+
+	@Override
+	public boolean isCreateBPartnerFolders() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateBPartnerFolders);
 	}
 
 	@Override

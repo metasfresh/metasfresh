@@ -1,17 +1,25 @@
 const translations = {
   appName: 'metasfresh mobile',
+  error: {
+    PleaseTryAgain: 'Please try again',
+    network: {
+      noResponse: 'Connection error',
+    },
+  },
   general: {
     Product: 'Product',
     Locator: 'Locator',
-    Barcode: 'Barcode',
+    QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
     QtyPicked: 'Qty picked',
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
     DropToLocator: 'Drop to locator',
-    PleaseTryAgain: 'Please try again',
     cancelText: 'Cancel',
+    scanQRCode: 'Scan QR',
+    Back: 'Back',
+    Home: 'Home',
   },
   login: {
     submitButton: 'Login',
@@ -34,6 +42,7 @@ const translations = {
     },
     picking: {
       PickingLine: 'Picking Line',
+      PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
       invalidQtyPicked: 'Invalid qty picked',
@@ -49,7 +58,7 @@ const translations = {
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
       scanLocator: 'Scan drop to Locator',
-      invalidLocatorBarcode: 'Invalid locator barcode',
+      invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
     },
     confirmButton: {
@@ -66,12 +75,21 @@ const translations = {
       ProductName: 'Product Name',
       target: 'To issue',
       picked: 'Issued',
+      generateHUQRCodes: {
+        packing: 'Packing',
+        qtyTUs: 'TUs',
+        print: 'Print',
+      },
       issues: {
         target: 'To issue',
         picked: 'Issued',
-        qtyToIssue: 'Qty to issue',
+        qtyToIssueTarget: 'Qty to Issue Target',
+        qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
+        step: {
+          name: 'Issue HU',
+        },
       },
       receipts: {
         qtyToReceiveTarget: 'Qty to Receive Target',

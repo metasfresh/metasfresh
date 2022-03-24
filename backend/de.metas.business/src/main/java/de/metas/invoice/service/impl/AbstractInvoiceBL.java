@@ -381,6 +381,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		to.setC_Incoterms_ID(from.getC_Incoterms_ID());
+		to.setIncotermLocation(from.getIncotermLocation());
 
 		InterfaceWrapperHelper.save(to);
 
