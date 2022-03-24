@@ -863,8 +863,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override | OPT.C_DocType_ID.Name |
-      | invoice_candidate_1               | 8                         | Provisionsabrechnung  |
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override | OPT.C_DocTypeInvoice_ID.Name |
+      | invoice_candidate_1               | 8                         | Provisionsabrechnung         |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 80                  |
@@ -1485,6 +1485,9 @@ Feature: Checking the effect of override fields on invoice candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
       | p_1        | salesProduct_18032022_21 |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
+      | p_1                     | PCE                    | KGM                  | 2            | Y                        |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
       | ps_1       | pricing_system_name18032022_21 | pricing_system_value18032022_21 | pricing_system_description18032022_21 | true         |
@@ -1497,9 +1500,6 @@ Feature: Checking the effect of override fields on invoice candidate
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.InvoicableQtyBasedOn |
       | pp_1       | plv_1                             | p_1                     | 10.0     | KGM               | Normal                        | CatchWeight              |
-    And metasfresh contains C_UOM_Conversions
-      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
-      | p_1                     | PCE                    | KGM                  | 2            | Y                        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | Endcustomer18032022_21 | N            | Y              | ps_1                          |
