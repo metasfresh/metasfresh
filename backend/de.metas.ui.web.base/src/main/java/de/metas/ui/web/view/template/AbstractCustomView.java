@@ -284,7 +284,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		}
 		else
 		{
-			return rowIds.stream().map(this::getById);
+			return rowIds.stream().map(rowsData::getByIdOrNull).filter(Objects::nonNull);
 		}
 	}
 
