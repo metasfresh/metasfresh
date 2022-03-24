@@ -22,18 +22,9 @@ package org.adempiere.util.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+import ch.qos.logback.core.util.TimeUtil;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
@@ -42,6 +33,17 @@ import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @ToString
 @EqualsAndHashCode
@@ -188,25 +190,28 @@ public final class Params implements IParams
 				: null;
 	}
 
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null
+				? value.toInstant()
+				: null;
+	}
+
 	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
-		final Object value = getParameterAsObject(parameterName);
-		return StringUtils.toBoolean(value);
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
 	}
 
-	public Params withParameter(@NonNull final String parameterName, final Object value)
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
 	{
-		final Object existingValue = values.get(parameterName);
-		if (Objects.equals(value, existingValue))
-		{
-			return this;
-		}
-		else
-		{
-			final Map<String, Object> newValues = new HashMap<>(values);
-			newValues.put(parameterName, value);
-			return new Params(newValues);
-		}
+		final Object value = getParameterAsObject(parameterName);
+		return StringUtils.toBoolean(value, defaultValue);
 	}
 }
