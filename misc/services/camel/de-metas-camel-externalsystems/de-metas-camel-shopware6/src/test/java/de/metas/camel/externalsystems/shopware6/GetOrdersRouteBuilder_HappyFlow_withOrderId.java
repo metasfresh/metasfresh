@@ -113,7 +113,7 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
-		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(0);
 		assertMockEndpointsSatisfied();
 	}
 

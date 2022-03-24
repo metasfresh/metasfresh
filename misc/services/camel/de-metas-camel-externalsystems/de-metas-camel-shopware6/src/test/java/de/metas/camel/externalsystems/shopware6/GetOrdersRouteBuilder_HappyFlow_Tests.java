@@ -372,29 +372,6 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
-
-			final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
-			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
-
-			final Map<String, String> parameters = new HashMap<>();
-			parameters.put(PARAM_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
-			parameters.put(PARAM_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
-			parameters.put(PARAM_PRODUCT_LOOKUP, JsonProductLookup.ProductId.name());
-			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
-			parameters.put(PARAM_JSON_PATH_EMAIL, MOCK_JSON_EMAIL_PATH);
-			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
-
-			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
-					.builder()
-					.traceId(MOCK_TRACE_ID)
-					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
-					.externalSystemChildConfigValue("childValue")
-					.externalSystemConfigId(JsonMetasfreshId.of(1))
-					.orgCode(MOCK_ORG_CODE)
-					.command("command")
-					.parameters(parameters)
-					.build();
 			
 			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
 					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
