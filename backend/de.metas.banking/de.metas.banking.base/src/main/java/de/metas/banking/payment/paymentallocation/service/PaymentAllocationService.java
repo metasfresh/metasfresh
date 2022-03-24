@@ -193,28 +193,20 @@ public class PaymentAllocationService
 				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
 				: Money.zero(currencyId);
 
-		final SOTrx soTrx = SOTrx.ofBoolean(paymentAllocationPayableItem.isSOTrx());
-
-		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
-				.soTrx(soTrx)
-				.isSOTrxAdjusted(false)
-				.isCreditMemo(false) // we assume it's not a credit memo
-				.isCreditMemoAdjusted(false) // we assume it's not a credit memo
-				.build()
-				.intern();
+		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
 
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
 				.documentNo(paymentAllocationPayableItem.getDocumentNo())
-				.soTrx(soTrx)
-				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
+				.soTrx(paymentAllocationPayableItem.getSoTrx())
+				.openAmt(amtMultiplier.convertToRealValue(openAmt))
 				.amountsToAllocate(AllocationAmounts.builder()
 										   .payAmt(payAmt)
 										   .discountAmt(discountAmt)
 										   .invoiceProcessingFee(invoiceProcessingFee)
 										   .build()
-										   .convertToRealAmounts(invoiceAmtMultiplier))
+										   .convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
