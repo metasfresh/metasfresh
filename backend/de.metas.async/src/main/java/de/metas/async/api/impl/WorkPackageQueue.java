@@ -33,6 +33,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessorEventDispatcher;
@@ -90,6 +91,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private final transient IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
+	private final transient QueueProcessorDAO queueProcessorDAO = QueueProcessorDAO.getInstance();
 
 	private final Properties ctx;
 	private final ImmutableSet<QueuePackageProcessorId> packageProcessorIds;
@@ -100,7 +102,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	/**
 	 * C_Queue_PackageProcessor_ID used for enquing
 	 */
-	private final int enquingPackageProcessorId;
+	private final QueuePackageProcessorId enquingPackageProcessorId;
 
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
@@ -137,12 +139,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		if (forEnqueing)
 		{
-			enquingPackageProcessorId = packageProcessorIds.iterator().next().getRepoId();
+			enquingPackageProcessorId = packageProcessorIds.iterator().next();
 			this.enquingPackageProcessorInternalName = enquingPackageProcessorInternalName;
 		}
 		else
 		{
-			enquingPackageProcessorId = -1;
+			enquingPackageProcessorId = null;
 			this.enquingPackageProcessorInternalName = null;
 		}
 	}
@@ -358,7 +360,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		//
 		// Statistics
-		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = workpackageProcessorFactory.getWorkpackageProcessorStatistics(workPackage.getC_Queue_PackageProcessor());
+		final I_C_Queue_PackageProcessor queuePackageProcessor = queueProcessorDAO.getPackageProcessor(QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID()));
+		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = workpackageProcessorFactory.getWorkpackageProcessorStatistics(queuePackageProcessor);
 		workpackageProcessorStatistics.incrementQueueSize();
 
 		return workPackage;
@@ -731,7 +734,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public IWorkPackageBuilder newWorkPackage(final Properties context)
 	{
-		if (enquingPackageProcessorId <= 0)
+		if (enquingPackageProcessorId == null)
 		{
 			throw new IllegalStateException("Enquing not allowed");
 		}

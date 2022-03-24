@@ -6,6 +6,7 @@ import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -57,7 +58,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 {
 	// Parameters
 	private final Properties _ctx;
-	private final int _queuePackageProcessorId;
+	@NonNull
+	private final QueuePackageProcessorId _queuePackageProcessorId;
 	private final IWorkPackageQueue _workPackageQueue;
 
 	private PInstanceId adPInstanceId;
@@ -81,7 +83,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	/* package */ WorkPackageBuilder(
 			final Properties _ctx,
 			final IWorkPackageQueue _workPackageQueue,
-			final int _queuePackageProcessorId)
+			@NonNull final QueuePackageProcessorId _queuePackageProcessorId)
 	{
 		this._ctx = _ctx;
 		this._queuePackageProcessorId = _queuePackageProcessorId;
@@ -123,7 +125,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	{
 		final I_C_Queue_WorkPackage newWorkPackage = InterfaceWrapperHelper.create(_ctx, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
 
-		newWorkPackage.setC_Queue_PackageProcessor_ID(_queuePackageProcessorId);
+		newWorkPackage.setC_Queue_PackageProcessor_ID(_queuePackageProcessorId.getRepoId());
 		newWorkPackage.setAD_PInstance_ID(PInstanceId.toRepoId(adPInstanceId));
 
 		return newWorkPackage;

@@ -95,7 +95,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				else
 				{
 					// note: we always get the new value, because things might have changed since this method started
-					final int pollIntervalMs = getPollInterval();
+					final int pollIntervalMs = getPollIntervalMillis();
 
 					Thread.sleep(pollIntervalMs);
 				}
@@ -304,7 +304,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 	}
 
 	@NonNull
-	private Integer getPollInterval()
+	private Integer getPollIntervalMillis()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_POLLINTERVAL_MILLIS, SYSCONFIG_POLLINTERVAL_DEFAULT_MS);
 	}

@@ -26,7 +26,9 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -79,6 +81,16 @@ public class QueueProcessorDAO
 		}
 
 		return Optional.empty();
+	}
+
+	@NonNull
+	public I_C_Queue_PackageProcessor getPackageProcessor(@NonNull final QueuePackageProcessorId queuePackageProcessorId)
+	{
+		final I_C_Queue_PackageProcessor packageProcessor = InterfaceWrapperHelper.load(queuePackageProcessorId, I_C_Queue_PackageProcessor.class);
+
+		Check.assumeNotNull(packageProcessor, "There must be a C_Queue_PackageProcessor record for QueuePackageProcessorId: {}", queuePackageProcessorId);
+
+		return packageProcessor;
 	}
 
 	/**
