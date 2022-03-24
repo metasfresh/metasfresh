@@ -48,7 +48,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		this.bankRepository = new BankRepository();
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.collectiveTransfer(true)
+				.referenceAsEndToEndId(false)
 				.build();
 		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
 		this.xmlDocument = null;
@@ -107,7 +107,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
 	{
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.collectiveTransfer(false)
+				.referenceAsEndToEndId(true)
 				.build();
 		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
 
@@ -159,7 +159,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void createDocument_batch_noCollectiveTransfer_withRef() throws Exception
 	{
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.collectiveTransfer(false)
+				.referenceAsEndToEndId(true)
 				.build();
 		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
 
