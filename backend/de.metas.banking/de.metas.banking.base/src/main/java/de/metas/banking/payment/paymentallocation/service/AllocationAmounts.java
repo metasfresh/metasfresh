@@ -213,7 +213,7 @@ public class AllocationAmounts
 		return negateIf(invoiceAmtMultiplier.isNegateToConvertToRealValue());
 	}
 
-	public AllocationAmounts negateIf(final boolean condition)
+	private AllocationAmounts negateIf(final boolean condition)
 	{
 		return condition ? negate() : this;
 	}
