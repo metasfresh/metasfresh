@@ -72,8 +72,13 @@ public final class InvoiceAmtMultiplier
 	public Amount convertToRealValue(@NonNull final Amount amount)
 	{
 		int toRealValueMultiplier = getToRealValueMultiplier();
-
 		return toRealValueMultiplier > 0 ? amount : amount.negate();
+	}
+
+	public Money convertToRealValue(@NonNull final Money money)
+	{
+		int toRealValueMultiplier = getToRealValueMultiplier();
+		return toRealValueMultiplier > 0 ? money : money.negate();
 	}
 
 	public boolean isNegateToConvertToRealValue()
@@ -125,7 +130,7 @@ public final class InvoiceAmtMultiplier
 		// Do we have to SO adjust?
 		if (isSOTrxAdjusted)
 		{
-			final int multiplierAP = soTrx.isPurchase()? -1 : +1;
+			final int multiplierAP = soTrx.isPurchase() ? -1 : +1;
 			multiplier *= multiplierAP;
 		}
 
