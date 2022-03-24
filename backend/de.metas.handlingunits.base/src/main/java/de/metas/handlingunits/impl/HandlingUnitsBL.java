@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -87,6 +88,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
@@ -121,6 +123,21 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
+	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
+
+	@Override
+	public IAutoCloseable huLoaderInProgress()
+	{
+		loadInProgress.set(true);
+		return () -> loadInProgress.set(false);
+	}
+
+	@Override
+	public boolean isHULoaderInProgress()
+	{
+		return CoalesceUtil.coalesceNotNull(loadInProgress.get(), false);
+	}
 
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)

@@ -418,7 +418,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				}
 			}
 
-			//
+			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

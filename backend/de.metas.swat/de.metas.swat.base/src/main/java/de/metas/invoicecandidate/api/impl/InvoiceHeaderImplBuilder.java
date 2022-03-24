@@ -47,6 +47,8 @@ public class InvoiceHeaderImplBuilder
 
 	private BPartnerInfo billTo;
 
+	private String paymentRule;
+
 	private int Sales_BPartner_ID;
 
 	private int SalesRep_User_ID;
@@ -125,6 +127,8 @@ public class InvoiceHeaderImplBuilder
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		return invoiceHeader;
 	}
@@ -214,6 +218,16 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		return _dateAcct;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)

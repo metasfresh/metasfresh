@@ -2377,4 +2377,43 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+	/**
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = PE */
+	public static final String PAYMENTRULE_PayPalExtern = "PE";
+	/** Credit Card Extern = CE */
+	public static final String PAYMENTRULE_CreditCardExtern = "CE";
+	/** Instant Bank Transfer = BE */
+	public static final String PAYMENTRULE_InstantBankTransfer = "BE";
+	@Override
+	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
+	{
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	@Override
+	public java.lang.String getPaymentRule()
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRule);
+	}
 }
