@@ -1,3 +1,6 @@
+DROP VIEW RV_DATEV_Export_Fact_Acct_Invoice
+;
+
 CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype, fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id) AS
 SELECT CASE
            WHEN fa.amtacctdr <> 0::numeric THEN 'S'
