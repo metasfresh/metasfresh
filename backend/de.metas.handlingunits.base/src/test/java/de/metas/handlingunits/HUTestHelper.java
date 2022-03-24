@@ -1139,12 +1139,6 @@ public class HUTestHelper
 	/**
 	 * Creates an {@link I_M_HU_PI_Item} with the given {@code qty} ("capacity") and {@code pPartner}<br>
 	 * and links it with the given {@code huDefinition} and {@code includedHuDefinition}.
-	 *
-	 * @param huDefinition
-	 * @param includedHuDefinition
-	 * @param qty
-	 * @param bpartner
-	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
 			final I_M_HU_PI huDefinition,

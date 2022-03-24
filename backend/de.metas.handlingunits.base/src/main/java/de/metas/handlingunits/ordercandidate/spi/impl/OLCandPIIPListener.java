@@ -22,13 +22,14 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  * #L%
  */
 
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
-
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.ordercandidate.api.OLCand;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandListener;
 
 /**
  * See {@link #onOrderLineCreated(OLCand, org.compiere.model.I_C_OrderLine)}.
@@ -36,13 +37,19 @@ import de.metas.ordercandidate.spi.IOLCandListener;
 @Component
 public class OLCandPIIPListener implements IOLCandListener
 {
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	
 	/**
-	 * Sets the new order line's <code>M_HU_PI_Item_Product_ID</code> from the olCand's effective <code>M_HU_PI_Item_Product_ID</code>, so that the system won't have to guess.
+	 * Sets the new order line's <code>M_HU_PI_Item_Product_ID</code> and IsManualQtyItemCapacity from the olCand's effective <code>M_HU_PI_Item_Product_ID</code>, so that the system won't have to guess.
 	 */
 	@Override
-	public void onOrderLineCreated(final OLCand olCand, final org.compiere.model.I_C_OrderLine newOrderLine)
+	public void onOrderLineCreated(@NonNull final OLCand olCand, @NonNull final org.compiere.model.I_C_OrderLine newOrderLine)
 	{
 		final I_C_OrderLine newOrderLineExt = InterfaceWrapperHelper.create(newOrderLine, I_C_OrderLine.class);
 		newOrderLineExt.setM_HU_PI_Item_Product_ID(olCand.getHUPIProductItemId());
+
+		newOrderLineExt.setIsManualQtyItemCapacity(olCand.unbox().isManualQtyItemCapacity());
+		
+		// note that I_C_OrderLine.setQtyItemCapacity was already called in the OLCandOrderFactory
 	}
 }

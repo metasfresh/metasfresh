@@ -78,7 +78,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomsDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final IOLCandBL olCandBL;
@@ -135,7 +135,10 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
 		{
 			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
-			olCand.setQtyItemCapacity(qtyItemCapacity.toBigDecimal());
+			if(!qtyItemCapacity.isInfinite())
+			{
+				olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
+			}
 		}
 	}
 
@@ -269,7 +272,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);
 
-		if (priceUOMInternalId != null && uomsRepo.isUOMForTUs(priceUOMInternalId))
+		if (priceUOMInternalId != null && uomsDAO.isUOMForTUs(priceUOMInternalId))
 		{
 			// this olCand has a TU/Gebinde price-UOM; that mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
 			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
@@ -316,6 +319,16 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	{
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
 		final I_C_UOM targetUOMRecord = olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
+
+		if (uomsDAO.isUOMForTUs(UomId.ofRepoId(targetUOMRecord.getC_UOM_ID())))
+		{
+			if (olCand.getQtyItemCapacity().signum() <= 0)
+			{
+				final String msg = "@NotFound@ @QtyItemCapacity@";
+				throw new AdempiereException(TranslatableStrings.parse(msg));
+			}
+			return;
+		}
 
 		final BigDecimal convertedQty = uomConversionBL.convertToProductUOM(
 				productId,

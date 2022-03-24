@@ -1,7 +1,6 @@
 package de.metas.material.event.eventbus;
 
-import org.slf4j.Logger;
-
+import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -12,6 +11,9 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventConfiguration;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -87,13 +89,12 @@ public final class MetasfreshEventBusService
 
 	private IEventBus getEventBus()
 	{
-		final IEventBus eventBus = eventBusFactory.getEventBus(eventBusTopic);
-		return eventBus;
+		return eventBusFactory.getEventBus(eventBusTopic);
 	}
 
-	public void postEvent(@NonNull final MaterialEvent event)
+	public void postEvent(@NonNull final MaterialEvent event, @Nullable final QueueWorkPackageId workPackageId)
 	{
-		final Event realEvent = materialEventConverter.fromMaterialEvent(event);
+		final Event realEvent = materialEventConverter.fromMaterialEvent(event, workPackageId);
 		getEventBus().postEvent(realEvent);
 	}
 
