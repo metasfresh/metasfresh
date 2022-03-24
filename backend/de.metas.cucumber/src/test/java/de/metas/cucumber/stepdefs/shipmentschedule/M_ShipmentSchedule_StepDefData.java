@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipmentschedule;
 
-import org.compiere.model.I_M_Inventory;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class M_Inventory_StepDefData extends StepDefData<I_M_Inventory>
+public class M_ShipmentSchedule_StepDefData extends StepDefData<I_M_ShipmentSchedule>
 {
 }

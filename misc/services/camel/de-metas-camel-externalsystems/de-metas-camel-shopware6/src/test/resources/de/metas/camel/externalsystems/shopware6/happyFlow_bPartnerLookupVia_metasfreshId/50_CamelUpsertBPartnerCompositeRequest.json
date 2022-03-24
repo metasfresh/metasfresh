@@ -29,9 +29,9 @@
                   "countryCode": "DE",
                   "shipTo": false,
                   "billTo": true,
-                  "bpartnerName": "billingCompany\nbillingDepartment\nbillingSalutationDisplayName firstName lastName",
+                  "bpartnerName":"company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "billingEmailAddress"
+                  "email": "billingEmailAddress@example.com"
                 }
               },
               {
@@ -45,9 +45,9 @@
                   "countryCode": "DE",
                   "shipTo": true,
                   "billTo": false,
-                  "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+                  "bpartnerName":"company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "emailAddress"
+                  "email": "shippingOrderAddress@example.com"
                 }
               }
             ],

@@ -30,11 +30,15 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Location_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;
@@ -64,12 +68,13 @@ import static org.assertj.core.api.Assertions.*;
 public class DataExportAudit_StepDef
 {
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_C_Location> locationTable;
-	private final StepDefData<I_Data_Export_Audit> dataExportAuditTable;
-	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
-	private final StepDefData<I_AD_PInstance> pinstanceTable;
-	private final StepDefData<I_M_HU> huTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final C_Location_StepDefData locationTable;
+	private final Data_Export_Audit_StepDefData dataExportAuditTable;
+	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final AD_PInstance_StepDefData pinstanceTable;
+	private final M_HU_StepDefData huTable;
+
 
 	private final TestContext testContext;
 
@@ -77,12 +82,12 @@ public class DataExportAudit_StepDef
 
 	public DataExportAudit_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_C_Location> locationTable,
-			@NonNull final StepDefData<I_Data_Export_Audit> dataExportAuditTable,
-			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable,
-			@NonNull final StepDefData<I_AD_PInstance> pinstanceTable,
-			@NonNull final StepDefData<I_M_HU> huTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final C_Location_StepDefData locationTable,
+			@NonNull final Data_Export_Audit_StepDefData dataExportAuditTable,
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final AD_PInstance_StepDefData pinstanceTable,
+			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;

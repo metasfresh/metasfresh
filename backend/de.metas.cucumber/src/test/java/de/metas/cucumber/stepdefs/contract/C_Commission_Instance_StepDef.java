@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -58,7 +57,7 @@ public class C_Commission_Instance_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(C_Commission_Instance_StepDef.class);
 
-	private final StepDefData<I_C_Commission_Instance> commissionInstanceTable;
+	private final C_Commission_Instance_StepDefData commissionInstanceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
@@ -66,7 +65,7 @@ public class C_Commission_Instance_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_Commission_Instance_StepDef(
-			@NonNull final StepDefData<I_C_Commission_Instance> commissionInstanceTable,
+			@NonNull final C_Commission_Instance_StepDefData commissionInstanceTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable)

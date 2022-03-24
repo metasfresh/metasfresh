@@ -40,9 +40,9 @@ public class AD_EventLog_Entry_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_AD_EventLog_Entry> eventLogEntryTable;
+	private final AD_EventLog_Entry_StepDefData eventLogEntryTable;
 
-	public AD_EventLog_Entry_StepDef(@NonNull final StepDefData<I_AD_EventLog_Entry> eventLogEntryTable)
+	public AD_EventLog_Entry_StepDef(@NonNull final AD_EventLog_Entry_StepDefData eventLogEntryTable)
 	{
 		this.eventLogEntryTable = eventLogEntryTable;
 	}

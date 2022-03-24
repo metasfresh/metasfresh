@@ -17,7 +17,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
@@ -374,6 +373,7 @@ public final class AggregationEngine
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+			invoiceHeader.setEmail(icRecord.getEMail());
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{

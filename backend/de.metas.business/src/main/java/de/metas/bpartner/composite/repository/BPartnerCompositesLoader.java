@@ -46,6 +46,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.title.TitleId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -493,6 +494,7 @@ final class BPartnerCompositesLoader
 				.description(trimBlankToNull(contactRecord.getDescription()))
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
+				.titleId(TitleId.ofRepoIdOrNull(contactRecord.getC_Title_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.roles(roles)
 				.changeLog(changeLog)

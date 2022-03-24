@@ -26,8 +26,8 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -84,8 +84,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
@@ -96,18 +95,20 @@ public class MD_Candidate_StepDef
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_MD_Candidate> stockCandidateTable;
+	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public MD_Candidate_StepDef(
+			@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
+			@NonNull final MD_Candidate_StepDefData stockCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
+		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;

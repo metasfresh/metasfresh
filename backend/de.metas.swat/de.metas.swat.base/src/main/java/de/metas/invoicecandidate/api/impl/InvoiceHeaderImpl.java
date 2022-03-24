@@ -38,6 +38,8 @@ import java.util.List;
 
 	private String poReference;
 
+	private String eMail;
+
 	private LocalDate dateInvoiced;
 
 	private LocalDate dateAcct;
@@ -141,6 +143,12 @@ import java.util.List;
 	}
 
 	@Override
+	public String getEMail()
+	{
+		return eMail;
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
@@ -177,6 +185,11 @@ import java.util.List;
 	public void setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
+	}
+
+	public void setEMail(final String eMail)
+	{
+		this.eMail = eMail;
 	}
 
 	public void setDateInvoiced(final LocalDate dateInvoiced)

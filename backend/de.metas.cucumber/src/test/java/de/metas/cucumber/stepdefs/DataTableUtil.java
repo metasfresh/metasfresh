@@ -62,6 +62,17 @@ public class DataTableUtil
 		return CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER), () -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
+	public String extractRecordIdentifier(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnNamePrefix,
+			@NonNull final String fallbackPrefix)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+	}
+
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);

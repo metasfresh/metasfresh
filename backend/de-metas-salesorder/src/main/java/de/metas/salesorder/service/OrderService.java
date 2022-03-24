@@ -42,7 +42,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
@@ -91,7 +90,10 @@ public class OrderService
 			return ImmutableSet.of();
 		}
 
-		asyncBatchId2OLCandIds.keySet().forEach(this::generateOrdersForBatch);
+		for (final AsyncBatchId asyncBatchId : asyncBatchId2OLCandIds.keySet())
+		{
+			generateOrdersForBatch(asyncBatchId);
+		}
 
 		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
 				.stream()

@@ -29,7 +29,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;

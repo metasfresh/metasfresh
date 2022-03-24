@@ -488,7 +488,7 @@ public class OrderBL implements IOrderBL
 		{
 			return Optional.empty(); // orderRecord is not yet ready
 		}
-		
+
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
 
 		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
@@ -1159,6 +1159,52 @@ public class OrderBL implements IOrderBL
 		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
+	}
+
+	@Override
+	@Nullable
+	public String getLocationEmail(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
+
+		if (orderContactId != null)
+		{
+			final I_AD_User contactRecord = bpartnerDAO.getContactById(orderContactId);
+
+			final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+			if (contactLocationId != null)
+			{
+				final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
+				final String contactLocationEmail = contactLocationRecord.getEMail();
+
+				if (!Check.isEmpty(contactLocationEmail))
+				{
+					return contactLocationEmail;
+				}
+			}
+		}
+
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+
+		if(bpartnerLocationId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+
+		return billLocationRecord.getEMail();
 	}
 
 	@Override

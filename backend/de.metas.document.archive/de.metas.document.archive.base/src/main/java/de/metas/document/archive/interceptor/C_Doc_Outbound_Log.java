@@ -1,7 +1,15 @@
 package de.metas.document.archive.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -12,14 +20,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
-import de.metas.document.archive.model.I_C_BPartner;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -49,10 +50,14 @@ import lombok.NonNull;
 public class C_Doc_Outbound_Log
 {
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
+	private final DocOutboundService docOutBoundService;
 
-	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository)
+	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository,
+			@NonNull final DocOutboundService docOutboundService)
 	{
 		this.docOutBoundRecipientRepository = docOutBoundRecipientRepository;
+		this.docOutBoundService = docOutboundService;
+
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
@@ -70,7 +75,17 @@ public class C_Doc_Outbound_Log
 		}
 
 		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
-		docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress()); // might be empty!
+
+		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
+		if (!Check.isEmpty(documentEmail, true))
+		{
+			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
+		}
+		else
+		{
+			docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress()); // might be empty!
+		}
+
 		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
 	}
 
@@ -99,4 +114,5 @@ public class C_Doc_Outbound_Log
 		final I_C_BPartner bpartnerRecord = loadOutOfTrx(docOutboundlogRecord.getC_BPartner_ID(), I_C_BPartner.class);
 		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord.getIsInvoiceEmailEnabled()));
 	}
+
 }

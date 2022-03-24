@@ -139,7 +139,7 @@ public class C_OLCand_StepDef
 		final I_C_Order order = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
 				.create()
-				.firstOnly(I_C_Order.class);
+				.firstOnlyNotNull(I_C_Order.class);
 
 		assertThat(order).isNotNull();
 

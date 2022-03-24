@@ -31,7 +31,6 @@ import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.document.DocTypeId;
@@ -49,6 +48,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -89,26 +89,26 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
-	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_Product_StepDefData productTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_Tax_StepDefData taxTable;
 
 	public C_Invoice_Candidate_StepDef(
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
-		this.orderLineTable = orderLineTable;
 		this.invoiceTable = invoiceTable;
 		this.bPartnerTable = bPartnerTable;
 		this.productTable = productTable;
+		this.orderLineTable = orderLineTable;
 		this.taxTable = taxTable;
 	}
 
@@ -430,5 +430,42 @@ public class C_Invoice_Candidate_StepDef
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
 		return !invoiceCandDAO.isToRecompute(invoiceCandidateRecord);
+	}
+
+	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
+	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> retrieveInvoiceCandidate(row));
+		}
+	}
+
+	private boolean retrieveInvoiceCandidate(@NonNull final Map<String, String> row)
+	{
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		final IQueryBuilder<I_C_Invoice_Candidate> candQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderLine.getC_Order_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+
+		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+		if (qtyToInvoice != null)
+		{
+			candQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
+		}
+
+		final I_C_Invoice_Candidate invoiceCandidate = candQueryBuilder.create()
+				.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+
+		if (invoiceCandidate == null)
+		{
+			return false;
+		}
+
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
+		return true;
 	}
 }

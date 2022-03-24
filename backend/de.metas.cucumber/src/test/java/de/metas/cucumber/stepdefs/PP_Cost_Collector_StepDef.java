@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -46,13 +48,13 @@ public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_PP_Order> ppOrderTable;
-	private final StepDefData<I_PP_Cost_Collector> ppCostCollectorTable;
+	private final PP_Order_StepDefData ppOrderTable;
+	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
 	private final M_Product_StepDefData productTable;
 
 	public PP_Cost_Collector_StepDef(
-			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
-			@NonNull final StepDefData<I_PP_Cost_Collector> ppCostCollectorTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.ppOrderTable = ppOrderTable;

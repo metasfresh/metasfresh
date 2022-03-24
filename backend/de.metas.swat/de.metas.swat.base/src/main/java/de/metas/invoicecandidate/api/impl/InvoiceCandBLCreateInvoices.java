@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -17,6 +16,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
@@ -42,6 +43,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -67,8 +69,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -141,6 +145,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
@@ -331,7 +336,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// => start creating the invoice from Order
 			if (createInvoiceFromOrder && invoiceHeader.getC_Order_ID() > 0)
 			{
-				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
+				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
 				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
 						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
@@ -394,6 +399,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
+			if(Check.isBlank(invoice.getEMail()))
+			{
+				invoice.setEMail(invoiceHeader.getEMail());
+			}
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
@@ -401,7 +410,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{
-				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
+				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
+				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
+				if(!Check.isBlank(inout.getEMail()))
+				{
+					invoice.setEMail(inout.getEMail());
+				}
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());

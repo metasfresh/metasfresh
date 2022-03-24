@@ -49,6 +49,28 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
+
+	/**
+	 * Set Users Group.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerCreatedByUserGroup_ID (int BPartnerCreatedByUserGroup_ID);
+
+	/**
+	 * Get Users Group.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBPartnerCreatedByUserGroup_ID();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_AD_UserGroup> COLUMN_BPartnerCreatedByUserGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "BPartnerCreatedByUserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_BPartnerCreatedByUserGroup_ID = "BPartnerCreatedByUserGroup_ID";
+
 	/**
 	 * Get Created.
 	 * Date this record was created
@@ -163,6 +185,29 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 
 	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Auto-send if created by users group.
+	 * If a business bartner was created by a user from the given group, then it is automatically send.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendWhenCreatedByUserGroup (boolean IsAutoSendWhenCreatedByUserGroup);
+
+	/**
+	 * Get Auto-send if created by users group.
+	 * If a business bartner was created by a user from the given group, then it is automatically send.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendWhenCreatedByUserGroup();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsAutoSendWhenCreatedByUserGroup = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsAutoSendWhenCreatedByUserGroup", null);
+	String COLUMNNAME_IsAutoSendWhenCreatedByUserGroup = "IsAutoSendWhenCreatedByUserGroup";
 
 	/**
 	 * Set IsSyncBPartnersToRabbitMQ.

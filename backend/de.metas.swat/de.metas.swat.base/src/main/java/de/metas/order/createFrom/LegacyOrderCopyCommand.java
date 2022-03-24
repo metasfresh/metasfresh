@@ -106,6 +106,7 @@ public class LegacyOrderCopyCommand
 		newOrder.setVolume(originalOrder.getVolume());
 		newOrder.setWeight(originalOrder.getWeight());
 		newOrder.setPOReference(originalOrder.getPOReference());
+		newOrder.setEMail((originalOrder.getEMail()));
 
 		newOrder.setCompleteOrderDiscount(originalOrder.getCompleteOrderDiscount());
 		newOrder.setDescriptionBottom(originalOrder.getDescriptionBottom());

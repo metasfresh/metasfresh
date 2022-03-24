@@ -27,7 +27,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -62,16 +62,17 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 
 public class M_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_M_Product_Category> productCategoryTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
+
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -81,7 +82,7 @@ public class M_Product_StepDef
 	public M_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
+			@NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
@@ -221,6 +222,12 @@ public class M_Product_StepDef
 		else
 		{
 			productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_STANDARD_ID.getRepoId());
+		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Description);
+		if (Check.isNotBlank(description))
+		{
+			productRecord.setDescription(description);
 		}
 
 		InterfaceWrapperHelper.saveRecord(productRecord);

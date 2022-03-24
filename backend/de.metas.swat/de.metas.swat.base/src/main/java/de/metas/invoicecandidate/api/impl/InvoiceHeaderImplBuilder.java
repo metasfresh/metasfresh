@@ -34,6 +34,8 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
+	private final Set<String> eMails = new HashSet<>();
+
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
@@ -120,6 +122,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setM_InOut_ID(getM_InOut_ID());
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
+		invoiceHeader.setEMail(getEmail());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
@@ -183,6 +186,16 @@ public class InvoiceHeaderImplBuilder
 	public void setPOReference(final String poReference)
 	{
 		normalizeAndAddIfNotNull(POReferences, poReference);
+	}
+
+	public String getEmail()
+	{
+		return CollectionUtils.singleElementOrNull(eMails);
+	}
+
+	public void setEmail(final String eMail)
+	{
+		normalizeAndAddIfNotNull(eMails, eMail);
 	}
 
 	public LocalDate getDateInvoiced()
@@ -489,4 +502,5 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 }

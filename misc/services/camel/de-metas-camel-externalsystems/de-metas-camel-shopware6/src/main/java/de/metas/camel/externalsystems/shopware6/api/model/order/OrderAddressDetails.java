@@ -36,8 +36,11 @@ public class OrderAddressDetails
 	JsonOrderAddress jsonOrderAddress;
 
 	@Nullable
-	String customId;
+	String customShopwareId;
 
+	@Nullable
+	String customMetasfreshId;
+	
 	@Nullable
 	String customEmail;
 }
