@@ -25,11 +25,14 @@ package de.metas.externalsystem.rabbitmqhttp;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.user.UserGroupId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
@@ -55,10 +58,13 @@ public class ExternalSystemRabbitMQConfig implements IExternalSystemChildConfig
 
 	boolean isSyncBPartnerToRabbitMQ;
 
+	@Getter(AccessLevel.NONE)
 	boolean isAutoSendWhenCreatedByUserGroup;
 
 	@Nullable
 	UserGroupId userGroupId;
+
+	boolean isSyncExternalReferencesToRabbitMQ;
 
 	@NonNull
 	public static ExternalSystemRabbitMQConfig cast(@NonNull final IExternalSystemChildConfig childCondig)
@@ -66,13 +72,13 @@ public class ExternalSystemRabbitMQConfig implements IExternalSystemChildConfig
 		return (ExternalSystemRabbitMQConfig)childCondig;
 	}
 
-	public boolean isSendBPartnerAllowed()
-	{
-		return isSyncBPartnerToRabbitMQ || isAutoSendBPartnerEnabled();
-	}
-
-	public boolean isAutoSendBPartnerEnabled()
+	public boolean isAutoSendSubjectWhenCreatedByUserGroup()
 	{
 		return isAutoSendWhenCreatedByUserGroup && userGroupId != null;
+	}
+
+	public boolean shouldExportBasedOnUserGroup(@NonNull final Set<UserGroupId> assignedUserGroupIds)
+	{
+		return isAutoSendSubjectWhenCreatedByUserGroup() && assignedUserGroupIds.contains(userGroupId);
 	}
 }

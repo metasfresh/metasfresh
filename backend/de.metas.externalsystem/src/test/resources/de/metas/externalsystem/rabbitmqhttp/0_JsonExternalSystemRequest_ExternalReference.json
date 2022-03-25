@@ -1,0 +1,13 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "RabbitMQRESTAPI",
+  "command": "exportExternalReference",
+  "adPInstanceId": 4,
+  "externalSystemConfigId": 1,
+  "parameters": {
+    "RemoteURL": "remoteURL",
+    "RoutingKey": "routingKey",
+    "RabbitMQAuthToken": "authToken",
+    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"id\":\"ref_1\",\"type\":\"BPartnerLocation\"}]}"
+  }
+}

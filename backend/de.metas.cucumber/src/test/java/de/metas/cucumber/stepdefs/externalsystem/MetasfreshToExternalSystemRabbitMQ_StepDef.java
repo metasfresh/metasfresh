@@ -106,7 +106,55 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue()).isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
 	}
 
-	private JsonExternalSystemRequest pollRequestFromQueue() throws IOException, TimeoutException, InterruptedException
+	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:")
+	public void rabbitMQ_receives_an_external_system_request_param(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+
+		final int numberOfMessages = tableRows.size();
+		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
+
+		logger.info("*** Found JsonExternalSystemRequest list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
+			assertThat(externalSystemConfig).isNotNull();
+
+			final String expectedJsonExternalReferenceLookupRequest = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters.JsonExternalReferenceLookupRequest");
+
+			if (EmptyUtil.isNotBlank(expectedJsonExternalReferenceLookupRequest))
+			{
+				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.filter(request -> expectedJsonExternalReferenceLookupRequest.equals(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST)))
+						.findFirst()
+						.orElse(null);
+
+				assertThat(jsonExternalSystemRequest).isNotNull();
+			}
+
+			final String bpIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (Check.isNotBlank(bpIdentifier))
+			{
+				final I_C_BPartner bPartner = bpartnerTable.get(bpIdentifier);
+				assertThat(bPartner).isNotNull();
+
+				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.filter(request -> String.valueOf(bPartner.getC_BPartner_ID()).equals(request.getParameters().get(PARAM_BPARTNER_ID)))
+						.findFirst()
+						.orElse(null);
+
+				assertThat(jsonExternalSystemRequest).isNotNull();
+			}
+		}
+	}
+
+	private List<JsonExternalSystemRequest> pollRequestFromQueue(final int numberOfMessages) throws IOException, TimeoutException, InterruptedException
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 		final Channel channel = connection.createChannel();
