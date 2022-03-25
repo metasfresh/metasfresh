@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.rabbitmq.common;
+package de.metas.camel.externalsystems.rabbitmq.externalreference;
 
-public interface CamelConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ExportExternalReferenceRouteContext
 {
-	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
-	String ROUTE_PROPERTY_EXPORT_EXTERNAL_REFERENCE_CONTEXT = "ExportExternalReferenceRouteContext";
+	@NonNull
+	String remoteUrl;
 
-	String EXPORT_INFO_RETRY_COUNT = "export.bpartner.retry.count";
+	@NonNull
+	String routingKey;
 
-	String EXPORT_INFO_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+	@NonNull
+	String authToken;
 }

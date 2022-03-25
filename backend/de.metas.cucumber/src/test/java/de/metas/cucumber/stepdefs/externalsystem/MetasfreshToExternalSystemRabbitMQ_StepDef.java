@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
+import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -31,30 +32,41 @@ import com.rabbitmq.client.Envelope;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class MetasfreshToExternalSystemRabbitMQ_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
+
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
@@ -88,7 +100,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")
 	public void rabbitMQ_receives_an_external_system_request(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
 	{
-		final JsonExternalSystemRequest requestToRabbitMQ = pollRequestFromQueue();
+		final int numberOfMessages = 1;
+		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
+		final JsonExternalSystemRequest requestToRabbitMQ = requests.get(0);
 
 		final Map<String, String> tableRow = dataTable.asMaps().get(0);
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
@@ -156,30 +170,52 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 	private List<JsonExternalSystemRequest> pollRequestFromQueue(final int numberOfMessages) throws IOException, TimeoutException, InterruptedException
 	{
-		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
-		final Channel channel = connection.createChannel();
+		Channel channel = null;
 
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-		final String[] message = new String[1];
-
-		final DefaultConsumer consumer = new DefaultConsumer(channel)
+		try
 		{
-			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
+			channel = connection.createChannel();
+
+			final CountDownLatch countDownLatch = new CountDownLatch(numberOfMessages);
+
+			final String[] messages = new String[numberOfMessages];
+
+			final DefaultConsumer consumer = new DefaultConsumer(channel)
 			{
-				message[0] = new String(body, StandardCharsets.UTF_8);
-				countDownLatch.countDown();
+				@Override
+				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+				{
+					messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
+					countDownLatch.countDown();
+				}
+			};
+
+			channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
+
+			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
+
+			assertThat(messageReceivedWithinTimeout).isTrue();
+
+			return Stream.of(messages)
+					.map(message -> {
+						try
+						{
+							return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message, JsonExternalSystemRequest.class);
+						}
+						catch (final Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
+					})
+					.collect(ImmutableList.toImmutableList());
 			}
-		};
-		channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
-
-		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
-
-		channel.close();
-
-		assertThat(messageReceivedWithinTimeout).isTrue();
-
-		return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message[0], JsonExternalSystemRequest.class);
+		finally
+		{
+			if (channel != null)
+			{
+				channel.close();
+			}
+		}
 	}
 }

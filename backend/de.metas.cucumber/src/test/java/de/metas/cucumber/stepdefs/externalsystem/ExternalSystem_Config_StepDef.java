@@ -60,8 +60,9 @@ import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
-import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_BPartnerCreatedByUserGroup_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
 import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
@@ -232,18 +233,23 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigRabbitMQ.setAuthToken("notImportant");
 				externalSystemConfigRabbitMQ.setRemoteURL("notImportant");
 				externalSystemConfigRabbitMQ.setRouting_Key("notImportant");
-				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(true);
 				externalSystemConfigRabbitMQ.setIsActive(true);
+
+				final boolean isSyncBPartnersToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncBPartnersToRabbitMQ, false);
+				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(isSyncBPartnersToRabbitMQ);
 
 				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
 				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
-				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_BPartnerCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if(Check.isNotBlank(userGroupIdentifier))
 				{
 					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
 					assertThat(userGroup).isNotNull();
-					externalSystemConfigRabbitMQ.setBPartnerCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
+					externalSystemConfigRabbitMQ.setSubjectCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
 				}
+
+				final boolean isSyncExternalReferencesToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, false);
+				externalSystemConfigRabbitMQ.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
 
 				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
 				break;
