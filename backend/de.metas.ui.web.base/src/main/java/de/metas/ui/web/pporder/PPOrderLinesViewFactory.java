@@ -155,7 +155,6 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		return ImmutableList.of(
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class),
-				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_IssueServiceProduct.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ReverseCandidate.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class),
@@ -165,7 +164,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_Delete.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueTuQty.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueCUQty.class),
-				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel.class));
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Pick_HU.class));
 
 	}
 
