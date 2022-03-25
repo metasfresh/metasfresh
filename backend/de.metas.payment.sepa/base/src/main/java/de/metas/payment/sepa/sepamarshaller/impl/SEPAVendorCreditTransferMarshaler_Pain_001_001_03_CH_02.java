@@ -699,14 +699,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		//
 		{
 			final String endToEndId;
-			if (exportContext.isCollectiveTransfer())
+			if (exportContext.isReferenceAsEndToEndId())
 			{
-				endToEndIdCounter++;
-				endToEndId = StringUtils.formatMessage("ENDTOENDID-{}", endToEndIdCounter);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_VALUE);
 			}
 			else
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_VALUE);
+				endToEndIdCounter++;
+				endToEndId = StringUtils.formatMessage("ENDTOENDID-{}", endToEndIdCounter);
 			}
 			final PaymentIdentification1 pmtId = objectFactory.createPaymentIdentification1();
 			pmtId.setEndToEndId(endToEndId);

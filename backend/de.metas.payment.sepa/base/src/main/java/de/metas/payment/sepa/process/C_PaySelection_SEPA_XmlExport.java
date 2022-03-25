@@ -42,9 +42,9 @@ public class C_PaySelection_SEPA_XmlExport
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
-	private final static String PARAM_COLLECTIVE_TRANSFER = "collectiveTransfer";
-	@Param(parameterName = PARAM_COLLECTIVE_TRANSFER, mandatory = true)
-	private boolean collectiveTransfer;
+	private final static String REFERENCE_AS_END_TO_END_ID = "ReferenceAsEndToEndId";
+	@Param(parameterName = REFERENCE_AS_END_TO_END_ID)
+	private boolean referenceAsEndToEndId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -89,7 +89,7 @@ public class C_PaySelection_SEPA_XmlExport
 		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
-				.collectiveTransfer(collectiveTransfer)
+				.referenceAsEndToEndId(referenceAsEndToEndId)
 				.build();
 		//
 		// After the export header and lines have been created, marshal the document.

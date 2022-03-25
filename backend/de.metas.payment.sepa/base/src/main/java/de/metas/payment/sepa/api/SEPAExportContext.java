@@ -29,5 +29,5 @@ import lombok.Value;
 @Builder
 public class SEPAExportContext
 {
-	boolean collectiveTransfer;
+	boolean referenceAsEndToEndId;
 }
