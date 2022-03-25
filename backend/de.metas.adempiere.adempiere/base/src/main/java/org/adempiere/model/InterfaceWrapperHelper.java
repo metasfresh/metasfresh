@@ -602,6 +602,24 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void setCtx(@NonNull final Object model, @NonNull final Properties ctx)
+	{
+		if (POWrapper.isHandled(model))
+		{
+			POWrapper.setCtx(model, ctx);
+		}
+		else if (POJOWrapper.isHandled(model))
+		{
+			POJOWrapper.setCtx(model, ctx);
+		}
+		else
+		{
+			final AdempiereException ex = new AdempiereException("Model not handled: " + model + "(class=" + model.getClass() + "). Ignored.");
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not set ctx to given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
+		}
+	}
+
 	private static Object extractModelToSave(final Object model)
 	{
 		final Object modelToSave;

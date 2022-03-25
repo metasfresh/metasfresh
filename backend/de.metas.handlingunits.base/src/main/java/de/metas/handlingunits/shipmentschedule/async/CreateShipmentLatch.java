@@ -22,18 +22,7 @@ package de.metas.handlingunits.shipmentschedule.async;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -41,6 +30,14 @@ import de.metas.async.spi.ILatchStragegy;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Makes sure that if a workpackage is locked that references shipment schedules with a certain header aggregation key, then no further workpackages which reference scheds with the same key can be
@@ -135,7 +132,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 				break;
 			}
 
-			final String lockedWpClassname = lockedWP.getC_Queue_Block().getC_Queue_PackageProcessor().getClassname();
+			final String lockedWpClassname = lockedWP.getC_Queue_PackageProcessor().getClassname();
 			if (!CLASSNAMES.contains(lockedWpClassname))
 			{
 				logger.debug("currently-locked WP {} belongs to the WP-processor {}; continuing.", new Object[] { lockedWP, lockedWpClassname });

@@ -37,7 +37,6 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.model.X_C_Async_Batch_Type;
@@ -47,8 +46,6 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -206,15 +203,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 		queue.setAsyncBatchIdForNewWorkpackages(asyncBatchId);
 
-		final I_C_Queue_Block queueBlock = queue.enqueueBlock(ctx);
-
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
-		final I_C_Queue_WorkPackage queueWorkpackage = queue.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+		final I_C_Queue_WorkPackage queueWorkpackage = queue
+				.newWorkPackage()
 				.setPriority(prio)
-				.build();
+				.buildAndEnqueue();
 
 		// Make sure that the watch processor is not in the same batch (because it will affect the counter which we are checking...)
 		queueWorkpackage.setC_Async_Batch(null);

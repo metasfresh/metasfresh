@@ -1,29 +1,31 @@
 package de.metas.async.api.impl;
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.logging.TableRecordMDC;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +57,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
-	private final WorkPackageBlockBuilder _blockBuilder;
+	private final Properties _ctx;
+	@NonNull
+	private final QueuePackageProcessorId _queuePackageProcessorId;
+	private final IWorkPackageQueue _workPackageQueue;
+
+	private PInstanceId adPInstanceId;
+
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private AsyncBatchId asyncBatchId = null;
 	private boolean asyncBatchSet = false;
@@ -72,19 +80,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
 
-	/* package */ WorkPackageBuilder(@NonNull final WorkPackageBlockBuilder blockBuilder)
+	/* package */ WorkPackageBuilder(
+			final Properties _ctx,
+			final IWorkPackageQueue _workPackageQueue,
+			@NonNull final QueuePackageProcessorId _queuePackageProcessorId)
 	{
-		_blockBuilder = blockBuilder;
+		this._ctx = _ctx;
+		this._queuePackageProcessorId = _queuePackageProcessorId;
+		this._workPackageQueue = _workPackageQueue;
 	}
 
 	@Override
-	public IWorkPackageBlockBuilder end()
-	{
-		return _blockBuilder;
-	}
-
-	@Override
-	public I_C_Queue_WorkPackage build()
+	public I_C_Queue_WorkPackage buildAndEnqueue()
 	{
 		// Add parameter "ElementsLockOwner" if we are are locking
 		final ILockCommand elementsLocker = getElementsLockerOrNull();
@@ -98,60 +105,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		markAsBuilt();
 
 		// Create the workpackage
-		final IWorkPackageQueue workpackageQueue = getWorkpackageQueue();
-		final I_C_Queue_Block queueBlock = getC_Queue_Block();
-		final String queueBlockOriginalTrxName = getTrxName(queueBlock);
+		final I_C_Queue_WorkPackage workPackage = buildWithPackageProcessor();
 
-		final IWorkpackagePrioStrategy workpackagePriority = getPriority();
-
-		try (final IAutoCloseable temporary = () -> setTrxName(queueBlock, queueBlockOriginalTrxName))
-		{
-			// Fact: the queueBlock's trxName is used when creating the workpackage and its elements.
-			// Therefore we temporarily set it to be our _trxName.
-			// Otherways, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
-			setTrxName(queueBlock, _trxName);
-
-			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
-			final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(
-					queueBlock,
-					workpackagePriority);
-			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
-			{
-				// Set the Async batch if provided
-				// TODO: optimize this and set everything in one shot and then save it.
-				if (asyncBatchSet)
-				{
-					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-				}
-
-				if (userInChargeId != null)
-				{
-					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
-				}
-
-				// Create workpackage parameters
-				if (_parametersBuilder != null)
-				{
-					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
-					_parametersBuilder.build();
-				}
-
-				createWorkpackageElements(workpackageQueue, workpackage);
-
-				//
-				// Lock enqueued workpackage elements
-				if (elementsLocker != null)
-				{
-					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
-				}
-
-				//
-				// Actually mark the workpackage as ready for processing
-				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
-				workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
-			}
-			return workpackage;
-		}
+		return enqueue(workPackage, elementsLocker);
 	}
 
 	private void createWorkpackageElements(
@@ -164,9 +120,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		}
 	}
 
-	private I_C_Queue_Block getC_Queue_Block()
+	@NonNull
+	public I_C_Queue_WorkPackage buildWithPackageProcessor()
 	{
-		return _blockBuilder.getCreateBlock();
+		final I_C_Queue_WorkPackage newWorkPackage = InterfaceWrapperHelper.create(_ctx, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
+
+		newWorkPackage.setC_Queue_PackageProcessor_ID(_queuePackageProcessorId.getRepoId());
+		newWorkPackage.setAD_PInstance_ID(PInstanceId.toRepoId(adPInstanceId));
+
+		return newWorkPackage;
 	}
 
 	@Override
@@ -185,7 +147,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 	private IWorkPackageQueue getWorkpackageQueue()
 	{
-		return _blockBuilder.getWorkPackageQueue();
+		return _workPackageQueue;
 	}
 
 	private void assertNotBuilt()
@@ -328,5 +290,72 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		this.asyncBatchSet = true;
 
 		return this;
+	}
+
+	@Override
+	public IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId)
+	{
+		this.adPInstanceId = adPInstanceId;
+		return this;
+	}
+
+	@NonNull
+	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
+	{
+		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
+
+		final IWorkpackagePrioStrategy workPackagePriority = getPriority();
+
+		final String originalWorkPackageTrxName = getTrxName(workPackage);
+
+		try (final IAutoCloseable temporary = () -> setTrxName(workPackage, originalWorkPackageTrxName))
+		{
+			// Fact: the workpackage trxName is used when creating the workpackage and its elements.
+			// Therefore we temporarily set it to be our _trxName.
+			// Otherways, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
+			setTrxName(workPackage, _trxName);
+
+			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
+			final I_C_Queue_WorkPackage workpackage = workPackageQueue.enqueueWorkPackage(
+					workPackage,
+					workPackagePriority);
+
+			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
+			{
+				// Set the Async batch if provided
+				// TODO: optimize this and set everything in one shot and then save it.
+				if (asyncBatchSet)
+				{
+					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+				}
+
+				if (userInChargeId != null)
+				{
+					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+				}
+
+				// Create workpackage parameters
+				if (_parametersBuilder != null)
+				{
+					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
+					_parametersBuilder.build();
+				}
+
+				createWorkpackageElements(workPackageQueue, workpackage);
+
+				//
+				// Lock enqueued workpackage elements
+				if (elementsLocker != null)
+				{
+					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
+				}
+
+				//
+				// Actually mark the workpackage as ready for processing
+				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
+				workPackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
+			}
+			return workpackage;
+		}
 	}
 }

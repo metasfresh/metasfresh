@@ -38,6 +38,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -1001,7 +1002,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(packageQueue);
 		queueProcessor.setWorkpackageProcessorFactory(packageProcessorFactory);
-		queueProcessor.run();
+
+		SynchronousProcessorPlanner.executeNow(queueProcessor);
 
 		return result;
 	}
