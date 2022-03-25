@@ -23,6 +23,9 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.ui.web.pporder.util.HURow;
+import de.metas.ui.web.pporder.util.WEBUI_PPOrder_PickingContext;
+import de.metas.ui.web.pporder.util.WEBUI_PP_Order_HURowHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
@@ -38,6 +41,7 @@ import lombok.Builder;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -151,7 +155,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	private Stream<HURow> streamHURows()
 	{
 		return streamSelectedRows()
-				.map(WEBUI_M_HU_Pick::toHURowOrNull)
+				.map(WEBUI_PP_Order_HURowHelper::toHURowOrNull)
 				.filter(Objects::nonNull)
 				.filter(HURow::isTopLevelHU)
 				.filter(HURow::isHuStatusActive);
@@ -220,8 +224,14 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Override
 	protected String doIt()
 	{
-		final HURow row = getSingleHURow();
-		pickHU(row);
+		final HuId huId = getSingleHURow().getHuId();
+		WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
+												  .ppOrderId(getPPOrderId())
+												  .huId(huId)
+												  .shipmentScheduleId(shipmentScheduleId)
+												  .pickingSlotId(pickingSlotId)
+												  .isTakeWholeHU(isTakeWholeHU)
+												  .build());
 
 		// invalidate view in order to be refreshed
 		getView().invalidateAll();
@@ -229,20 +239,10 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
-	private void pickHU(final HURow row)
-	{
-		final HuId huId = row.getHuId();
-		pickingCandidateService.pickHU(PickRequest.builder()
-				.shipmentScheduleId(shipmentScheduleId)
-				.pickFrom(PickFrom.ofHuId(huId))
-				.pickingSlotId(pickingSlotId)
-				.build());
-		// NOTE: we are not moving the HU to shipment schedule's locator.
+	private  PPOrderId getPPOrderId(){
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
-		pickingCandidateService.processForHUIds(ImmutableSet.of(huId),
-												shipmentScheduleId,
-												OnOverDelivery.ofTakeWholeHUFlag(isTakeWholeHU),
-												ppOrderView.getPpOrderId());
+		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
+		return ppOrderId;
 	}
 
 	@Override
@@ -256,52 +256,4 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		invalidateView();
 	}
 
-	@Nullable
-	private static HURow toHURowOrNull(final IViewRow row)
-	{
-		if (row instanceof HUEditorRow)
-		{
-			final HUEditorRow huRow = HUEditorRow.cast(row);
-			return HURow.builder()
-					.huId(huRow.getHuId())
-					.topLevelHU(huRow.isTopLevel())
-					.huStatusActive(huRow.isHUStatusActive())
-					.build();
-		}
-		else if (row instanceof PPOrderLineRow)
-		{
-			final PPOrderLineRow ppOrderLineRow = PPOrderLineRow.cast(row);
-
-			// this process does not apply to source HUs
-			if (ppOrderLineRow.isSourceHU())
-			{
-				return null;
-			}
-
-			if (!ppOrderLineRow.getType().isHUOrHUStorage())
-			{
-				return null;
-			}
-			return HURow.builder()
-					.huId(ppOrderLineRow.getHuId())
-					.topLevelHU(ppOrderLineRow.isTopLevelHU())
-					.huStatusActive(ppOrderLineRow.isHUStatusActive())
-					.build();
-		}
-		else
-		{
-			//noinspection ThrowableNotThrown
-			new AdempiereException("Row type not supported: " + row).throwIfDeveloperModeOrLogWarningElse(logger);
-			return null;
-		}
-	}
-
-	@Value
-	@Builder
-	private static class HURow
-	{
-		HuId huId;
-		boolean topLevelHU;
-		boolean huStatusActive;
-	}
 }
