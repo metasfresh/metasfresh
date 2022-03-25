@@ -3,7 +3,8 @@ Feature: Validate external reference is sent to RabbitMQ
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-    And metasfresh contains AD_UserGroup:
+  Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
+    Given metasfresh contains AD_UserGroup:
       | AD_UserGroup_ID.Identifier | Name                  | IsActive | OPT.Description                   |
       | userGroup_externalRef      | userGroup_externalRef | true     | userGroup_externalRef description |
     And load AD_User:
@@ -13,11 +14,10 @@ Feature: Validate external reference is sent to RabbitMQ
       | AD_UserGroup_User_Assign_ID.Identifier | AD_UserGroup_ID.Identifier | AD_User_ID.Identifier | IsActive |
       | userGroupAssign_1                      | userGroup_externalRef      | metasfresh_user       | true     |
 
-  Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue                       | OPT.IsSyncExternalReferencesToRabbitMQ | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.IsSyncBPartnersToRabbitMQ | OPT.SubjectCreatedByUserGroup_ID.Identifier |
       | config_1                            | RabbitMQ | syncExternalReferenceExportRabbitMQUpdate | true                                   | true                                 | true                          | userGroup_externalRef                       |
-      | config_noAutoSync                   | RabbitMQ | autoExportRabbitMQExternalRef             | true                                   |                                      | false                         | false                                       |
+      | config_noAutoSync                   | RabbitMQ | autoExportRabbitMQExternalRef             | true                                   |                                      | false                         |                                             |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
