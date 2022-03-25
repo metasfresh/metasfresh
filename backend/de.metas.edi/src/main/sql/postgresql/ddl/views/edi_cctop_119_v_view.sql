@@ -1,14 +1,13 @@
 -- View: EDI_Cctop_119_v
 
--- DROP VIEW IF EXISTS EDI_Cctop_119_v;
-
+DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
        lookup.C_Invoice_ID       AS EDI_Cctop_INVOIC_v_ID,
        lookup.M_InOut_ID,
        pl.C_BPartner_Location_ID,
-       pl.GLN,
+       REGEXP_REPLACE(pl.GLN, '\s+$', '') AS GLN,
        pl.Phone,
        pl.Fax,
        p.Name,
