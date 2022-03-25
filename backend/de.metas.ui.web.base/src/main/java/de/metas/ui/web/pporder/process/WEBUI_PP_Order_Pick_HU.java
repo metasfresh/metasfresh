@@ -191,24 +191,6 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		return filler.getPickingSlotValues(context);
 	}
 
-	// @ProcessParamLookupValuesProvider(//
-	// 		parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, //
-	// 		numericKey = true, //
-	// 		lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	// private LookupValuesPage getShipmentScheduleValues(final LookupDataSourceContext context)
-	// {
-	// 	return createNewDefaultParametersFiller().getShipmentScheduleValues(context);
-	// }
-
-	// private WEBUI_M_HU_Pick_ParametersFiller createNewDefaultParametersFiller()
-	// {
-	// 	final HURow row = toHURowOrNull(getSingleSelectedRow());
-	// 	return WEBUI_M_HU_Pick_ParametersFiller.defaultFillerBuilder()
-	// 			.huId(row.getHuId())
-	// 			.salesOrderLineId(getSalesOrderLineId())
-	// 			.build();
-	// }
-
 	private Stream<HURow> getHURowsFromIncludedRows()
 	{
 		return getSingleSelectedRow().getIncludedRows().stream()
