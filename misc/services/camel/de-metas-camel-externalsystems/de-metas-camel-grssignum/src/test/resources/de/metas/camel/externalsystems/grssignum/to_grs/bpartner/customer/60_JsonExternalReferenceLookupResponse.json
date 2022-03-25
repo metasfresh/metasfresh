@@ -1,0 +1,5 @@
+{
+  "items": [
+    { "lookupItem": { "metasfreshId":1, "type":"Product" }, "externalReference": "someExternalRefFromGRS" }
+  ]
+}

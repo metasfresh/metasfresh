@@ -80,6 +80,7 @@ public class CurrencyDAO implements ICurrencyDAO
 			.build();
 
 	@Override
+	@NonNull
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
 		return getCurrenciesMap().getById(currencyId);

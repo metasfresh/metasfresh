@@ -39,12 +39,15 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.service.AlbertaCompositeProductInfo;
 import de.metas.vertical.healthcare.alberta.service.AlbertaPackagingUnit;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
@@ -55,9 +58,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +73,8 @@ import java.util.Set;
 public class GetProductsCommand
 {
 	private static final Instant DEFAULT_SINCE = Instant.ofEpochMilli(0);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@NonNull
 	private final ProductsServicesFacade servicesFacade;
@@ -176,6 +184,12 @@ public class GetProductsCommand
 
 		final UomId uomId = UomId.ofRepoId(productRecord.getC_UOM_ID());
 
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
+
+		final LocalDate discontinuedFrom = productRecord.isDiscontinued()
+				? TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId)
+				: null;
+
 		return JsonProduct.builder()
 				.id(JsonMetasfreshId.of(productId.getRepoId()))
 				.externalId(productRecord.getExternalId())
@@ -188,6 +202,7 @@ public class GetProductsCommand
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
+				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
 				.build();
@@ -223,6 +238,11 @@ public class GetProductsCommand
 				.customer(record.isUsedForCustomer())
 				//
 				.leadTimeInDays(record.getDeliveryTime_Promised())
+				//
+				.excludedFromSale(record.isExcludedFromSale())
+				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
+				.excludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
 				//
 				.build();
 	}

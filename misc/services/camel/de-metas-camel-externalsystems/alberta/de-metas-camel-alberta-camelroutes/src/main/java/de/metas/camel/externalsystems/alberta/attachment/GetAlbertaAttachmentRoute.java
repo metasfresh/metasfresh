@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.alberta.attachment;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.processor.AttachmentProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.AttachmentRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentProcessor;
@@ -32,6 +31,7 @@ import de.metas.camel.externalsystems.alberta.attachment.processor.GetDocumentsP
 import de.metas.camel.externalsystems.alberta.common.AlbertaApiProvider;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -232,8 +232,8 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 
 		routeContext.setDocument(document);
 
-		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), document.getCreatedBy());
-		final Users updatedBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), document.getUpdatedBy());
+		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), document.getCreatedBy());
+		final Users updatedBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), document.getUpdatedBy());
 
 		final Optional<BPUpsertCamelRequest> contactUpsertRequest = DataMapper
 				.usersToBPartnerUpsert(routeContext.getOrgCode(), routeContext.getRootBPartnerIdForUsers(), createdBy, updatedBy);
@@ -256,7 +256,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 
 		routeContext.setAttachment(attachment);
 
-		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), attachment.getMetadata().getCreatedBy());
+		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), attachment.getMetadata().getCreatedBy());
 
 		final Optional<BPUpsertCamelRequest> contactUpsertRequest = DataMapper
 				.usersToBPartnerUpsert(routeContext.getOrgCode(), routeContext.getRootBPartnerIdForUsers(), createdBy);
@@ -274,7 +274,6 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 	private Users getUserOrNull(
 			@NonNull final UserApi userApi,
 			@NonNull final String apiKey,
-			@NonNull final String tenant,
 			@Nullable final String userId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(userId))
@@ -282,7 +281,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 			return null;
 		}
 
-		final Users user = userApi.getUser(apiKey, tenant, userId);
+		final Users user = userApi.getUser(apiKey, userId);
 
 		if (user == null)
 		{

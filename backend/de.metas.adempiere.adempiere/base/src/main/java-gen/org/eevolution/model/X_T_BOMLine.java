@@ -1,582 +1,430 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
-import org.compiere.util.Env;
+import javax.annotation.Nullable;
 
 /** Generated Model for T_BOMLine
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_T_BOMLine extends PO implements I_T_BOMLine, I_Persistent 
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_T_BOMLine extends org.compiere.model.PO implements I_T_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1163201524L;
 
     /** Standard Constructor */
-    public X_T_BOMLine (Properties ctx, int T_BOMLine_ID, String trxName)
+    public X_T_BOMLine (final Properties ctx, final int T_BOMLine_ID, @Nullable final String trxName)
     {
       super (ctx, T_BOMLine_ID, trxName);
-      /** if (T_BOMLine_ID == 0)
-        {
-			setSel_Product_ID (0);
-			setT_BOMLine_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_T_BOMLine (Properties ctx, ResultSet rs, String trxName)
+    public X_T_BOMLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
-    /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
-    {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_T_BOMLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
+	}
 
-	public I_AD_PInstance getAD_PInstance() throws RuntimeException
-    {
-		return (I_AD_PInstance)MTable.get(getCtx(), I_AD_PInstance.Table_Name)
-			.getPO(getAD_PInstance_ID(), get_TrxName());	}
+	@Override
+	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
+	}
 
-	/** Set Process Instance.
-		@param AD_PInstance_ID 
-		Instance of the process
-	  */
-	public void setAD_PInstance_ID (int AD_PInstance_ID)
+	@Override
+	public void setAD_PInstance_ID (final int AD_PInstance_ID)
 	{
 		if (AD_PInstance_ID < 1) 
 			set_Value (COLUMNNAME_AD_PInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
+			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
 	}
 
-	/** Get Process Instance.
-		@return Instance of the process
-	  */
-	public int getAD_PInstance_ID () 
+	@Override
+	public int getAD_PInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+	}
 
-	/** Set Accounting Schema.
-		@param C_AcctSchema_ID 
-		Rules for accounting
-	  */
-	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
+	@Override
+	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+	}
+
+	@Override
+	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
 			set_Value (COLUMNNAME_C_AcctSchema_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
+			set_Value (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
 	}
 
-	/** Get Accounting Schema.
-		@return Rules for accounting
-	  */
-	public int getC_AcctSchema_ID () 
+	@Override
+	public int getC_AcctSchema_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
 	}
 
-	/** Set Cost.
-		@param Cost 
-		Cost information
-	  */
-	public void setCost (BigDecimal Cost)
+	@Override
+	public void setCost (final @Nullable BigDecimal Cost)
 	{
 		set_Value (COLUMNNAME_Cost, Cost);
 	}
 
-	/** Get Cost.
-		@return Cost information
-	  */
-	public BigDecimal getCost () 
+	@Override
+	public BigDecimal getCost() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Cost);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Cost);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** CostingMethod AD_Reference_ID=122 */
+	/** 
+	 * CostingMethod AD_Reference_ID=122
+	 * Reference name: C_AcctSchema Costing Method
+	 */
 	public static final int COSTINGMETHOD_AD_Reference_ID=122;
-	/** Standard Costing = S */
+	/** StandardCosting = S */
 	public static final String COSTINGMETHOD_StandardCosting = "S";
-	/** Average PO = A */
+	/** AveragePO = A */
 	public static final String COSTINGMETHOD_AveragePO = "A";
 	/** Lifo = L */
 	public static final String COSTINGMETHOD_Lifo = "L";
 	/** Fifo = F */
 	public static final String COSTINGMETHOD_Fifo = "F";
-	/** Last PO Price = p */
+	/** LastPOPrice = p */
 	public static final String COSTINGMETHOD_LastPOPrice = "p";
-	/** Average Invoice = I */
+	/** AverageInvoice = I */
 	public static final String COSTINGMETHOD_AverageInvoice = "I";
-	/** Last Invoice = i */
+	/** LastInvoice = i */
 	public static final String COSTINGMETHOD_LastInvoice = "i";
-	/** User Defined = U */
+	/** UserDefined = U */
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
-	/** Set Costing Method.
-		@param CostingMethod 
-		Indicates how Costs will be calculated
-	  */
-	public void setCostingMethod (String CostingMethod)
+	@Override
+	public void setCostingMethod (final @Nullable java.lang.String CostingMethod)
 	{
-
 		set_Value (COLUMNNAME_CostingMethod, CostingMethod);
 	}
 
-	/** Get Costing Method.
-		@return Indicates how Costs will be calculated
-	  */
-	public String getCostingMethod () 
+	@Override
+	public java.lang.String getCostingMethod() 
 	{
-		return (String)get_Value(COLUMNNAME_CostingMethod);
+		return get_ValueAsString(COLUMNNAME_CostingMethod);
 	}
 
-	/** Set Standard Cost.
-		@param CostStandard 
-		Standard Costs
-	  */
-	public void setCostStandard (BigDecimal CostStandard)
+	@Override
+	public void setCostStandard (final @Nullable BigDecimal CostStandard)
 	{
 		set_Value (COLUMNNAME_CostStandard, CostStandard);
 	}
 
-	/** Get Standard Cost.
-		@return Standard Costs
-	  */
-	public BigDecimal getCostStandard () 
+	@Override
+	public BigDecimal getCostStandard() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostStandard);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostStandard);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Current Cost Price.
-		@param CurrentCostPrice 
-		The currently used cost price
-	  */
-	public void setCurrentCostPrice (BigDecimal CurrentCostPrice)
+	@Override
+	public void setCurrentCostPrice (final @Nullable BigDecimal CurrentCostPrice)
 	{
 		set_Value (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
 
-	/** Get Current Cost Price.
-		@return The currently used cost price
-	  */
-	public BigDecimal getCurrentCostPrice () 
+	@Override
+	public BigDecimal getCurrentCostPrice() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPrice);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPrice);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Current Cost Price Lower Level.
-		@param CurrentCostPriceLL 
-		Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
-	  */
-	public void setCurrentCostPriceLL (BigDecimal CurrentCostPriceLL)
+	@Override
+	public void setCurrentCostPriceLL (final @Nullable BigDecimal CurrentCostPriceLL)
 	{
 		set_Value (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
 	}
 
-	/** Get Current Cost Price Lower Level.
-		@return Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
-	  */
-	public BigDecimal getCurrentCostPriceLL () 
+	@Override
+	public BigDecimal getCurrentCostPriceLL() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPriceLL);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPriceLL);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Future Cost Price.
-		@param FutureCostPrice Future Cost Price	  */
-	public void setFutureCostPrice (BigDecimal FutureCostPrice)
+	@Override
+	public void setFutureCostPrice (final @Nullable BigDecimal FutureCostPrice)
 	{
 		set_Value (COLUMNNAME_FutureCostPrice, FutureCostPrice);
 	}
 
-	/** Get Future Cost Price.
-		@return Future Cost Price	  */
-	public BigDecimal getFutureCostPrice () 
+	@Override
+	public BigDecimal getFutureCostPrice() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FutureCostPrice);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FutureCostPrice);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Future Cost Price Lower Level.
-		@param FutureCostPriceLL Future Cost Price Lower Level	  */
-	public void setFutureCostPriceLL (BigDecimal FutureCostPriceLL)
+	@Override
+	public void setFutureCostPriceLL (final @Nullable BigDecimal FutureCostPriceLL)
 	{
 		set_Value (COLUMNNAME_FutureCostPriceLL, FutureCostPriceLL);
 	}
 
-	/** Get Future Cost Price Lower Level.
-		@return Future Cost Price Lower Level	  */
-	public BigDecimal getFutureCostPriceLL () 
+	@Override
+	public BigDecimal getFutureCostPriceLL() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FutureCostPriceLL);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FutureCostPriceLL);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Implosion.
-		@param Implosion 
-		Implosion of a Bill of Materials refers to finding all the BOM''s in which a component is used.
-	  */
-	public void setImplosion (boolean Implosion)
+	@Override
+	public void setImplosion (final boolean Implosion)
 	{
-		set_Value (COLUMNNAME_Implosion, Boolean.valueOf(Implosion));
+		set_Value (COLUMNNAME_Implosion, Implosion);
 	}
 
-	/** Get Implosion.
-		@return Implosion of a Bill of Materials refers to finding all the BOM''s in which a component is used.
-	  */
-	public boolean isImplosion () 
+	@Override
+	public boolean isImplosion() 
 	{
-		Object oo = get_Value(COLUMNNAME_Implosion);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Implosion);
 	}
 
-	/** Set Cost Frozen.
-		@param IsCostFrozen 
-		Indicated that the Standard Cost is frozen
-	  */
-	public void setIsCostFrozen (boolean IsCostFrozen)
+	@Override
+	public void setIsCostFrozen (final boolean IsCostFrozen)
 	{
-		set_Value (COLUMNNAME_IsCostFrozen, Boolean.valueOf(IsCostFrozen));
+		set_Value (COLUMNNAME_IsCostFrozen, IsCostFrozen);
 	}
 
-	/** Get Cost Frozen.
-		@return Indicated that the Standard Cost is frozen
-	  */
-	public boolean isCostFrozen () 
+	@Override
+	public boolean isCostFrozen() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCostFrozen);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCostFrozen);
 	}
 
-	/** Set Level no.
-		@param LevelNo Level no	  */
-	public void setLevelNo (int LevelNo)
+	@Override
+	public void setLevelNo (final int LevelNo)
 	{
-		set_Value (COLUMNNAME_LevelNo, Integer.valueOf(LevelNo));
+		set_Value (COLUMNNAME_LevelNo, LevelNo);
 	}
 
-	/** Get Level no.
-		@return Level no	  */
-	public int getLevelNo () 
+	@Override
+	public int getLevelNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LevelNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_LevelNo);
 	}
 
-	/** Set Levels.
-		@param Levels Levels	  */
-	public void setLevels (String Levels)
+	@Override
+	public void setLevels (final @Nullable java.lang.String Levels)
 	{
 		set_Value (COLUMNNAME_Levels, Levels);
 	}
 
-	/** Get Levels.
-		@return Levels	  */
-	public String getLevels () 
+	@Override
+	public java.lang.String getLevels() 
 	{
-		return (String)get_Value(COLUMNNAME_Levels);
+		return get_ValueAsString(COLUMNNAME_Levels);
 	}
 
-	public I_M_CostElement getM_CostElement() throws RuntimeException
-    {
-		return (I_M_CostElement)MTable.get(getCtx(), I_M_CostElement.Table_Name)
-			.getPO(getM_CostElement_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
 
-	/** Set Cost Element.
-		@param M_CostElement_ID 
-		Product Cost Element
-	  */
-	public void setM_CostElement_ID (int M_CostElement_ID)
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
 			set_Value (COLUMNNAME_M_CostElement_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_CostElement_ID, Integer.valueOf(M_CostElement_ID));
+			set_Value (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
 	}
 
-	/** Get Cost Element.
-		@return Product Cost Element
-	  */
-	public int getM_CostElement_ID () 
+	@Override
+	public int getM_CostElement_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostElement_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
 	}
 
-	public I_M_CostType getM_CostType() throws RuntimeException
-    {
-		return (I_M_CostType)MTable.get(getCtx(), I_M_CostType.Table_Name)
-			.getPO(getM_CostType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostType getM_CostType()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class);
+	}
 
-	/** Set Cost Type.
-		@param M_CostType_ID 
-		Type of Cost (e.g. Current, Plan, Future)
-	  */
-	public void setM_CostType_ID (int M_CostType_ID)
+	@Override
+	public void setM_CostType(final org.compiere.model.I_M_CostType M_CostType)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class, M_CostType);
+	}
+
+	@Override
+	public void setM_CostType_ID (final int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
 			set_Value (COLUMNNAME_M_CostType_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_CostType_ID, Integer.valueOf(M_CostType_ID));
+			set_Value (COLUMNNAME_M_CostType_ID, M_CostType_ID);
 	}
 
-	/** Get Cost Type.
-		@return Type of Cost (e.g. Current, Plan, Future)
-	  */
-	public int getM_CostType_ID () 
+	@Override
+	public int getM_CostType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_CostType_ID);
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
+	@Override
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException
-    {
-		return (org.eevolution.model.I_PP_Product_BOM)MTable.get(getCtx(), org.eevolution.model.I_PP_Product_BOM.Table_Name)
-			.getPO(getPP_Product_BOM_ID(), get_TrxName());	}
+	@Override
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
+	}
 
-	/** Set BOM & Formula.
-		@param PP_Product_BOM_ID 
-		BOM & Formula
-	  */
-	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID)
+	@Override
+	public void setPP_Product_BOM(final org.eevolution.model.I_PP_Product_BOM PP_Product_BOM)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class, PP_Product_BOM);
+	}
+
+	@Override
+	public void setPP_Product_BOM_ID (final int PP_Product_BOM_ID)
 	{
 		if (PP_Product_BOM_ID < 1) 
 			set_Value (COLUMNNAME_PP_Product_BOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Product_BOM_ID, Integer.valueOf(PP_Product_BOM_ID));
+			set_Value (COLUMNNAME_PP_Product_BOM_ID, PP_Product_BOM_ID);
 	}
 
-	/** Get BOM & Formula.
-		@return BOM & Formula
-	  */
-	public int getPP_Product_BOM_ID () 
+	@Override
+	public int getPP_Product_BOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOM_ID);
 	}
 
-	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine() throws RuntimeException
-    {
-		return (org.eevolution.model.I_PP_Product_BOMLine)MTable.get(getCtx(), org.eevolution.model.I_PP_Product_BOMLine.Table_Name)
-			.getPO(getPP_Product_BOMLine_ID(), get_TrxName());	}
+	@Override
+	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
+	}
 
-	/** Set BOM Line.
-		@param PP_Product_BOMLine_ID 
-		BOM Line
-	  */
-	public void setPP_Product_BOMLine_ID (int PP_Product_BOMLine_ID)
+	@Override
+	public void setPP_Product_BOMLine(final org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class, PP_Product_BOMLine);
+	}
+
+	@Override
+	public void setPP_Product_BOMLine_ID (final int PP_Product_BOMLine_ID)
 	{
 		if (PP_Product_BOMLine_ID < 1) 
 			set_Value (COLUMNNAME_PP_Product_BOMLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Product_BOMLine_ID, Integer.valueOf(PP_Product_BOMLine_ID));
+			set_Value (COLUMNNAME_PP_Product_BOMLine_ID, PP_Product_BOMLine_ID);
 	}
 
-	/** Get BOM Line.
-		@return BOM Line
-	  */
-	public int getPP_Product_BOMLine_ID () 
+	@Override
+	public int getPP_Product_BOMLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOMLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOMLine_ID);
 	}
 
-	/** Set Quantity.
-		@param QtyBOM 
-		Indicate the Quantity  use in this BOM
-	  */
-	public void setQtyBOM (BigDecimal QtyBOM)
+	@Override
+	public void setQtyBOM (final @Nullable BigDecimal QtyBOM)
 	{
 		set_Value (COLUMNNAME_QtyBOM, QtyBOM);
 	}
 
-	/** Get Quantity.
-		@return Indicate the Quantity  use in this BOM
-	  */
-	public BigDecimal getQtyBOM () 
+	@Override
+	public BigDecimal getQtyBOM() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBOM);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Selected Product.
-		@param Sel_Product_ID Selected Product	  */
-	public void setSel_Product_ID (int Sel_Product_ID)
+	@Override
+	public void setSel_Product_ID (final int Sel_Product_ID)
 	{
 		if (Sel_Product_ID < 1) 
 			set_Value (COLUMNNAME_Sel_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_Sel_Product_ID, Integer.valueOf(Sel_Product_ID));
+			set_Value (COLUMNNAME_Sel_Product_ID, Sel_Product_ID);
 	}
 
-	/** Get Selected Product.
-		@return Selected Product	  */
-	public int getSel_Product_ID () 
+	@Override
+	public int getSel_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Sel_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Sel_Product_ID);
 	}
 
-	/** Set Sequence.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo)
+	@Override
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Sequence.
-		@return Method of ordering records; lowest number comes first
-	  */
-	public int getSeqNo () 
+	@Override
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Temporal BOM Line.
-		@param T_BOMLine_ID Temporal BOM Line	  */
-	public void setT_BOMLine_ID (int T_BOMLine_ID)
+	@Override
+	public void setT_BOMLine_ID (final int T_BOMLine_ID)
 	{
 		if (T_BOMLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_T_BOMLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_T_BOMLine_ID, Integer.valueOf(T_BOMLine_ID));
+			set_ValueNoCheck (COLUMNNAME_T_BOMLine_ID, T_BOMLine_ID);
 	}
 
-	/** Get Temporal BOM Line.
-		@return Temporal BOM Line	  */
-	public int getT_BOMLine_ID () 
+	@Override
+	public int getT_BOMLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_T_BOMLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_T_BOMLine_ID);
 	}
 }

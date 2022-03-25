@@ -29,7 +29,7 @@ import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -287,7 +287,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 			final Pharmacy pharmacy = json.deserialize(pharmacyStr, Pharmacy.class);
 
-			Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class), any(String.class)))
+			Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class)))
 					.thenReturn(pharmacy);
 
 			return pharmacyApi;
@@ -302,7 +302,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 			final Doctor doctor = json.deserialize(doctorStr, Doctor.class);
 
-			Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class), any(String.class)))
+			Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class)))
 					.thenReturn(doctor);
 
 			return albertaDoctorApi;

@@ -9,6 +9,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -140,5 +141,12 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 				.setOnlyActiveRecords(true)
 				.setParameters(params)
 				.firstOnly(I_C_Queue_WorkPackage_Notified.class);
+	}
+
+	@Override
+	public void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId)
+	{
+		asyncBatch.setAD_PInstance_ID(pInstanceId.getRepoId());
+		InterfaceWrapperHelper.save(asyncBatch);
 	}
 }

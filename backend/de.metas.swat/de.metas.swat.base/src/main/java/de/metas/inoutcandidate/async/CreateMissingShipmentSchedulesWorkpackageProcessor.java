@@ -6,10 +6,12 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -19,6 +21,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,6 +37,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private static final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private static final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private static final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private static final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
@@ -43,8 +47,6 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 	public static void scheduleIfNotPostponed(@NonNull final Object model)
 	{
-		final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 		final AsyncBatchId asyncBatchId = asyncBatchBL
 				.getAsyncBatchId(model)
 				.orElse(null);
@@ -96,7 +98,13 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 		// After shipment schedules where created, invalidate them because we want to make sure they are up2date.
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.flagForRecompute(shipmentScheduleIds);
+		final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
+
+		final Collection<I_M_ShipmentSchedule> scheduleRecords = shipmentScheduleDAO.getByIds(shipmentScheduleIds).values();
+		for (final I_M_ShipmentSchedule scheduleRecord : scheduleRecords)
+		{
+			invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(scheduleRecord);
+		}
 
 		Loggables.addLog("Created " + shipmentScheduleIds.size() + " candidates");
 		return Result.SUCCESS;

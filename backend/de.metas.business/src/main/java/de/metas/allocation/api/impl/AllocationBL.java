@@ -32,6 +32,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.Null;
+
 public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -54,6 +56,13 @@ public class AllocationBL implements IAllocationBL
 			return null;
 		}
 		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
+		{
+			return null;
+		}
+
+		//dev-note: don't allocate payments to reversal documents
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
+		if (docStatus.isReversed() || invoice.getReversal_ID() > 0)
 		{
 			return null;
 		}

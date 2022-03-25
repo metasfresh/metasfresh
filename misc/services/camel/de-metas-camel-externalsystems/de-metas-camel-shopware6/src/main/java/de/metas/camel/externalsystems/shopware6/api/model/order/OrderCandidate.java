@@ -22,7 +22,10 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-import de.metas.common.util.CoalesceUtil;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,26 +34,31 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
+@JsonDeserialize(builder = OrderCandidate.OrderCandidateBuilder.class)
 public class OrderCandidate
 {
 	@NonNull
+	@JsonProperty("jsonOrder")
 	JsonOrder jsonOrder;
 
-	@Nullable
-	String customBPartnerId;
+	@NonNull
+	@JsonProperty("orderNode")
+	JsonNode orderNode;
 
 	@Nullable
+	@JsonProperty("salesRepId")
 	String salesRepId;
 
 	@NonNull
-	public String getEffectiveCustomerId()
+	public String getCustomField(@NonNull final String customPath)
 	{
-		return CoalesceUtil.coalesce(customBPartnerId, getShopwareCustomerId());
-	}
+		final JsonNode customIdNode = orderNode.at(customPath);
 
-	@NonNull
-	public String getShopwareCustomerId()
-	{
-		return jsonOrder.getOrderCustomer().getCustomerId();
+		if (customIdNode == null || Check.isBlank(customIdNode.asText()))
+		{
+			throw new RuntimeException("Failed to process order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "); Nothing found on the given customPath: " + customPath);
+		}
+
+		return customIdNode.asText();
 	}
 }

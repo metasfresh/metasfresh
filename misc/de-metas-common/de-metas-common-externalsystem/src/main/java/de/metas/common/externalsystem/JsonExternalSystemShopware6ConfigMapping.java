@@ -38,10 +38,10 @@ public class JsonExternalSystemShopware6ConfigMapping
 	@NonNull
 	Integer seqNo;
 
-	@NonNull
+	@Nullable
 	String docTypeOrder;
 
-	@NonNull
+	@Nullable
 	String paymentRule;
 
 	@NonNull
@@ -65,19 +65,27 @@ public class JsonExternalSystemShopware6ConfigMapping
 	@Nullable
 	String description;
 
+	@Nullable
+	String bpartnerIdJSONPath;
+
+	@Nullable
+	JsonBPartnerLookup bpartnerLookup;
+
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemShopware6ConfigMapping(
 			@JsonProperty("seqNo") @NonNull final Integer seqNo,
-			@JsonProperty("docTypeOrder") @NonNull final String docTypeOrder,
-			@JsonProperty("paymentRule") @NonNull final String paymentRule,
+			@JsonProperty("docTypeOrder") @Nullable final String docTypeOrder,
+			@JsonProperty("paymentRule") @Nullable final String paymentRule,
 			@JsonProperty("bpartnerSyncAdvice") @NonNull final SyncAdvise bPartnerSyncAdvice,
 			@JsonProperty("bpartnerLocationSyncAdvice") @NonNull final SyncAdvise bPartnerLocationSyncAdvice,
 			@JsonProperty("invoiceEmailEnabled") @Nullable final Boolean invoiceEmailEnabled,
 			@JsonProperty("paymentTerm") @Nullable final String paymentTermValue,
 			@JsonProperty("sw6CustomerGroup") @Nullable final String sw6CustomerGroup,
 			@JsonProperty("sw6PaymentMethod") @Nullable final String sw6PaymentMethod,
-			@JsonProperty("description") @Nullable final String description)
+			@JsonProperty("description") @Nullable final String description,
+			@JsonProperty("bpartnerIdJSONPath") @Nullable final String bpartnerIdJSONPath,
+			@JsonProperty("bpartnerLookup") @Nullable final JsonBPartnerLookup bpartnerLookup)
 	{
 		this.seqNo = seqNo;
 		this.docTypeOrder = docTypeOrder;
@@ -89,6 +97,8 @@ public class JsonExternalSystemShopware6ConfigMapping
 		this.sw6CustomerGroup = sw6CustomerGroup;
 		this.sw6PaymentMethod = sw6PaymentMethod;
 		this.description = description;
+		this.bpartnerIdJSONPath = bpartnerIdJSONPath;
+		this.bpartnerLookup = bpartnerLookup;
 	}
 
 	public boolean isGroupMatching(@NonNull final String sw6CustomerGroup)
@@ -100,5 +110,4 @@ public class JsonExternalSystemShopware6ConfigMapping
 	{
 		return Check.isBlank(this.sw6PaymentMethod) || this.sw6PaymentMethod.trim().equals(sw6PaymentMethod.trim());
 	}
-
 }

@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -33,8 +33,10 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,6 +46,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class MD_Stock_StepDef
 {
+	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
@@ -54,7 +58,7 @@ public class MD_Stock_StepDef
 	}
 
 	@Given("metasfresh initially has no MD_Stock data")
-	public void setupMD_Stock_Data()
+	public void setupMD_Stock_Data() throws InterruptedException
 	{
 		truncateMDStockData();
 	}
@@ -69,7 +73,24 @@ public class MD_Stock_StepDef
 		}
 	}
 
-	private void truncateMDStockData()
+	/**
+	 * TODO: prepare the initial state without truncating
+	 */
+	private void truncateMDStockData() throws InterruptedException
+	{
+		try
+		{
+			truncateMDStockData0();
+		}
+		catch (final DBDeadLockDetectedException e)
+		{
+			logger.warn("Caught DBDeadLockDetectedException while truncating MDStockData! Will retry in 1second");
+			Thread.sleep(1000);
+			truncateMDStockData0();
+		}
+	}
+
+	private void truncateMDStockData0()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE M_Transaction cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE M_InventoryLine cascade", ITrx.TRXNAME_None);

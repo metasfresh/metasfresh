@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -59,6 +60,7 @@ import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.websocket.WebsocketConfig;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -267,7 +269,7 @@ public class DebugRestController
 
 		return LookupDataSourceFactory.instance.getCacheStats()
 				.stream()
-				.map(stats -> stats.toString())
+				.map(CCache.CCacheStats::toString)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -349,7 +351,7 @@ public class DebugRestController
 	public enum LoggingModule
 	{
 		websockets_and_invalidation(
-				de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName(),
+				WebsocketConfig.class.getPackage().getName(),
 				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()),
 		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(

@@ -11,6 +11,7 @@ import {
   allowShortcut,
   disableShortcut,
 } from '../actions/WindowActions';
+import { setTableNavigation } from '../actions/TableActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
@@ -52,7 +53,7 @@ class WidgetWrapper extends PureComponent {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTabWrapper ref={this.childRef} {...this.props} />;
+      return <InlineTabWrapper {...this.props} />;
     }
 
     if (renderMaster) {
@@ -183,6 +184,7 @@ WidgetWrapper.propTypes = {
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
   disconnected: PropTypes.string,
+  setTableNavigation: PropTypes.func,
 };
 
 export default connect(
@@ -194,6 +196,7 @@ export default connect(
     closeModal,
     patch,
     updatePropertyValue,
+    setTableNavigation,
   },
   null,
   { forwardRef: true }

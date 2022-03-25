@@ -10,18 +10,17 @@ import de.metas.bpartner.OrgMappingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Set;
 
 import static de.metas.util.Check.isBlank;
 
@@ -67,6 +66,8 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -114,6 +115,10 @@ public class BPartnerLocation
 	private String district;
 	@Nullable
 	private String countryCode;
+	@Nullable
+	private String phone;
+	@Nullable
+	private String email;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -123,6 +128,20 @@ public class BPartnerLocation
 
 	@Nullable
 	private OrgMappingId orgMappingId;
+
+	@Nullable
+	private String mobile;
+
+	@Nullable
+	private String fax;
+
+	@Nullable
+	final String setupPlaceNo;
+
+	final boolean remitTo;
+	final boolean handOverLocation;
+	final boolean replicationLookupDefault;
+	final boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -153,9 +172,18 @@ public class BPartnerLocation
 			@Nullable final String region,
 			@Nullable final String city,
 			@Nullable final String countryCode,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final String mobile,
+			@Nullable final String fax,
+			@Nullable final String setupPlaceNo,
+			@Nullable final Boolean remitTo,
+			@Nullable final Boolean handOverLocation,
+			@Nullable final Boolean replicationLookupDefault,
+			@Nullable final Boolean visitorsAddress)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -183,6 +211,24 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+
+		this.phone = phone;
+
+		this.mobile = mobile;
+
+		this.fax = fax;
+
+		this.email = email;
+
+		this.setupPlaceNo = setupPlaceNo;
+
+		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
+
+		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
+
+		this.remitTo = remitTo != null ? remitTo : false;
+
+		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 	}
 
 	public BPartnerLocation deepCopy()
@@ -271,5 +317,14 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+	}
+
+	/**
+	 * Can be used if this instance's ID is known to be not null.
+	 */
+	@NonNull
+	public BPartnerLocationId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "id may not be null at this point");
 	}
 }

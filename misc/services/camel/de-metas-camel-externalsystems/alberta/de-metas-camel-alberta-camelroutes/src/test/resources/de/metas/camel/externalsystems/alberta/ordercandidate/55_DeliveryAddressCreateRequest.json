@@ -8,8 +8,8 @@
         "location": {
           "active": null,
           "activeSet": false,
-          "name": null,
-          "nameSet": false,
+          "name": "address, additionalAddress, additionalAddress2",
+          "nameSet": true,
           "bpartnerName": "address name",
           "bpartnerNameSet": true,
           "address1": "address",

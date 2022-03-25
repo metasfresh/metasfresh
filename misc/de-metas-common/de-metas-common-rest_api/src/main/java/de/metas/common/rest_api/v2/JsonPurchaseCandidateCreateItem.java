@@ -50,6 +50,10 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
+	@NonNull
+	@JsonProperty("poReference")
+	String poReference;
+	
 	@Nullable
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
@@ -118,6 +122,7 @@ public class JsonPurchaseCandidateCreateItem
 	private JsonPurchaseCandidateCreateItem(
 			@JsonProperty("orgCode") final @NonNull String orgCode,
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
+			@JsonProperty("poReference") final @NonNull String poReference, 
 			@JsonProperty("externalPurchaseOrderUrl") final @Nullable String externalPurchaseOrderUrl,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
@@ -136,12 +141,13 @@ public class JsonPurchaseCandidateCreateItem
 
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
+		this.poReference = poReference;
 		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.externalLineId = externalLineId;
-		this.isManualPrice = CoalesceUtil.coalesce(isManualPrice, false);
+		this.isManualPrice = CoalesceUtil.coalesceNotNull(isManualPrice, false);
 		this.isPrepared = isPrepared;
 		this.price = price;
-		this.isManualDiscount = CoalesceUtil.coalesce(isManualDiscount, false);
+		this.isManualDiscount = CoalesceUtil.coalesceNotNull(isManualDiscount, false);
 		this.discount = discount;
 		this.purchaseDatePromised = purchaseDatePromised;
 		this.purchaseDateOrdered = purchaseDateOrdered;

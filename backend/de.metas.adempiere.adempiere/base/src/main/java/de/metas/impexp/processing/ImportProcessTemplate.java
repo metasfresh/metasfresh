@@ -1,17 +1,26 @@
 package de.metas.impexp.processing;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.impexp.ActualImportRecordsResult;
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
+import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -33,28 +42,17 @@ import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.classic.Level;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.impexp.ActualImportRecordsResult;
-import de.metas.impexp.config.DataImportConfigId;
-import de.metas.impexp.format.ImportTableDescriptor;
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
-import de.metas.logging.LogManager;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Base implementation of {@link IImportProcess}.
@@ -329,6 +327,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		{
 			final int countImportRecordsDeleted = deleteImportRecords(ImportDataDeleteRequest.builder()
 					.mode(ImportDataDeleteMode.ONLY_IMPORTED)
+					.importTableName(getImportTableName())
 					.build());
 			resultCollector.setCountImportRecordsDeleted(countImportRecordsDeleted);
 			loggable.addLog("Deleted Old Imported = {}", countImportRecordsDeleted);

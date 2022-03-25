@@ -1,11 +1,11 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -19,12 +19,13 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
@@ -76,6 +77,7 @@ public class AddQtyToHUCommand
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -95,6 +97,8 @@ public class AddQtyToHUCommand
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final AddQtyToHURequest request)
 	{
+		validateSourceHUs(request.getSourceHUIds());
+
 		this.sourceHUIds = request.getSourceHUIds();
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
@@ -150,10 +154,11 @@ public class AddQtyToHUCommand
 
 		addQtyToCandidate(candidate, productId, qtyPicked);
 
-		final BPartnerLocationId bPartnerLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
-		final BPartnerId bPartnerId = bPartnerLocationId.getBpartnerId();
-
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bPartnerId, bPartnerLocationId);
+		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
+		huPickingSlotBL.allocatePickingSlotIfPossible(PickingSlotAllocateRequest.builder()
+						.pickingSlotId(pickingSlotId)
+						.bpartnerAndLocationId(bpartnerAndLocationId)
+						.build());
 
 		return qtyPicked;
 	}
@@ -181,8 +186,6 @@ public class AddQtyToHUCommand
 
 	/**
 	 * Source - take the preselected sourceHUs
-	 *
-	 * @return
 	 */
 	private HUListAllocationSourceDestination createFromSourceHUsAllocationSource()
 	{
@@ -202,9 +205,8 @@ public class AddQtyToHUCommand
 		{
 			throw new AdempiereException("not an active HU").setParameter("hu", hu);
 		}
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(hu);
 
-		return destination;
+		return HUListAllocationSourceDestination.of(hu);
 	}
 
 	private void addQtyToCandidate(
@@ -225,6 +227,7 @@ public class AddQtyToHUCommand
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
+		candidate.assertNotApproved();
 		candidate.pick(qtyNew);
 		pickingCandidateRepository.save(candidate);
 	}
@@ -246,6 +249,19 @@ public class AddQtyToHUCommand
 					.setParameter("qtyToDeliverTarget", qtyToDeliverTarget)
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);
+		}
+	}
+
+	private void validateSourceHUs(@NonNull final List<HuId> sourceHUIds)
+	{
+		for (final HuId sourceHuId : sourceHUIds)
+		{
+			if (!handlingUnitsBL.isHUHierarchyCleared(sourceHuId))
+			{
+				throw new AdempiereException("Non 'Cleared' HUs cannot be picked!")
+						.appendParametersToMessage()
+						.setParameter("M_HU_ID", sourceHuId);
+			}
 		}
 	}
 }

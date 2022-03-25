@@ -9,6 +9,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -25,6 +26,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -46,6 +48,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -54,6 +58,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 import static java.math.BigDecimal.ONE;
@@ -98,22 +103,24 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return createShareWithMissingICsQuery()
 				.iterate(I_C_Commission_Share.class);
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_Commission_Share commissionShareRecord = create(model, I_C_Commission_Share.class);
 
-		return !recordHasAnInvoiceCandiate(commissionShareRecord);
+		final boolean invoiceCandidateIsMissed = !recordHasAnInvoiceCandiate(commissionShareRecord);
+		return invoiceCandidateIsMissed ? CandidatesAutoCreateMode.CREATE_CANDIDATES : CandidatesAutoCreateMode.DONT;
 	}
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
@@ -191,11 +198,12 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					 "IC.BPartnerID must be the contract owner! IC.BPartnerID: {}, flatRateTerm.Bill_BPartnerId: {}, commissionShareId: {}",
 					 bPartnerId, flatrateTerm.getBill_BPartner_ID(), commissionShareRecord.getC_Commission_Share_ID());
 
-		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = ContractLocationHelper.extractBillToLocationId(flatrateTerm);
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, soTrx);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, soTrx);
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
@@ -205,7 +213,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						soTrx)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
@@ -296,7 +304,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := the commission product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1
@@ -384,9 +392,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	@NonNull
 	private DocTypeId getDoctypeId(@NonNull final I_C_Commission_Share shareRecord)
 	{
-		final CommissionConstants.CommissionDocType commissionDocType = shareRecord.isSOTrx()
-				? CommissionConstants.CommissionDocType.SALES_COMMISSION
-				: CommissionConstants.CommissionDocType.PURCHASE_COMMISSION;
+		final CommissionConstants.CommissionDocType commissionDocType = getCommissionDocType(shareRecord);
 
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
@@ -395,5 +401,28 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
 						.build());
+	}
+
+	@NonNull
+	private CommissionConstants.CommissionDocType getCommissionDocType(@NonNull final I_C_Commission_Share shareRecord)
+	{
+		if (!shareRecord.isSOTrx())
+		{
+			// note that SOTrx is about the share record's settlement.
+			// I.e. if the sales-rep receives money from the commission, then it's a purchase order trx
+			return CommissionConstants.CommissionDocType.COMMISSION;
+		}
+		else if (shareRecord.getC_LicenseFeeSettingsLine_ID() > 0)
+		{
+			return CommissionConstants.CommissionDocType.LICENSE_COMMISSION;
+		}
+		else if (shareRecord.getC_MediatedCommissionSettingsLine_ID() > 0)
+		{
+			return CommissionConstants.CommissionDocType.MEDIATED_COMMISSION;
+		}
+
+		throw new AdempiereException("Unhandled commission type! ")
+				.appendParametersToMessage()
+				.setParameter("C_CommissionShare_ID", shareRecord.getC_Commission_Share_ID());
 	}
 }

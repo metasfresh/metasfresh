@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
+import FocusTrap from 'focus-trap-react';
 
 import {
   getAttributesInstance,
@@ -18,6 +19,7 @@ import {
   DROPDOWN_OFFSET_BIG,
   DROPDOWN_OFFSET_SMALL,
 } from '../../../constants/Constants';
+import { getTableId } from '../../../reducers/tables';
 
 /**
  * @file Class based component.
@@ -127,12 +129,27 @@ export default class Attributes extends Component {
   /**
    * @method handleToggle
    * @summary ToDo: Describe the method
-   * @param {*} option
+   * @param {bool} show
    * @todo Write the documentation
    */
-  handleToggle = (option) => {
-    const { handleBackdropLock, updateHeight, rowIndex, isModal } = this.props;
+  handleToggle = (show) => {
+    const {
+      handleBackdropLock,
+      updateHeight,
+      rowIndex,
+      isModal,
+      setTableNavigation,
+      docType,
+      dataId,
+      tabId,
+    } = this.props;
     const { loading, dropdown } = this.state;
+
+    // this is limited to tables only
+    if (rowIndex != null) {
+      const tableId = getTableId({ windowId: docType, docId: dataId, tabId });
+      setTableNavigation(tableId, !show);
+    }
 
     !dropdown &&
       !isModal &&
@@ -153,9 +170,9 @@ export default class Attributes extends Component {
         () => {
           //Method is disabling outside click in parents
           //elements if there is some
-          handleBackdropLock && handleBackdropLock(!!option);
+          handleBackdropLock && handleBackdropLock(!!show);
 
-          if (option) {
+          if (show) {
             this.handleInit();
           }
         }
@@ -220,24 +237,37 @@ export default class Attributes extends Component {
         value,
       }).then((response) => {
         if (response.data && response.data.length) {
-          const fields = response.data[0].fieldsByName;
+          const { fieldsByName, id } = response.data[0];
+          let fetchLayout = false;
+          const updatedDataState = this.state.data;
 
-          Object.keys(fields).map((fieldName) => {
-            this.setState(
-              (prevState) => ({
-                data: {
-                  ...prevState.data,
-                  [fieldName]: {
-                    ...prevState.data[fieldName],
-                    value,
-                  },
-                },
-              }),
-              () => {
-                cb && cb();
-              }
-            );
+          Object.keys(fieldsByName).map((fieldName) => {
+            if (
+              updatedDataState[fieldName].displayed !==
+              fieldsByName[fieldName].displayed
+            ) {
+              fetchLayout = true;
+            }
+
+            updatedDataState[fieldName] = {
+              ...updatedDataState[fieldName],
+              ...fieldsByName[fieldName],
+            };
           });
+
+          this.setState({ data: updatedDataState }, cb);
+
+          if (fetchLayout) {
+            getLayout(attributeType, id).then((response) => {
+              const { elements } = response.data;
+
+              this.setState({
+                layout: elements,
+                loading: false,
+              });
+            });
+          }
+
           return Promise.resolve(true);
         }
         return Promise.resolve(false);
@@ -330,41 +360,43 @@ export default class Attributes extends Component {
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
-      <div
-        onKeyDown={this.handleKeyDown}
-        className={classnames('attributes', {
-          'attributes-in-table': rowId,
-        })}
-      >
-        <button
-          tabIndex={tabIndex}
-          onClick={() => this.handleToggle(true)}
-          className={classnames(
-            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-            {
-              'tag-disabled': dropdown,
-              'tag-disabled disabled': readonly,
-            }
-          )}
+      <FocusTrap active={!!dropdown}>
+        <div
+          onKeyDown={this.handleKeyDown}
+          className={classnames('attributes', {
+            'attributes-in-table': rowId,
+          })}
         >
-          {label ? label : 'Edit'}
-        </button>
-        {dropdown && (
-          <AttributesDropdown
-            {...this.props}
-            attributeType={attributeType}
-            dataId={dataId}
+          <button
             tabIndex={tabIndex}
-            onClickOutside={this.handleCompletion}
-            data={data}
-            layout={layout}
-            handlePatch={this.handlePatch}
-            handleChange={this.handleChange}
-            attrId={attrId}
-            rowIndex={rowIndex}
-          />
-        )}
-      </div>
+            onClick={() => this.handleToggle(true)}
+            className={classnames(
+              'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+              {
+                'tag-disabled': dropdown,
+                'tag-disabled disabled': readonly,
+              }
+            )}
+          >
+            {label ? label : 'Edit'}
+          </button>
+          {dropdown && (
+            <AttributesDropdown
+              {...this.props}
+              attributeType={attributeType}
+              dataId={dataId}
+              tabIndex={tabIndex}
+              onClickOutside={this.handleCompletion}
+              data={data}
+              layout={layout}
+              handlePatch={this.handlePatch}
+              handleChange={this.handleChange}
+              attrId={attrId}
+              rowIndex={rowIndex}
+            />
+          )}
+        </div>
+      </FocusTrap>
     );
   }
 }
@@ -410,4 +442,5 @@ Attributes.propTypes = {
   disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
   openModal: PropTypes.func,
   closeModal: PropTypes.func,
+  setTableNavigation: PropTypes.func,
 };

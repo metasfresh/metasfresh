@@ -19,7 +19,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "locations" : [
       {
-        "metasfreshId" : 100015,
+        "metasfreshId" : 100016,
         "active" : true,
         "postal" : "5040",
         "poBox" : "poBox",
@@ -28,6 +28,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1563553074,
           "createdBy" : 30,
@@ -44,7 +48,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
   {
     "bankAccounts" : [ ],
     "bpartner" : {
-      "id" : 100016,
+      "id" : 100017,
       "active" : true,
       "name" : "bPartner.name",
       "companyName" : "bPartner.companyName",
@@ -61,9 +65,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
-        "leftToRight" : true,
+        "baseLanguage" : true,
         "decimalPoint" : false,
-        "baseLanguage" : true
+        "leftToRight" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -78,7 +82,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "C_BPartner_ID"
           ],
           "keysByColumnName" : {
-            "C_BPartner_ID" : 100016
+            "C_BPartner_ID" : 100017
           }
         },
         "createdByUserId" : 30,
@@ -97,74 +101,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "excludeFromPromotions" : false
     },
     "contacts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "AD_User",
-          "recordId" : {
-            "keyColumnNames" : [
-              "AD_User_ID"
-            ],
-            "keysByColumnName" : {
-              "AD_User_ID" : 100021
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "contactType" : {
-          "billToDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "defaultContact" : {
-            "value" : false,
-            "present" : true
-          },
-          "purchase" : {
-            "value" : false,
-            "present" : true
-          },
-          "purchaseDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "sales" : {
-            "value" : false,
-            "present" : true
-          },
-          "salesDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "shipToDefault" : {
-            "value" : false,
-            "present" : true
-          }
-        },
-        "email" : "c1_email@email.net",
-        "handles" : [ ],
-        "id" : {
-          "bpartnerId" : 100016,
-          "userId" : 100021
-        },
-        "invoiceEmailEnabled" : true,
-        "membershipContact" : false,
-        "name" : "c1_name",
-        "newsletter" : false,
-        "phone" : "c1_phone",
-        "roles" : [ ],
-        "subjectMatterContact" : false
-      },
       {
         "active" : true,
         "changeLog" : {
@@ -219,11 +155,79 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "present" : true
           }
         },
+        "email" : "c1_email@email.net",
+        "handles" : [ ],
+        "id" : {
+          "bpartnerId" : 100017,
+          "userId" : 100022
+        },
+        "invoiceEmailEnabled" : true,
+        "membershipContact" : false,
+        "name" : "c1_name",
+        "newsletter" : false,
+        "phone" : "c1_phone",
+        "roles" : [ ],
+        "subjectMatterContact" : false
+      },
+      {
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "AD_User",
+          "recordId" : {
+            "keyColumnNames" : [
+              "AD_User_ID"
+            ],
+            "keysByColumnName" : {
+              "AD_User_ID" : 100023
+            }
+          },
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561134,
+            "nanos" : 560000000
+          },
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561134,
+            "nanos" : 560000000
+          },
+          "entries" : [ ]
+        },
+        "contactType" : {
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "defaultContact" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchase" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchaseDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "sales" : {
+            "value" : false,
+            "present" : true
+          },
+          "salesDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          }
+        },
         "email" : "c2_email@email.net",
         "handles" : [ ],
         "id" : {
-          "bpartnerId" : 100016,
-          "userId" : 100022
+          "bpartnerId" : 100017,
+          "userId" : 100023
         },
         "invoiceEmailEnabled" : true,
         "membershipContact" : false,
@@ -246,7 +250,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100018
+              "C_BPartner_Location_ID" : 100019
             }
           },
           "createdByUserId" : 30,
@@ -263,12 +267,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
-        "existingLocationId" : 100017,
+        "existingLocationId" : 100018,
         "gln" : "l1_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
-          "repoId" : 100018,
-          "bpartnerId" : 100016
+          "repoId" : 100019,
+          "bpartnerId" : 100017
         },
         "locationType" : {
           "billTo" : {
@@ -286,11 +291,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "l1_poBox",
         "postal" : "l1_postal",
-        "region" : "l1_region"
+        "region" : "l1_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       },
       {
         "active" : true,
@@ -303,7 +315,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100020
+              "C_BPartner_Location_ID" : 100021
             }
           },
           "createdByUserId" : 30,
@@ -320,12 +332,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
-        "existingLocationId" : 100019,
+        "existingLocationId" : 100020,
         "gln" : "l2_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
-          "repoId" : 100020,
-          "bpartnerId" : 100016
+          "repoId" : 100021,
+          "bpartnerId" : 100017
         },
         "locationType" : {
           "billTo" : {
@@ -343,11 +356,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "l2_poBox",
         "postal" : "l2_postal",
-        "region" : "l2_region"
+        "region" : "l2_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -382,7 +402,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "entries" : [ ]
         },
-        "currencyId" : 100012,
+        "currencyId" : 100013,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
@@ -506,7 +526,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
               "AD_User_ID"
             ],
             "keysByColumnName" : {
-              "AD_User_ID" : 100014
+              "AD_User_ID" : 100015
             }
           },
           "createdByUserId" : 30,
@@ -555,7 +575,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "handles" : [ ],
         "id" : {
           "bpartnerId" : 20,
-          "userId" : 100014
+          "userId" : 100015
         },
         "invoiceEmailEnabled" : true,
         "membershipContact" : false,
@@ -596,8 +616,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -619,11 +640,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -658,7 +686,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "entries" : [ ]
         },
-        "currencyId" : 100012,
+        "currencyId" : 100013,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
@@ -782,7 +810,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
               "AD_User_ID"
             ],
             "keysByColumnName" : {
-              "AD_User_ID" : 100014
+              "AD_User_ID" : 100015
             }
           },
           "createdByUserId" : 30,
@@ -830,7 +858,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "handles" : [ ],
         "id" : {
           "bpartnerId" : 20,
-          "userId" : 100014
+          "userId" : 100015
         },
         "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
@@ -869,8 +897,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -892,11 +921,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -931,7 +967,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "entries" : [ ]
         },
-        "currencyId" : 100012,
+        "currencyId" : 100013,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
@@ -1077,8 +1113,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -1100,11 +1137,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -1139,7 +1183,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "entries" : [ ]
         },
-        "currencyId" : 100012,
+        "currencyId" : 100013,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
@@ -1285,8 +1329,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
           "repoId" : 40,
@@ -1308,11 +1353,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "locationRecord.poBox",
         "postal" : "locationRecord.postal",
-        "region" : "locationRecord.regionName"
+        "region" : "locationRecord.regionName",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       },
       {
         "active" : true,
@@ -1325,7 +1377,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100016
+              "C_BPartner_Location_ID" : 100017
             }
           },
           "createdByUserId" : 30,
@@ -1342,11 +1394,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation_city",
         "countryCode" : "DE",
-        "existingLocationId" : 100015,
+        "existingLocationId" : 100016,
         "gln" : "newLocation_gln",
+        "handOverLocation" : false,
         "handles" : [ ],
         "id" : {
-          "repoId" : 100016,
+          "repoId" : 100017,
           "bpartnerId" : 20
         },
         "locationType" : {
@@ -1365,11 +1418,18 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
+          },
+          "visitorsAddress" : {
+            "value" : false,
+            "present" : true
           }
         },
         "poBox" : "newLocation_poBox",
         "postal" : "newLocation_postal",
-        "region" : "newLocation_region"
+        "region" : "newLocation_region",
+        "remitTo" : false,
+        "replicationLookupDefault" : false,
+        "visitorsAddress" : false
       }
     ],
     "orgId" : 10
@@ -1452,6 +1512,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "handoverLocation" : false,
+    "remitTo" : false,
+    "visitorsAddress" : false,
+    "replicationLookupDefault" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1479,6 +1543,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "handoverLocation" : false,
+    "remitTo" : false,
+    "visitorsAddress" : false,
+    "replicationLookupDefault" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1506,6 +1574,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "handoverLocation" : false,
+    "remitTo" : false,
+    "visitorsAddress" : false,
+    "replicationLookupDefault" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1552,6 +1624,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1627,6 +1703,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1702,6 +1782,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1735,6 +1819,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
           "lastUpdatedMillis" : 1561133544,
           "lastUpdatedBy" : 30
         }
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersProducts=[
+  {
+    "bpartnerProducts" : [
+      {
+        "bPartnerId" : 21,
+        "vendor" : false,
+        "currentVendor" : false,
+        "customer" : false,
+        "leadTimeInDays" : 0,
+        "excludedFromSale" : false,
+        "excludedFromPurchase" : false,
+        "productId" : 10
       }
     ]
   }
@@ -1783,6 +1885,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 30,
@@ -1854,6 +1960,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 31,
@@ -1933,6 +2043,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 32,
@@ -2004,6 +2118,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 33,
@@ -2082,6 +2200,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "handoverLocation" : false,
+            "remitTo" : false,
+            "visitorsAddress" : false,
+            "replicationLookupDefault" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 34,

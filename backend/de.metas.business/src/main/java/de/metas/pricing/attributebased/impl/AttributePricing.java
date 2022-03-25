@@ -1,24 +1,6 @@
 package de.metas.pricing.attributebased.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -42,6 +24,22 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class AttributePricing implements IPricingRule
 {
@@ -124,8 +122,8 @@ public class AttributePricing implements IPricingRule
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
-			final IPricingContext pricingCtx,
-			final IPricingResult result,
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final IPricingResult result,
 			@NonNull final I_M_ProductPrice productPrice)
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
@@ -190,7 +188,7 @@ public class AttributePricing implements IPricingRule
 		return productPriceAttribute;
 	}
 
-	private final Optional<IProductPriceAware> getProductPriceAttributeAware(final IPricingContext pricingCtx)
+	private Optional<IProductPriceAware> getProductPriceAttributeAware(final IPricingContext pricingCtx)
 	{
 		final Object referencedObject = pricingCtx.getReferencedObject();
 
@@ -216,7 +214,7 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @return product price attribute if exists and it's valid
 	 */
-	private static final Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
+	private static Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
 	{
 		if (productPriceId <= 0)
 		{
@@ -234,7 +232,7 @@ public class AttributePricing implements IPricingRule
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			logger.debug("Returning null because M_ProductPrice_ID={} is not active: {}", productPriceId);
+			logger.debug("Returning null because M_ProductPrice_ID={} is not active", productPriceId);
 			return Optional.empty();
 		}
 

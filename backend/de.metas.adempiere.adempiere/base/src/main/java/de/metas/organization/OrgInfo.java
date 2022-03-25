@@ -2,6 +2,7 @@ package de.metas.organization;
 
 import java.time.ZoneId;
 
+import de.metas.user.UserGroupId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -68,4 +69,15 @@ public class OrgInfo
 	BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
 	ZoneId timeZone;
+
+	/**
+	 * If the sysconfig FlatrateTerm_Handler#SYS_Config_AUTO_INVOICE is set to N then this is ignored
+	 */
+	boolean autoInvoiceFlatrateTerms;
+
+
+	@Nullable
+	UserGroupId supplierApprovalExpirationNotifyUserGroupID;
+	@Nullable
+	UserGroupId partnerCreatedFromAnotherOrgNotifyUserGroupID;
 }

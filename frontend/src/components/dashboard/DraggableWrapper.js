@@ -2,9 +2,8 @@ import update from 'immutability-helper';
 import produce from 'immer';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { DragDropContext } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import { connect } from 'react-redux';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -29,6 +28,7 @@ export class DraggableWrapper extends Component {
   state = {
     cards: [],
     indicators: [],
+    indicatorsLoaded: false,
     idMaximized: null,
     websocketEndpoint: null,
     chartOptions: false,
@@ -135,6 +135,7 @@ export class DraggableWrapper extends Component {
     getTargetIndicatorsDashboard().then((response) => {
       this.setState({
         indicators: response.data.items,
+        indicatorsLoaded: true,
       });
     });
   };
@@ -267,6 +268,7 @@ export class DraggableWrapper extends Component {
             removeCard={this.removeCard}
             entity={'indicators'}
             transparent={!editmode}
+            className="indicator-card"
           >
             <RawChart
               id={indicator.id}
@@ -287,6 +289,20 @@ export class DraggableWrapper extends Component {
             />
           </DndWidget>
         ))}
+      </div>
+    );
+  };
+
+  renderLogo = () => {
+    const { indicators, indicatorsLoaded } = this.state;
+
+    return indicators.length > 0 || !indicatorsLoaded ? (
+      false
+    ) : (
+      <div className="dashboard-wrapper dashboard-logo-wrapper">
+        <div className="logo-wrapper">
+          <img src={logo} />
+        </div>
       </div>
     );
   };
@@ -315,52 +331,48 @@ export class DraggableWrapper extends Component {
 
     return (
       <div className="kpis-wrapper">
-        {cards.length > 0 ? (
-          cards.map((item, id) => {
-            return (
-              <DndWidget
-                key={id}
-                index={id}
-                id={item.id}
-                moveCard={this.moveCard}
-                addCard={this.addCard}
-                onDrop={this.onDrop}
-                removeCard={this.removeCard}
-                entity={'cards'}
-                className={
-                  'draggable-widget ' +
-                  (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
-                }
-                transparent={!editmode}
-              >
-                <ChartWidget
-                  key={item.id}
-                  id={item.id}
+        {cards.length > 0
+          ? cards.map((item, id) => {
+              return (
+                <DndWidget
+                  key={id}
                   index={id}
-                  chartType={item.kpi.chartType}
-                  caption={item.caption}
-                  fields={item.kpi.fields}
-                  groupBy={item.kpi.groupByField}
-                  kpi={true}
+                  id={item.id}
                   moveCard={this.moveCard}
-                  idMaximized={idMaximized}
-                  maximizeWidget={this.maximizeWidget}
-                  text={item.caption}
-                  data={item.data}
-                  noData={item.fetchOnDrop}
-                  handleChartOptions={this.handleChartOptions}
-                  {...{ editmode }}
-                />
-              </DndWidget>
-            );
-          })
-        ) : (
-          <div className="dashboard-wrapper dashboard-logo-wrapper">
-            <div className="logo-wrapper">
-              <img src={logo} />
-            </div>
-          </div>
-        )}
+                  addCard={this.addCard}
+                  onDrop={this.onDrop}
+                  removeCard={this.removeCard}
+                  entity={'cards'}
+                  className={
+                    'draggable-widget ' +
+                    (idMaximized === item.id
+                      ? 'draggable-widget-maximize '
+                      : '')
+                  }
+                  transparent={!editmode}
+                >
+                  <ChartWidget
+                    key={item.id}
+                    id={item.id}
+                    index={id}
+                    chartType={item.kpi.chartType}
+                    caption={item.caption}
+                    fields={item.kpi.fields}
+                    groupBy={item.kpi.groupByField}
+                    kpi={true}
+                    moveCard={this.moveCard}
+                    idMaximized={idMaximized}
+                    maximizeWidget={this.maximizeWidget}
+                    text={item.caption}
+                    data={item.data}
+                    noData={item.fetchOnDrop}
+                    handleChartOptions={this.handleChartOptions}
+                    {...{ editmode }}
+                  />
+                </DndWidget>
+              );
+            })
+          : this.renderLogo()}
       </div>
     );
   };
@@ -502,21 +514,22 @@ export class DraggableWrapper extends Component {
     const { editmode } = this.props;
 
     return (
-      <div className="dashboard-cards-wrapper">
-        {this.renderOptionModal()}
-        <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
-          {this.renderIndicators()}
-          {this.renderKpis()}
+      <DndProvider backend={HTML5Backend}>
+        <div className="dashboard-cards-wrapper">
+          {this.renderOptionModal()}
+          <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
+            {this.renderIndicators()}
+            {this.renderKpis()}
+          </div>
+          {editmode && <Sidenav addCard={this.addCard} />}
         </div>
-        {editmode && <Sidenav addCard={this.addCard} />}
-      </div>
+      </DndProvider>
     );
   }
 }
 
 DraggableWrapper.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   editmode: PropTypes.bool,
 };
 
-export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+export default DraggableWrapper;

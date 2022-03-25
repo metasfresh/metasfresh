@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.api;
 
 import de.metas.async.AsyncBatchId;
@@ -8,8 +5,12 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
@@ -56,12 +57,12 @@ public interface IAsyncBatchDAO extends ISingletonService
 	/**
 	 * retrieve workpackages for async batch
 	 */
-	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, String trxName);
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, @Nullable String trxName);
 
 	/**
 	 * retrieve workpackages for async batch
 	 */
-	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, String trxName, Boolean processed);
+	List<I_C_Queue_WorkPackage> retrieveWorkPackages(I_C_Async_Batch asyncBatch, @Nullable String trxName, Boolean processed);
 
 	/**
 	 * retrieve notified workpackages fro an async batch
@@ -72,4 +73,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 * fetch the notifyable record for a given workpackage
 	 */
 	I_C_Queue_WorkPackage_Notified fetchWorkPackagesNotified(I_C_Queue_WorkPackage workPackage);
+
+	void setPInstance_IDAndSave(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final PInstanceId pInstanceId);
+
 }

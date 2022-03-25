@@ -1,8 +1,9 @@
 package de.metas.ordercandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -180,6 +181,27 @@ public interface I_C_OLCand
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setApplySalesRepFrom (java.lang.String ApplySalesRepFrom);
+
+	/**
+	 * Get Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getApplySalesRepFrom();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ApplySalesRepFrom = new ModelColumn<>(I_C_OLCand.class, "ApplySalesRepFrom", null);
+	String COLUMNNAME_ApplySalesRepFrom = "ApplySalesRepFrom";
 
 	/**
 	 * Set Bill Business Partner.
@@ -491,6 +513,26 @@ public interface I_C_OLCand
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
+	 * Set Internal sales rep.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_SalesRep_Internal_ID (int C_BPartner_SalesRep_Internal_ID);
+
+	/**
+	 * Get Internal sales rep.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_SalesRep_Internal_ID();
+
+	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
 
 	/**
 	 * Set Kosten.
@@ -2417,4 +2459,69 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getBPartnerName();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_OLCand.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getEMail();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_EMail = new ModelColumn<>(I_C_OLCand.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhone (@Nullable String Phone);
+
+	/**
+	 * Get Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getPhone();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Phone = new ModelColumn<>(I_C_OLCand.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
 }

@@ -24,11 +24,14 @@ package de.metas.camel.externalsystems.core;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+
+import static de.metas.camel.externalsystems.core.restapi.ExternalSystemRestAPIHandler.HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID;
 
 @Configuration
 public class AppConfiguration
@@ -53,5 +56,22 @@ public class AppConfiguration
 	{
 		camelContext.getManagementStrategy()
 				.addEventNotifier(new AuditEventNotifier(context.getBean(ProducerTemplate.class)));
+	}
+
+	@Bean
+	CamelContextConfiguration contextConfiguration()
+	{
+		return new CamelContextConfiguration()
+		{
+			@Override
+			public void beforeApplicationStart(final CamelContext camelContext) {}
+
+			@Override
+			public void afterApplicationStart(final CamelContext camelContext)
+			{
+				context.getBean(ProducerTemplate.class)
+						.sendBody("direct:" + HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID,"trigger rest api handler!");
+			}
+		};
 	}
 }

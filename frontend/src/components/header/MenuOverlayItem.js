@@ -152,6 +152,25 @@ class MenuOverlayItem extends Component {
     dispatch(getElementBreadcrumb(entity, elementId));
   };
 
+  iconByType = (type) => {
+    switch (type) {
+      case 'window':
+        return <i className="meta-icon-vertragsverwaltung m-icon-space" />;
+      case 'newRecord':
+        return <i className="meta-icon-file m-icon-space" />;
+      case 'process':
+        return <i className="meta-icon-issue m-icon-space" />;
+      case 'report':
+        return <i className="meta-icon-beschaffung m-icon-space" />;
+      case 'group':
+        return <i className="meta-icon-report m-icon-space" />;
+      case 'board':
+        return <i className="meta-icon-calendar m-icon-space" />;
+      default:
+        return '';
+    }
+  };
+
   render() {
     const {
       nodeId,
@@ -179,8 +198,14 @@ class MenuOverlayItem extends Component {
         {!query && (
           <BookmarkButton
             isBookmark={favorite}
-            {...{ onUpdateData, nodeId, transparentBookmarks }}
+            {...{
+              type,
+              onUpdateData,
+              nodeId,
+              transparentBookmarks,
+            }}
           >
+            {this.iconByType(type)}
             <span
               className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
               onClick={(e) => {
@@ -195,47 +220,52 @@ class MenuOverlayItem extends Component {
         )}
 
         {query && (
-          <span
-            className={
-              children
-                ? ''
-                : type === 'group'
-                ? 'query-clickable-group'
-                : 'query-clickable-link'
-            }
-            onClick={
-              children
-                ? ''
-                : (e) => this.clickedItem(e, elementId, nodeId, type)
-            }
-          >
-            {children
-              ? children.map((item, id) => (
-                  <span key={id} className="query-results">
-                    <span className="query-caption">
-                      {id === 0 ? caption + ' / ' : '/'}
-                    </span>
-                    <span
-                      title={item.caption}
-                      className={
-                        type === 'group'
-                          ? 'query-clickable-group'
-                          : 'query-clickable-link'
-                      }
-                      onClick={(e) =>
-                        this.clickedItem(
-                          e,
-                          item.elementId,
-                          item.nodeId,
-                          item.type
-                        )
-                      }
-                    >
-                      {item.caption}
-                    </span>
-                  </span>
-                ))
-              : caption}
+          <span>
+            {this.iconByType(type)}
+            <span
+              className={
+                children
+                  ? ''
+                  : type === 'group'
+                  ? 'query-clickable-group'
+                  : 'query-clickable-link'
+              }
+              onClick={
+                children
+                  ? ''
+                  : (e) => this.clickedItem(e, elementId, nodeId, type)
+              }
+            >
+              <span className="query-menu-item">
+                {children
+                  ? children.map((item, id) => (
+                      <span key={id} className="query-results">
+                        <span className="query-caption">
+                          {id === 0 ? caption + ' / ' : '/'}
+                        </span>
+                        <span
+                          title={item.caption}
+                          className={
+                            type === 'group'
+                              ? 'query-clickable-group'
+                              : 'query-clickable-link'
+                          }
+                          onClick={(e) =>
+                            this.clickedItem(
+                              e,
+                              item.elementId,
+                              item.nodeId,
+                              item.type
+                            )
+                          }
+                        >
+                          {item.caption}
+                        </span>
+                      </span>
+                    ))
+                  : caption}
+              </span>
+            </span>
           </span>
         )}
       </span>

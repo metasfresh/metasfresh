@@ -5,6 +5,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -33,6 +34,8 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
+	private final Set<String> eMails = new HashSet<>();
+
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
@@ -44,7 +47,11 @@ public class InvoiceHeaderImplBuilder
 
 	private BPartnerInfo billTo;
 
+	private String paymentRule;
+
 	private int Sales_BPartner_ID;
+
+	private int SalesRep_User_ID;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -63,6 +70,10 @@ public class InvoiceHeaderImplBuilder
 	private Boolean taxIncluded = null;
 
 	private int C_Async_Batch_ID;
+
+	private int C_Incoterms_ID;
+
+	private String incotermLocation;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -100,6 +111,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setBillTo(getBillTo());
 		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
 
+		invoiceHeader.setSalesRepId(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
+
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
 		invoiceHeader.setDescriptionBottom(getDescriptionBottom());
@@ -109,6 +122,13 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setM_InOut_ID(getM_InOut_ID());
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
+		invoiceHeader.setEMail(getEmail());
+
+		//incoterms
+		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
+		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		return invoiceHeader;
 	}
@@ -126,6 +146,26 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Async_Batch_ID(final int asyncBatchId)
 	{
 		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
+	}
+
+	private int getC_Incoterms_ID()
+	{
+		return C_Incoterms_ID;
+	}
+
+	public void setC_Incoterms_ID(final int incoterms_id)
+	{
+		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
+	}
+
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
 	public I_C_DocType getC_DocTypeInvoice()
@@ -148,6 +188,16 @@ public class InvoiceHeaderImplBuilder
 		normalizeAndAddIfNotNull(POReferences, poReference);
 	}
 
+	public String getEmail()
+	{
+		return CollectionUtils.singleElementOrNull(eMails);
+	}
+
+	public void setEmail(final String eMail)
+	{
+		normalizeAndAddIfNotNull(eMails, eMail);
+	}
+
 	public LocalDate getDateInvoiced()
 	{
 		Check.assumeNotNull(_dateInvoiced, "Parameter _dateInvoiced is not null");
@@ -168,6 +218,16 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		return _dateAcct;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
@@ -238,9 +298,21 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
+	public int get_SaleRep_ID ()
+	{
+		return SalesRep_User_ID;
+	}
+
+
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
+	}
+
+
+	public void setSalesRep_ID(final int salesRep_ID)
+	{
+		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
 	}
 
 	public int getC_Currency_ID()
@@ -430,4 +502,5 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 }

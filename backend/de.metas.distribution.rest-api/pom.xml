@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <migration-sql-basedir/>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
+    </properties>
+
+    <groupId>de.metas.distribution</groupId>
+    <artifactId>de.metas.distribution.rest-api</artifactId>
+    <version>10.0.0</version>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.workflow</groupId>
+            <artifactId>de.metas.workflow.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+

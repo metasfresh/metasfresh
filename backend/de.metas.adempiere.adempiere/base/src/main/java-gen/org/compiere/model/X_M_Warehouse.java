@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehouse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -801530237L;
+	private static final long serialVersionUID = 895356713L;
 
     /** Standard Constructor */
     public X_M_Warehouse (final Properties ctx, final int M_Warehouse_ID, @Nullable final String trxName)
@@ -143,6 +143,54 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public void setIsIssueWarehouse (final boolean IsIssueWarehouse)
+	{
+		set_Value (COLUMNNAME_IsIssueWarehouse, IsIssueWarehouse);
+	}
+
+	@Override
+	public boolean isIssueWarehouse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsIssueWarehouse);
+	}
+
+	@Override
+	public void setIsPickingWarehouse (final boolean IsPickingWarehouse)
+	{
+		set_Value (COLUMNNAME_IsPickingWarehouse, IsPickingWarehouse);
+	}
+
+	@Override
+	public boolean isPickingWarehouse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPickingWarehouse);
+	}
+
+	@Override
+	public void setIsQualityReturnWarehouse (final boolean IsQualityReturnWarehouse)
+	{
+		set_Value (COLUMNNAME_IsQualityReturnWarehouse, IsQualityReturnWarehouse);
+	}
+
+	@Override
+	public boolean isQualityReturnWarehouse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsQualityReturnWarehouse);
+	}
+
+	@Override
+	public void setIsQuarantineWarehouse (final boolean IsQuarantineWarehouse)
+	{
+		set_Value (COLUMNNAME_IsQuarantineWarehouse, IsQuarantineWarehouse);
+	}
+
+	@Override
+	public boolean isQuarantineWarehouse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsQuarantineWarehouse);
+	}
+
+	@Override
 	public void setIsReceiveAsSourceHU (final boolean IsReceiveAsSourceHU)
 	{
 		set_Value (COLUMNNAME_IsReceiveAsSourceHU, IsReceiveAsSourceHU);
@@ -152,27 +200,6 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public boolean isReceiveAsSourceHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReceiveAsSourceHU);
-	}
-
-	/** 
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	@Override
-	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
-	{
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	@Override
-	public java.lang.String getMRP_Exclude() 
-	{
-		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
 
 	@Override
@@ -218,21 +245,6 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
-	public void setM_WarehouseSource_ID (final int M_WarehouseSource_ID)
-	{
-		if (M_WarehouseSource_ID < 1) 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, M_WarehouseSource_ID);
-	}
-
-	@Override
-	public int getM_WarehouseSource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class);
@@ -257,6 +269,69 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public int getM_Warehouse_Type_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Type_ID);
+	}
+
+	@Override
+	public void setM_WarehouseSource_ID (final int M_WarehouseSource_ID)
+	{
+		if (M_WarehouseSource_ID < 1) 
+			set_Value (COLUMNNAME_M_WarehouseSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_WarehouseSource_ID, M_WarehouseSource_ID);
+	}
+
+	@Override
+	public int getM_WarehouseSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturing_Warehouse_Group_ID, org.compiere.model.I_M_Warehouse_Group.class);
+	}
+
+	@Override
+	public void setManufacturing_Warehouse_Group(final org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturing_Warehouse_Group_ID, org.compiere.model.I_M_Warehouse_Group.class, Manufacturing_Warehouse_Group);
+	}
+
+	@Override
+	public void setManufacturing_Warehouse_Group_ID (final int Manufacturing_Warehouse_Group_ID)
+	{
+		if (Manufacturing_Warehouse_Group_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturing_Warehouse_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturing_Warehouse_Group_ID, Manufacturing_Warehouse_Group_ID);
+	}
+
+	@Override
+	public int getManufacturing_Warehouse_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Manufacturing_Warehouse_Group_ID);
+	}
+
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	@Override
+	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
+	{
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	@Override
+	public java.lang.String getMRP_Exclude() 
+	{
+		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
 
 	@Override

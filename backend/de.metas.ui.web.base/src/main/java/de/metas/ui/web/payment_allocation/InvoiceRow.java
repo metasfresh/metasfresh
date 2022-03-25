@@ -61,6 +61,10 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final String documentNo;
 
+	@ViewColumn(seqNo = 25, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "POReference")
+	@Getter
+	private final String poReference;
+
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
 	@Getter
 	private final LocalDate dateInvoiced;
@@ -76,7 +80,7 @@ public class InvoiceRow implements IViewRow
 	private final Amount openAmt;
 
 	public static final String FIELD_DiscountAmt = "discountAmt";
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount", fieldName = FIELD_DiscountAmt)
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "DiscountAmt", fieldName = FIELD_DiscountAmt)
 	@Getter
 	private final Amount discountAmt;
 
@@ -124,6 +128,7 @@ public class InvoiceRow implements IViewRow
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final ITranslatableString docTypeName,
 			@NonNull final String documentNo,
+			@Nullable final String poReference,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
 			@NonNull final InvoiceDocBaseType docBaseType,
@@ -138,6 +143,7 @@ public class InvoiceRow implements IViewRow
 		this.isPreparedForAllocation = isPreparedForAllocation;
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
+		this.poReference = poReference;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
 		this.docBaseType = docBaseType;

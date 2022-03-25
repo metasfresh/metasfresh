@@ -28,10 +28,11 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class StepDefData<T>
+public abstract class StepDefData<T>
 {
 	private final Map<String, T> records = new HashMap<>();
 
@@ -62,7 +63,7 @@ public class StepDefData<T>
 	{
 		for (final Map.Entry<String, T> entry : map.entrySet())
 		{
-			put(entry.getKey(), entry.getValue());
+			putOrReplace(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -85,6 +86,12 @@ public class StepDefData<T>
 		assertThat(record).as("Missing record for identifier=%s", identifier).isNotNull();
 
 		return record;
+	}
+
+	@NonNull
+	public Optional<T> getOptional(@NonNull final String identifier)
+	{
+		return Optional.ofNullable(records.get(identifier));
 	}
 
 	public ImmutableCollection<T> getRecords()

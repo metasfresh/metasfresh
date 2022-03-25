@@ -88,12 +88,6 @@ class QuotationLineAggregator
 		return this;
 	}
 
-	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
-		details.add(detail);
-	}
-
 	public void createOrderLines(@NonNull final OrderFactory orderFactory)
 	{
 		if (this.orderLineBuilderUsed != null)

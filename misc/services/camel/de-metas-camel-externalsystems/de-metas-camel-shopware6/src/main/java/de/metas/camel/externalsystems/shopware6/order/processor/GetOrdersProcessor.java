@@ -26,57 +26,56 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.NumberUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRoute.GET_CURRENCY_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRoute.GET_SALUTATION_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 
 public class GetOrdersProcessor implements Processor
 {
 	private final ProcessLogger processLogger;
+	private final ProducerTemplate producerTemplate;
 
-	public GetOrdersProcessor(final ProcessLogger processLogger)
+	public GetOrdersProcessor(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
 	{
 		this.processLogger = processLogger;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
@@ -97,66 +96,63 @@ public class GetOrdersProcessor implements Processor
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
-		final Shopware6QueryRequest getOrdersRequest;
-		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
-		if (Check.isNotBlank(orderNo))
-		{
-			getOrdersRequest = buildOrderNoQueryRequest(orderNo);
-		}
-		else
-		{
-			final String updatedAfter = CoalesceUtil.coalesceNotNull(
-					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
-					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
-					Instant.ofEpochSecond(0).toString());
-
-			getOrdersRequest = buildUpdatedAfterQueryRequest(updatedAfter);
-		}
-
-		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
-		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
+		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.pInstanceId(request.getAdPInstanceId())
+				.build();
 
-		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
+		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
+
+		final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(request);
+
+		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(importOrdersRequest.getShopware6QueryRequest(), salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
 
-		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
-				.baseUrl(basePath)
-				.clientId(clientId)
-				.clientSecret(clientSecret)
-				.build();
+		final CurrencyInfoProvider currencyInfoProvider = getCurrencyInfoProvider(basePath, clientId, clientSecret);
 
-		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)exchange.getContext().createProducerTemplate()
-				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+		final SalutationInfoProvider salutationInfoProvider = getSalutationInfoProvider(basePath, clientId, clientSecret);
 
-		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider);
+		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
 	@VisibleForTesting
-	public ImportOrdersRouteContext buildContext(
+	public static ImportOrdersRouteContext buildContext(
 			@NonNull final JsonExternalSystemRequest request,
 			@NonNull final ShopwareClient shopwareClient,
-			@NonNull final CurrencyInfoProvider currencyInfoProvider)
+			@NonNull final CurrencyInfoProvider currencyInfoProvider,
+			@NonNull final SalutationInfoProvider salutationInfoProvider,
+			final boolean skipNextImportStartingTimestamp)
 	{
 		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+		final String emailJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_EMAIL);
+
+		final String productLookup = request.getParameters().get(ExternalSystemConstants.PARAM_PRODUCT_LOOKUP);
+
+		Check.assumeNotNull(productLookup, "JsonExternalSystemRequest.parameters[ProductLookup] can't be missing");
 
 		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.externalSystemRequest(request)
 				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
+				.pInstanceId(request.getAdPInstanceId())
 				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
+				.emailJsonPath(emailJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
+				.salutationInfoProvider(salutationInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
+				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
+				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
 				.build();
 	}
 
 	@NonNull
-	private Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
+	private static Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
 	{
 		final String shopware6Mappings = request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
 
@@ -176,50 +172,13 @@ public class GetOrdersProcessor implements Processor
 		}
 	}
 
-	@NonNull
-	@VisibleForTesting
-	public static  QueryRequest buildOrderNoQueryRequest(@NonNull final String orderNo)
-	{
-		return QueryRequest.builder()
-				.query(JsonQuery.builder()
-							   .field(Shopware6Constants.FIELD_ORDER_NUMBER)
-							   .queryType(JsonQuery.QueryType.EQUALS)
-							   .value(orderNo)
-							   .build())
-				.build();
-	}
-
-	@NonNull
-	@VisibleForTesting
-	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)
-	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
-
-		return MultiQueryRequest.builder()
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_UPDATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_CREATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.build())
-				.build();
-	}
-
 	@Nullable
-	private TaxProductIdProvider getTaxProductIdProvider(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private static TaxProductIdProvider getTaxProductIdProvider(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		final ImmutableMap.Builder<JsonMetasfreshId, List<BigDecimal>> productId2VatRatesBuilder = ImmutableMap.builder();
 		final Map<String, String> parameters = externalSystemRequest.getParameters();
 
-		final String normalVatRates = parameters.get(PARAM_FREIGHT_COST_NORMAL_VAT_RATES);
+		final String normalVatRates = parameters.get(PARAM_NORMAL_VAT_RATES);
 		final String normalVatProductId = parameters.get(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID);
 		if (Check.isNotBlank(normalVatProductId) && Check.isNotBlank(normalVatRates))
 		{
@@ -229,7 +188,7 @@ public class GetOrdersProcessor implements Processor
 			productId2VatRatesBuilder.put(productId, rates);
 		}
 
-		final String reducedVatRates = parameters.get(PARAM_FREIGHT_COST_REDUCED_VAT_RATES);
+		final String reducedVatRates = parameters.get(PARAM_REDUCED_VAT_RATES);
 		final String reducedVatProductId = parameters.get(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID);
 		if (Check.isNotBlank(reducedVatProductId) && Check.isNotBlank(reducedVatRates))
 		{
@@ -247,5 +206,31 @@ public class GetOrdersProcessor implements Processor
 		}
 
 		return TaxProductIdProvider.of(productId2VatRates);
+	}
+
+	@NonNull
+	private CurrencyInfoProvider getCurrencyInfoProvider(@NonNull final String basePath, @NonNull final String clientId, @NonNull final String clientSecret)
+	{
+		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		return (CurrencyInfoProvider)producerTemplate
+				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+	}
+
+	@NonNull
+	private SalutationInfoProvider getSalutationInfoProvider(@NonNull final String basePath, @NonNull final String clientId, @NonNull final String clientSecret)
+	{
+		final GetSalutationsRequest getSalutationsRequest = GetSalutationsRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		return (SalutationInfoProvider)producerTemplate
+				.sendBody("direct:" + GET_SALUTATION_ROUTE_ID, ExchangePattern.InOut, getSalutationsRequest);
 	}
 }

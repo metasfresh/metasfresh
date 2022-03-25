@@ -36,7 +36,8 @@ describe('Attributes component', () => {
     it('toggle triggers init', done => {
       const props = fixtures.data1.widgetProps;
       const patchFn = jest.fn();
-      const wrapper = shallow(<Attributes {...props} patch={patchFn} />);
+      const setTableNavigationFn = jest.fn();
+      const wrapper = shallow(<Attributes {...props} patch={patchFn} setTableNavigation={setTableNavigationFn} />);
       const spy = jest.spyOn(wrapper.instance(), 'handleToggle');
       const spyInit = jest.spyOn(wrapper.instance(), 'handleInit');
 

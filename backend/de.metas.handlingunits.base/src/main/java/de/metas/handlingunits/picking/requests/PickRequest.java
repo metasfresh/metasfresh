@@ -1,25 +1,24 @@
 package de.metas.handlingunits.picking.requests;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.eevolution.api.PPOrderBOMLineId;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.QtyRejectedWithReason;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -46,30 +45,37 @@ import lombok.Value;
 @Value
 public class PickRequest
 {
-	ShipmentScheduleId shipmentScheduleId;
+	@Nullable PickingCandidateId existingPickingCandidateId;
+	@NonNull ShipmentScheduleId shipmentScheduleId;
 
-	PickFrom pickFrom;
-	ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrder;
+	@NonNull PickFrom pickFrom;
+	@Nullable ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrder;
 
-	HuPackingInstructionsId packToId;
+	@Nullable PackToSpec packToSpec;
 
-	PickingSlotId pickingSlotId;
+	@Nullable PickingSlotId pickingSlotId;
 
-	/** Quantity to be picked. If not set, the whole HU shall be picked */
-	Quantity qtyToPick;
+	/**
+	 * Quantity to be picked. If not set, the whole HU shall be picked
+	 */
+	@Nullable Quantity qtyToPick;
+	@Nullable QtyRejectedWithReason qtyRejected;
 
 	boolean autoReview;
 
 	@Builder
 	private PickRequest(
+			@Nullable final PickingCandidateId existingPickingCandidateId,
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			@NonNull PickFrom pickFrom,
 			@Nullable List<IssueToPickingOrderRequest> issuesToPickingOrder,
-			@Nullable HuPackingInstructionsId packToId,
+			@Nullable PackToSpec packToSpec,
 			@Nullable PickingSlotId pickingSlotId,
 			@Nullable Quantity qtyToPick,
+			@Nullable QtyRejectedWithReason qtyRejected,
 			boolean autoReview)
 	{
+		this.existingPickingCandidateId = existingPickingCandidateId;
 		this.shipmentScheduleId = shipmentScheduleId;
 
 		this.pickFrom = pickFrom;
@@ -85,16 +91,18 @@ public class PickRequest
 		// Pick from picking/manufacturing order:
 		else if (pickFrom.isPickFromPickingOrder())
 		{
-			Check.assumeNotNull(qtyToPick, "Parameter qtyToPick is not null");
+			Objects.requireNonNull(qtyToPick, "Parameter qtyToPick is not null");
 			this.qtyToPick = qtyToPick;
-			this.issuesToPickingOrder = ImmutableList.copyOf(issuesToPickingOrder);
+			this.issuesToPickingOrder = ImmutableList.copyOf(Objects.requireNonNull(issuesToPickingOrder));
 		}
 		else
 		{
 			throw new AdempiereException("Unknown pick from: " + pickFrom);
 		}
 
-		this.packToId = packToId;
+		this.qtyRejected = qtyRejected;
+
+		this.packToSpec = packToSpec;
 
 		this.pickingSlotId = pickingSlotId;
 
@@ -105,16 +113,9 @@ public class PickRequest
 	@Builder
 	public static class IssueToPickingOrderRequest
 	{
-		@NonNull
-		PPOrderBOMLineId issueToOrderBOMLineId;
-
-		@NonNull
-		HuId issueFromHUId;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		Quantity qtyToIssue;
+		@NonNull PPOrderBOMLineId issueToOrderBOMLineId;
+		@NonNull HuId issueFromHUId;
+		@NonNull ProductId productId;
+		@NonNull Quantity qtyToIssue;
 	}
 }

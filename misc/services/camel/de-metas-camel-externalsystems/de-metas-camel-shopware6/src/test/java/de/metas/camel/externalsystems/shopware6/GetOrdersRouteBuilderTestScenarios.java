@@ -25,8 +25,10 @@ package de.metas.camel.externalsystems.shopware6;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -64,7 +66,7 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class), Mockito.mock(ProducerTemplate.class));
 	}
 
 	@Override
@@ -81,10 +83,13 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
 
+		final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build();
+
 		prepareRouteForTesting(failingMockUpsertBPartnerProcessor,
 							   mockErrorRouteEndpointProcessor,
 							   successfullyClearOrdersProcessor,
-							   runtimeParamsProcessor);
+							   runtimeParamsProcessor,
+							   externalSystemRequest);
 
 		context.start();
 
@@ -99,12 +104,13 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 			final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor,
 			final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor,
 			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
-			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final JsonExternalSystemRequest externalSystemRequest) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockGetOrdersProcessor()));
+									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockGetOrdersProcessor(externalSystemRequest)));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {

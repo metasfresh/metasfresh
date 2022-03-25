@@ -26,7 +26,9 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -44,15 +46,20 @@ public class CoalesceUtil
 	}
 
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final T value2)
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
-		return value1 == null ? value2 : value1;
+		final T result = value1 == null ? value2 : value1;
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+		}
+		return result;
 	}
 
 	@Nullable
-	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
+	public <T> T coalesce(@Nullable final T value1, @Nullable final Supplier<T> value2)
 	{
-		return value1 != null ? value1 : value2.get();
+		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
 	/**
@@ -67,9 +74,14 @@ public class CoalesceUtil
 	}
 
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @NonNull final T value3)
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
-		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+		final T result = value1 != null ? value1 : (value2 != null ? value2 : value3);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one of value1, value2 or value3 has to be not-null");
+		}
+		return result;
 	}
 
 	/**
@@ -100,7 +112,7 @@ public class CoalesceUtil
 		final T result = coalesce(values);
 		if (result == null)
 		{
-			throw new NullPointerException("At least one parameter must be not-null");
+			throw new NullPointerException("At least one parameter has to be not-null");
 		}
 		return result;
 	}
@@ -124,6 +136,14 @@ public class CoalesceUtil
 				firstValidValue(Objects::nonNull, values),
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
+
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
+	{
+		return Optional.ofNullable(coalesceSuppliers(values));
+	}
+
 	
 	@SafeVarargs
 	@Nullable
@@ -215,7 +235,6 @@ public class CoalesceUtil
 	}
 
 	@SafeVarargs
-	@Nullable
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
 		if(valueSuppliers == null || valueSuppliers.length == 0)
@@ -259,5 +278,22 @@ public class CoalesceUtil
 		}
 
 		return count;
+	}
+
+	@NonNull
+	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
 	}
 }

@@ -22,18 +22,8 @@ package de.metas.banking.payment.paymentallocation.model;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Date;
-
-import de.metas.organization.ClientAndOrgId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ObjectUtils;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.bpartner.BPartnerId;
@@ -44,10 +34,17 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Date;
 
 /**
  * Invoice or Prepaid Order.
@@ -412,7 +409,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	}
 
 	@Override
-	public void distributeNotAppliedAmtToWriteOffs(InvoiceWriteOffAmountType type)
+	public void distributeNotAppliedAmtToWriteOffs(final InvoiceWriteOffAmountType type)
 	{
 		// avoid double write off amounts e.g. when changing one of the allowance check boxes
 		resetAllWriteOffAmounts();
@@ -590,7 +587,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			return new InvoiceRow(this);
 		}
 
-		public Builder setOrgId(OrgId orgId)
+		public Builder setOrgId(final OrgId orgId)
 		{
 			this.orgId = orgId;
 			return this;

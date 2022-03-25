@@ -115,3 +115,11 @@
     cursor: pointer;
     color: $brand-super-light-color;
 }
+
+.side-attachment-wrapper, .docref-spinner-wrapper {
+    >.screen-freeze {
+        height: 15%;
+        justify-content: normal;
+        margin-top: 1em;
+    }
+}

@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.v1.shipping;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

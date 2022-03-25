@@ -25,14 +25,15 @@ package de.metas.cucumber.stepdefs.pricing;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -40,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -52,30 +54,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class M_PriceList_StepDef
 {
-	private final OrgId defaultOrgId = StepDefConstants.ORG_ID;
 	private final CurrencyRepository currencyRepository;
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-	private final StepDefData<I_M_PriceList> priceListTable;
-	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
-	private final StepDefData<I_M_ProductPrice> productPriceTable;
-	
+	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_PriceList_StepDefData priceListTable;
+	private final M_PriceList_Version_StepDefData priceListVersionTable;
+	private final M_ProductPrice_StepDefData productPriceTable;
+
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
-			@NonNull final StepDefData<I_M_PriceList> priceListTable,
-			@NonNull final StepDefData<I_M_PriceList_Version> priceListVersionTable,
-			@NonNull final StepDefData<I_M_ProductPrice> productPriceTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_PriceList_StepDefData priceListTable,
+			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
+			@NonNull final M_ProductPrice_StepDefData productPriceTable)
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -88,8 +91,11 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
-		createM_PricingSystem(dataTableRow);
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			createM_PricingSystem(dataTableRow);
+		}
 	}
 
 	@And("metasfresh contains M_PriceLists")
@@ -111,22 +117,22 @@ public class M_PriceList_StepDef
 
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
 
-		m_pricingSystem.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_pricingSystem.setAD_Org_ID(ORG_ID.getRepoId());
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
 		m_pricingSystem.setDescription(description);
 
 		saveRecord(m_pricingSystem);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
-		pricingSystemTable.put(recordIdentifier, m_pricingSystem);
+		pricingSystemTable.putOrReplace(recordIdentifier, m_pricingSystem);
 	}
 
 	private void createM_PriceList(@NonNull final Map<String, String> row)
 	{
 		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_PricingSystem_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final String countryCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_Country.CountryCode");
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, "C_Currency.ISO_Code");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
@@ -140,7 +146,7 @@ public class M_PriceList_StepDef
 
 		final I_M_PriceList m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 
-		m_priceList.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_priceList.setAD_Org_ID(ORG_ID.getRepoId());
 		m_priceList.setM_PricingSystem_ID(pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID());
 		m_priceList.setC_Currency_ID(currencyId.getRepoId());
 		m_priceList.setName(name);
@@ -163,7 +169,7 @@ public class M_PriceList_StepDef
 		saveRecord(m_priceList);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList.Table_Name);
-		priceListTable.put(recordIdentifier, m_priceList);
+		priceListTable.putOrReplace(recordIdentifier, m_priceList);
 	}
 
 	@NonNull
@@ -192,16 +198,16 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Description);
 
 		final I_M_PriceList_Version m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
-		m_priceList_Version.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		m_priceList_Version.setAD_Org_ID(ORG_ID.getRepoId());
 		m_priceList_Version.setM_PriceList_ID(priceListTable.get(priceListIdentifier).getM_PriceList_ID());
 		m_priceList_Version.setName(name);
 		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
-		
+
 		saveRecord(m_priceList_Version);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList_Version.Table_Name);
-		priceListVersionTable.put(recordIdentifier, m_priceList_Version);
+		priceListVersionTable.putOrReplace(recordIdentifier, m_priceList_Version);
 	}
 
 	@And("metasfresh contains M_ProductPrices")
@@ -219,25 +225,27 @@ public class M_PriceList_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-		
 
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
 
 		productPrice.setM_PriceList_Version_ID(priceListVersionTable.get(plvIdentifier).getM_PriceList_Version_ID());
 		productPrice.setM_Product_ID(product.getM_Product_ID());
-		productPrice.setC_UOM_ID(product.getC_UOM_ID());
+		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 
 		saveRecord(productPrice);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.Table_Name);
-		productPriceTable.put(recordIdentifier, productPrice);
+		productPriceTable.putOrReplace(recordIdentifier, productPrice);
 	}
 }

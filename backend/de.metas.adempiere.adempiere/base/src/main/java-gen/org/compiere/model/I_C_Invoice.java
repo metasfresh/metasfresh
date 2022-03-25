@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -312,7 +313,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -322,7 +323,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -473,6 +474,52 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -494,6 +541,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_Invoice.class, "C_Invoice_ID", null);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Invoice.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Sales order.
@@ -587,50 +657,6 @@ public interface I_C_Invoice
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Invoice.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Nachbelastung.
@@ -1014,6 +1040,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_DunningGrace = "DunningGrace";
 
 	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_EMail = new ModelColumn<>(I_C_Invoice.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1058,7 +1105,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_GenerateTo = "GenerateTo";
 
 	/**
-	 * Set Summe Gesamt.
+	 * Set Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1068,7 +1115,7 @@ public interface I_C_Invoice
 	void setGrandTotal (BigDecimal GrandTotal);
 
 	/**
-	 * Get Summe Gesamt.
+	 * Get Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1127,27 +1174,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
-	 * Set Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInvoice_includedTab (@Nullable java.lang.String Invoice_includedTab);
-
-	/**
-	 * Get Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getInvoice_includedTab();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
-	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
-
-	/**
 	 * Set Inkasso-Status.
 	 * Invoice Collection Status
 	 *
@@ -1169,6 +1195,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceCollectionType = new ModelColumn<>(I_C_Invoice.class, "InvoiceCollectionType", null);
 	String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
+
+	/**
+	 * Set Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoice_includedTab (@Nullable java.lang.String Invoice_includedTab);
+
+	/**
+	 * Get Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoice_includedTab();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
+	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
 
 	/**
 	 * Set Active.
@@ -1422,8 +1469,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Set Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1432,8 +1479,8 @@ public interface I_C_Invoice
 	void setIsTransferred (boolean IsTransferred);
 
 	/**
-	 * Get Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Get Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1466,7 +1513,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1476,7 +1523,7 @@ public interface I_C_Invoice
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir

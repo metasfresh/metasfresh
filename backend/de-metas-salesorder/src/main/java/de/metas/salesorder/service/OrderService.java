@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.logging.LogManager;
@@ -42,7 +42,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -67,11 +67,11 @@ public class OrderService
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
+	
 	private final AsyncBatchService asyncBatchService;
+
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
@@ -90,7 +90,10 @@ public class OrderService
 			return ImmutableSet.of();
 		}
 
-		asyncBatchId2OLCandIds.keySet().forEach(this::generateOrdersForBatch);
+		for (final AsyncBatchId asyncBatchId : asyncBatchId2OLCandIds.keySet())
+		{
+			generateOrdersForBatch(asyncBatchId);
+		}
 
 		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
 				.stream()
@@ -163,29 +166,13 @@ public class OrderService
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
 	{
-		final I_C_Order orderWithAsyncBatch = assignAsyncBatchToOrderIfMissing(order);
-
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(orderWithAsyncBatch.getC_Async_Batch_ID());
+		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 
 		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderWithAsyncBatch);
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
 			return null;
 		};
 
-		asyncBatchService.executeBatch(action, asyncBatchId);
-	}
-
-	@NonNull
-	private I_C_Order assignAsyncBatchToOrderIfMissing(@NonNull final I_C_Order order)
-	{
-		if (order.getC_Async_Batch_ID() > 0)
-		{
-			return order; // nothing more to be done
-		}
-
-		return trxManager.callInNewTrx(() -> {
-			final AsyncBatchId currentAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_EnqueueScheduleForOrder);
-			return orderDAO.assignAsyncBatchId(OrderId.ofRepoId(order.getC_Order_ID()), currentAsyncBatchId);
-		});
+		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}
 }

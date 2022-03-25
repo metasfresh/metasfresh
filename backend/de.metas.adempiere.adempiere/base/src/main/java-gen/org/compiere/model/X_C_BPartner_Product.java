@@ -1,18 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -105180983L;
+	private static final long serialVersionUID = 947249298L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
@@ -128,7 +129,19 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setExclusionFromSaleReason (final java.lang.String ExclusionFromSaleReason)
+	public void setExclusionFromPurchaseReason (final @Nullable java.lang.String ExclusionFromPurchaseReason)
+	{
+		set_Value (COLUMNNAME_ExclusionFromPurchaseReason, ExclusionFromPurchaseReason);
+	}
+
+	@Override
+	public java.lang.String getExclusionFromPurchaseReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExclusionFromPurchaseReason);
+	}
+
+	@Override
+	public void setExclusionFromSaleReason (final @Nullable java.lang.String ExclusionFromSaleReason)
 	{
 		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
 	}
@@ -188,6 +201,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
+	public void setIsExcludedFromPurchase (final boolean IsExcludedFromPurchase)
+	{
+		set_Value (COLUMNNAME_IsExcludedFromPurchase, IsExcludedFromPurchase);
+	}
+
+	@Override
+	public boolean isExcludedFromPurchase() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludedFromPurchase);
+	}
+
+	@Override
 	public void setIsExcludedFromSale (final boolean IsExcludedFromSale)
 	{
 		set_Value (COLUMNNAME_IsExcludedFromSale, IsExcludedFromSale);
@@ -206,7 +231,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public java.lang.String getManufacturer() 
+	public java.lang.String getManufacturer()
 	{
 		return get_ValueAsString(COLUMNNAME_Manufacturer);
 	}

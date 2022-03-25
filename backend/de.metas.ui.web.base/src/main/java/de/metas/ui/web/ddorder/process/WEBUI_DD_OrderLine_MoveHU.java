@@ -1,18 +1,11 @@
 package de.metas.ui.web.ddorder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-
-import org.compiere.model.I_M_MovementLine;
-import org.eevolution.model.I_DD_OrderLine;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -25,6 +18,13 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_MovementLine;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import org.eevolution.model.I_DD_OrderLine;
+
+import java.util.List;
 
 /*
  * #%L
@@ -51,11 +51,14 @@ import de.metas.util.Services;
 public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String PARAM_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@Param(parameterName = PARAM_M_HU_ID, mandatory = true)
-	private int p_M_HU_ID;
+	private HuId p_M_HU_ID;
 
 	private static final String PARAM_M_LocatorTo_ID = I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID;
 	@Param(parameterName = PARAM_M_LocatorTo_ID)
@@ -88,20 +91,18 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		}
 		else if (PARAM_M_HU_ID.equals(parameterName))
 		{
-			final int ddOrderLineId = getSingleSelectedRow().getId().toInt();
+			final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(getSingleSelectedRow().getId().toInt());
 
-			final List<Integer> huIds = Services.get(IHUDDOrderDAO.class).retrieveHUIdsScheduledToMove(getCtx(), ImmutableSet.of(ddOrderLineId));
-
+			final List<HuId> huIds = ddOrderMoveScheduleService.retrieveHUIdsScheduledButNotMovedYet(ddOrderLineId);
 			if (Check.isEmpty(huIds))
 			{
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 			}
 
-			final int huId = huIds.get(0);
-			final I_M_HU hu = load(huId, I_M_HU.class);
+			final HuId huId = huIds.iterator().next();
+			final I_M_HU hu = handlingUnitsBL.getById(huId);
 
-			return IntegerLookupValue.of(huIds.get(0), hu.getValue());
-
+			return IntegerLookupValue.of(huId, TranslatableStrings.anyLanguage(hu.getValue()));
 		}
 		else
 		{
@@ -111,20 +112,18 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final int ddOrderLineId = getSingleSelectedRow().getId().toInt();
-		final I_DD_OrderLine ddOrderLine = load(ddOrderLineId, I_DD_OrderLine.class);
+		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(getSingleSelectedRow().getId().toInt());
+		final I_DD_OrderLine ddOrderLine = ddOrderService.getLineById(ddOrderLineId);
+		final I_M_HU hu = handlingUnitsBL.getById(p_M_HU_ID);
 
-		final I_M_HU hu = load(p_M_HU_ID, I_M_HU.class);
-
-		huDDOrderBL.createMovements()
-				.setDDOrderLines(ImmutableList.of(ddOrderLine))
-				.setLocatorToIdOverride(p_M_LocatorTo_ID)
-				.setDoDirectMovements(true)
-				.setFailIfCannotAllocate(true)
-				.allocateHU(hu)
-				.processWithinOwnTrx();
+		ddOrderService.prepareAllocateFullHUsAndMove()
+				.toDDOrderLine(ddOrderLine)
+				.failIfCannotAllocate()
+				.allocateHUAndPrepareGeneratingMovements(hu)
+				.locatorToIdOverride(p_M_LocatorTo_ID > 0 ? warehouseBL.getLocatorIdByRepoId(p_M_LocatorTo_ID) : null)
+				.generateDirectMovements();
 
 		return MSG_OK;
 	}

@@ -20,7 +20,6 @@ import {
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -312,13 +311,6 @@ export function updateDataFieldProperty(property, item, scope) {
   };
 }
 
-export function noConnection(status) {
-  return {
-    type: NO_CONNECTION,
-    status: status,
-  };
-}
-
 export function openModal({
   title = '',
   windowId,
@@ -404,14 +396,17 @@ export function indicatorState(state) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowId, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowId, docId, query)
+    const tableId = getTableId({ windowId, tabId, docId });
+    dispatch(updateTabTable({ tableId, pending: true }));
+    return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
-        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
-        dispatch(updateTabTable(tableId, tableData));
+        dispatch(
+          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+        );
 
         return Promise.resolve(response);
       })
@@ -691,7 +686,13 @@ export function createWindow({
                 tabId,
                 ...tab,
               };
-              dispatch(updateTabTable(tableId, tableData));
+              dispatch(
+                updateTabTable({
+                  tableId,
+                  tableResponse: tableData,
+                  pending: false,
+                })
+              );
             });
           }
           /** post get layout action triggered for the inlineTab case */

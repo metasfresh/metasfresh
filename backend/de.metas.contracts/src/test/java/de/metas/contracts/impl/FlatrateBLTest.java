@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 
 import java.sql.Timestamp;
@@ -35,6 +34,9 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
+import de.metas.document.location.DocumentLocation;
 import de.metas.lang.SOTrx;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
@@ -55,6 +57,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
@@ -203,8 +206,13 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
-		currentTerm.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID(), location.getC_Location_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(currentTerm)
+				.setFrom(bpartnerLocationId);
+
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -237,7 +245,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		dataEntry.setAD_Org_ID(orgId.getRepoId());
 		dataEntry.setC_Flatrate_Term(currentTerm);
 		dataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
-		dataEntry.setM_Product_DataEntry(product);
+		dataEntry.setM_Product_DataEntry_ID(product.getM_Product_ID());
 		dataEntry.setC_Period(period);
 		save(dataEntry);
 
@@ -252,10 +260,10 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.when(
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						ProductId.ofRepoId(product.getM_Product_ID())))
+						productAcctDAO.retrieveActivityForAcct(
+								clientId,
+								orgId,
+								ProductId.ofRepoId(product.getM_Product_ID())))
 				.thenReturn(activityId);
 
 		final Properties ctx = Env.getCtx();
@@ -263,7 +271,6 @@ public class FlatrateBLTest extends ContractsTestBase
 		final boolean isSOTrx = true;
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						any(Properties.class),
 						any(I_C_Flatrate_Term.class),
 						any(TaxCategoryId.class),
 						anyInt(),
@@ -472,7 +479,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		// matchings linked to the first conditions
 		final I_C_Flatrate_Matching matching1 = newInstance(I_C_Flatrate_Matching.class);
 		matching1.setSeqNo(10);
-		matching1.setM_Product_Category_Matching(productCategory);
+		matching1.setM_Product_Category_Matching_ID(productCategory.getM_Product_Category_ID());
 		matching1.setC_Flatrate_Transition(transition);
 		matching1.setC_Flatrate_Conditions(conditions1);
 		save(matching1);
@@ -485,8 +492,8 @@ public class FlatrateBLTest extends ContractsTestBase
 		// matchings linked with the second conditions
 		final I_C_Flatrate_Matching matching2 = newInstance(I_C_Flatrate_Matching.class);
 		matching2.setSeqNo(10);
-		matching2.setM_Product_Category_Matching(productCategory);
-		matching2.setM_Product(product);
+		matching2.setM_Product_Category_Matching_ID(productCategory.getM_Product_Category_ID());
+		matching2.setM_Product_ID(product.getM_Product_ID());
 		matching2.setC_Flatrate_Transition(transition);
 		matching2.setC_Flatrate_Conditions(conditions2);
 		save(matching2);
@@ -498,7 +505,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// terms must be for the same flatrate data
 		final I_C_Flatrate_Data flatrateData = newInstance(I_C_Flatrate_Data.class);
-		flatrateData.setC_BPartner(partner);
+		flatrateData.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(flatrateData);
 
 		// first term: first conditions, March 15 - April 14

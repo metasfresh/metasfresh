@@ -22,24 +22,85 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.StringUtils;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @UtilityClass
 public class StepDefUtil
 {
-	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	/**
+	 * Waits for the given {@code worker} to supply {@code true}.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker,
+			@Nullable final Runnable logContext) throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): Long.MAX_VALUE;
 
-		boolean conditionIsMet = worker.get();
+		boolean conditionIsMet = false;
 
-		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
+		while (deadLineMillis > System.currentTimeMillis() && !conditionIsMet)
 		{
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
 		}
+
+		if (!conditionIsMet && logContext != null)
+		{
+			logContext.run();
+		}
+
+		assertThat(conditionIsMet).as("Condition was not met within the %s second timeout", maxWaitSeconds).isTrue();
+	}
+
+	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
+	{
+		try
+		{
+			return Integer.parseInt(idOrIdentifier);
+		}
+		catch (final NumberFormatException exception)
+		{
+			final Object model = stepDefDataTable.get(idOrIdentifier);
+
+			return InterfaceWrapperHelper.getId(model);
+		}
+	}
+
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker) throws InterruptedException
+	{
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+	@NonNull
+	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	{
+		return Arrays.stream(identifier.split(","))
+				.map(StringUtils::trim)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 }

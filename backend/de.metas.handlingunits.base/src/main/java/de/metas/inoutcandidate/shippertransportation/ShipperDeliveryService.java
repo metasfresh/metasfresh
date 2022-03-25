@@ -146,7 +146,7 @@ public class ShipperDeliveryService
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isEmpty(shipperGatewayId, true))
+		if (Check.isBlank(shipperGatewayId))
 		{
 			return;
 		}

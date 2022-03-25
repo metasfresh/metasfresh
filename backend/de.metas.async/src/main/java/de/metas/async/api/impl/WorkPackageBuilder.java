@@ -203,13 +203,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public WorkPackageBuilder addElement(final Object model)
+	public WorkPackageBuilder addElement(@NonNull final Object model)
 	{
-		assertNotBuilt();
-
 		//
 		// Add the model to elements to enqueue
 		final TableRecordReference record = TableRecordReference.ofOrNull(model);
+		return addElement(record);
+	}
+
+	@NonNull
+	private WorkPackageBuilder addElement(@NonNull final TableRecordReference record)
+	{
+		assertNotBuilt();
+
 		elements.add(record);
 
 		//

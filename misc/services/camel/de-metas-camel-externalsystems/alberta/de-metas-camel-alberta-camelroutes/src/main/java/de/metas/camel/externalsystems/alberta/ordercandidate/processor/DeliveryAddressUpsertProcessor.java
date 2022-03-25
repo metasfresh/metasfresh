@@ -22,10 +22,11 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
+import com.google.common.base.Joiner;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
@@ -75,8 +76,12 @@ public class DeliveryAddressUpsertProcessor implements Processor
 	{
 		final String bPartnerLocationIdentifier = ExternalIdentifierFormat.formatDeliveryAddressExternalId(patientId);
 
+		final String addressName = Joiner.on(", ").skipNulls()
+				.join(orderDeliveryAddress.getAddress(), orderDeliveryAddress.getAdditionalAddress(), orderDeliveryAddress.getAdditionalAddress2());
+
 		final JsonRequestLocation deliveryAddressRequest = new JsonRequestLocation();
 		deliveryAddressRequest.setBpartnerName(orderDeliveryAddress.getName());
+		deliveryAddressRequest.setName(addressName);
 		deliveryAddressRequest.setAddress1(orderDeliveryAddress.getAddress());
 		deliveryAddressRequest.setAddress2(orderDeliveryAddress.getAdditionalAddress());
 		deliveryAddressRequest.setAddress3(orderDeliveryAddress.getAdditionalAddress2());

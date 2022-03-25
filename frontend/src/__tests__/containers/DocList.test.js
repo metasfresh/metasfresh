@@ -62,6 +62,10 @@ import attributesData from '../../../test_setup/fixtures/attributes.json';
 
 jest.mock(`../../components/app/QuickActions`);
 
+// so that we don't have collision with other tests running in parallel
+const serverPort = serverTestPort + 2;
+global.config.WS_URL = `ws://localhost:${serverPort}/ws`;
+
 // jest.useFakeTimers();
 
 const middleware = [thunk];
@@ -114,7 +118,7 @@ describe.skip('DocList', () => {
       path: '/ws',
     });
 
-    server.listen(serverTestPort+1); // this is defined in the jestSetup file
+    server.listen(serverPort); // this is defined in the jestSetup file
   });
 
   // afterEach stop server
@@ -151,6 +155,11 @@ describe.skip('DocList', () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/userSession')
         .reply(200, userSessionData);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/login/isLoggedIn')
+        .reply(200, true);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -223,19 +232,17 @@ describe.skip('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${windowId}/${viewId}/quickActions?childViewId=${includedViewId}&childViewSelectedIds=${
-            includedData.result[0].id}&selectedIds=${data.result[0].id
-          }`
+        .post(
+          `/documentView/${windowId}/${viewId}/quickActions`, 
+          { childViewId: includedViewId, childViewSelectedIds: includedData.result[0].id, selectedIds: data.result[0].id }
         )
         .reply(200, quickActionsData.parent_quickactions2);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?parentViewId=${viewId}&parentViewSelectedIds=${
-            data.result[0].id}&selectedIds=${includedData.result[0].id
-          }`
+        .post(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions`, 
+          { parentViewId: viewId, parentViewSelectedIds: data.result[0].id, selectedIds: includedData.result[0].id }
         )
         .reply(200, quickActionsData.included_quickactions);
 
@@ -255,7 +262,7 @@ describe.skip('DocList', () => {
         );
       });
 
-      await act( async() => {
+      await act(async() => {
         wrapper.update();
 
         await waitFor(async () => {
@@ -264,7 +271,7 @@ describe.skip('DocList', () => {
         });
       });      
 
-      await act( async() => {
+      await act(async() => {
         wrapper.update();
 
         await waitFor(async () => {
@@ -282,7 +289,7 @@ describe.skip('DocList', () => {
 
       const quickActionsId = getQuickActionsId({ windowId: includedWindowId, viewId: includedViewId });
 
-      await act( async() => {
+      await act(async() => {
         waitFor(() => {
           expect(
             store.getState().actionsHandler[quickActionsId]

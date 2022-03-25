@@ -33,8 +33,8 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -42,6 +42,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -61,17 +62,20 @@ class BPartnerCompositeRepositoryTest
 {
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CountryId countryId_DE;
+	private OrgId orgId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
+		
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
-				new MockLogEntriesRepository());
+				new MockLogEntriesRepository(),
+				new UserRoleRepository());
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -81,7 +85,7 @@ class BPartnerCompositeRepositoryTest
 	void save_and_load_standardCase()
 	{
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("12345")
 						.name("name1")
@@ -123,6 +127,8 @@ class BPartnerCompositeRepositoryTest
 						//.district("district")
 						.countryCode("DE")
 						.poBox("poBox")
+						.phone("phone")
+						.email("email")
 						.build())
 				.contact(BPartnerContact.builder()
 						// @Nullable final BPartnerContactId id,
@@ -155,11 +161,13 @@ class BPartnerCompositeRepositoryTest
 						.orgMappingId(null)
 						.birthday(LocalDate.parse("1901-02-03"))
 						.bPartnerLocationId(null)
-						.roles(ImmutableList.of()
-						).build())
+						.roles(ImmutableList.of())
+						.email2("email2")
+						.email3("email3")
+						.build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();
@@ -194,7 +202,7 @@ class BPartnerCompositeRepositoryTest
 				.build());
 
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("value")
 						.name("name1")
@@ -205,7 +213,7 @@ class BPartnerCompositeRepositoryTest
 						.build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();

@@ -1,12 +1,14 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner_Product
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_BPartner_Product 
 {
 
@@ -223,6 +225,27 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_EAN_CU = "EAN_CU";
 
 	/**
+	 * Set Exclusion From Purchase Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExclusionFromPurchaseReason (@Nullable java.lang.String ExclusionFromPurchaseReason);
+
+	/**
+	 * Get Exclusion From Purchase Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExclusionFromPurchaseReason();
+
+	ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromPurchaseReason = new ModelColumn<>(I_C_BPartner_Product.class, "ExclusionFromPurchaseReason", null);
+	String COLUMNNAME_ExclusionFromPurchaseReason = "ExclusionFromPurchaseReason";
+
+	/**
 	 * Set Exclusion From Sale Reason.
 	 *
 	 * <br>Type: Text
@@ -355,7 +378,28 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Exclusion from sales documents.
+	 * Set Exclude from purchase.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludedFromPurchase (boolean IsExcludedFromPurchase);
+
+	/**
+	 * Get Exclude from purchase.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludedFromPurchase();
+
+	ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromPurchase = new ModelColumn<>(I_C_BPartner_Product.class, "IsExcludedFromPurchase", null);
+	String COLUMNNAME_IsExcludedFromPurchase = "IsExcludedFromPurchase";
+
+	/**
+	 * Set Exclude from sales.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -364,7 +408,7 @@ public interface I_C_BPartner_Product
 	void setIsExcludedFromSale (boolean IsExcludedFromSale);
 
 	/**
-	 * Get Exclusion from sales documents.
+	 * Get Exclude from sales.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

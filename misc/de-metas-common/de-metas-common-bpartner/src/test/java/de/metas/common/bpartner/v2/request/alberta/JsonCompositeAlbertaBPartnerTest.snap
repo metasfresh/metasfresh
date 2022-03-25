@@ -61,6 +61,10 @@ de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.ser
       "deactivationDateSet" : true,
       "deactivationComment" : "comment",
       "deactivationCommentSet" : true,
+      "classification" : "classification",
+      "classificationSet" : true,
+      "careDegree" : 2.2,
+      "careDegreeSet" : true,
       "createdAt" : {
         "seconds" : 1574380800,
         "nanos" : 0

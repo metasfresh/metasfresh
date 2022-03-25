@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-
+import { leftTrim } from '../../utils';
 import { debounce } from 'lodash';
 
 import history from '../../services/History';
@@ -18,6 +18,7 @@ import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 import { DEBOUNCE_TIME_SEARCH } from '../../constants/Constants';
+import SpinnerOverlay from '../app/SpinnerOverlay';
 
 /**
  * @file Class based component.
@@ -91,20 +92,30 @@ class MenuOverlay extends Component {
   handleQuery = (e) => {
     e.preventDefault();
 
-    if (e.target.value) {
+    const query = leftTrim(e.target.value);
+
+    if (query) {
       this.setState({
-        query: e.target.value,
+        query,
+        pendingQuery: query ? true : false,
       });
-      queryPathsRequest(e.target.value, 9)
+
+      queryPathsRequest(query, 9)
         .then((response) => {
-          this.setState({
-            queriedResults: flattenLastElem(response.data),
-          });
+          if (query === this.state.query) {
+            this.setState({
+              queriedResults: flattenLastElem(response.data),
+              pendingQuery: false,
+              query,
+            });
+          }
         })
         .catch((err) => {
           if (err.response && err.response.status === 404) {
             this.setState({
               queriedResults: [],
+              pendingQuery: false,
+              query,
             });
           }
         });
@@ -113,6 +124,7 @@ class MenuOverlay extends Component {
         {
           query: '',
           queriedResults: [],
+          pendingQuery: false,
         },
         () => {
           if (this.searchInputQuery) this.searchInputQuery.value = '';
@@ -140,7 +152,7 @@ class MenuOverlay extends Component {
   };
 
   /**
-   * @method mapStateToProps
+   * @method handleRedirect
    * @summary ToDo: Describe the method.
    * @param {*} elementId
    * @param {*} isNew
@@ -606,7 +618,8 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { queriedResults, deepSubNode, query, data } = this.state;
+    const { queriedResults, deepSubNode, query, data, pendingQuery } =
+      this.state;
     const { nodeId, node, handleMenuOverlay, openModal } = this.props;
     const nodeData = data.length
       ? data
@@ -652,7 +665,8 @@ class MenuOverlay extends Component {
                   )}
                 </div>
 
-                {queriedResults &&
+                {!pendingQuery &&
+                  queriedResults &&
                   queriedResults.map((result, index) => (
                     <MenuOverlayItem
                       ref={(overlayItem) => {
@@ -672,8 +686,18 @@ class MenuOverlay extends Component {
                     />
                   ))}
 
-                {queriedResults.length === 0 && query !== '' && (
-                  <span>There are no results</span>
+                {queriedResults.length === 0 &&
+                  query !== '' &&
+                  !pendingQuery && (
+                    <span>
+                      {counterpart.translate('window.noResults.caption')}
+                    </span>
+                  )}
+
+                {pendingQuery && (
+                  <div className="menu-overlay-spinner">
+                    <SpinnerOverlay iconSize={50} />
+                  </div>
                 )}
               </div>
             </div>

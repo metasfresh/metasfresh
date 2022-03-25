@@ -9,8 +9,8 @@ import counterpart from 'counterpart';
 import { LOOKUP_SHOW_MORE_PIXEL_NO } from '../../../constants/Constants';
 
 import {
-  autocompleteRequest,
   autocompleteModalRequest,
+  autocompleteRequest,
 } from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
@@ -130,7 +130,7 @@ export class RawLookup extends Component {
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.props.onDropdownListToggle(false);
+      this.dropdownListToggle(false);
     }
   };
 
@@ -154,7 +154,7 @@ export class RawLookup extends Component {
       updateItems,
     } = this.props;
     let selected = select;
-    let mainProp = mainProperty[0];
+    let mainProp = mainProperty;
 
     this.setState({
       selected: null,
@@ -187,7 +187,7 @@ export class RawLookup extends Component {
         });
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty[0].field, selected, () =>
+        onChange(mainProperty.field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
@@ -234,7 +234,7 @@ export class RawLookup extends Component {
         windowId: newRecordWindowId,
         modalType: 'window',
         dataId: 'NEW',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
       })
     );
   };
@@ -245,7 +245,7 @@ export class RawLookup extends Component {
         isFocused: false,
       },
       () => {
-        this.props.onDropdownListToggle(false, mouse);
+        this.dropdownListToggle(false, mouse);
       }
     );
   }
@@ -271,7 +271,7 @@ export class RawLookup extends Component {
         windowId: advSearchWindowId,
         modalType: 'window',
         dataId: 'SEARCH',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        triggerField: filterWidget ? parameterName : mainProperty.field,
         parentWindowId: windowType,
         parentDocumentId: dataId,
         parentFieldId: item.field,
@@ -291,12 +291,18 @@ export class RawLookup extends Component {
         },
         () => {
           if (!mandatory && mouse) {
-            this.props.onDropdownListToggle(true);
+            this.dropdownListToggle(true);
           }
         }
       );
     }
   }
+
+  dropdownListToggle = (val, mouse) => {
+    const { item } = this.props;
+
+    this.props.onDropdownListToggle(val, item.field, mouse);
+  };
 
   typeaheadRequest = () => {
     const {
@@ -311,33 +317,27 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      isModal,
-      newRecordCaption,
-      mandatory,
-      advSearchCaption,
-      advSearchWindowId,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
-    const placeholder = mainProperty[0].clearValueText
-      ? mainProperty[0].clearValueText
-      : this.props.placeholder;
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
       rowId,
       tabId,
     };
+
+    this.typeaheadQuery = typeaheadParams.query;
 
     if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
         dataId,
-        mainProperty[0].field,
+        mainProperty.field,
         inputValue
       );
     } else if (viewId && !filterWidget) {
@@ -358,55 +358,68 @@ export class RawLookup extends Component {
     }
 
     typeaheadRequest.then((response) => {
-      let values = response.data.values || [];
-      const isAlwaysDisplayNewBPartner = response.data
-        .isAlwaysDisplayNewBPartner
-        ? true
-        : false;
-      const hasMoreResults = response.data.hasMoreResults ? true : false;
-      let list = null;
-      const newState = {
-        loading: false,
-      };
-
-      const optionNew = { key: 'NEW', caption: newRecordCaption };
-      if (values.length === 0 && !isModal) {
-        list = [optionNew];
-
-        newState.forceEmpty = true;
-        newState.selected = optionNew;
-      } else {
-        list = values;
-        isAlwaysDisplayNewBPartner && list.unshift(optionNew);
-
-        newState.forceEmpty = false;
-        newState.selected = advSearchWindowId ? values[1] : values[0];
+      if (
+        this.typeaheadQuery &&
+        this.typeaheadQuery === typeaheadParams.query
+      ) {
+        this.populateTypeaheadData(response.data);
       }
-
-      // we inject the advanced search entry if we have a advSearchWindowId
-      advSearchWindowId &&
-        list.unshift({ key: 'SEARCH', caption: advSearchCaption });
-
-      if (!mandatory && placeholder) {
-        list.push({
-          caption: placeholder,
-          key: null,
-        });
-      }
-      newState.list = [...list];
-      newState.hasMoreResults = hasMoreResults;
-
-      this.setState({ ...newState });
     });
   };
 
-  handleChange = (handleChangeOnFocus, allowEmpty) => {
+  populateTypeaheadData = (responseData) => {
     const {
-      handleInputEmptyStatus,
-      enableAutofocus,
-      isOpen,
-      onDropdownListToggle,
+      mainProperty,
+      newRecordCaption,
+      advSearchCaption,
+      advSearchWindowId,
+      isModal,
+      mandatory,
     } = this.props;
+
+    const placeholder = mainProperty.clearValueText
+      ? mainProperty.clearValueText
+      : this.props.placeholder;
+
+    let values = responseData.values || [];
+    const isAlwaysDisplayNewBPartner =
+      !!responseData.isAlwaysDisplayNewBPartner;
+    const hasMoreResults = !!responseData.hasMoreResults;
+    let list;
+    const newState = { loading: false };
+
+    const optionNew = { key: 'NEW', caption: newRecordCaption };
+    if (values.length === 0 && !isModal) {
+      list = [optionNew];
+
+      newState.forceEmpty = true;
+      newState.selected = optionNew;
+    } else {
+      list = values;
+      isAlwaysDisplayNewBPartner && list.unshift(optionNew);
+
+      newState.forceEmpty = false;
+      newState.selected = advSearchWindowId ? values[1] : values[0];
+    }
+
+    // we inject the advanced search entry if we have a advSearchWindowId
+    advSearchWindowId &&
+      list.unshift({ key: 'SEARCH', caption: advSearchCaption });
+
+    if (!mandatory && placeholder) {
+      list.push({
+        caption: placeholder,
+        key: null,
+      });
+    }
+    newState.list = [...list];
+    newState.hasMoreResults = hasMoreResults;
+
+    this.setState({ ...newState });
+  };
+
+  handleChange = (handleChangeOnFocus, allowEmpty) => {
+    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 
@@ -420,7 +433,7 @@ export class RawLookup extends Component {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
       if (!isOpen) {
-        onDropdownListToggle(true);
+        this.dropdownListToggle(true);
       }
 
       this.setState(
@@ -454,7 +467,7 @@ export class RawLookup extends Component {
     if (!filterWidget && !!defaultValue && this.inputSearch) {
       const init = [defaultValue];
       const inputValue = defaultValue.caption;
-      const clearValueText = this.props.mainProperty[0].clearValueText;
+      const clearValueText = this.props.mainProperty.clearValueText;
       const placeholder = clearValueText
         ? clearValueText
         : this.props.placeholder;

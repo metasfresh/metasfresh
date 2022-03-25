@@ -17,7 +17,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
@@ -59,6 +58,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -370,13 +370,19 @@ public final class AggregationEngine
 			invoiceHeader.setBillTo(getBillTo(icRecord));
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
+			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
+			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+			invoiceHeader.setEmail(icRecord.getEMail());
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
-				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
-			}
+				final I_C_Order order = orderDAO.getById(orderId);
+				invoiceHeader.setExternalId(order.getExternalId());
+				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
+			}
+			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
 			// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
@@ -410,7 +416,10 @@ public final class AggregationEngine
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 												 pricingSystemName,
-												 invoiceHeader.getBillTo());
+												 invoiceHeader.getBillTo())
+							.appendParametersToMessage()
+							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
+							.setParameter("C_Invoice_Candidate", icRecord);
 				}
 				M_PriceList_ID = plId.getRepoId();
 			}

@@ -97,7 +97,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(TransactionCreatedEvent.class, TransactionDeletedEvent.class);
 	}
@@ -217,7 +217,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				break;
 			default:
 				throw Check.fail("Unsupported business case {}; candidate={}",
-						candidate.getBusinessCase(), candidate);
+								 candidate.getBusinessCase(), candidate);
 		}
 		return pickDirectlyIfFeasible;
 	}
@@ -386,6 +386,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
+					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.businessCaseDetail(productionDetail)
 					.transactionDetail(transactionDetailOfEvent)
 					.build();
@@ -507,7 +508,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		throw fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
 	}
-
 
 	private List<Candidate> prepareUnrelatedCandidate(@NonNull final AbstractTransactionEvent event)
 	{

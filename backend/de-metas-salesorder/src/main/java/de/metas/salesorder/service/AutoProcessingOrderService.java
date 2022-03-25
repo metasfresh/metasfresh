@@ -31,7 +31,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -133,7 +133,7 @@ public class AutoProcessingOrderService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invoiceService.processInvoiceCandidates(invoiceCandidateIds);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	private boolean sameShippingAndBillingAddress(

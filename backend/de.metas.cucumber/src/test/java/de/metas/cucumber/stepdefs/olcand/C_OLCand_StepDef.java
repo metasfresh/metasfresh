@@ -33,6 +33,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -50,7 +51,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -91,9 +91,9 @@ public class C_OLCand_StepDef
 		assertThat(compositeResponse).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Order.Identifier");
-		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Shipment.Identifier");
-		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Invoice.Identifier");
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Order_ID.Identifier");
+		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
+		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
 
 		if (orderIdentifier == null)
 		{
@@ -139,7 +139,7 @@ public class C_OLCand_StepDef
 		final I_C_Order order = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
 				.create()
-				.firstOnly(I_C_Order.class);
+				.firstOnlyNotNull(I_C_Order.class);
 
 		assertThat(order).isNotNull();
 
@@ -166,13 +166,16 @@ public class C_OLCand_StepDef
 
 		assertThat(shipments).isNotNull();
 
+		final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
+		assertThat(identifiers).hasSameSizeAs(shipments);
+
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
-
 			for (int index = 0; index < shipments.size(); index++)
 			{
-				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
+				final String identifier = identifiers.get(index);
+				final I_M_InOut record = shipments.get(index);
+				shipmentTable.putOrReplace(identifier, record);
 			}
 		}
 		else
@@ -204,9 +207,5 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
-	@NonNull
-	private List<String> splitIdentifiers(@NonNull final String identifiers)
-	{
-		return Arrays.asList(identifiers.split(","));
-	}
+
 }

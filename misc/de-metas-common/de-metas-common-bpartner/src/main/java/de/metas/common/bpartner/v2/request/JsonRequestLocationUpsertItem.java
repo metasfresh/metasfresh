@@ -40,7 +40,7 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+	@ApiModelProperty(position = 10, required = true, //
 			value = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created location.") //
 	@NonNull
@@ -51,7 +51,8 @@ public class JsonRequestLocationUpsertItem
 	@Nullable
 	String externalVersion;
 
-	@ApiModelProperty(allowEmptyValue = false, position = 30, value = "The location to upsert")
+	@ApiModelProperty(position = 30, required = true, //
+			value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 

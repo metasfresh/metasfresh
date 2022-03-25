@@ -34,7 +34,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.web.exception.MissingResourceException;
@@ -228,7 +228,7 @@ public class AlbertaBPartnerCompositeService
 		}
 
 		final AlbertaPatient existingAlbertaPatient = existingAlbertaPatientOpt
-				.orElse(AlbertaPatient.builder()
+				.orElseGet(() -> AlbertaPatient.builder()
 								.bPartnerId(bPartnerId)
 								.build());
 
@@ -326,6 +326,16 @@ public class AlbertaBPartnerCompositeService
 		if (request.isDeactivationCommentSet())
 		{
 			syncedAlbertaBuilder.deactivationComment(request.getDeactivationComment());
+		}
+
+		if (request.isClassificationSet())
+		{
+			syncedAlbertaBuilder.classification(request.getClassification());
+		}
+
+		if (request.isCareDegreeSet())
+		{
+			syncedAlbertaBuilder.careDegree(request.getCareDegree());
 		}
 
 		if (request.isCreatedAtSet())

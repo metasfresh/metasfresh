@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 
-import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class CreateBPartnerUpsertReqProcessor implements Processor
@@ -56,9 +56,13 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
-		final String bPartnerLocationIdJSONPath = importOrdersRouteContext.getBpLocationCustomJsonPath();
-
-		final List<OrderDeliveryItem> orderDeliveryItems = shopwareClient.getDeliveryAddresses(orderCandidate.getJsonOrder().getId(), bPartnerLocationIdJSONPath);
+		final String bPartnerLocationShopwareIdJSONPath = importOrdersRouteContext.getBpLocationCustomJsonPath();
+		final String bPartnerLocationMetasfreshIdJSONPath = "/customFields/metasfreshLocationId"; // TODO: replace with request parameter that comes from the external system config
+		
+		final List<OrderDeliveryItem> orderDeliveryItems = shopwareClient.getDeliveryAddresses(orderCandidate.getJsonOrder().getId(),
+																							   bPartnerLocationShopwareIdJSONPath,
+																							   bPartnerLocationMetasfreshIdJSONPath,
+																							   importOrdersRouteContext.getEmailJsonPath());
 
 		if (CollectionUtils.isEmpty(orderDeliveryItems))
 		{
@@ -70,8 +74,9 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		importOrdersRouteContext.setDateRequired(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingDateLatest().toLocalDate());
 		importOrdersRouteContext.setShippingCost(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingCost());
 		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
+		importOrdersRouteContext.setOrderShippingAddress(lastOrderDeliveryItem.getOrderAddressDetails().getJsonOrderAddress());
 
-		final JsonCustomerGroup jsonCustomerGroup = getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
+		final JsonCustomerGroup jsonCustomerGroup =  getCustomerGroup(shopwareClient, orderCandidate.getJsonOrder().getOrderCustomer());
 
 		importOrdersRouteContext.setBPartnerCustomerGroup(jsonCustomerGroup);
 
@@ -79,11 +84,14 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.shopwareClient(shopwareClient)
 				.billingAddressId(orderCandidate.getJsonOrder().getBillingAddressId())
 				.orderCustomer(orderCandidate.getJsonOrder().getOrderCustomer())
-				.shippingAddress(lastOrderDeliveryItem.getJsonOrderAddressAndCustomId())
+				.salutationInfoProvider(importOrdersRouteContext.getSalutationInfoProvider())
+				.shippingAddress(lastOrderDeliveryItem.getOrderAddressDetails())
 				.orgCode(orgCode)
-				.externalBPartnerId(orderCandidate.getEffectiveCustomerId())
-				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
-				.matchingShopware6Mapping(getMatchingShopware6Mapping(importOrdersRouteContext.getShopware6ConfigMappings(), jsonCustomerGroup))
+				.externalBPartnerId(importOrdersRouteContext.getEffectiveCustomerId())
+				.bPartnerLocationIdentifierCustomShopwarePath(bPartnerLocationShopwareIdJSONPath)
+				.bPartnerLocationIdentifierCustomMetasfreshPath(bPartnerLocationMetasfreshIdJSONPath)
+				.emailCustomPath(importOrdersRouteContext.getEmailJsonPath())
+				.matchingShopware6Mapping(importOrdersRouteContext.getMatchingShopware6Mapping())
 				.build();
 
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();

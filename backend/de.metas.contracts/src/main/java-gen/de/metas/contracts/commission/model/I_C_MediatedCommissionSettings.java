@@ -1,30 +1,7 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.contracts.commission.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_MediatedCommissionSettings
  *  @author metasfresh (generated) 
@@ -74,7 +51,7 @@ public interface I_C_MediatedCommissionSettings
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Mediated commission settings.
+	 * Set Brokerage commission settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -83,7 +60,7 @@ public interface I_C_MediatedCommissionSettings
 	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
 
 	/**
-	 * Get Mediated commission settings.
+	 * Get Brokerage commission settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -146,7 +123,7 @@ public interface I_C_MediatedCommissionSettings
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -155,7 +132,7 @@ public interface I_C_MediatedCommissionSettings
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_C_MediatedCommissionSettings, Object> COLUMN_Description = new ModelColumn<>(I_C_MediatedCommissionSettings.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -190,7 +167,7 @@ public interface I_C_MediatedCommissionSettings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -199,7 +176,7 @@ public interface I_C_MediatedCommissionSettings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_C_MediatedCommissionSettings, Object> COLUMN_Name = new ModelColumn<>(I_C_MediatedCommissionSettings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";

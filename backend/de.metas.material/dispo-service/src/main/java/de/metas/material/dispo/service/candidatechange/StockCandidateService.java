@@ -113,6 +113,7 @@ public class StockCandidateService
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId);
+
 		if (materialDescriptor.isReservedForCustomer())
 		{
 			candidateBuilder.materialDescriptor(materialDescriptor);
@@ -142,8 +143,8 @@ public class StockCandidateService
 	public SaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
 	{
 		Check.errorIf(candidateToUpdate.getId().isNull(),
-				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
-				candidateToUpdate);
+					  "Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
+					  candidateToUpdate);
 
 		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId().getRepoId(), I_MD_Candidate.class);
 		final BigDecimal previousQty = candidateRecord.getQty();
@@ -157,10 +158,10 @@ public class StockCandidateService
 		return SaveResult.builder()
 				.candidate(candidateToUpdate)
 				.previousTime(DateAndSeqNo
-						.builder()
-						.date(previousDate)
-						.seqNo(previousSeqNo)
-						.build())
+									  .builder()
+									  .date(previousDate)
+									  .seqNo(previousSeqNo)
+									  .build())
 				.previousQty(previousQty)
 				.build();
 	}
@@ -179,7 +180,9 @@ public class StockCandidateService
 		{
 			if (stockWithDelta.isDateMovedForwards())
 			{
-				deltaUntilRangeEnd = stockWithDelta.getCandidate().getQuantity().negate();
+				Check.assumeNotNull(stockWithDelta.getPreviousQty(), "PreviousQty cannot be null on update case!");
+
+				deltaUntilRangeEnd = stockWithDelta.getPreviousQty().negate();
 				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
 			}
 			else
@@ -231,11 +234,11 @@ public class StockCandidateService
 		final MaterialDescriptorQuery //
 				materialDescriptorQuery = createMaterialDescriptorQueryBuilder(candidate.getMaterialDescriptor())
 				.timeRangeEnd(DateAndSeqNo
-						.builder()
-						.date(candidate.getDate())
-						.seqNo(candidate.getSeqNo())
-						.operator(Operator.EXCLUSIVE)
-						.build())
+									  .builder()
+									  .date(candidate.getDate())
+									  .seqNo(candidate.getSeqNo())
+									  .operator(Operator.EXCLUSIVE)
+									  .build())
 				.build();
 
 		return CandidatesQuery.builder()
@@ -249,25 +252,52 @@ public class StockCandidateService
 	private CandidatesQuery createStockQueryBetweenDates(
 			@NonNull final SaveResult saveResult)
 	{
-		final DateAndSeqNo rangeStart = DateAndSeqNo
-				.ofCandidate(saveResult.getCandidate())
-				.min(saveResult.getPreviousTime())
-				.withOperator(Operator.EXCLUSIVE);
-
+		final DateAndSeqNo rangeStart;
 		final DateAndSeqNo rangeEnd;
 		if (!saveResult.isDateMoved())
 		{
+			rangeStart = DateAndSeqNo
+					.ofCandidate(saveResult.getCandidate())
+					.min(saveResult.getPreviousTime())
+					.withOperator(Operator.EXCLUSIVE);
 			rangeEnd = null; // if the stock is not moving on the time axis, we look at all records, from rangeStart onwards
 		}
 		else
 		{
-			rangeEnd = DateAndSeqNo
-					.ofCandidate(saveResult.getCandidate())
-					.max(saveResult.getPreviousTime())
+			if (saveResult.isDateMovedForwards())
+			{
+				rangeStart = DateAndSeqNo
+						.ofCandidate(saveResult.getCandidate())
+						.min(saveResult.getPreviousTime())
+						.withOperator(Operator.EXCLUSIVE);
 
-					// if we moved a record forward in time (i.e. increased its date), then this is the time where the record sits now;
-					// we don't want to apply the delta to it, because it already has the value it shall have
-					.withOperator(Operator.EXCLUSIVE);
+				rangeEnd = DateAndSeqNo
+						.ofCandidate(saveResult.getCandidate())
+						.max(DateAndSeqNo
+									 .builder()
+									 .date(saveResult.getCandidate().getDate())
+									 .seqNo(saveResult.getCandidate().getSeqNo())
+									 .build())
+
+						.withOperator(Operator.INCLUSIVE);
+			}
+			else
+			{
+				rangeStart = DateAndSeqNo
+						.ofCandidate(saveResult.getCandidate())
+						.min(DateAndSeqNo
+									 .builder()
+									 .date(saveResult.getCandidate().getDate())
+									 .seqNo(saveResult.getCandidate().getSeqNo())
+									 .build())
+						.withOperator(Operator.EXCLUSIVE);
+
+				rangeEnd = DateAndSeqNo
+						.ofCandidate(saveResult.getCandidate())
+						.max(saveResult.getPreviousTime())
+
+						.withOperator(Operator.EXCLUSIVE);
+			}
 		}
 
 		final MaterialDescriptorQuery //

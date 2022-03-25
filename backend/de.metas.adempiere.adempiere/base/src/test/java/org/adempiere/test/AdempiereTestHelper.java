@@ -46,6 +46,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -130,6 +131,7 @@ public class AdempiereTestHelper
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		Adempiere.enableUnitTestMode();
+		POJOLookupMap.resetToDefaultNextIdSupplier();
 
 		Check.setDefaultExClass(AdempiereException.class);
 
@@ -262,6 +264,11 @@ public class AdempiereTestHelper
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
+		final I_AD_System system = InterfaceWrapperHelper.newInstance(I_AD_System.class);
+		system.setAD_System_ID(1234); // don't use the "normal" unit test counter or every ID in every snapshot file with need to be +1ed
+		system.setName("AdempiereTestHelper");
+		InterfaceWrapperHelper.saveRecord(system);
+
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
 		save(allOrgs);
@@ -331,7 +338,10 @@ public class AdempiereTestHelper
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
 	 * <p>
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
+	 *
+	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
 	 */
+	@Deprecated
 	public static Function<Object, String> createSnapshotJsonFunction()
 	{
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();

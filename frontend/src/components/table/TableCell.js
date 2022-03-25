@@ -65,13 +65,14 @@ class TableCell extends PureComponent {
    * when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
-    const { onKeyDown, property, isReadonly } = this.props;
+    const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+    const isAttributeWidget = tableCellData.widgetType === 'ProductAttributes';
 
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
 
-    onKeyDown(e, property, isReadonly);
+    onKeyDown(e, property, isReadonly, isAttributeWidget);
   };
 
   /**
@@ -243,6 +244,7 @@ class TableCell extends PureComponent {
               updateHeight,
               updateRow,
             }}
+            suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}

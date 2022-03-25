@@ -23,7 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -69,7 +69,7 @@ public class WebuiHUTransformCommand
 	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
 	 * </ul>
 	 */
-	public static enum ActionType
+	public enum ActionType
 	{
 		/**
 		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)}.
@@ -190,7 +190,7 @@ public class WebuiHUTransformCommand
 				{
 					throw new FillMandatoryException(WEBUI_M_HU_Transform.PARAM_M_HU_PI_Item_Product_ID);
 				}
-				return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
+					return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
 			}
 			case TU_Set_Ownership:
 			{
@@ -225,10 +225,7 @@ public class WebuiHUTransformCommand
 	}
 
 	/**
-	 * @param row
-	 * @param huPlanningReceiptOwnerPM
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/1130
+	 * @implSpec https://github.com/metasfresh/metasfresh/issues/1130
 	 */
 	private WebuiHUTransformCommandResult action_updatePlanningReceiptOwnerPM(final HUEditorRow row, final boolean huPlanningReceiptOwnerPM)
 	{
@@ -244,10 +241,7 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split selected CU to an existing TU.
 	 *
-	 * @param cuRow
-	 * @param tuHU
 	 * @param qtyCU quantity to split
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final Quantity qtyCU)
 	{
@@ -273,10 +267,6 @@ public class WebuiHUTransformCommand
 
 	/**
 	 * Split selected CU to a new CU.
-	 *
-	 * @param cuRow
-	 * @param qtyCU
-	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewCU(final HUEditorRow cuRow, final Quantity qtyCU)
 	{

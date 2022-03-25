@@ -22,33 +22,28 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+
+import java.util.List;
 
 public interface IHUShipmentScheduleDAO extends ISingletonService
 {
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(I_M_HU hu);
+
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveByTopLevelHUAndShipmentScheduleId(
+			@NonNull I_M_HU topLevelHU,
+			@NonNull ShipmentScheduleId shipmentScheduleId);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(int shipmentScheduleId, int tuHUId, String trxName);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(I_M_HU vhu);
 
 	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(I_M_HU vhu);
-
-	/**
-	 * Retrieve all active {@link I_M_ShipmentSchedule_QtyPicked} records, which were not already delivered, for given loading unit (i.e. {@link I_M_ShipmentSchedule_QtyPicked#COLUMNNAME_M_LU_HU_ID}
-	 * is checked).
-	 *
-	 * @param hu
-	 * @return
-	 */
-	List<I_M_ShipmentSchedule_QtyPicked> retriveQtyPickedNotDeliveredForTopLevelHU(I_M_HU hu);
 
 	List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(List<I_M_HU> hus);
 }

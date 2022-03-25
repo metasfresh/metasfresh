@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 259252226L;
+	private static final long serialVersionUID = 1656813470L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -125,6 +125,29 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
+	/**
+	 * ApplySalesRepFrom AD_Reference_ID=541416
+	 * Reference name: SalesRepFrom
+	 */
+	public static final int APPLYSALESREPFROM_AD_Reference_ID=541416;
+	/** Dispo = Candidate */
+	public static final String APPLYSALESREPFROM_Dispo = "Candidate";
+	/** Stammdaten = BPartner */
+	public static final String APPLYSALESREPFROM_Stammdaten = "BPartner";
+	/** Dispo wenn vorh. = CandidateFirst */
+	public static final String APPLYSALESREPFROM_DispoWennVorh = "CandidateFirst";
+	@Override
+	public void setApplySalesRepFrom (final java.lang.String ApplySalesRepFrom)
+	{
+		set_Value (COLUMNNAME_ApplySalesRepFrom, ApplySalesRepFrom);
+	}
+
+	@Override
+	public java.lang.String getApplySalesRepFrom()
+	{
+		return get_ValueAsString(COLUMNNAME_ApplySalesRepFrom);
+	}
+
 	@Override
 	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
@@ -212,14 +235,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
 	{
-		if (C_BP_Location_Override_Value_ID < 1) 
+		if (C_BP_Location_Override_Value_ID < 1)
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
-	public int getC_BP_Location_Override_Value_ID() 
+	public int getC_BP_Location_Override_Value_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
@@ -227,14 +250,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1) 
+		if (C_Async_Batch_ID < 1)
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID() 
+	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
@@ -361,6 +384,21 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_BPartner_SalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
+	}
+
+	@Override
+	public void setC_BPartner_SalesRep_Internal_ID (final int C_BPartner_SalesRep_Internal_ID)
+	{
+		if (C_BPartner_SalesRep_Internal_ID < 1)
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, null);
+		else
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_Internal_ID, C_BPartner_SalesRep_Internal_ID);
+	}
+
+	@Override
+	public int getC_BPartner_SalesRep_Internal_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_Internal_ID);
 	}
 
 	@Override
@@ -1166,7 +1204,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public boolean isManualQtyItemCapacity() 
+	public boolean isManualQtyItemCapacity()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
 	}
@@ -1625,7 +1663,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getQtyShipped() 
+	public BigDecimal getQtyShipped()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1644,5 +1682,41 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setPhone (final @Nullable String Phone)
+	{
+		set_Value (COLUMNNAME_Phone, Phone);
+	}
+
+	@Override
+	public String getPhone()
+	{
+		return get_ValueAsString(COLUMNNAME_Phone);
+	}
+
+	@Override
+	public void setEMail (final @Nullable String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public String getEMail()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public String getBPartnerName()
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 }

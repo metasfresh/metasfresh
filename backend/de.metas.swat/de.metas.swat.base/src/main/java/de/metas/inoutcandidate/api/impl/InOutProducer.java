@@ -495,6 +495,11 @@ public class InOutProducer implements IInOutProducer
 		//
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
+
+		if(order!=null)
+		{
+			receiptHeader.setEMail(order.getEMail());
+		}
 		if (order != null && order.isDropShip())
 		{
 			receiptHeader.setIsDropShip(true);

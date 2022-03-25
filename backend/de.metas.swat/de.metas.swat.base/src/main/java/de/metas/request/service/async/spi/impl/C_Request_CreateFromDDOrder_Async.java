@@ -22,23 +22,20 @@
 
 package de.metas.request.service.async.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.request.api.IRequestBL;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_OrderLine;
 
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.request.api.IRequestBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapter
 {
@@ -50,7 +47,7 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 		final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 		// retrieve the items (DDOrder lines) that were enqueued and put them in a list
-		final List<I_DD_OrderLine> lines = queueDAO.retrieveItems(workPackage, I_DD_OrderLine.class, localTrxName);
+		final List<I_DD_OrderLine> lines = queueDAO.retrieveAllItems(workPackage, I_DD_OrderLine.class);
 
 		// for each line that was enqueued, create a R_Request containing the information from the DDOrder line and DDOrder
 		for (final I_DD_OrderLine line : lines)
@@ -61,54 +58,35 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 		return Result.SUCCESS;
 	}
 
-	public static void createWorkpackage(final List<Integer> ddOrderLineIds)
+	public static void createWorkpackage(final List<DDOrderLineId> ddOrderLineIds)
 	{
-		if (Check.isEmpty(ddOrderLineIds))
-		{
-			// no lines to process
-			return;
-		}
-
-		for (final Integer ddOrderLineId : ddOrderLineIds)
-		{
-			if (ddOrderLineId == null || ddOrderLineId <= 0)
-			{
-				// should not happen
-				continue;
-			}
-
-			final I_DD_OrderLine ddOrderLine = load(ddOrderLineId, I_DD_OrderLine.class);
-
-			// Schedule the request creation based on the given DDOrderline id
-			SCHEDULER.schedule(ddOrderLine);
-		}
-
+		SCHEDULER.scheduleAll(ddOrderLineIds);
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<I_DD_OrderLine> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_DD_OrderLine>(C_Request_CreateFromDDOrder_Async.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<DDOrderLineId> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<DDOrderLineId>(C_Request_CreateFromDDOrder_Async.class)
 	{
 		@Override
-		protected boolean isEligibleForScheduling(final I_DD_OrderLine model)
+		protected boolean isEligibleForScheduling(final DDOrderLineId ddOrderLineId)
 		{
-			return model != null && model.getDD_OrderLine_ID() > 0;
-		};
+			return ddOrderLineId != null;
+		}
 
 		@Override
-		protected Properties extractCtxFromItem(final I_DD_OrderLine item)
+		protected Properties extractCtxFromItem(final DDOrderLineId ddOrderLineId)
 		{
 			return Env.getCtx();
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(final I_DD_OrderLine item)
+		protected String extractTrxNameFromItem(final DDOrderLineId ddOrderLineId)
 		{
 			return ITrx.TRXNAME_ThreadInherited;
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final Collector collector, final I_DD_OrderLine item)
+		protected TableRecordReference extractModelToEnqueueFromItem(final Collector collector, final DDOrderLineId ddOrderLineId)
 		{
-			return TableRecordReference.of(I_DD_OrderLine.Table_Name, item.getDD_OrderLine_ID());
+			return TableRecordReference.of(I_DD_OrderLine.Table_Name, ddOrderLineId);
 		}
 	};
 

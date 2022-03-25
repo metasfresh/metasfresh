@@ -23,18 +23,19 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.CommonAlbertaConstants;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
+import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderLineInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -97,6 +98,7 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 
 		final JsonAlbertaOrderInfo.JsonAlbertaOrderInfoBuilder albertaOrderInfoBuilder = JsonAlbertaOrderInfo.builder();
 		albertaOrderInfoBuilder
+				.externalId(order.getId())
 				.rootId(order.getRootId())
 				.creationDate(asInstant(order.getCreationDate()))
 				.startDate(asJavaLocalDate(order.getStartDate()))
@@ -115,7 +117,10 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 				.annotation(order.getAnnotation())
 
 				.therapy(order.getTherapyId() != null ? String.valueOf(order.getTherapyId()) : null)
-				.therapyTypes(extractTherapyTypes(order));
+				.therapyTypes(extractTherapyTypes(order))
+
+				.deliveryInformation(order.getDeliveryInformation())
+				.deliveryNote(order.getDeliveryNote());
 
 		return processLines(olCandRequestBuilder, albertaOrderInfoBuilder, order);
 	}
@@ -164,22 +169,26 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 						throw new RuntimeException("Missing articleId! OrderedArticleId: " + orderedArticle.getId());
 					}
 
+					final JsonAlbertaOrderLineInfo.JsonAlbertaOrderLineInfoBuilder albertaOrderLineInfoBuilder = JsonAlbertaOrderLineInfo.builder();
+
 					if (orderedArticle.getDuration() != null)
 					{
-						albertaInfoBuilder.durationAmount(orderedArticle.getDuration().getAmount());
-						albertaInfoBuilder.timePeriod(orderedArticle.getDuration().getTimePeriod());
+						albertaOrderLineInfoBuilder.durationAmount(orderedArticle.getDuration().getAmount());
+						albertaOrderLineInfoBuilder.timePeriod(orderedArticle.getDuration().getTimePeriod());
 					}
 
-					final JsonAlbertaOrderInfo albertaOrderInfo = albertaInfoBuilder
+					albertaOrderLineInfoBuilder
+							.externalId(orderedArticle.getId())
 							.salesLineId(orderedArticle.getSalesLineId())
 							.unit(orderedArticle.getUnit())
 							.isRentalEquipment(orderedArticle.isIsRentalEquipment())
 							.isPrivateSale(orderedArticle.isIsPrivateSale())
-							.updated(asInstant(orderedArticle.getUpdated()))
-							.build();
+							.updated(asInstant(orderedArticle.getUpdated()));
+
+					albertaInfoBuilder.jsonAlbertaOrderLineInfo(albertaOrderLineInfoBuilder.build());
 
 					return requestBuilder
-							.albertaOrderInfo(albertaOrderInfo)
+							.albertaOrderInfo(albertaInfoBuilder.build())
 							.externalLineId(orderedArticle.getId())
 							.productIdentifier(ExternalIdentifierFormat.formatExternalId(orderedArticle.getArticleId()))
 							.qty(orderedArticle.getQuantity())

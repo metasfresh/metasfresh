@@ -22,38 +22,44 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatedOLCandProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor;
+import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
-import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
-import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -62,32 +68,29 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.loadAsString;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_ADDRESS_HTTP_URL;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_SALUTATION_DISPLAY_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_SALUTATION_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CREATE_PAYMENT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_PRODUCT_ID;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_RATES;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_DISPLAY_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_TRACE_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
@@ -97,15 +100,9 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 
 public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupport
 {
@@ -152,7 +149,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	protected RouteBuilder createRouteBuilder()
 	{
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-		return new GetOrdersRouteBuilder(processLogger);
+		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
+
+		return new GetOrdersRouteBuilder(processLogger, producerTemplate);
 	}
 
 	@Override
@@ -164,7 +163,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	@Test
 	void happyFlow_zeroTax() throws Exception
 	{
-		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
 		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
 		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
@@ -270,26 +269,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 									  .process(runtimeParamsProcessor));
 	}
 
-	private static String loadAsString(@NonNull final String name)
-	{
-		final InputStream inputStream = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(name);
-		return new BufferedReader(
-				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-				.lines()
-				.collect(Collectors.joining("\n"));
-	}
-
-	private static class MockSuccessfullyCreatedOLCandProcessor implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-		}
-	}
-
 	public static class MockGetOrdersProcessor implements Processor
 	{
 		@Override
@@ -299,14 +278,23 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new JavaTimeModule());
 
-			final InputStream ordersIS = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
-			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
+			final InputStream root = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
+			final JsonNode rootNode = mapper.readValue(root, JsonNode.class);
+			final JsonNode arrayJsonNode = rootNode.get(JSON_NODE_DATA);
 
-			final List<OrderCandidate> orderCandidates = jsonOrders
-					.getData()
-					.stream()
-					.map(order -> OrderCandidate.builder().jsonOrder(order).salesRepId(SALES_REP_IDENTIFIER).build())
-					.collect(Collectors.toList());
+			final List<OrderCandidate> orderCandidates = new ArrayList<>();
+			for (final JsonNode orderNode : arrayJsonNode)
+			{
+				final JsonOrder order = mapper.treeToValue(orderNode, JsonOrder.class);
+
+				final OrderCandidate orderCandidate = OrderCandidate.builder()
+						.jsonOrder(order)
+						.orderNode(orderNode)
+						.salesRepId(SALES_REP_IDENTIFIER)
+						.build();
+
+				orderCandidates.add(orderCandidate);
+			}
 
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
@@ -316,29 +304,17 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
-			final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
-			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
-
-			final Map<String, String> parameters = new HashMap<>();
-			parameters.put(PARAM_FREIGHT_COST_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
-			parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
-			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
-
-			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
-					.builder()
-					.traceId(MOCK_TRACE_ID)
-					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
-					.externalSystemConfigId(JsonMetasfreshId.of(1))
-					.orgCode(MOCK_ORG_CODE)
-					.command("command")
-					.parameters(parameters)
+			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
+					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
+															  MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
 					.build();
 
-			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(processLogger)
-					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider);
+			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
+					.productLookup(JsonProductLookup.ProductId)
+					.build();
+			final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
+
+			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
@@ -347,7 +323,10 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		@NonNull
 		private ShopwareClient prepareShopwareClientMock(final ObjectMapper mapper) throws IOException
 		{
-			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com");
+			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+			final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
+
+			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com", pInstanceLogger);
 			final ShopwareClient shopwareClientSpy = Mockito.spy(dumbShopwareClient);
 
 			Mockito.doNothing().when(shopwareClientSpy).refreshTokenIfExpired();
@@ -359,15 +338,12 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(String.class), any());
 
-			//2. mock getOrderAddressDetails
-			final InputStream billingAddressIS = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
-			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
-
-			Mockito.doReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
-												 .jsonOrderAddress(billingAddress)
-												 .build()))
+			//2. mock billing order address
+			final String billingAddressString = loadAsString(JSON_ORDER_BILLING_ADDRESS_PATH);
+			final UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(MOCK_BILLING_ADDRESS_HTTP_URL);
+			Mockito.doReturn(ResponseEntity.ok(billingAddressString))
 					.when(shopwareClientSpy)
-					.getOrderAddressDetails(nullable(String.class), nullable(String.class));
+					.performWithRetry(eq(uriComponentsBuilder.build().toUri()), eq(HttpMethod.GET), eq(String.class), any());
 
 			//3. mock getCountryDetails
 			final InputStream countryIS = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
@@ -410,54 +386,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonCustomerGroups.class), any());
 
 			return shopwareClientSpy;
-		}
-	}
-
-	private static class MockUpsertBPartnerProcessor implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_UPSERT_BPARTNER_RESPONSE);
-			exchange.getIn().setBody(upsertBPartnerResponse);
-		}
-	}
-
-	static class MockSuccessfullyClearOrdersProcessor implements Processor
-	{
-		@Getter
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-		}
-	}
-
-	static class MockSuccessfullyUpsertRuntimeParamsProcessor implements Processor
-	{
-		@Getter
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-		}
-	}
-
-	private static class MockSuccessfullyCreatePaymentProcessor implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
 		}
 	}
 }

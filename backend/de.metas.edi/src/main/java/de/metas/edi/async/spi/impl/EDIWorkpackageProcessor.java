@@ -69,7 +69,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 
 		final Set<TableRecordIdPair> seenDocumentRecordIds = new HashSet<>();
 
-		final List<I_EDI_Document> ediDocuments = queueDAO.retrieveItems(workpackage, I_EDI_Document.class, localTrxName);
+		final List<I_EDI_Document> ediDocuments = queueDAO.retrieveAllItems(workpackage, I_EDI_Document.class);
 		for (final I_EDI_Document ediDocument : ediDocuments)
 		{
 			// Create export processor
