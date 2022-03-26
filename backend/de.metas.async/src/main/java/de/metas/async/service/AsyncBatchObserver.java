@@ -206,12 +206,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 
+		final String ownerName = AsyncBatchObserver.class.getName() + "_" + I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID + "=" + asyncBatch.getC_Async_Batch_ID();
+		
 		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
-
+		
 		while (!timeoutReached.get())
 		{
 			final ILock lock = lockManager.lock()
-					.setOwner(LockOwner.forOwnerName(AsyncBatchObserver.class.getName()))
+					.setOwner(LockOwner.forOwnerName(ownerName))
 					.setAllowAdditionalLocks(ILockCommand.AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)
 					.setFailIfAlreadyLocked(false)
 					.addRecordByModel(asyncBatch)
