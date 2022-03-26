@@ -40,7 +40,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

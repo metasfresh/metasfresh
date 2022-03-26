@@ -3,6 +3,7 @@ Feature: sales order
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
@@ -83,7 +84,7 @@ Feature: sales order
       | o_2                      | false   | POO         | MED        | DR            |
     And the purchase order with document subtype 'MED' linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | 10         | 100        | p_2                     | shiptopartner_2              |
+      | 10         | 100        | p_2                     | endcustomer_2                |
     And the sales order identified by 'o_2' is closed
     And the shipment schedule identified by s_ol_2 is processed after not more than 30 seconds
 
@@ -118,8 +119,8 @@ Feature: sales order
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_26                | p_26                    |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier |
-      | bpl_26     | endcustomer_36           | l_26                         |
+      | Identifier | C_BPartner_ID.Identifier |
+      | bpl_26     | endcustomer_36           |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
       | o_26       | true    | endcustomer_26           | 2021-04-17  | true           | endcustomer_36                      |
