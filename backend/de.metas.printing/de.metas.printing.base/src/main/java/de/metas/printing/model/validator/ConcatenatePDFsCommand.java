@@ -144,6 +144,7 @@ class ConcatenatePDFsCommand
 		return queryBL
 				.createQueryBuilder(I_C_Printing_Queue.class)
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
+				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, printingQueueItemsGeneratedAsyncBatchId)
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
 				.filter(TypedSqlQueryFilter.of(whereClause))
