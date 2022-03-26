@@ -18,6 +18,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
@@ -34,6 +36,10 @@ import java.util.List;
 public class C_Queue_WorkPackage
 {
 	private static final Logger logger = LogManager.getLogger(C_Queue_WorkPackage.class);
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private final AsyncBathMilestoneService asyncBatchMilestoneService = SpringContextHolder.instance.getBean(AsyncBathMilestoneService.class);
 
 	public static final C_Queue_WorkPackage INSTANCE = new C_Queue_WorkPackage();
 
@@ -73,26 +79,35 @@ public class C_Queue_WorkPackage
 	})
 	public void processMilestoneFromWP(@NonNull final I_C_Queue_WorkPackage wp)
 	{
-		final AsyncBathMilestoneService asyncBathMilestoneService = SpringContextHolder.instance.getBean(AsyncBathMilestoneService.class);
-
 		if (wp.getC_Async_Batch_ID() <= 0)
 		{
 			return;
 		}
 
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID());
 		final String trxName = InterfaceWrapperHelper.getTrxName(wp);
 
-		final AsyncBatchMilestoneQuery query = AsyncBatchMilestoneQuery.builder()
-				.asyncBatchId(AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID()))
-				.processed(false)
-				.build();
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID());
+		trxManager
+				.getTrxListenerManager(trxName)
+				.runAfterCommit(() -> processMilestoneInOwnTrx(wp, asyncBatchId));
+	}
 
-		final List<AsyncBatchMilestone> milestones = asyncBathMilestoneService.getByQuery(query);
+	private void processMilestoneInOwnTrx(
+			@NonNull final I_C_Queue_WorkPackage wp,
+			@NonNull final AsyncBatchId asyncBatchId)
+	{
+		trxManager.runInNewTrx(() -> {
 
-		if (milestones.size() > 0)
-		{
-			asyncBathMilestoneService.processAsyncBatchMilestone(asyncBatchId, milestones, trxName);
-		}
+			final AsyncBatchMilestoneQuery query = AsyncBatchMilestoneQuery.builder()
+					.asyncBatchId(AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID()))
+					.processed(false)
+					.build();
+			final List<AsyncBatchMilestone> milestones = asyncBatchMilestoneService.getByQuery(query);
+
+			if (milestones.size() > 0)
+			{
+				asyncBatchMilestoneService.processAsyncBatchMilestone(asyncBatchId, milestones, ITrx.TRXNAME_ThreadInherited);
+			}
+		});
 	}
 }

@@ -107,7 +107,7 @@ public class AsyncBatchMilestoneObserver
 		{
 			final AsyncBatchId asyncBatchId = asyncBatchDAO.retrieveAsyncBatchIdByMilestone(id);
 
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, null);
 
