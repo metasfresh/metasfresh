@@ -139,6 +139,7 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -673,6 +674,7 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
+		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
 				.type(Type.SHIP_TO)
