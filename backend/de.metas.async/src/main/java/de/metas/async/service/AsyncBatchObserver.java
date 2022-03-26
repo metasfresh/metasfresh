@@ -127,7 +127,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		}
 		catch (final TimeoutException timeoutException)
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(id);
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(id);
 
 			final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, ITrx.TRXNAME_None);
 
@@ -204,7 +204,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		final Instant startTime = Instant.now();
 
-		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 		final String ownerName = AsyncBatchObserver.class.getName() + "_" + I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID + "=" + asyncBatch.getC_Async_Batch_ID();
 		

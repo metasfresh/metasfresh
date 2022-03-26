@@ -17,6 +17,7 @@ import org.adempiere.util.lang.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -53,7 +54,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 *
 	 * @return {@code true} iff the respective record was updated to {@code processed='Y'};
 	 */
-	boolean updateProcessed(AsyncBatchId asyncBatchId);
+	boolean updateProcessedOutOfTrx(AsyncBatchId asyncBatchId);
 
 	/**
 	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
@@ -124,4 +125,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
 
 	AsyncBatchType getAsyncBatchTypeById(@NonNull AsyncBatchTypeId asyncBatchTypeId);
+
+	Duration getTimeUntilProcessedRecheck(I_C_Async_Batch asyncBatch);
 }

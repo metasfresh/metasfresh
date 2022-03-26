@@ -22,6 +22,7 @@
 
 package de.metas.invoice;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -35,19 +36,23 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -58,6 +63,8 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class InvoiceService
 {
+	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -72,6 +79,12 @@ public class InvoiceService
 	@NonNull
 	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
+		if (shipmentLines.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines lit is empty; -> nothing to do");
+			return ImmutableSet.of();
+		}
+		
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
@@ -97,7 +110,10 @@ public class InvoiceService
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
 
-		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+		for (final Map.Entry<AsyncBatchId, List<InvoiceCandidateId>> entry : asyncBatchId2InvoiceCandIds.entrySet())
+		{
+			generateInvoicesForAsyncBatch(ImmutableSet.copyOf(entry.getValue()), entry.getKey());
+		}
 	}
 
 	@NonNull

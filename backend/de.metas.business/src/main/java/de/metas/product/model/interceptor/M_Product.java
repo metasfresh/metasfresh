@@ -1,22 +1,31 @@
 package de.metas.product.model.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,6 +54,10 @@ import org.springframework.stereotype.Component;
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+
+	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
+
+	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
 	@Init
 	public void registerCallouts()
@@ -88,4 +101,29 @@ public class M_Product
 		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE ,
+			ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
+	@CalloutMethod(columnNames = I_M_Product.COLUMNNAME_C_UOM_ID)
+	public void setUOM_ID(@NonNull final I_M_Product product)
+	{
+		final AdMessageKey errorMessage = checkExistingUOMConversions(product);
+		if (errorMessage != null)
+		{
+			throw new AdempiereException(errorMessage);
+		}
+	}
+
+	@Nullable
+	private AdMessageKey checkExistingUOMConversions(@NonNull final I_M_Product product)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final UOMConversionsMap conversionsMap = uomConversionsDAO.getProductConversions(productId);
+		if (conversionsMap.isHasRatesForNonStockingUOMs())
+		{
+			return MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED;
+		}
+
+		return null;
+	}
 }

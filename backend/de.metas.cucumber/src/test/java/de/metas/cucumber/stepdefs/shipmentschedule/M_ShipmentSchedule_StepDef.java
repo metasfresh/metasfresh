@@ -431,19 +431,19 @@ public class M_ShipmentSchedule_StepDef
 		final BigDecimal orderedQtyNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.OrderedQtyNetPrice");
 		if (orderedQtyNetPrice != null)
 		{
-			assertThat(item.getOrderedQtyNetPrice()).isEqualTo(orderedQtyNetPrice);
+			assertThat(item.getOrderedQtyNetPrice()).isEqualByComparingTo(orderedQtyNetPrice);
 		}
 
 		final BigDecimal qtyToDeliverNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.QtyToDeliverNetPrice");
 		if (qtyToDeliverNetPrice != null)
 		{
-			assertThat(item.getQtyToDeliverNetPrice()).isEqualTo(qtyToDeliverNetPrice);
+			assertThat(item.getQtyToDeliverNetPrice()).isEqualByComparingTo(qtyToDeliverNetPrice);
 		}
 
 		final BigDecimal deliveredQtyNetPrice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.DeliveredQtyNetPrice");
 		if (deliveredQtyNetPrice != null)
 		{
-			assertThat(item.getDeliveredQtyNetPrice()).isEqualTo(deliveredQtyNetPrice);
+			assertThat(item.getDeliveredQtyNetPrice()).isEqualByComparingTo(deliveredQtyNetPrice);
 		}
 	}
 
