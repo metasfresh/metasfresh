@@ -106,8 +106,8 @@ public class C_OrderLine_StepDef
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 
-			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." +I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
-			if (partnerIdentifier !=null)
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			if (partnerIdentifier != null)
 			{
 				final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
 				orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -155,9 +155,8 @@ public class C_OrderLine_StepDef
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
-			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
-
-			final int partnerId = partnerTable.get(partnerIdentifier).getC_BPartner_ID();
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			final int partnerId = Check.isBlank(partnerIdentifier) ? 0 : partnerTable.get(partnerIdentifier).getC_BPartner_ID();
 
 			boolean linePresent = false;
 
@@ -165,8 +164,11 @@ public class C_OrderLine_StepDef
 			{
 				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
 						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
-						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID()
-						&& orderLine.getC_BPartner_ID() == partnerId;
+						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID();
+				if (partnerId > 0)
+				{
+					linePresent = linePresent && orderLine.getC_BPartner_ID() == partnerId;
+				}
 
 				if (linePresent)
 				{
@@ -230,61 +232,5 @@ public class C_OrderLine_StepDef
 
 		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		orderLineTable.putOrReplace(olIdentifier, orderLine);
-	}
-
-	@Then("the mediated purchase order linked to order {string} has lines:")
-	public void thePurchaseOrderLinkedToOrderO_HasLines(@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
-	{
-		final I_C_Order purchaseOrder = queryBL
-				.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
-				.create().firstOnly(I_C_Order.class);
-
-		assertThat(purchaseOrder).isNotNull();
-
-		final I_C_DocType docType = queryBL
-				.createQueryBuilder(I_C_DocType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, purchaseOrder.getC_DocTypeTarget_ID())
-				.create().firstOnly(I_C_DocType.class);
-
-		assertThat(docType).isNotNull();
-		assertThat(docType.getDocSubType()).isEqualTo(X_C_DocType.DOCSUBTYPE_Mediated);
-
-		final List<I_C_OrderLine> purchaseOrderLines = queryBL
-				.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, purchaseOrder.getC_Order_ID())
-				.create()
-				.list(I_C_OrderLine.class);
-
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
-			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
-			final String partnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
-
-			final int partnerId = partnerTable.get(partnerIdentifier).getC_BPartner_ID();
-
-			boolean linePresent = false;
-
-			for (final I_C_OrderLine orderLine : purchaseOrderLines)
-			{
-				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
-						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
-						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID()
-						&& orderLine.getC_BPartner_ID() == partnerId;
-
-				if (linePresent)
-				{
-					break;
-				}
-			}
-
-			assertThat(linePresent).isTrue();
-		}
 	}
 }
