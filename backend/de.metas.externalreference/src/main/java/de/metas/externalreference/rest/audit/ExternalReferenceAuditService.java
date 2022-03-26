@@ -86,13 +86,13 @@ public class ExternalReferenceAuditService implements IMasterDataExportAuditServ
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		if (jsonExternalReferenceItem.getMetasfreshId() == null)
+		if (jsonExternalReferenceItem.getExternalReferenceId() == null)
 		{
 			return;
 		}
 
 		final DataExportAuditRequest jsonExternalReferenceItemRequest = DataExportAuditRequest.builder()
-				.tableRecordReference(TableRecordReference.of(I_S_ExternalReference.Table_Name, jsonExternalReferenceItem.getMetasfreshId().getValue()))
+				.tableRecordReference(TableRecordReference.of(I_S_ExternalReference.Table_Name, jsonExternalReferenceItem.getExternalReferenceId().getValue()))
 				.action(Action.Standalone)
 				.externalSystemConfigId(externalSystemParentConfigId)
 				.adPInstanceId(pInstanceId)

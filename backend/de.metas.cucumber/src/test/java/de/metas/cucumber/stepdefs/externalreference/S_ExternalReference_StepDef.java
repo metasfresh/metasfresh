@@ -200,12 +200,9 @@ public class S_ExternalReference_StepDef
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final I_S_ExternalReference externalReference = queryBL.createQueryBuilder(I_S_ExternalReference.class)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, item.getLookupItem().getId())
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, item.getLookupItem().getType())
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, item.getMetasfreshId().getValue())
-					.create()
-					.firstOnlyNotNull(I_S_ExternalReference.class);
+			final I_S_ExternalReference externalReference = InterfaceWrapperHelper.load(item.getExternalReferenceId().getValue(), I_S_ExternalReference.class);
+
+			assertThat(externalReference).isNotNull();
 
 			externalRefTable.put(externalReferenceIdentifier, externalReference);
 		}

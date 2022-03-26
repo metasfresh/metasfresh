@@ -59,6 +59,7 @@ import org.compiere.model.I_Data_Export_Audit;
 import org.compiere.model.I_Data_Export_Audit_Log;
 import org.compiere.util.DB;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -320,7 +321,7 @@ public class DataExportAudit_StepDef
 
 		final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
 
-		bPartnerLocation.setGLN("not-relevant");
+		bPartnerLocation.setAddress("not-relevant" + Instant.now().toEpochMilli());
 
 		InterfaceWrapperHelper.save(bPartnerLocation);
 	}

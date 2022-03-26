@@ -6,7 +6,8 @@
         "type": "BPartner"
       },
       "metasfreshId": 2156428,
-      "systemName": "ALBERTA"
+      "systemName": "ALBERTA",
+      "externalReferenceId": 100000
     },
     {
       "lookupItem": {
@@ -14,7 +15,8 @@
         "type": "BPartnerLocation"
       },
       "metasfreshId": 2205178,
-      "systemName": "ALBERTA"
+      "systemName": "ALBERTA",
+      "externalReferenceId": 100001
     },
     {
       "lookupItem": {
@@ -22,7 +24,8 @@
         "type": "UserID"
       },
       "metasfreshId": 2188227,
-      "systemName": "ALBERTA"
+      "systemName": "ALBERTA",
+      "externalReferenceId": 100002
     }
   ]
 }

@@ -128,8 +128,6 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final int numberOfMessages = tableRows.size();
 		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(numberOfMessages);
 
-		logger.info("*** Found JsonExternalSystemRequest list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
-
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String externalSystemConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -198,6 +196,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			assertThat(messageReceivedWithinTimeout).isTrue();
 
 			return Stream.of(messages)
+					.peek(message -> logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, message ))
 					.map(message -> {
 						try
 						{

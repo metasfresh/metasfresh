@@ -9,7 +9,7 @@
       }
     },
     "routing_key": "routingKey",
-    "payload": "{\"items\":[{\"lookupItem\":{\"id\":\"externalRef_bpartner\",\"type\":\"BPartner\"},\"metasfreshId\":2156428,\"systemName\":\"ALBERTA\"},{\"lookupItem\":{\"id\":\"externalRef_bpLocation\",\"type\":\"BPartnerLocation\"},\"metasfreshId\":2205178,\"systemName\":\"ALBERTA\"},{\"lookupItem\":{\"id\":\"externalRef_user\",\"type\":\"UserID\"},\"metasfreshId\":2188227,\"systemName\":\"ALBERTA\"}]}",
+    "payload": "{\"items\":[{\"lookupItem\":{\"id\":\"externalRef_bpartner\",\"type\":\"BPartner\"},\"metasfreshId\":2156428,\"systemName\":\"ALBERTA\",\"externalReferenceId\":100000},{\"lookupItem\":{\"id\":\"externalRef_bpLocation\",\"type\":\"BPartnerLocation\"},\"metasfreshId\":2205178,\"systemName\":\"ALBERTA\",\"externalReferenceId\":100001},{\"lookupItem\":{\"id\":\"externalRef_user\",\"type\":\"UserID\"},\"metasfreshId\":2188227,\"systemName\":\"ALBERTA\",\"externalReferenceId\":100002}]}",
     "payload_encoding": "string"
   }
 }

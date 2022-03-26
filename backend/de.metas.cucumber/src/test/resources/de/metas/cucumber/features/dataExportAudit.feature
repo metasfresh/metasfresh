@@ -47,39 +47,8 @@ Feature: data export audit using bpartner metasfresh api
       | location_data_export            | Exported-AlongWithParent | config_1                            | p_1                        |
 
 
-  Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq
-    Given all the export audit data is reset
-    And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsSyncBPartnersToRabbitMQ |
-      | config_1                            | RabbitMQ | testRabbitMQ        | true                          |
-    And add external system config and pinstance headers
-      | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | config_1                            | p_1                        |
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/2156425' receives a 'GET' request with the headers from context
-    And process bpartner endpoint response
-      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | C_Location_ID.Identifier |
-      | bpartner_1               | bpartner_location_1               | location_1               |
-    And after not more than 30s, there are added records in Data_Export_Audit
-      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | bpartner_data_export            | C_BPartner          | bpartner_1           |                                        |
-      | bp_location_data_export         | C_BPartner_Location | bpartner_location_1  | bpartner_data_export                   |
-      | location_data_export            | C_Location          | location_1           | bp_location_data_export                |
-    And there are added records in Data_Export_Audit_Log
-      | Data_Export_Audit_ID.Identifier | Data_Export_Action       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | bpartner_data_export            | Exported-Standalone      | config_1                            | p_1                        |
-      | bp_location_data_export         | Exported-AlongWithParent | config_1                            | p_1                        |
-      | location_data_export            | Exported-AlongWithParent | config_1                            | p_1                        |
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
-    And the following c_bpartner_location is changed
-      | C_BPartner_Location_ID.Identifier |
-      | bpartner_location_1               |
-    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
-      | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
-      | bpartner_1               | config_1                            |
-
-
   Scenario: External reference data export audit
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
     "requestItems": [
@@ -125,7 +94,7 @@ Feature: data export audit using bpartner metasfresh api
     }
 }
 """
-    Then verify that bPartner was created for externalIdentifier
+    And verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier                       | OPT.Code           | Name               | OPT.CompanyName   | OPT.Language |
       | created_bpartner         | ext-Shopware6-BPartner_ER_Audit_25032022 | shopware6codeAudit | shopware6nameAudit | shopware6cmpAudit | de           |
 
@@ -165,24 +134,16 @@ Feature: data export audit using bpartner metasfresh api
 
     Then process external reference lookup endpoint response
       | S_ExternalReference_ID.Identifier | ExternalReference            |
-      | recordRef_1                       | BPartner_ER_Audit_25032022   |
-      | recordRef_2                       | BPLocation_ER_Audit_25032022 |
-      | recordRef_3                       | BPContact_ER_Audit_25032022  |
+      | externalRef_BPartner                       | BPartner_ER_Audit_25032022   |
+      | externalRef_BPLocation                       | BPLocation_ER_Audit_25032022 |
+      | externalRef_BPContact                       | BPContact_ER_Audit_25032022  |
     And after not more than 30s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | dataExport_ref1                 | S_ExternalReference | recordRef_1          |                                        |
-      | dataExport_ref2                 | S_ExternalReference | recordRef_2          |                                        |
-      | dataExport_ref3                 | S_ExternalReference | recordRef_3          |                                        |
+      | dataExport_BPartner                 | S_ExternalReference | externalRef_BPartner          |                                        |
+      | dataExport_BPLocation                 | S_ExternalReference | externalRef_BPLocation          |                                        |
+      | dataExport_BPContact                 | S_ExternalReference | externalRef_BPContact          |                                        |
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | dataExport_ref1                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_ref2                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_ref3                 | Exported-Standalone | config_1                            | p_1                        |
-
-    And the following S_ExternalReference is changed:
-      | S_ExternalReference_ID.Identifier | OPT.Version |
-      | recordRef_1                       | version_1   |
-
-    And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                           |
-      | config_1                            | {"systemName":"Shopware6","items":[{"id":"test12","type":"BPartner"},{"id":"BPLocation_ER_Audit_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_Audit_25032022","type":"UserID"}]} |
+      | dataExport_BPartner                 | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPLocation                 | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPContact                 | Exported-Standalone | config_1                            | p_1                        |
