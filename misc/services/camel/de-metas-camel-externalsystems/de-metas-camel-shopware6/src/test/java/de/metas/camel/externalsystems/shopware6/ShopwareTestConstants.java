@@ -45,7 +45,7 @@ public interface ShopwareTestConstants
 	String MOCK_NORMAL_VAT_RATES = "7.7,19,0";
 	String MOCK_REDUCED_VAT_RATES = "5.5,12";
 	String MOCK_JSON_EMAIL_PATH = "/customFields/deliveryNotificationEmailAddress";
-	String MOCK_BILLING_ADDRESS_HTTP_URL = "https://www.matter.com/api/v3/order-address/billingAddressId";
+	String MOCK_BILLING_ADDRESS_HTTP_URL = "https://www.matter.com/api/order-address/billingAddressId";
 
 	String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
 	String MOCK_OL_CAND_CREATE = "mock:olCandCreate";

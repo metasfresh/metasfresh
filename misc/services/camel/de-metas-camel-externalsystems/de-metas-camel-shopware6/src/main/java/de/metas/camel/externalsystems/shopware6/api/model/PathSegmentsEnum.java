@@ -30,7 +30,6 @@ import lombok.Getter;
 public enum PathSegmentsEnum
 {
 	API("api"),
-	V3("v3"),
 	SEARCH("search"),
 	ORDER("order"),
 	PRODUCT("product"),
