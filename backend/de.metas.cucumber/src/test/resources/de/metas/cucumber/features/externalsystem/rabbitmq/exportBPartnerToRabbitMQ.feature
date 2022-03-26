@@ -14,8 +14,8 @@ Feature: Validate BPartner is sent to RabbitMQ
       | AD_UserGroup_User_Assign_ID.Identifier | AD_UserGroup_ID.Identifier | AD_User_ID.Identifier | IsActive |
       | userGroupAssign_1                      | userGroup_1                | metasfresh_user       | true     |
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.BPartnerCreatedByUserGroup_ID.Identifier |
-      | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                  |
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.SubjectCreatedByUserGroup_ID.Identifier | OPT.IsSyncBPartnersToRabbitMQ |
+      | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                 | true                          |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -50,12 +50,11 @@ Feature: Validate BPartner is sent to RabbitMQ
       | ExternalSystem_Config_ID.Identifier |
       | config_1                            |
 
-
   Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq
     Given all the export audit data is reset
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue |
-      | config_1                            | RabbitMQ | testRabbitMQ        |
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsSyncBPartnersToRabbitMQ |
+      | config_1                            | RabbitMQ | testRabbitMQ_26032022        | true                          |
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |

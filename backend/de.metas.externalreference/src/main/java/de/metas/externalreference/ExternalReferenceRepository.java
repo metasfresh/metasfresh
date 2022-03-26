@@ -27,6 +27,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,6 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 @Repository
 public class ExternalReferenceRepository
@@ -164,6 +168,26 @@ public class ExternalReferenceRepository
 				.create()
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
+	}
+
+	@NonNull
+	public ExternalReference getById(@NonNull final ExternalReferenceId externalReferenceId)
+	{
+		final I_S_ExternalReference externalReference =  load(externalReferenceId, I_S_ExternalReference.class);
+
+		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+
+		return buildExternalReference(externalReference);
+	}
+
+	@NonNull
+	public UserId getCreatedBy(@NonNull final ExternalReferenceId externalReferenceId)
+	{
+		final I_S_ExternalReference externalReference = load(externalReferenceId, I_S_ExternalReference.class);
+
+		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+
+		return UserId.ofRepoId(externalReference.getCreatedBy());
 	}
 
 	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)

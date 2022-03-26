@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -137,21 +138,15 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
-		parentRecord.setIsActive(true);
-		saveRecord(parentRecord);
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
-		childRecord.setExternalSystemValue("testRabbitMQValue");
-		childRecord.setRemoteURL("remoteURL");
-		childRecord.setRouting_Key("routingKey");
-		childRecord.setAuthToken("authToken");
-		childRecord.setIsSyncBPartnersToRabbitMQ(true);
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setIsAutoSendWhenCreatedByUserGroup(false);
-		saveRecord(childRecord);
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("testRabbitMQValue")
+				.isSyncBPartnerToRabbitMQ(true)
+				.build();
 
 		// when
 		final ExternalSystemRabbitMQConfigId id = ExternalSystemRabbitMQConfigId.ofRepoId(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
@@ -225,23 +220,19 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getByTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
-		saveRecord(parentRecord);
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.build();
 
 		final String value = "testRabbitMQValue";
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
-		childRecord.setExternalSystemValue(value);
-		childRecord.setRemoteURL("remoteURL");
-		childRecord.setRouting_Key("routingKey");
-		childRecord.setAuthToken("authToken");
-		childRecord.setIsSyncBPartnersToRabbitMQ(true);
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		childRecord.setIsAutoSendWhenCreatedByUserGroup(true);
-		childRecord.setBPartnerCreatedByUserGroup_ID(1);
-		saveRecord(childRecord);
+		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value(value)
+				.isSyncBPartnerToRabbitMQ(true)
+				.isAutoSendWhenCreatedByUserGroup(true)
+				.subjectCreatedByUserGroupId(1)
+				.build();
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.RabbitMQ, value)
@@ -552,20 +543,15 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_RabbitMQ_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
-		parentRecord.setIsActive(true);
-		saveRecord(parentRecord);
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
-		childRecord.setExternalSystemValue("testRabbitMQValue");
-		childRecord.setRemoteURL("remoteURL");
-		childRecord.setRouting_Key("routingKey");
-		childRecord.setAuthToken("authToken");
-		childRecord.setIsSyncBPartnersToRabbitMQ(true);
-		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		saveRecord(childRecord);
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("testRabbitMQValue")
+				.isSyncBPartnerToRabbitMQ(true)
+				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
@@ -576,5 +562,45 @@ class ExternalSystemConfigRepoTest
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
 		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_getActiveByType_RabbitMQ()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.build();
+
+		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_getActiveByType_NoRecord()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.build();
+
+		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Alberta);
+
+		// then
+		assertThat(result).isEmpty();
 	}
 }

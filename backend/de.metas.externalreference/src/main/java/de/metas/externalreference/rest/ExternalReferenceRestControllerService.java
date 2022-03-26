@@ -156,6 +156,8 @@ public class ExternalReferenceRestControllerService
 						.lookupItem(lookupItem)
 						.metasfreshId(JsonMetasfreshId.of(externalReference.getRecordId()))
 						.version(externalReference.getVersion())
+						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
+						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.build();
 
 			}

@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
-import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemTestUtil;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
@@ -38,6 +38,7 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,25 +55,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-public class RabbitMQExternalSystemServiceTest
+public class ExportBPartnerToRabbitMQServiceTest
 {
-	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
+	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest_BPartner.json";
 
 	private JsonExternalSystemRequest expectedJsonExternalSystemRequest;
-	private RabbitMQExternalSystemService rabbitMQExternalSystemService;
+	private ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService;
 
 	@BeforeEach
 	public void init() throws IOException
 	{
 		AdempiereTestHelper.get().init();
 
-		rabbitMQExternalSystemService = new RabbitMQExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
-																		  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
-																		  new DataExportAuditLogRepository(),
-																		  new DataExportAuditRepository(),
-																		  new UserGroupRepository());
-
-		createPrerequisites();
+		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+																			  new DataExportAuditRepository(),
+																			  new DataExportAuditLogRepository(),
+																			  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
+																			  new UserGroupRepository());
 
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 		final InputStream externalSystemIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST);
@@ -84,7 +83,6 @@ public class RabbitMQExternalSystemServiceTest
 	{
 		// given
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(3);
-		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(2);
 
 		final I_AD_Org orgRecord = newInstance(I_AD_Org.class);
 		orgRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
@@ -96,36 +94,26 @@ public class RabbitMQExternalSystemServiceTest
 		bpartner.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		saveRecord(bpartner);
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getCode())
+				.customParentConfigId(1)
+				.build();
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(externalSystemParentConfig.getExternalSystem_Config_ID())
+				.isSyncBPartnerToRabbitMQ(true)
+				.customChildConfigId(2)
+				.value("value")
+				.build();
+
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getC_BPartner_ID());
+		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(configRabbitMQHttp.getExternalSystem_Config_RabbitMQ_HTTP_ID());
 
 		// when
-		final Optional<JsonExternalSystemRequest> externalSystemRequest = rabbitMQExternalSystemService.toJsonExternalSystemRequest(externalSystemRabbitMQConfigId, bpartnerId, pInstanceId);
+		final Optional<JsonExternalSystemRequest> externalSystemRequest = exportBPartnerToRabbitMQService.getExportExternalSystemRequest(externalSystemRabbitMQConfigId, bPartnerRecordRef, pInstanceId);
 
 		// then
 		assertThat(externalSystemRequest).isPresent();
 		assertThat(externalSystemRequest.get()).isEqualTo(expectedJsonExternalSystemRequest);
-	}
-
-	private void createPrerequisites()
-	{
-		final I_ExternalSystem_Config externalSystemParentConfig = newInstance(I_ExternalSystem_Config.class);
-		externalSystemParentConfig.setExternalSystem_Config_ID(1);
-		externalSystemParentConfig.setName("ParentConfig");
-		externalSystemParentConfig.setIsActive(true);
-		externalSystemParentConfig.setType(ExternalSystemType.RabbitMQ.getCode());
-
-		saveRecord(externalSystemParentConfig);
-
-		final I_ExternalSystem_Config_RabbitMQ_HTTP externalSystemConfigRabbitMQHttp = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
-		externalSystemConfigRabbitMQHttp.setExternalSystem_Config_RabbitMQ_HTTP_ID(2);
-		externalSystemConfigRabbitMQHttp.setExternalSystem_Config_ID(1);
-		externalSystemConfigRabbitMQHttp.setExternalSystemValue("value");
-		externalSystemConfigRabbitMQHttp.setIsActive(true);
-		externalSystemConfigRabbitMQHttp.setRemoteURL("https://test");
-		externalSystemConfigRabbitMQHttp.setRouting_Key("key");
-		externalSystemConfigRabbitMQHttp.setAuthToken("authToken");
-		externalSystemConfigRabbitMQHttp.setIsSyncBPartnersToRabbitMQ(true);
-
-		saveRecord(externalSystemConfigRabbitMQHttp);
 	}
 }

@@ -23,7 +23,7 @@
 package de.metas.externalsystem.rabbitmqhttp.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.rabbitmqhttp.RabbitMQExternalSystemService;
+import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -42,11 +42,11 @@ public class C_User_Assigned_Role
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	private final RabbitMQExternalSystemService rabbitMQExternalSystemService;
+	private final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService;
 
-	public C_User_Assigned_Role(@NonNull final RabbitMQExternalSystemService rabbitMQExternalSystemService)
+	public C_User_Assigned_Role(@NonNull final ExportBPartnerToRabbitMQService exportBPartnerToRabbitMQService)
 	{
-		this.rabbitMQExternalSystemService = rabbitMQExternalSystemService;
+		this.exportBPartnerToRabbitMQService = exportBPartnerToRabbitMQService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -59,6 +59,6 @@ public class C_User_Assigned_Role
 			return;
 		}
 
-		trxManager.runAfterCommit(() -> rabbitMQExternalSystemService.enqueueBPartnerSync(bpartnerId));
+		trxManager.runAfterCommit(() -> exportBPartnerToRabbitMQService.enqueueBPartnerSync(bpartnerId));
 	}
 }

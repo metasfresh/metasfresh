@@ -44,13 +44,14 @@ import javax.annotation.Nullable;
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalRef",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/externalRef",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalRefs" })
+		ExternalReferenceRestController.EXTERNAL_REFERENCE_REST_CONTROLLER_PATH_V2 })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController
 {
+	public static final String EXTERNAL_REFERENCE_REST_CONTROLLER_PATH_V2 = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalRefs";
 
-private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	public ExternalReferenceRestController(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
 	{
@@ -68,7 +69,6 @@ private final ExternalReferenceRestControllerService externalReferenceRestContro
 	{
 		return externalReferenceRestControllerService.performLookup(orgCode, request);
 	}
-
 
 	// note that we are not going to update references because they are not supposed to change
 	@PostMapping("{orgCode}")

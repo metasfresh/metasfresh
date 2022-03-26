@@ -208,6 +208,40 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
+	/**
+	 * @return the configs if both their parent and child records have {@code IsActive='Y'}
+	 */
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getActiveByType(@NonNull final ExternalSystemType externalSystemType)
+	{
+		final ImmutableList<ExternalSystemParentConfig> result;
+
+		switch (externalSystemType)
+		{
+			case Alberta:
+				result = getAllByTypeAlberta();
+				break;
+			case RabbitMQ:
+				result = getAllByTypeRabbitMQ();
+				break;
+			case WOO:
+				result = getAllByTypeWOO();
+				break;
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
+
+		return result
+				.stream()
+				.filter(ExternalSystemParentConfig::getIsActive)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
 	{
@@ -329,7 +363,8 @@ public class ExternalSystemConfigRepo
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
 				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
-				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getBPartnerCreatedByUserGroup_ID()))
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getSubjectCreatedByUserGroup_ID()))
+				.isSyncExternalReferencesToRabbitMQ(rabbitMQConfigRecord.isSyncExternalReferencesToRabbitMQ())
 				.build();
 	}
 
