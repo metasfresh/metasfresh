@@ -84,7 +84,8 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
@@ -161,7 +162,7 @@ public class MD_Candidate_StepDef
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
 
-		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent);
+		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
@@ -361,7 +362,7 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event);
+		postMaterialEventService.postEventNow(event, null);
 	}
 
 	@And("metasfresh has no MD_Candidate for identifier {string}")

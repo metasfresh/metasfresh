@@ -25,11 +25,12 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.user.UserId;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
@@ -91,9 +92,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @Component
 public class AvailableForSalesUtil
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AvailableForSalesRepository availableForSalesRepository;
-
+	
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderDAO ordersDAO = Services.get(IOrderDAO.class);
+	
 	public AvailableForSalesUtil(@NonNull final AvailableForSalesRepository availableForSalesRepository)
 	{
 		this.availableForSalesRepository = availableForSalesRepository;
@@ -296,7 +300,7 @@ public class AvailableForSalesUtil
 			@NonNull final AvailableForSalesConfig config)
 	{
 		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
-		query2OrderLineIds = createQueries(requests, config);
+				query2OrderLineIds = createQueries(requests, config);
 
 		final AvailableForSalesMultiQuery availableForSalesMultiQuery = AvailableForSalesMultiQuery
 				.builder()
@@ -305,7 +309,7 @@ public class AvailableForSalesUtil
 
 		// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
 		final ImmutableMap<OrderLineId, Quantities> //
-		qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
+				qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
 
 		for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
 		{
@@ -369,31 +373,19 @@ public class AvailableForSalesUtil
 			@NonNull final Quantities quantities,
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-
-		final I_C_OrderLine salesOrderLineRecord = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		final I_C_OrderLine salesOrderLineRecord = ordersDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
 
 		// We do everything in the order line's UOM right from the start in order to depend on QtyEntered as opposed to QtyOrdered.
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
-		final BigDecimal qtyToBeShippedInOrderLineUOM = uomConversionBL
-				.convertFromProductUOM(
-						ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID()),
-						UomId.ofRepoId(salesOrderLineRecord.getC_UOM_ID()),
-						quantities.getQtyToBeShipped());
-
-		final BigDecimal qtyOnHandInOrderLineUOM = uomConversionBL
-				.convertFromProductUOM(
-						ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID()),
-						UomId.ofRepoId(salesOrderLineRecord.getC_UOM_ID()),
-						quantities.getQtyOnHandStock());
+		final ProductId productId = ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID());
+		
+		final Quantity qtyToBeShippedInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyToBeShipped(), productId), salesOrderLineRecord);
+		final Quantity qtyOnHandInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyOnHandStock(), productId), salesOrderLineRecord);
 
 		// QtyToBeShippedInOrderLineUOM includes the salesOrderLineRecord.getQtyEntered().
 		// We subtract it again to make it comparable with the orderLine's qtyOrdered.
-		final BigDecimal qtyToBeShippedEff = qtyToBeShippedInOrderLineUOM
-				.subtract(salesOrderLineRecord.getQtyEntered());
-
-		final BigDecimal qtyAvailableForSales = qtyOnHandInOrderLineUOM.subtract(qtyToBeShippedEff);
+		final BigDecimal qtyToBeShippedEff = qtyToBeShippedInOrderLineUOM.toBigDecimal().subtract(salesOrderLineRecord.getQtyEntered());
+		final BigDecimal qtyAvailableForSales = qtyOnHandInOrderLineUOM.toBigDecimal().subtract(qtyToBeShippedEff);
 
 		salesOrderLineRecord.setQtyAvailableForSales(qtyAvailableForSales);
 
@@ -406,6 +398,6 @@ public class AvailableForSalesUtil
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor(null);
 		}
 
-		ordersRepo.save(salesOrderLineRecord);
+		ordersDAO.save(salesOrderLineRecord);
 	}
 }

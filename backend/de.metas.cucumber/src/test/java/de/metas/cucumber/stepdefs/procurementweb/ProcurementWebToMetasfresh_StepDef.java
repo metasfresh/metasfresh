@@ -99,7 +99,7 @@ public class ProcurementWebToMetasfresh_StepDef
 	@When("metasfresh receives a GetAllBPartnersRequest via RabbitMQ")
 	public void metasfresh_receives_a_get_all_b_partners_request() throws IOException, TimeoutException
 	{
-		final String string = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(GetAllBPartnersRequest.INSTANCE);
+		final String string = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(GetAllBPartnersRequest.builder().build());
 
 		try (final Connection connection = procurementWebuiFactory.newConnection())
 		{

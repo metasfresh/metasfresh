@@ -16,6 +16,7 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -115,10 +116,11 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
 		final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
+		final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
 		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
-
+		
 		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
 				? null
 				: OrderLineGroup.builder()
@@ -147,6 +149,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.salesRepInternalId(salesRepInternalId)
 				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
+				.qtyItemCapacityEff(qtyItemCapacity)
 				.bpartnerName(olCandRecord.getBPartnerName())
 				.email(olCandRecord.getEMail())
 				.phone(olCandRecord.getPhone())

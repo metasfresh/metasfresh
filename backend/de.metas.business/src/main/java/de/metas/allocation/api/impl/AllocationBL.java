@@ -11,17 +11,22 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRules;
 import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRulesRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
@@ -171,47 +176,47 @@ public class AllocationBL implements IAllocationBL
 		});
 	}
 
-	public I_C_AllocationHdr autoAllocateSpecificPayment(
+	public void autoAllocateSpecificPayment(
 			org.compiere.model.I_C_Invoice invoice,
-			org.compiere.model.I_C_Payment payment,
+			I_C_Payment payment,
 			boolean ignoreIsAutoAllocateAvailableAmt)
 	{
 		if (invoice.isPaid())
 		{
-			return null;
+			return;
 		}
 		if (!invoice.isSOTrx())
 		{
-			return null;
+			return;
 		}
 		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
 		{
-			return null;
+			return;
 		}
 
 		// payment and invoice must have same partner
 		if (payment.getC_BPartner_ID() != invoice.getC_BPartner_ID())
 		{
-			return null;
+			return;
 		}
 
 		// payment must be completed
 		final DocStatus docStatus = DocStatus.ofCode(payment.getDocStatus());
 		if (!docStatus.isCompleted())
 		{
-			return null;
+			return;
 		}
 
 		// payment must be processed
 		if (!payment.isProcessed())
 		{
-			return null;
+			return;
 		}
 
 		// // Matching DocType
 		if (payment.isReceipt() != invoice.isSOTrx())
 		{
-			return null;
+			return;
 		}
 
 		if (!ignoreIsAutoAllocateAvailableAmt)
@@ -219,14 +224,14 @@ public class AllocationBL implements IAllocationBL
 			// payment must be autoallocatedAavilableAmt
 			if (!payment.isAutoAllocateAvailableAmt())
 			{
-				return null;
+				return;
 			}
 		}
 
 		// payment must not be oallocated
 		if (payment.isAllocated())
 		{
-			return null;
+			return;
 		}
 
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -269,7 +274,7 @@ public class AllocationBL implements IAllocationBL
 						.lineDone();
 			}
 		}
-		return allocBuilder.create(true);
+		allocBuilder.create(true);
 	}
 
 	@Override
@@ -285,5 +290,49 @@ public class AllocationBL implements IAllocationBL
 		}
 		// the reversal is always younger than the original document
 		return allocationHdr.getC_AllocationHdr_ID() > allocationHdr.getReversal_ID();
+	}
+
+	@Override
+	public void invoiceDiscountAndWriteOff(@NonNull final InvoiceDiscountAndWriteOffRequest request)
+	{
+		final org.compiere.model.I_C_Invoice invoice = request.getInvoice();
+
+		Timestamp dateTrx;
+		Timestamp dateAcct;
+		if(request.isUseInvoiceDate())
+		{
+			dateTrx = invoice.getDateInvoiced();
+			dateAcct = invoice.getDateAcct();
+		}
+		else
+		{
+			dateTrx = TimeUtil.asTimestamp(request.getDateTrx() != null ? request.getDateTrx() : SystemTime.asInstant());
+			dateAcct = dateTrx;
+		}
+
+		final Money discountAmt = request.getDiscountAmt();
+		final Money writeOffAmt = request.getWriteOffAmt();
+		if (Money.countNonZero(discountAmt, writeOffAmt) == 0)
+		{
+			throw new AdempiereException("At least one of the amounts shall be non-zero: " + request);
+		}
+		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(discountAmt, writeOffAmt);
+
+		newBuilder()
+				.orgId(invoice.getAD_Org_ID())
+				.currencyId(currencyId)
+				.dateAcct(dateAcct)
+				.dateTrx(dateTrx)
+				.description(StringUtils.trimBlankToNull(request.getDescription()))
+				//
+				.addLine()
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.discountAmt(Money.toBigDecimalOrZero(discountAmt))
+				.writeOffAmt(Money.toBigDecimalOrZero(writeOffAmt))
+				.lineDone()
+				//
+				.create(true); // complete=true
 	}
 }

@@ -63,6 +63,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -302,11 +303,19 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	@Override
 	public InOutGenerateResult processReceiptSchedules(@NonNull final CreateReceiptsParameters parameters)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
+		try
+		{
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 
-		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(parameters));
-		return inoutGenerateResult;
+			return trxManager.call(trxName, () -> processReceiptSchedules0(parameters));
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("CreateReceiptsParameters", parameters);
+		}
 	}
 
 	/**
@@ -322,11 +331,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				? parameters.getSelectedHuIds()
 				: retrieveAllocatedHuIds(receiptSchedules); //if no selectedHuIds were provided, load all the HUs allocated to the target receipt schedules
 
-		validateHuIds(selectedHuIds);
-
 		// Iterate all selected receipt schedules, get assigned HUs and adjust their Product Storage Qty to WeightNet
+		// note: selectedHUs might well be empty or null, for packing-material-M_ReceiptSchedules
 		if (selectedHuIds != null && !selectedHuIds.isEmpty())
 		{
+			validateHuIds(selectedHuIds);
+			
 			final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(parameters.getCtx(), ITrx.TRXNAME_ThreadInherited);
 			huWeightNetAdjuster.setInScopeHU_IDs(selectedHuIds);
 			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)

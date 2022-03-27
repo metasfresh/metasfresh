@@ -190,9 +190,19 @@ public class Quantitys
 		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
-	public Quantity create(final int qty, final UomId repoId)
+	public Quantity create(final int qty, @NonNull final UomId repoId)
 	{
 		return create(BigDecimal.valueOf(qty), repoId);
+	}
+
+	@Nullable
+	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return null;
+		}
+		return quantity.toBigDecimal();
 	}
 
 	public class QuantityDeserializer extends StdDeserializer<Quantity>

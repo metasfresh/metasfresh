@@ -408,6 +408,7 @@
             <xsd:element minOccurs="0" name="VATaxID" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ReferenceNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="Setup_Place_No" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SiteName" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_120_vType">
@@ -447,7 +448,7 @@
             <xsd:element minOccurs="0" name="Rate" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="taxfree" type="YES-NO"/>
             <xsd:element minOccurs="0" name="Value" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="VendorProductNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="CustomerProductNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDI_cctop_invoic_v_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Leergut" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ProductDescription" type="xsd:string"/>

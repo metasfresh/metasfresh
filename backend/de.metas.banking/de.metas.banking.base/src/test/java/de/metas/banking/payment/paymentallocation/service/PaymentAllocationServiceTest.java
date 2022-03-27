@@ -24,6 +24,7 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
+import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -38,17 +39,19 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -82,8 +85,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -106,9 +109,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class PaymentAllocationServiceTest
 {
+	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
+	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = false;
 
-	@SuppressWarnings("FieldCanBeLocal")
-	private IPaymentBL paymentBL;
 	private PaymentAllocationService paymentAllocationService;
 	private Map<InvoiceDocBaseType, I_C_DocType> invoiceDocTypes;
 	private CurrencyId euroCurrencyId;
@@ -121,7 +124,7 @@ public class PaymentAllocationServiceTest
 	private ProductId serviceFeeProductId;
 	private BPartnerId feeCompanyId1;
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
@@ -137,7 +140,6 @@ public class PaymentAllocationServiceTest
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
-		paymentBL = Services.get(IPaymentBL.class);
 		bpartnerId = createBPartnerId();
 
 		serviceInvoiceDocTypeId = DocTypeId.ofRepoId(222);
@@ -145,12 +147,12 @@ public class PaymentAllocationServiceTest
 
 		final CountryId countryId = BusinessTestHelper.createCountry("DE");
 
-		serviceInvoiceDocTypeId = Services.get(IDocTypeDAO.class)
-				.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-									   .ctx(Env.getCtx())
-									   .name("invoice processing fee vendor invoice")
-									   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-									   .build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		serviceInvoiceDocTypeId = docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
+																   .ctx(Env.getCtx())
+																   .name("invoice processing fee vendor invoice")
+																   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+																   .build());
 
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -286,7 +288,7 @@ public class PaymentAllocationServiceTest
 
 		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
 
-		final PaymentAllocationPayableItem paymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).invoice(invoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem paymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).invoice(invoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Collections.singletonList(paymentAllocationPayableItem));
 
@@ -299,7 +301,7 @@ public class PaymentAllocationServiceTest
 
 		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
 
-		final PaymentAllocationPayableItem paymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).serviceFeeAmt(new BigDecimal(10)).invoice(invoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem paymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(100)).openAmt(new BigDecimal(100)).serviceFeeAmt(new BigDecimal(10)).invoice(invoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Collections.singletonList(paymentAllocationPayableItem));
 
@@ -313,11 +315,10 @@ public class PaymentAllocationServiceTest
 		final I_C_Invoice firstInvoice = invoice().type(CustomerInvoice).open("50").currency(euroCurrencyId).build();
 		final I_C_Invoice secondInvoice = invoice().type(CustomerInvoice).open("50").currency(euroCurrencyId).build();
 
-		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(40)).openAmt(new BigDecimal(40)).serviceFeeAmt(new BigDecimal(10)).invoice(firstInvoice).isSOTrx(true).build();
-		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(38)).openAmt(new BigDecimal(48)).serviceFeeAmt(new BigDecimal(12)).invoice(secondInvoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(40)).openAmt(new BigDecimal(40)).serviceFeeAmt(new BigDecimal(10)).invoice(firstInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(38)).openAmt(new BigDecimal(48)).serviceFeeAmt(new BigDecimal(12)).invoice(secondInvoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
-
 
 	}
 
@@ -329,8 +330,8 @@ public class PaymentAllocationServiceTest
 		final I_C_Invoice firstInvoice = invoice().type(CustomerInvoice).open("50").currency(euroCurrencyId).build();
 		final I_C_Invoice secondInvoice = invoice().type(CustomerInvoice).open("50").currency(euroCurrencyId).build();
 
-		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(firstInvoice).isSOTrx(true).build();
-		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(secondInvoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(firstInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(secondInvoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
 
@@ -345,9 +346,9 @@ public class PaymentAllocationServiceTest
 		final I_C_Invoice secondInvoice = invoice().type(CustomerInvoice).open("75").currency(euroCurrencyId).build();
 
 		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(25)).openAmt(new BigDecimal(25))
-				.invoice(firstInvoice).isSOTrx(true).build();
+				.invoice(firstInvoice).soTrx(SOTrx.SALES).build();
 		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(75)).openAmt(new BigDecimal(75))
-				.invoice(secondInvoice).isSOTrx(true).build();
+				.invoice(secondInvoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
 
@@ -392,9 +393,12 @@ public class PaymentAllocationServiceTest
 			@Nullable final BigDecimal serviceFeeAmt,
 			@Nullable final BigDecimal discountAmt,
 			@NonNull final I_C_Invoice invoice,
-			final boolean isSOTrx)
+			@NonNull final SOTrx soTrx)
 	{
+		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, isCreditMemo(invoice));
+
 		return PaymentAllocationPayableItem.builder()
+				.amtMultiplier(amtMultiplier)
 				.payAmt(Amount.of(payAmt, CurrencyCode.EUR))
 				.openAmt(Amount.of(openAmt, CurrencyCode.EUR))
 				.serviceFeeAmt(serviceFeeAmt == null ? null : Amount.of(serviceFeeAmt, CurrencyCode.EUR))
@@ -406,40 +410,34 @@ public class PaymentAllocationServiceTest
 				.paymentDate(Instant.now())
 				.bPartnerId(bpartnerId)
 				.documentNo(invoice.getDocumentNo())
-				.isSOTrx(isSOTrx)
+				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
 				.build();
 	}
 
+	/**
+	 * @param open open amount - we assume the open amount is a relative value (i.e. same as you see the invoice grand total in sales/purcahse invoice window)
+	 */
 	@Builder(builderMethodName = "invoice")
-	private I_C_Invoice getInvoice(
+	private I_C_Invoice createInvoice(
 			final InvoiceDocBaseType type,
 			final String open,
 			@Nullable final CurrencyId currency)
 	{
 		final Money openAmt = money(open, currency);
-
 		final LocalDate acctDate = LocalDate.parse("2020-09-04");
-
-		//
-		// Create the invoice record (needed for the BL which calculates how much was allocated)
-		final I_C_Invoice invoice;
-
-		final Money invoiceGrandTotal = openAmt
-				.negateIf(type.isCreditMemo())
-				.negateIf(!type.isSales());
 
 		final int invoiceId = nextInvoiceId++;
 		final I_C_DocType docType = getInvoiceDocType(type);
-		invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
 		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(docType.isSOTrx());
 		invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
-		invoice.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
-		invoice.setGrandTotal(invoiceGrandTotal.toBigDecimal());
+		invoice.setC_Currency_ID(openAmt.getCurrencyId().getRepoId());
+		invoice.setGrandTotal(openAmt.toBigDecimal());
 		invoice.setProcessed(true);
 		invoice.setDocStatus(IDocument.STATUS_Completed);
 		invoice.setDateAcct(TimeUtil.asTimestamp(acctDate));
@@ -468,6 +466,12 @@ public class PaymentAllocationServiceTest
 		docType.setIsSOTrx(invoiceDocBaseType.isSales());
 		InterfaceWrapperHelper.save(docType);
 		return docType;
+	}
+
+	private boolean isCreditMemo(final I_C_Invoice invoice)
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		return invoiceBL.isCreditMemo(invoice);
 	}
 
 	@Builder(builderMethodName = "payment", builderClassName = "$DefaultPaymentBuilder")
@@ -500,11 +504,25 @@ public class PaymentAllocationServiceTest
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
-	@Test(expected = AdempiereException.class)
+	@org.junit.jupiter.api.Test
+	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
+	{
+		final InvoiceAmtMultiplier multiplierInRealLife = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.SALES, false);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
+	}
+
+	@Test
 	public void paymentValid_EmptyPayableItems()
 	{
 		//shall throw exception because payable items array is empty
-		paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithNoPayable());
+		assertThatThrownBy(() -> paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithNoPayable()))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageStartingWith("Invalid allocation");
 
 	}
 
@@ -549,9 +567,10 @@ public class PaymentAllocationServiceTest
 
 	}
 
-	@Test(expected = PaymentDocumentNotAllocatedException.class)
+	@Test
 	public void paymentValid_MultiplePayableItems_NoServiceFee_OverAllocated()
 	{
-		paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated());
+		assertThatThrownBy(() -> paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated()))
+				.isInstanceOf(PaymentDocumentNotAllocatedException.class);
 	}
 }

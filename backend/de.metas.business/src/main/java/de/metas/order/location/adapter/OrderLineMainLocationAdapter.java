@@ -111,7 +111,9 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 
 	public void setFromOrderHeader(@NonNull final I_C_Order order)
 	{
-		final DocumentLocation orderLocation = order.isDropShip()
+		final boolean useDropshiplocation = order.isDropShip() && order.isSOTrx();
+		
+		final DocumentLocation orderLocation = useDropshiplocation
 				? OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation()
 				: OrderDocumentLocationAdapterFactory.locationAdapter(order).toDocumentLocation();
 

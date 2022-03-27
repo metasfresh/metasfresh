@@ -33,6 +33,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.scheduler.SchedulerAction;
 import de.metas.scheduler.SchedulerSearchKey;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.SchedulerEventBusService;
@@ -98,8 +99,8 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.DISABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .schedulerAction(SchedulerAction.DISABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.DISABLE)
 													 .build());
 		return MSG_OK;
 	}

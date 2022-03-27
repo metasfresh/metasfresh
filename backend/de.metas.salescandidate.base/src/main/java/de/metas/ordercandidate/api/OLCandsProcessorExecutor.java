@@ -9,6 +9,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
@@ -26,6 +27,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -104,7 +106,6 @@ public class OLCandsProcessorExecutor
 		this.candidatesSource = candidatesSource;
 	}
 
-	@Nullable
 	public void process()
 	{
 		// Note: We could make life easier by constructing a ORDER and GROUP BY SQL statement,
@@ -129,17 +130,25 @@ public class OLCandsProcessorExecutor
 		final ListMultimap<ArrayKey, OLCand> grouping = ArrayListMultimap.create();
 		for (final OLCand candidate : candidates)
 		{
-			if (candidate.isProcessed())
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidate.unbox()))
 			{
-				continue; // ts: I don't see a need for this check, but let's keep it until we covered this by ait
-			}
+				if (candidate.isProcessed())
+				{
+					continue; // ts: I don't see a need for this check, but let's keep it until we covered this by ait
+				}
 
-			//
-			// Register grouping key
-			final int olCandId = candidate.getId();
-			final ArrayKey groupingKey = mkGroupingKey(candidate);
-			toProcess.put(olCandId, groupingKey);
-			grouping.put(groupingKey, candidate);
+				//
+				// Register grouping key
+				final int olCandId = candidate.getId();
+				final ArrayKey groupingKey = mkGroupingKey(candidate);
+				toProcess.put(olCandId, groupingKey);
+				grouping.put(groupingKey, candidate);
+			}
+			catch (final AdempiereException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getId());
+			}
 		}
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
@@ -150,37 +159,45 @@ public class OLCandsProcessorExecutor
 		OLCand previousCandidate = null;
 		for (final OLCand candidate : candidates)
 		{
-			final int olCandId = candidate.getId();
-			if (processedIds.contains(olCandId) || candidate.isProcessed())
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidate.unbox()))
 			{
-				// 'candidate' has already been processed
-				continue;
-			}
-
-			// Each group shall go to a separate order line
-			if (currentOrder != null)
-			{
-				currentOrder.closeCurrentOrderLine();
-			}
-
-			// get the group of the current unprocessed candidate
-			final ArrayKey groupingKey = toProcess.get(olCandId);
-			for (final OLCand candOfGroup : grouping.get(groupingKey))
-			{
-				if (currentOrder != null && isOrderSplit(candOfGroup, previousCandidate))
+				final int olCandId = candidate.getId();
+				if (processedIds.contains(olCandId) || candidate.isProcessed())
 				{
-					currentOrder.completeOrDelete();
-					currentOrder = null;
-				}
-				if (currentOrder == null)
-				{
-					currentOrder = newOrderFactory();
+					// 'candidate' has already been processed
+					continue;
 				}
 
-				currentOrder.addOLCand(candOfGroup);
+				// Each group shall go to a separate order line
+				if (currentOrder != null)
+				{
+					currentOrder.closeCurrentOrderLine();
+				}
 
-				Check.assume(processedIds.add(candOfGroup.getId()), candOfGroup + " of grouping " + grouping + " is not processed twice");
-				previousCandidate = candOfGroup;
+				// get the group of the current unprocessed candidate
+				final ArrayKey groupingKey = toProcess.get(olCandId);
+				for (final OLCand candOfGroup : grouping.get(groupingKey))
+				{
+					if (currentOrder != null && isOrderSplit(candOfGroup, previousCandidate))
+					{
+						currentOrder.completeOrDelete();
+						currentOrder = null;
+					}
+					if (currentOrder == null)
+					{
+						currentOrder = newOrderFactory();
+					}
+
+					currentOrder.addOLCand(candOfGroup);
+
+					Check.assume(processedIds.add(candOfGroup.getId()), candOfGroup + " of grouping " + grouping + " is not processed twice");
+					previousCandidate = candOfGroup;
+				}
+			}
+			catch (final AdempiereException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getId());
 			}
 		}
 
@@ -192,7 +209,7 @@ public class OLCandsProcessorExecutor
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
 	}
 
-	private OLCand prepareOLCandBeforeProcessing(final OLCand candidate)
+	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate)
 	{
 		if (candidate.getDateDoc() == null)
 		{

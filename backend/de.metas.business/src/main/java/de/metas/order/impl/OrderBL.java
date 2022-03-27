@@ -23,6 +23,7 @@
 package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -270,6 +271,7 @@ public class OrderBL implements IOrderBL
 		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
 
+	@Nullable
 	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
 			@Nullable final BPartnerLocationAndCaptureId shipToBPLocationId,
@@ -847,6 +849,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
+	@Nullable
 	@Override
 	public org.compiere.model.I_AD_User getShipToUser(final I_C_Order order)
 	{
@@ -867,6 +870,7 @@ public class OrderBL implements IOrderBL
 				: null;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerLocationAndCaptureId getBillToLocationId(@NonNull final I_C_Order order)
 	{
@@ -897,7 +901,7 @@ public class OrderBL implements IOrderBL
 
 		if (contactIdOrNull == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@ for Order " + order.getC_Order_ID())
+			throw new AdempiereException("@NotFound@ @Contact_ID@ for Order " + order.getC_Order_ID())
 					.appendParametersToMessage()
 					.setParameter("getBill_BPartner_ID", order.getBill_BPartner_ID())
 					.setParameter("getBill_Location_ID", order.getBill_Location_ID())
@@ -915,12 +919,28 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Nullable
-	private BPartnerContactId getBillToContactIdOrNull(@NonNull final I_C_Order order)
+	@VisibleForTesting
+	BPartnerContactId getBillToContactIdOrNull(@NonNull final I_C_Order order)
 	{
 		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_User_ID());
-		return billToContactId != null
-				? billToContactId
-				: BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+		if (billToContactId != null)
+		{
+			return billToContactId; // we are done
+		}
+
+		if (order.getAD_User_ID() <= 0)
+		{
+			return null; // nothing we can fall back to
+		}
+
+		// see if we may return order.getAD_User_ID()
+		if (order.getBill_BPartner_ID() > 0 && order.getBill_BPartner_ID() != order.getC_BPartner_ID())
+		{
+			return null; // we can't return order.getAD_User_ID() as bill contact, because if we return a contact, it needs belong to the bill-partner
+		}
+
+		// we made sure that we may return this as the bill contact
+		return BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);

@@ -45,6 +45,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @ToString
@@ -220,6 +221,16 @@ public final class Params implements IParams
 				: null;
 	}
 
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null
+				? value.toInstant()
+				: null;
+	}
+
 	@Override
 	public Instant getParameterAsInstant(final String parameterName)
 	{
@@ -230,10 +241,20 @@ public final class Params implements IParams
 	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
-		final Object value = getParameterAsObject(parameterName);
-		return StringUtils.toBoolean(value);
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
 	}
 
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		final Object value = getParameterAsObject(parameterName);
+		return StringUtils.toBoolean(value, defaultValue);
+	}
+
+	
+	
 	@SuppressWarnings("unused")
 	public Params withParameter(@NonNull final String parameterName, final Object value)
 	{

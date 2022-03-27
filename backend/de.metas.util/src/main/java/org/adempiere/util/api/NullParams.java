@@ -34,6 +34,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.util.lang.RepoIdAware;
 
+import javax.annotation.Nullable;
+
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.
  *
@@ -84,6 +86,13 @@ import de.metas.util.lang.RepoIdAware;
 		return false;
 	}
 
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return defaultValue;
+	}
+
 	@Override
 	public Timestamp getParameterAsTimestamp(final String parameterName)
 	{
@@ -98,6 +107,13 @@ import de.metas.util.lang.RepoIdAware;
 
 	@Override
 	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
 	{
 		return null;
 	}

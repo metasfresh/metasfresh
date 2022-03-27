@@ -90,7 +90,6 @@ public class PPOrderUtil
 	}
 
 	/**
-	 * @param bomLine
 	 * @return true if given BOM Line is a alternative/variant for a main component line
 	 */
 	public boolean isVariant(@NonNull final I_PP_Order_BOMLine bomLine)
@@ -115,7 +114,6 @@ public class PPOrderUtil
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
 	 *
-	 * @param bomLine
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 * @see #isReceipt(I_PP_Order_BOMLine)
 	 */
@@ -146,7 +144,6 @@ public class PPOrderUtil
 	 * @param ppOrderProductId     the {@code M_Product_ID} of a given ppOrder
 	 * @param ppOrderStartSchedule the {@code M_Product_ID} of a given ppOrder
 	 * @param ppOrderProductBOM    the {@code DateStartSchedule} of a given ppOrder
-	 * @return
 	 */
 	public I_PP_Product_BOM verifyProductBOMAndReturnIt(
 			@NonNull final ProductId ppOrderProductId,
