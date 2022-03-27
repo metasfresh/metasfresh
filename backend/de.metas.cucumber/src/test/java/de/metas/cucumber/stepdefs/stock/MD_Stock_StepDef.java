@@ -74,7 +74,10 @@ public class MD_Stock_StepDef
 
 		StepDefUtil.tryAndWait(timeoutSeconds, 500, supplier);
 
-		rows.forEach(this::validateMD_Stock);
+		for (final Map<String, String> row : rows)
+		{
+			validateMD_Stock(row);
+		}
 	}
 
 	/**
@@ -109,11 +112,13 @@ public class MD_Stock_StepDef
 
 	private boolean waitForStock(@NonNull final Map<String, String> row)
 	{
-		final int productIdentifier = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+		
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
 
 		final I_MD_Stock mdStock = queryBL.createQueryBuilder(I_MD_Stock.class)
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productIdentifier)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.firstOnly(I_MD_Stock.class);
 		return mdStock != null && mdStock.getQtyOnHand().compareTo(qtyOnHand) == 0;
