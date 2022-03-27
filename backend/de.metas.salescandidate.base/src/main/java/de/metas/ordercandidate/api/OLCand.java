@@ -164,7 +164,7 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final OrderLineGroup orderLineGroup,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
-			@Nullable final Quantity qtyItemCapacityEff
+			@Nullable final Quantity qtyItemCapacityEff,
 			@NonNull final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
