@@ -199,7 +199,7 @@ public class PaymentAllocationService
 		// for purchase invoices and sales credit memos, we need to negate
 		// but not for sales invoices and purchase credit memos
 		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
-		final boolean negateAmounts = soTrx.isPurchase() ^ invoiceIsCreditMemo;
+		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
 		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())

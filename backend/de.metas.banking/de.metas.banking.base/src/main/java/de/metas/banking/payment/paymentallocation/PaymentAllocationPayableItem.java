@@ -61,13 +61,13 @@ public class PaymentAllocationPayableItem
 	boolean invoiceIsCreditMemo;
 	
 	String documentNo;
-	SOTrx soTrx;
-	LocalDate dateInvoiced;
 
 	/**
 	 * This property is not about the invoice, but basically about the payment.
 	 */
-	boolean isSOTrx;
+	SOTrx soTrx;
+	
+	LocalDate dateInvoiced;
 
 	@Builder
 	private PaymentAllocationPayableItem(

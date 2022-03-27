@@ -102,7 +102,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
