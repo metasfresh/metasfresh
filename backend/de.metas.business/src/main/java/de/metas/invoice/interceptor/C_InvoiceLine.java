@@ -86,7 +86,7 @@ public class C_InvoiceLine
 		}
 
 		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final SOTrx soTrx = SOTrx.ofBooleanNonNull(invoice.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}
 }

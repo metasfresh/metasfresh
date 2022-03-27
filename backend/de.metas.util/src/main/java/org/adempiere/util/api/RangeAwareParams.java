@@ -202,12 +202,6 @@ public class RangeAwareParams implements IRangeAwareParams
 	}
 
 	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		return values.getParameterAsInstant(parameterName);
-	}
-
-	@Override
 	public ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName)
 	{
 		return valuesTo.getParameterAsZonedDateTime(parameterName);

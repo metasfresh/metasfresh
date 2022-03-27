@@ -353,7 +353,7 @@ public class C_OrderLine
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		final SOTrx soTrx = SOTrx.ofBooleanNonNull(order.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(order.isSOTrx());
 
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}

@@ -119,12 +119,6 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		return null;
-	}
-
-	@Override
 	public BigDecimal getParameterAsBigDecimal(final String paraCheckNetamttoinvoice)
 	{
 		return null;

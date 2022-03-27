@@ -35,7 +35,7 @@ public enum SOTrx
 	 * For backward compatibility we are accepting null parameter, so we are calling {@link #ofNullableBoolean(Boolean)}.
 	 * <p>
 	 * But in the future, instead of calling this method,
-	 * pls call {@link #ofBooleanNotNull(boolean)} if you know that the parameter is not null,
+	 * pls call {@link #ofBooleanNotNull(Boolean)} if you know that the parameter is not null,
 	 * or pls call {@link #ofNullableBoolean(Boolean)} if you know the parameter might be null (so the return value).
 	 */
 	@Nullable

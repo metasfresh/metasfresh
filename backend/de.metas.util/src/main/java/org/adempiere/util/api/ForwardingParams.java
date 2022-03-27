@@ -116,12 +116,6 @@ public class ForwardingParams implements IParams
 	}
 
 	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		return params.getParameterAsInstant(parameterName);
-	}
-
-	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);

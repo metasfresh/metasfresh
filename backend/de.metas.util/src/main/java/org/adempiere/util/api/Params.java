@@ -45,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @ToString
@@ -229,13 +228,6 @@ public final class Params implements IParams
 		return value != null
 				? value.toInstant()
 				: null;
-	}
-
-	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		final Timestamp value = getParameterAsTimestamp(parameterName);
-		return value != null ? value.toInstant() : null;
 	}
 
 	@Override
