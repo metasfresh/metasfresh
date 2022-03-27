@@ -37,7 +37,7 @@ BEGIN
         DROP TABLE IF EXISTS dlm.C_Queue_Workpackage_ToArchive_All;
 
         CREATE TABLE dlm.C_Queue_Workpackage_ToArchive_All AS
-        SELECT C_Queue_Workpackage_ID, C_Queue_Block_ID, C_Async_Batch_ID
+        SELECT C_Queue_Workpackage_ID, C_Async_Batch_ID
         FROM C_Queue_Workpackage wp
         WHERE wp.Processed = 'Y'
           AND wp.Updated <= NOW() - $1 -- older than $1 days
@@ -47,7 +47,6 @@ BEGIN
 
         -- Index it
         CREATE INDEX ON dlm.C_Queue_Workpackage_ToArchive_All (C_Queue_Workpackage_ID);
-        CREATE INDEX ON dlm.C_Queue_Workpackage_ToArchive_All (C_Queue_Block_ID);
         CREATE INDEX ON dlm.C_Queue_Workpackage_ToArchive_All (C_Async_Batch_ID);
 
         RAISE NOTICE 'Inserted % records into dlm.C_Queue_Workpackage_ToArchive_All.',C_Queue_Workpackage_ToArchive_All_Inserted_Count;
@@ -82,24 +81,8 @@ BEGIN
 
     -- Index it and update the table statistics. the index is going to help us in moving additional records
     CREATE INDEX ON TMP_C_Queue_Workpackage_ToArchive (C_Queue_Workpackage_ID);
-    CREATE INDEX ON TMP_C_Queue_Workpackage_ToArchive (C_Queue_Block_ID);
     CREATE INDEX ON TMP_C_Queue_Workpackage_ToArchive (C_Async_Batch_ID);
     ANALYZE TMP_C_Queue_Workpackage_ToArchive;
-
-    -- also move such records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive that share a C_Queue_Block_ID with an already moved record
-    RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_Queue_Block_ID with an already inserted record.';
-    WITH items AS (
-        DELETE FROM dlm.C_Queue_Workpackage_ToArchive_All t
-            WHERE t.C_Queue_Block_ID IN (
-                SELECT C_Queue_Block_ID
-                FROM TMP_C_Queue_Workpackage_ToArchive
-            )
-            RETURNING *
-    )
-    INSERT
-    INTO TMP_C_Queue_Workpackage_ToArchive
-    SELECT *
-    FROM items;
 
     -- also move such records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive that share a C_ASync_Batch_ID with an already moved record
     RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_ASync_Batch_ID with an already inserted record.';
@@ -178,28 +161,11 @@ BEGIN
     GET DIAGNOSTICS Count_Queue_Workpackage_Archived_Inserted = ROW_COUNT;
     RAISE NOTICE 'Moved % records to table dlm.C_Queue_Workpackage_Archived', Count_Queue_Workpackage_Archived_Inserted;
 
-    -- Archive C_Queue_Blocks
-    WITH deleted_rows AS (
-        DELETE FROM C_Queue_Block t
-            WHERE TRUE
-                AND EXISTS(SELECT 1 FROM TMP_C_Queue_Workpackage_ToArchive s WHERE s.C_Queue_Block_ID = t.C_Queue_Block_ID)
-                AND NOT EXISTS(SELECT 1 FROM C_Queue_Workpackage wp WHERE wp.C_Queue_Block_ID = t.C_Queue_Block_ID) -- there are no other workpackages
-            RETURNING *
-    )
-    INSERT
-    INTO dlm.C_Queue_Block_Archived
-    SELECT *
-    FROM deleted_rows;
-
-    GET DIAGNOSTICS Count_Queue_Block_Archived_Inserted = ROW_COUNT;
-    RAISE NOTICE 'Moved % records to table dlm.C_Queue_Block_Archived', Count_Queue_Block_Archived_Inserted;
-
     -- Count remaining things to delete
     SELECT COUNT(1) FROM dlm.C_Queue_Workpackage_ToArchive_All INTO Remaining_C_Queue_Workpackage_ToArchive_All;
     RAISE NOTICE 'Remaining records in dlm.C_Queue_Workpackage_ToArchive_All: % ', Remaining_C_Queue_Workpackage_ToArchive_All;
 
     RAISE NOTICE 'Updating the stats of our production tables (analyze)';
-    ANALYZE c_queue_block;
     ANALYZE c_queue_element;
     ANALYZE c_queue_workpackage;
     ANALYZE c_queue_workpackage_log;

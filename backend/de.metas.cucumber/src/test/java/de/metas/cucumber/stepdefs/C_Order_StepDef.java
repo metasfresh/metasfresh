@@ -79,6 +79,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
@@ -113,7 +114,7 @@ public class C_Order_StepDef
 	}
 
 	@Given("metasfresh contains C_Orders:")
-	public void metasfresh_contains_c_order(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -126,12 +127,17 @@ public class C_Order_StepDef
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 
+			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT."+COLUMNNAME_DropShip_BPartner_ID);
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
+
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
+			order.setDropShip_BPartner_ID(dropShipPartnerId);
+			order.setIsDropShip(isDropShip);
 
 			if (paymentTermId > 0)
 			{
@@ -315,6 +321,12 @@ public class C_Order_StepDef
 			{
 				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
 			}
+
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
+			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
+
+			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
+			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
 		}
 	}
 

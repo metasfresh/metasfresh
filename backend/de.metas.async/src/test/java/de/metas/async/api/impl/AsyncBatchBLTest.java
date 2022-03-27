@@ -14,11 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.Properties;
 
 public class AsyncBatchBLTest
 {
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private AsyncBatchBL asyncBatchBL;
 
 	private Properties ctx;
@@ -38,30 +41,28 @@ public class AsyncBatchBLTest
 	}
 
 	@Test
-	public void test_Processed()
+	public void givenNotEnoughTimePassedSinceLastEnqueued_whenGetTimeUntilProcessedRecheck_thenReturnTimeToWait()
 	{
-		
+		//given
 		final Timestamp FirstEnqueued = TimeUtil.addMinutes(now, -5);
 		final Timestamp LastEnqueued = TimeUtil.addMinutes(now, -4);
-		final Timestamp LastProcessed = TimeUtil.addMinutes(now, -3);
-		final int CountEnqueued = 2;
-		final int CountProcessed = 2;
+		final Timestamp LastProcessed = TimeUtil.addMinutes(now, +1);
 
 		final I_C_Async_Batch asyncBatch = newAsyncBatch();
 		asyncBatch.setFirstEnqueued(FirstEnqueued);
 		asyncBatch.setLastEnqueued(LastEnqueued);
 		asyncBatch.setLastProcessed(LastProcessed);
-		
-		asyncBatch.setCountEnqueued(CountEnqueued);
-		asyncBatch.setCountProcessed(CountProcessed);
-		final boolean processedExpected = true;
+		InterfaceWrapperHelper.save(asyncBatch);
 
-		Assert.assertEquals("Invalid Processed", processedExpected, asyncBatchBL.checkProcessed(asyncBatch));
+		//when
+		final Duration timeToWait = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
+
+		//then
+		Assert.assertEquals(TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1)), timeToWait.toMillis());
 	}
 
 	private I_C_Async_Batch newAsyncBatch()
 	{
 		return InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
 	}
-
 }

@@ -22,17 +22,17 @@ package de.metas.document.archive.process;
  * #L%
  */
 
-
-import java.util.Properties;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+
+import java.util.Properties;
 
 /**
  * Process all queue work packages for our {@link DocOutboundWorkpackageProcessor}.
@@ -55,10 +55,11 @@ public class C_Doc_Outbound_CreatePDF extends JavaProcess
 	{
 		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue workpackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
-		final IQueueProcessor queueProcessor = queueProcessorFactory.createSynchronousQueueProcessor(workpackageQueue);
+		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
 
-		queueProcessor.run();
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createSynchronousQueueProcessor(workPackageQueue);
+
+		SynchronousProcessorPlanner.executeNow(queueProcessor);
 
 		final IQueueProcessorStatistics statistics = queueProcessor.getStatisticsSnapshot();
 

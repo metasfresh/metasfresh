@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -169,10 +168,6 @@ public class ShipmentScheduleEnqueuer
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
 
-		final IWorkPackageBlockBuilder blockBuilder = queue
-				.newBlock()
-				.setAD_PInstance_Creator_ID(workPackageParameters.adPInstanceId)
-				.setContext(localCtx.getCtx());
 		IWorkPackageBuilder workpackageBuilder = null;
 		String lastHeaderAggregationKey = null;
 
@@ -210,8 +205,9 @@ public class ShipmentScheduleEnqueuer
 				// Create workpackage
 				if (workpackageBuilder == null)
 				{
-					workpackageBuilder = blockBuilder
-							.newWorkpackage()
+					workpackageBuilder = queue
+							.newWorkPackage()
+							.setAD_PInstance_ID(workPackageParameters.adPInstanceId)
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName())
@@ -289,7 +285,7 @@ public class ShipmentScheduleEnqueuer
 		if (noSchedsAreToRecompute)
 		{
 			// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
-			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.build();
+			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.buildAndEnqueue();
 			result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
 		}
 		else

@@ -163,20 +163,7 @@ public class Invoice450RequestConversionServiceTest
 	@Test
 	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment()
 	{
-		final int bPartnerId = 10;
-
-		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
-		bankAccount.setC_BPartner_ID(bPartnerId);
-		bankAccount.setQR_IBAN("CH0930769016110591261");
-		bankAccount.setC_Currency_ID(123);
-		bankAccount.setAD_Org_Mapping_ID(123);
-		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
-		bankAccount.setIBAN("123");
-		InterfaceWrapperHelper.save(bankAccount);
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bPartner.setC_BPartner_ID(bPartnerId);
-		InterfaceWrapperHelper.save(bPartner);
+		final int bPartnerId = createBPartnerTestSetup();
 
 		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450.xml";
 		final InputStream inputStream = createInputStream(inputXmlFileName);
@@ -195,6 +182,49 @@ public class Invoice450RequestConversionServiceTest
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
 		assertOutputMatchesSnapshot(outputStream);
+	}
+
+	@Test
+	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment_no_Bank()
+	{
+		final int bPartnerId = createBPartnerTestSetup();
+
+		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450_noEsrBank.xml";
+		final InputStream inputStream = createInputStream(inputXmlFileName);
+		assertXmlIsValid(inputStream); // guard
+
+		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream(inputXmlFileName));
+
+		assertThat(xRequest.getPayload().getBody().getEsr()).isOfAnyClassIn(XmlEsr9.class);
+		assertThat(((XmlEsr9)xRequest.getPayload().getBody().getEsr()).getBank()).isNull();
+
+		final XmlRequest withMod = invoice450RequestConversionService.augmentRequest(xRequest, BPartnerId.ofRepoId(bPartnerId));
+
+		assertThat(withMod.getPayload().getBody().getEsr()).isOfAnyClassIn(XmlEsr9.class);
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
+
+		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		assertOutputMatchesSnapshot(outputStream);
+	}
+
+	private int createBPartnerTestSetup()
+	{
+		final int bPartnerId = 10;
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(bPartnerId);
+		bankAccount.setQR_IBAN("CH0930769016110591261");
+		bankAccount.setC_Currency_ID(123);
+		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
+		bankAccount.setIBAN("123");
+		InterfaceWrapperHelper.save(bankAccount);
+
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bPartner.setC_BPartner_ID(bPartnerId);
+		InterfaceWrapperHelper.save(bPartner);
+		return bPartnerId;
 	}
 
 	private void testWithPublicExampleXmlFile(@NonNull final String inputXmlFileName)

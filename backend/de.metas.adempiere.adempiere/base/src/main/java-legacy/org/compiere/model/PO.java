@@ -592,7 +592,7 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(@NonNull final Properties ctx)
+	public final void setCtx(@NonNull final Properties ctx)
 	{
 		this.p_ctx = ctx;
 	}

@@ -22,18 +22,6 @@ package de.metas.edi.process;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -54,6 +42,17 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Send EDI documents for selected entries.
@@ -137,12 +136,11 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		for (final I_EDI_Document_Extension ediDocument : ediDocuments)
 		{
 			final I_C_Queue_WorkPackage workpackage = queue
-					.newBlock()
-					.newWorkpackage()
+					.newWorkPackage()
 					.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
 					.addElement(ediDocument)
 					.bindToThreadInheritedTrx()
-					.build();
+					.buildAndEnqueue();
 
 			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 

@@ -45,7 +45,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 
 	String ASYNC_BATCH_TYPE_DEFAULT = "Default";
 
-	I_C_Async_Batch retrieveAsyncBatchRecord(AsyncBatchId asyncBatchId);
+	I_C_Async_Batch retrieveAsyncBatchRecordOutOfTrx(AsyncBatchId asyncBatchId);
 
 	/**
 	 * Retrieve async batch type by internal name which must be unique.

@@ -53,7 +53,7 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_C_Async_Batch retrieveAsyncBatchRecord(@NonNull final AsyncBatchId asyncBatchId)
+	public I_C_Async_Batch retrieveAsyncBatchRecordOutOfTrx(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return loadOutOfTrx(asyncBatchId, I_C_Async_Batch.class);
 	}

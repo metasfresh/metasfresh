@@ -8,6 +8,7 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
+import de.metas.async.api.impl.QueueProcessorDAO;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;

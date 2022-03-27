@@ -22,17 +22,27 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+
+import javax.annotation.Nullable;
 
 @ToString
 public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_OrderLine delegate;
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	OrderLineMainLocationAdapter(@NonNull final I_C_OrderLine delegate)
 	{
@@ -106,5 +116,12 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 				: OrderDocumentLocationAdapterFactory.locationAdapter(order).toDocumentLocation();
 
 		setFrom(orderLocation);
+	}
+
+	public void setLocationAndResetRenderedAddress(@NonNull final BPartnerLocationAndCaptureId from)
+	{
+		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setBPartnerAddress(null);
 	}
 }

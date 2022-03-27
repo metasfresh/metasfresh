@@ -13,15 +13,13 @@
  *****************************************************************************/
 package org.adempiere.model;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -38,16 +36,15 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -886,6 +883,17 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 		po.set_TrxName(trxName);
 
+	}
+
+	public static void setCtx(@NonNull final Object model,@NonNull final Properties ctx)
+	{
+		final PO po = getStrictPO(model);
+		if (po == null)
+		{
+			throw new ModelClassNotSupportedException(model);
+		}
+
+		po.setCtx(ctx);
 	}
 
 	/**
