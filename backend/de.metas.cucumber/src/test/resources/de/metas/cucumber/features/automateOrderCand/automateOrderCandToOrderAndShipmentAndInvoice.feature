@@ -109,7 +109,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "discount": 0,
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
-    "qtyShipped": 0
+    "qtyShipped": 0,
+    "bpartnerName": "testName"
 }
 """
 
@@ -133,10 +134,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
       | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         |
     And validate the created order lines
-      | C_Order.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1            | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ordereLine_1_1            | order_1               | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
     # We didn't close the order, so we expect QtyOrdered=10
-    
+
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to shipment in first step and then invoice with close order
