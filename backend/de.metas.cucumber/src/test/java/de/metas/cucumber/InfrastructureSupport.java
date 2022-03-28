@@ -101,11 +101,14 @@ public class InfrastructureSupport
 
 		if (runAgainstDockerizedDatabase)
 		{
-			final String fullImageName = "metasfresh/metasfresh-db:latest";
+			// this image is from release-branch 2021-09-15. it is failrly old, 
+			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
+			final String fullImageName = "metasfresh/metasfresh-db:5.172.2_380_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated
 			final GenericContainer<?> db = new GenericContainer<>(DockerImageName.parse(fullImageName))
+					//.withImagePullPolicy(PullPolicy.alwaysPull()) // needed then going with e.g. "latest"
 					.withEnv("POSTGRES_PASSWORD", "password")
 					.withStartupTimeout(Duration.ofMinutes(3)) // the DB needs to be populated
 					.withExposedPorts(5432);

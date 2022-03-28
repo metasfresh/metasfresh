@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
- *
+ * Also see {@link ConditionTypeSpecificInvoiceCandidateHandler}.
  */
 public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 {

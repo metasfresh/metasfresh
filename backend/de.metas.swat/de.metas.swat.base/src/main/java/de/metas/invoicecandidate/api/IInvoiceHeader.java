@@ -80,4 +80,6 @@ public interface IInvoiceHeader
 	int getC_Incoterms_ID();
 
 	String getIncotermLocation();
+
+	String getPaymentRule();
 }

@@ -2,6 +2,7 @@ package de.metas.order.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -12,9 +13,11 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -27,6 +30,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceA
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
@@ -36,8 +40,10 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -60,6 +66,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
@@ -77,6 +84,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -128,8 +140,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_Invoice_Candidate createCandidateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
@@ -140,11 +150,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
-		icRecord.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
+		icRecord.setAD_Table_ID(tableDAO.retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());
 
-		icRecord.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-
+		icRecord.setC_OrderLine(orderLine);
+		
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
@@ -158,13 +168,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setOrderedData(icRecord, orderLine);
 
-		icRecord.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
-		icRecord.setPriceActual(orderLine.getPriceActual());
-		icRecord.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
-		icRecord.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
-		icRecord.setDiscount(orderLine.getDiscount()); // cg: 04868
-		icRecord.setC_Currency_ID(orderLine.getC_Currency_ID());
-
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
@@ -176,52 +179,28 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Invoice Rule(s)
+		icRecord.setInvoiceRule(order.getInvoiceRule());
+
+		// If we are dealing with a non-receivable service set the InvoiceRule_Override to Immediate
+		// because we want to invoice those right away (08408)
+		if (isNotReceivebleService(icRecord))
 		{
-			icRecord.setInvoiceRule(order.getInvoiceRule());
-
-			// If we are dealing with a non-receivable service set the InvoiceRule_Override to Immediate
-			// because we want to invoice those right away (08408)
-			if (isNotReceivebleService(icRecord))
-			{
-				icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
-			}
+			icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 		}
-
-		icRecord.setM_PricingSystem_ID(order.getM_PricingSystem_ID());
 
 		// 05265
 		icRecord.setIsSOTrx(orderLine.getC_Order().isSOTrx());
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
+		// prices and tax
+		final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord);
+		IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
+		
 		//
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
-
-		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-				.deliveryLocationAdapter(order)
-				.toDocumentLocation();
-		if (orderDeliveryLocation.getBpartnerLocationId() == null)
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.locationAdapter(order)
-					.toDocumentLocation();
-		}
-
-		//
-		// Tax
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
-				icRecord,
-				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(), // shipDate
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
-				SOTrx.ofBoolean(order.isSOTrx()));
-		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
@@ -237,7 +216,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
+		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
@@ -327,6 +306,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setIncoterms(ic, orderLine);
 
 		setC_Flatrate_Term_ID(ic, orderLine);
+
+		setPaymentRule(ic, orderLine);
 	}
 
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
@@ -350,6 +331,32 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}
 
+	private void setPaymentRule(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
+		final PaymentRule paymentRule;
+		if (order.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofNullableCode(order.getPaymentRule());
+		}
+		else
+		{
+			final I_C_BPartner partner = bpartnerDAO.getById(order.getC_BPartner_ID());
+			paymentRule = PaymentRule.ofNullableCode(partner.getPaymentRule());
+		}
+
+		if (paymentRule != null)
+		{
+			ic.setPaymentRule(paymentRule.getCode());
+		}
+		else
+		{
+			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
+		}
+	}
+	
 	/**
 	 * Sets {@link I_C_Invoice_Candidate#COLUMNNAME_QtyDelivered C_Invoice_Candidate.QtyDelivered} to {@link I_C_OrderLine#COLUMNNAME_QtyDelivered C_OrderLine.QtyDelivered}.
 	 * <p>
@@ -416,29 +423,55 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(icRecord.getC_OrderLine(), I_C_OrderLine.class);
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+
+		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(order)
+				.toDocumentLocation();
+		if (orderDeliveryLocation.getBpartnerLocationId() == null)
+		{
+			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+					.locationAdapter(order)
+					.toDocumentLocation();
+		}
+
+		// Tax
+		final TaxId taxId = taxBL.getTaxNotNull(
+				InterfaceWrapperHelper.getCtx(icRecord),
+				icRecord,
+				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
+				orderLine.getM_Product_ID(),
+				order.getDatePromised(), // shipDate
+				OrgId.ofRepoId(order.getAD_Org_ID()),
+				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
+				SOTrx.ofBoolean(order.isSOTrx()));
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
+				.pricingSystemId(PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
 				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
-				.taxIncluded(orderLine.getC_Order().isTaxIncluded());
+				.taxId(taxId)
+				.taxIncluded(order.isTaxIncluded())
+				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 
 		//
 		// Percent Group Compensation Line
-		if (ic.isGroupCompensationLine() && GroupCompensationAmtType.Percent.getAdRefListValue().equals(ic.getGroupCompensationAmtType()))
+		if (icRecord.isGroupCompensationLine() && GroupCompensationAmtType.Percent.getAdRefListValue().equals(icRecord.getGroupCompensationAmtType()))
 		{
 			final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
-			final GroupId groupId = groupsRepo.extractGroupId(ic);
+			final GroupId groupId = groupsRepo.extractGroupId(icRecord);
 			final Group group = groupsRepo.retrieveGroup(groupId);
 			group.updateAllCompensationLines();
 
-			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(ic));
+			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(icRecord));
 			priceAndTax.priceEntered(compensationLine.getPrice());
 			priceAndTax.priceActual(compensationLine.getPrice());
 			priceAndTax.compensationGroupBaseAmt(compensationLine.getBaseAmt());
@@ -490,7 +523,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_BPartner_SalesRep_ID(order.getC_BPartner_SalesRep_ID());
 	}
 
-	private void setGroupCompensationData(final I_C_Invoice_Candidate ic, final I_C_OrderLine fromOrderLine)
+	private void setGroupCompensationData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine fromOrderLine)
 	{
 		if (!OrderGroupCompensationUtils.isInGroup(fromOrderLine))
 		{

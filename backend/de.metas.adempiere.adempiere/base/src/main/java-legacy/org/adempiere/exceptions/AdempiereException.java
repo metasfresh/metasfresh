@@ -202,6 +202,19 @@ public class AdempiereException extends RuntimeException
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
 
+	/** 
+	 * Tells if a throwable passsing thourgh trx-manager shall be logged there or not.
+	 * We currently have one exception where whe know that it needs not to be logged and can clutter the whole output when it is logged.
+	 */
+	public static boolean isThrowableLoggedInTrxManager(@NonNull final Throwable t)
+	{
+		if (t instanceof AdempiereException)
+		{
+			return ((AdempiereException)t).isLoggedInTrxManager();
+		}
+		return true;
+	}
+
 	@VisibleForTesting
 	static final String PARAMETER_RecordRef = "recordRef";
 	@VisibleForTesting
@@ -691,5 +704,16 @@ public class AdempiereException extends RuntimeException
 	{
 		addSuppressed(exception);
 		return this;
+	}
+
+	/**
+	 * Override with a method returning false if your exception is more of a signal than an error 
+	 * and shall not clutter the log when it is caught and rethrown by the transaction manager.
+	 * 
+	 * To be invoked by {@link AdempiereException#isThrowableLoggedInTrxManager(Throwable)}.
+	 */
+	protected boolean isLoggedInTrxManager()
+	{
+		return true;
 	}
 }
