@@ -49,8 +49,9 @@ public class WEBUI_PPOrder_PickingContext
 	@NonNull
 	PickingSlotId pickingSlotId;
 
-	@NonNull
 	Quantity qtyToPick;
 
 	boolean isTakeWholeHU;
+
+	boolean isPickAllRecievedHUs;
 }
