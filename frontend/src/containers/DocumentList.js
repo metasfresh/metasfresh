@@ -647,7 +647,6 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    // TODO - this.lastViewedPage is from commit d494221a1ab604b3d083e273db68d0fa676e7b2b ; please check if OK
     this.lastViewedPage = currentPage;
     viewData.viewId && this.getData(viewData.viewId, currentPage, sort);
   };
