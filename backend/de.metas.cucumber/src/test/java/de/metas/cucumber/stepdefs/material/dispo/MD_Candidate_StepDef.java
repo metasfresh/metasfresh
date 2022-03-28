@@ -81,6 +81,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -237,7 +238,6 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-
 	@Then("^after not more than (.*)s, metasfresh has this MD_Candidate data$")
 	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
 	{
@@ -385,9 +385,9 @@ public class MD_Candidate_StepDef
 			// if this is a identifier that we have not seen yet, then make sure that we also wait for a new MD_Candidate
 			final boolean isNewIdentifier = !materialDispoDataItemStepDefData.getOptional(tableRow.getIdentifier()).isPresent();
 			final ImmutableSet<CandidateId> idsToExclude;
-			if(isNewIdentifier)
+			if (isNewIdentifier)
 			{
-				idsToExclude = materialDispoDataItemStepDefData.getCandidateIds();				
+				idsToExclude = materialDispoDataItemStepDefData.getCandidateIds();
 			}
 			else
 			{
@@ -395,17 +395,13 @@ public class MD_Candidate_StepDef
 			}
 
 			// make sure the given md_candidate has been created
-			final Supplier<Boolean> candidateCreated = () ->
-					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
-							.filter(candidate -> !idsToExclude.contains(candidate.getId()))
-							.map(Candidate::getMaterialDescriptor)
-							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
-							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
-							.isPresent();
-
-			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
-
-			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
+			final Supplier<Optional<MaterialDispoDataItem>> candidateCreated = () -> materialDispoRecordRepository.getAllBy(tableRow.createQuery()).stream()
+					.filter(materialDispoRecord -> !idsToExclude.contains(materialDispoRecord.getCandidateId()))
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
+					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
+					.findFirst();
+			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated);
 
 			assertThat(materialDispoRecord).isNotNull();
 

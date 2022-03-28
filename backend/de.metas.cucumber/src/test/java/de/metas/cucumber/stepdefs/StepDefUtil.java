@@ -27,10 +27,12 @@ import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -49,8 +51,7 @@ public class StepDefUtil
 			@NonNull final Supplier<Boolean> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): Long.MAX_VALUE;
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
 		boolean conditionIsMet = false;
 
@@ -90,6 +91,55 @@ public class StepDefUtil
 		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
+
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker,
+			@Nullable final Runnable logContext) throws InterruptedException
+	{
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
+
+		while (deadLineMillis > System.currentTimeMillis())
+		{
+			Thread.sleep(checkingIntervalMs);
+			final Optional<T> workerResult = worker.get();
+			if(workerResult.isPresent())
+			{
+				return workerResult.get();
+			}
+		}
+
+		if (logContext != null)
+		{
+			logContext.run();
+		}
+		Assertions.fail("the given spllier didn't succeed within the "+maxWaitSeconds+"second timeout");
+		return null;
+				
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+
+	private long computeDeadLineMillis(final long maxWaitSeconds)
+	{
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): Long.MAX_VALUE;
+		return deadLineMillis;
+	}
+	
 	@NonNull
 	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
 	{

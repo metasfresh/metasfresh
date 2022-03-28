@@ -151,6 +151,7 @@ Feature: create production order
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it
+    # Basic setup
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_3        | trackedProduct_2           | standard_category                    |
@@ -231,6 +232,7 @@ Feature: create production order
     ]
   }
   """
+    # Create the order to start it all
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_2        | true    | endcustomer_3            | 2021-06-17  | 2021-06-16T21:00:00Z |
@@ -277,6 +279,7 @@ Feature: create production order
     And the following PP_Order_Candidates are re-opened
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
+    # raise the quantity from 10 to 22, so 12 additional items are requried
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | ocP_2                            | 22         |                   |
