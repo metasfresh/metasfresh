@@ -130,6 +130,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new org.adempiere.ad.callout.model.validator.AD_ColumnCallout());
 		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn());
+		engine.addModelValidator(new org.adempiere.model.validator.AD_SysConfig());
 		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor());
 
 		engine.addModelValidator(new AD_Workflow());
@@ -138,8 +139,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599
 
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
-
-		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE);
 
 		//
 		// Currency

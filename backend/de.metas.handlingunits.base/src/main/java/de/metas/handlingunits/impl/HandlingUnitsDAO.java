@@ -59,9 +59,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -74,11 +72,11 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -641,36 +639,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator)
+	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(@NonNull final LocatorId locatorId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(locator);
-		final String trxName = InterfaceWrapperHelper.getTrxName(locator);
-		final int locatorId = locator.getM_Locator_ID();
-
-		return retrieveTopLevelHUsForLocators(ctx, Collections.singleton(locatorId), trxName);
-	}
-
-	public Iterator<I_M_HU> retrieveTopLevelHUsForLocators(final Properties ctx, final Collection<Integer> locatorIds, final String trxName)
-	{
-		if (locatorIds.isEmpty())
-		{
-			return IteratorUtils.emptyIterator();
-		}
-
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
-		filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorIds);
-
-		// Top Level filter
-		filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_HU.COLUMN_M_HU_ID);
-
-		return queryBuilder
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorId)
+				.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null) // top level HU
+				.orderBy(I_M_HU.COLUMN_M_HU_ID)
 				.create()
-				.setOnlyActiveRecords(true)
 				.iterate(I_M_HU.class);
 	}
 
@@ -1001,7 +977,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public void setReservedByHUIds(@NonNull final Collection<HuId> huIds, final boolean reserved)
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
 	{
 		if (huIds.isEmpty())
 		{

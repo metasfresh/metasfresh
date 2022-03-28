@@ -1,35 +1,41 @@
 package de.metas.tax.api;
 
-import java.time.LocalDate;
-import java.util.Date;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Charge;
-import org.compiere.model.MLocation;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.MLocation;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * Throw by Tax Engine where no tax found for given criteria
  */
-@SuppressWarnings("serial")
 public class TaxNotFoundException extends AdempiereException
 {
-	private static final String MSG_TaxNotFound = "TaxNotFound";
+	private static final AdMessageKey MSG_TaxNotFound = AdMessageKey.of("TaxNotFound");
 
 	private final ProductId productId;
 	private final int chargeId;
@@ -41,13 +47,15 @@ public class TaxNotFoundException extends AdempiereException
 
 	private final LocalDate shipDate;
 	private final CountryId shipFromCountryId;
-	private final int shipFromC_Location_ID;
-	private final int shipToC_Location_ID;
+	private final LocationId shipFromC_Location_ID;
+
+	private final CountryId shipToCountryId;
+	private final BPartnerLocationAndCaptureId shipToC_Location_ID;
 
 	private final LocalDate billDate;
 	private final CountryId billFromCountryId;
-	private final int billFromC_Location_ID;
-	private final int billToC_Location_ID;
+	private final LocationId billFromC_Location_ID;
+	private final LocationId billToC_Location_ID;
 
 	@Builder
 	private TaxNotFoundException(
@@ -60,14 +68,15 @@ public class TaxNotFoundException extends AdempiereException
 			final OrgId orgId,
 			//
 			final Date shipDate,
-			final int shipFromC_Location_ID,
+			final LocationId shipFromC_Location_ID,
 			final CountryId shipFromCountryId,
-			final int shipToC_Location_ID,
+			final CountryId shipToCountryId,
+			final BPartnerLocationAndCaptureId shipToC_Location_ID,
 			//
 			final Date billDate,
-			final int billFromC_Location_ID,
+			final LocationId billFromC_Location_ID,
 			final CountryId billFromCountryId,
-			final int billToC_Location_ID)
+			final LocationId billToC_Location_ID)
 	{
 		super(TranslatableStrings.empty());
 
@@ -86,21 +95,25 @@ public class TaxNotFoundException extends AdempiereException
 
 		this.shipDate = TimeUtil.asLocalDate(shipDate);
 		setParameter("shipDate", shipDate);
+
 		this.shipFromC_Location_ID = shipFromC_Location_ID;
-		setParameter("shipFromC_Location_ID", shipFromC_Location_ID > 0 ? shipFromC_Location_ID : null);
+		setParameter("shipFromC_Location_ID", shipFromC_Location_ID != null ? shipFromC_Location_ID.getRepoId() : null);
 		this.shipFromCountryId = shipFromCountryId;
 		setParameter("shipFromCountryId", shipFromCountryId);
+
 		this.shipToC_Location_ID = shipToC_Location_ID;
-		setParameter("shipToC_Location_ID", shipToC_Location_ID > 0 ? shipToC_Location_ID : null);
+		setParameter("shipToC_Location_ID", shipToC_Location_ID);
+		this.shipToCountryId = shipToCountryId;
+		setParameter("shipToCountryId", shipToCountryId);
 
 		this.billDate = TimeUtil.asLocalDate(billDate);
 		setParameter("billDate", billDate);
 		this.billFromC_Location_ID = billFromC_Location_ID;
-		setParameter("billFromC_Location_ID", billFromC_Location_ID > 0 ? billFromC_Location_ID : null);
+		setParameter("billFromC_Location_ID", billFromC_Location_ID != null ? billFromC_Location_ID.getRepoId() : null);
 		this.billFromCountryId = billFromCountryId;
 		setParameter("billFromCountryId", billFromCountryId);
 		this.billToC_Location_ID = billToC_Location_ID;
-		setParameter("billToC_Location_ID", billToC_Location_ID > 0 ? billToC_Location_ID : null);
+		setParameter("billToC_Location_ID", billToC_Location_ID != null ? billToC_Location_ID.getRepoId() : null);
 	}
 
 	@Override
@@ -145,15 +158,20 @@ public class TaxNotFoundException extends AdempiereException
 		{
 			message.append(" - ").appendADElement("ShipDate").append(": ").appendDate(shipDate);
 		}
-		if (shipFromC_Location_ID > 0 || shipFromCountryId != null)
+		if (shipFromC_Location_ID != null || shipFromCountryId != null)
 		{
-			final String locationString = getLocationString(shipFromC_Location_ID, shipFromCountryId);
+			final ITranslatableString locationString = getLocationString(shipFromC_Location_ID, shipFromCountryId);
 			message.append(" - ").appendADElement("ShipFrom").append(": ").append(locationString);
 		}
-		if (shipToC_Location_ID > 0)
+
+		if (shipToC_Location_ID != null)
 		{
 			final String locationString = getLocationString(shipToC_Location_ID);
 			message.append(" - ").appendADElement("ShipTo").append(": ").append(locationString);
+		}
+		else if (shipToCountryId != null)
+		{
+			message.append(" - ").appendADElement("ShipTo").append(": ").append(getCountryName(shipToCountryId));
 		}
 
 		//
@@ -162,12 +180,12 @@ public class TaxNotFoundException extends AdempiereException
 		{
 			message.append(" - ").appendADElement("BillDate").append(": ").appendDate(billDate);
 		}
-		if (billFromC_Location_ID > 0 || billFromCountryId != null)
+		if (billFromC_Location_ID != null || billFromCountryId != null)
 		{
-			final String locationString = getLocationString(billFromC_Location_ID, billFromCountryId);
+			final ITranslatableString locationString = getLocationString(billFromC_Location_ID, billFromCountryId);
 			message.append(" - ").appendADElement("BillFrom").append(": ").append(locationString);
 		}
-		if (billToC_Location_ID > 0)
+		if (billToC_Location_ID != null)
 		{
 			final String locationString = getLocationString(billToC_Location_ID);
 			message.append(" - ").appendADElement("BillTo").append(": ").append(locationString);
@@ -178,34 +196,68 @@ public class TaxNotFoundException extends AdempiereException
 		return message.build();
 	}
 
-	private static final String getLocationString(final int locationId, final CountryId fallbackCountryId)
+	private static ITranslatableString getLocationString(final LocationId locationId, final CountryId fallbackCountryId)
 	{
-		if (locationId > 0)
+		if (locationId != null)
 		{
-			return getLocationString(locationId);
+			return TranslatableStrings.anyLanguage(getLocationString(locationId));
 		}
 		if (fallbackCountryId != null)
 		{
-			return Services.get(ICountryDAO.class).getCountryNameById(fallbackCountryId).getDefaultValue();
+			return getCountryName(fallbackCountryId);
 		}
 
-		return "?";
+		return TranslatableStrings.anyLanguage("?");
 	}
 
-	private static final String getLocationString(final int locationId)
+	private static ITranslatableString getCountryName(final CountryId countryId)
 	{
-		if (locationId <= 0)
+		return countryId != null
+				? Services.get(ICountryDAO.class).getCountryNameById(countryId)
+				: TranslatableStrings.anyLanguage("?");
+	}
+
+	private static String getLocationString(@Nullable final LocationId locationId)
+	{
+		if (locationId == null)
 		{
 			return "?";
 		}
 
-		final MLocation loc = MLocation.get(Env.getCtx(), locationId, null);
-		if (loc == null || loc.get_ID() != locationId)
+		final MLocation loc = MLocation.get(Env.getCtx(), locationId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		if (loc == null || loc.getC_Location_ID() != locationId.getRepoId())
 		{
 			return "?";
 		}
 
 		return loc.toString();
+	}
+
+	private static String getLocationString(final BPartnerLocationAndCaptureId bpLocationId)
+	{
+		if (bpLocationId == null)
+		{
+			return "?";
+		}
+
+		final LocationId locationId;
+		if (bpLocationId.getLocationCaptureId() != null)
+		{
+			locationId = bpLocationId.getLocationCaptureId();
+		}
+		else
+		{
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId.getBpartnerLocationId());
+			locationId = bpLocation != null ? LocationId.ofRepoIdOrNull(bpLocation.getC_Location_ID()) : null;
+		}
+
+		if (locationId == null)
+		{
+			return "?";
+		}
+
+		final I_C_Location location = Services.get(ILocationDAO.class).getById(locationId);
+		return location != null ? location.toString() : locationId.toString();
 	}
 
 }

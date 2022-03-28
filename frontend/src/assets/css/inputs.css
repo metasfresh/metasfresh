@@ -802,6 +802,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     padding: 0;
     flex: 1;
 
+    :first-child {
+        width: 100%;
+    }
+
     &.input-icon {
         flex: 0.05;
         justify-content: flex-end;
@@ -1015,6 +1019,11 @@ table {
     text-align: center;
     z-index: 1001;
     box-sizing: border-box;
+}
+
+.lookup-widget-wrapper > div > .input-mandatory {
+    border: 2px solid $brand-mandatory-color;
+    border-radius: 3px;
 }
 
 .btn-borderless:focus {

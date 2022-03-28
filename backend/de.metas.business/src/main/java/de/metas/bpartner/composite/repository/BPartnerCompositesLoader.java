@@ -22,7 +22,9 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.user.role.UserRole;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
@@ -34,11 +36,15 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.logging.LogManager;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -49,6 +55,7 @@ import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -60,12 +67,16 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
+import static org.compiere.util.TimeUtil.asLocalDate;
 
 /*
  * #%L
@@ -92,16 +103,23 @@ import static de.metas.util.StringUtils.trimBlankToNull;
 final class BPartnerCompositesLoader
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerCompositesLoader.class);
+
 	private final LogEntriesRepository recordChangeLogRepository;
+	private final UserRoleRepository userRoleRepository;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
-	private BPartnerCompositesLoader(@NonNull final LogEntriesRepository recordChangeLogRepository)
+	private BPartnerCompositesLoader(
+			@NonNull final LogEntriesRepository recordChangeLogRepository,
+			@NonNull final UserRoleRepository userRoleRepository)
 	{
 		this.recordChangeLogRepository = recordChangeLogRepository;
+		this.userRoleRepository = userRoleRepository;
 	}
 
 	public ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -130,8 +148,13 @@ final class BPartnerCompositesLoader
 
 		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.builder();
 
+		final Map<OrgId, ZoneId> org2ZoneIdMap = new HashMap<>();
+
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
+			final OrgId bPartnerOrgId = OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID());
+			final ZoneId timeZone = org2ZoneIdMap.computeIfAbsent(bPartnerOrgId, orgDAO::getTimeZone);
+
 			final BPartnerId id = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
 
 			final BPartner bpartner = ofBPartnerRecord(bPartnerRecord, relatedRecords.getRecordRef2LogEntries());
@@ -139,7 +162,7 @@ final class BPartnerCompositesLoader
 			final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 					.orgId(OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID()))
 					.bpartner(bpartner)
-					.contacts(ofContactRecords(id, relatedRecords))
+					.contacts(ofContactRecords(id, relatedRecords, timeZone))
 					.locations(ofBPartnerLocationRecords(id, relatedRecords))
 					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
 					.build();
@@ -289,6 +312,10 @@ final class BPartnerCompositesLoader
 				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
+				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
+				.salesRep(getSalesRep(bpartnerRecord))
+				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
+				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bpartnerRecord.getAD_Org_Mapping_ID()))
@@ -409,32 +436,38 @@ final class BPartnerCompositesLoader
 				.build();
 	}
 
-	private static ImmutableList<BPartnerContact> ofContactRecords(
+	private ImmutableList<BPartnerContact> ofContactRecords(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final CompositeRelatedRecords relatedRecords)
+			@NonNull final CompositeRelatedRecords relatedRecords,
+			@NonNull final ZoneId orgZoneId)
 	{
 		return relatedRecords.getContactsByBPartnerId(bpartnerId)
 				.stream()
-				.map(contactRecord -> ofContactRecord(contactRecord, relatedRecords))
+				.map(contactRecord -> ofContactRecord(contactRecord, relatedRecords, orgZoneId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static BPartnerContact ofContactRecord(
+	private BPartnerContact ofContactRecord(
 			@NonNull final I_AD_User contactRecord,
-			@NonNull final CompositeRelatedRecords relatedRecords)
+			@NonNull final CompositeRelatedRecords relatedRecords,
+			@NonNull final ZoneId orgZoneId)
 	{
 		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
+
+		final UserId contactUserId = UserId.ofRepoId(contactRecord.getAD_User_ID());
+		final List<UserRole> roles = userRoleRepository.getUserRoles(contactUserId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
 				.active(contactRecord.isActive())
-				.id(BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID()))
+				.id(BPartnerContactId.of(bpartnerId, contactUserId))
 				.contactType(extractBPartnerContactType(contactRecord))
 				.email(trimBlankToNull(contactRecord.getEMail()))
 				.externalId(ExternalId.ofOrNull(contactRecord.getExternalId()))
 				.value(trimBlankToNull(contactRecord.getValue()))
 				.firstName(trimBlankToNull(contactRecord.getFirstname()))
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
+				.birthday(asLocalDate(contactRecord.getBirthday(), orgZoneId))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
 				.membershipContact(contactRecord.isMembershipContact())
@@ -446,6 +479,7 @@ final class BPartnerCompositesLoader
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
+				.roles(roles)
 				.changeLog(changeLog)
 				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
@@ -507,6 +541,24 @@ final class BPartnerCompositesLoader
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.build();
+	}
+
+	@Nullable
+	private static SalesRep getSalesRep(@NonNull final I_C_BPartner bPartnerRecord)
+	{
+		final BPartnerId bPartnerSalesRepId = BPartnerId.ofRepoIdOrNull(bPartnerRecord.getC_BPartner_SalesRep_ID());
+
+		if (bPartnerSalesRepId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner salesRep = InterfaceWrapperHelper.load(bPartnerSalesRepId, I_C_BPartner.class);
+
+		return SalesRep.builder()
+				.id(bPartnerSalesRepId)
+				.value(salesRep.getValue())
 				.build();
 	}
 }

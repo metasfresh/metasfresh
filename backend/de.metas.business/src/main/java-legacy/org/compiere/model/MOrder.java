@@ -23,9 +23,14 @@ package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -34,6 +39,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -45,6 +51,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.payment_reservation.OrderPaymentReservationCreateResult;
 import de.metas.order.payment_reservation.OrderPaymentReservationService;
 import de.metas.organization.IOrgDAO;
@@ -119,6 +126,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -405,12 +413,10 @@ public class MOrder extends X_C_Order implements IDocument
 	 * Set Business Partner Defaults & Details.
 	 * SOTrx should be set.
 	 *
-	 * @param bp business partner
+	 * FIXME: keep in sync / merge with de.metas.order.impl.{@link de.metas.order.impl.OrderBL#setBPartner(I_C_Order, I_C_BPartner)}
 	 */
 	public void setBPartner(final I_C_BPartner bp)
 	{
-		// FIXME: keep in sync / merge with de.metas.adempiere.service.impl.OrderBL.setBPartner(I_C_Order, I_C_BPartner)
-
 		if (bp == null)
 		{
 			return;
@@ -458,42 +464,9 @@ public class MOrder extends X_C_Order implements IDocument
 			setSalesRep_ID(salesRepId);
 		}
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
 		// Set Locations
-		final List<I_C_BPartner_Location> locs = InterfaceWrapperHelper.createList(
-				bPartnerDAO.retrieveBPartnerLocations(bp),
-				I_C_BPartner_Location.class);
-
-		for (final I_C_BPartner_Location loc : locs)
-		{
-			if (loc.isShipTo())
-			{
-				super.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID());
-			}
-			if (loc.isBillTo())
-			{
-				setBill_Location_ID(loc.getC_BPartner_Location_ID());
-			}
-		}
-		// set to first
-		if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
-		{
-			super.setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
-		}
-		if (getBill_Location_ID() == 0 && !locs.isEmpty())
-		{
-			setBill_Location_ID(locs.get(0).getC_BPartner_Location_ID());
-		}
-		if (getC_BPartner_Location_ID() == 0)
-		{
-			throw new BPartnerNoShipToAddressException(bp);
-		}
-
-		if (getBill_Location_ID() == 0)
-		{
-			throw new BPartnerNoBillToAddressException(bp);
-		}
+		setShipToLocation(bp);
+		setBillLocation(bp);
 
 		// Set Contact
 		final List<I_AD_User> contacts = InterfaceWrapperHelper.createList(bPartnerDAO.retrieveContacts(bp), I_AD_User.class);
@@ -502,6 +475,44 @@ public class MOrder extends X_C_Order implements IDocument
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
 		}
 	}    // setBPartner
+
+	private void setShipToLocation(final I_C_BPartner bp)
+	{
+		final I_C_BPartner_Location shipToLocation = bPartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
+		if (shipToLocation == null)
+		{
+			throw new BPartnerNoShipToAddressException(bp);
+		}
+		OrderDocumentLocationAdapterFactory.locationAdapter(this)
+				.setLocationAndResetRenderedAddress(BPartnerLocationAndCaptureId.ofRecord(shipToLocation));
+	}
+
+	private void setBillLocation(final I_C_BPartner bp)
+	{
+		final I_C_BPartner_Location billToLocation = bPartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.BILL_TO)
+				.build());
+		if (billToLocation == null)
+		{
+			throw new BPartnerNoBillToAddressException(bp);
+		}
+		final BPartnerId oldBPartnerId = BPartnerId.ofRepoIdOrNull(this.getBill_BPartner_ID());
+		final BPartnerLocationAndCaptureId newBPartnerLocationId = BPartnerLocationAndCaptureId.ofRecord(billToLocation);
+		final BPartnerContactId newContactId = BPartnerId.equals(oldBPartnerId, newBPartnerLocationId.getBpartnerId())
+				? BPartnerContactId.ofRepoIdOrNull(oldBPartnerId, this.getBill_User_ID())
+				: null;
+		OrderDocumentLocationAdapterFactory.billLocationAdapter(this)
+				.setFrom(DocumentLocation.builder()
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
+	}
 
 	/**
 	 * Copy Lines From other Order
@@ -595,8 +606,6 @@ public class MOrder extends X_C_Order implements IDocument
 		// line.setQtyReserved(BigDecimal.ZERO);
 		line.setDateDelivered(null);
 		line.setDateInvoiced(null);
-		// don't copy linked lines
-		line.setLink_OrderLine_ID(0);
 		// Tax
 		// MOrder otherOrder = fromLine.getC_Order ();
 		// if (getC_BPartner_ID() != otherOrder.getC_BPartner_ID())
@@ -690,7 +699,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 		//
 		return new Query(getCtx(), MOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
-				.setParameters(new Object[] { get_ID() })
+				.setParameters(get_ID())
 				.setOrderBy(orderBy)
 				.listImmutable(MOrderLine.class);
 	}
@@ -782,7 +791,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		//
 		final List<MOrderTax> list = new Query(getCtx(), MOrderTax.Table_Name, "C_Order_ID=?", get_TrxName())
-				.setParameters(new Object[] { get_ID() })
+				.setParameters(get_ID())
 				.list(MOrderTax.class);
 		m_taxes = list.toArray(new MOrderTax[list.size()]);
 		return m_taxes;
@@ -800,7 +809,7 @@ public class MOrder extends X_C_Order implements IDocument
 				+ " AND il.C_OrderLine_ID=ol.C_OrderLine_ID"
 				+ " AND ol.C_Order_ID=?)";
 		final List<MInvoice> list = new Query(Env.getCtx(), MInvoice.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
-				.setParameters(new Object[] { orderId })
+				.setParameters(orderId)
 				.setOrderBy("C_Invoice_ID DESC")
 				.list(MInvoice.class);
 		return list.toArray(new MInvoice[list.size()]);
@@ -912,7 +921,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Reservations in Warehouse
 		if (!newRecord && is_ValueChanged("M_Warehouse_ID"))
 		{
-			for (MOrderLine line : getLinesRequery())
+			for (final MOrderLine line : getLinesRequery())
 			{
 				if (!line.canChangeWarehouse(true))
 				{
@@ -928,7 +937,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID()));
+			setBPartner(bPartnerDAO.getById(getC_BPartner_ID()));
 		}
 		// No Bill - get from Ship
 		if (getBill_BPartner_ID() <= 0)

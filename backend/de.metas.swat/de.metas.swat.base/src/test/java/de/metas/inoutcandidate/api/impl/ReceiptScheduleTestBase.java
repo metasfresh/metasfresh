@@ -22,8 +22,9 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
@@ -37,6 +38,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.logging.LogManager;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
@@ -52,6 +55,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -65,6 +69,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -116,8 +121,8 @@ public abstract class ReceiptScheduleTestBase
 
 	// Masterdata
 	private OrgId orgId;
-	protected I_C_BPartner bpartner1;
-	protected I_C_BPartner bpartner2;
+	protected BPartnerLocationId bpartner1;
+	protected BPartnerLocationId bpartner2;
 	protected I_M_Product product1_wh1;
 	protected I_M_Product product2_wh1;
 	protected I_M_Product product3_wh2;
@@ -198,14 +203,17 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				Matchers.any(),
-				Matchers.eq(orgId),
-				Matchers.any()))
+				ArgumentMatchers.any(),
+				ArgumentMatchers.eq(orgId),
+				ArgumentMatchers.any()))
 				.thenReturn(activityId);
 
 		// #653
 		attr_LotNumberDate = createM_Attribute(AttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 		attr_LotNumber = createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
+		// Increase log level in case we have some errors
+		LogManager.setLoggerLevel(org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler.class, Level.DEBUG);
 
 		setup();
 	}
@@ -221,13 +229,11 @@ public abstract class ReceiptScheduleTestBase
 		return ctx;
 	}
 
-	public I_C_BPartner createBPartner(final String name)
+	public BPartnerLocationId createBPartner(final String name)
 	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, ITrx.TRXNAME_None);
-		bp.setValue(name);
-		bp.setName(name);
-		saveRecord(bp);
-		return bp;
+		final I_C_BPartner bpartner = BusinessTestHelper.createBPartner(name);
+		final I_C_BPartner_Location bpLocation = BusinessTestHelper.createBPartnerLocation(bpartner);
+		return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 	}
 
 	public I_M_Product createProduct(
@@ -273,7 +279,8 @@ public abstract class ReceiptScheduleTestBase
 		return locator;
 	}
 
-	protected I_M_ReceiptSchedule createReceiptSchedule(final I_C_BPartner bPartner,
+	protected I_M_ReceiptSchedule createReceiptSchedule(
+			final BPartnerLocationId bpartnerLocationId,
 			final I_M_Warehouse warehouse,
 			final Timestamp date,
 			final I_M_Product product, final int qty)
@@ -284,9 +291,9 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setAD_Org_ID(0);
 		receiptSchedule.setAD_Table_ID(0);
 
-		receiptSchedule.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(bPartner.getC_BPartner_ID(), 0);
-		receiptSchedule.setAD_User_ID(BPartnerContactId.toRepoId(bPartnerContactId));
+		receiptSchedule.setC_BPartner_ID(bpartnerLocationId.getBpartnerId().getRepoId());
+		receiptSchedule.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
+		receiptSchedule.setAD_User_ID(-1);
 
 		receiptSchedule.setDateOrdered(date);
 
@@ -321,8 +328,8 @@ public abstract class ReceiptScheduleTestBase
 		order.setBill_BPartner_ID(0);
 		order.setBill_Location_ID(0);
 		order.setBill_User_ID(0);
-		order.setC_BPartner_ID(bpartner1.getC_BPartner_ID()); // needed to avoid an NPE in InOutGeneratedEventBus
-		order.setC_BPartner_Location_ID(0);
+		order.setC_BPartner_ID(bpartner1.getBpartnerId().getRepoId()); // needed to avoid an NPE in InOutGeneratedEventBus
+		order.setC_BPartner_Location_ID(bpartner1.getRepoId());
 
 		if (warehouse != null)
 		{
@@ -365,8 +372,7 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// BPartner
-		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
-		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setFromOrderHeader(order);
 
 		// more if needed
 

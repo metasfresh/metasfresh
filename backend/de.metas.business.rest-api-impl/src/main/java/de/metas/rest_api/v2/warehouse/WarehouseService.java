@@ -31,7 +31,6 @@ import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
@@ -90,7 +89,6 @@ public class WarehouseService
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -160,7 +158,6 @@ public class WarehouseService
 		if (!Boolean.TRUE.equals(outOfStockInfoRequest.getClosePendingShipmentSchedules())
 				&& !Boolean.TRUE.equals(outOfStockInfoRequest.getCreateInventory()))
 		{
-
 			Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: closePendingShipmentSchedules and createInventory are both false! No action is performed!");
 
 			return JsonOutOfStockResponse.builder()
@@ -169,6 +166,7 @@ public class WarehouseService
 		}
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(outOfStockInfoRequest.getOrgCode());
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: orgCode resolved to AD_Org_ID {}!", OrgId.toRepoIdOrAny(orgId));
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
@@ -178,13 +176,13 @@ public class WarehouseService
 						.resourceName("M_Product")
 						.build());
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", productId);
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", ProductId.toRepoId(productId));
 
 		final AttributeSetInstanceId attributeSetInstanceId = computeAttributeSetInstanceFromJson(outOfStockInfoRequest.getAttributeSetInstance())
 				.orElse(null);
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", attributeSetInstanceId);
-
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", AttributeSetInstanceId.toRepoId(attributeSetInstanceId));
+		
 		final Optional<WarehouseId> targetWarehouseId = ALL.equals(warehouseIdentifier)
 				? Optional.empty()
 				: Optional.of(getWarehouseByIdentifier(orgId, warehouseIdentifier));

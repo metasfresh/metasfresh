@@ -22,19 +22,51 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkpackageLogsRepository;
+import de.metas.async.api.IWorkpackageParamDAO;
+import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.event.WorkpackageProcessedEvent;
 import de.metas.async.event.WorkpackageProcessedEvent.Status;
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IWorkpackageSkipRequest;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.IWorkpackageProcessor.Result;
+import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.exceptions.ServiceConnectionException;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -60,51 +92,17 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
-import ch.qos.logback.classic.Level;
-import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkpackageLogsRepository;
-import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.api.IWorkpackageProcessorContextFactory;
-import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IWorkpackageSkipRequest;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.async.spi.IWorkpackageProcessor.Result;
-import de.metas.async.spi.IWorkpackageProcessor2;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.exceptions.LockFailedException;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.user.UserId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.exceptions.ServiceConnectionException;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
 
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.DONE;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
 import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 
-@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
+@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "asyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
@@ -169,7 +167,7 @@ class WorkpackageProcessorTask implements Runnable
 				NoopPerformanceMonitoringService.INSTANCE);
 
 		service.monitorTransaction(
-				() -> run0(),
+				this::run0,
 				TransactionMetadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
@@ -207,7 +205,7 @@ class WorkpackageProcessorTask implements Runnable
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
-						(TrxRunnable)trxName_IGNORED -> {
+						trxName_IGNORED -> {
 							// ignore the concrete trxName param,
 							// by default everything shall use the thread inherited trx
 							final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
@@ -239,6 +237,7 @@ class WorkpackageProcessorTask implements Runnable
 			}
 			else
 			{
+				markError(workPackage, new AdempiereException("Result " + resultRef.getValue() + " not supported for workPackage=" + workPackage));
 				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for workPackage=" + workPackage);
 			}
 		}
@@ -317,7 +316,7 @@ class WorkpackageProcessorTask implements Runnable
 	/**
 	 * Method called before we actually start to process the workpackage, but after the transaction is created.
 	 */
-	private final void beforeWorkpackageProcessing()
+	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
 		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
@@ -332,7 +331,7 @@ class WorkpackageProcessorTask implements Runnable
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
-	private Result processWorkpackage(final String trxName)
+	private Result processWorkpackage(@Nullable final String trxName)
 	{
 		// Setup context and everything that needs to be setup before actually starting to process the workpackage
 		beforeWorkpackageProcessing();
@@ -387,7 +386,9 @@ class WorkpackageProcessorTask implements Runnable
 		}
 	}
 
-	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	private RuntimeException handleServiceConnectionException(
+			@Nullable final String trxName, 
+			@NonNull final ServiceConnectionException e)
 	{
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
@@ -556,8 +557,7 @@ class WorkpackageProcessorTask implements Runnable
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
-		logger.info(msg, skipException);
-		Loggables.addLog(msg);
+		Loggables.withLogger(logger,Level.DEBUG).addLog(msg, skipException);
 
 		createAndFireEventWithStatus(workPackage, SKIPPED);
 	}
@@ -608,7 +608,7 @@ class WorkpackageProcessorTask implements Runnable
 		{
 			return; // nothing to do
 		}
-		
+
 		final WorkpackageProcessedEvent processingDoneEvent = WorkpackageProcessedEvent.builder()
 				.correlationId(correlationId)
 				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))

@@ -1,8 +1,9 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
-//import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
+import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.listener.TableAttachmentListenerService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -18,7 +19,9 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -86,7 +89,7 @@ public class AttachmentEntryRepository
 				.createQueryBuilder(I_AD_Attachment_MultiRef.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, referencedRecord.getRecord_ID())
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.create()
 				.list();
 
@@ -109,9 +112,23 @@ public class AttachmentEntryRepository
 		return result.build();
 	}
 
+	@NonNull
+	public Set<AttachmentEntry> getByReferencedRecords(@NonNull final Set<TableRecordReference> referencedRecords)
+	{
+		final ImmutableSet.Builder<AttachmentEntry> attachmentEntries = ImmutableSet.builder();
+
+		for (final TableRecordReference tableRecordReference : referencedRecords)
+		{
+			getByReferencedRecord(tableRecordReference)
+					.forEach(attachmentEntries::add);
+		}
+		return attachmentEntries.build();
+	}
+
 	public byte[] retrieveAttachmentEntryData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
+
 		return record.getBinaryData();
 	}
 
@@ -154,6 +171,14 @@ public class AttachmentEntryRepository
 		final AttachmentEntry attachmentEntry = attachmentEntryFactory.toAttachmentEntry(attachmentEntryRecord);
 
 		final AttachmentEntry.AttachmentEntryBuilder builder = attachmentEntry.toBuilder();
+
+		final Map<TableRecordReference, String> recordReference2AttachmentName = attachmentMultiRefRecords.stream()
+				.filter(multiRefRecord -> Check.isNotBlank(multiRefRecord.getFileName_Override()))
+				.collect(Collectors.toMap(multiRefRecord -> TableRecordReference.of(multiRefRecord.getAD_Table_ID(), multiRefRecord.getRecord_ID()),
+										  I_AD_Attachment_MultiRef::getFileName_Override));
+
+		builder.linkedRecord2AttachmentName(recordReference2AttachmentName);
+
 		for (final I_AD_Attachment_MultiRef attachmentMultiRefRecord : attachmentMultiRefRecords)
 		{
 			final TableRecordReference referencedRecord = TableRecordReference.of(
@@ -191,10 +216,7 @@ public class AttachmentEntryRepository
 
 		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
 
-		return attachmentEntry
-				.toBuilder()
-				.id(AttachmentEntryId.ofRepoId(attachmentEntryRecord.getAD_AttachmentEntry_ID()))
-				.build();
+		return forRecord(attachmentEntryRecord);
 	}
 
 	private void syncLinkedRecords(

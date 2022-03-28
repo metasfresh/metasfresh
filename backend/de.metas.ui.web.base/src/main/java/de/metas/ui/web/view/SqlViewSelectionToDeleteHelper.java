@@ -1,12 +1,6 @@
 package de.metas.ui.web.view;
 
-import java.util.Set;
-import java.util.UUID;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
+import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -14,6 +8,12 @@ import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection_ToDelete;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import java.util.Set;
+import java.util.UUID;
 
 /*
  * #%L
@@ -136,6 +136,19 @@ public class SqlViewSelectionToDeleteHelper
 					+ "\n )";
 			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
 			logger.trace("Deleted {} rows from {}", count, I_T_WEBUI_ViewSelection.Table_Name);
+		}
+
+		//
+		// Delete from T_ES_FTS_Search_Result
+		{
+			final String sql = "DELETE FROM " + I_T_ES_FTS_Search_Result.Table_Name + " t "
+					+ "\n WHERE EXISTS (SELECT 1 FROM " + I_T_WEBUI_ViewSelection_ToDelete.Table_Name + " s "
+					+ "\n       WHERE "
+					+ "\n           s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_View_UUID + "=t." + I_T_ES_FTS_Search_Result.COLUMNNAME_Search_UUID
+					+ "\n           AND s." + I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
+					+ "\n )";
+			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+			logger.trace("Deleted {} rows from {}", count, I_T_ES_FTS_Search_Result.Table_Name);
 		}
 
 		//

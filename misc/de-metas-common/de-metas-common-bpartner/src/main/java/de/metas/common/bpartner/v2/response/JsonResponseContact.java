@@ -33,6 +33,8 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 @Value
 public class JsonResponseContact
@@ -41,6 +43,7 @@ public class JsonResponseContact
 	public static final String EMAIL = "email";
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
+	public static final String BIRTHDAY = "birthday";
 	public static final String NAME = "name";
 	public static final String GREETING = "greeting";
 	public static final String CODE = "code";
@@ -61,6 +64,7 @@ public class JsonResponseContact
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
+	public static final String ROLES = "roles";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -86,6 +90,9 @@ public class JsonResponseContact
 
 	@JsonInclude(Include.NON_EMPTY)
 	String firstName;
+
+	@JsonInclude(Include.NON_EMPTY)
+	LocalDate birthday;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String email;
@@ -132,6 +139,10 @@ public class JsonResponseContact
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean subjectMatter;
 
+	@ApiModelProperty(allowEmptyValue = false)
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseContactRole> roles;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
@@ -147,6 +158,7 @@ public class JsonResponseContact
 			@JsonProperty(GREETING) final String greeting,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
+			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
 
@@ -165,7 +177,7 @@ public class JsonResponseContact
 			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
 			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
-
+			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -192,9 +204,11 @@ public class JsonResponseContact
 		this.greeting = greeting;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.birthday = birthday;
 		this.email = email;
 		this.phone = phone;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
+		this.roles = roles;
 
 		this.changeInfo = changeInfo;
 	}

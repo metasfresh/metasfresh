@@ -44,24 +44,38 @@ public class JSONLookupValuesPage
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean hasMoreResults;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isAlwaysDisplayNewBPartner;
+
 	@Builder
 	private JSONLookupValuesPage(
 			@NonNull final ImmutableList<JSONLookupValue> values,
-			@Nullable final Boolean hasMoreResults)
+			@Nullable final Boolean hasMoreResults,
+			@Nullable final Boolean isAlwaysDisplayNewBPartner)
 	{
 		this.values = values;
 		this.hasMoreResults = hasMoreResults;
+		this.isAlwaysDisplayNewBPartner = isAlwaysDisplayNewBPartner;
 	}
 
 	private JSONLookupValuesPage()
 	{
 		values = ImmutableList.of();
 		hasMoreResults = false;
+		isAlwaysDisplayNewBPartner = false;
 	}
 
 	public static JSONLookupValuesPage of(
 			@Nullable final LookupValuesPage page,
 			@NonNull final String adLanguage)
+	{
+		return of(page, adLanguage, false);
+	}
+
+	public static JSONLookupValuesPage of(
+			@Nullable final LookupValuesPage page,
+			@NonNull final String adLanguage,
+			@Nullable final Boolean isAlwaysDisplayNewBPartner)
 	{
 		if (page == null || page.isEmpty())
 		{
@@ -70,8 +84,9 @@ public class JSONLookupValuesPage
 		else
 		{
 			return builder()
-					.values(JSONLookupValuesList.toListOfJSONLookupValues(page.getValues(), adLanguage))
+					.values(JSONLookupValuesList.toListOfJSONLookupValues(page.getValues(), adLanguage, false))
 					.hasMoreResults(page.getHasMoreResults().toBooleanOrNull())
+					.isAlwaysDisplayNewBPartner(isAlwaysDisplayNewBPartner)
 					.build();
 		}
 	}

@@ -41,6 +41,7 @@ public class JsonMetasfreshId
 		return new JsonMetasfreshId(value);
 	}
 
+	@Nullable
 	public static JsonMetasfreshId ofOrNull(@Nullable final Integer value)
 	{
 		if (isEmpty(value))
@@ -52,11 +53,7 @@ public class JsonMetasfreshId
 
 	private static boolean isEmpty(@Nullable final Integer value)
 	{
-		if (value == null || value < 0)
-		{
-			return true;
-		}
-		return false;
+		return value == null || value < 0;
 	}
 
 	private JsonMetasfreshId(@NonNull final Integer value)
@@ -79,6 +76,7 @@ public class JsonMetasfreshId
 		return Objects.equals(id1, id2);
 	}
 
+	@Nullable
 	public static Integer toValue(@Nullable final JsonMetasfreshId externalId)
 	{
 		if (externalId == null)
@@ -95,5 +93,14 @@ public class JsonMetasfreshId
 			return -1;
 		}
 		return externalId.getValue();
+	}
+
+	public static String toValueStr(@Nullable final JsonMetasfreshId externalId)
+	{
+		if (externalId == null)
+		{
+			return "-1";
+		}
+		return String.valueOf(externalId.getValue());
 	}
 }

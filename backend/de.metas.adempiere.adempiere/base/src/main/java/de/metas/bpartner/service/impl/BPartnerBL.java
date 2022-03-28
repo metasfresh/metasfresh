@@ -3,12 +3,14 @@ package de.metas.bpartner.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -21,6 +23,8 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -44,12 +48,14 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
@@ -57,6 +63,7 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
@@ -110,16 +117,16 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner,
-			final I_C_BPartner_Location location,
-			final I_AD_User user,
-			@Nullable final String trxName)
+			@NonNull final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final I_C_BPartner_Location bpLocation,
+			@Nullable final LocationId locationId,
+			@Nullable final I_AD_User bpContact)
 	{
 		final AddressBuilder addressBuilder = AddressBuilder.builder()
-				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
-				.adLanguage(bPartner.getAD_Language())
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.adLanguage(bpartner.getAD_Language())
 				.build();
-		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
 	}
 
 	@Override
@@ -296,8 +303,6 @@ public class BPartnerBL implements IBPartnerBL
 
 	/**
 	 * Selects the default contact from a list of BPartner users. Returns first user with IsDefaultContact=Y found or first contact.
-	 *
-	 * @return default user/contact.
 	 */
 	@Nullable
 	private I_AD_User getDefaultBPContact(final List<I_AD_User> users)
@@ -340,7 +345,7 @@ public class BPartnerBL implements IBPartnerBL
 		final ILocationBL locationBL = Services.get(ILocationBL.class);
 
 		final String address = locationBL.mkAddress(
-				bpLocation.getC_Location(),
+				locationBL.getRecordById(LocationId.ofRepoId(bpLocation.getC_Location_ID())),
 				bpartner,
 				"",  // bPartnerBlock
 				"" // userBlock
@@ -535,9 +540,36 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
-		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
+		return locationDAO.getCountryIdByLocationId(locationId);
+	}
+
+	@Override
+	public CountryId getCountryId(@NonNull final BPartnerInfo bpartnerInfo)
+	{
+		if (bpartnerInfo.getLocationId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
+		}
+		else
+		{
+			return bpartnersRepo.getCountryId(bpartnerInfo.getBpartnerLocationId());
+		}
+	}
+
+	@Override
+	public LocationId getLocationId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
+		{
+			return bpartnerLocationAndCaptureId.getLocationCaptureId();
+		}
+		else
+		{
+			return bpartnersRepo.getLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
+		}
 	}
 
 	@Override
@@ -627,21 +659,21 @@ public class BPartnerBL implements IBPartnerBL
 		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
 
 		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
-				strategyId,
-				ComputeNameAndGreetingRequest.builder()
-						.adLanguage(bpartner.getAD_Language())
-						.contacts(bpartnersRepo.retrieveContacts(bpartner)
-								.stream()
-								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
-										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
-										.firstName(contact.getFirstname())
-										.lastName(contact.getLastname())
-										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
-										.isDefaultContact(contact.isDefaultContact())
-										.isMembershipContact(contact.isMembershipContact())
-										.build())
-								.collect(ImmutableList.toImmutableList()))
-						.build())
+						strategyId,
+						ComputeNameAndGreetingRequest.builder()
+								.adLanguage(bpartner.getAD_Language())
+								.contacts(bpartnersRepo.retrieveContacts(bpartner)
+										.stream()
+										.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+												.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+												.firstName(contact.getFirstname())
+												.lastName(contact.getLastname())
+												.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+												.isDefaultContact(contact.isDefaultContact())
+												.isMembershipContact(contact.isMembershipContact())
+												.build())
+										.collect(ImmutableList.toImmutableList()))
+								.build())
 				.orElse(null);
 
 		if (nameAndGreeting == null)
@@ -653,4 +685,64 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 		bpartnersRepo.save(bpartner);
 	}
+
+	@Override
+	public void setPreviousIdIfPossible(@NonNull final I_C_BPartner_Location location)
+	{
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(location.getC_BPartner_ID()));
+		final Set<Integer> oldLocations = locations.stream()
+				.map(I_C_BPartner_Location::getPrevious_ID)
+				.collect(Collectors.toSet());
+		final List<I_C_BPartner_Location> locationCandidates = locations.stream()
+				.filter(loc -> !oldLocations.contains(loc.getC_BPartner_Location_ID()) && loc.getC_BPartner_Location_ID() != location.getC_BPartner_Location_ID())
+				.collect(Collectors.toList());
+		if (locationCandidates.size() == 1)
+		{
+			location.setPrevious_ID(locationCandidates.stream().findFirst().get().getC_BPartner_Location_ID());
+			bpartnersRepo.save(location);
+		}
+	}
+
+	@Override
+	public void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation)
+	{
+		updateFromPreviousLocationNoSave(bpLocation);
+		bpartnersRepo.save(bpLocation);
+	}
+
+	@Override
+	public void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation)
+	{
+		final int previousId = bpLocation.getPrevious_ID();
+		if (previousId <= 0)
+		{
+			return;
+		}
+
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
+		if (previousLocation == null)
+		{
+			return;
+		}
+		// Don't update the defaults if the current location is still valid.
+		if (validFrom.before(Env.getDate()))
+		{
+			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
+			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
+
+			previousLocation.setIsBillToDefault(false);
+			previousLocation.setIsShipToDefault(false);
+			bpartnersRepo.save(previousLocation);
+		}
+
+		bpLocation.setIsBillTo(previousLocation.isBillTo());
+		bpLocation.setIsShipTo(previousLocation.isShipTo());
+	}
+
 }

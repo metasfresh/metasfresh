@@ -1,7 +1,7 @@
 package de.metas.inout.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -10,10 +10,12 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -56,9 +58,12 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -98,6 +103,7 @@ public class InOutBL implements IInOutBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -131,12 +137,12 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inOut = inOutLine.getM_InOut();
 
 		SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
+		final BPartnerLocationAndCaptureId bpLocationId = InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId();
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
 				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
-				bPartnerId,
+				bpLocationId.getBpartnerId(),
 				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
 				soTrx);
 
@@ -167,7 +173,7 @@ public class InOutBL implements IInOutBL
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
-				BPartnerLocationId.ofRepoId(bPartnerId, inOut.getC_BPartner_Location_ID()),
+				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
@@ -589,5 +595,15 @@ public class InOutBL implements IInOutBL
 				.build();
 
 		return requestsRepo.createRequest(requestCandidate);
+	}
+
+	@Override
+	@NonNull
+	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
+	{
+		final OrgId orgId = OrgId.ofRepoId(inOut.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
 	}
 }

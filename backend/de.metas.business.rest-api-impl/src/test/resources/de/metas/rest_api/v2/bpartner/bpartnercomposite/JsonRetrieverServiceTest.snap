@@ -25,7 +25,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           },
           "entries" : [ ]
         },
-        "currencyId" : 100012,
+        "currencyId" : 100013,
         "iban" : "INITIAL-IBAN-1",
         "id" : {
           "repoId" : 50,
@@ -136,6 +136,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       }
@@ -170,7 +171,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
-        "existingLocationId" : 100010,
+        "existingLocationId" : 100011,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {

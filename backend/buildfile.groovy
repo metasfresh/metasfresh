@@ -108,8 +108,8 @@ Map build(
 				"""
 
                 dir('de.metas.cucumber') {
-                    def distributionBuildFile = load('buildfile.groovy')
-                    distributionBuildFile.build(mvnConf, scmVars)
+                    def cucumberBuildFile = load('buildfile.groovy')
+                    cucumberBuildFile.build(mvnConf, scmVars)
                 }
 
                 final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"

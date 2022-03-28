@@ -2,7 +2,9 @@ package de.metas.invoice.service.impl;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -10,12 +12,15 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.IOrgDAO;
@@ -55,6 +60,7 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
@@ -104,6 +110,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
@@ -145,7 +152,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final Timestamp shipDate = io.getMovementDate();
 
-		final BPartnerLocationId shipToPartnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId shipToPartnerLocationId = InOutDocumentLocationAdapterFactory
+				.locationAdapter(io)
+				.getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io.isSOTrx();
 
@@ -160,7 +169,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
-			@NonNull final BPartnerLocationId partnerLocationId,
+			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -169,8 +178,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -207,10 +214,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.isSOTrx(isSOTrx)
 						.shipDate(taxDate)
 						.shipFromCountryId(countryFromId)
-						.shipToC_Location_ID(locationTo.getC_Location_ID())
+						.shipToC_Location_ID(partnerLocationId)
 						.billDate(invoice.getDateInvoiced())
 						.billFromCountryId(countryFromId)
-						.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
+						.billToC_Location_ID(LocationId.ofRepoId(bPartnerLocationRecord.getC_Location_ID()))
 						.build();
 			}
 			final TaxId taxId = tax.getTaxId();
@@ -436,8 +443,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		if (invoice.getC_BPartner_Location_ID() <= 0)
@@ -449,9 +454,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-
-		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
+		return Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 	}
 
 	@Override
@@ -535,5 +539,17 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
+	}
+
+
+	@NonNull
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
+
+		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
+
+		return Quantity.of(qtyInvoiced, stockUOM);
 	}
 }

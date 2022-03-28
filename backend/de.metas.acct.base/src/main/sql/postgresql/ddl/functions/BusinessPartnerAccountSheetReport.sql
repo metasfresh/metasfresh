@@ -16,7 +16,8 @@ CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id num
                 amount           NUMERIC,
                 endingBalance    NUMERIC,
                 currencyCode     TEXT,
-                description      TEXT
+                description      TEXT,
+                created          TIMESTAMP
             )
 AS
 $BODY$
@@ -273,7 +274,8 @@ BEGIN
                         t.amount,
                         t.endingBalance,
                         t.targetCurrencyCode,
-                        t.description
+                        t.description,
+                        t.created
                  FROM temp_BusinessPartnerAccountSheetReport t
                  ORDER BY t.dateacct, t.created, t.documentno;
 END;

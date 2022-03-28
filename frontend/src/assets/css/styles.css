@@ -1067,6 +1067,8 @@ body{
     width: 200px;
     max-width: 480px;
     max-height: 80vh;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -1086,6 +1088,7 @@ body{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 5px;
 }
 
 .filter-clear {
@@ -1641,6 +1644,12 @@ body{
             background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
         }
     }
+}
+
+.modal-spinner {
+    height: 100%;
+    width: 100%;
+    background-color: transparent !important;
 }
 
 .paypal-reservation-container {

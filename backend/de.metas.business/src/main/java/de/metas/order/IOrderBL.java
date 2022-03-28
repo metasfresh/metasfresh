@@ -24,7 +24,7 @@ package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -73,14 +73,14 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	BPartnerLocationId getShipToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	BPartnerLocationId getBillToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getBillToLocationId(I_C_Order order);
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
@@ -140,12 +140,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
 	 */
-	void updateAddresses(I_C_Order order);
-
-	/**
-	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
-	 */
-	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
+	void updateOrderLineAddressesFromOrder(I_C_Order order);
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -258,5 +253,9 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isHaddexOrder(I_C_Order order);
 
-	void closeOrder(final OrderId orderId);
+	void closeOrder(OrderId orderId);
+
+	Optional<DeliveryViaRule> findDeliveryViaRule(@NonNull I_C_Order orderRecord);
+
+	String getDocumentNoById(OrderId orderId);
 }

@@ -1,8 +1,8 @@
 package de.metas;
 
 import com.google.common.base.Stopwatch;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -80,19 +80,18 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
-			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
+			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
 			//
-	;
+			;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 	}

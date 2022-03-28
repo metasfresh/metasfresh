@@ -42,12 +42,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_S_Resource;
@@ -261,8 +261,8 @@ public class OrderCheckupTestHelper
 				.list(I_C_Printing_Queue_Recipient.class);
 
 		// Validate the printing queue item
-		Assert.assertEquals("Printing queue item - PrintoutForOtherUser", true, printingItem.isPrintoutForOtherUser());
-		Assert.assertEquals("Printing queue item - IsActive", true, printingItem.isActive());
+		Assert.assertTrue("Printing queue item - PrintoutForOtherUser", printingItem.isPrintoutForOtherUser());
+		Assert.assertTrue("Printing queue item - IsActive", printingItem.isActive());
 
 		assertThat("Printout recipients - wrong number", printoutRecipients.size(), is(1));
 		assertThat("Printout recipient - wrong AD_User_ToPrint_ID", printoutRecipients.get(0).getAD_User_ToPrint_ID(), is(report.getAD_User_Responsible_ID()));

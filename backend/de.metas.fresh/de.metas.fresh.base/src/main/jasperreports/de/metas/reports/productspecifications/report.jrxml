@@ -334,7 +334,9 @@ FROM m_product p
 		</band>
 		<band height="65" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235">
+					<printWhenExpression><![CDATA[new Boolean($F{shelflifedays} != null)]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>

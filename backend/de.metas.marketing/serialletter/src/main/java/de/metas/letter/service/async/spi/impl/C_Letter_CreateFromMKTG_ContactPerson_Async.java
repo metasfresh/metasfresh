@@ -16,6 +16,7 @@ import de.metas.location.LocationRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.util.Loggables;
+import org.compiere.util.Evaluatees;
 
 /*
  * #%L
@@ -90,8 +91,8 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 				}
 				else
 				{
-					subject = boilerPlate.getSubject();
-					body = boilerPlate.getTextSnippet();
+					subject = boilerPlate.evaluateSubject(Evaluatees.empty());
+					body = boilerPlate.evaluateTextSnippet(Evaluatees.empty());
 				}
 			}
 

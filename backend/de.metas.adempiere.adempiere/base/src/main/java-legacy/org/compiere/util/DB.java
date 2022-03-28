@@ -24,14 +24,12 @@ package org.compiere.util;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.ILanguageDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -42,7 +40,6 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,12 +60,10 @@ import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
-import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
 import org.compiere.model.Null;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
-import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -98,8 +93,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * General Database Interface
@@ -161,57 +154,6 @@ public class DB
 	 * SQL Statement Separator "; "
 	 */
 	public final String SQLSTATEMENT_SEPARATOR = "; ";
-
-	/**************************************************************************
-	 * Check need for post Upgrade
-	 *
-	 * @param ctx context
-	 * @return true if post upgrade ran - false if there was no need
-	 */
-	@Deprecated
-	public boolean afterMigration(final Properties ctx)
-	{
-		// UPDATE AD_System SET IsJustMigrated='Y'
-		final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
-		if (!system.isJustMigrated())
-		{
-			return false;
-		}
-		// Role update
-		log.info("After migration: running role access update for all roles");
-		try
-		{
-			Services.get(IUserRolePermissionsDAO.class).updateAccessRecordsForAllRoles();
-		}
-		catch (final Exception ex)
-		{
-			log.error("Role access update failed. Ignored.", ex);
-		}
-
-		// Release Specif stuff & Print Format
-		try
-		{
-			final Class<?> clazz = Class.forName("org.compiere.MigrateData");
-			clazz.newInstance();
-		}
-		catch (final Exception e)
-		{
-			log.error("After migration: migrate data failed", e);
-		}
-
-		// Language check
-		log.info("After migration: Language maintainance");
-		Services.get(ILanguageDAO.class).addAllMissingTranslations();
-
-		// Sequence check
-		log.info("After migration: Sequence check");
-		SequenceCheck.validate(ctx);
-
-		// Reset Flag
-		system.setIsJustMigrated(false);
-		save(system);
-		return true;
-	}    // afterMigration
 
 	/**************************************************************************
 	 * Set connection.
@@ -1047,7 +989,7 @@ public class DB
 		}
 		catch (final SQLException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw new DBException(e, functionCall, params);
 		}
 	}
 
@@ -2192,7 +2134,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, @NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2231,7 +2173,7 @@ public class DB
 	 *
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);

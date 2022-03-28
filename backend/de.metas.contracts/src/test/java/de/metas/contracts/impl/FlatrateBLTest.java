@@ -35,13 +35,44 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
+import de.metas.document.location.DocumentLocation;
 import de.metas.lang.SOTrx;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.location.LocationId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.rules.MockedPricingRule;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -60,30 +91,18 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.SpringApplication;
 
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Data;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Matching;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.organization.OrgId;
-import de.metas.pricing.rules.MockedPricingRule;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 public class FlatrateBLTest extends ContractsTestBase
 {
@@ -128,6 +147,8 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		productAcctDAO = Mockito.mock(IProductAcctDAO.class);
 		taxBL = Mockito.mock(ITaxBL.class);
+
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@BeforeEach
@@ -186,8 +207,13 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
-		currentTerm.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID(), location.getC_Location_ID());
+
+		ContractDocumentLocationAdapterFactory
+				.billLocationAdapter(currentTerm)
+				.setFrom(bpartnerLocationId);
+
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -235,10 +261,10 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.when(
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						ProductId.ofRepoId(product.getM_Product_ID())))
+						productAcctDAO.retrieveActivityForAcct(
+								clientId,
+								orgId,
+								ProductId.ofRepoId(product.getM_Product_ID())))
 				.thenReturn(activityId);
 
 		final Properties ctx = Env.getCtx();
@@ -253,7 +279,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						any(Timestamp.class),
 						any(OrgId.class),
 						any(WarehouseId.class),
-						anyInt(),
+						any(BPartnerLocationAndCaptureId.class),
 						any(SOTrx.class)))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

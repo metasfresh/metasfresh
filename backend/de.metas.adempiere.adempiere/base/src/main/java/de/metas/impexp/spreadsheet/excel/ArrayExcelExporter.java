@@ -21,17 +21,15 @@
  */
 package de.metas.impexp.spreadsheet.excel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.Env;
-
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Export excel from ArrayList of data

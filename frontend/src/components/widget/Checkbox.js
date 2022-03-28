@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
+import usePrevious from '../../hooks/usePrevious';
+
 /**
  * @file Function based component.
  * @module Checkbox
@@ -19,14 +21,18 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
+    isEdited,
   } = props;
-  let { value, defaultValue } = props.widgetData[0];
+  let { value, defaultValue } = widgetData;
+  const prevValue = usePrevious(value);
 
   const [isChanged, setChanged] = useState(false);
 
   let initialValue =
     updateItems && !isFilterActive && !isChanged ? defaultValue : value;
+
   initialValue = typeof initialValue === 'undefined' ? null : initialValue;
+  const [initialRender, setInitialRender] = useState(false);
   const [checkedState, setCheckedState] = useState(initialValue);
   const [checkedValue, setCheckedValue] = useState(!!initialValue);
 
@@ -36,8 +42,26 @@ const Checkbox = (props) => {
       !isChanged &&
       handlePatch(widgetField, defaultValue, id);
 
+    // we're not setting the initialRender flag for filters, as we don't have a case where
+    // they might be rendered already AND their value could be modified in another part of the
+    // application (ex modal)
+    if (!initialRender && !updateItems) {
+      setInitialRender(true);
+    }
+
+    // only valid for checkboxes in tabs
+    if (isChanged && value !== prevValue && initialRender && isEdited) {
+      setChanged(false);
+    }
+
+    // if widget's value changed without user triggering it, update the local state as it
+    // was due to a change in a modal or other part of the app
+    if (!isChanged && value !== prevValue && initialRender) {
+      setCheckedState(!checkedState);
+    }
+
     setCheckedValue(isChanged && value === '' ? false : !!checkedState);
-  }, [checkedState]);
+  }, [checkedState, value]);
 
   /**
    * @method handleClear
@@ -67,14 +91,21 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
-    handlePatch(widgetField, newCheckedState, id);
+
+    handlePatch(widgetField, newCheckedState, id).then(() => {
+      // in case of checkboxes in tabs we will always get a websocket request, which ras break
+      // the current state. So don't change it until next render
+      if (!isEdited) {
+        setChanged(false);
+      }
+    });
   };
 
   return (
     <div>
       <label
         className={classnames('input-checkbox', {
-          'input-disabled': widgetData[0].readonly || disabled,
+          'input-disabled': widgetData.readonly || disabled,
         })}
         tabIndex={fullScreen ? -1 : tabIndex}
         onKeyDown={(e) => {
@@ -89,7 +120,7 @@ const Checkbox = (props) => {
           type="checkbox"
           className={classnames({ 'is-checked': initialValue })}
           checked={checkedValue}
-          disabled={widgetData[0].readonly || disabled}
+          disabled={widgetData.readonly || disabled}
           onChange={updateCheckedState}
           tabIndex="-1"
         />
@@ -102,7 +133,7 @@ const Checkbox = (props) => {
       </label>
       {filterWidget &&
       !disabled &&
-      !widgetData[0].readonly &&
+      !widgetData.readonly &&
       (checkedState === false || checkedState === true) ? (
         <small className="input-side" onClick={handleClear}>
           (clear)
@@ -116,7 +147,7 @@ const Checkbox = (props) => {
 
 /**
  * @typedef {object} Props Component props
- * @prop {array} widgetData
+ * @prop {object} widgetData
  * @prop {bool} [disabled]
  * @prop {bool} [fullScreen]
  * @prop {number} [tabIndex]
@@ -124,10 +155,11 @@ const Checkbox = (props) => {
  * @prop {func} [handlePatch]
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
+ * @prop {bool} [isEdited] - this flag is set only for checkboxes in Tabs
  */
 Checkbox.propTypes = {
-  widgetData: PropTypes.array.isRequired,
+  widgetData: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
   fullScreen: PropTypes.bool,
   tabIndex: PropTypes.number,
@@ -137,6 +169,7 @@ Checkbox.propTypes = {
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  isEdited: PropTypes.bool,
 };
 
 export default Checkbox;

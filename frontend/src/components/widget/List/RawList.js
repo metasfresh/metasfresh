@@ -4,7 +4,7 @@ import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isEqual, findIndex, pullAt } from 'lodash';
-
+import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
 
@@ -335,11 +335,28 @@ export class RawList extends PureComponent {
       isFocused,
       clearable,
       isMultiselect,
+      compositeWidgetData, // for composite lookups - all the widgets data
+      field,
       listHash,
+      wrapperElement,
     } = this.props;
 
     let value = '';
     let placeholder = '';
+    const widgetData =
+      compositeWidgetData &&
+      compositeWidgetData.filter((itemWidgetData) => {
+        return itemWidgetData.field == field;
+      })[0];
+    const widgetDataValidStatus =
+      widgetData && widgetData.validStatus
+        ? widgetData.validStatus.valid
+        : false;
+    const emptyCompositeLookup =
+      compositeWidgetData &&
+      compositeWidgetData.every(
+        (widgetDataItem) => widgetDataItem.value === ''
+      );
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -356,6 +373,15 @@ export class RawList extends PureComponent {
     placeholder = this.props.lookupList
       ? this.props.properties.emptyText
       : placeholder;
+
+    let width = this.dropdown ? this.dropdown.offsetWidth : 0;
+
+    if (wrapperElement) {
+      const wrapperWidth = wrapperElement.offsetWidth;
+      const offset = this.dropdown.offsetLeft;
+
+      width = wrapperWidth - offset;
+    }
 
     const classicDropdown = (
       <TetherComponent
@@ -384,7 +410,12 @@ export class RawList extends PureComponent {
                   'select-dropdown': !lookupList,
                   focused: isFocused,
                   opened: isToggled,
-                  'input-mandatory': !lookupList && mandatory && !selected,
+                  'input-mandatory':
+                    (!lookupList && mandatory && !selected) ||
+                    (!widgetDataValidStatus &&
+                      mandatory &&
+                      lookupList &&
+                      !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
                 onFocus={readonly ? null : this.focusDropdown}
@@ -452,9 +483,9 @@ export class RawList extends PureComponent {
               listHash={listHash}
               loading={loading}
               options={this.state.dropdownList}
-              empty="There is no choice available"
+              empty={`${counterpart.translate('widget.list.hasNoResults')}`}
               selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
+              width={width}
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
@@ -554,6 +585,9 @@ RawList.propTypes = {
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
   isMultiselect: PropTypes.bool,
+  compositeWidgetData: PropTypes.array,
+  field: PropTypes.string,
+  wrapperElement: PropTypes.any,
 };
 
 RawList.defaultProps = {

@@ -276,7 +276,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateWarehouseId(sched);
 
-				shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(sched);
+				shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
 
 				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
@@ -715,7 +715,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
-		final String bpartnerAddress = sched.getBPartnerAddress_Override();
+		final String bpartnerAddress = shipmentScheduleEffectiveBL.getBPartnerAddress(sched);
 
 		DeliveryGroupCandidate candidate;
 
@@ -747,7 +747,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	{
 		return DeliveryGroupCandidate.builder()
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
-				.bPartnerAddress(sched.getBPartnerAddress_Override())
+				.bPartnerAddress(shipmentScheduleEffectiveBL.getBPartnerAddress(sched))
 				.groupId(DeliveryGroupCandidateGroupId.of(scheduleSourceDoc.getRecordRef()))
 				.shipperId(scheduleSourceDoc.getShipperId())
 				.build();
@@ -767,8 +767,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
+		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 
-		sched.setProcessed(noQtyOverride && noQtyReserved);
+		sched.setProcessed(noQtyOverride && noQtyReserved && noQtyPickedAndNotDelivered);
 	}
 
 	private void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)

@@ -39,6 +39,7 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
@@ -50,12 +51,15 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
 import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.externalreference.ExternalIdentifier;
@@ -71,6 +75,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -88,13 +93,16 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isEmpty;
 
@@ -124,6 +132,10 @@ public class JsonRetrieverService
 			.put(BPartner.VENDOR, JsonResponseBPartner.VENDOR)
 			.put(BPartner.CUSTOMER, JsonResponseBPartner.CUSTOMER)
 			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
+			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
+			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
+			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
+			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.build();
 
@@ -138,6 +150,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.ACTIVE, JsonResponseContact.ACTIVE)
 			.put(BPartnerContact.FIRST_NAME, JsonResponseContact.FIRST_NAME)
 			.put(BPartnerContact.LAST_NAME, JsonResponseContact.LAST_NAME)
+			.put(BPartnerContact.BIRTHDAY, JsonResponseContact.BIRTHDAY)
 			.put(BPartnerContact.ID, JsonResponseContact.METASFRESH_ID)
 			.put(BPartnerContact.BPARTNER_ID, JsonResponseContact.METASFRESH_BPARTNER_ID)
 			.put(BPartnerContact.NAME, JsonResponseContact.NAME)
@@ -300,6 +313,13 @@ public class JsonRetrieverService
 				.vendor(bpartner.isVendor())
 				.customer(bpartner.isCustomer())
 				.company(bpartner.isCompany())
+				.salesPartnerCode(bpartner.getSalesPartnerCode())
+				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
+				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
+									 .map(PaymentRule::getCode)
+									 .map(JSONPaymentRule::ofCode)
+									 .orElse(null))
+				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
 				.build();
@@ -340,6 +360,7 @@ public class JsonRetrieverService
 		return jsonChangeInfo.build();
 	}
 
+	@Nullable
 	private String convertIdToGroupName(@Nullable final BPGroupId bpGroupId)
 	{
 		if (bpGroupId == null)
@@ -368,14 +389,23 @@ public class JsonRetrieverService
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
-				greetingTrl = greeting.getGreeting(language.getAD_Language());
+				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
+			final List<JsonResponseContactRole> roles = contact.getRoles()
+					.stream()
+					.map(role -> JsonResponseContactRole.builder()
+							.name(role.getName())
+							.isUniquePerBpartner(role.isUniquePerBpartner())
+							.build())
+					.collect(Collectors.toList());
 
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
 					.email(contact.getEmail())
 					.firstName(contact.getFirstName())
 					.lastName(contact.getLastName())
+					.birthday(contact.getBirthday())
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
@@ -394,6 +424,7 @@ public class JsonRetrieverService
 					.purchase(contactType.getIsPurchaseOr(false))
 					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
 					.subjectMatter(contact.isSubjectMatterContact())
+					.roles(roles)
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}
@@ -707,5 +738,19 @@ public class JsonRetrieverService
 			default:
 				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
 		}
+	}
+
+	@Nullable
+	private JsonResponseSalesRep getJsonResponseSalesRep(@Nullable final SalesRep salesRep)
+	{
+		if (salesRep == null)
+		{
+			return null;
+		}
+
+		return JsonResponseSalesRep.builder()
+				.salesRepId(JsonMetasfreshId.of(salesRep.getId().getRepoId()))
+				.salesRepValue(salesRep.getValue())
+				.build();
 	}
 }

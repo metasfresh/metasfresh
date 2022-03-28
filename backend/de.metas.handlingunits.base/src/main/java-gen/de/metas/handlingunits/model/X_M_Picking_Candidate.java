@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_Picking_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1275027448L;
+	private static final long serialVersionUID = -262606109L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (final Properties ctx, final int M_Picking_Candidate_ID, @Nullable final String trxName)
@@ -265,6 +265,19 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setQtyReject (final BigDecimal QtyReject)
+	{
+		set_Value (COLUMNNAME_QtyReject, QtyReject);
+	}
+
+	@Override
+	public BigDecimal getQtyReject() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReject);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyReview (final @Nullable BigDecimal QtyReview)
 	{
 		set_Value (COLUMNNAME_QtyReview, QtyReview);
@@ -275,6 +288,27 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReview);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * RejectReason AD_Reference_ID=541422
+	 * Reference name: M_Picking_Candidate_RejectReason
+	 */
+	public static final int REJECTREASON_AD_Reference_ID=541422;
+	/** NotFound = N */
+	public static final String REJECTREASON_NotFound = "N";
+	/** Damaged = D */
+	public static final String REJECTREASON_Damaged = "D";
+	@Override
+	public void setRejectReason (final @Nullable java.lang.String RejectReason)
+	{
+		set_Value (COLUMNNAME_RejectReason, RejectReason);
+	}
+
+	@Override
+	public java.lang.String getRejectReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_RejectReason);
 	}
 
 	/** 

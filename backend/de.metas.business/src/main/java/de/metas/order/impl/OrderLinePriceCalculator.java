@@ -2,6 +2,7 @@ package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
@@ -23,6 +24,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.OrderLineRepository;
 import de.metas.order.OrderLinePriceAndDiscount;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -59,6 +61,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
@@ -90,7 +93,9 @@ final class OrderLinePriceCalculator
 	private static final AdMessageKey MSG_Enforced = AdMessageKey.of("Enforced");
 	private static final AdMessageKey MSG_NotEnforced = AdMessageKey.of("NotEnforced");
 
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 	private final IOrderLineBL orderLineBL;
@@ -159,8 +164,6 @@ final class OrderLinePriceCalculator
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
-		orderLine.setBase_Commission_Points_Per_Price_UOM(pricingResult.getBaseCommissionPointsPerPriceUOM());
-		orderLine.setTraded_Commission_Percent(Percent.toBigDecimalOrNull(pricingResult.getTradedCommissionPercent()));
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
@@ -351,9 +354,9 @@ final class OrderLinePriceCalculator
 			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(), orderBL.retrievePriceListId(order, pricingSystemId));
 			if (pricingSystemId == null && priceListId != null)
 			{
-				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);
+				pricingSystemId = priceListDAO.getPricingSystemId(priceListId);
 			}
-			final CountryId countryId = getCountryIdOrNull(orderLine);
+			final CountryId countryId = getCountryId(orderLine).orElse(null);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
 			pricingCtx.setPriceListVersionId(null);
@@ -376,15 +379,11 @@ final class OrderLinePriceCalculator
 		return pricingCtx;
 	}
 
-	private static CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	private Optional<CountryId> getCountryId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
-		if (bpLocationId == null)
-		{
-			return null;
-		}
-
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpLocationId);
+		return OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine)
+				.getBPartnerLocationAndCaptureIdIfExists()
+				.map(bpartnerBL::getCountryId);
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()

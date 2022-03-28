@@ -40,6 +40,7 @@ public class JsonAuthenticateRequestTest
 		final JsonAuthenticateRequest request = JsonAuthenticateRequest.builder()
 				.grantedAuthority("grantedAuthority")
 				.authKey("authKey")
+				.orgCode("123")
 				.pInstance(JsonMetasfreshId.of(1))
 				.build();
 

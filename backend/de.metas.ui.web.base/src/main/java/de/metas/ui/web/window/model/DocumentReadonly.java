@@ -29,7 +29,7 @@ import lombok.Value;
 /** Decides on whether a field is readonly, based one the field's document. Example: i an M_Product is not active, then its fields are in general read-only. */
 @Value
 @Builder
-public final class DocumentReadonly
+public class DocumentReadonly
 {
 	public static final DocumentReadonly NOT_READONLY = builder()
 			.parentActive(true).active(true)
@@ -37,7 +37,7 @@ public final class DocumentReadonly
 			.processing(false)
 			.build();
 
-	public static final DocumentReadonly ofParent(DocumentReadonly parentDocumentReadonly)
+	public static DocumentReadonly ofParent(DocumentReadonly parentDocumentReadonly)
 	{
 		return builder()
 				.parentActive(parentDocumentReadonly.active)
@@ -48,11 +48,11 @@ public final class DocumentReadonly
 				.build();
 	}
 
-	private final boolean parentActive;
-	private final boolean active;
-	private final boolean processed;
-	private final boolean processing;
-	private final Boolean fieldsReadonly;
+	boolean parentActive;
+	boolean active;
+	boolean processed;
+	boolean processing;
+	Boolean fieldsReadonly;
 
 	public boolean computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
 	{

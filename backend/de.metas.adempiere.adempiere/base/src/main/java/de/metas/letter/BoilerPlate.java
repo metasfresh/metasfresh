@@ -1,12 +1,12 @@
-/**
- *
- */
 package de.metas.letter;
 
-import javax.annotation.Nullable;
-
+import de.metas.i18n.Language;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.compiere.util.Evaluatee;
 
 /*
  * #%L
@@ -35,14 +35,29 @@ import lombok.Value;
  *
  */
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class BoilerPlate
 {
+	@NonNull
 	BoilerPlateId id;
 
-	@Nullable
-	String subject;
+	@NonNull
+	Language language;
 
-	@Nullable
-	String textSnippet;
+	@NonNull
+	IStringExpression subject;
+
+	@NonNull
+	IStringExpression textSnippet;
+
+	public String evaluateSubject(@NonNull final Evaluatee evalCtx)
+	{
+		return subject.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+	}
+
+	public String evaluateTextSnippet(@NonNull final Evaluatee evalCtx)
+	{
+		return textSnippet.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+	}
+
 }

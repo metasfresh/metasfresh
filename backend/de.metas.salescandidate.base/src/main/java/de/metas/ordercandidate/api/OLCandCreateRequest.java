@@ -1,7 +1,9 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
@@ -118,6 +120,14 @@ public class OLCandCreateRequest
 
 	String importWarningMessage;
 
+	AsyncBatchId asyncBatchId;
+
+	BigDecimal qtyShipped;
+
+	AssignSalesRepRule assignSalesRepRule;
+
+	BPartnerId salesRepInternalId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -160,7 +170,11 @@ public class OLCandCreateRequest
 			@Nullable final Boolean isImportedWithIssues,
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
-			@Nullable final String importWarningMessage)
+			@Nullable final String importWarningMessage,
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped,
+			@Nullable final AssignSalesRepRule assignSalesRepRule,
+			@Nullable final BPartnerId salesRepInternalId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -216,5 +230,10 @@ public class OLCandCreateRequest
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
+		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
+
+		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
+		this.salesRepInternalId = salesRepInternalId;
 	}
 }

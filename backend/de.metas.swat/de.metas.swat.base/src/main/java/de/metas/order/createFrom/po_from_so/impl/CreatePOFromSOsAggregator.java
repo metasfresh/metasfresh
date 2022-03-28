@@ -1,10 +1,13 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
@@ -20,10 +23,15 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
@@ -53,13 +61,13 @@ import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
  * Created new purchase orders for sales order lines and contains one instance of {@link CreatePOLineFromSOLinesAggregator} for each created purchase order line.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_C_OrderLine>
 {
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregator.class);
 
 	@NonNull
 	private final PurchaseTypeEnum p_TypeOfPurchase;
@@ -73,6 +81,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
+	@NonNull
+	final Map<I_C_Order, List<I_C_OrderLine>> skippedSalesOrderLinesByOrder = new HashMap<>();
+
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
 			final String purchaseQtySource,
@@ -85,6 +96,34 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
+	}
+
+	@NonNull
+	public Optional<String> getSkippedLinesMessage()
+	{
+		if (skippedSalesOrderLinesByOrder.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(skippedSalesOrderLinesByOrder.entrySet()
+								   .stream()
+								   .map(entry -> {
+									   final I_C_Order salesOrder = entry.getKey();
+									   final List<I_C_OrderLine> salesOrderLines = entry.getValue();
+
+									   return salesOrderLines.stream()
+											   .map(orderLine -> salesOrder.getDocumentNo() + "-" + orderLine.getLine())
+											   .collect(Collectors.joining(", "));
+								   })
+								   .collect(Collectors.joining(", ")));
+	}
+
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
 	}
 
 	/**
@@ -147,15 +186,17 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	@Override
 	protected void addItemToGroup(final I_C_Order purchaseOrder, final I_C_OrderLine salesOrderLine)
 	{
+		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 		final CreatePOLineFromSOLinesAggregator orderLineAggregator = getCreateLineAggregator(purchaseOrder);
 		if (orderLineAggregator.getPurchaseOrder() == dummyOrder)
 		{
+			collectSkippedLine(salesOrder, salesOrderLine);
+
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped sales order line: {}", salesOrderLine.getC_OrderLine_ID());
 			return;// nothing to do
 		}
 
 		orderLineAggregator.add(salesOrderLine);
-
-		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		if (purchaseOrder.getLink_Order_ID() > 0 &&
 				purchaseOrder.getLink_Order_ID() != salesOrder.getC_Order_ID())
@@ -197,7 +238,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setLink_Order_ID(salesOrder.getC_Order_ID());
 		purchaseOrder.setIsSOTrx(false);
 
-		if(PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
+		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
 		{
 			orderBL.setPODocTypeTargetId(purchaseOrder, DOCSUBTYPE_Mediated);
 		}
@@ -245,15 +286,15 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getDropShip_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getDropShip_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getDropShip_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromDeliveryLocation(salesOrder);
 			}
 			else
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getC_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getC_BPartner_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromShipLocation(salesOrder);
 			}
 
 			// get default drop ship warehouse
@@ -278,7 +319,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		InterfaceWrapperHelper.save(purchaseOrder);
 		return purchaseOrder;
-	}	// createPOForVendor
+	}    // createPOForVendor
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{
@@ -291,9 +332,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		return salesOrder.getM_Warehouse_ID();
 	}
 
-	@Override
-	public String toString()
+	private void collectSkippedLine(@NonNull final I_C_Order salesOrder, @NonNull final I_C_OrderLine salesOrderLine)
 	{
-		return ObjectUtils.toString(this);
+		final List<I_C_OrderLine> skippedOrderLinesFromCurrentOrder = new ArrayList<>();
+		skippedOrderLinesFromCurrentOrder.add(salesOrderLine);
+		skippedSalesOrderLinesByOrder.merge(salesOrder, skippedOrderLinesFromCurrentOrder, (oldList, newList) -> {oldList.addAll(newList); return oldList;});
 	}
 }

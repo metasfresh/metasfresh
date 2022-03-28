@@ -22,8 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -35,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +49,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_OrderLine_StepDef
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_Order> orderTable;
@@ -134,5 +140,55 @@ public class C_OrderLine_StepDef
 
 			assertThat(linePresent).isTrue();
 		}
+	}
+
+	@And("validate the created order lines")
+	public void validate_created_order_lines(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
+
+			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+
+			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
+
+			//dev-note: we assume the tests are not using the same product on different lines
+			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.firstOnlyNotNull(I_C_OrderLine.class);
+
+			validateOrderLine(orderLineRecord, row);
+		}
+	}
+
+	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
+		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
+		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
+		final BigDecimal price = DataTableUtil.extractBigDecimalWithScaleForColumnName(row, "price");
+		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
+		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
+		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
+
+		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
+		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
+		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
+		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
+		assertThat(orderLine.getDiscount()).isEqualTo(discount);
+		assertThat(orderLine.isProcessed()).isEqualTo(processed);
+		assertThat(orderLine.getM_Product_ID()).isEqualTo(productId);
+		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
+
+		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
+		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 	}
 }

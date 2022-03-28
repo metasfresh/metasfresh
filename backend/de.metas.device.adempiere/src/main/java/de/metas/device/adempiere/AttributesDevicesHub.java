@@ -86,6 +86,7 @@ public class AttributesDevicesHub
 				.toString();
 	}
 
+	@Nullable
 	public AttributeDeviceAccessor getAttributeDeviceAccessorById(final String id)
 	{
 		return deviceConfigPool.getAllAttributeCodes()
@@ -103,7 +104,7 @@ public class AttributesDevicesHub
 	}
 
 	@SuppressWarnings("rawtypes")
-	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final AttributeCode attributeCode)
+	private AttributeDeviceAccessorsList createAttributeDeviceAccessor(final AttributeCode attributeCode)
 	{
 		final List<DeviceConfig> deviceConfigsForThisAttribute = deviceConfigPool.getDeviceConfigsForAttributeCode(attributeCode);
 		logger.info("Devices configs for attributte {}: {}", attributeCode, deviceConfigsForThisAttribute);
@@ -163,7 +164,7 @@ public class AttributesDevicesHub
 		return AttributeDeviceAccessorsList.of(deviceAccessors.build(), warningMessage.toString());
 	}
 
-	private static final String extractDeviceDisplayNameCommonPrefixForDeviceConfigs(final List<DeviceConfig> deviceConfigs)
+	private static String extractDeviceDisplayNameCommonPrefixForDeviceConfigs(final List<DeviceConfig> deviceConfigs)
 	{
 		final List<String> deviceNames = Lists.transform(deviceConfigs, deviceConfig -> deviceConfig.getDeviceName());
 		return extractDeviceDisplayNameCommonPrefix(deviceNames);
@@ -175,11 +176,10 @@ public class AttributesDevicesHub
 	 * If there are more than one device for this attribute, we use the device names' first characters for the button texts.
 	 * How many chars we need depends of how log the common prefix is.
 	 *
-	 * @param deviceNames
 	 * @return common prefix
 	 */
 	@VisibleForTesting
-	/* package */static final String extractDeviceDisplayNameCommonPrefix(final List<String> deviceNames)
+	/* package */static String extractDeviceDisplayNameCommonPrefix(final List<String> deviceNames)
 	{
 		if (deviceNames.size() <= 1)
 		{
@@ -192,7 +192,7 @@ public class AttributesDevicesHub
 	}
 
 	@VisibleForTesting
-	/* package */static final String createDeviceDisplayName(
+	/* package */static String createDeviceDisplayName(
 			@Nullable final String deviceDisplayNameCommonPrefix,
 			@NonNull final String deviceName)
 	{

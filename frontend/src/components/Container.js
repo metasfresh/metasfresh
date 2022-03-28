@@ -10,6 +10,7 @@ import {
 
 import DocumentList from '../containers/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
+import SpinnerOverlay from './app/SpinnerOverlay';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
@@ -32,6 +33,7 @@ class Container extends PureComponent {
       actions,
       showSidelist,
       siteName,
+      showSpinner, // indicator flag to show spinner while fetching data for the advanced search
       connectionError,
       noMargin,
       entity,
@@ -107,6 +109,8 @@ class Container extends PureComponent {
         )}
 
         {connectionError && <ErrorScreen />}
+
+        {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
         <div
           className={
@@ -290,6 +294,7 @@ Container.propTypes = {
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
   hasComments: PropTypes.bool,
+  showSpinner: PropTypes.bool,
 };
 
 /**
@@ -307,6 +312,7 @@ const mapStateToProps = (state, { windowId }) => {
   return {
     notFound: master.notFound,
     connectionError: state.windowHandler.connectionError || false,
+    showSpinner: state.windowHandler.showSpinner || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,
     breadcrumb: state.menuHandler.breadcrumb,

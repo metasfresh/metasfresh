@@ -2,14 +2,17 @@ package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
@@ -20,7 +23,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -31,6 +33,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
@@ -38,6 +41,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -54,12 +58,9 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -69,11 +70,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
@@ -94,11 +94,9 @@ public final class AggregationEngine
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -287,10 +285,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-							+ " ic's own headerAggregationKey = {};\n"
-							+ " new headerAndAggregators = {}",
-					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+									+ " ic's own headerAggregationKey = {};\n"
+									+ " new headerAndAggregators = {}",
+							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -366,23 +364,23 @@ public final class AggregationEngine
 	{
 		try
 		{
-			final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
-			final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
+			final BPartnerLocationAndCaptureId billBPLocationId = getBillLocationId(icRecord);
 
 			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
-			invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
-			invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
-			invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
+			invoiceHeader.setBillTo(getBillTo(icRecord));
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
-				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
-			}
+				final I_C_Order order = orderDAO.getById(orderId);
+				invoiceHeader.setExternalId(order.getExternalId());
+				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
+			}
+			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
 			// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
@@ -406,17 +404,20 @@ public final class AggregationEngine
 			}
 			else
 			{
-				final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(icRecord.getBill_BPartner_ID(), icRecord.getBill_Location_ID());
+				final BPartnerLocationAndCaptureId bpLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(icRecord).getBPartnerLocationAndCaptureId();
 				final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 						PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
 						bpLocationId,
 						SOTrx.ofBoolean(icRecord.isSOTrx()));
 				if (plId == null)
 				{
+					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-							new Object[] {
-									icRecord.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(icRecord.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
-									invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
+												 pricingSystemName,
+												 invoiceHeader.getBillTo())
+							.appendParametersToMessage()
+							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
+							.setParameter("C_Invoice_Candidate", icRecord);
 				}
 				M_PriceList_ID = plId.getRepoId();
 			}
@@ -515,34 +516,26 @@ public final class AggregationEngine
 				});
 	}
 
-	@NonNull
-	private BPartnerLocationId getBillLocationId(@NonNull final I_C_Invoice_Candidate ic)
+	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
-		final BPartnerLocationId billBPLocationOverrideId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, ic.getBill_Location_Override_ID());
-		if (billBPLocationOverrideId != null)
-		{
-			return billBPLocationOverrideId;
-		}
+		final BPartnerLocationAndCaptureId bpLocationId = getBillLocationId(ic);
+		final BPartnerContactId bpContactId = getBillContactId(ic, bpLocationId.getBpartnerLocationId());
+		return BPartnerInfo.ofLocationAndContact(bpLocationId, bpContactId);
+	}
 
-		if (useDefaultBillLocationAndContactIfNotOverride)
-		{
-			final BPartnerLocationId defaulBillLocationId = bpartnerDAO.retrieveCurrentBillLocationOrNull(bpartnerId);
-			if (defaulBillLocationId != null)
-			{
-				return defaulBillLocationId;
-			}
-		}
-
-		return BPartnerLocationId.ofRepoId(bpartnerId, ic.getBill_Location_ID());
+	@NonNull
+	private BPartnerLocationAndCaptureId getBillLocationId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return invoiceCandBL.getBillLocationId(ic, useDefaultBillLocationAndContactIfNotOverride);
 	}
 
 	private BPartnerContactId getBillContactId(
 			@NonNull final I_C_Invoice_Candidate ic,
 			final BPartnerLocationId billBPLocationId)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
-		final BPartnerContactId billContactOverrideId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID_Override_ID());
+		final BPartnerContactId billContactOverrideId = InvoiceCandidateLocationAdapterFactory
+				.billLocationOverrideAdapter(ic)
+				.getBPartnerContactId();
 		if (billContactOverrideId != null)
 		{
 			return billContactOverrideId;
@@ -551,18 +544,21 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.onlyActive(true)
-					.contactType(ContactType.BILL_TO_DEFAULT)
-					.bpartnerId(billBPLocationId.getBpartnerId())
-					.bPartnerLocationId(billBPLocationId)
-					.ifNotFound(IfNotFound.RETURN_NULL)
-					.build());
+																					 .onlyActive(true)
+																					 .contactType(ContactType.BILL_TO_DEFAULT)
+																					 .bpartnerId(billBPLocationId.getBpartnerId())
+																					 .bPartnerLocationId(billBPLocationId)
+																					 .ifNotFound(IfNotFound.RETURN_NULL)
+																					 .build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
 			}
 		}
-		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID());
+
+		return InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.getBPartnerContactId();
 	}
 
 	public List<IInvoiceHeader> aggregate()
@@ -594,7 +590,6 @@ public final class AggregationEngine
 	/**
 	 * Aggregates all invoice lines and populate {@link IInvoiceHeader}'s lines.
 	 *
-	 * @param headerAndAggregators
 	 * @return {@link IInvoiceHeader} or <code>null</code>
 	 */
 	private IInvoiceHeader aggregate(final InvoiceHeaderAndLineAggregators headerAndAggregators)
@@ -685,63 +680,48 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
-		invoiceHeader.setC_PaymentTerm_ID(getC_PaymentTerm_ID(invoiceHeader));
+		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
 	}
 
-	private int getC_PaymentTerm_ID(final InvoiceHeaderImpl invoiceHeader)
+	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)
 	{
-		final int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLines(invoiceHeader);
-
-		if (C_PaymentTerm_ID > 0)
+		final Optional<PaymentTermId> paymentTermId = extractPaymentTermIdFromLines(invoiceHeader);
+		if (paymentTermId.isPresent())
 		{
-			return C_PaymentTerm_ID;
+			return paymentTermId;
 		}
 		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.loadOutOfTrx(invoiceHeader.getBillBPartnerId(), I_C_BPartner.class);
-		if (invoiceHeader.isSOTrx())
-		{
-			return billPartner.getC_PaymentTerm_ID();
-		}
-		else
-		{
-			return billPartner.getPO_PaymentTerm_ID();
-		}
+		return bpartnerBL.getPaymentTermIdForBPartner(invoiceHeader.getBillTo().getBpartnerId(), SOTrx.ofBoolean(invoiceHeader.isSOTrx()));
 	}
 
 	/**
 	 * extract C_PaymentTerm_ID from invoice candidate
-	 *
-	 * @return
 	 */
-	private int extractC_PaymentTerm_IDFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	private Optional<PaymentTermId> extractPaymentTermIdFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final List<IInvoiceCandAggregate> lines = invoiceHeader.getLines();
 		if (lines == null || lines.isEmpty())
 		{
-			return -1;
+			return Optional.empty();
 		}
 
-		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
+		final ImmutableMap<Optional<PaymentTermId>, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
 		// extract payment term if all lines have same C_PaymentTerm_ID
 		if (uniquePaymentTermLines.size() == 1)
 		{
-			final Set<Integer> ids = uniquePaymentTermLines.keySet();
-			final int id = ids.iterator().next();
-			if (id > 0)
-			{
-				return id;
-			}
+			final ImmutableSet<Optional<PaymentTermId>> ids = uniquePaymentTermLines.keySet();
+			return ids.iterator().next();
 		}
 
-		return -1;
+		return Optional.empty();
 	}
 
-	private Map<Integer, IInvoiceLineRW> mapUniqueIInvoiceLineRWPerPaymentTerm(@NonNull final List<IInvoiceCandAggregate> lines)
+	private ImmutableMap<Optional<PaymentTermId>, IInvoiceLineRW> mapUniqueIInvoiceLineRWPerPaymentTerm(@NonNull final List<IInvoiceCandAggregate> lines)
 	{
 		final List<IInvoiceLineRW> invoiceLinesRW = new ArrayList<>();
 		lines.forEach(lineAgg -> invoiceLinesRW.addAll(lineAgg.getAllLines()));
 
 		return invoiceLinesRW.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(line -> line.getC_PaymentTerm_ID()));
+				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 }

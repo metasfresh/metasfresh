@@ -1,14 +1,7 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.slf4j.MDC.MDCCloseable;
-
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -23,6 +16,15 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,6 +70,9 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<Object> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<Object>(CreateMissingInvoiceCandidatesWorkpackageProcessor.class)
 	{
+		private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+		private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL =  Services.get(IInvoiceCandidateHandlerBL.class);
+
 		@Override
 		protected boolean isEligibleForScheduling(final Object model)
 		{
@@ -75,7 +80,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			// Check if *we* shall create the invoice candidates
 			final Properties ctx = extractCtxFromItem(model);
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-			final List<IInvoiceCandidateHandler> handlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, tableName);
+			final List<IInvoiceCandidateHandler> handlers = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, tableName);
 			boolean isCreateCandidates = false;
 			for (final IInvoiceCandidateHandler handler : handlers)
 			{
@@ -112,8 +117,19 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		{
 			final Properties ctx = extractCtxFromItem(model);
 			return Env.getLoggedUserIdIfExists(ctx).orElse(null);
+		};
+
+		@Override
+		public Optional<AsyncBatchId> extractAsyncBatchFromItem(final WorkpackagesOnCommitSchedulerTemplate<Object>.Collector collector, final Object item)
+		{
+			return asyncBatchBL.getAsyncBatchId(item);
 		}
 	};
+
+	static
+	{
+		SCHEDULER.setCreateOneWorkpackagePerAsyncBatch(true);
+	}
 
 	// services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);

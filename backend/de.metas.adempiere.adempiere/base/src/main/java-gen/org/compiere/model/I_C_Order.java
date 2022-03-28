@@ -203,24 +203,29 @@ public interface I_C_Order
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
-	 * Set Bill Contact.
+	 * Set Rechnungsstandort (Address).
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBill_User_ID (int Bill_User_ID);
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
 
 	/**
-	 * Get Bill Contact.
+	 * Get Rechnungsstandort (Address).
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getBill_User_ID();
+	int getBill_Location_Value_ID();
 
-	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_Order.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
 
 	/**
 	 * Set Abw. Rechnungsadresse.
@@ -242,6 +247,26 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_BillToAddress = new ModelColumn<>(I_C_Order.class, "BillToAddress", null);
 	String COLUMNNAME_BillToAddress = "BillToAddress";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_User_ID();
+
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Address.
@@ -287,26 +312,25 @@ public interface I_C_Order
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
+	 * Set Async Batch.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
 
 	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
+	 * Get Async Batch.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BP_BankAccount_ID();
+	int getC_Async_Batch_ID();
 
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+	ModelColumn<I_C_Order, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Order.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Business Partner.
@@ -349,6 +373,31 @@ public interface I_C_Order
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_Order.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
 	 * Set Businesspartner-Memo.
 	 * Memo Text
 	 *
@@ -376,6 +425,26 @@ public interface I_C_Order
 	String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
 
 	/**
+	 * Set Pharmacy.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Pharmacy_ID (int C_BPartner_Pharmacy_ID);
+
+	/**
+	 * Get Pharmacy.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Pharmacy_ID();
+
+	String COLUMNNAME_C_BPartner_Pharmacy_ID = "C_BPartner_Pharmacy_ID";
+
+	/**
 	 * Set Sales partner.
 	 *
 	 * <br>Type: Search
@@ -394,6 +463,28 @@ public interface I_C_Order
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Campaign.
@@ -424,7 +515,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -434,7 +525,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -560,6 +651,100 @@ public interface I_C_Order
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
+	 * Set Frame Agreement Order.
+	 * Reference to corresponding FrameAgreement Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_FrameAgreement_Order_ID (int C_FrameAgreement_Order_ID);
+
+	/**
+	 * Get Frame Agreement Order.
+	 * Reference to corresponding FrameAgreement Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_FrameAgreement_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_FrameAgreement_Order();
+
+	void setC_FrameAgreement_Order(@Nullable org.compiere.model.I_C_Order C_FrameAgreement_Order);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_C_FrameAgreement_Order_ID = new ModelColumn<>(I_C_Order.class, "C_FrameAgreement_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_FrameAgreement_Order_ID = "C_FrameAgreement_Order_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Order.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
+
+	/**
+	 * Get Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCompleteOrderDiscount();
+
+	ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new ModelColumn<>(I_C_Order.class, "CompleteOrderDiscount", null);
+	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Order.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
+
+	/**
 	 * Set Sales order.
 	 * Order
 	 *
@@ -674,73 +859,6 @@ public interface I_C_Order
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Order.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Rabatt %.
-	 * Abschlag in Prozent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
-
-	/**
-	 * Get Rabatt %.
-	 * Abschlag in Prozent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCompleteOrderDiscount();
-
-	ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new ModelColumn<>(I_C_Order.class, "CompleteOrderDiscount", null);
-	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Order.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Create Copy.
@@ -948,8 +1066,29 @@ public interface I_C_Order
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Lieferadresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryToAddress (@Nullable java.lang.String DeliveryToAddress);
+
+	/**
+	 * Get Lieferadresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryToAddress();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DeliveryToAddress = new ModelColumn<>(I_C_Order.class, "DeliveryToAddress", null);
+	String COLUMNNAME_DeliveryToAddress = "DeliveryToAddress";
+
+	/**
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -958,8 +1097,8 @@ public interface I_C_Order
 	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1145,6 +1284,33 @@ public interface I_C_Order
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
+	 * Set Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Value_ID (int DropShip_Location_Value_ID);
+
+	/**
+	 * Get Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Value();
+
+	void setDropShip_Location_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Value);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Value_ID = new ModelColumn<>(I_C_Order.class, "DropShip_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Value_ID = "DropShip_Location_Value_ID";
+
+	/**
 	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table
@@ -1255,7 +1421,7 @@ public interface I_C_Order
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
-	 * Set Summe Gesamt.
+	 * Set Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1265,7 +1431,7 @@ public interface I_C_Order
 	void setGrandTotal (BigDecimal GrandTotal);
 
 	/**
-	 * Get Summe Gesamt.
+	 * Get Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1276,6 +1442,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Order.class, "GrandTotal", null);
 	String COLUMNNAME_GrandTotal = "GrandTotal";
+
+	/**
+	 * Set Übergabe adresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOverAddress (@Nullable java.lang.String HandOverAddress);
+
+	/**
+	 * Get Übergabe adresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHandOverAddress();
+
+	ModelColumn<I_C_Order, Object> COLUMN_HandOverAddress = new ModelColumn<>(I_C_Order.class, "HandOverAddress", null);
+	String COLUMNNAME_HandOverAddress = "HandOverAddress";
 
 	/**
 	 * Set Übergabe-Memo.
@@ -1303,6 +1490,71 @@ public interface I_C_Order
 	String COLUMNNAME_HandOver_BPartner_Memo = "HandOver_BPartner_Memo";
 
 	/**
+	 * Set Übergabeadresse.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_ID (int HandOver_Location_ID);
+
+	/**
+	 * Get Übergabeadresse.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_ID();
+
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+
+	/**
+	 * Set Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_Value_ID (int HandOver_Location_Value_ID);
+
+	/**
+	 * Get Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getHandOver_Location_Value();
+
+	void setHandOver_Location_Value(@Nullable org.compiere.model.I_C_Location HandOver_Location_Value);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Location> COLUMN_HandOver_Location_Value_ID = new ModelColumn<>(I_C_Order.class, "HandOver_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_HandOver_Location_Value_ID = "HandOver_Location_Value_ID";
+
+	/**
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Partner_ID();
+
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
 	 * Set Handover contact.
 	 *
 	 * <br>Type: Table
@@ -1321,27 +1573,6 @@ public interface I_C_Order
 	int getHandOver_User_ID();
 
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
-
-	/**
-	 * Set Übergabe adresse.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHandOverAddress (@Nullable java.lang.String HandOverAddress);
-
-	/**
-	 * Get Übergabe adresse.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHandOverAddress();
-
-	ModelColumn<I_C_Order, Object> COLUMN_HandOverAddress = new ModelColumn<>(I_C_Order.class, "HandOverAddress", null);
-	String COLUMNNAME_HandOverAddress = "HandOverAddress";
 
 	/**
 	 * Set Incoterm.
@@ -1411,6 +1642,31 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_Order.class, "InvoiceRule", null);
 	String COLUMNNAME_InvoiceRule = "InvoiceRule";
+
+	/**
+	 * Set Invoice Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoiceStatus (@Nullable java.lang.String InvoiceStatus);
+
+	/**
+	 * Get Invoice Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getInvoiceStatus();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InvoiceStatus = new ModelColumn<>(I_C_Order.class, "InvoiceStatus", null);
+	String COLUMNNAME_InvoiceStatus = "InvoiceStatus";
 
 	/**
 	 * Set Active.
@@ -1550,7 +1806,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Berechnete Menge.
-	 * Is this invoiced?
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1560,7 +1816,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Berechnete Menge.
-	 * Is this invoiced?
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1708,8 +1964,8 @@ public interface I_C_Order
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Set Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1718,8 +1974,8 @@ public interface I_C_Order
 	void setIsTransferred (boolean IsTransferred);
 
 	/**
-	 * Get Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Get Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1771,6 +2027,48 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsUseBPartnerAddress = new ModelColumn<>(I_C_Order.class, "IsUseBPartnerAddress", null);
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+
+	/**
+	 * Set Benutze abw. Lieferung Adresse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUseDeliveryToAddress (boolean IsUseDeliveryToAddress);
+
+	/**
+	 * Get Benutze abw. Lieferung Adresse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUseDeliveryToAddress();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsUseDeliveryToAddress = new ModelColumn<>(I_C_Order.class, "IsUseDeliveryToAddress", null);
+	String COLUMNNAME_IsUseDeliveryToAddress = "IsUseDeliveryToAddress";
+
+	/**
+	 * Set Übergabe.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUseHandOver_Location (boolean IsUseHandOver_Location);
+
+	/**
+	 * Get Übergabe.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUseHandOver_Location();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsUseHandOver_Location = new ModelColumn<>(I_C_Order.class, "IsUseHandOver_Location", null);
+	String COLUMNNAME_IsUseHandOver_Location = "IsUseHandOver_Location";
 
 	/**
 	 * Set Zugehörige Bestellung.
@@ -2004,7 +2302,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment BPartner.
-	 * Business Partner responsible for the payment
+	 * Zahlungspartner
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2014,7 +2312,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment BPartner.
-	 * Business Partner responsible for the payment
+	 * Zahlungspartner
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2027,7 +2325,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment Location.
-	 * Location of the Business Partner responsible for the payment
+	 * Zahlungsanschrift
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2037,7 +2335,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment Location.
-	 * Location of the Business Partner responsible for the payment
+	 * Zahlungsanschrift
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2246,7 +2544,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Promotion Code.
-	 * User entered promotion code at sales time
+	 * Werbecode
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2256,7 +2554,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Promotion Code.
-	 * User entered promotion code at sales time
+	 * Werbecode
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2387,27 +2685,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Proposal_ID = new ModelColumn<>(I_C_Order.class, "Ref_Proposal_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
-
-	/**
-	 * Set Return Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setreturnDate (@Nullable java.sql.Timestamp returnDate);
-
-	/**
-	 * Get Return Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getreturnDate();
-
-	ModelColumn<I_C_Order, Object> COLUMN_returnDate = new ModelColumn<>(I_C_Order.class, "returnDate", null);
-	String COLUMNNAME_returnDate = "returnDate";
 
 	/**
 	 * Set Sales partner code.

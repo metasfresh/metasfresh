@@ -23,10 +23,12 @@
 package de.metas.common.ordercandidates.v2.request;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.Check;
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,13 +63,25 @@ public enum JsonOrderDocType
 											 .collect(Collectors.toMap(JsonOrderDocType::getCode, item -> item)));
 	}
 
-	public static JsonOrderDocType ofCode(@NonNull final String code){
+	@Nullable
+	public static JsonOrderDocType ofCodeOrNull(@Nullable final String code)
+	{
+		if(Check.isBlank(code))
+		{
+			return null;
+		}
+		return ofCode(code);
+	}
+	
+	@NonNull
+	public static JsonOrderDocType ofCode(@NonNull final String code)
+	{
 		final JsonOrderDocType orderDocType = lookup.get(code);
 
-		if(orderDocType == null){
+		if(orderDocType == null)
+		{
 			throw new IllegalArgumentException("OrderDocType does not support code: " + code);
 		}
-
 		return orderDocType;
 	}
 

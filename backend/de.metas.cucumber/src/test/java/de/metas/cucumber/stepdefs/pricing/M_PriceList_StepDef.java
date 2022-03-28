@@ -32,6 +32,9 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -39,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -52,7 +56,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -67,6 +71,7 @@ public class M_PriceList_StepDef
 	private final StepDefData<I_M_ProductPrice> productPriceTable;
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
@@ -117,7 +122,7 @@ public class M_PriceList_StepDef
 		m_pricingSystem.setDescription(description);
 
 		saveRecord(m_pricingSystem);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 		pricingSystemTable.put(recordIdentifier, m_pricingSystem);
 	}
@@ -125,7 +130,7 @@ public class M_PriceList_StepDef
 	private void createM_PriceList(@NonNull final Map<String, String> row)
 	{
 		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_PricingSystem_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final String countryCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_Country.CountryCode");
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, "C_Currency.ISO_Code");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
@@ -219,23 +224,25 @@ public class M_PriceList_StepDef
 		final I_M_Product product = productTable.get(productIdentifier);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
 
-
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
 
 		productPrice.setM_PriceList_Version_ID(priceListVersionTable.get(plvIdentifier).getM_PriceList_Version_ID());
 		productPrice.setM_Product_ID(product.getM_Product_ID());
-		productPrice.setC_UOM_ID(product.getC_UOM_ID());
+		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 
 		saveRecord(productPrice);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.Table_Name);
 		productPriceTable.put(recordIdentifier, productPrice);
 	}

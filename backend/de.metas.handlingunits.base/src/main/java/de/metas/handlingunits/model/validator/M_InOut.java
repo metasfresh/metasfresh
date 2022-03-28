@@ -56,6 +56,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -376,7 +377,7 @@ public class M_InOut
 
 		if (returnsServiceFacade.isCustomerReturn(returnInOut))
 		{
-			huMovementBL.moveHUsToWarehouse(hus, returnInOut.getM_Warehouse());
+			huMovementBL.moveHUsToWarehouse(hus, WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID()));
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);

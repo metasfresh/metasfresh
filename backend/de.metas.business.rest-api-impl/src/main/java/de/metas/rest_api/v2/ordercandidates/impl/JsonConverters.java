@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
@@ -21,6 +22,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.impl.DocTypeService;
+import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -159,7 +161,7 @@ public class JsonConverters
 				: OrderLineGroup.builder()
 				.groupKey(jsonOrderLineGroup.getGroupKey())
 				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
-				.discount(Percent.of(jsonOrderLineGroup.getDiscount()))
+				.discount(Percent.ofNullable(jsonOrderLineGroup.getDiscount()))
 				.build();
 
 		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
@@ -175,6 +177,11 @@ public class JsonConverters
 				.map(JsonDocTypeInfo::getDocSubType)
 				.orElse(null);
 
+		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+
+		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
+
+		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -185,7 +192,7 @@ public class JsonConverters
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//
-				.bpartner(masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId))
+				.bpartner(bPartnerInfo)
 				.billBPartner(masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null))
 				.dropShipBPartner(masterdataProvider.getBPartnerInfo(request.getDropShipBPartner(), orgId).orElse(null))
 				.handOverBPartner(masterdataProvider.getBPartnerInfo(request.getHandOverBPartner(), orgId).orElse(null))
@@ -235,7 +242,10 @@ public class JsonConverters
 				.importWarningMessage(request.getImportWarningMessage())
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
+				.qtyShipped(request.getQtyShipped())
 				//
+				.assignSalesRepRule(assignSalesRepRule)
+				.salesRepInternalId(salesRepInternalId)
 				;
 	}
 
@@ -364,5 +374,21 @@ public class JsonConverters
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
 				.build();
+	}
+
+	@NonNull
+	private static AssignSalesRepRule getAssignSalesRepRule(@NonNull final JsonApplySalesRepFrom jsonApplySalesRepFrom)
+	{
+		switch (jsonApplySalesRepFrom)
+		{
+			case Candidate:
+				return AssignSalesRepRule.Candidate;
+			case BPartner:
+				return AssignSalesRepRule.BPartner;
+			case CandidateFirst:
+				return AssignSalesRepRule.CandidateFirst;
+			default:
+				throw new AdempiereException("Unsupported JsonApplySalesRepFrom " + jsonApplySalesRepFrom);
+		}
 	}
 }

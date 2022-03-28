@@ -59,6 +59,7 @@ public class C_OrderLine
 
 		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false; // when the subscription changed, update all prices
 
+		ol.setIsManualDiscount(false);
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 		if (subscriptionId <= 0)
 		{
@@ -68,11 +69,11 @@ public class C_OrderLine
 			ol.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-					.orderLine(ol)
-					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-					.updateLineNetAmt(true)
-					.build());
+											 .orderLine(ol)
+											 .resultUOM(ResultUOM.PRICE_UOM)
+											 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+											 .updateLineNetAmt(true)
+											 .build());
 
 			return;
 		}

@@ -1,9 +1,9 @@
 package de.metas.material.event;
 
-import java.util.Collection;
-
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ public interface MaterialEventHandler<T extends MaterialEvent>
 	 *         <li>the actual events' respective class will be {@code equal}ed against the returned class(es), so returning an abstract class here seems to be pointless.
 	 *         <li>An empty result means "invoke on every event type"
 	 */
-	Collection<Class<? extends T>> getHandeledEventType();
+	Collection<Class<? extends T>> getHandledEventType();
 
 	/**
 	 * Note that when this method is called, there is a thread-local {@link ILoggable} instance you can get with {@link Loggables#get()}.

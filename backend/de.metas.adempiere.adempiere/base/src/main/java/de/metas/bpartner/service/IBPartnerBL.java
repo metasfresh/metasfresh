@@ -1,11 +1,13 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.User;
@@ -60,7 +62,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * make full address
 	 */
-	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, @Nullable String trxName);
+	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
@@ -168,6 +170,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
+	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest
@@ -215,9 +219,13 @@ public interface IBPartnerBL extends ISingletonService
 		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
-	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+	CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryId(@NonNull BPartnerInfo bpartnerInfo);
+
+	LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
@@ -231,4 +239,8 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
+
+	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
+
+	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
 }

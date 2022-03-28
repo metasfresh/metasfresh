@@ -1,12 +1,11 @@
 package de.metas.ordercandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -35,6 +34,7 @@ import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -199,18 +199,17 @@ class OLCandOrderFactory
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
 
-		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
-		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
-		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
+		OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.setFrom(candidateOfGroup.getBPartnerInfo());
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
-			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
-			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
-			order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
+			OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(order)
+					.setFrom(billBPartner);
 		}
 
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
@@ -227,11 +226,9 @@ class OLCandOrderFactory
 		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo().orElse(null);
 		if (dropShipBPartner != null)
 		{
-			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
-			order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
-			order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
-			final boolean isDropShip = dropShipBPartner.getBpartnerId() != null || dropShipBPartner.getBpartnerLocationId() != null;
-			order.setIsDropShip(isDropShip);
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.setFrom(dropShipBPartner);
 		}
 		else
 		{
@@ -241,11 +238,14 @@ class OLCandOrderFactory
 		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo().orElse(null);
 		if (handOverBPartner != null)
 		{
-			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
-			order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
-			order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
+			OrderDocumentLocationAdapterFactory
+					.handOverLocationAdapter(order)
+					.setFrom(handOverBPartner);
 		}
-		order.setIsUseHandOver_Location(handOverBPartner != null && handOverBPartner.getBpartnerLocationId() != null);
+		else
+		{
+			order.setIsUseHandOver_Location(false);
+		}
 
 		if (candidateOfGroup.getC_Currency_ID() > 0)
 		{
@@ -280,12 +280,19 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
+		if (candidateOfGroup.getAsyncBatchId() != null)
+		{
+			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
+		}
+
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
+
+		setBPSalesRepIdToOrder(order, candidateOfGroup);
 
 		save(order);
 		return order;
@@ -607,4 +614,34 @@ class OLCandOrderFactory
 		return note;
 	}
 
+	@Nullable
+	@VisibleForTesting
+	I_C_Order getOrder()
+	{
+		return order;
+	}
+
+	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)
+	{
+		switch (olCand.getAssignSalesRepRule())
+		{
+			case Candidate:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepId()));
+				break;
+			case BPartner:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+				break;
+			case CandidateFirst:
+				final int salesRepInt = Optional.ofNullable(olCand.getSalesRepId())
+						.map(BPartnerId::getRepoId)
+						.orElseGet(() -> BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+
+				order.setC_BPartner_SalesRep_ID(salesRepInt);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SalesRepFrom type")
+						.appendParametersToMessage()
+						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
+		}
+	}
 }

@@ -4,7 +4,7 @@ DROP VIEW IF EXISTS M_Packageable_V
 CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT p.*
 
-     -- note: keep in sync with de.metas.inoutcandidate.api.Packageable.getQtyPickedOrDelivered()
+     -- note: keep in sync with de.metas.picking.api.Packageable.getQtyPickedOrDelivered()
      , p.QtyDelivered + p.QtyPickedNotDelivered + p.QtyPickedPlanned AS QtyPickedOrDelivered
 FROM (
          SELECT
@@ -12,13 +12,17 @@ FROM (
              -- BPartner
              p.C_BPartner_ID                                           AS C_BPartner_Customer_ID,
              p.Value                                                   AS BPartnerValue,
-             (coalesce(p.Name, '') || coalesce(p.Name2, ''))           AS BPartnerName,
+             (COALESCE(p.Name, '') || COALESCE(p.Name2, ''))           AS BPartnerName,
 
              --
              -- BPartner location
              l.C_BPartner_Location_ID,
              l.Name                                                    AS BPartnerLocationName,
-             s.BPartnerAddress_Override,
+             (CASE
+                  WHEN s.BPartnerAddress_Override IS NOT NULL AND s.BPartnerAddress_Override != ''
+                      THEN s.BPartnerAddress_Override
+                      ELSE s.BPartnerAddress
+              END)                                                     AS BPartnerAddress_Override,
 
              --
              -- Order Info

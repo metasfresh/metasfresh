@@ -1,19 +1,15 @@
 package de.metas.ordercandidate.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
-import de.metas.ordercandidate.api.OLCandProcessorRepository;
+import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
@@ -25,11 +21,6 @@ import de.metas.util.Services;
  */
 public class ProcessOLCands extends JavaProcess
 {
-	//
-	// Services
-	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-	private final OLCandProcessorRepository olCandProcessorRepo = Adempiere.getBean(OLCandProcessorRepository.class);
-
 	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
 	private int olCandProcessorId;
@@ -48,20 +39,12 @@ public class ProcessOLCands extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
+		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
+
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
-		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(olCandProcessorId);
 
-		try
-		{
-			olCandBL.process(olCandProcessor);
-			return MSG_OK;
-		}
-		catch (final Exception ex)
-		{
-			addLog("@Error@: " + ex.getLocalizedMessage());
-			addLog("@Rollback@");
-			throw AdempiereException.wrapIfNeeded(ex);
+		olCandToOrderEnqueuer.enqueue(olCandProcessorId, null);
 
-		}
+		return MSG_OK;
 	}
 }

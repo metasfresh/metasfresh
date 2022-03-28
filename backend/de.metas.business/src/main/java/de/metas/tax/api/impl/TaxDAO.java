@@ -2,7 +2,7 @@ package de.metas.tax.api.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.annotation.CacheCtx;
@@ -59,7 +59,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.tax.api.TypeOfDestCountry.DOMESTIC;
 import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
@@ -343,9 +343,9 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 
-		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
+		final BPartnerLocationAndCaptureId bpartnerLocationId = taxQuery.getBPartnerLocationId();
 		
-		final CountryId destCountryId = getCountryId(bPartnerLocationId);
+		final CountryId destCountryId = getCountryId(bpartnerLocationId);
 		final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, destCountryId);
 		
 		final boolean euOneStopShop = orgDAO.isEUOneStopShop(orgId);
@@ -384,7 +384,7 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
-		final BPartnerId bpartnerId = bPartnerLocationId.getBpartnerId();
+		final BPartnerId bpartnerId = bpartnerLocationId.getBpartnerId();
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
@@ -415,7 +415,7 @@ public class TaxDAO implements ITaxDAO
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, typeOfDestCountry.getCode(), null);
 		}
 
-		final Timestamp fiscalRepresentationFromDate = coalesce(taxQuery.getDateOfInterest(), Env.getDate());
+		final Timestamp fiscalRepresentationFromDate = coalesceNotNull(taxQuery.getDateOfInterest(), Env.getDate());
 		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
@@ -448,14 +448,21 @@ public class TaxDAO implements ITaxDAO
 		return typeOfDestCountry;
 	}
 
-	private CountryId getCountryId(final BPartnerLocationId bPartnerLocationId)
+	private CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpartnerLocation = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bPartnerLocationId);
-		if (bpartnerLocation == null)
+		if(bpartnerLocationId.getLocationCaptureId() != null)
 		{
-			throw new AdempiereException("No location found for bpartnerLocationId: " + bPartnerLocationId);
+			return locationDAO.getCountryIdByLocationId(bpartnerLocationId.getLocationCaptureId());
 		}
-		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+		else
+		{
+			final I_C_BPartner_Location bpartnerLocation = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId.getBpartnerLocationId());
+			if (bpartnerLocation == null)
+			{
+				throw new AdempiereException("No location found for bpartnerLocationId: " + bpartnerLocationId);
+			}
+			return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+		}
 	}
 
 }

@@ -1,8 +1,7 @@
 package de.metas.externalreference.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_ExternalReference
  *  @author metasfresh (generated) 

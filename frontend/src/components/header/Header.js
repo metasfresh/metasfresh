@@ -2,9 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import classnames from 'classnames';
 
+import history from '../../services/History';
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
@@ -130,13 +130,16 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handleInboxOpen
-   * @summary ToDo: Describe the method
-   * @param {object} state
+   * @method openInbox
+   * @summary Shows inbox
    */
-  handleInboxOpen = (state) => {
-    this.setState({ isInboxOpen: !!state });
-  };
+  openInbox = () => this.setState({ isInboxOpen: true });
+
+  /**
+   * @method closeInbox
+   * @summary Hides inbox
+   */
+  closeInbox = () => this.setState({ isInboxOpen: false });
 
   /**
    * @method handleInboxToggle
@@ -221,7 +224,7 @@ class Header extends PureComponent {
    * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
-    const { dispatch, history } = this.props;
+    const { dispatch } = this.props;
 
     dispatch(setBreadcrumb([]));
     history.push('/');
@@ -555,7 +558,7 @@ class Header extends PureComponent {
    * @param {string} where
    */
   redirect = (where) => {
-    this.props.history.push(where);
+    history.push(where);
   };
 
   /**
@@ -723,9 +726,7 @@ class Header extends PureComponent {
                       'header-item-open': isInboxOpen,
                     }
                   )}
-                  onClick={() =>
-                    this.closeOverlays('', () => this.handleInboxOpen(true))
-                  }
+                  onClick={() => this.closeOverlays('', this.openInbox)}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
@@ -751,8 +752,8 @@ class Header extends PureComponent {
                 <Inbox
                   ref={this.inboxRef}
                   open={isInboxOpen}
-                  close={this.handleInboxOpen}
-                  onFocus={() => this.handleInboxOpen(true)}
+                  close={this.closeInbox}
+                  onFocus={this.openInbox}
                   disableOnClickOutside={true}
                   inbox={inbox}
                 />
@@ -937,7 +938,6 @@ class Header extends PureComponent {
  * @prop {*} siteName
  * @prop {*} windowId
  * @prop {bool} hasComments - used to indicate comments available for the details view
- * @prop {object} history
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
@@ -965,11 +965,9 @@ Header.propTypes = {
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
   hasComments: PropTypes.bool,
-  history: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { location } = ownProps;
+const mapStateToProps = (state) => {
   const { master } = state.windowHandler;
   const { docActionElement, documentSummaryElement } = master.layout;
   const docSummaryData =
@@ -979,7 +977,6 @@ const mapStateToProps = (state, ownProps) => {
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
-    pathname: location.pathname,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
     docStatus: docActionElement,
@@ -987,4 +984,4 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export default withRouter(connect(mapStateToProps)(Header));
+export default connect(mapStateToProps)(Header);

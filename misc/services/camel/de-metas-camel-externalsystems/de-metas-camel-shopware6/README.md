@@ -12,8 +12,16 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
   * `JsonExternalSystemRequest.parameters.BasePath`
   * `JsonExternalSystemRequest.parameters.UpdatedAfterOverride` 
   * `JsonExternalSystemRequest.parameters.UpdatedAfter`
-    
+  * `JsonExternalSystemRequest.parameters.NormalVAT_Rates`
+  * `JsonExternalSystemRequest.parameters.M_FreightCost_NormalVAT_Product_ID`
+  * `JsonExternalSystemRequest.parameters.Reduced_VAT_Rates`
+  * `JsonExternalSystemRequest.parameters.M_FreightCost_ReducedVAT_Product_ID`
+  * `JsonExternalSystemRequest.parameters.TargetPriceListId`
+  * `JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded`
+  * `JsonExternalSystemRequest.parameters.PriceListCurrencyCode`
+
 * `JsonExternalSystemShopware6ConfigMappings` - computed from mappings set on window `541116 - ExternalSystem_Config_Shopware6` send on `JsonExternalSystemRequest.parameters.ConfigMappings`
+* `JsonUOMMappings` - computed from mappings set on window `541116 - ExternalSystem_Config_Shopware6` send on `JsonExternalSystemRequest.parameters.UOMMappings`
 
 **Shopware6 => metasfresh BPartners**
 
@@ -109,7 +117,7 @@ Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 JsonOrderLine.id |  `externalLineId` | Y | JsonOLCandCreateRequest.externalLineId |  |
 JsonOrderLine.productId |  `M_Product_ID` | Y | JsonOLCandCreateRequest.productIdentifier | "ext-Shopware6-{{productId}}" |
-JsonOrderLine.unitPrice |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | |
+JsonOrderLine.unitPrice |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | ..if the JsonOrderLine is a bundle-main-item, then use const `ZERO` as price |
 JsonOrderLine.quantity |  `qtyentered` | Y | JsonOLCandCreateRequest.qty | |
 JsonOrderLine.description |  `description` | N | JsonOLCandCreateRequest.description | |
 JsonOrderLine.position |  `line` | N | JsonOLCandCreateRequest.line | |
@@ -154,3 +162,37 @@ JsonOrderTransaction.totalPrice |  `payamt` | Y | JsonOrderPaymentCreateRequest.
 Order.OrderCustomer.currencyId |  `c_currency_id` | Y | JsonOrderPaymentCreateRequest.currencyCode | returns currency isoCode  by currencyId, from CurrencyInfoProvider|
 Order.OrderCustomer.id | `C_Order_ID.c_payment_id` | Y | JsonOrderPaymentCreateRequest.orderIdentifier | |
 JsonOrderTransaction.createdAt |  `datetrx` | N | JsonOrderPaymentCreateRequest.transactionDate | |
+
+***
+**Shopware6 => metasfresh product**
+
+* `Product` - pulled via the search endpoint `api/v3/search/product`
+
+we need to invoke the endpoint `api/v2/products`
+
+1. Product - all `metasfresh-column` values refer to `M_Product` columns
+
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProduct.productNumber | `value` | Y | JsonRequestProduct.code | |
+JsonProduct.ean | `upc` | N | JsonRequestProduct.ean | |
+JsonProduct.name | `name` | Y | JsonRequestProduct.name | |
+JsonProduct.unitId | `c_uom_id` | Y | JsonRequestProduct.uomCode | set based on UOMMappings param, default UOM is PCE, if no JsonUOMMappings.JsonUOMMapping.JsonUOM.code is found for the shopware code |
+---- | `producttype` | Y | JsonRequestProduct.Type.ITEM | |
+--- | ---- | N | JsonRequestProductUpsert.syncAdvise | default value CREATE_OR_MERGE |
+
+2. Price - all `metasfresh-column` values refer to `M_ProductPrice` columns
+
+we need to invoke the endpoint '/api/v2/prices'
+
+Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
+---- | ---- | ---- | ---- | ---- |
+JsonProduct.id | `m_product_id` | Y | JsonRequestProductPrice.productIdentifier | "ext-Shopware6-{{productId}}" |
+JsonExternalSystemRequest.orgCode | `ad_org_id` | Y | JsonRequestProductPrice.orgCode | |
+JsonProduct.tax.taxRate | `c_taxcategory_id` | Y | JsonRequestProductPrice.taxCategory | set based on NormalVAT_Rates and Reduced_VAT_Rates params |
+---- | `m_pricelist_version_id` | Y | UpsertProductPriceList.priceListIdentifier | set based on JsonExternalSystemRequest.parameters.TargetPriceListId, always set to the newest active price list version |
+---- | `pricestd` | Y | JsonRequestProductPrice.priceStd | 0 if: <br /> - JsonExternalSystemRequest.parameters<br />.PriceListCurrencyCode is not equal to JsonCurrency.isoCode of JsonProduct.JsonPrice.currencyId, <br /><br /> - JsonProduct.JsonPrice is null or empty, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is true and JsonProduct.JsonPrice.gross is null, <br /><br /> - JsonExternalSystemRequest.parameters.<br />PriceList_IsTaxIncluded is false and JsonProduct.JsonPrice.net is null|
+JsonProduct.price.net | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is false |
+JsonProduct.price.gross | `pricestd` | Y | JsonRequestProductPrice.priceStd | if JsonExternalSystemRequest.parameters.PriceList_IsTaxIncluded is true |
+JsonProduct.id | ---- | Y | JsonRequestProductPriceUpsertItem.productPriceIdentifier | "ext-Shopware6-{{productId}}" |
+--- | ---- | N | JsonRequestProductPriceUpsert.syncAdvise | default value CREATE_OR_MERGE |

@@ -11,7 +11,7 @@ BEGIN
     from c_invoiceline il
              join C_Tax t on il.c_tax_id = t.c_tax_id
     where il.c_invoice_id = p_C_Invoice_ID
-    group by t.ad_boilerplate_id;
+    group by il.c_invoice_id;
 
     IF taxnotetext IS NOT NUll THEN
         RETURN taxnotetext;

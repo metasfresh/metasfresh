@@ -27,6 +27,7 @@ import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.ConfigConstants;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -61,7 +62,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @EnableAsync
@@ -118,12 +118,10 @@ public class WebRestApiApplication
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		return Services
+		return new ArrayList<>(Services
 				.get(ISysConfigBL.class)
-				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
-				.values()
-				.stream()
-				.collect(Collectors.toCollection(ArrayList::new));
+				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, ClientAndOrgId.SYSTEM)
+				.values());
 	}
 
 	@Bean

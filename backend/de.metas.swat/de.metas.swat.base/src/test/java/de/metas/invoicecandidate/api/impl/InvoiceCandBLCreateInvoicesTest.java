@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.business.BusinessTestHelper;
+import de.metas.greeting.GreetingRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -38,6 +40,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -156,7 +159,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
-
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	/**
@@ -190,14 +193,16 @@ public class InvoiceCandBLCreateInvoicesTest
 	 *
 	 * User Story: there can be cases where invoice candidates had Processed=N when fetched, but in meantime, some of them were already processed and so we need to skip those
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
+	 * Task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
 	 */
 	@Test
 	public void test_submitAlreadyProcessedCandidate()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -263,7 +268,7 @@ public class InvoiceCandBLCreateInvoicesTest
 	/**
 	 * Test: Invoice candidates with discount
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
+	 * Task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
 	 */
 	@Test
 	public void test_DiscountInvoiceCandidates()
@@ -329,7 +334,7 @@ public class InvoiceCandBLCreateInvoicesTest
 	/**
 	 * Test: priceEntered in Invoice candidadates
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_PriceEnteredInvoiceCandidates()

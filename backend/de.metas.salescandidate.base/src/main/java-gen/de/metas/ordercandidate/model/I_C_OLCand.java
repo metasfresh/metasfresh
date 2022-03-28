@@ -5,19 +5,18 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-/**
- * Generated Interface for C_OLCand
- *
- * @author metasfresh (generated)
+/** Generated Interface for C_OLCand
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_OLCand
+public interface I_C_OLCand 
 {
 
 	String Table_Name = "C_OLCand";
 
-	//	/** AD_Table_ID=540244 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540244 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
 
 	/**
 	 * Get Client.
@@ -184,6 +183,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setApplySalesRepFrom (java.lang.String ApplySalesRepFrom);
+
+	/**
+	 * Get Sales rep from.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getApplySalesRepFrom();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ApplySalesRepFrom = new ModelColumn<>(I_C_OLCand.class, "ApplySalesRepFrom", null);
+	String COLUMNNAME_ApplySalesRepFrom = "ApplySalesRepFrom";
+
+	/**
 	 * Set Bill Business Partner.
 	 *
 	 * <br>Type: Table
@@ -224,6 +244,31 @@ public interface I_C_OLCand
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
+
+	/**
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Table
@@ -242,6 +287,101 @@ public interface I_C_OLCand
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
+
+	/**
+	 * Get Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
+
+	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_OLCand.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/**
+	 * Set Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+
+	/**
+	 * Get Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getC_BP_Location_Effective_ID();
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_ID();
 
 	/**
 	 * Set Eff. Business Partner.
@@ -308,6 +448,31 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
 	 * Set Geschäftspartner abw..
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -350,52 +515,24 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Internal sales rep.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+	void setC_BPartner_SalesRep_Internal_ID (int C_BPartner_SalesRep_Internal_ID);
 
 	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Internal sales rep.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getC_BP_Location_Effective_ID();
-
-	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+	int getC_BPartner_SalesRep_Internal_ID();
 
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_ID();
-
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
 
 	/**
 	 * Set Kosten.
@@ -442,7 +579,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Rechnungs-Belegart.
+	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -452,7 +589,7 @@ public interface I_C_OLCand
 	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
 
 	/**
-	 * Get Rechnungs-Belegart.
+	 * Get DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -528,27 +665,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
 	/**
-	 * Set Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
-
-	/**
-	 * Get Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCompensationGroupKey();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
-	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
-
-	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -571,32 +687,24 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Set Tax Category.
+	 * Tax Category
 	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Tax Category.
+	 * Tax Category
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_GroupingErrorMessage = new ModelColumn<>(I_C_OLCand.class, "GroupingErrorMessage", null);
-	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
+	int getC_TaxCategory_ID();
 
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
@@ -641,6 +749,52 @@ public interface I_C_OLCand
 	int getC_UOM_Internal_ID();
 
 	String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
+
+	/**
+	 * Set Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
+
+	/**
+	 * Get Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
+	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Kand.-Datum.
@@ -863,13 +1017,30 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getDescriptionHeader();
+	@Nullable java.lang.String getDescriptionHeader();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DescriptionHeader = new ModelColumn<>(I_C_OLCand.class, "DescriptionHeader", null);
 	String COLUMNNAME_DescriptionHeader = "DescriptionHeader";
-	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OLCand.class, "IsGroupCompensationLine", null);
-	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
+
+	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (@Nullable BigDecimal Discount);
+
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_Discount = new ModelColumn<>(I_C_OLCand.class, "Discount", null);
 	String COLUMNNAME_Discount = "Discount";
@@ -1001,6 +1172,58 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_Location_Override_ID = "DropShip_Location_Override_ID";
 
 	/**
+	 * Set Lieferadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Override_Value_ID (int DropShip_Location_Override_Value_ID);
+
+	/**
+	 * Get Lieferadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Override_Value();
+
+	void setDropShip_Location_Override_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "DropShip_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Override_Value_ID = "DropShip_Location_Override_Value_ID";
+
+	/**
+	 * Set Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Value_ID (int DropShip_Location_Value_ID);
+
+	/**
+	 * Get Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Value();
+
+	void setDropShip_Location_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "DropShip_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Value_ID = "DropShip_Location_Value_ID";
+
+	/**
 	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table
@@ -1078,13 +1301,10 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getExternalLineId();
+	@Nullable java.lang.String getExternalLineId();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_OLCand.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
-	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupingError = new ModelColumn<>(I_C_OLCand.class, "IsGroupingError", null);
-	String COLUMNNAME_IsGroupingError = "IsGroupingError";
 
 	/**
 	 * Set Group compensation discount percentage.
@@ -1108,24 +1328,25 @@ public interface I_C_OLCand
 	String COLUMNNAME_GroupCompensationDiscountPercentage = "GroupCompensationDiscountPercentage";
 
 	/**
-	 * Get Tax Category.
-	 * Tax Category
+	 * Set Grouping error message.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_TaxCategory_ID();
+	void setGroupingErrorMessage (@Nullable java.lang.String GroupingErrorMessage);
 
 	/**
-	 * Set Tax Category.
-	 * Tax Category
+	 * Get Grouping error message.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_TaxCategory_ID(int C_TaxCategory_ID);
+	@Nullable java.lang.String getGroupingErrorMessage();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_GroupingErrorMessage = new ModelColumn<>(I_C_OLCand.class, "GroupingErrorMessage", null);
+	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
 
 	/**
 	 * Set Übergabeadresse eff..
@@ -1190,6 +1411,56 @@ public interface I_C_OLCand
 	int getHandOver_Location_Override_ID();
 
 	String COLUMNNAME_HandOver_Location_Override_ID = "HandOver_Location_Override_ID";
+
+	/**
+	 * Set Übergabeadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_Override_Value_ID (int HandOver_Location_Override_Value_ID);
+
+	/**
+	 * Get Übergabeadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getHandOver_Location_Override_Value();
+
+	void setHandOver_Location_Override_Value(@Nullable org.compiere.model.I_C_Location HandOver_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_HandOver_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "HandOver_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_HandOver_Location_Override_Value_ID = "HandOver_Location_Override_Value_ID";
+
+	/**
+	 * Set Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_Value_ID (int HandOver_Location_Value_ID);
+
+	/**
+	 * Get Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getHandOver_Location_Value();
+
+	void setHandOver_Location_Value(@Nullable org.compiere.model.I_C_Location HandOver_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_HandOver_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "HandOver_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_HandOver_Location_Value_ID = "HandOver_Location_Value_ID";
 
 	/**
 	 * Set Handover Partner eff..
@@ -1276,6 +1547,27 @@ public interface I_C_OLCand
 	int getHandOver_User_ID();
 
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
+
+	/**
+	 * Set Import warning message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportWarningMessage (@Nullable java.lang.String ImportWarningMessage);
+
+	/**
+	 * Get Import warning message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getImportWarningMessage();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ImportWarningMessage = new ModelColumn<>(I_C_OLCand.class, "ImportWarningMessage", null);
+	String COLUMNNAME_ImportWarningMessage = "ImportWarningMessage";
 
 	/**
 	 * Set Invoicable Quantity per.
@@ -1366,14 +1658,13 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
 
 	/**
-	 * Get Discount %.
-	 * Discount in percent
+	 * Set Group Discount Line.
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getDiscount();
+	void setIsGroupCompensationLine (boolean IsGroupCompensationLine);
 
 	/**
 	 * Get Group Discount Line.
@@ -1384,61 +1675,29 @@ public interface I_C_OLCand
 	 */
 	boolean isGroupCompensationLine();
 
-	/**
-	 * Set Discount %.
-	 * Discount in percent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDiscount(@Nullable BigDecimal Discount);
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OLCand.class, "IsGroupCompensationLine", null);
+	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
 
 	/**
-	 * Get Gruppierungsfehlermeldung.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable
-	java.lang.String getGroupingErrorMessage();
-
-	/**
-	 * Set Gruppierungsfehlermeldung.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setGroupingErrorMessage(@Nullable java.lang.String GroupingErrorMessage);
-
-	/**
-	 * Set Group Discount Line.
+	 * Set Has grouping errors.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsGroupCompensationLine(boolean IsGroupCompensationLine);
+	void setIsGroupingError (boolean IsGroupingError);
 
 	/**
-	 * Set Gruppierungsfehler.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsGroupingError(boolean IsGroupingError);
-
-	/**
-	 * Get Gruppierungsfehler.
+	 * Get Has grouping errors.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isGroupingError();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupingError = new ModelColumn<>(I_C_OLCand.class, "IsGroupingError", null);
+	String COLUMNNAME_IsGroupingError = "IsGroupingError";
 
 	/**
 	 * Set Discount Manual.
@@ -1481,6 +1740,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_OLCand.class, "IsManualPrice", null);
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set IsManualQtyItemCapacity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyItemCapacity (boolean IsManualQtyItemCapacity);
+
+	/**
+	 * Get IsManualQtyItemCapacity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyItemCapacity();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsManualQtyItemCapacity = new ModelColumn<>(I_C_OLCand.class, "IsManualQtyItemCapacity", null);
+	String COLUMNNAME_IsManualQtyItemCapacity = "IsManualQtyItemCapacity";
 
 	/**
 	 * Set SeqNo..
@@ -1914,6 +2194,28 @@ public interface I_C_OLCand
 	String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
+	 * Set Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_Internal_ID();
+
+	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
+
+	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -1935,17 +2237,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
-	 * Get Price diff..
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getPriceDifference();
-
-	/**
 	 * Set Price diff..
 	 *
 	 * <br>Type: CostPrice
@@ -1956,17 +2247,19 @@ public interface I_C_OLCand
 	@Deprecated
 	void setPriceDifference (@Nullable BigDecimal PriceDifference);
 
-	ModelColumn<I_C_OLCand, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_OLCand.class, "PriceDifference", null);
-	String COLUMNNAME_PriceDifference = "PriceDifference";
-
 	/**
-	 * Get Price imp..
+	 * Get Price diff..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	BigDecimal getPriceEntered();
+	@Deprecated
+	BigDecimal getPriceDifference();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_OLCand.class, "PriceDifference", null);
+	String COLUMNNAME_PriceDifference = "PriceDifference";
 
 	/**
 	 * Set Price imp..
@@ -1977,17 +2270,17 @@ public interface I_C_OLCand
 	 */
 	void setPriceEntered (@Nullable BigDecimal PriceEntered);
 
-	ModelColumn<I_C_OLCand, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_OLCand.class, "PriceEntered", null);
-	String COLUMNNAME_PriceEntered = "PriceEntered";
-
 	/**
-	 * Get Price.
+	 * Get Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPriceInternal();
+	BigDecimal getPriceEntered();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_OLCand.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
 	 * Set Price.
@@ -1998,30 +2291,17 @@ public interface I_C_OLCand
 	 */
 	void setPriceInternal (@Nullable BigDecimal PriceInternal);
 
+	/**
+	 * Get Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceInternal();
+
 	ModelColumn<I_C_OLCand, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_OLCand.class, "PriceInternal", null);
 	String COLUMNNAME_PriceInternal = "PriceInternal";
-
-	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_Internal_ID();
-
-	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
 
 	/**
 	 * Set Processed.
@@ -2112,6 +2392,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
+	 * Set Qty Shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped (@Nullable BigDecimal QtyShipped);
+
+	/**
+	 * Get Qty Shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyShipped();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped = new ModelColumn<>(I_C_OLCand.class, "QtyShipped", null);
+	String COLUMNNAME_QtyShipped = "QtyShipped";
+
+	/**
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
@@ -2158,25 +2459,4 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Import warning message.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setImportWarningMessage (@Nullable java.lang.String ImportWarningMessage);
-
-	/**
-	 * Get Import warning message.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getImportWarningMessage();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_ImportWarningMessage = new ModelColumn<>(I_C_OLCand.class, "ImportWarningMessage", null);
-	String COLUMNNAME_ImportWarningMessage = "ImportWarningMessage";
 }

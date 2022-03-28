@@ -4,6 +4,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -36,7 +37,10 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.archive.api.ArchiveAction;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
@@ -44,15 +48,20 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
+
+import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 /**
  * Async processor that sends the PDFs of {@link I_C_Doc_Outbound_Log_Line}s' {@link I_AD_Archive}s as Email.
@@ -60,7 +69,6 @@ import java.util.Properties;
  * Where this column is empty, no mail is send.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class MailWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -77,6 +85,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
@@ -173,10 +182,18 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					emailParams.getMessage(),
 					isHTMLMessage(emailParams.getMessage()));
 
+			final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
+
+			final long addedAttachments = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
+					.map(attachment -> email.addAttachment(attachment.getFilename(), attachment.getAttachmentDataSupplier().get()))
+					.filter(Boolean::booleanValue)
+					.count();
+
 			final byte[] attachment = archiveBL.getBinaryData(archive);
-			if (attachment == null)
+			if (attachment == null && addedAttachments <= 0)
 			{
-				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT; // TODO log or do something; do NOT send blank mails without an attachment
+				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
+				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
 			{
@@ -219,8 +236,6 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
-
-
 	private boolean isHTMLMessage(final String message)
 	{
 		if (Check.isEmpty(message))
@@ -235,6 +250,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Language language = extractLanguage(docOutboundLogRecord);
+		final Evaluatee evalCtx = createEvaluationContext(docOutboundLogRecord);
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
@@ -248,21 +264,21 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 				return EmailParams
 						.builder()
-						.subject(boilerPlate.getSubject())
-						.message(boilerPlate.getTextSnippet())
+						.subject(boilerPlate.evaluateSubject(evalCtx))
+						.message(boilerPlate.evaluateTextSnippet(evalCtx))
 						.build();
 			}
 		}
 
 		Loggables.addLog("createEmailParams - AD_Messages with values {} and {}", MSG_EmailSubject, MSG_EmailMessage);
 
-		final String subject = msgBL.getMsg(language.getAD_Language(), MSG_EmailSubject);
-		final String message = msgBL.getMsg(language.getAD_Language(), MSG_EmailMessage);
+		final IStringExpression subject = StringExpressionCompiler.instance.compile(msgBL.getMsg(language.getAD_Language(), MSG_EmailSubject));
+		final IStringExpression message = StringExpressionCompiler.instance.compile(msgBL.getMsg(language.getAD_Language(), MSG_EmailMessage));
 
 		return EmailParams
 				.builder()
-				.subject(subject)
-				.message(message)
+				.subject(subject.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve))
+				.message(message.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve))
 				.build();
 	}
 
@@ -307,6 +323,17 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final Language language = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		Loggables.addLog("extractLanguage - Using the language={} returned by Env.getADLanguageOrBaseLanguage()", language);
 		return language;
+	}
+
+	private Evaluatee createEvaluationContext(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final TableRecordReference modelRef = TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID());
+		final Evaluatee modelCtx = modelRef != null
+				? TableModelLoader.instance.getPO(modelRef)
+				: Evaluatees.empty();
+
+		return modelCtx
+				.andComposeWith(InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord));
 	}
 
 	@Value

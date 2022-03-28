@@ -22,6 +22,7 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.document.DocTypeId;
@@ -41,6 +42,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.PO;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -54,7 +56,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor);
+	void process(OLCandProcessorDescriptor processor, AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -74,7 +76,7 @@ public interface IOLCandBL extends ISingletonService
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
 	 * @param date to be used in retrieving the actual price
 	 */
-	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
+	IPricingResult computePriceActual(I_C_OLCand olCand, @Nullable BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, LocalDate date);
 
 	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 

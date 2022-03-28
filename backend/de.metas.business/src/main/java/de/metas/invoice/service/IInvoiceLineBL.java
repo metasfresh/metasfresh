@@ -22,19 +22,18 @@ package de.metas.invoice.service;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.compiere.model.MInvoiceLine;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  *
@@ -47,10 +46,9 @@ public interface IInvoiceLineBL extends ISingletonService
 	void setTaxAmtInfo(Properties ctx, I_C_InvoiceLine il, String getTrxName);
 
 	/**
-	 * Retrieves the il's C_Tax_ID if the il has an inout line. {@link MInvoiceLine#getTax()} only uses the bill location date and address, which is not correct (for us).
+	 * Retrieves the il's C_Tax_ID if the il has an inout line. MInvoiceLine.getTax() only uses the bill location date and address, which is not correct (for us).
 	 * <p/>
 	 * <b>IMPORTANT:</b> if the il has M_InoutLine_ID<=0, the method does nothing!
-	 *
 	 */
 	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
 
@@ -80,10 +78,6 @@ public interface IInvoiceLineBL extends ISingletonService
 
 	/**
 	 * Uses the given <code>invoiceLine</code>'s <code>QtyInvoiced</code>, <code>C_UOM</code> and <code>Price_UOM</code> to compute and set the given line's <code>QtyInvoicedInPriceUOM</code>.
-	 * <p>
-	 * Note that this method makes use of {@link #calculatedQtyInPriceUOM(BigDecimal, I_C_InvoiceLine)}.
-	 *
-	 * @see #calculatedQtyInPriceUOM(BigDecimal, I_C_InvoiceLine)
 	 */
 	void setQtyInvoicedInPriceUOM(I_C_InvoiceLine invoiceLine);
 
@@ -97,5 +91,7 @@ public interface IInvoiceLineBL extends ISingletonService
 	 */
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
-	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId taxPartnerLocationId, boolean isSOTrx);
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
+
+	Quantity getQtyInvoicedStockUOM(I_C_InvoiceLine invoiceLine);
 }

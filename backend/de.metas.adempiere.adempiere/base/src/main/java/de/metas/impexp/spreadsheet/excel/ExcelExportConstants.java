@@ -22,16 +22,15 @@
 
 package de.metas.impexp.spreadsheet.excel;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
 @Builder

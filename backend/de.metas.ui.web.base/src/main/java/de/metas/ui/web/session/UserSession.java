@@ -13,7 +13,7 @@ import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
@@ -475,6 +475,16 @@ public class UserSession
 			final int defaultLookupSearchStartDelayMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
 			return defaultLookupSearchStartDelayMillis > 0 ? Duration.ofMillis(defaultLookupSearchStartDelayMillis) : Duration.ZERO;
 		};
+	}
+
+	/*
+	This configuration is used for a webui option.
+	 */
+	private static final String SYSCONFIG_isAlwaysDisplayNewBPartner = "de.metas.ui.web.session.UserSession.IsAlwaysDisplayNewBPartner";
+
+	public boolean isAlwaysShowNewBPartner()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_isAlwaysDisplayNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
 	}
 
 	@NonNull

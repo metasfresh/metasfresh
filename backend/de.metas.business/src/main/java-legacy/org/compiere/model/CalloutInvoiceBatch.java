@@ -354,63 +354,8 @@ public class CalloutInvoiceBatch extends CalloutEngine
 	 */
 	public String tax (final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
 	{
-		final String column = mField.getColumnName();
-		if (value == null)
-		{
-			return "";
-		}
-
-		int C_Charge_ID = 0;
-		if (column.equals("C_Charge_ID"))
-		{
-			C_Charge_ID = ((Integer)value).intValue();
-		}
-		else
-		{
-			C_Charge_ID = Env.getContextAsInt(ctx, WindowNo, "C_Charge_ID");
-		}
-		log.debug("C_Charge_ID=" + C_Charge_ID);
-		if (C_Charge_ID == 0)
-		 {
-			return amt (ctx, WindowNo, mTab, mField, value);	//
-		}
-
-		//	Check Partner Location
-		final int C_BPartner_Location_ID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_Location_ID");
-		if (C_BPartner_Location_ID == 0)
-		 {
-			return amt (ctx, WindowNo, mTab, mField, value);	//
-		}
-		log.debug("BP_Location=" + C_BPartner_Location_ID);
-
-		//	Dates
-		final Timestamp billDate = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
-		log.debug("Bill Date=" + billDate);
-		final Timestamp shipDate = billDate;
-		log.debug("Ship Date=" + shipDate);
-
-		final int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		log.debug("Org=" + AD_Org_ID);
-
-		final int M_Warehouse_ID = Env.getContextAsInt(ctx, "#M_Warehouse_ID");
-		log.debug("Warehouse=" + M_Warehouse_ID);
-
-		//
-		final int C_Tax_ID = Tax.get(ctx, 0, C_Charge_ID, billDate, shipDate,
-			AD_Org_ID, M_Warehouse_ID, C_BPartner_Location_ID, C_BPartner_Location_ID,
-			Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y"));
-		log.info("Tax ID=" + C_Tax_ID);
-		//
-		if (C_Tax_ID == 0)
-		{
-			mTab.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
-		}
-		else
-		{
-			mTab.setValue("C_Tax_ID", new Integer(C_Tax_ID));
-		}
-		//
-		return amt (ctx, WindowNo, mTab, mField, value);
+		// NOTE: this callout needs to be deleted
+		return null;
 	}	//	tax
 
 
