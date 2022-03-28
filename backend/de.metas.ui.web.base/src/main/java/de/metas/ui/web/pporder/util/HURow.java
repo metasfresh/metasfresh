@@ -23,8 +23,11 @@
 package de.metas.ui.web.pporder.util;
 
 import de.metas.handlingunits.HuId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -33,4 +36,6 @@ public class HURow
 	HuId huId;
 	boolean topLevelHU;
 	boolean huStatusActive;
+	
+	Quantity qty;
 }

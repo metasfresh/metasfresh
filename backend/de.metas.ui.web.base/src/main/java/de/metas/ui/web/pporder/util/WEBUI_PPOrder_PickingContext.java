@@ -25,20 +25,22 @@ package de.metas.ui.web.pporder.util;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 @Value
 @Builder
 public class WEBUI_PPOrder_PickingContext
 {
-
 	@NonNull
 	PPOrderId ppOrderId;
-
-	@NonNull
+	
 	HuId huId;
 
 	@NonNull
@@ -46,6 +48,9 @@ public class WEBUI_PPOrder_PickingContext
 
 	@NonNull
 	PickingSlotId pickingSlotId;
+
+	@NonNull
+	Quantity qtyToPick;
 
 	boolean isTakeWholeHU;
 }

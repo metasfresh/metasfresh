@@ -97,6 +97,7 @@ public class WEBUI_PP_Order_HURowHelper
 					.huId(ppOrderLineRow.getHuId())
 					.topLevelHU(ppOrderLineRow.isTopLevelHU())
 					.huStatusActive(ppOrderLineRow.isHUStatusActive())
+					.qty(ppOrderLineRow.getQty())
 					.build();
 		}
 		else

@@ -40,6 +40,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -52,12 +53,17 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -68,6 +74,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IUOMDAO iuomDao = Services.get(IUOMDAO.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Param(parameterName = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID, mandatory = true)
@@ -94,8 +101,8 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		}
 
 		if (!getSingleSelectedRow().getType().isMainProduct()
-				&& !getSingleSelectedRow().isReceipt()
-				&& !existsActiveHU())
+				|| !getSingleSelectedRow().isReceipt()
+				|| !existsActiveHU())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no active HU found");
 		}
@@ -123,12 +130,11 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	}
 
 	@Override
-	@RunOutOfTrx
+	// @RunOutOfTrx
 	protected String doIt()
 	{
-		getHURowsFromIncludedRows()
-				.filter(huRow -> isEligibleHU(huRow))
-				.forEach(huRow -> pickHU(huRow.getHuId()));
+
+		pickHUs();
 
 		// invalidate view in order to be refreshed
 		getView().invalidateAll();
@@ -136,23 +142,59 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		return MSG_OK;
 	}
 
-	private void pickHU(final HuId huId)
+	private Map<HuId, Quantity> calculateDistributionOfQuantityOverHUs(final BigDecimal qtyToPick)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
-		final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
-		final BigDecimal qtyPicked = shipmentSchedule.getQtyPickList();
-		if (qtyPicked.compareTo(qtyOrdered) < 0)
+		final Map<HuId, Quantity> map = getHuIdsQuantitiesAsMap();
+
+		final Map<HuId, Quantity> distribution = new HashMap<>();
+		BigDecimal neededQty = qtyToPick;
+		for (final HuId huId : map.keySet())
 		{
-			WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
-													  .ppOrderId(getView().getPpOrderId())
-													  .huId(huId)
-													  .shipmentScheduleId(shipmentScheduleId)
-													  .pickingSlotId(pickingSlotId)
-													  .isTakeWholeHU(isTakeWholeHU)
-													  .build());
+			final Quantity huQty = map.get(huId);
+			if (huQty.toBigDecimal().compareTo(neededQty) >= 0)
+			{
+				distribution.put(huId, Quantity.of(neededQty, huQty.getUOM()));
+				neededQty = BigDecimal.ZERO;
+				break;
+			}
+			else
+			{
+				// remove avalaible qty n continue
+				distribution.put(huId, huQty);
+				neededQty = neededQty.subtract(huQty.toBigDecimal());
+			}
 		}
+		return distribution;
 	}
 
+	private Map<HuId, Quantity> getHuIdsQuantitiesAsMap()
+	{
+		final Map<HuId, Quantity> map = new HashMap<HuId, Quantity>();
+		getHURowsFromIncludedRows()
+				.filter(huRow -> isEligibleHU(huRow))
+				.forEach(huRow -> map.put(huRow.getHuId(), huRow.getQty()));
+
+		return map;
+	}
+
+	private void pickHUs()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
+		if (shipmentSchedule.getQtyToDeliver().compareTo(BigDecimal.ZERO) > 0)
+		{
+			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver();
+			calculateDistributionOfQuantityOverHUs(qtyToPick).entrySet().stream()
+					.forEach(e -> WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
+																			   .ppOrderId(getView().getPpOrderId())
+																			   .huId(e.getKey())
+																			   .shipmentScheduleId(shipmentScheduleId)
+																			   .qtyToPick(e.getValue())
+																			   .pickingSlotId(pickingSlotId)
+																			   .isTakeWholeHU(e.getValue().qtyAndUomCompareToEquals(getHuIdsQuantitiesAsMap().get(e.getKey())))
+																			   .build())
+					);
+		}
+	}
 
 	private boolean existsActiveHU()
 	{
@@ -210,7 +252,6 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	private boolean isEligibleHU(final HURow row)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(row.getHuId());
-
 		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
 		return huContextFactory
 				.createMutableHUContext()
