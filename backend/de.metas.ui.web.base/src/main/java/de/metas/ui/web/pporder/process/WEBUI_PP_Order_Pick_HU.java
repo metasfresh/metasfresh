@@ -24,9 +24,6 @@ package de.metas.ui.web.pporder.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -50,16 +47,14 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
-
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -72,11 +67,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_Pick_HU.class);
 
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IUOMDAO iuomDao = Services.get(IUOMDAO.class);
-	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Param(parameterName = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID, mandatory = true)
 	private PickingSlotId pickingSlotId;
@@ -89,9 +80,6 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 
 	@Param(parameterName = "IsPickViaReceivedQuantity", mandatory = true)
 	private boolean isPickViaReceivedQuantity;
-
-
-	private final boolean isViaReceivedQuantity = false;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -147,11 +135,10 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@Override
 	protected String doIt()
 	{
-		if (isViaReceivedQuantity)
+		if (isPickViaReceivedQuantity)
 		{
 			// Satisfy the shipment quantity over all the received HUs
 			pickHUs();
-
 		}
 		else
 		{
@@ -181,16 +168,18 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		if (shipmentSchedule.getQtyToDeliver().compareTo(BigDecimal.ZERO) > 0)
 		{
 			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver();
-			calculateDistributionOfQuantityOverHUs(qtyToPick).entrySet().stream()
-					.forEach(e -> WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
-																			.ppOrderId(getView().getPpOrderId())
-																			.huId(e.getKey())
-																			.shipmentScheduleId(shipmentScheduleId)
-																			.qtyToPick(e.getValue())
-																			.pickingSlotId(pickingSlotId)
-																			.isTakeWholeHU(e.getValue().qtyAndUomCompareToEquals(getHuIdsQuantitiesAsMap().get(e.getKey())))
-																			.build())
-					);
+			for (final Map.Entry<HuId, Quantity> e : calculateDistributionOfQuantityOverHUs(qtyToPick)
+					.entrySet())
+			{
+				WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
+														  .ppOrderId(getView().getPpOrderId())
+														  .huId(e.getKey())
+														  .shipmentScheduleId(shipmentScheduleId)
+														  .qtyToPick(e.getValue())
+														  .pickingSlotId(pickingSlotId)
+														  .isTakeWholeHU(e.getValue().qtyAndUomCompareToEquals(getHuIdsQuantitiesAsMap().get(e.getKey())))
+														  .build());
+			}
 		}
 	}
 
@@ -206,12 +195,11 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 			if (huQty.toBigDecimal().compareTo(neededQty) >= 0)
 			{
 				distribution.put(huId, Quantity.of(neededQty, huQty.getUOM()));
-				neededQty = BigDecimal.ZERO;
 				break;
 			}
 			else
 			{
-				// remove avalaible qty n continue
+				// substract avalaible qty
 				distribution.put(huId, huQty);
 				neededQty = neededQty.subtract(huQty.toBigDecimal());
 			}
@@ -247,12 +235,21 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 				.filter(WEBUI_PP_Order_HURowHelper::isEligibleHU);
 	}
 
-	@Nullable
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		return DEFAULT_VALUE_NOTAVAILABLE;
+		return createNewDefaultParametersFiller().getDefaultValue(parameter);
 	}
+
+	@ProcessParamLookupValuesProvider(//
+			parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, //
+			numericKey = true, //
+			lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	private LookupValuesPage getShipmentScheduleValues(final LookupDataSourceContext context)
+	{
+		return createNewDefaultParametersFiller().getShipmentScheduleValues(context);
+	}
+
 
 	private HURow getSingleHURow()
 	{
@@ -263,16 +260,11 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@Nullable
 	private OrderLineId getSalesOrderLineId()
 	{
-		final IView view = getView();
-		if (view instanceof PPOrderLinesView)
+		if ( getView() != null)
 		{
-			final PPOrderLinesView ppOrderLinesView = PPOrderLinesView.cast(view);
-			return ppOrderLinesView.getSalesOrderLineId();
+			return getView().getSalesOrderLineId();
 		}
-		else
-		{
 			return null;
-		}
 	}
 
 	@ProcessParamLookupValuesProvider(//
@@ -299,5 +291,14 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		}
 
 		invalidateView();
+	}
+
+	private WEBUI_M_HU_Pick_ParametersFiller createNewDefaultParametersFiller()
+	{
+		final HURow row = getSingleHURow();
+		return WEBUI_M_HU_Pick_ParametersFiller.defaultFillerBuilder()
+				.huId(row.getHuId())
+				.salesOrderLineId(getSalesOrderLineId())
+				.build();
 	}
 }
