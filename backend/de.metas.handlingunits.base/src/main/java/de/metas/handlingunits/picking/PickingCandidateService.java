@@ -191,7 +191,7 @@ public class PickingCandidateService
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
 
-		for(PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		for(final PickingCandidate pickingCandidate : pickingCandidatesToProcess)
 		{
 			validateAttributes(pickingCandidate);
 		}

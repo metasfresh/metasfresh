@@ -44,7 +44,6 @@ import de.metas.ui.web.pporder.util.HURow;
 import de.metas.ui.web.pporder.util.WEBUI_PPOrder_PickingContext;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_HURowHelper;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -55,6 +54,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
