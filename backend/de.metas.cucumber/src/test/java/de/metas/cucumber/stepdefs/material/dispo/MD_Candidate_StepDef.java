@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -382,21 +381,8 @@ public class MD_Candidate_StepDef
 	{
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
-			// if this is a identifier that we have not seen yet, then make sure that we also wait for a new MD_Candidate
-			final boolean isNewIdentifier = !materialDispoDataItemStepDefData.getOptional(tableRow.getIdentifier()).isPresent();
-			final ImmutableSet<CandidateId> idsToExclude;
-			if (isNewIdentifier)
-			{
-				idsToExclude = materialDispoDataItemStepDefData.getCandidateIds();
-			}
-			else
-			{
-				idsToExclude = ImmutableSet.of();
-			}
-
 			// make sure the given md_candidate has been created
 			final Supplier<Optional<MaterialDispoDataItem>> candidateCreated = () -> materialDispoRecordRepository.getAllBy(tableRow.createQuery()).stream()
-					.filter(materialDispoRecord -> !idsToExclude.contains(materialDispoRecord.getCandidateId()))
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
 					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
