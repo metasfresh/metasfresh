@@ -53,6 +53,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -219,6 +220,9 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setDocStatus(DocStatus.Completed.getCode());
 		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 		order.setC_DocTypeTarget_ID(1000016);
+		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order.setC_Currency_ID(10);
+		order.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order);
 	}
 

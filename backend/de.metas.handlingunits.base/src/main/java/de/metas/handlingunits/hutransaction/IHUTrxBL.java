@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.hutransaction;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -93,7 +94,7 @@ public interface IHUTrxBL extends ISingletonService
 	 * <code>trxLines</code> shall contain the transaction but also the counterpart transaction. If not, an error will be thrown.
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
-
+	
 	default void unlinkFromParentBeforeDestroy(
 			final IHUContext huContext,
 			@NonNull final I_M_HU hu,
