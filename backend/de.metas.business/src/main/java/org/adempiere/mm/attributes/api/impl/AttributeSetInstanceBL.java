@@ -244,7 +244,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 
 	@Override
-	public void cloneOrCreateASI(final Object to, final Object from)
+	public void cloneOrCreateASI(@Nullable final Object to, @Nullable final Object from)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
@@ -255,25 +255,22 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			return;
 		}
 		final IAttributeSetInstanceAware fromASIAware = attributeSetInstanceAwareFactoryService.createOrNull(from);
-		if (fromASIAware == null)
+
+		// #12728 Create new ASI if none was found in the source
+		if (fromASIAware == null || fromASIAware.getM_AttributeSetInstance_ID() <= 0)
 		{
-			return;
+			final ProductId productId = ProductId.ofRepoId(toASIAware.getM_Product_ID());
+			I_M_AttributeSetInstance newASI = createASI(productId);
+			toASIAware.setM_AttributeSetInstance_ID(newASI.getM_AttributeSetInstance_ID());
 		}
 
 		//
 		// Clone the ASI if it exists
-		if (fromASIAware.getM_AttributeSetInstance_ID() > 0)
+		else
 		{
 			final I_M_AttributeSetInstance asi = fromASIAware.getM_AttributeSetInstance();
 			final I_M_AttributeSetInstance asiCopy = attributeDAO.copy(asi);
 			toASIAware.setM_AttributeSetInstance(asiCopy);
-		}
-		// #12728 Create new ASI if none was found in the source
-		else
-		{
-			final ProductId productId = ProductId.ofRepoId(fromASIAware.getM_Product_ID());
-			I_M_AttributeSetInstance newASI = createASI(productId);
-			toASIAware.setM_AttributeSetInstance_ID(newASI.getM_AttributeSetInstance_ID());
 		}
 	}
 
