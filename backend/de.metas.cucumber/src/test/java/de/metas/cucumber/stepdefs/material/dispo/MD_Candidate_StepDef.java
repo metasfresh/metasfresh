@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -381,9 +382,22 @@ public class MD_Candidate_StepDef
 	{
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
+			// if this is a identifier that we have not seen yet, then make sure that we also wait for a new MD_Candidate
+			final boolean isNewIdentifier = !materialDispoDataItemStepDefData.getOptional(tableRow.getIdentifier()).isPresent();
+			final ImmutableSet<CandidateId> idsToExclude;
+			if(isNewIdentifier)
+			{
+				idsToExclude = materialDispoDataItemStepDefData.getCandidateIds();				
+			}
+			else
+			{
+				idsToExclude = ImmutableSet.of();
+			}
+
 			// make sure the given md_candidate has been created
 			final Supplier<Boolean> candidateCreated = () ->
 					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
+							.filter(candidate -> !idsToExclude.contains(candidate.getId()))
 							.map(Candidate::getMaterialDescriptor)
 							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
 							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
@@ -395,12 +409,12 @@ public class MD_Candidate_StepDef
 
 			assertThat(materialDispoRecord).isNotNull();
 
-			assertThat(materialDispoRecord.getType()).as("type").isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase").isEqualTo(tableRow.getBusinessCase());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId").isEqualTo(tableRow.getProductId().getRepoId());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date").isEqualTo(tableRow.getTime());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).as("quantity").isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoRecord.getAtp()).as("atp").isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoRecord.getType()).as("type of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date  of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getTime());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).as("quantity of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getQty());
+			assertThat(materialDispoRecord.getAtp()).as("atp of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getAtp());
 
 			final String attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
