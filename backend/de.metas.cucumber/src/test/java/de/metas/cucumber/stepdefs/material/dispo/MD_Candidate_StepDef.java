@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData.RecordDataItem;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
@@ -419,12 +420,12 @@ public class MD_Candidate_StepDef
 	}
 
 	@And("the following MD_Candidates are validated")
-	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable)
+	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			validate_md_candidate_with_stock(tableRow);
+			validate_md_candidate_with_stock(tableRow, 60L); // TODO add timeout to step def
 		}
 	}
 
@@ -458,18 +459,29 @@ public class MD_Candidate_StepDef
 		assertThat(stockCandidate.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(qty);
 	}
 
-	private void validate_md_candidate_with_stock(@NonNull final Map<String, String> tableRow)
+	private void validate_md_candidate_with_stock(
+			@NonNull final Map<String, String> tableRow,
+			final long timeoutSec) throws InterruptedException
 	{
 		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoDataIdentifier);
+		final RecordDataItem<MaterialDispoDataItem> materialDispoDataItem = materialDispoDataItemStepDefData.getRecordDataItem(materialDispoDataIdentifier);
 
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
-				.id(materialDispoDataItem.getCandidateId())
-				.type(materialDispoDataItem.getType())
+				.id(materialDispoDataItem.getRecord().getCandidateId())
+				.type(materialDispoDataItem.getRecord().getType())
 				.build();
-
-		final MaterialDispoDataItem freshMaterialDispoItemInfo = materialDispoRecordRepository.getBy(candidatesQuery);
-
+		final MaterialDispoDataItem freshMaterialDispoItemInfo = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () ->
+		{
+			final MaterialDispoDataItem result = materialDispoRecordRepository.getBy(candidatesQuery);
+			final Instant updated = result.getUpdated();
+			if(updated.isAfter(materialDispoDataItem.getRecordUpdated()))
+			{
+				materialDispoDataItemStepDefData.putOrReplace(materialDispoDataIdentifier, result); // update the item with its new updated value
+				return Optional.of(result);
+			}
+			return Optional.empty();
+		});
+		
 		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

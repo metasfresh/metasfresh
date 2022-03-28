@@ -23,6 +23,12 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
@@ -32,6 +38,7 @@ import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.product.IProductDAO;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductInfo;
@@ -45,8 +52,14 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.compiere.model.I_M_Attribute;
+import org.eevolution.api.IPPOrderBL;
 
+import java.util.List;
 import java.util.Objects;
 
 public class ProductsToPickRowsDataFactory
@@ -84,9 +97,9 @@ public class ProductsToPickRowsDataFactory
 	public ProductsToPickRowsData create(final PackageableRow packageableRow)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(packageableRow.getPackageables())
-				.considerAttributes(considerAttributes)
-				.build());
+																			.packageables(packageableRow.getPackageables())
+																			.considerAttributes(considerAttributes)
+																			.build());
 		final ImmutableList<ProductsToPickRow> rows = plan.getLines()
 				.stream()
 				.map(this::toRow)
@@ -173,10 +186,9 @@ public class ProductsToPickRowsDataFactory
 				.qty(planLine.getQty())
 				//
 				.includedRows(pickFromPickingOrder.getIssueToBOMLines()
-						.stream()
-						.map(this::toRow)
-						.collect(ImmutableList.toImmutableList()))
-				//
+									  .stream()
+									  .map(this::toRow)
+									  .collect(ImmutableList.toImmutableList()))
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(sourceDocumentInfo.getExistingPickingCandidate());
 	}

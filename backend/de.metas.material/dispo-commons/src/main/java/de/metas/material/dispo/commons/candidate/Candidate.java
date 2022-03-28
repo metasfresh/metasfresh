@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -104,6 +105,8 @@ public class Candidate
 
 	Dimension dimension;
 
+	Instant updated;
+	
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -118,7 +121,8 @@ public class Candidate
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
-			Dimension dimension)
+			final Dimension dimension,
+			@Nullable final Instant updated)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -147,6 +151,7 @@ public class Candidate
 		}
 
 		this.dimension = dimension;
+		this.updated = CoalesceUtil.coalesceNotNull(updated, SystemTime.asInstant());
 	}
 
 	public static class CandidateBuilder

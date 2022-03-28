@@ -856,7 +856,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	private static final IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
+	private static IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
 	{
 		return ModelClassIntrospector
 				.getInstance()
@@ -941,7 +941,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
+	public static boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
 		if (modelClass == null)
 		{
@@ -967,10 +967,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param clazz
 	 * @return AD_Table_ID or <code>-1</code>.
 	 */
-	public static final int getTableIdOrNull(final Class<?> clazz)
+	public static int getTableIdOrNull(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName == null)
@@ -981,7 +980,7 @@ public class InterfaceWrapperHelper
 
 	}
 
-	public static final String getKeyColumnName(final Class<?> clazz)
+	public static String getKeyColumnName(final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
 		return getKeyColumnName(tableName);
@@ -991,11 +990,8 @@ public class InterfaceWrapperHelper
 	 * Returns <code>tableName + "_ID"</code>.
 	 * <p>
 	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
-	 *
-	 * @param tableName
-	 * @return
 	 */
-	public static final String getKeyColumnName(final String tableName)
+	public static String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
@@ -1260,7 +1256,7 @@ public class InterfaceWrapperHelper
 		return value;
 	}
 
-	private static final <T> T getValue(final Object model,
+	private static <T> T getValue(final Object model,
 			final String columnName,
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable)

@@ -412,6 +412,9 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	/** Kreditoren Nachbelastung = NBK */
 	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** CallOrder = CAO */
+	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -583,7 +586,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public boolean isExcludeFromCommision()
+	public boolean isExcludeFromCommision() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromCommision);
 	}

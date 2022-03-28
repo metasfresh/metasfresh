@@ -51,7 +51,7 @@ Feature: credit limit
       | i_1        | 540008         | 2021-04-17   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_1       | i_1                       | p_1                     | PCE          | 10       | 0         |
+      | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by i_1 is completed
 
     And the user creates a JsonCreateShipmentRequest and stores it in the context
@@ -80,7 +80,7 @@ Feature: credit limit
       | s_1                   | s_s_1                            |
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
-      | s_1                 | endcustomer_1            | l_1                               | 2021-04-17  | null        | true      | CO        |
+      | s_1                   | endcustomer_1            | l_1                               | 2021-04-17  | null        | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                 | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | s_line_1_1                | s_1                   | p_1                     | 10          | true      |

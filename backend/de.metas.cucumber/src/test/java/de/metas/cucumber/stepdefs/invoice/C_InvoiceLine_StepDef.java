@@ -47,13 +47,16 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final C_Invoice_StepDefData invoiceTable;
+	final C_InvoiceLine_StepDefData invoiceLineTable;
 	final M_Product_StepDefData productTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.invoiceTable = invoiceTable;
+		this.invoiceLineTable = invoiceLineTable;
 		this.productTable = productTable;
 	}
 
@@ -91,12 +94,14 @@ public class C_InvoiceLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}
 }

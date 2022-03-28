@@ -27,9 +27,11 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 /**
  * Candidate model that consolidates a supply/demand candidate with the corresponding stock-candidate.
@@ -55,11 +57,15 @@ public class MaterialDispoDataItem
 
 	BusinessCaseDetail businessCaseDetail;
 
+	@NonNull
+	Instant updated;
+	
 	public static MaterialDispoDataItem of(
 			@NonNull final Candidate dataCanddiate,
 			@NonNull final Candidate stockCandidate)
 	{
 		return MaterialDispoDataItem.builder()
+				.updated(TimeUtil.max(dataCanddiate.getUpdated(), stockCandidate.getUpdated()))
 				.materialDescriptor(dataCanddiate.getMaterialDescriptor())
 				.candidateId(dataCanddiate.getId())
 				.type(dataCanddiate.getType())

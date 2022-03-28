@@ -43,7 +43,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 {
 	public static final IModelClassIntrospector instance = new ModelClassIntrospector();
 
-	public static final IModelClassIntrospector getInstance()
+	public static IModelClassIntrospector getInstance()
 	{
 		return instance;
 	}
@@ -67,7 +67,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 				.orElse(null);
 	}
 
-	private final Optional<IModelClassInfo> createModelClassInfo(final Class<?> clazz)
+	private Optional<IModelClassInfo> createModelClassInfo(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName != null || clazz.isInterface())

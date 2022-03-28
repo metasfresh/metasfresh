@@ -696,6 +696,7 @@ public class CandidateRepositoryWriteService
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
 		return candidate
+				.withUpdated(TimeUtil.asInstant(candidateRecord.getUpdated()))
 				.withId(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
 				.withParentId(CandidateId.ofRepoIdOrNull(candidateRecord.getMD_Candidate_Parent_ID()))
 				.withGroupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))

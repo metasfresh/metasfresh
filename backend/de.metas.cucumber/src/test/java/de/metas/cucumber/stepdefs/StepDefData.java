@@ -22,10 +22,14 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableCollection;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
+import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,12 +38,13 @@ import static org.assertj.core.api.Assertions.*;
 
 public abstract class StepDefData<T>
 {
-	private final Map<String, T> records = new HashMap<>();
+	private final Map<String, RecordDataItem<T>> records = new HashMap<>();
 
 	public void put(@NonNull final String identifier, @NonNull final T productRecord)
 	{
-		final T oldRecord = records.put(identifier, productRecord);
+		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
 
+		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
 				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
 				.isNull();
@@ -47,7 +52,7 @@ public abstract class StepDefData<T>
 
 	public void putOrReplace(@NonNull final String identifier, @NonNull final T productRecord)
 	{
-		final T oldRecord = records.get(identifier);
+		final RecordDataItem<T> oldRecord = records.get(identifier);
 
 		if (oldRecord == null)
 		{
@@ -55,7 +60,7 @@ public abstract class StepDefData<T>
 		}
 		else
 		{
-			records.replace(identifier, productRecord);
+			records.replace(identifier, createRecordDataItem(productRecord));
 		}
 	}
 
@@ -69,7 +74,7 @@ public abstract class StepDefData<T>
 
 	public void putIfMissing(@NonNull final String identifier, @NonNull final T record)
 	{
-		final T oldRecord = records.get(identifier);
+		final RecordDataItem<T> oldRecord = records.get(identifier);
 
 		if (oldRecord != null)
 		{
@@ -82,20 +87,53 @@ public abstract class StepDefData<T>
 	@NonNull
 	public T get(@NonNull final String identifier)
 	{
-		final T record = records.get(identifier);
-		assertThat(record).as("Missing record for identifier=%s", identifier).isNotNull();
+		return getRecordDataItem(identifier).getRecord();
+	}
 
-		return record;
+	@NonNull
+	public RecordDataItem<T> getRecordDataItem(@NonNull final String identifier)
+	{
+		final RecordDataItem<T> recordDataItem = records.get(identifier);
+		assertThat(recordDataItem).as("Missing recordDataItem for identifier=%s", identifier).isNotNull();
+
+		return recordDataItem;
 	}
 
 	@NonNull
 	public Optional<T> getOptional(@NonNull final String identifier)
 	{
-		return Optional.ofNullable(records.get(identifier));
+		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
 	}
 
-	public ImmutableCollection<T> getRecords()
+	public ImmutableList<T> getRecords()
 	{
-		return ImmutableList.copyOf(records.values());
+		return records.values().stream().map(RecordDataItem::getRecord).collect(ImmutableList.toImmutableList());
+	}
+
+	@NotNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
+	{
+		final Optional<Instant> updatedOpt;
+		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()))
+		{
+			updatedOpt = InterfaceWrapperHelper
+					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
+					.map(TimeUtil::asInstant);
+		}
+		else
+		{
+			updatedOpt = Optional.empty();
+		}
+		
+		final Instant updated = updatedOpt.orElse(Instant.MIN);
+		return new RecordDataItem<T>(productRecord, Instant.now(), updated);
+	}
+
+	@Value
+	public static class RecordDataItem<T>
+	{
+		T record;
+		Instant recordAdded;
+		Instant recordUpdated;
 	}
 }

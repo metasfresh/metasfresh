@@ -46,15 +46,15 @@ Feature: invoice rules
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1                   | invoice_1               |
+    Then enqueue invoice candidate of order o_1 for invoicing and after not more than 30s, the invoice is found
+      | C_Invoice_ID.Identifier |
+      | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick
@@ -99,15 +99,15 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_2                            | p_2                     | 6         | hu_1               |
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_2                   | invoice_2               |
+    Then enqueue invoice candidate of order o_2 for invoicing and after not more than 30s, the invoice is found
+      | C_Invoice_ID.Identifier |
+      | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
-      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_2               | p_2                     | 6           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity

@@ -531,17 +531,6 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
-	public void updateOrderLineFromContract(final I_C_Order order)
-	{
-		orderDAO.retrieveOrderLines(order)
-				.stream()
-				.filter(line -> line.getC_Flatrate_Conditions_ID() > 0)
-				.forEach(orderLineBL::updatePrices);
-	}
-
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
