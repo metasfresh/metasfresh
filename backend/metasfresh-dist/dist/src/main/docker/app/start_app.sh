@@ -139,8 +139,6 @@ then
 fi
 
 set_properties /opt/metasfresh/metasfresh.properties
-set_properties /opt/metasfresh/local_settings.properties
-set_properties /root/local_settings.properties
 
 run_metasfresh
 
