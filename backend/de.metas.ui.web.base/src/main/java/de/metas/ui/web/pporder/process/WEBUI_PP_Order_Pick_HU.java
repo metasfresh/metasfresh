@@ -22,10 +22,10 @@
 
 package de.metas.ui.web.pporder.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -39,7 +39,6 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
@@ -49,15 +48,16 @@ import de.metas.ui.web.pporder.util.WEBUI_PPOrder_PickingContext;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_HURowHelper;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -65,6 +65,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -86,6 +87,12 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@Param(parameterName = "IsTakeWholeHU", mandatory = true)
 	private boolean isTakeWholeHU;
 
+	@Param(parameterName = "IsPickViaReceivedQuantity", mandatory = true)
+	private boolean isPickViaReceivedQuantity;
+
+
+	private final boolean isViaReceivedQuantity = false;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -95,16 +102,24 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 			return eligibleView;
 		}
 
-		if (!getView().getPlanningStatus().isComplete())
+		final ImmutableList<HURow> firstRows = streamHURows().limit(2).collect(ImmutableList.toImmutableList());
+		if (firstRows.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("PPOrder is not complete");
+			// NOTE: we decided to hide this action when there is not available,
+			// because we want to cover the requirements of https://github.com/metasfresh/metasfresh-webui-api/issues/683,
+			// were we need to hide the action for source HU lines... and does not worth the effort to handle particularly that case.
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
-		if (!getSingleSelectedRow().getType().isMainProduct()
-				|| !getSingleSelectedRow().isReceipt()
-				|| !existsActiveHU())
+		if (firstRows.size() != 1)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no active HU found");
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		if (!WEBUI_PP_Order_HURowHelper.isEligibleHU(getSingleHURow()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -130,16 +145,53 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	}
 
 	@Override
-	// @RunOutOfTrx
 	protected String doIt()
 	{
+		if (isViaReceivedQuantity)
+		{
+			// Satisfy the shipment quantity over all the received HUs
+			pickHUs();
 
-		pickHUs();
-
+		}
+		else
+		{
+			pickHU();
+		}
 		// invalidate view in order to be refreshed
 		getView().invalidateAll();
 
 		return MSG_OK;
+	}
+
+	private void pickHU()
+	{
+		final HuId huId = getSingleHURow().getHuId();
+		WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
+												  .ppOrderId(getView().getPpOrderId())
+												  .huId(huId)
+												  .shipmentScheduleId(shipmentScheduleId)
+												  .pickingSlotId(pickingSlotId)
+												  .isTakeWholeHU(isTakeWholeHU)
+												  .build());
+	}
+
+	private void pickHUs()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
+		if (shipmentSchedule.getQtyToDeliver().compareTo(BigDecimal.ZERO) > 0)
+		{
+			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver();
+			calculateDistributionOfQuantityOverHUs(qtyToPick).entrySet().stream()
+					.forEach(e -> WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
+																			.ppOrderId(getView().getPpOrderId())
+																			.huId(e.getKey())
+																			.shipmentScheduleId(shipmentScheduleId)
+																			.qtyToPick(e.getValue())
+																			.pickingSlotId(pickingSlotId)
+																			.isTakeWholeHU(e.getValue().qtyAndUomCompareToEquals(getHuIdsQuantitiesAsMap().get(e.getKey())))
+																			.build())
+					);
+		}
 	}
 
 	private Map<HuId, Quantity> calculateDistributionOfQuantityOverHUs(final BigDecimal qtyToPick)
@@ -167,40 +219,45 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		return distribution;
 	}
 
+	private Stream<HURow> streamHURows()
+	{
+		return streamSelectedRows()
+				.map(WEBUI_PP_Order_HURowHelper::toHURowOrNull)
+				.filter(Objects::nonNull)
+				.filter(HURow::isTopLevelHU)
+				.filter(HURow::isHuStatusActive);
+	}
+
 	private Map<HuId, Quantity> getHuIdsQuantitiesAsMap()
 	{
-		final Map<HuId, Quantity> map = new HashMap<HuId, Quantity>();
-		getHURowsFromIncludedRows()
-				.filter(huRow -> isEligibleHU(huRow))
-				.forEach(huRow -> map.put(huRow.getHuId(), huRow.getQty()));
-
-		return map;
+		return getHURowsFromIncludedRows()
+				.filter(WEBUI_PP_Order_HURowHelper::isEligibleHU)
+				.collect(Collectors.toMap(HURow::getHuId, HURow::getQty));
 	}
 
-	private void pickHUs()
+	private Stream<HURow> getHURowsFromIncludedRows()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
-		if (shipmentSchedule.getQtyToDeliver().compareTo(BigDecimal.ZERO) > 0)
-		{
-			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver();
-			calculateDistributionOfQuantityOverHUs(qtyToPick).entrySet().stream()
-					.forEach(e -> WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
-																			   .ppOrderId(getView().getPpOrderId())
-																			   .huId(e.getKey())
-																			   .shipmentScheduleId(shipmentScheduleId)
-																			   .qtyToPick(e.getValue())
-																			   .pickingSlotId(pickingSlotId)
-																			   .isTakeWholeHU(e.getValue().qtyAndUomCompareToEquals(getHuIdsQuantitiesAsMap().get(e.getKey())))
-																			   .build())
-					);
-		}
+		return getView().streamByIds(DocumentIdsSelection.ALL)
+				.filter(row -> row.getType().isMainProduct() || row.isReceipt())
+				.flatMap(row -> row.getIncludedRows().stream())
+				.map(WEBUI_PP_Order_HURowHelper::toHURowOrNull)
+				.filter(Objects::nonNull)
+				.filter(HURow::isTopLevelHU)
+				.filter(HURow::isHuStatusActive)
+				.filter(WEBUI_PP_Order_HURowHelper::isEligibleHU);
 	}
 
-	private boolean existsActiveHU()
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		return getSingleSelectedRow().getIncludedRows().stream()
-				.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
-				.anyMatch(ppOrderLineRow -> ppOrderLineRow.isHUStatusActive());
+		return DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	private HURow getSingleHURow()
+	{
+		return streamHURows()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("only one selected row was expected")));
 	}
 
 	@Nullable
@@ -233,31 +290,14 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 		return filler.getPickingSlotValues(context);
 	}
 
-	private Stream<HURow> getHURowsFromIncludedRows()
-	{
-		return getSingleSelectedRow().getIncludedRows().stream()
-				.map(WEBUI_PP_Order_HURowHelper::toHURowOrNull)
-				.filter(Objects::nonNull)
-				.filter(HURow::isTopLevelHU)
-				.filter(HURow::isHuStatusActive);
-	}
-
-	@Nullable
 	@Override
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	protected void postProcess(final boolean success)
 	{
-		return DEFAULT_VALUE_NOTAVAILABLE;
-	}
+		if (!success)
+		{
+			return;
+		}
 
-	private boolean isEligibleHU(final HURow row)
-	{
-		final I_M_HU hu = handlingUnitsBL.getById(row.getHuId());
-		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
-		return huContextFactory
-				.createMutableHUContext()
-				.getHUStorageFactory()
-				.getStorage(hu)
-				.isSingleProductStorage();
+		invalidateView();
 	}
-
 }

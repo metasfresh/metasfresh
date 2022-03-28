@@ -24,6 +24,9 @@ package de.metas.ui.web.pporder.util;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -35,6 +38,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,6 +53,8 @@ public class WEBUI_PP_Order_HURowHelper
 {
 
 	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_HURowHelper.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public final static void pickHU(final WEBUI_PPOrder_PickingContext context)
 	{
@@ -57,6 +63,7 @@ public class WEBUI_PP_Order_HURowHelper
 		pickingCandidateService.pickHU(PickRequest.builder()
 											   .shipmentScheduleId(context.getShipmentScheduleId())
 											   .pickFrom(PickFrom.ofHuId(context.getHuId()))
+											   .qtyToPick(context.getQtyToPick())
 											   .pickingSlotId(context.getPickingSlotId())
 											   .build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
@@ -108,7 +115,18 @@ public class WEBUI_PP_Order_HURowHelper
 		}
 	}
 
+	public final static boolean isEligibleHU(final HURow row)
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-
+		final I_M_HU hu = handlingUnitsBL.getById(row.getHuId());
+		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
+		return huContextFactory
+				.createMutableHUContext()
+				.getHUStorageFactory()
+				.getStorage(hu)
+				.isSingleProductStorage();
+	}
 
 }

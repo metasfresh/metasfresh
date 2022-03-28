@@ -110,7 +110,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (!isEligibleHU())
+		if (!WEBUI_PP_Order_HURowHelper.isEligibleHU(getSingleHURow()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
 		}
@@ -139,18 +139,6 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		}
 	}
 
-	private boolean isEligibleHU()
-	{
-		final HURow row = getSingleHURow();
-		final I_M_HU hu = handlingUnitsBL.getById(row.getHuId());
-
-		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
-		return huContextFactory
-				.createMutableHUContext()
-				.getHUStorageFactory()
-				.getStorage(hu)
-				.isSingleProductStorage();
-	}
 
 	private Stream<HURow> streamHURows()
 	{
