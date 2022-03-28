@@ -78,8 +78,8 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@Param(parameterName = "IsTakeWholeHU", mandatory = true)
 	private boolean isTakeWholeHU;
 
-	@Param(parameterName = "IsPickViaReceivedQuantity", mandatory = true)
-	private boolean isPickViaReceivedQuantity;
+	@Param(parameterName = "IsPickAllRecievedHUs", mandatory = true)
+	private boolean isPickAllRecievedHUs;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -135,7 +135,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 	@Override
 	protected String doIt()
 	{
-		if (isPickViaReceivedQuantity)
+		if (isPickAllRecievedHUs)
 		{
 			// Satisfy the shipment quantity over all the received HUs
 			pickHUs();
