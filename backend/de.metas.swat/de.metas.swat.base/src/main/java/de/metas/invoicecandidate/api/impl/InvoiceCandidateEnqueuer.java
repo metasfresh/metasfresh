@@ -158,7 +158,6 @@ import lombok.NonNull;
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
 		icChangesChecker.assertNoChanges(invoiceCandidates);
 
-		trxManager.commit(ITrx.TRXNAME_ThreadInherited);
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
