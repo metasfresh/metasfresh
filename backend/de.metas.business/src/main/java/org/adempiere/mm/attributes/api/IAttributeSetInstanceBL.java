@@ -87,6 +87,8 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
 	}
 
+	void cloneOrCreateASI(Object to, Object from);
+
 	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
