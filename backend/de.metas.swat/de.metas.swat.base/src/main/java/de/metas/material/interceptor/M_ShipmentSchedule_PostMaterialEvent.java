@@ -150,6 +150,9 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getQtyReserved()
 				.subtract(oldShipmentSchedule.getQtyReserved());
 
+		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
+				.getDocumentLineDescriptor();
+
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
@@ -161,6 +164,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.reservedQuantityDelta(reservedQuantityDelta)
 				.orderedQuantityDelta(orderedQuantityDelta)
+				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 	}
