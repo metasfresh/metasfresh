@@ -24,6 +24,9 @@ package de.metas.ui.web.pporder.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -37,6 +40,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick_ParametersFiller;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -49,6 +53,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.PPOrderId;
 
@@ -58,6 +63,7 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 {
 
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Param(parameterName = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID, mandatory = true)
 	protected PickingSlotId pickingSlotId;
@@ -131,29 +137,43 @@ public class WEBUI_PP_Order_Pick_HU extends WEBUI_PP_Order_Template implements I
 				return;
 			}
 			final Quantity huRowQty = huRow.getQty();
+			final HuId huId = huRow.getHuId();
+			final HuId huIdToProcess;
 
 			final Quantity qtyToPick;
 
 			if (isTakeWholeHU || qtyLeftToPick.compareTo(huRowQty) > 0)
 			{
 				qtyToPick = huRowQty;
+
+				huIdToProcess = huId;
+
 			}
+
 			else
 			{
 				qtyToPick = qtyLeftToPick;
+
+				final I_M_HU splitHU = CollectionUtils.singleElement(HUTransformService.newInstance()
+																			 .husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+																								  .sourceHU(huDAO.getById(huId))
+																								  .productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+																								  .qtyCU(qtyToPick)
+																								  .onlyFromUnreservedHUs(true)
+																								  .build()));
+				huIdToProcess = HuId.ofRepoId(splitHU.getM_HU_ID());
+
 			}
 
-			final HuId huId = huRow.getHuId();
-
-			qtyLeftToPick = qtyLeftToPick.subtract(qtyToPick);
-
-			WEBUI_PP_Order_ProcessHelper.pickHU(WEBUI_Picking_Request.builder()
-														.huId(huId)
+			WEBUI_PP_Order_ProcessHelper.pickAndProcessHU(WEBUI_Picking_Request.builder()
+														.huId(huIdToProcess)
 														.shipmentScheduleId(shipmentScheduleId)
 														.pickingSlotId(pickingSlotId)
 														.isTakeWholeHU(isTakeWholeHU)
 														.ppOrderId(ppOrderId)
 														.build());
+
+			qtyLeftToPick = qtyLeftToPick.subtract(qtyToPick);
 
 		}
 	}

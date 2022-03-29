@@ -203,7 +203,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
-		WEBUI_PP_Order_ProcessHelper.pickHU(WEBUI_Picking_Request.builder()
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessHU(WEBUI_Picking_Request.builder()
 													.huId(huId)
 													.shipmentScheduleId(shipmentScheduleId)
 													.pickingSlotId(pickingSlotId)

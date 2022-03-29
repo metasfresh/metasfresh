@@ -99,7 +99,7 @@ public class WEBUI_PP_Order_ProcessHelper
 	}
 
 	@Nullable
-	public final static HURow toHURowOrNull(final IViewRow viewRow)
+	public static HURow toHURowOrNull(final IViewRow viewRow)
 	{
 		if (viewRow instanceof HUEditorRow)
 		{
@@ -152,7 +152,7 @@ public class WEBUI_PP_Order_ProcessHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static void pickHU(@NonNull final WEBUI_Picking_Request request)
+	public static void pickAndProcessHU(@NonNull final WEBUI_Picking_Request request)
 	{
 
 		pickingCandidateService.pickHU(PickRequest.builder()
