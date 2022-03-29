@@ -1,35 +1,24 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import java.sql.Timestamp;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -51,24 +40,10 @@ import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
-import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *
@@ -98,6 +73,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
@@ -212,7 +189,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
 
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(receiptSchedule, line);
+			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, line);
 
 			// task #653
 			// Set the LotNumberDate as attribute in the new receipt schedule's ASI
