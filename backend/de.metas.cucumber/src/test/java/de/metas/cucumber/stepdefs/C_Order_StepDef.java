@@ -260,15 +260,6 @@ public class C_Order_StepDef
 				order.setPaymentRule(paymentRule);
 			}
 
-			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
-				assertThat(bPartnerLocation).isNotNull();
-
-				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
-			}
-
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
