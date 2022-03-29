@@ -478,7 +478,8 @@ class OLCandOrderFactory
 			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
-			currentOrderLine.setQtyItemCapacity(candidate.getQtyItemCapacity());
+
+			currentOrderLine.setQtyItemCapacity(Quantitys.toBigDecimalOrNull(candidate.getQtyItemCapacityEff()));
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);

@@ -22,11 +22,15 @@
 
 package de.metas.material.dispo.commons.candidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class MaterialDispoRecordRepository
@@ -41,11 +45,7 @@ public class MaterialDispoRecordRepository
 	@NonNull
 	public MaterialDispoDataItem getBy(@NonNull final CandidatesQuery query)
 	{
-		if (query.getType().equals(CandidateType.STOCK))
-		{
-			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
-					.setParameter("candidatesQuery", query);
-		}
+		assertNotStockQuery(query);
 
 		final Candidate candidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidate == null)
@@ -53,6 +53,35 @@ public class MaterialDispoRecordRepository
 			throw new AdempiereException("The given candidatesQuery does not match any candidate").appendParametersToMessage()
 					.setParameter("candidatesQuery", query);
 		}
+		return extractMaterialDispoItem(query, candidate);
+	}
+
+	@NonNull
+	public List<MaterialDispoDataItem> getAllBy(@NonNull final CandidatesQuery query)
+	{
+		assertNotStockQuery(query);
+
+		final ImmutableList.Builder<MaterialDispoDataItem> result = ImmutableList.builder();
+
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		for (final Candidate candidate : candidates)
+		{
+			result.add(extractMaterialDispoItem(query, candidate));
+		}
+		return result.build();
+	}
+
+	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
+	{
+		if (query.getType().equals(CandidateType.STOCK))
+		{
+			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
+					.setParameter("candidatesQuery", query);
+		}
+	}
+
+	private MaterialDispoDataItem extractMaterialDispoItem(final @NonNull CandidatesQuery query, final @NonNull Candidate candidate)
+	{
 		final Candidate stockCandidate;
 		switch (candidate.getType())
 		{

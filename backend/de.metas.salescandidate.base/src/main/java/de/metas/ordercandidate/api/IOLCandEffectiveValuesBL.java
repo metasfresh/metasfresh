@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -171,6 +172,12 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
 
+	/**
+	 * @return might return zero.
+	 */
+	@NonNull
+	Quantity getQtyItemCapacity_Effective(@NonNull I_C_OLCand olCandRecord);
+	
 	/**
 	 * Like {@link #getEffectiveUomId(I_C_OLCand)} , but return the actual uom.
 	 */

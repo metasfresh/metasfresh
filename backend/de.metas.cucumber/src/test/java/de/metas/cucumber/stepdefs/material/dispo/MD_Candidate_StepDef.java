@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -80,11 +81,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
@@ -161,7 +164,7 @@ public class MD_Candidate_StepDef
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
 
-		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent);
+		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
@@ -234,7 +237,6 @@ public class MD_Candidate_StepDef
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
-
 
 	@Then("^after not more than (.*)s, metasfresh has this MD_Candidate data$")
 	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
@@ -361,7 +363,7 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event);
+		postMaterialEventService.postEventNow(event, null);
 	}
 
 	@And("metasfresh has no MD_Candidate for identifier {string}")
@@ -380,26 +382,35 @@ public class MD_Candidate_StepDef
 	{
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
+			// if this is a identifier that we have not seen yet, then make sure that we also wait for a new MD_Candidate
+			final boolean isNewIdentifier = !materialDispoDataItemStepDefData.getOptional(tableRow.getIdentifier()).isPresent();
+			final ImmutableSet<CandidateId> idsToExclude;
+			if (isNewIdentifier)
+			{
+				idsToExclude = materialDispoDataItemStepDefData.getCandidateIds();
+			}
+			else
+			{
+				idsToExclude = ImmutableSet.of();
+			}
+
 			// make sure the given md_candidate has been created
-			final Supplier<Boolean> candidateCreated = () ->
-					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
-							.map(Candidate::getMaterialDescriptor)
-							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
-							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
-							.isPresent();
-
-			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
-
-			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
+			final Supplier<Optional<MaterialDispoDataItem>> candidateCreated = () -> materialDispoRecordRepository.getAllBy(tableRow.createQuery()).stream()
+					.filter(materialDispoRecord -> !idsToExclude.contains(materialDispoRecord.getCandidateId()))
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
+					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
+					.findFirst();
+			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated);
 
 			assertThat(materialDispoRecord).isNotNull();
 
-			assertThat(materialDispoRecord.getType()).isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getBusinessCase()).isEqualTo(tableRow.getBusinessCase());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).isEqualTo(tableRow.getProductId().getRepoId());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
-			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+			assertThat(materialDispoRecord.getType()).as("type of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getType());
+			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getBusinessCase());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getProductId().getRepoId());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date  of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getTime());
+			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).as("quantity of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getQty());
+			assertThat(materialDispoRecord.getAtp()).as("atp of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getAtp());
 
 			final String attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))

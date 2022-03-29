@@ -53,7 +53,9 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
@@ -293,16 +295,16 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{
 		@Override
-		public boolean isProviderNeededForOLCand(final I_C_OLCand olCand)
+		public boolean isProviderNeededForOLCand(@NonNull final I_C_OLCand olCand)
 		{
 			return false;
 		}
 
-		@Nullable
+		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(final I_C_OLCand olCand)
+		public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return null;
+			return Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID()));
 		}
 	}
 

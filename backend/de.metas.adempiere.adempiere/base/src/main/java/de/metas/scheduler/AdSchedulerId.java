@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -58,4 +59,6 @@ public class AdSchedulerId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final AdSchedulerId id) { return id != null ? id.getRepoId() : -1; }
 }

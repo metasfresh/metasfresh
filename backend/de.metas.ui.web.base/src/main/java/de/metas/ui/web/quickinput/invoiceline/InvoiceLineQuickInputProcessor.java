@@ -61,7 +61,7 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		// 3834
 		final ProductId productId = ProductId.ofRepoId(invoiceLineQuickInput.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final SOTrx soTrx = SOTrx.ofBooleanNonNull(invoice.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, invoice);

@@ -240,7 +240,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		if (minTimeAfterFirstEnqueued.compareTo(now) > 0)
 		{
-			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterFirstEnqueued);
+			final long millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterFirstEnqueued);
 
 			return Duration.ofMillis(millisToWait);
 		}
@@ -250,8 +250,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(lastProcessed, processedTimeOffsetMillis);
 		if (minTimeAfterLastProcessed.compareTo(now) > 0)
 		{
-			final int millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterLastProcessed);
-
+			final long millisToWait = TimeUtil.getMillisBetween(now, minTimeAfterLastProcessed);
 			return Duration.ofMillis(millisToWait);
 		}
 

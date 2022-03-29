@@ -25,6 +25,7 @@ package de.metas.procurement.webui.sync.rabbitmq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.procurement.webui.service.RabbitMQAuditService;
 import de.metas.procurement.webui.sync.exception.SendSyncException;
 import lombok.NonNull;
 import org.springframework.amqp.core.Message;
@@ -40,13 +41,16 @@ import java.nio.charset.StandardCharsets;
 public class SenderToMetasfresh
 {
 	private final RabbitTemplate rabbitTemplate;
+	private final RabbitMQAuditService auditService;
 	private final Queue queue;
 
 	public SenderToMetasfresh(
 			@NonNull final RabbitTemplate rabbitTemplate,
+			@NonNull final RabbitMQAuditService auditService,
 			@NonNull @Qualifier(Constants.QUEUE_NAME_PW_TO_MF) final Queue queue)
 	{
 		this.rabbitTemplate = rabbitTemplate;
+		this.auditService = auditService;
 		this.queue = queue;
 	}
 
@@ -67,5 +71,6 @@ public class SenderToMetasfresh
 		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
 		rabbitTemplate.convertAndSend(queue.getName(), new Message(messageAsBytes, messageProperties));
+		auditService.logSendToMetasfresh(queue.getName(), requestToMetasfresh);
 	}
 }

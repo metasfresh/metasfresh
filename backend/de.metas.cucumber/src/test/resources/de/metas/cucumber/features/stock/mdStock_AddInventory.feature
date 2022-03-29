@@ -14,6 +14,7 @@ Feature: stock changes accordingly
       | 222        | automateProduct222 |
 
   Scenario: Changes stock by adding inventory
+    # create two inventories, each one with one inventory-line
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
       | 11                        | 540008         | 2021-07-12   | 1111           |
@@ -23,11 +24,11 @@ Feature: stock changes accordingly
       | 21                            | 11                        | 222                     | PCE          | 10       | 0       |
       | 22                            | 12                        | 222                     | PCE          | 16       | 10      |
     When the inventory identified by 11 is completed
-    Then metasfresh has MD_Stock data
+    Then after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 10        |
 
     And the inventory identified by 12 is completed
-    And metasfresh has MD_Stock data
+    And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 16        |

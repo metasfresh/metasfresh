@@ -77,7 +77,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	@Value
 	@Builder
-	public class CreateReceiptsParameters
+	class CreateReceiptsParameters
 	{
 		@NonNull
 		Properties ctx;

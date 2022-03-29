@@ -224,8 +224,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param previousReceiptSchedule
-	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -439,7 +437,6 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setIsSOTrx(false);
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
-			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
