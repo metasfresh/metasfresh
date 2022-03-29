@@ -42,6 +42,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -69,6 +70,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -86,6 +88,8 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 
 public class C_Invoice_StepDef
 {
+	private final static transient Logger logger = LogManager.getLogger(C_Invoice_StepDef.class);
+
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -169,11 +173,16 @@ public class C_Invoice_StepDef
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
 		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateRecord::isProcessed);
+		StepDefUtil.tryAndWait(timeoutSec, 500,
+							   () -> {
+								   InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
+								   return invoiceCandidateRecord.isProcessed();
+							   },
+							   () -> logger.error(invoiceCandidateRecord + " was not processed"));
 
 		DB.deleteT_Selection(invoiceCandidatesSelectionId, ITrx.TRXNAME_None);
 
-			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 
 		final List<de.metas.adempiere.model.I_C_Invoice> sortedInvoices = invoices.stream()
 				.sorted(Comparator.comparing(de.metas.adempiere.model.I_C_Invoice::getCreated))
@@ -275,7 +284,7 @@ public class C_Invoice_StepDef
 		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocationIdentifier);
 		assertThat(bPartnerLocation).isNotNull();
-		assertThat(invoice.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+		assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
 		if (Check.isNotBlank(poReference))

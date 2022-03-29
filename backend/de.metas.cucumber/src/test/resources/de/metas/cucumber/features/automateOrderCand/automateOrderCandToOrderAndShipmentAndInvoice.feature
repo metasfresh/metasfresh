@@ -80,7 +80,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 10          | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
 
   @from:cucumber
@@ -228,7 +228,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 8           | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
   @from:cucumber
@@ -339,7 +339,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 8           | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
   @from:cucumber
@@ -469,8 +469,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 8           | true      |
-      | invoiceLine_2               | invoice_1               | product_1               | 2           | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
+      | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -546,7 +546,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 10          | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -646,5 +646,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | product_1               | 8           | true      |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
