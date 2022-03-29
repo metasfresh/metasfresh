@@ -1,17 +1,8 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickFrom;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
@@ -19,30 +10,21 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
-import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
-import de.metas.ui.web.pporder.util.WEBUI_PPOrder_PickingContext;
-import de.metas.ui.web.pporder.util.WEBUI_PP_Order_HURowHelper;
+import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
+import de.metas.ui.web.pporder.util.WEBUI_Picking_Request;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.eevolution.api.PPOrderId;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -72,11 +54,6 @@ import java.util.stream.Stream;
 
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final Logger logger = LogManager.getLogger(WEBUI_M_HU_Pick.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
-
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private PickingSlotId pickingSlotId;
 
@@ -110,7 +87,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (!WEBUI_PP_Order_HURowHelper.isEligibleHU(getSingleHURow()))
+		if (!WEBUI_PP_Order_ProcessHelper.isEligibleHU(firstRows.get(0)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
 		}
@@ -139,11 +116,10 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		}
 	}
 
-
 	private Stream<HURow> streamHURows()
 	{
 		return streamSelectedRows()
-				.map(WEBUI_PP_Order_HURowHelper::toHURowOrNull)
+				.map(row -> WEBUI_PP_Order_ProcessHelper.toHURowOrNull(row))
 				.filter(Objects::nonNull)
 				.filter(HURow::isTopLevelHU)
 				.filter(HURow::isHuStatusActive);
@@ -212,14 +188,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Override
 	protected String doIt()
 	{
-		final HuId huId = getSingleHURow().getHuId();
-		WEBUI_PP_Order_HURowHelper.pickHU(WEBUI_PPOrder_PickingContext.builder()
-												  .ppOrderId(getPPOrderId())
-												  .huId(huId)
-												  .shipmentScheduleId(shipmentScheduleId)
-												  .pickingSlotId(pickingSlotId)
-												  .isTakeWholeHU(isTakeWholeHU)
-												  .build());
+		final HURow row = getSingleHURow();
+		pickHU(row);
 
 		// invalidate view in order to be refreshed
 		getView().invalidateAll();
@@ -227,10 +197,19 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
-	private  PPOrderId getPPOrderId(){
+	private void pickHU(final HURow row)
+	{
+		final HuId huId = row.getHuId();
+
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
-		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
-		return ppOrderId;
+
+		WEBUI_PP_Order_ProcessHelper.pickHU(WEBUI_Picking_Request.builder()
+													.huId(huId)
+													.shipmentScheduleId(shipmentScheduleId)
+													.pickingSlotId(pickingSlotId)
+													.isTakeWholeHU(isTakeWholeHU)
+													.ppOrderId(ppOrderView.getPpOrderId())
+													.build());
 	}
 
 	@Override

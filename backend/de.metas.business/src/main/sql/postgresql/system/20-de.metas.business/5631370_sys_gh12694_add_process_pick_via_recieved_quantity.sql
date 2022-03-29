@@ -113,3 +113,15 @@ UPDATE AD_Process_Para SET DisplayLogic='@M_ShipmentSchedule_ID/0@ ! 0',Updated=
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-03-28 16:55:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542239
 ;
 
+
+
+-- 2022-03-29T15:13:09.918Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542239
+;
+
+-- 2022-03-29T15:13:09.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542239
+;
+
