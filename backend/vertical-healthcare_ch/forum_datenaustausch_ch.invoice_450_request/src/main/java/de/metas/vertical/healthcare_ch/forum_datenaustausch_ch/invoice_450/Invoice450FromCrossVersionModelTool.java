@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.Bank;
@@ -37,6 +38,8 @@ import de.metas.location.Location;
 import de.metas.location.LocationRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
@@ -198,6 +201,7 @@ public class Invoice450FromCrossVersionModelTool
 	private final LocationRepository locationRepository = SpringContextHolder.instance.getBean(LocationRepository.class);
 	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final static transient Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
+	private final transient ILoggable debugLoggable = Loggables.withLogger(logger, Level.DEBUG);
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -1581,22 +1585,22 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (location == null)
 		{
-			logger.warn("No location found for bank {}", bank);
+			debugLoggable.addLog("No location found for bank {}", bank);
 			return false;
 		}
 		if (Check.isBlank(location.getPostal()))
 		{
-			logger.warn("No postal code found for location {}", location);
+			debugLoggable.addLog("No postal code found for location {}", location);
 			return false;
 		}
 		if (Check.isBlank(location.getCity()))
 		{
-			logger.warn("No city found for location {}", location);
+			debugLoggable.addLog("No city found for location {}", location);
 			return false;
 		}
 		if (Check.isBlank(location.getCountryCode()))
 		{
-			logger.warn("No country code found for location {}", location);
+			debugLoggable.addLog("No country code found for location {}", location);
 			return false;
 		}
 		return true;
@@ -1606,12 +1610,12 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (bank == null)
 		{
-			logger.warn("No bank found for bank ID {}", bankId);
+			debugLoggable.addLog("No bank found for bank ID {}", bankId);
 			return false;
 		}
 		if (bank.getLocationId() == null)
 		{
-			logger.warn("No location found for bank ID {}", bankId);
+			debugLoggable.addLog("No location found for bank ID {}", bankId);
 			return false;
 		}
 		return true;
@@ -1621,17 +1625,17 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (bankAccount == null)
 		{
-			logger.warn("No bank account found for BPartnerId {}", bPartnerId);
+			debugLoggable.addLog("No bank account found for BPartnerId {}", bPartnerId);
 			return false;
 		}
 		if (bankAccount.getQrIban() == null)
 		{
-			logger.warn("No QR IBAN found for BankAccount {}", bankAccount.getId());
+			debugLoggable.addLog("No QR IBAN found for BankAccount {}", bankAccount.getId());
 			return false;
 		}
 		if (bankAccount.getBankId() == null && esr9.getBank() == null)
 		{
-			logger.warn("No bank found for BankAccount {} and bank record does not exist in provided XML", bankAccount.getId());
+			debugLoggable.addLog("No bank found for BankAccount {} and bank record does not exist in provided XML", bankAccount.getId());
 			return false;
 		}
 		return true;
