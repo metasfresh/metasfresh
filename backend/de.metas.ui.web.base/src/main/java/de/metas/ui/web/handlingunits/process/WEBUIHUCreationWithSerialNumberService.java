@@ -99,7 +99,14 @@ public class WEBUIHUCreationWithSerialNumberService
 			final int serialNoCount = availableSerialNumbers.size();
 			final int cusToCreateCount = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
-			final Set<HuId> splitCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount);
+			final Set<HuId> splitCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount)
+					.stream()
+					// #12728
+					// If the selectedCuRow does not have a parent, it will be added to the set of
+					// split CUs (see de.metas.ui.web.handlingunits.process.WEBUIHUCreationWithSerialNumberService.createCUsBatch)
+					// Make sure the serial numbers get into the actual, new split CUs (with greater IDs) first, and only afterwards in the source row.
+					.sorted(Comparator.comparing(HuId::getRepoId).reversed())
+					.collect(ImmutableSet.toImmutableSet());
 
 			assignSerialNumbersToCUs(splitCUIDs, availableSerialNumbers);
 			huIDsAdded.addAll(splitCUIDs);
@@ -127,10 +134,7 @@ public class WEBUIHUCreationWithSerialNumberService
 			splitCUs.addAll(createCUsBatch(huEditorRowHierarchy, maxCUsAllowedPerBatch));
 		}
 
-		return splitCUs
-				.stream()
-				.sorted(Comparator.comparing(HuId::getRepoId).reversed())
-				.collect(ImmutableSet.toImmutableSet());
+		return splitCUs;
 	}
 
 	private Set<HuId> createCUsBatch(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final int maxCUsAllowedPerBatch)
