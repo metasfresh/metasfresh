@@ -38,7 +38,6 @@ import de.metas.location.Location;
 import de.metas.location.LocationRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -201,7 +200,6 @@ public class Invoice450FromCrossVersionModelTool
 	private final LocationRepository locationRepository = SpringContextHolder.instance.getBean(LocationRepository.class);
 	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final static transient Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
-	private final transient ILoggable debugLoggable = Loggables.withLogger(logger, Level.DEBUG);
 
 	private static final long VALIDATION_STATUS_OK = 0L;
 
@@ -1585,22 +1583,22 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (location == null)
 		{
-			debugLoggable.addLog("No location found for bank {}", bank);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No location found for bank {}", bank);
 			return false;
 		}
 		if (Check.isBlank(location.getPostal()))
 		{
-			debugLoggable.addLog("No postal code found for location {}", location);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No postal code found for location {}", location);
 			return false;
 		}
 		if (Check.isBlank(location.getCity()))
 		{
-			debugLoggable.addLog("No city found for location {}", location);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No city found for location {}", location);
 			return false;
 		}
 		if (Check.isBlank(location.getCountryCode()))
 		{
-			debugLoggable.addLog("No country code found for location {}", location);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No country code found for location {}", location);
 			return false;
 		}
 		return true;
@@ -1610,12 +1608,12 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (bank == null)
 		{
-			debugLoggable.addLog("No bank found for bank ID {}", bankId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank found for bank ID {}", bankId);
 			return false;
 		}
 		if (bank.getLocationId() == null)
 		{
-			debugLoggable.addLog("No location found for bank ID {}", bankId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No location found for bank ID {}", bankId);
 			return false;
 		}
 		return true;
@@ -1625,17 +1623,17 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (bankAccount == null)
 		{
-			debugLoggable.addLog("No bank account found for BPartnerId {}", bPartnerId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank account found for BPartnerId {}", bPartnerId);
 			return false;
 		}
 		if (bankAccount.getQrIban() == null)
 		{
-			debugLoggable.addLog("No QR IBAN found for BankAccount {}", bankAccount.getId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No QR IBAN found for BankAccount {}", bankAccount.getId());
 			return false;
 		}
 		if (bankAccount.getBankId() == null && esr9.getBank() == null)
 		{
-			debugLoggable.addLog("No bank found for BankAccount {} and bank record does not exist in provided XML", bankAccount.getId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank found for BankAccount {} and bank record does not exist in provided XML", bankAccount.getId());
 			return false;
 		}
 		return true;
