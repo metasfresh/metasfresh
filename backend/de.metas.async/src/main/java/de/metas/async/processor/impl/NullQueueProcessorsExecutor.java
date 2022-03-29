@@ -43,21 +43,12 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public boolean removeQueueProcessor(int queueProcessorId)
+	public void removeQueueProcessor(final int queueProcessorId)
 	{
-		return true;
 	}
 
 	@Override
-	public boolean removeAllQueueProcessor()
-	{
-		// NOTE: don't throw exception because there are some BLs which are not expecting that.
-		// On the other hand there is no harm done, we got nothing anyways
-		return true; // succes
-	}
-
-	@Override
-	public void addQueueProcessor(I_C_Queue_Processor processorDef)
+	public void addQueueProcessor(final I_C_Queue_Processor processorDef)
 	{
 		// nothing
 	}
@@ -69,7 +60,7 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public IQueueProcessor getQueueProcessor(int queueProcessorId)
+	public IQueueProcessor getQueueProcessor(final int queueProcessorId)
 	{
 		// nothing
 		return null;

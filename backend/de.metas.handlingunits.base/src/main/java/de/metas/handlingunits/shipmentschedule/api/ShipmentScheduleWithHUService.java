@@ -286,7 +286,7 @@ public class ShipmentScheduleWithHUService
 			}
 		}
 
-		// find out if and what what the pickHUsOnTheFly() method did for us
+		// find out if and what the pickHUsOnTheFly() method did for us
 		final Quantity allocatedQty = result
 				.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)

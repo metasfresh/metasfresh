@@ -25,7 +25,9 @@ package de.metas.banking.payment.paymentallocation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -40,6 +42,7 @@ import java.time.LocalDate;
 @Value
 public class PaymentAllocationPayableItem
 {
+	InvoiceAmtMultiplier amtMultiplier;
 	Amount openAmt;
 	Amount payAmt;
 	Amount discountAmt;
@@ -58,15 +61,17 @@ public class PaymentAllocationPayableItem
 	boolean invoiceIsCreditMemo;
 	
 	String documentNo;
-	LocalDate dateInvoiced;
 
 	/**
 	 * This property is not about the invoice, but basically about the payment.
 	 */
-	boolean isSOTrx;
+	SOTrx soTrx;
+	
+	LocalDate dateInvoiced;
 
 	@Builder
 	private PaymentAllocationPayableItem(
+			@NonNull final InvoiceAmtMultiplier amtMultiplier,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount payAmt,
 			@NonNull final Amount discountAmt,
@@ -79,9 +84,10 @@ public class PaymentAllocationPayableItem
 			@NonNull final BPartnerId invoiceBPartnerId,
 			final boolean invoiceIsCreditMemo, 
 			@NonNull final String documentNo,
-			final boolean isSOTrx,
+			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateInvoiced)
 	{
+		this.amtMultiplier = amtMultiplier;
 		this.openAmt = openAmt;
 		this.payAmt = payAmt;
 		this.discountAmt = discountAmt;
@@ -93,7 +99,7 @@ public class PaymentAllocationPayableItem
 		this.invoiceId = invoiceId;
 		this.invoiceBPartnerId = invoiceBPartnerId;
 		this.documentNo = documentNo;
-		this.isSOTrx = isSOTrx;
+		this.soTrx = soTrx;
 		this.dateInvoiced = dateInvoiced;
 	}
 }

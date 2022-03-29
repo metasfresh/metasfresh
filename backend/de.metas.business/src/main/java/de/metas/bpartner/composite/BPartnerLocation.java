@@ -10,6 +10,7 @@ import de.metas.bpartner.OrgMappingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -316,5 +317,14 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+	}
+
+	/**
+	 * Can be used if this instance's ID is known to be not null.
+	 */
+	@NonNull
+	public BPartnerLocationId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "id may not be null at this point");
 	}
 }

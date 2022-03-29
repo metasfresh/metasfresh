@@ -69,7 +69,7 @@ public class AttachmentEntryCreateRequest
 
 	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
 			@NonNull final String fileName,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
 		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.Data)

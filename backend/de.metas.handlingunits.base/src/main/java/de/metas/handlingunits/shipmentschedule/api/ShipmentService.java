@@ -60,6 +60,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -398,7 +399,6 @@ public class ShipmentService implements IShipmentService
 		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyToDeliver.keySet());
 	}
 
-	@NonNull
 	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
@@ -438,10 +438,16 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if (NumberUtils.asBigDecimal(olCand.getQtyShipped(), BigDecimal.ZERO).signum() <= 0)
+			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
+				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,
 										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+				continue;
+			}
+			else if (olCand.getQtyShipped().signum() <= 0)
+			{
+				// the caller wants *no* shipment
 				continue;
 			}
 

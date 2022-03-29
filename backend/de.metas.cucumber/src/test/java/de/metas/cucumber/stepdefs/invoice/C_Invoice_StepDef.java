@@ -24,12 +24,13 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -70,34 +71,35 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 
 public class C_Invoice_StepDef
 {
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
 		this.orderTable = orderTable;
-		this.bpartnerTable = bPartnerTable;
+		this.bpartnerTable = bpartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 	}
 
@@ -208,8 +210,12 @@ public class C_Invoice_StepDef
 				.orgId(StepDefConstants.ORG_ID)
 				.value(paymentTerm)
 				.build();
+
 		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
 				.orElse(null);
+
+		assertThat(paymentTermId).isNotNull();
+		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 
 		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
 		if (Check.isNotBlank(docSubType))
@@ -221,6 +227,21 @@ public class C_Invoice_StepDef
 					.firstOnlyNotNull(I_C_DocType.class);
 
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
+
+		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
+		if (Check.isNotBlank(bpartnerAddress))
+		{
+			assertThat(invoice.getBPartnerAddress()).isEqualTo(bpartnerAddress);
+		}
+
+		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
+
+		if (Check.isNotBlank(expectedDocTypeName))
+		{
+			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+
+			assertThat(actualInvoiceDocType.getName()).isEqualTo(expectedDocTypeName);
 		}
 
 		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);

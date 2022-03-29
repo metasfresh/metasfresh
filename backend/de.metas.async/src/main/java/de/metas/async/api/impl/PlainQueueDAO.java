@@ -22,22 +22,6 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.POJOQuery;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.compiere.model.IQuery;
-import org.slf4j.Logger;
-
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Queue_Element;
@@ -45,8 +29,26 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.POJOQuery;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
@@ -129,6 +131,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
+	@NonNull
 	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
 	{
 		final int tableId = element.getAD_Table_ID();
@@ -139,7 +142,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 		{
 			item = db.lookup(tableId, recordId, clazz);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 			throw new PackageItemNotAvailableException(tableName, recordId);
@@ -161,6 +164,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 				null,  // tableName=null => get it from the given model class
 				ITrx.TRXNAME_None)
 				.addFilter(new QueueFilter(packageQuery))
+				.setLimit(QueryLimit.getQueryLimitOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator);
 	}
 
@@ -203,7 +207,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 			}
 
 			// Only work packages for given process
-			final List<Integer> packageProcessorIds = packageQuery.getPackageProcessorIds();
+			final Set<QueuePackageProcessorId> packageProcessorIds = packageQuery.getPackageProcessorIds();
 			if (packageProcessorIds != null)
 			{
 				if (packageProcessorIds.isEmpty())
@@ -211,7 +215,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
 							+"\n Package query: "+packageQuery);
 				}
-				final int packageProcessorId = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();
+				final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workpackage.getC_Queue_PackageProcessor_ID());
 				if (!packageProcessorIds.contains(packageProcessorId))
 				{
 					return false;

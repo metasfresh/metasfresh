@@ -78,7 +78,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptorWit
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -135,7 +135,7 @@ public class MaterialEventSerializerTests
 		//
 		// Test via materialEventConverter
 		{
-			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent, null);
 			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
 
 			assertThat(deserializedEvent).isEqualTo(originalEvent);

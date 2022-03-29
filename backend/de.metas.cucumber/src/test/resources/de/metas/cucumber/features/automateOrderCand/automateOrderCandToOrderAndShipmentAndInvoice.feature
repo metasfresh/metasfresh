@@ -63,8 +63,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | order_1               | 2021-07-20  | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -82,6 +82,61 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | product_1               | 10          | true      |
 
+
+  @from:cucumber
+  @topic:orderCandidate
+  Scenario: Order candidate to shipment and invoice flow and unclosed order, with qtyShipped = 0!
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
+  """
+{
+    "orgCode": "001",
+    "externalLineId": "1555_zeroQtyShipped",
+    "externalHeaderId": "1444_zeroQtyShipped",
+    "dataSource": "int-Shopware",
+    "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175",
+        "contactIdentifier": "2188224"
+    },
+    "dateRequired": "2021-08-20",
+    "dateOrdered": "2021-07-20",
+    "orderDocType": "SalesOrder",
+    "paymentTerm": "val-1000002",
+    "productIdentifier": 2005577,
+    "qty": 10,
+    "price": 5,
+    "currencyCode": "EUR",
+    "discount": 0,
+    "poReference": "po_ref_mock",
+    "deliveryViaRule": "S",
+    "qtyShipped": 0,
+    "bpartnerName": "testName"
+}
+"""
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "1444_zeroQtyShipped",
+    "inputDataSourceName": "int-Shopware",
+    "ship": true,
+    "invoice": true,
+    "closeOrder": false
+}
+"""
+
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               |                       |                         |
+    # We expect just an order and no shipment and no invoice. Thus the empty identifiers
+
+    And validate the created orders
+      | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName |
+      | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ordereLine_1_1            | order_1               | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+    # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber
   @topic:orderCandidate
@@ -134,8 +189,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 222            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | order_1               | 2021-07-20  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -164,8 +219,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 222            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | order_1               | 2021-07-20  | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
@@ -226,8 +281,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 444            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | order_1               | 2021-07-20  | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
@@ -338,8 +393,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 9999           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | order_1               | 2021-07-20  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -421,13 +476,13 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo |
-      | inventory_1               | 2021-10-12T00:00:00Z | 32323      |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID |
-      | inventory_1               | inventoryLine_1               | productIdentifier_1     | 0       | 100      | 2005577          |
-    And complete inventory with inventoryIdentifier 'inventory_1'
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
+      | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |
+    And the inventory identified by inventory_1 is completed
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -474,8 +529,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 744777         | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | c_ol_1                    | order_1               | 2021-10-13  | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -497,13 +552,13 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @topic:orderCandidate
   Scenario: Order candidate to shipment in first step and then invoice with close order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo |
-      | inventory_1               | 2021-10-12T00:00:00Z | 32323      |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_Product_ID |
-      | inventory_1               | inventoryLine_1               | productIdentifier_2     | 0       | 100      | 2005577          |
-    And complete inventory with inventoryIdentifier 'inventory_1'
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
+      | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |
+    And the inventory identified by inventory_1 is completed
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -552,8 +607,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 888            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | c_ol_1                    | order_1               | 2021-10-13  | product_1               | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -582,8 +637,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | 888            | bpartner_1               | bpartnerLocation_1                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-10-13  | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
+      | c_ol_1                    | order_1               | 2021-10-13  | product_1               | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |

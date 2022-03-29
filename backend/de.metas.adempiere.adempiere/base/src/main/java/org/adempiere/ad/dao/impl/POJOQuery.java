@@ -190,6 +190,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		queryNew.options = this.options == null ? null : new HashMap<>(this.options);
 
 		queryNew.unions = unions == null ? null : new ArrayList<>(unions);
+		queryNew.limit = limit;
 
 		return queryNew;
 	}

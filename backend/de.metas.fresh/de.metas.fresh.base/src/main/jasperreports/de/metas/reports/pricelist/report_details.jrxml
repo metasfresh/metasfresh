@@ -291,9 +291,8 @@
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-20" x="476" y="0" width="47" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean(
-    ($F{altpricestd} == null || $F{pricestd}.equals($F{altpricestd}))
-    && $F{pricestd} != null
-)]]></printWhenExpression>
+    ($F{altpricestd} == null || $F{pricestd}.compareTo($F{altpricestd})==0) 
+ && $F{pricestd} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -310,7 +309,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="476" y="0" width="47" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean( $F{altpricestd} != null
-    && !$F{pricestd}.equals( $F{altpricestd} )
+    && $F{altpricestd}.compareTo($F{pricestd})!=0
     && $F{pricestd}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<box>

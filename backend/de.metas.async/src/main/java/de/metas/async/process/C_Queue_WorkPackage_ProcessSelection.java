@@ -1,15 +1,5 @@
 package de.metas.async.process;
 
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.IQuery;
-
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
@@ -22,6 +12,15 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.IQuery;
+
+import java.util.Iterator;
 
 /*
  * #%L
@@ -114,7 +113,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 						continue; // might be processed by the server
 					}
 
-					final IWorkpackageProcessor workpackageProcessor = workpackageProcessorFactory.getWorkpackageProcessor(workPackage.getC_Queue_Block().getC_Queue_PackageProcessor());
+					final IWorkpackageProcessor workpackageProcessor = workpackageProcessorFactory.getWorkpackageProcessor(workPackage.getC_Queue_PackageProcessor());
 					final IWorkpackageProcessor2 workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workpackageProcessor);
 					final IParams workpackageParameters = workpackageParamDAO.retrieveWorkpackageParams(workPackage);
 					workPackageProcessorWrapped.setParameters(workpackageParameters);
@@ -127,7 +126,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 					workPackage.setProcessed(true);
 					addLog("Processed {}", workPackage);
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					workPackage.setIsError(true);
 				}

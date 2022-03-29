@@ -33,7 +33,7 @@
       "warehouseCode": null,
       "warehouseDestCode": null,
       "dateCandidate": "2021-01-11",
-      "line": 1,
+      "line": 10,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
@@ -45,7 +45,10 @@
       "description": "lineDescription",
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "shipper": "ext-Shopware6-shippingMethodId"
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -80,7 +83,7 @@
       "warehouseCode": null,
       "warehouseDestCode": null,
       "dateCandidate": "2021-01-11",
-      "line": 2,
+      "line": 20,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
@@ -92,7 +95,10 @@
       "description": "lineDescription2",
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "shipper": "ext-Shopware6-shippingMethodId"
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -127,7 +133,7 @@
       "warehouseCode": null,
       "warehouseDestCode": null,
       "dateCandidate": "2021-01-11",
-      "line": null,
+      "line": 30,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
@@ -136,7 +142,10 @@
       "description": null,
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "shipper": "ext-Shopware6-shippingMethodId"
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     },
     {
       "orgCode": "orgCode",
@@ -171,7 +180,7 @@
       "warehouseCode": null,
       "warehouseDestCode": null,
       "dateCandidate": "2021-01-11",
-      "line": null,
+      "line": 40,
       "isManualPrice": true,
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
@@ -180,7 +189,10 @@
       "description": null,
       "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "shipper": "ext-Shopware6-shippingMethodId"
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
     }
   ]
 }

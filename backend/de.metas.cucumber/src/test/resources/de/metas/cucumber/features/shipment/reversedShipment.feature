@@ -27,15 +27,15 @@ Feature: reversed shipment
       | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_1 | hu_endcustomer | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 0123456789011 | endcustomer_1            |
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo |
-      | inv_1                     | 2021-04-01T00:00:00Z | 22222      |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       |
-    When complete inventory with inventoryIdentifier 'inv_1'
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01T00:00:00Z | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
     And after not more than 30s, M_HU are found:
       | Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | HUStatus | IsActive |
       | hu_1       | null                     | null                              | A        | Y        |

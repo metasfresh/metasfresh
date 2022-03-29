@@ -1,36 +1,5 @@
 package de.metas.async.processor.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.reflect.TestingClassInstanceProvider;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.NOPWorkpackageLogsRepository;
@@ -41,15 +10,25 @@ import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.lock.api.ILockManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.reflect.TestingClassInstanceProvider;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 {
 	@Test
-	public void test01() throws InterruptedException
+	public void test01()
 	{
 		helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
 
@@ -74,20 +53,20 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		InterfaceWrapperHelper.refresh(workpackages.get(7));
 		Assert.assertEquals("Priority 1 packages shall be processed first", workpackages.get(7), processedWorkpackages.get(0));
 
-		for (I_C_Queue_WorkPackage wp : processedWorkpackages)
+		for (final I_C_Queue_WorkPackage wp : processedWorkpackages)
 		{
 			final RuntimeException rteExpected = workpackageProcessor.getRuntimeExceptionFor(wp);
 			if (rteExpected != null)
 			{
 				// Exception
 				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(rteExpected.getMessage());
-				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, false, wp.isProcessed());
-				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, true, wp.isError());
+				Assert.assertFalse("Workpackage - Invalid Processed: " + wp, wp.isProcessed());
+				Assert.assertTrue("Workpackage - Invalid IsError: " + wp, wp.isError());
 			}
 			else
 			{
-				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, true, wp.isProcessed());
-				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, false, wp.isError());
+				Assert.assertTrue("Workpackage - Invalid Processed: " + wp, wp.isProcessed());
+				Assert.assertFalse("Workpackage - Invalid IsError: " + wp, wp.isError());
 			}
 		}
 
@@ -98,8 +77,8 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 	{
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 		final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueue);
-		processor.run();
-		processor.shutdown();
+
+		SynchronousProcessorPlanner.executeNow(processor);
 	}
 
 	/**
@@ -109,7 +88,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 	public static class MissingWorkPackageProcessor implements IWorkpackageProcessor
 	{
 		@Override
-		public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
+		public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 		{
 			return null; // no BL needed here.
 		}
@@ -153,8 +132,8 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		{
 			final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueueForProcessing);
 			processor.setWorkpackageProcessorFactory(workpackageProcessorFactory);
-			processor.run();
-			processor.shutdown();
+
+			SynchronousProcessorPlanner.executeNow(processor);
 		}
 
 		//
@@ -167,9 +146,9 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		for (final I_C_Queue_WorkPackage workpackage : workpackages)
 		{
 			InterfaceWrapperHelper.refresh(workpackage);
-			Assert.assertEquals("Workpackage " + workpackage + " - Invalid IsError", false, workpackage.isError());
-			Assert.assertEquals("Workpackage " + workpackage + " - Invalid Processed", false, workpackage.isProcessed());
-			Assert.assertEquals("Workpackage " + workpackage + " - Shall not be locked", false, Services.get(ILockManager.class).isLocked(workpackage));
+			Assert.assertFalse("Workpackage " + workpackage + " - Invalid IsError", workpackage.isError());
+			Assert.assertFalse("Workpackage " + workpackage + " - Invalid Processed", workpackage.isProcessed());
+			Assert.assertFalse("Workpackage " + workpackage + " - Shall not be locked", Services.get(ILockManager.class).isLocked(workpackage));
 		}
 
 		//
@@ -186,8 +165,8 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		{
 			final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueueForProcessing);
 			processor.setWorkpackageProcessorFactory(workpackageProcessorFactory);
-			processor.run();
-			processor.shutdown();
+
+			SynchronousProcessorPlanner.executeNow(processor);
 		}
 
 		//
@@ -195,9 +174,9 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		for (final I_C_Queue_WorkPackage workpackage : workpackages)
 		{
 			InterfaceWrapperHelper.refresh(workpackage);
-			Assert.assertEquals("Workpackage " + workpackage + " - Invalid IsError", false, workpackage.isError());
-			Assert.assertEquals("Workpackage " + workpackage + " - Invalid Processed", true, workpackage.isProcessed());
-			Assert.assertEquals("Workpackage " + workpackage + " - Shall not be locked", false, Services.get(ILockManager.class).isLocked(workpackage));
+			Assert.assertFalse("Workpackage " + workpackage + " - Invalid IsError", workpackage.isError());
+			Assert.assertTrue("Workpackage " + workpackage + " - Invalid Processed", workpackage.isProcessed());
+			Assert.assertFalse("Workpackage " + workpackage + " - Shall not be locked", Services.get(ILockManager.class).isLocked(workpackage));
 		}
 
 	}

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2097225767L;
+	private static final long serialVersionUID = 228606393L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -228,7 +228,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public BigDecimal getChargeAmt() 
+	public BigDecimal getChargeAmt()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -249,14 +249,14 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	@Override
 	public void setC_Incoterms_ID (final int C_Incoterms_ID)
 	{
-		if (C_Incoterms_ID < 1) 
+		if (C_Incoterms_ID < 1)
 			set_Value (COLUMNNAME_C_Incoterms_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
 	}
 
 	@Override
-	public int getC_Incoterms_ID() 
+	public int getC_Incoterms_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
 	}
@@ -680,6 +680,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -921,12 +933,12 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getMovementDate() 
+	public java.sql.Timestamp getMovementDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
-	/** 
+	/**
 	 * MovementType AD_Reference_ID=189
 	 * Reference name: M_Transaction Movement Type
 	 */
@@ -962,7 +974,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.lang.String getMovementType() 
+	public java.lang.String getMovementType()
 	{
 		return get_ValueAsString(COLUMNNAME_MovementType);
 	}

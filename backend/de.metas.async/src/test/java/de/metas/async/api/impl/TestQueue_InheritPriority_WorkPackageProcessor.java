@@ -1,12 +1,5 @@
 package de.metas.async.api.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Element;
@@ -15,6 +8,12 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -72,9 +71,8 @@ public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpack
 						InterfaceWrapperHelper.getCtx(workpackage),
 						TestQueue_InheritPriority_WorkPackageProcessor.class);
 		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing
-				.newBlock()
-				.newWorkpackage()
-				.build();
+				.newWorkPackage()
+				.buildAndEnqueue();
 
 		// this is the actual test!
 		assertThat("wp2 did not inherit wp1's prio", wp2.getPriority(), is(expectedPriority.getPrioriy(queueForEnqueuing)));

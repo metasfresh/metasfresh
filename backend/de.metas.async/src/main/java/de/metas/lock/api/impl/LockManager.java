@@ -22,11 +22,6 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.IQuery;
-
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -35,6 +30,12 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.lock.spi.impl.SqlLockDatabase;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
+
+import java.util.List;
 
 public class LockManager implements ILockManager
 {
@@ -168,5 +169,17 @@ public class LockManager implements ILockManager
 	public int removeAutoCleanupLocks()
 	{
 		return getLockDatabase().removeAutoCleanupLocks();
+	}
+
+	@Override
+	public <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query,@NonNull final Class<T> clazz)
+	{
+		return getLockDatabase().retrieveAndLockMultipleRecords(query, clazz);
+	}
+
+	@Override
+	public <T> IQuery<T> addNotLockedClause(final IQuery<T> query)
+	{
+		return getLockDatabase().addNotLockedClause(query);
 	}
 }

@@ -59,6 +59,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
+	public static final JsonCreateShipmentResponse EMPTY_SHIPMENT_RESPONSE = JsonCreateShipmentResponse.builder().createdShipmentIds(ImmutableList.of()).build();
+
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Order_StepDefData orderTable;
@@ -106,7 +109,11 @@ public class C_OLCand_StepDef
 
 		if (shipmentIdentifier == null)
 		{
-			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(null);
+			// we expect that there are no infos about any generated shipments
+			if (compositeResponse.getShipmentResponse() != null)
+			{
+				assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
+			}
 		}
 		else
 		{
@@ -114,8 +121,12 @@ public class C_OLCand_StepDef
 		}
 
 		if (invoiceIdentifier == null)
-		{
-			assertThat(compositeResponse.getInvoiceInfoResponse()).isEqualTo(null);
+		{ 
+			// we expect that there are no infos about any generated invoice
+			if (compositeResponse.getInvoiceInfoResponse() != null)
+			{
+				assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
+			}
 		}
 		else
 		{
@@ -139,7 +150,7 @@ public class C_OLCand_StepDef
 		final I_C_Order order = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
 				.create()
-				.firstOnly(I_C_Order.class);
+				.firstOnlyNotNull(I_C_Order.class);
 
 		assertThat(order).isNotNull();
 

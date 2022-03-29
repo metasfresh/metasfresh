@@ -22,10 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -33,6 +34,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -48,9 +50,8 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -58,24 +59,27 @@ public class C_OrderLine_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData partnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData partnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
+		this.partnerTable = partnerTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -88,7 +92,7 @@ public class C_OrderLine_StepDef
 			orderLine.setM_Product_ID(product.getM_Product_ID());
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
-			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(attributeSetInstanceIdentifier))
 			{
 				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
@@ -100,6 +104,13 @@ public class C_OrderLine_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
+
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			if (partnerIdentifier != null)
+			{
+				final I_C_BPartner partner = partnerTable.get(partnerIdentifier);
+				orderLine.setC_BPartner_ID(partner.getC_BPartner_ID());
+			}
 
 			saveRecord(orderLine);
 
@@ -143,6 +154,8 @@ public class C_OrderLine_StepDef
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+			final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_BPartner_ID + ".Identifier");
+			final int partnerId = Check.isBlank(partnerIdentifier) ? 0 : partnerTable.get(partnerIdentifier).getC_BPartner_ID();
 
 			boolean linePresent = false;
 
@@ -151,6 +164,10 @@ public class C_OrderLine_StepDef
 				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
 						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
 						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID();
+				if (partnerId > 0)
+				{
+					linePresent = linePresent && orderLine.getC_BPartner_ID() == partnerId;
+				}
 
 				if (linePresent)
 				{
@@ -199,17 +216,20 @@ public class C_OrderLine_StepDef
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
-		assertThat(orderLine.getM_Product_ID()).isEqualTo(productTable.get(productIdentifier).getM_Product_ID());
+		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
+		assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
-		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
-		assertThat(orderLine.getDiscount()).isEqualTo(discount);
-		assertThat(orderLine.isProcessed()).isEqualTo(processed);
-		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
-		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
+		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualTo(price);
+		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
+		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
+		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(productTable.get(productIdentifier).getM_Product_ID());
+		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+
+		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderLineTable.putOrReplace(olIdentifier, orderLine);
 	}
 }

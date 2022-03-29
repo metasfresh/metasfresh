@@ -604,6 +604,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setDateOrdered(order.getDateOrdered());
+			if (Check.isBlank(icRecord.getEMail()))
+			{
+				icRecord.setEMail(order.getEMail());
+			}
 		}
 		else if (icRecord.getC_Order_ID() <= 0)
 		{
@@ -872,9 +876,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			);
 
 			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-					.bpartnerId(billLocationFromInOut.getBpartnerId())
-					.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-					.build());
+																		   .bpartnerId(billLocationFromInOut.getBpartnerId())
+																		   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+																		   .build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;

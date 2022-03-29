@@ -28,8 +28,8 @@ Feature: invoice rules
       | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_1 | Endcustomer2 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_1        | 0123456789011 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     | 1000012              |
@@ -81,8 +81,8 @@ Feature: invoice rules
       | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_2 | p_Endcustomer | N            | Y              | ps_2                          | P               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_2        | 0123456789012 | endcustomer_2            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_2        | 0123456789012 | endcustomer_2            | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
       | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     | 1000012              |
@@ -134,8 +134,8 @@ Feature: invoice rules
       | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_3 | p_Endcustomer2 | N            | Y              | ps_3                          | P               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_3        | 0123456789012 | endcustomer_3            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
       | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     | 1000012              |
@@ -194,8 +194,8 @@ Feature: invoice rules
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_3 | p_Endcustomer_3 | N            | Y              | ps_3                          | P               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier |
-      | l_3        | 0123456789012 | endcustomer_3            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
       | o_3        | true    | endcustomer_3            | 2021-04-15  | 1000012              | po_ref_mock     |
@@ -234,8 +234,8 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_3               | p_3                     | 5           | true      |
     And update shipment schedules
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override |
-      | s_s_3                            | 10                    |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_3                            | 10                        |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_3                            | D                 | Y                  |

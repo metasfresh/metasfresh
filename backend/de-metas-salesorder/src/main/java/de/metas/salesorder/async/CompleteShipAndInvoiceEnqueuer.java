@@ -42,11 +42,9 @@ public class CompleteShipAndInvoiceEnqueuer
 	public void enqueue(@NonNull final OrderId orderId, @Nullable final String trxName)
 	{
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), CompleteShipAndInvoiceWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+				.newWorkPackage()
 				.bindToTrxName(trxName)
 				.parameter(WP_PARAM_C_Order_ID, orderId)
-				.build();
+				.buildAndEnqueue();
 	}
 }

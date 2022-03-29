@@ -66,6 +66,12 @@ public final class QueryLimit
 		return limit != null ? ofInt(limit) : NO_LIMIT;
 	}
 
+	@NonNull
+	public static QueryLimit getQueryLimitOrNoLimit(@Nullable final QueryLimit limit)
+	{
+		return limit != null ? limit : NO_LIMIT;
+	}
+
 	public static final QueryLimit NO_LIMIT = new QueryLimit(0);
 	public static final QueryLimit ONE = new QueryLimit(1);
 	public static final QueryLimit TWO = new QueryLimit(2);

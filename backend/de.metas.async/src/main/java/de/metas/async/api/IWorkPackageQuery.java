@@ -22,8 +22,10 @@ package de.metas.async.api;
  * #L%
  */
 
+import de.metas.async.processor.QueuePackageProcessorId;
+import org.adempiere.ad.dao.QueryLimit;
 
-import java.util.List;
+import java.util.Set;
 
 public interface IWorkPackageQuery
 {
@@ -31,31 +33,34 @@ public interface IWorkPackageQuery
 	/**
 	 * @return the processed
 	 */
-	public abstract Boolean getProcessed();
+	Boolean getProcessed();
 
 	/**
 	 * @return the readyForProcessing
 	 */
-	public abstract Boolean getReadyForProcessing();
+	Boolean getReadyForProcessing();
 
 	/**
 	 * @return the error
 	 */
-	public abstract Boolean getError();
+	Boolean getError();
 
 	/**
 	 * @return the skippedTimeoutMillis
 	 */
-	public abstract long getSkippedTimeoutMillis();
+	long getSkippedTimeoutMillis();
 
 	/**
 	 * @return the packageProcessorIds
 	 */
-	public abstract List<Integer> getPackageProcessorIds();
+	Set<QueuePackageProcessorId> getPackageProcessorIds();
 
 	/**
 	 * @return the priorityFrom
 	 */
-	public abstract String getPriorityFrom();
+	String getPriorityFrom();
 
+	QueryLimit getLimit();
+
+	void setLimit(QueryLimit limit);
 }

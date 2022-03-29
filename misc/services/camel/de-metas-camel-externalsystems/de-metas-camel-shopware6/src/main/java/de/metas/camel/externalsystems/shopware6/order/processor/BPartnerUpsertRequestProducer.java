@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderCustomer;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
+import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -58,9 +59,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.BILL_TO_SUFFIX;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHIP_TO_SUFFIX;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 
 /**
  * One instance of this class produces one {@link BPartnerRequestProducerResult}.
@@ -93,7 +92,10 @@ public class BPartnerUpsertRequestProducer
 	Map<String, String> countryIdToISOCode;
 
 	@Nullable
-	String bPartnerLocationIdentifierCustomPath;
+	String bPartnerLocationIdentifierCustomShopwarePath;
+
+	@Nullable
+	String bPartnerLocationIdentifierCustomMetasfreshPath;
 
 	@Nullable
 	String emailCustomPath;
@@ -104,6 +106,12 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping;
 
+	/**
+	 * @param bPartnerLocationIdentifierCustomShopwarePath   if given, try to get a custom (permanent) shopware6-ID
+	 *                                                       from the shopware-address JSON. Fail if there is no such C_BPartner_Location_ID
+	 * @param bPartnerLocationIdentifierCustomMetasfreshPath if given, try to get the metasfresh C_BPartner_Location_ID
+	 *                                                       from the shopware-address JSON. Don't fail if there is no such C_BPartner_Location_ID
+	 */
 	@Builder
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
@@ -112,7 +120,8 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final OrderAddressDetails shippingAddress,
 			@NonNull final String billingAddressId,
 			@NonNull final SalutationInfoProvider salutationInfoProvider,
-			@Nullable final String bPartnerLocationIdentifierCustomPath,
+			@Nullable final String bPartnerLocationIdentifierCustomShopwarePath,
+			@Nullable final String bPartnerLocationIdentifierCustomMetasfreshPath,
 			@Nullable final String emailCustomPath,
 			@NonNull final ExternalIdentifier externalBPartnerId,
 			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping)
@@ -121,7 +130,8 @@ public class BPartnerUpsertRequestProducer
 		this.shopwareClient = shopwareClient;
 		this.orderCustomer = orderCustomer;
 		this.shippingAddress = shippingAddress;
-		this.bPartnerLocationIdentifierCustomPath = bPartnerLocationIdentifierCustomPath;
+		this.bPartnerLocationIdentifierCustomShopwarePath = bPartnerLocationIdentifierCustomShopwarePath;
+		this.bPartnerLocationIdentifierCustomMetasfreshPath = bPartnerLocationIdentifierCustomMetasfreshPath;
 		this.emailCustomPath = emailCustomPath;
 		this.externalBPartnerId = externalBPartnerId;
 		this.matchingShopware6Mapping = matchingShopware6Mapping;
@@ -158,7 +168,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(orderCustomer.getFirstName() + " " + orderCustomer.getLastName());
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
-		jsonRequestBPartner.setCode(asExternalIdentifier(orderCustomer.getCustomerNumber()));
+		jsonRequestBPartner.setCode(ExternalIdentifierFormat.formatExternalId(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
 
 		if (matchingShopware6Mapping != null)
@@ -221,7 +231,7 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestLocation.setEmail(orderAddressWithCustomId.getCustomEmail());
 
 		return JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(asExternalIdentifier(bpLocationExternalId))
+				.locationIdentifier(bpLocationExternalId)
 				.location(jsonRequestLocation)
 				.build();
 	}
@@ -267,16 +277,26 @@ public class BPartnerUpsertRequestProducer
 				.build();
 	}
 
+	/**
+	 * @param isBillingAddress only relevant if the custom IDs are blank
+	 */
 	@NonNull
 	private String getBpLocationIdentifier(
 			@NonNull final OrderAddressDetails orderAddressWithCustomId,
 			final boolean isBillingAddress)
 	{
-		return Optional.ofNullable(orderAddressWithCustomId.getCustomId())
-				.orElseGet(() -> {
-					final String suffix = isBillingAddress ? BILL_TO_SUFFIX : SHIP_TO_SUFFIX;
-					return externalBPartnerId.getRawValue() + suffix;
-				});
+
+		if (Check.isNotBlank(orderAddressWithCustomId.getCustomMetasfreshId()))
+		{
+			return orderAddressWithCustomId.getCustomMetasfreshId();
+		}
+		else if (Check.isNotBlank(orderAddressWithCustomId.getCustomShopwareId()))
+		{
+			return ExternalIdentifierFormat.formatExternalId(orderAddressWithCustomId.getCustomShopwareId());
+		}
+
+		final String suffix = isBillingAddress ? BILL_TO_SUFFIX : SHIP_TO_SUFFIX;
+		return ExternalIdentifierFormat.formatExternalId(externalBPartnerId.getRawValue() + suffix);
 	}
 
 	@NonNull
@@ -312,7 +332,10 @@ public class BPartnerUpsertRequestProducer
 	{
 		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(), billingAddressId)
 				? shippingAddress
-				: shopwareClient.getOrderAddressDetails(billingAddressId, bPartnerLocationIdentifierCustomPath, emailCustomPath)
+				: shopwareClient.getOrderAddressDetails(billingAddressId,
+														bPartnerLocationIdentifierCustomShopwarePath,
+														bPartnerLocationIdentifierCustomMetasfreshPath,
+														emailCustomPath)
 				.orElseThrow(() -> new RuntimeException("Missing address details for addressId: " + billingAddressId));
 	}
 
@@ -320,12 +343,6 @@ public class BPartnerUpsertRequestProducer
 	{
 		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(),
 							  billingAddress.getJsonOrderAddress().getId());
-	}
-
-	@NonNull
-	private String asExternalIdentifier(@NonNull final String externalId)
-	{
-		return EXTERNAL_ID_PREFIX + "-" + SHOPWARE6_SYSTEM_NAME + "-" + externalId;
 	}
 
 	@NonNull

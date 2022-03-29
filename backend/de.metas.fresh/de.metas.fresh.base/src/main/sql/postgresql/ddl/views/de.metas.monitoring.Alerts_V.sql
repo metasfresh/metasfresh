@@ -9,8 +9,7 @@ CREATE OR REPLACE VIEW "de.metas.monitoring".Alerts_V AS
 UNION 
 	SELECT DISTINCT 'Async: error in package of '||p.ClassName, 'Latest failure: '||max(wp.Updated)
 	FROM C_Queue_Workpackage wp
-		JOIN C_Queue_Block b ON b.C_Queue_Block_ID=wp.C_Queue_Block_ID
-		JOIN C_Queue_PackageProcessor p ON p.C_Queue_PackageProcessor_ID=b.C_Queue_PackageProcessor_ID
+		JOIN C_Queue_PackageProcessor p ON p.C_Queue_PackageProcessor_ID=wp.C_Queue_PackageProcessor_ID
 	WHERE 
 		wp.IsActive='Y' AND wp.IsError='Y' and wp.Processed='N'
 	GROUP BY p.ClassName

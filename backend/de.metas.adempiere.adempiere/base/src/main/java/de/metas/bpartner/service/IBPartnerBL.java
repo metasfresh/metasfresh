@@ -243,4 +243,11 @@ public interface IBPartnerBL extends ISingletonService
 	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
 
 	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
+
+	/**
+	 * extracted logic from legacy code
+	 * @param bp
+	 * @return
+	 */
+	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 }

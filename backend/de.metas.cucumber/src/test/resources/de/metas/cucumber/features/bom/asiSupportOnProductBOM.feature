@@ -33,8 +33,8 @@ Feature: ASI support in Product BOM rest-api
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_SO | customer_SO | customer_SO | Y              | ps_SO                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | customerLocation_SO | customerSO01 | customer_SO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | customerLocation_SO | customerSO01 | customer_SO              | Y                   | Y                   |
 
   @from:cucumber
   Scenario: Create sales order with different ASI, on complete no production candidate is found
@@ -156,7 +156,7 @@ Feature: ASI support in Product BOM rest-api
 
     And the order identified by order_SO is completed
 
-    And after not more than 30s, AD_EventLog_Entry are found
+    And after not more than 60s, AD_EventLog_Entry are found
       | AD_EventLog_Entry_ID.Identifier | Classname                                              | MsgText                                               | Processed |
       | eventLog_1                      | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
       | eventLog_2                      | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
@@ -268,14 +268,14 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S2              | 5          |
     And the order identified by order_SO is completed
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood | false     | product_S2              | bom_1                        | pp_finishedGood                   | 540006        | 5          | 5            | 0            | PCE               | 2022-01-08T21:00:00Z | 2022-01-08T21:00:00Z | false    | bomAttributeSetInstance                  |
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier       | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood                  | olc_finishedGood | component_S2            | 25         | PCE               | CO            | bomLine_1                        | bomLineAttributeSetInstance              |
 
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111      | DEMAND            | SHIPMENT                  | product_S2              | 2022-01-08T21:00:00Z | -5  | -5                     |                                          |
       | c_222      | SUPPLY            | PRODUCTION                | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
@@ -395,8 +395,8 @@ Feature: ASI support in Product BOM rest-api
       | Identifier  | Name        | Value         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | supplier_PO | supplier_PO | supplier_PO_1 | Y            | N              | ps_PO                         | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | supplierLocation_PO | supplierP101 | supplier_PO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | supplierLocation_PO | supplierP101 | supplier_PO              | Y                   | Y                   |
 
     And metasfresh contains M_AttributeSetInstance with identifier "po_AttributeSetInstance":
   """
@@ -416,7 +416,7 @@ Feature: ASI support in Product BOM rest-api
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_PO | order_PO              | product_S3              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | md_po      | SUPPLY            | PURCHASE                      | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
@@ -439,14 +439,14 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
     And the order identified by order_SO is completed
 
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier      | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood | false     | product_S3              | bom_1                        | pp_finishedGood                   | 540006        | 10         | 10           | 0            | PCE               | 2022-01-08T21:00:00Z | 2022-01-08T21:00:00Z | false    | bomAttributeSetInstance                  |
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier       | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_finishedGood                  | olc_finishedGood | component_S3            | 50         | PCE               | CO            | bomLine_1                        | bomLineAttributeSetInstance              |
 
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111      | DEMAND            | SHIPMENT                      | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
       | c_222      | SUPPLY            | PRODUCTION                    | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |

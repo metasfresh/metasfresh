@@ -22,25 +22,28 @@ package de.metas.async.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorListener;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.exceptions.UnlockFailedException;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * Use {@link IWorkPackageQueueFactory} to get an instance.
@@ -51,40 +54,9 @@ import de.metas.lock.exceptions.UnlockFailedException;
 public interface IWorkPackageQueue
 {
 	/**
-	 * Timeout: wait forever, until we get next item
-	 */
-	int TIMEOUT_Infinite = 0;
-
-	/**
-	 * Timeout: if we did not get the item first, don't retry at all
-	 */
-	int TIMEOUT_OneTimeOnly = -1;
-
-	/**
 	 * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
-
-	/**
-	 * Retrieves the oldest work package with the highest priority that is supposed to be handled by the <code>AD_Process</code> with the given adProcessId.
-	 * <p>
-	 * In addition, locks the work package so that other calling processes won't see it when selecting the next package using this method.
-	 *
-	 * Notes:
-	 * <ul>
-	 * <li>in order to process the returned package, it's recommended to use {@link #processLockedPackage(I_C_Queue_WorkPackage, IWorkpackageProcessor)}</li>
-	 * <li>the returned package's <code>ctx</code> contains the <code>#AD_Client_ID</code>, <code>#AD_Org_ID</code> and <code>#AD_User_ID</code> of the package's AD_Client_ID, AD_Org_ID and CreatedBy
-	 * respectively</li>
-	 * <li>if a package has previously been skipped then it won't be returned before the timeout of {@link #DEFAULT_RETRY_TIMEOUT_MILLIS} milliseconds has passed</li>
-	 * <li>the context which is incorporated in returned package (i.e. InterfaceWrapperHelper.getCtx(workpackage)) is not the same as the context given as argument. That context is modified in order
-	 * to have the right AD_Client_ID, AD_Org_ID and AD_User_ID.
-	 * </ul>
-	 *
-	 * @param timeoutMillis if there is no workpackage available and timeoutMillis > 0 this method will try to poll for given timeout until it will return null (nothing found)
-	 * @return {@link I_C_Queue_WorkPackage} or <code>null</code> if there either is no package or the calling process is too slow (compared with other concurrent processes also looking for work with
-	 *         the same adProcessId) to select and then lock an available package after *many* tries.
-	 */
-	I_C_Queue_WorkPackage pollAndLock(long timeoutMillis);
 
 	/**
 	 * Unlocks given package
@@ -120,35 +92,18 @@ public interface IWorkPackageQueue
 	 */
 	Properties getCtx();
 
-	String getPriorityFrom();
-
-	int getSkipRetryTimeoutMillis();
-
 	/**
-	 * Start creating a new block to be enqueued
-	 */
-	IWorkPackageBlockBuilder newBlock();
-
-	/**
-	 * Convenient method to quickly create and enqueue a new block to the queue.
-	 *
-	 * @return I_C_Queue_Block (created block)
-	 * @see #newBlock()
-	 */
-	I_C_Queue_Block enqueueBlock(Properties ctx);
-
-	/**
-	 * Adds a work package to to the given block.
+	 * Adds a work package to the respective queue.
 	 *
 	 * NOTE: the workpackage WILL NOT be marked as ready for processing.
 	 *
 	 * @param priority priority strategy to be used. <b>But</b> note that if the queue will also invoke {@link IWorkpackageProcessorContextFactory#getThreadInheritedPriority()} and will prefer that
 	 *            priority (if any!) over this parameter.
 	 * @return I_C_Queue_WorkPackage (created workPackage)
-	 * @deprecated Please consider using {@link #newBlock()}
+	 * @deprecated Please consider using {@link #newWorkPackage()}
 	 */
 	@Deprecated
-	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_Block block, IWorkpackagePrioStrategy priority);
+	I_C_Queue_WorkPackage enqueueWorkPackage(I_C_Queue_WorkPackage workPackage, IWorkpackagePrioStrategy priority);
 
 	/**
 	 * Adds an element to the given <code>workPackage</code>.
@@ -167,7 +122,7 @@ public interface IWorkPackageQueue
 	void enqueueElements(I_C_Queue_WorkPackage workPackage, Iterable<TableRecordReference> models);
 
 	/**
-	 * Convenient method for quickly enqueuing an element. This method automatically creates a new {@link I_C_Queue_Block} and {@link I_C_Queue_WorkPackage}. After creating the
+	 * Convenient method for quickly enqueuing an element. This method automatically creates a new {@link I_C_Queue_WorkPackage}. After creating the
 	 * {@link I_C_Queue_Element}, the work package is marked as ready for processing.
 	 */
 	I_C_Queue_Element enqueueElement(Object modelReference);
@@ -219,4 +174,14 @@ public interface IWorkPackageQueue
 	 * @throws UnsupportedOperationException if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
 	 */
 	String getEnquingPackageProcessorInternalName();
+
+	IWorkPackageBuilder newWorkPackage();
+
+	IWorkPackageBuilder newWorkPackage(Properties ctx);
+
+	Optional<IQuery<I_C_Queue_WorkPackage>> createQuery(Properties workPackageCtx, QueryLimit limit);
+
+	Set<QueuePackageProcessorId> getQueuePackageProcessorIds();
+
+	QueueProcessorId getQueueProcessorId();
 }

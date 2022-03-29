@@ -47,14 +47,15 @@ import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
-import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.shopware6.ProductLookup;
+import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.user.UserGroupId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -350,6 +351,8 @@ public class ExternalSystemConfigRepo
 				.remoteUrl(rabbitMQConfigRecord.getRemoteURL())
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
+				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getBPartnerCreatedByUserGroup_ID()))
 				.build();
 	}
 
@@ -579,7 +582,7 @@ public class ExternalSystemConfigRepo
 				.map(shopwareConfig -> getById(query.getParentConfigId())
 						.childConfig(shopwareConfig).build());
 	}
-	
+
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getShopware6ConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
@@ -599,7 +602,7 @@ public class ExternalSystemConfigRepo
 				.map(shopwareConfig -> getById(query.getParentConfigId())
 						.childConfig(shopwareConfig).build());
 	}
-	
+
 	private void storeShopware6Config(@NonNull final ExternalSystemParentConfig config)
 	{
 		final ExternalSystemShopware6Config configToSave = ExternalSystemShopware6Config.cast(config.getChildConfig());

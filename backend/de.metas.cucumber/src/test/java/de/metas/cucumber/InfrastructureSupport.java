@@ -41,7 +41,7 @@ public class InfrastructureSupport
 	 * Can be changed to {@code false} when running/developing cucumber-tests locally.
 	 * If {@code false}, then cucumber runs against your local DB, and not an ephemeral DB-image.
 	 * The benefits are:
-	 * - cucmber startup time is reduced drastically
+	 * - cucumber startup time is reduced drastically
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
 	 * 
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
@@ -56,7 +56,7 @@ public class InfrastructureSupport
 	 * docker exec -it infrastructure_db_1  psql -U postgres -c "alter database metasfresh_template_master_integration is_template true;"
 	 * </pre>
 	 * 
-	 * Now, you can reset your local DB after each cucumbrer run like this:  
+	 * Now, you can reset your local DB after each cucumber run like this:  
 	 * <pre>
 	 * # drop the current metasfresh-DB and recreate it from the template
 	 * docker exec -it infrastructure_db_1  psql -U postgres -c "drop database if exists metasfresh;" && \

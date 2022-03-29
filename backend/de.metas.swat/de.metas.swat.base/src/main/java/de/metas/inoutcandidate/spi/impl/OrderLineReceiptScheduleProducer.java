@@ -143,12 +143,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 
 			final Timestamp dateOrdered = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDateOrdered(),
+					line::getDateOrdered,
 					() -> line.getC_Order().getDateOrdered());
 			receiptSchedule.setDateOrdered(dateOrdered);
 
 			final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDatePromised(),
+					line::getDatePromised,
 					() -> line.getC_Order().getDatePromised());
 			receiptSchedule.setMovementDate(datePromised);
 		}

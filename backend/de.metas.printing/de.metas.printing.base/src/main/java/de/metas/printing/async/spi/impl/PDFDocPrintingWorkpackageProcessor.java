@@ -96,7 +96,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			catch (Exception e)
 			{
-				throw new AdempiereException(e.getMessage());
+				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
 		return Result.SUCCESS;

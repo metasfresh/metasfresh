@@ -2086,4 +2086,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

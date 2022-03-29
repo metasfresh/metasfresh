@@ -25,14 +25,14 @@ package de.metas.payment.esr.processor.impl;
  * #L%
  */
 
-import java.util.List;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
+
+import java.util.List;
 
 /**
  * Import the esr from the file which is stored in attachment
@@ -40,7 +40,7 @@ import de.metas.util.Services;
  * @author cg
  *
  */
-public class LoadESRImportFileWorkpackageProcessor implements IWorkpackageProcessor
+public class LoadESRImportFileWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -75,5 +75,11 @@ public class LoadESRImportFileWorkpackageProcessor implements IWorkpackageProces
 	{
 		Services.get(IESRImportBL.class).process(esrImport);
 
+	}
+
+	@Override
+	public boolean isRunInTransaction()
+	{
+		return false;
 	}
 }

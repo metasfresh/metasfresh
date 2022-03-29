@@ -22,32 +22,7 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.adempiere.util.concurrent.Threads;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.jmx.JMXQueueProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -55,48 +30,41 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.impl.planner.AsyncProcessorPlanner;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Default implementation of queue processor executor
  *
  * @author tsa
- *
  */
 @VisibleForTesting
 public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
 	private static final transient Logger logger = LogManager.getLogger(QueueProcessorsExecutor.class);
 
-	private final String threadNamePrefix = "async-Dispatcher";
-	private final ThreadPoolExecutor threadExecutor;
-	private final Map<Integer, QueueProcessorDescriptor> queueProcessorDescriptors = new ConcurrentHashMap<>();
 	private final ReentrantLock mainLock = new ReentrantLock();
+	private final AsyncProcessorPlanner asyncProcessorPlanner = new AsyncProcessorPlanner();
 
 	public QueueProcessorsExecutor()
 	{
-		final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
-				.setThreadNamePrefix(threadNamePrefix)
-				.setDaemon(true)
-				.build();
-
-		this.threadExecutor = new ThreadPoolExecutor(
-				1, // corePoolSize
-				100, // maximumPoolSize
-				1000, // keepAliveTime
-				TimeUnit.MILLISECONDS, // timeUnit
-
-				// SynchronousQueue has *no* capacity. Therefore, each new submitted task will directly cause a new thread to be started,
-				// which is exactly what we want here.
-				// Thank you, http://stackoverflow.com/questions/10186397/threadpoolexecutor-without-a-queue !!!
-				new SynchronousQueue<Runnable>(), // workQueue
-
-				threadFactory, // threadFactory
-				new ThreadPoolExecutor.AbortPolicy() // RejectedExecutionHandler
-		);
 	}
 
 	@Override
@@ -112,30 +80,12 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			Check.assumeNotNull(processor, "processor not null"); // shall not happen
 
 			//
-			// Run the processor in one of this executors free slots
-			final Future<?> future = threadExecutor.submit(() -> {
-				// Set thread name to easily debug and check which processor (poller) in which thread.
-				final String threadNameOld = Threads.setThreadName(threadNamePrefix + "-" + processor.getName());
-
-				try
-				{
-					processor.run();
-				}
-				finally
-				{
-					// restore thread's name
-					Threads.setThreadName(threadNameOld);
-				}
-			});
-
-			final QueueProcessorDescriptor descriptor = new QueueProcessorDescriptor(queueProcessorId, processor, future);
-			queueProcessorDescriptors.put(queueProcessorId, descriptor);
-
-			logger.info("Registered {}", descriptor);
-
-			//
 			// Register MBean
-			registerMBean(descriptor);
+			registerMBean(processor);
+
+			asyncProcessorPlanner.addQueueProcessor(processor);
+
+			asyncProcessorPlanner.start();
 		}
 		finally
 		{
@@ -143,45 +93,13 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private IQueueProcessor createProcessor(I_C_Queue_Processor processorDef)
-	{
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForPackageProcessing(processorDef);
-		return Services.get(IQueueProcessorFactory.class).createAsynchronousQueueProcessor(processorDef, queue);
-	}
-
 	@Override
-	public boolean removeAllQueueProcessor()
-	{
-		boolean removed = true;
-
-		mainLock.lock();
-		try
-		{
-			final List<QueueProcessorDescriptor> descriptors = new ArrayList<>(queueProcessorDescriptors.values());
-			for (final QueueProcessorDescriptor descriptor : descriptors)
-			{
-				final int queueProcessorId = descriptor.getQueueProcessorId();
-				if (!removeQueueProcessor0(queueProcessorId))
-				{
-					removed = false;
-				}
-			}
-		}
-		finally
-		{
-			mainLock.unlock();
-		}
-
-		return removed;
-	}
-
-	@Override
-	public boolean removeQueueProcessor(final int queueProcessorId)
+	public void removeQueueProcessor(final int queueProcessorId)
 	{
 		mainLock.lock();
 		try
 		{
-			return removeQueueProcessor0(queueProcessorId);
+			removeQueueProcessor0(queueProcessorId);
 		}
 		finally
 		{
@@ -189,53 +107,29 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private boolean removeQueueProcessor0(final int queueProcessorId)
+	private void removeQueueProcessor0(final int queueProcessorId)
 	{
-		final QueueProcessorDescriptor descriptor = queueProcessorDescriptors.remove(queueProcessorId);
-		if (descriptor == null)
+		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId));
+		if (!queueProcessor.isPresent())
 		{
-			return true;
+			return;
 		}
 
-		unregisterMBean(descriptor);
+		unregisterMBean(queueProcessor.get());
 
-		descriptor.getQueueProcessor().shutdown();
-
-		final Future<?> future = descriptor.getFuture();
-		if (future.isDone())
-		{
-			logger.info("Unregistered {} (already done)", descriptor);
-			return true;
-		}
-		if (future.isCancelled())
-		{
-			logger.info("Unregistered {} (already canceled)", descriptor);
-			return true;
-		}
-
-		if (future.cancel(true))
-		{
-			logger.info("Unregistered {} (canceled now)", descriptor);
-			return true;
-		}
-
-		logger.warn("Could not unregister {} (canceling failed)", descriptor);
-		return false;
+		this.asyncProcessorPlanner.removeQueueProcessor(queueProcessor.get().getQueueProcessorId());
 	}
 
 	@Override
+	@Nullable
 	public IQueueProcessor getQueueProcessor(final int queueProcessorId)
 	{
 		mainLock.lock();
 		try
 		{
-			final QueueProcessorDescriptor desc = queueProcessorDescriptors.get(queueProcessorId);
-			if (desc == null)
-			{
-				return null;
-			}
-
-			return desc.getQueueProcessor();
+			return asyncProcessorPlanner
+					.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId))
+					.orElse(null);
 		}
 		finally
 		{
@@ -250,15 +144,15 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		try
 		{
 			logger.info("Shutdown started");
-			threadExecutor.shutdown();
 
-			final List<QueueProcessorDescriptor> descriptors = new ArrayList<>(queueProcessorDescriptors.values());
-			for (final QueueProcessorDescriptor desc : descriptors)
-			{
-				removeQueueProcessor0(desc.getQueueProcessorId());
-			}
+			asyncProcessorPlanner.getRegisteredQueueProcessors()
+					.stream()
+					.map(IQueueProcessor::getQueueProcessorId)
+					.map(QueueProcessorId::getRepoId)
+					.forEach(this::removeQueueProcessor0);
 
-			threadExecutor.shutdownNow();
+			this.asyncProcessorPlanner.shutdown();
+
 			logger.info("Shutdown finished");
 		}
 		finally
@@ -267,19 +161,13 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private String createJMXName(final QueueProcessorDescriptor desc)
+	private void registerMBean(final IQueueProcessor queueProcessor)
 	{
-		final String jmxName = de.metas.async.processor.impl.QueueProcessorsExecutor.class.getName()
-				+ ":type=" + desc.getQueueProcessor().getName();
-		return jmxName;
-	}
+		unregisterMBean(queueProcessor);
 
-	private void registerMBean(final QueueProcessorDescriptor desc)
-	{
-		unregisterMBean(desc);
+		final JMXQueueProcessor processorMBean = new JMXQueueProcessor(queueProcessor, queueProcessor.getQueueProcessorId().getRepoId());
 
-		final JMXQueueProcessor processorMBean = new JMXQueueProcessor(desc.getQueueProcessor(), desc.getQueueProcessorId());
-		final String jmxName = createJMXName(desc);
+		final String jmxName = createJMXName(queueProcessor);
 
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		try
@@ -287,31 +175,15 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			final ObjectName name = new ObjectName(jmxName);
 			mbs.registerMBean(processorMBean, name);
 		}
-		catch (MalformedObjectNameException e)
-		{
-			e.printStackTrace();
-		}
-		catch (InstanceAlreadyExistsException e)
-		{
-			e.printStackTrace();
-		}
-		catch (MBeanRegistrationException e)
-		{
-			e.printStackTrace();
-		}
-		catch (NotCompliantMBeanException e)
-		{
-			e.printStackTrace();
-		}
-		catch (NullPointerException e)
+		catch (final MalformedObjectNameException | InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | NullPointerException e)
 		{
 			e.printStackTrace();
 		}
 	}
 
-	private void unregisterMBean(final QueueProcessorDescriptor desc)
+	private void unregisterMBean(@NonNull final IQueueProcessor queueProcessor)
 	{
-		final String jmxName = createJMXName(desc);
+		final String jmxName = createJMXName(queueProcessor);
 
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		try
@@ -319,59 +191,26 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			final ObjectName name = new ObjectName(jmxName);
 			mbs.unregisterMBean(name);
 		}
-		catch (InstanceNotFoundException e)
+		catch (final InstanceNotFoundException e)
 		{
 			// nothing
 			// e.printStackTrace();
 		}
-		catch (MalformedObjectNameException e)
+		catch (final MalformedObjectNameException | NullPointerException | MBeanRegistrationException e)
 		{
 			e.printStackTrace();
 		}
-		catch (MBeanRegistrationException e)
-		{
-			e.printStackTrace();
-		}
-		catch (NullPointerException e)
-		{
-			e.printStackTrace();
-		}
-
 	}
 
-	private static final class QueueProcessorDescriptor
+	private IQueueProcessor createProcessor(@NonNull final I_C_Queue_Processor processorDef)
 	{
-		private final int queueProcessorId;
-		private final IQueueProcessor queueProcessor;
-		private final Future<?> future;
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForPackageProcessing(processorDef);
+		return Services.get(IQueueProcessorFactory.class).createAsynchronousQueueProcessor(processorDef, queue);
+	}
 
-		public QueueProcessorDescriptor(final int queueProcessorId, final IQueueProcessor queueProcessor, final Future<?> future)
-		{
-			super();
-			this.queueProcessorId = queueProcessorId;
-			this.queueProcessor = queueProcessor;
-			this.future = future;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "QueueProcessorDescriptor [queueProcessorId=" + queueProcessorId + ", queueProcessor=" + queueProcessor + ", future=" + future + "]";
-		}
-
-		public int getQueueProcessorId()
-		{
-			return queueProcessorId;
-		}
-
-		public IQueueProcessor getQueueProcessor()
-		{
-			return queueProcessor;
-		}
-
-		public Future<?> getFuture()
-		{
-			return future;
-		}
+	private static String createJMXName(@NonNull final IQueueProcessor queueProcessor)
+	{
+		return QueueProcessorsExecutor.class.getName()
+				+ ":type=" + queueProcessor.getName();
 	}
 }

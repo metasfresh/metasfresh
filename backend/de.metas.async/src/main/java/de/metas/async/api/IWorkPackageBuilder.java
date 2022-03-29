@@ -8,6 +8,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -46,21 +47,19 @@ public interface IWorkPackageBuilder
 	/**
 	 * Creates the workpackage and marks it as ready for processing (but also see {@link #bindToTrxName(String)}).
 	 * <p>
-	 * Is this builder's parent ({@link IWorkPackageBlockBuilder}) was not yet created/stored in the DB, this method will do it on the fly.
-	 * <p>
 	 * If a locker was specified (see {@link #setElementsLocker(ILockCommand)}) all elements will be locked.
 	 */
-	I_C_Queue_WorkPackage build();
+	I_C_Queue_WorkPackage buildAndEnqueue();
 
 	@NonNull
 	default QueueWorkPackageId buildAndGetId()
 	{
-		final I_C_Queue_WorkPackage workpackage = build();
+		final I_C_Queue_WorkPackage workpackage = buildAndEnqueue();
 		return QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
 	}
 
 	/**
-	 * This is the sibling of {@link #build()}, but it doesn't build/enqueue the work package. Instead it discards it.
+	 * This is the sibling of {@link #buildAndEnqueue()}, but it doesn't build/enqueue the work package. Instead it discards it.
 	 * Note that this method also marks the package builder as "build", so no more elements can be added after this method was called.
 	 *
 	 * <b>IMPORTANT</b> as of now, the method does nothing about possible locks.
@@ -68,13 +67,6 @@ public interface IWorkPackageBuilder
 	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	void discard();
-
-	/**
-	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
-	 *
-	 * @return parent builder
-	 */
-	IWorkPackageBlockBuilder end();
 
 	/**
 	 * Creates or returns the existing workpackage parameters builder of this package builder.
@@ -173,7 +165,7 @@ public interface IWorkPackageBuilder
 	IWorkPackageBuilder setElementsLocker(ILockCommand elementsLocker);
 
 	/**
-	 * @return Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 * @return Lock aquired when enqueued elements were locked (on {@link #buildAndEnqueue()}).
 	 * Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();
@@ -183,4 +175,8 @@ public interface IWorkPackageBuilder
 	 * If the asyncBatchId is not set, it will be inherited.
 	 */
 	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
+
+	I_C_Queue_WorkPackage buildWithPackageProcessor();
+
+	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
 }

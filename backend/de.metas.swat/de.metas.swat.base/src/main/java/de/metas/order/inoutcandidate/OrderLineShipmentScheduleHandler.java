@@ -23,6 +23,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLineId;
@@ -31,8 +32,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -82,11 +85,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);;
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
+	
 
 	public OrderLineShipmentScheduleHandler(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
@@ -209,9 +212,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final I_C_UOM priceUOM = uomdao.getById(orderLine.getPrice_UOM_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, priceUOM, orderLine.getQtyReserved());
-		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
+		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
+		
+		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 
 		// only display item products
 		final boolean display = productBL.getProductType(productId).isItem();

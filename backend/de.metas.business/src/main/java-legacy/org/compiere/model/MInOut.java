@@ -16,21 +16,48 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvBL;
+import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.order.DeliveryRule;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.IOrderDAO;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -45,46 +72,18 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.materialtransaction.IMTransactionDAO;
-import de.metas.order.DeliveryRule;
-import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.IOrderDAO;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Shipment Model
@@ -398,6 +397,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(order.getUser1_ID());
 		setUser2_ID(order.getUser2_ID());
 		setPriorityRule(order.getPriorityRule());
+		setEMail(order.getEMail());
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -496,6 +496,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(invoice.getAD_OrgTrx_ID());
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
+		setEMail(invoice.getEMail());
 
 		// metas
 		copyAdditionalCols(order);
@@ -573,6 +574,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser2_ID(original.getUser2_ID());
 		setC_Incoterms_ID(original.getC_Incoterms_ID());
 		setIncotermLocation(original.getIncotermLocation());
+		setEMail(original.getEMail());
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());

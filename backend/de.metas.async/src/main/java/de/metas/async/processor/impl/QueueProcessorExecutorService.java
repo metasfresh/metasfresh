@@ -81,7 +81,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 		}
 
 		// Remove all queue processors. It shall be none, but just to make sure
-		executor.removeAllQueueProcessor();
+		executor.shutdown();
 
 		for (final I_C_Queue_Processor processorDef : Services.get(IQueueDAO.class).retrieveAllProcessors())
 		{
@@ -93,7 +93,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 	public void removeAllQueueProcessors()
 	{
 		delayedInit.cancelAndReset();
-		executor.removeAllQueueProcessor();
+		executor.shutdown();
 	}
 
 	@Override
