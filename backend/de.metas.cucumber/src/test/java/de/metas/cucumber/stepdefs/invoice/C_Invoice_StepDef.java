@@ -223,6 +223,12 @@ public class C_Invoice_StepDef
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 		}
 
+		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);
+		if (Check.isNotBlank(paymentRule))
+		{
+			assertThat(invoice.getPaymentRule()).isEqualTo(paymentRule);
+		}
+
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 	}

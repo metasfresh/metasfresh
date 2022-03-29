@@ -63,7 +63,6 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,11 +70,12 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.copy.CopyRecordRequest;
+import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -106,6 +106,7 @@ public class DocumentCollection
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final UserSession userSession;
 	private final DocumentWebsocketPublisher websocketPublisher;
+	private final CopyRecordService copyRecordService;
 
 	private final Cache<DocumentKey, Document> rootDocuments;
 	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
@@ -113,11 +114,13 @@ public class DocumentCollection
 	/* package */ DocumentCollection(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final UserSession userSession,
-			@NonNull final DocumentWebsocketPublisher websocketPublisher)
+			@NonNull final DocumentWebsocketPublisher websocketPublisher,
+			@NonNull final CopyRecordService copyRecordService)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.userSession = userSession;
 		this.websocketPublisher = websocketPublisher;
+		this.copyRecordService = copyRecordService;
 
 		// setup the cache
 		final int cacheSize = Services
@@ -788,25 +791,13 @@ public class DocumentCollection
 
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
 
-		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
-		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
-		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+		final CopyRecordRequest copyRecordRequest = CopyRecordRequest.builder()
+				.customErrorIfCloneNotAllowed(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW)
+				.fromAdWindowId(fromDocumentPath.getAdWindowIdOrNull())
+				.tableRecordReference(fromRecordRef)
+				.build();
 
-		if (!CopyRecordFactory.isEnabledForTableName(tableName))
-		{
-			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
-		}
-
-		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
-		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
-		PO.copyValues(fromPO, toPO, true);
-		InterfaceWrapperHelper.save(toPO);
-
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
-		childCRS.setParentPO(toPO);
-		childCRS.setBase(true);
-		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+		final PO toPO = copyRecordService.copyRecord(copyRecordRequest);
 
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 	}

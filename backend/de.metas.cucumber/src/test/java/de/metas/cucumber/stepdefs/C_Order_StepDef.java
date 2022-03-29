@@ -44,15 +44,21 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.copy.CopyRecordRequest;
+import org.adempiere.model.copy.CopyRecordService;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -68,7 +74,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -77,6 +83,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
@@ -87,6 +94,7 @@ public class C_Order_StepDef
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
@@ -161,9 +169,11 @@ public class C_Order_StepDef
 
 			if(EmptyUtil.isNotBlank(docBaseType))
 			{
+				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-						.addEqualsFilter(COLUMNNAME_DocSubType, null)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
 						.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 
@@ -171,6 +181,21 @@ public class C_Order_StepDef
 
 				order.setC_DocType_ID(docType.getC_DocType_ID());
 				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			}
+
+			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
+			if (Check.isNotBlank(paymentRule))
+			{
+				order.setPaymentRule(paymentRule);
+			}
+
+			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bpLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
+				assertThat(bPartnerLocation).isNotNull();
+
+				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			}
 
 			saveRecord(order);
@@ -375,13 +400,18 @@ public class C_Order_StepDef
 		final String deliveryRule = DataTableUtil.extractStringForColumnName(row, "deliveryRule");
 		final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, "deliveryViaRule");
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "processed", false);
-		final String externalId = DataTableUtil.extractStringForColumnName(row, "externalId");
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_ExternalId);
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 		final String bpartnerName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_BPartnerName);
 
 		final I_C_Order order = orderTable.get(identifier);
+		InterfaceWrapperHelper.refresh(order);
 
-		assertThat(order.getExternalId()).isEqualTo(externalId);
+		if (Check.isNotBlank(externalId))
+		{
+			assertThat(order.getExternalId()).isEqualTo(externalId);
+		}
+
 		assertThat(order.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
 		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
@@ -390,7 +420,7 @@ public class C_Order_StepDef
 		assertThat(order.isProcessed()).isEqualTo(processed);
 		assertThat(order.getDocStatus()).isEqualTo(docStatus);
 
-		if(Check.isNotBlank(bpartnerName))
+		if (Check.isNotBlank(bpartnerName))
 		{
 			assertThat(order.getBPartnerName()).isEqualTo(bpartnerName);
 		}
@@ -401,6 +431,18 @@ public class C_Order_StepDef
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
 		assertThat(docType).isNotNull();
 		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
+
+		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_PaymentRule);
+		if (Check.isNotBlank(paymentRule))
+		{
+			assertThat(order.getPaymentRule()).isEqualTo(paymentRule);
+		}
+
+		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_POReference);
+		if(Check.isNotBlank(poReference))
+		{
+			assertThat(order.getPOReference()).isEqualTo(poReference);
+		}
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
@@ -432,6 +474,31 @@ public class C_Order_StepDef
 					.firstOnlyOptional(I_C_OrderLine.class);
 
 			assertThat(orderLine).isPresent();
+		}
+	}
+
+	@When("C_Order is cloned")
+	public void clone_order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String clonedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ClonedOrder." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			assertThat(order).isNotNull();
+
+			final TableRecordReference recordReference = TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID());
+			final CopyRecordRequest copyRecordRequest = CopyRecordRequest.builder()
+					.tableRecordReference(recordReference)
+					.build();
+
+			final PO po = copyRecordService.copyRecord(copyRecordRequest);
+
+			final I_C_Order clonedOrder = load(po.get_ID(), I_C_Order.class);
+			orderTable.putOrReplace(clonedOrderIdentifier, clonedOrder);
 		}
 	}
 
