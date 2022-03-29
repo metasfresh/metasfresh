@@ -71,9 +71,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
 
+	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
+
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
+
+	private static final int BARCODE_ORDERCHECHUP_PROCESS_ID= 540814; // hardcoded ordercheckup_with_barcode/report.jasper
 
 	@Override
 	public void generateReportsIfEligible(final I_C_Order order)
@@ -268,6 +272,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@Override
 	public int getNumberOfCopies(final I_C_Printing_Queue queueItem)
 	{
+		if (BARCODE_ORDERCHECHUP_PROCESS_ID == queueItem.getAD_Process_ID())
+		{
+			final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			return copies;
+		}
+
 		final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		return copies;
 	}
