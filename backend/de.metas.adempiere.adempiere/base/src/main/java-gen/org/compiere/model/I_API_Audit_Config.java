@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -168,6 +169,27 @@ public interface I_API_Audit_Config
 
 	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsInvokerWaitsForResult = new ModelColumn<>(I_API_Audit_Config.class, "IsInvokerWaitsForResult", null);
 	String COLUMNNAME_IsInvokerWaitsForResult = "IsInvokerWaitsForResult";
+
+	/**
+	 * Set Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKeepErroredRequestDays (int KeepErroredRequestDays);
+
+	/**
+	 * Get Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKeepErroredRequestDays();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_KeepErroredRequestDays = new ModelColumn<>(I_API_Audit_Config.class, "KeepErroredRequestDays", null);
+	String COLUMNNAME_KeepErroredRequestDays = "KeepErroredRequestDays";
 
 	/**
 	 * Set Days keep request body.

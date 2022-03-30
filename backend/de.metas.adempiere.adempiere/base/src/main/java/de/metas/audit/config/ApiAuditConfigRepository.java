@@ -46,7 +46,7 @@ public class ApiAuditConfigRepository
 				.create()
 				.list()
 				.stream()
-				.map(this::buildConfigFromRecord)
+				.map(ApiAuditConfigRepository::buildConfigFromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -59,7 +59,7 @@ public class ApiAuditConfigRepository
 	}
 
 	@NonNull
-	private ApiAuditConfig buildConfigFromRecord(@NonNull final I_API_Audit_Config record)
+	private static ApiAuditConfig buildConfigFromRecord(@NonNull final I_API_Audit_Config record)
 	{
 		return ApiAuditConfig.builder()
 				.apiAuditConfigId(ApiAuditConfigId.ofRepoId(record.getAPI_Audit_Config_ID()))
@@ -70,6 +70,7 @@ public class ApiAuditConfigRepository
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))

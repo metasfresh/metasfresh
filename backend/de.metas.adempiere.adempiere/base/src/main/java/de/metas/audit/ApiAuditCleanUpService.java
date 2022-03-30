@@ -22,15 +22,18 @@
 
 package de.metas.audit;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.config.ApiAuditConfigRepository;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditRepository;
+import de.metas.audit.request.ApiRequestIterator;
+import de.metas.audit.request.ApiRequestQuery;
+import de.metas.audit.request.Status;
 import de.metas.audit.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.response.ApiResponseAudit;
 import de.metas.audit.response.ApiResponseAuditRepository;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,8 +42,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Service
 public class ApiAuditCleanUpService
@@ -66,22 +69,30 @@ public class ApiAuditCleanUpService
 
 	public void deleteProcessedRequests()
 	{
-		final List<ApiRequestAudit> processedApiRequests = apiRequestAuditRepository.getAllProcessedRequests();
+		final ApiRequestQuery apiRequestQuery = ApiRequestQuery.builder()
+				.apiRequestStatusSet(ImmutableSet.of(Status.ERROR, Status.PROCESSED))
+				.build();
 
-		if (Check.isEmpty(processedApiRequests))
+		final ApiRequestIterator processedApiRequests = apiRequestAuditRepository.getByQuery(apiRequestQuery);
+
+		if (!processedApiRequests.hasNext())
 		{
 			return;
 		}
 
 		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
 
-		processedApiRequests
-				.stream()
-				.filter(request -> isReadyForCleanup(request, apiAuditConfigShortTimeIndex))
-				.forEach(this::deleteProcessedRequestInTrx);
+		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
+			if (isReadyForCleanup(apiRequestAudit, apiAuditConfigShortTimeIndex))
+			{
+				deleteProcessedRequestInNewTrx(apiRequestAudit);
+			}
+		};
+
+		processedApiRequests.forEach(deleteIfTime);
 	}
 
-	private void deleteProcessedRequestInTrx(@NonNull final ApiRequestAudit apiRequestAudit)
+	private void deleteProcessedRequestInNewTrx(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		trxManager.runInNewTrx(() -> deleteProcessedRequest(apiRequestAudit));
 	}
@@ -106,7 +117,13 @@ public class ApiAuditCleanUpService
 
 		final long daysSinceLastUpdate = (Instant.now().getEpochSecond() - apiRequestAudit.getTime().getEpochSecond()) / (60 * 60 * 24);
 
-		return daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
+		final boolean deleteProcessedRequest = (apiRequestAudit.isErrorAcknowledged() || Status.PROCESSED.equals(apiRequestAudit.getStatus()))
+				&& daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
+
+		final boolean deleteErroredRequest = Status.ERROR.equals(apiRequestAudit.getStatus())
+				&& daysSinceLastUpdate > apiAuditConfig.getKeepErroredRequestDays();
+
+		return deleteErroredRequest || deleteProcessedRequest;
 	}
 
 	@Value
