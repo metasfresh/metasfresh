@@ -12,14 +12,11 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -101,15 +98,13 @@ public class M_Product
 		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, orgId, productPlanningSchemaSelector);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE ,
-			ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
-	@CalloutMethod(columnNames = I_M_Product.COLUMNNAME_C_UOM_ID)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = { I_M_Product.COLUMNNAME_C_UOM_ID })
 	public void setUOM_ID(@NonNull final I_M_Product product)
 	{
 		final AdMessageKey errorMessage = checkExistingUOMConversions(product);
 		if (errorMessage != null)
 		{
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(errorMessage).markAsUserValidationError();
 		}
 	}
 
