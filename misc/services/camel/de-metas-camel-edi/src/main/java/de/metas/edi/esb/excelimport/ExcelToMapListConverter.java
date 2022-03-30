@@ -51,7 +51,7 @@ import lombok.NonNull;
  * To create a new instance, use {@link #builder()}.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class ExcelToMapListConverter
 {
@@ -66,7 +66,7 @@ public class ExcelToMapListConverter
 	private final boolean discardRepeatingHeaders;
 	private final boolean useTypeColumn;
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
