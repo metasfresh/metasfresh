@@ -189,18 +189,19 @@ public class Charge
 	 */
 	protected int createElementValue (String value, String name, boolean isExpenseType)
 	{
-		log.info(name);
-		//
-		MElementValue ev = new MElementValue(Env.getCtx(), value, name, null,
-			isExpenseType ? MElementValue.ACCOUNTTYPE_Expense : MElementValue.ACCOUNTTYPE_Revenue, 
-				MElementValue.ACCOUNTSIGN_Natural,
-				false, false, null);
-		ev.setAD_Org_ID(m_AD_Org_ID);
-		if (!ev.save())
-		{
-			log.warn("C_ElementValue_ID not created");
-		}
-		return ev.getC_ElementValue_ID();
+		throw new UnsupportedOperationException();
+		// log.info(name);
+		// //
+		// MElementValue ev = new MElementValue(Env.getCtx(), value, name, null,
+		// 	isExpenseType ? MElementValue.ACCOUNTTYPE_Expense : MElementValue.ACCOUNTTYPE_Revenue,
+		// 		MElementValue.ACCOUNTSIGN_Natural,
+		// 		false, false, null);
+		// ev.setAD_Org_ID(m_AD_Org_ID);
+		// if (!ev.save())
+		// {
+		// 	log.warn("C_ElementValue_ID not created");
+		// }
+		// return ev.getC_ElementValue_ID();
 	}   //  createElementValue
 
 	/**
