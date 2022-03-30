@@ -109,14 +109,16 @@ Feature: Allow order discount via API (compensation group)
   ]
 }
 """
-    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/clearToProcess' and fulfills with '200' status code
-        """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
 {
-  "externalHeaderId": "externalHeaderId60",
-  "inputDataSourceName": "int-Shopware"
+    "externalHeaderId": "externalHeaderId60",
+    "inputDataSourceName": "int-Shopware",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
 }
 """
-    And ProcessOLCands is called
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'
       | Line | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
       | 1    | true                    | 2                           | D                     | P                        |

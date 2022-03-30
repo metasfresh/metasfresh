@@ -588,6 +588,10 @@ Feature: ASI support in Product BOM rest-api
       | orderLine_PO | order_PO              | product_S4              | 10         | po_AttributeSetInstance                  |
     And the order identified by order_PO is completed
 
+    And after not more than 30s, MD_Candidates are found
+      | Identifier  | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | po_supply   | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
+
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """
   {
