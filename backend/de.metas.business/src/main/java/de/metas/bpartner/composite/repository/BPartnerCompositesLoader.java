@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -22,7 +23,6 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
@@ -35,6 +35,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.logging.LogManager;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -66,8 +67,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 
@@ -527,6 +528,7 @@ final class BPartnerCompositesLoader
 
 		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankAccountRecord.getC_BPartner_ID());
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccountRecord.getC_Bank_ID());
 
 		return BPartnerBankAccount.builder()
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
@@ -535,6 +537,7 @@ final class BPartnerCompositesLoader
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.bankId(bankId)
 				.build();
 	}
 }
