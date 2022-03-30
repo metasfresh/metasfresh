@@ -25,7 +25,6 @@ package de.metas.material.dispo.commons.candidate;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
