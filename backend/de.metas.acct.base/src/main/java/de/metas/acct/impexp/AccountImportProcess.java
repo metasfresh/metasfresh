@@ -3,13 +3,18 @@
  */
 package de.metas.acct.impexp;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,19 +32,11 @@ import org.compiere.model.X_AD_Tree;
 import org.compiere.model.X_C_Element;
 import org.compiere.model.X_I_ElementValue;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -102,7 +99,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	protected I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_ElementValue(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -147,7 +144,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 			{
 				accountImportResult = importElement(importRecord);
 			}
-			else if ((importRecord.getC_Element_ID() <= 0 && importRecord.getElementName().equals(previousElementName))
+			else if ((importRecord.getC_Element_ID() <= 0 && Objects.equals(importRecord.getElementName(), previousElementName))
 					|| importRecord.getC_Element_ID() > 0)
 			{
 				accountImportResult = doNothingAndUsePreviousElement(importRecord, previousImportRecord);
@@ -228,7 +225,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		return ImportRecordResult.Nothing;
 	}
 
-	private I_C_ElementValue importElementValue(@NonNull final I_I_ElementValue importRecord)
+	private void importElementValue(@NonNull final I_I_ElementValue importRecord)
 	{
 		final I_C_ElementValue elementvalue;
 		if (importRecord.getC_ElementValue_ID() <= 0)
@@ -245,7 +242,6 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		InterfaceWrapperHelper.save(elementvalue);
 		importRecord.setC_ElementValue_ID(elementvalue.getC_ElementValue_ID());
 
-		return elementvalue;
 	}
 
 	private void setElementValueFields(@NonNull final I_I_ElementValue importRecord, @NonNull final I_C_ElementValue elementvalue)
@@ -306,12 +302,12 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 				.create()
 				.listDistinct(I_AD_Tree.COLUMNNAME_AD_Tree_ID)
 				.stream()
-				.map(map -> extractTreeIdOrNull(map))
+				.map(AccountImportProcess::extractTreeIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static final Integer extractTreeIdOrNull(final Map<String, Object> map)
+	private static Integer extractTreeIdOrNull(final Map<String, Object> map)
 	{
 		final int treeId = NumberUtils.asInt(map.get(I_AD_Tree.COLUMNNAME_AD_Tree_ID), -1);
 		if (treeId <= 0)
@@ -332,12 +328,12 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 				.create()
 				.listDistinct(I_I_ElementValue.COLUMNNAME_C_Element_ID)
 				.stream()
-				.map(map -> extractElementIdOrNull(map))
+				.map(AccountImportProcess::extractElementIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static final Integer extractElementIdOrNull(final Map<String, Object> map)
+	private static Integer extractElementIdOrNull(final Map<String, Object> map)
 	{
 		final int elementId = NumberUtils.asInt(map.get(I_C_Element.COLUMNNAME_C_Element_ID), -1);
 		if (elementId <= 0)
