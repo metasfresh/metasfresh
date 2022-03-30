@@ -74,7 +74,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 	@ToString
 	@EqualsAndHashCode
-	private class FetchFromSQL implements ModelCacheInvalidateRequestFactory
+	private static class FetchFromSQL implements ModelCacheInvalidateRequestFactory
 	{
 		private final String targetTableName;
 		private final IStringExpression sqlToGetTargetRecordIdBySourceRecordId;
