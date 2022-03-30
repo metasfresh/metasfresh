@@ -26,7 +26,6 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.picking.api.PickingConfigRepository;
@@ -54,7 +53,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -82,12 +80,12 @@ public class HU2PackingItemsAllocator
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
+	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
 	/**
 	 * Cannot fully load:
 	 */
@@ -117,6 +115,7 @@ public class HU2PackingItemsAllocator
 	 */
 	@Builder
 	private HU2PackingItemsAllocator(
+			@NonNull final ShipmentSchedulesSupplier shipmentSchedulesSupplier,
 			@NonNull final IPackingItem itemToPack,
 			@Nullable final PackingItemsMap packingItems,
 			@Nullable final PackingSlot packedItemsSlot,
@@ -126,6 +125,7 @@ public class HU2PackingItemsAllocator
 			@Nullable final IAllocationDestination packToDestination,
 			@Nullable final Quantity qtyToPack)
 	{
+		this.shipmentSchedulesSupplier = shipmentSchedulesSupplier;
 		this.itemToPack = itemToPack;
 		this.packingItems = packingItems != null ? packingItems : PackingItemsMap.ofUnpackedItem(itemToPack);
 		this.packedItemsSlot = packedItemsSlot != null ? packedItemsSlot : PackingSlot.DEFAULT_PACKED;
@@ -504,9 +504,8 @@ public class HU2PackingItemsAllocator
 			return;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
-		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
-		final boolean isShipmentScheduleOverDelivered = currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0;
+		final Quantity currentQtyToDeliver = shipmentSchedulesSupplier.getProjectedQtyToDeliver(packedPart.getShipmentScheduleId());
+		final boolean isShipmentScheduleOverDelivered = currentQtyToDeliver.compareTo(qtyPacked) < 0;
 
 		if (isShipmentScheduleOverDelivered)
 		{
@@ -514,6 +513,7 @@ public class HU2PackingItemsAllocator
 			{
 				case TAKE_WHOLE_HU:
 				{
+					final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId());
 					pickFromVHU_pickDirectly(pickFromVHU, packedPart, shipmentSchedule);
 					return;
 				}
@@ -536,9 +536,11 @@ public class HU2PackingItemsAllocator
 		}
 		else
 		{
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId());
 			pickFromVHU_pickDirectly(pickFromVHU, packedPart, shipmentSchedule);
-			return;
 		}
+
+		shipmentSchedulesSupplier.addQtyDelivered(packedPart.getShipmentScheduleId(), qtyPacked);
 	}
 
 	private void pickFromVHU_pickDirectly(final @NonNull I_M_HU pickFromVHU, final @NonNull PackingItemPart packedPart, final I_M_ShipmentSchedule shipmentSchedule)
@@ -570,10 +572,7 @@ public class HU2PackingItemsAllocator
 	private void pickFromVHU_splitCurrentHU(@NonNull final I_M_HU pickFromVHU, @NonNull final PackingItemPart packedPart)
 	{
 		final Quantity qtyPacked = packedPart.getQty();
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
-		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
-
-		final Quantity qtyCU = Quantity.of(currentQtyToDeliver, packedPart.getQty().getUOM());
+		final Quantity qtyCU = shipmentSchedulesSupplier.getProjectedQtyToDeliver(packedPart.getShipmentScheduleId());
 
 		final ProductId productId = packedPart.getProductId();
 		final I_M_HU huReceived = CollectionUtils.singleElement(HUTransformService.newInstance()
@@ -587,6 +586,7 @@ public class HU2PackingItemsAllocator
 		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId());
 		final boolean anonymousHuPickedOnTheFly = false;
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, huReceived, _huContext, anonymousHuPickedOnTheFly);
 
@@ -632,11 +632,6 @@ public class HU2PackingItemsAllocator
 				.getStorageFactory()
 				.getStorage(sourceHURecord)
 				.getQuantity(productId, uomRecord);
-	}
-
-	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
-	{
-		return shipmentSchedulesRepo.getById(shipmentScheduleId);
 	}
 
 	/**
@@ -742,7 +737,7 @@ public class HU2PackingItemsAllocator
 
 	private IAllocationSource createAllocationSourceFromShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final I_M_ShipmentSchedule schedule = getShipmentScheduleById(shipmentScheduleId);
+		final I_M_ShipmentSchedule schedule = shipmentSchedulesSupplier.getShipmentScheduleById(shipmentScheduleId);
 		final ShipmentScheduleQtyPickedProductStorage shipmentScheduleQtyPickedStorage = ShipmentScheduleQtyPickedProductStorage.of(schedule);
 		return new GenericAllocationSourceDestination(shipmentScheduleQtyPickedStorage, schedule);
 	}
