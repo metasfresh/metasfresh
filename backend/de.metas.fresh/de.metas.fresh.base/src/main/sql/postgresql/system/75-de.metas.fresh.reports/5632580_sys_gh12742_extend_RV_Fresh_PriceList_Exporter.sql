@@ -142,7 +142,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report_With_P
                 qty                        numeric,
                 priceUOMSymbol             text,
                 pricestd                   text,
-                m_productprice_id          integer,
+                m_productprice_id          integer, --10
                 c_bpartner_id              numeric,
                 m_hu_pi_item_product_id    integer,
                 uom_x12de355               text,
@@ -152,20 +152,17 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report_With_P
                 m_product_id               integer,
                 bp_value                   text,
                 bp_name                    text,
-                reportfilename             text,
+                reportfilename             text,    --20
                 show_product_price_pi_flag text,
                 bill_bpartner_id           numeric,
                 bill_location_id           numeric,
                 handover_partner_id        numeric,
                 handover_location_id       numeric,
                 dropship_bpartner_id       numeric,
-                dropship_location_id       numeric
+                dropship_location_id       numeric  --27
             )
-
 AS
 $BODY$
-    --
-
 SELECT plc.value                                                                                                          AS prodvalue,
        plc.customerproductnumber                                                                                          AS customerproductnumber,
        plc.productcategory                                                                                                AS productcategory,
@@ -175,7 +172,7 @@ SELECT plc.value                                                                
        NULL::numeric                                                                                                      AS qty,
        plc.uomsymbol                                                                                                      AS priceUOMSymbol,
        TO_CHAR(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                AS pricestd,
-       plc.M_ProductPrice_ID                                                                                              AS m_productprice_id,
+       plc.M_ProductPrice_ID                                                                                              AS m_productprice_id, --10
        p_c_bpartner_id                                                                                                    AS c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                                                                        AS m_hu_pi_item_product_id,
        stockingUOM.x12de355                                                                                               AS uom_x12de355,
@@ -185,8 +182,10 @@ SELECT plc.value                                                                
        plc.m_product_id                                                                                                   AS m_product_id,
        plc.BP_Value                                                                                                       AS bp_value,
        plc.BP_Name                                                                                                        AS bp_name,
-       CONCAT(bp_value, '_', bp_name, '_', CASE WHEN prlv.isactive = 'Y' THEN prlv.validfrom::date ELSE NULL END, '.xls') AS reportfilename,
+       CONCAT(bp_value, '_', bp_name, '_', CASE WHEN prlv.isactive = 'Y' THEN prlv.validfrom::date ELSE NULL END, '.xls') AS reportfilename,    --20
        p_show_product_price_pi_flag                                                                                       AS show_product_price_pi_flag,
+       p_c_bpartner_id                                                                                                    AS bill_bpartner_id,
+       p_c_bpartner_location_id                                                                                           AS bill_location_id,
        p_dropship_partner_id                                                                                              AS handover_partner_id,
        p_dropship_location_id                                                                                             AS handover_location_id,
        p_dropship_partner_id                                                                                              AS dropship_bpartner_id,

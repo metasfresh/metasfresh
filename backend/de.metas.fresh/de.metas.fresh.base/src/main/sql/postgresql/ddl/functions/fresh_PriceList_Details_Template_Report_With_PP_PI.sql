@@ -70,6 +70,8 @@ SELECT plc.value                                                                
        plc.BP_Name                                                                                                        AS bp_name,
        CONCAT(bp_value, '_', bp_name, '_', CASE WHEN prlv.isactive = 'Y' THEN prlv.validfrom::date ELSE NULL END, '.xls') AS reportfilename,
        p_show_product_price_pi_flag                                                                                       AS show_product_price_pi_flag,
+       p_c_bpartner_id                                                                                                    AS bill_bpartner_id,
+       p_c_bpartner_location_id                                                                                           AS bill_location_id,
        p_dropship_partner_id                                                                                              AS handover_partner_id,
        p_dropship_location_id                                                                                             AS handover_location_id,
        p_dropship_partner_id                                                                                              AS dropship_bpartner_id,
