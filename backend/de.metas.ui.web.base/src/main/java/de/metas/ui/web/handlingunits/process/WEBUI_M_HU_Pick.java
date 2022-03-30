@@ -1,7 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
@@ -13,8 +16,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
+import de.metas.ui.web.pporder.util.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
-import de.metas.ui.web.pporder.util.WEBUI_Picking_Request;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
@@ -203,13 +206,20 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
-		WEBUI_PP_Order_ProcessHelper.pickAndProcessHU(WEBUI_Picking_Request.builder()
-													.huId(huId)
-													.shipmentScheduleId(shipmentScheduleId)
-													.pickingSlotId(pickingSlotId)
-													.isTakeWholeHU(isTakeWholeHU)
-													.ppOrderId(ppOrderView.getPpOrderId())
-													.build());
+		final PickRequest pickRequest = PickRequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.pickFrom(PickFrom.ofHuId(huId))
+				.pickingSlotId(pickingSlotId)
+				.build();
+
+		final ProcessPickingRequest processPickingRequest = ProcessPickingRequest.builder()
+				.huIds(ImmutableSet.of(huId))
+				.ppOrderId(ppOrderView.getPpOrderId())
+				.shipmentScheduleId(shipmentScheduleId)
+				.isTakeWholeHU(isTakeWholeHU)
+				.build();
+
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, processPickingRequest);
 	}
 
 	@Override

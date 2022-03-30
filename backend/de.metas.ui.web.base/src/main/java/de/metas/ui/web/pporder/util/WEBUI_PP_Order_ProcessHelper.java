@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -152,17 +151,22 @@ public class WEBUI_PP_Order_ProcessHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static void pickAndProcessHU(@NonNull final WEBUI_Picking_Request request)
+	public static void pickAndProcessSingleHU(@NonNull final PickRequest pickRequest, @NonNull final ProcessPickingRequest processRequest)
 	{
+		pickHU(pickRequest);
 
-		pickingCandidateService.pickHU(PickRequest.builder()
-											   .shipmentScheduleId(request.getShipmentScheduleId())
-											   .pickFrom(PickFrom.ofHuId(request.getHuId()))
-											   .pickingSlotId(request.getPickingSlotId())
-											   .build());
+		processHUs(processRequest);
+	}
 
-		// NOTE: we are not moving the HU to shipment schedule's locator.
-		pickingCandidateService.processForHUIds(ImmutableSet.of(request.getHuId()),
+	public static void pickHU(@NonNull final PickRequest request)
+	{
+		pickingCandidateService.pickHU(request);
+
+	}
+
+	public static void processHUs(@NonNull final ProcessPickingRequest request)
+	{
+		pickingCandidateService.processForHUIds(request.getHuIds(),
 												request.getShipmentScheduleId(),
 												OnOverDelivery.ofTakeWholeHUFlag(request.isTakeWholeHU()),
 												request.getPpOrderId());

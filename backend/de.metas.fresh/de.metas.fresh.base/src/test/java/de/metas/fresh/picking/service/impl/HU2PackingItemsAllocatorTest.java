@@ -21,34 +21,6 @@ package de.metas.fresh.picking.service.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefPalet;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createLUs;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -63,15 +35,40 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.picking.OnOverDelivery;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.picking.service.impl.ShipmentSchedulesSupplier;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefPalet;
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createLUs;
+import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.comparesEqualTo;
 
 public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 {
@@ -82,9 +79,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	private IHUTrxBL huTrxBL;
 	private IQueryBL queryBL;
 
-	/** TU */
+	/**
+	 * TU
+	 */
 	private I_M_HU_PI_Item_Product huDefIFCO;
-	/** LU */
+	/**
+	 * LU
+	 */
 	private I_M_HU_PI_Item huDefPalet;
 
 	//
@@ -140,8 +141,15 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.assertExpected_ShipmentSchedule("shipment schedule");
 	}
 
+	private ShipmentSchedulesSupplier newShipmentScheduleSupplier()
+	{
+		return ShipmentSchedulesSupplier.builder()
+				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.build();
+	}
+
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07466_Picking_Assumtion_Failure_%28103123870103%29
+	 * @implSpec task http://dewiki908/mediawiki/index.php/07466_Picking_Assumtion_Failure_%28103123870103%29
 	 */
 	@Test
 	public void test_allocate_to_LUs()
@@ -156,6 +164,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 			HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
@@ -184,6 +193,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 			HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
@@ -212,6 +222,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 			HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(luHUs)
@@ -245,6 +256,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 			HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 					.itemToPack(itemToPack)
 					.packingItems(packingItems)
 					.pickFromHUs(tuHUs)
@@ -274,6 +286,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
+				.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHUs(tuHUs)
@@ -307,6 +320,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
+				.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.pickFromHU(aggregateVhu)
@@ -336,8 +350,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.toBigDecimal(), BigDecimal.ZERO);
 
 		parts.updatePart(PackingItems.newPackingItemPart(schedule)
-				.qty(qtyToDeliver)
-				.build());
+								 .qty(qtyToDeliver)
+								 .build());
 
 		return schedule;
 	}
@@ -385,7 +399,6 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	}
 
 	/**
-	 *
 	 * NOTE: this test assumes the TUs were fully allocated to shipment schedule
 	 *
 	 * @param luHU

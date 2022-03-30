@@ -19,6 +19,7 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -29,6 +30,7 @@ import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PickedHuAndQty;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.picking.service.impl.ShipmentSchedulesSupplier;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -94,7 +96,10 @@ public class ProcessHUsAndPickingCandidateCommand
 	@Nullable
 	private final PPOrderId ppOrderId;
 
-	final private Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
+	//
+	// State
+	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
+	private final Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -131,6 +136,10 @@ public class ProcessHUsAndPickingCandidateCommand
 		this.onOverDelivery = onOverDelivery;
 
 		this.ppOrderId = ppOrderId;
+
+		this.shipmentSchedulesSupplier = ShipmentSchedulesSupplier.builder()
+				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.build();
 	}
 
 	public ImmutableList<PickingCandidate> perform()
@@ -212,6 +221,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 		itemsToPack.forEach(itemToPack -> {
 			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(shipmentSchedulesSupplier)
 					.itemToPack(itemToPack)
 					.onOverDelivery(onOverDelivery)
 					.pickFromHU(hu)

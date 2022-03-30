@@ -125,3 +125,23 @@ DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542239
 DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542239
 ;
 
+
+
+
+
+
+-- 2022-03-30T07:35:08.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Value='WEBUI_PP_Order_Pick_ReceivedHUs',Updated=TO_TIMESTAMP('2022-03-30 10:35:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585028
+;
+
+-- 2022-03-30T07:35:36.695Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.ui.web.pporder.process.WEBUI_PP_Order_Pick_ReceivedHUs',Updated=TO_TIMESTAMP('2022-03-30 10:35:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585028
+;
+
+-- 2022-03-30T07:35:42.821Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET EntityType='D',Updated=TO_TIMESTAMP('2022-03-30 10:35:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585028
+;
+

@@ -22,34 +22,27 @@
 
 package de.metas.ui.web.pporder.util;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.picking.api.PickingSlotId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class WEBUI_Picking_Request
+public class ProcessPickingRequest
 {
 	@Nullable
 	PPOrderId ppOrderId;
-	
-	HuId huId;
+
+	@NonNull
+	ImmutableSet<HuId> huIds;
 
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
-
-	@NonNull
-	PickingSlotId pickingSlotId;
-
-	@Nullable
-	Quantity qtyToPick;
 
 	boolean isTakeWholeHU;
 }
