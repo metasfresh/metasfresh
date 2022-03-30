@@ -163,3 +163,78 @@ INSERT INTO t_alter_column values('api_audit_config','KeepErroredRequestDays','N
 UPDATE API_Audit_Config SET KeepErroredRequestDays=7 WHERE KeepErroredRequestDays IS NULL
 ;
 
+-- 2022-03-30T11:36:55.164Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Tage Aufrufrev. mit Fehler aufheben', PrintName='Tage Aufrufrev. mit Fehler aufheben',Updated=TO_TIMESTAMP('2022-03-30 14:36:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580734 AND AD_Language='de_CH'
+;
+
+-- 2022-03-30T11:36:55.206Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580734,'de_CH')
+;
+
+-- 2022-03-30T11:36:58.667Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Tage Aufrufrev. mit Fehler aufheben', PrintName='Tage Aufrufrev. mit Fehler aufheben',Updated=TO_TIMESTAMP('2022-03-30 14:36:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580734 AND AD_Language='de_DE'
+;
+
+-- 2022-03-30T11:36:58.668Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580734,'de_DE')
+;
+
+-- 2022-03-30T11:36:58.685Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580734,'de_DE')
+;
+
+-- 2022-03-30T11:36:58.686Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='KeepErroredRequestDays', Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL WHERE AD_Element_ID=580734
+;
+
+-- 2022-03-30T11:36:58.687Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='KeepErroredRequestDays', Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL, AD_Element_ID=580734 WHERE UPPER(ColumnName)='KEEPERROREDREQUESTDAYS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-03-30T11:36:58.689Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='KeepErroredRequestDays', Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL WHERE AD_Element_ID=580734 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-03-30T11:36:58.690Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580734) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580734)
+;
+
+-- 2022-03-30T11:36:58.716Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Tage Aufrufrev. mit Fehler aufheben', Name='Tage Aufrufrev. mit Fehler aufheben' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580734)
+;
+
+-- 2022-03-30T11:36:58.718Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580734
+;
+
+-- 2022-03-30T11:36:58.719Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Tage Aufrufrev. mit Fehler aufheben', Description=NULL, Help=NULL WHERE AD_Element_ID = 580734
+;
+
+-- 2022-03-30T11:36:58.720Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Tage Aufrufrev. mit Fehler aufheben', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580734
+;
+
+-- 2022-03-30T11:37:04.708Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Tage Aufrufrev. mit Fehler aufheben', PrintName='Tage Aufrufrev. mit Fehler aufheben',Updated=TO_TIMESTAMP('2022-03-30 14:37:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580734 AND AD_Language='nl_NL'
+;
+
+-- 2022-03-30T11:37:04.709Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580734,'nl_NL')
+;
+
