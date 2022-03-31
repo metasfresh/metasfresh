@@ -25,6 +25,7 @@ package de.metas.acct.model.validator;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueRepository;
@@ -34,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
@@ -86,15 +86,16 @@ public class C_ElementValue
 			return;
 		}
 
-		final ClientId adClientId = ClientId.ofRepoId(elementValue.getAD_Client_ID());
-		for (final AcctSchema acctSchema : acctSchemasRepo.getAllByClient(adClientId))
+		final AccountDimension.Builder accountDimensionTemplate = AccountDimension.builder()
+				//.setAcctSchemaId(acctSchema.getId())
+				.setC_ElementValue_ID(elementValue.getC_ElementValue_ID())
+				.setAD_Client_ID(elementValue.getAD_Client_ID())
+				.setAD_Org_ID(OrgId.ANY.getRepoId());
+
+		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
+		for (final AcctSchema acctSchema : acctSchemasRepo.getByChartOfAccountsId(chartOfAccountsId))
 		{
-			MAccount.getCreate(AccountDimension.builder()
-					.setAcctSchemaId(acctSchema.getId())
-					.setC_ElementValue_ID(elementValue.getC_ElementValue_ID())
-					.setAD_Client_ID(adClientId.getRepoId())
-					.setAD_Org_ID(OrgId.ANY.getRepoId())
-					.build());
+			MAccount.getCreate(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
 		}
 	}
 
