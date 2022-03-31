@@ -22,17 +22,16 @@ package org.compiere.report.core;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
+import de.metas.acct.api.IAccountBL;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.acct.api.IAccountBL;
-import de.metas.acct.api.IElementValueDAO;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
 
 public class AcctBalanceRModelAggregatedValue extends AbstractRModelAggregatedValue
 {
@@ -42,7 +41,6 @@ public class AcctBalanceRModelAggregatedValue extends AbstractRModelAggregatedVa
 
 	// Services
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
-	private final IElementValueDAO elementValueDAO = Services.get(IElementValueDAO.class);
 
 	@Override
 	public void reset()
@@ -115,8 +113,11 @@ public class AcctBalanceRModelAggregatedValue extends AbstractRModelAggregatedVa
 		}
 		final KeyNamePair accountKNP = (KeyNamePair)accountObj;
 		final int elementValueId = accountKNP.getKey();
-		final I_C_ElementValue elementValue = elementValueDAO.retrieveById(getCtx(), elementValueId);
-		return elementValue;
+		if (elementValueId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.create(getCtx(), elementValueId, I_C_ElementValue.class, ITrx.TRXNAME_None);
 	}
 
 	private BigDecimal getAmount(final IRModelMetadata metadata, final List<Object> row, final String amountColumnName)

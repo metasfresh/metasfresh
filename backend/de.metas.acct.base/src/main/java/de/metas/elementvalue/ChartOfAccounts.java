@@ -2,7 +2,7 @@
  * #%L
  * de.metas.acct.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,21 @@
  * #L%
  */
 
-package de.metas.treenode;
+package de.metas.elementvalue;
 
-import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.api.ChartOfAccountsId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.model.tree.AdTreeId;
-
-import javax.annotation.Nullable;
+import org.adempiere.service.ClientId;
 
 @Value
 @Builder
-public class TreeNode
+public class ChartOfAccounts
 {
-	@NonNull AdTreeId chartOfAccountsTreeId;
-	@NonNull ElementValueId nodeId;
-	@Nullable ElementValueId parentId;
-	int seqNo;
+	@NonNull ChartOfAccountsId id;
+	@NonNull String name;
+	@NonNull ClientId clientId;
+	@NonNull AdTreeId treeId;
 }

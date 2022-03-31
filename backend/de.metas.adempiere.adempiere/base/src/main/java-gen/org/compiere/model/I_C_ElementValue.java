@@ -182,11 +182,6 @@ public interface I_C_ElementValue
 	 */
 	int getC_Element_ID();
 
-	org.compiere.model.I_C_Element getC_Element();
-
-	void setC_Element(org.compiere.model.I_C_Element C_Element);
-
-	ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Element> COLUMN_C_Element_ID = new ModelColumn<>(I_C_ElementValue.class, "C_Element_ID", org.compiere.model.I_C_Element.class);
 	String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**

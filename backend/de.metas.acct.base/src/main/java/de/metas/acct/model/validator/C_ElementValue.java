@@ -1,7 +1,5 @@
 package de.metas.acct.model.validator;
 
-import java.util.List;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,31 +22,33 @@ import java.util.List;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueRepository;
+import de.metas.organization.OrgId;
+import de.metas.treenode.TreeNodeService;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.ChartOfAccountsId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.organization.OrgId;
-import de.metas.treenode.TreeNodeService;
-import lombok.NonNull;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Interceptor(I_C_ElementValue.class)
 public class C_ElementValue
 {
 	private final IAcctSchemaDAO acctSchemasRepo;
 	private final TreeNodeService treeNodeService;
+
+	private static final AtomicBoolean updateTreeNodeDisabled = new AtomicBoolean(false);
 
 	public C_ElementValue(
 			@NonNull final IAcctSchemaDAO acctSchemasRepo,
@@ -75,11 +75,17 @@ public class C_ElementValue
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_C_ElementValue elementValue)
 	{
-		createValidCombination(elementValue);
+		createValidCombinationIfNeeded(elementValue);
 	}
 
-	private void createValidCombination(final I_C_ElementValue elementValue)
+	@VisibleForTesting
+	protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)
 	{
+		if (elementValue.isSummary())
+		{
+			return;
+		}
+
 		final ClientId adClientId = ClientId.ofRepoId(elementValue.getAD_Client_ID());
 		for (final AcctSchema acctSchema : acctSchemasRepo.getAllByClient(adClientId))
 		{
@@ -92,9 +98,21 @@ public class C_ElementValue
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
-	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
+	public static IAutoCloseable temporaryDisableUpdateTreeNode()
 	{
-		treeNodeService.updateTreeNode(elementValueRecord);
+		final boolean wasDisabled = updateTreeNodeDisabled.getAndSet(true);
+		return () -> updateTreeNodeDisabled.set(wasDisabled);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
+	public void updateTreeNode(final I_C_ElementValue record)
+	{
+		if (updateTreeNodeDisabled.get())
+		{
+			return;
+		}
+
+		final ElementValue elementValue = ElementValueRepository.toElementValue(record);
+		treeNodeService.updateTreeNode(elementValue);
 	}
 }

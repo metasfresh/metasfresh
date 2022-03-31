@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_I_ElementValue extends org.compiere.model.PO implements I_I_ElementValue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1514168288L;
+	private static final long serialVersionUID = -1988684738L;
 
     /** Standard Constructor */
     public X_I_ElementValue (final Properties ctx, final int I_ElementValue_ID, @Nullable final String trxName)
@@ -180,18 +180,6 @@ public class X_I_ElementValue extends org.compiere.model.PO implements I_I_Eleme
 	public int getC_DataImport_Run_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DataImport_Run_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Element getC_Element()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Element_ID, org.compiere.model.I_C_Element.class);
-	}
-
-	@Override
-	public void setC_Element(final org.compiere.model.I_C_Element C_Element)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Element_ID, org.compiere.model.I_C_Element.class, C_Element);
 	}
 
 	@Override

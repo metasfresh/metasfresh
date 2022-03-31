@@ -1,11 +1,24 @@
 package de.metas.acct.impexp;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.elementvalue.ChartOfAccounts;
+import de.metas.elementvalue.ChartOfAccountsService;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueRepository;
+import de.metas.elementvalue.ElementValueService;
+import de.metas.treenode.TreeNode;
+import de.metas.treenode.TreeNodeRepository;
+import de.metas.treenode.TreeNodeService;
+import de.metas.util.Check;
 import lombok.Builder;
-import lombok.experimental.UtilityClass;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Element;
-import org.compiere.model.I_C_ElementValue;
+import org.adempiere.model.tree.AdTreeId;
 import org.compiere.model.I_I_ElementValue;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,17 +44,31 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-/**
- * A collection of account import test helpers.
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-@UtilityClass
 class AccountImportTestHelper
 {
+	private final ChartOfAccountsService chartOfAccountsService;
+	private final ElementValueService elementValueService;
+	private final ElementValueRepository elementValueRepository;
+	private final TreeNodeService treeNodeService;
+	private final TreeNodeRepository treeNodeRepository;
+
+	AccountImportTestHelper(
+			@NonNull final ChartOfAccountsService chartOfAccountsService,
+			@NonNull final ElementValueService elementValueService,
+			@NonNull final ElementValueRepository elementValueRepository,
+			@NonNull final TreeNodeService treeNodeService,
+			@NonNull final TreeNodeRepository treeNodeRepository)
+	{
+		this.chartOfAccountsService = chartOfAccountsService;
+		this.elementValueService = elementValueService;
+		this.elementValueRepository = elementValueRepository;
+		this.treeNodeService = treeNodeService;
+		this.treeNodeRepository = treeNodeRepository;
+	}
+
 	@Builder(builderMethodName = "importRecord", builderClassName = "ImportRecordBuilder")
 	private static I_I_ElementValue createImportRecord(
-			String elementName,
+			String chartOfAccountsName,
 			String value,
 			String name,
 			String parentValue,
@@ -51,41 +78,44 @@ class AccountImportTestHelper
 			boolean postActual,
 			boolean postBudget,
 			boolean postStatistical,
-			boolean docControlled)
+			boolean docControlled,
+			String defaultAccountName)
 	{
 		final I_I_ElementValue importRecord = InterfaceWrapperHelper.newInstance(I_I_ElementValue.class);
-		importRecord.setElementName(elementName);
+		importRecord.setElementName(chartOfAccountsName);
 		importRecord.setParentValue(parentValue);
 		importRecord.setValue(value);
 		importRecord.setName(name);
 		importRecord.setAccountSign(accountSign);
 		importRecord.setAccountType(accountType);
+		importRecord.setIsSummary(summary);
 		importRecord.setPostActual(postActual);
 		importRecord.setPostBudget(postBudget);
 		importRecord.setPostStatistical(postStatistical);
 		importRecord.setIsDocControlled(docControlled);
+		importRecord.setDefault_Account(defaultAccountName);
 
 		InterfaceWrapperHelper.save(importRecord);
 		return importRecord;
 	}
 
-	public static void assertImported(final I_I_ElementValue importRecord)
+	public void assertImported(final I_I_ElementValue importRecord)
 	{
-		assertElementImported(importRecord);
+		assertChartOfAccountImported(importRecord);
 		assertElementValueImported(importRecord);
 	}
 
-	public static void assertElementImported(final I_I_ElementValue importRecord)
+	public void assertChartOfAccountImported(final I_I_ElementValue importRecord)
 	{
-		final I_C_Element element = importRecord.getC_Element();
-		assertThat(element).isNotNull();
-		assertThat(element.getName()).isEqualTo(importRecord.getElementName());
+		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(importRecord.getC_Element_ID());
+		final ChartOfAccounts chartOfAccounts = chartOfAccountsService.getById(chartOfAccountsId);
+		assertThat(chartOfAccounts.getName()).isEqualTo(importRecord.getElementName());
 	}
 
-	public static void assertElementValueImported(final I_I_ElementValue importRecord)
+	public void assertElementValueImported(final I_I_ElementValue importRecord)
 	{
-		final I_C_ElementValue elementValue = importRecord.getC_ElementValue();
-		assertThat(elementValue).isNotNull();
+		final ElementValueId elementValueId = ElementValueId.ofRepoId(importRecord.getC_ElementValue_ID());
+		final ElementValue elementValue = elementValueService.getById(elementValueId);
 		assertThat(elementValue.getValue()).isEqualTo(importRecord.getValue());
 		assertThat(elementValue.getName()).isEqualTo(importRecord.getName());
 		assertThat(elementValue.getAccountType()).isEqualTo(importRecord.getAccountType());
@@ -95,6 +125,45 @@ class AccountImportTestHelper
 		assertThat(elementValue.isPostBudget()).isEqualTo(importRecord.isPostBudget());
 		assertThat(elementValue.isPostStatistical()).isEqualTo(importRecord.isPostStatistical());
 		assertThat(elementValue.isDocControlled()).isEqualTo(importRecord.isDocControlled());
+		assertThat(elementValue.getDefaultAccountName()).isEqualTo(importRecord.getDefault_Account());
+
+		if (!Check.isBlank(importRecord.getParentValue()))
+		{
+			final ElementValueId parentElementValueId = ElementValueId.ofRepoIdOrNull(importRecord.getParentElementValue_ID());
+			assertThat(parentElementValueId).isNotNull();
+			assertThat(elementValue.getParentId()).isEqualTo(parentElementValueId);
+
+			final ElementValue parentElementValue = elementValueService.getById(parentElementValueId);
+			assertThat(parentElementValue.getValue()).isEqualTo(importRecord.getParentValue());
+		}
+		else
+		{
+			final ElementValueId parentElementValueId = ElementValueId.ofRepoIdOrNull(importRecord.getParentElementValue_ID());
+			assertThat(parentElementValueId).isNull();
+			assertThat(elementValue.getParentId()).isNull();
+		}
 	}
 
+	public static ImmutableSet<ChartOfAccountsId> extractChartOfAccountsIds(final List<I_I_ElementValue> importRecords)
+	{
+		return importRecords.stream()
+				.map(importRecord -> ChartOfAccountsId.ofRepoId(importRecord.getC_Element_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void assertTreeStructureIsUpToDate(final ChartOfAccountsId chartOfAccountsId)
+	{
+		final ImmutableSet<TreeNode> nodesCreatedFromElementValues = elementValueRepository
+				.getAllRecordsByChartOfAccountsId(chartOfAccountsId)
+				.stream()
+				.map(ElementValueRepository::toElementValue)
+				.map(treeNodeService::toTreeNode)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final AdTreeId chartOfAccountsTreeId = chartOfAccountsService.getById(chartOfAccountsId).getTreeId();
+
+		final ImmutableSet<TreeNode> nodesFoundInDB = treeNodeRepository.getByTreeId(chartOfAccountsTreeId);
+
+		assertThat(nodesFoundInDB).isEqualTo(nodesCreatedFromElementValues);
+	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,35 @@
  * #L%
  */
 
-package de.metas.acct.api;
+package de.metas.elementvalue;
 
-import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.util.ISingletonService;
+import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_ElementValue;
+import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Properties;
 
-public interface IElementValueDAO extends ISingletonService
+@Value
+@Builder
+public class ElementValueCreateOrUpdateRequest
 {
+	@Nullable ElementValueId existingElementValueId;
 
-	@Nullable
-	I_C_ElementValue retrieveById(Properties ctx, int elementValueId);
-
-	@NonNull ImmutableSet<ElementValueId> getElementValueIdsBetween(@NonNull String valueFrom, @NonNull String valueTo);
-
+	@NonNull OrgId orgId;
+	@NonNull ChartOfAccountsId chartOfAccountsId;
+	@NonNull String value;
+	@NonNull String name;
+	@NonNull String accountSign;
+	@NonNull String accountType;
+	boolean isSummary;
+	boolean isDocControlled;
+	boolean isPostActual;
+	boolean isPostBudget;
+	boolean isPostStatistical;
+	@Nullable ElementValueId parentId;
+	@Nullable Integer seqNo;
+	@Nullable String defaultAccountName;
 }
