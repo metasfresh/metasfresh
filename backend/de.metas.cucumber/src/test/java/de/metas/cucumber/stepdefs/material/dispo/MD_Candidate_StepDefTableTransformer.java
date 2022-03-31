@@ -63,7 +63,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
-			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
+			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 

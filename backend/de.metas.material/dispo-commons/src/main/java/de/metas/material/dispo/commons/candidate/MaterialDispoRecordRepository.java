@@ -22,14 +22,15 @@
 
 package de.metas.material.dispo.commons.candidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Repository
@@ -57,13 +58,45 @@ public class MaterialDispoRecordRepository
 	}
 
 	@NonNull
-	public List<MaterialDispoDataItem> getAllBy(@NonNull final CandidatesQuery query)
+	public ImmutableList<MaterialDispoDataItem> getAllBy(@NonNull final CandidatesQuery query)
 	{
 		assertNotStockQuery(query);
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		return asMaterialDispoDataItem(query, candidates);
+	}
 
+	@NonNull
+	@VisibleForTesting	
+	public String getAllByQueryAsString(@NonNull final CandidatesQuery query)
+	{
+		assertNotStockQuery(query);
+		
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		return asString(query, candidates);
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public String getAllAsString()
+	{
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNo();
+		return asString(null, candidates);
+	}
+
+	@NonNull
+	private String asString(final @Nullable CandidatesQuery query, final @NonNull List<Candidate> candidates)
+	{
+		final StringBuilder sb = new StringBuilder();
+		asMaterialDispoDataItem(query, candidates).forEach(item -> sb.append(item + "\n"));
+		return sb.toString();
+	}
+	
+	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItem(
+			final @Nullable CandidatesQuery query,
+			final @NonNull List<Candidate> candidates)
+	{
 		final ImmutableList.Builder<MaterialDispoDataItem> result = ImmutableList.builder();
 
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidates)
 		{
 			result.add(extractMaterialDispoItem(query, candidate));
@@ -80,7 +113,7 @@ public class MaterialDispoRecordRepository
 		}
 	}
 
-	private MaterialDispoDataItem extractMaterialDispoItem(final @NonNull CandidatesQuery query, final @NonNull Candidate candidate)
+	private MaterialDispoDataItem extractMaterialDispoItem(final @Nullable CandidatesQuery query, final @NonNull Candidate candidate)
 	{
 		final Candidate stockCandidate;
 		switch (candidate.getType())
