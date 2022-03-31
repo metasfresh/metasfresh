@@ -1,12 +1,13 @@
 package de.metas.acct.impexp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import lombok.Builder;
+import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_I_ElementValue;
 
-import lombok.experimental.UtilityClass;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -34,40 +35,66 @@ import lombok.experimental.UtilityClass;
  * A collection of account import test helpers.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
-/* package */class AccountImportTestHelper
+class AccountImportTestHelper
 {
-	public static void assertImported(final I_I_ElementValue ielementvalue)
+	@Builder(builderMethodName = "importRecord", builderClassName = "ImportRecordBuilder")
+	private static I_I_ElementValue createImportRecord(
+			String elementName,
+			String value,
+			String name,
+			String parentValue,
+			String accountType,
+			String accountSign,
+			boolean summary,
+			boolean postActual,
+			boolean postBudget,
+			boolean postStatistical,
+			boolean docControlled)
 	{
-		assertElementImported(ielementvalue);
-		assertElementValueImported(ielementvalue);
+		final I_I_ElementValue importRecord = InterfaceWrapperHelper.newInstance(I_I_ElementValue.class);
+		importRecord.setElementName(elementName);
+		importRecord.setParentValue(parentValue);
+		importRecord.setValue(value);
+		importRecord.setName(name);
+		importRecord.setAccountSign(accountSign);
+		importRecord.setAccountType(accountType);
+		importRecord.setPostActual(postActual);
+		importRecord.setPostBudget(postBudget);
+		importRecord.setPostStatistical(postStatistical);
+		importRecord.setIsDocControlled(docControlled);
+
+		InterfaceWrapperHelper.save(importRecord);
+		return importRecord;
 	}
 
-	public static void assertElementImported(final I_I_ElementValue ielementvalue)
+	public static void assertImported(final I_I_ElementValue importRecord)
 	{
-		final I_C_Element element = ielementvalue.getC_Element();
+		assertElementImported(importRecord);
+		assertElementValueImported(importRecord);
+	}
+
+	public static void assertElementImported(final I_I_ElementValue importRecord)
+	{
+		final I_C_Element element = importRecord.getC_Element();
 		assertThat(element).isNotNull();
-		assertThat(element.getName()).isNotNull();
-		assertThat(element.getName()).isEqualTo(ielementvalue.getElementName());
+		assertThat(element.getName()).isEqualTo(importRecord.getElementName());
 	}
 
-	public static void assertElementValueImported(final I_I_ElementValue ielementvalue)
+	public static void assertElementValueImported(final I_I_ElementValue importRecord)
 	{
-		final I_C_ElementValue elementValue = ielementvalue.getC_ElementValue();
+		final I_C_ElementValue elementValue = importRecord.getC_ElementValue();
 		assertThat(elementValue).isNotNull();
-		assertThat(elementValue.getValue()).isNotNull();
-		assertThat(elementValue.getValue()).isEqualTo(ielementvalue.getValue());
-		assertThat(elementValue.getName()).isNotNull();
-		assertThat(elementValue.getName()).isEqualTo(ielementvalue.getName());
-		assertThat(elementValue.getAccountType()).isEqualTo(ielementvalue.getAccountType());
-		assertThat(elementValue.getAccountSign()).isEqualTo(ielementvalue.getAccountSign());
-		assertThat(elementValue.isSummary()).isEqualTo(ielementvalue.isSummary());
-		assertThat(elementValue.isPostActual()).isEqualTo(ielementvalue.isPostActual());
-		assertThat(elementValue.isPostBudget()).isEqualTo(ielementvalue.isPostBudget());
-		assertThat(elementValue.isPostStatistical()).isEqualTo(ielementvalue.isPostStatistical());
-		assertThat(elementValue.isDocControlled()).isEqualTo(ielementvalue.isDocControlled());
-		}
+		assertThat(elementValue.getValue()).isEqualTo(importRecord.getValue());
+		assertThat(elementValue.getName()).isEqualTo(importRecord.getName());
+		assertThat(elementValue.getAccountType()).isEqualTo(importRecord.getAccountType());
+		assertThat(elementValue.getAccountSign()).isEqualTo(importRecord.getAccountSign());
+		assertThat(elementValue.isSummary()).isEqualTo(importRecord.isSummary());
+		assertThat(elementValue.isPostActual()).isEqualTo(importRecord.isPostActual());
+		assertThat(elementValue.isPostBudget()).isEqualTo(importRecord.isPostBudget());
+		assertThat(elementValue.isPostStatistical()).isEqualTo(importRecord.isPostStatistical());
+		assertThat(elementValue.isDocControlled()).isEqualTo(importRecord.isDocControlled());
+	}
 
 }

@@ -1,9 +1,8 @@
 package de.metas.acct.impexp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
@@ -12,8 +11,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.DBFunctionsRepository;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -51,92 +50,22 @@ public class AccountImportProcess_Test
 	}
 
 	@Test
-	public void testAccountImport()
+	public void standardCase()
 	{
-		final List<I_I_ElementValue> ievs = prepareImportElementValue();
+		//@formatter:off
+		final List<I_I_ElementValue> importRecords = ImmutableList.of(
+				AccountImportTestHelper.importRecord().elementName("Import Account").value("1"    ).name("Aktiven"              ).parentValue(null ).accountType("A").accountSign("N").summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				AccountImportTestHelper.importRecord().elementName("Import Account").value("10"   ).name("Umlaufvermögen"       ).parentValue("1"  ).accountType("A").accountSign("N").summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				AccountImportTestHelper.importRecord().elementName("Import Account").value("100"  ).name("Total flüssige Mittel").parentValue("10" ).accountType("A").accountSign("N").summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				AccountImportTestHelper.importRecord().elementName("Import Account").value("10000").name("Kasse"                ).parentValue("100").accountType("A").accountSign("N").summary(false).postActual(true ).postBudget(true ).postStatistical(true ).docControlled(false).build()
+		);
+		//@formatter:on
 
 		final AccountImportProcess importProcess = new AccountImportProcess();
 		importProcess.setCtx(ctx);
 
-		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue, false /* isInsertOnly */));
+		importRecords.forEach(importRecord -> importProcess.importRecord(new Mutable<>(), importRecord, false));
 
-		ievs.forEach(iElelemntValue -> AccountImportTestHelper.assertImported(iElelemntValue));
-	}
-
-	/**
-	 * Build a test case for import<br>
-	 * <br>
-	 * <code>ElementName	 Value	 Name        			ParentValue	 AccountType	AccountSign	IsSummary	PostActual	PostBudget	PostStatistical	IsDocControlled	</code><br>
-	 * <code>Import Account	 1	    Aktiven	  			   					 A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 10	    Umlaufvermögen	  			1		     A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 100    Total flüssige Mittel	  	10		     A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 10000  Kasse	  					100		     A				N          N            Y            Y             Y              N         </code><br>
-	 *
-	 * @param lines
-	 */
-	private List<I_I_ElementValue> prepareImportElementValue()
-	{
-		final List<I_I_ElementValue> elements = new ArrayList<>();
-
-		I_I_ElementValue iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("1")
-				.name("Aktiven")
-				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
-
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("10")
-				.name("Umlaufvermögen")
-				.parentValue("1")
-				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
-
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("100")
-				.name("Total flüssige Mittel")
-				.parentValue("10")
-				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
-
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("10000")
-				.name("Kasse")
-				.parentValue("100")
-				.accountType("A")
-				.accountSign("N")
-				.summary(false)
-				.postActual(true)
-				.postBudget(true)
-				.postStatistical(true)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
-
-		return elements;
+		importRecords.forEach(AccountImportTestHelper::assertImported);
 	}
 }
