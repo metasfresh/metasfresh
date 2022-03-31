@@ -1,7 +1,7 @@
 
 -- 2022-03-30T13:38:12.065Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Val_Rule_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,53458,0,584659,542240,30,138,540569,'DropShip_BPartner_ID',TO_TIMESTAMP('2022-03-30 15:38:11','YYYY-MM-DD HH24:MI:SS'),100,'Business Partner to ship to','de.metas.ordercandidate',0,'If empty the business partner will be shipped to.','Y','Y','Y','N','N','N','Lieferempfänger',70,TO_TIMESTAMP('2022-03-30 15:38:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Val_Rule_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,53458,0,584659,542240,30,138,NULL,'DropShip_BPartner_ID',TO_TIMESTAMP('2022-03-30 15:38:11','YYYY-MM-DD HH24:MI:SS'),100,'Business Partner to ship to','de.metas.ordercandidate',0,'If empty the business partner will be shipped to.','Y','Y','Y','N','N','N','Lieferempfänger',70,TO_TIMESTAMP('2022-03-30 15:38:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-03-30T13:38:12.068Z
