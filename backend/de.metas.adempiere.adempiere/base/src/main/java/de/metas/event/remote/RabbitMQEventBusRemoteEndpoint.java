@@ -99,7 +99,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 		}
 		if (Objects.equals(getSenderId(), senderId))
 		{
-			logger.debug("onRemoteEvent - event's senderId is equal to the *local* sender id; -> ignoring event", senderId);
+			logger.debug("onRemoteEvent - event's senderId is equal to the *local* sender id (={}); -> ignoring event", senderId);
 			return;
 		}
 

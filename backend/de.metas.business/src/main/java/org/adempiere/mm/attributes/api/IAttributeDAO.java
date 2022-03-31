@@ -49,6 +49,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IAttributeDAO extends ISingletonService
 {
 	String CACHEKEY_ATTRIBUTE_VALUE = I_M_AttributeValue.Table_Name;
@@ -250,5 +252,5 @@ public interface IAttributeDAO extends ISingletonService
 
 	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
 
-	boolean nullSafeASIEquals(AttributeSetInstanceId firstASIId,AttributeSetInstanceId secondASIId);
+	boolean nullSafeASIEquals(@Nullable AttributeSetInstanceId firstASIId, @Nullable AttributeSetInstanceId secondASIId);
 }
