@@ -28,6 +28,10 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * Chart of Accounts ID (i.e. C_Element_ID)
+ */
 @Value
 public class ElementId implements RepoIdAware
 {
@@ -46,7 +50,7 @@ public class ElementId implements RepoIdAware
 
 	private ElementId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Element_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Element_ID (i.e. Chart of Accounts ID)");
 	}
 
 	@Override
