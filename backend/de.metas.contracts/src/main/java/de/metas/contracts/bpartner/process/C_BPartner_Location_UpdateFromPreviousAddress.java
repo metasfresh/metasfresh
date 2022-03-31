@@ -68,6 +68,7 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 				.addCompareFilter(I_C_BPartner_Location.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, now)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_C_BPartner_Location.COLUMNNAME_Previous_ID)
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_ValidFrom)
 				.create()
 				.map(I_C_BPartner_Location.class, I_C_BPartner_Location::getC_BPartner_Location_ID);
 
@@ -92,12 +93,17 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 		}
 		locationsToDeactivate.keySet()
 				.forEach(
-						locationId -> addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
-								locationId, oldLocToNewLoc.get(locationId)));
+						locationId -> logDeactivation(oldLocToNewLoc, locationId));
 
 		locationsToDeactivate.forEach((oldLocId, location) -> replaceLocation(location, newLocations.get(oldLocToNewLoc.get(oldLocId))));
 
 		deactivateLocations(locationsToDeactivate.keySet());
+	}
+
+	protected void logDeactivation(final Map<Integer, Integer> oldLocToNewLoc, final Integer locationId)
+	{
+		addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
+				locationId, oldLocToNewLoc.get(locationId));
 	}
 
 	private void deactivateLocations(final Set<Integer> keySet)
