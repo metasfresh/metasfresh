@@ -61,16 +61,19 @@ public class C_ElementValueTest
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		AdempiereTestHelper.createClientInfo();
 
-		final ElementValueRepository elementValueRepository = new ElementValueRepository();
-		elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
-
 		final ChartOfAccountsService chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
-		this.treeNodeRepo = new TreeNodeRepository();
-		this.treeNodeService = new TreeNodeService(treeNodeRepo, chartOfAccountsService);
+		final TreeNodeRepository treeNodeRepo = new TreeNodeRepository();
+		final TreeNodeService treeNodeService = new TreeNodeService(treeNodeRepo, chartOfAccountsService);
+
+		final ElementValueRepository elementValueRepository = new ElementValueRepository();
+		ElementValueService elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, treeNodeService));
 
+		this.elementValueService = elementValueService;
+		this.treeNodeService = treeNodeService;
+		this.treeNodeRepo = treeNodeRepo;
 		this.chartOfAccounts = chartOfAccountsService.createChartOfAccounts(ChartOfAccountsCreateRequest.builder()
 				.name("Test")
 				.clientId(Env.getClientId())
@@ -81,7 +84,8 @@ public class C_ElementValueTest
 	private ElementValueId createElementValue(
 			@NonNull final String name,
 			@Nullable final ElementValueId parentId,
-			final int seqNo)
+			final int seqNo,
+			final boolean summary)
 	{
 		final ElementValue elementValue = elementValueService.createOrUpdate(ElementValueCreateOrUpdateRequest.builder()
 				.orgId(OrgId.ANY)
@@ -90,7 +94,7 @@ public class C_ElementValueTest
 				.name(name)
 				.accountSign(X_C_ElementValue.ACCOUNTSIGN_Natural)
 				.accountType(X_C_ElementValue.ACCOUNTTYPE_Asset)
-				.isSummary(false)
+				.isSummary(summary)
 				.parentId(parentId)
 				.seqNo(seqNo)
 				.build());
@@ -109,7 +113,7 @@ public class C_ElementValueTest
 	@Test
 	void moveNodeToNewParent()
 	{
-		final ElementValueId parentId = elementValue().name("117").parentId(null).seqNo(1000).build();
+		final ElementValueId parentId = elementValue().name("117").parentId(null).seqNo(1000).summary(true).build();
 		final ElementValueId ev1Id = elementValue().name("11710").parentId(parentId).seqNo(10).build();
 		final ElementValueId ev2Id = elementValue().name("11730").parentId(parentId).seqNo(20).build();
 		final ElementValueId ev3Id = elementValue().name("11720").parentId(null).seqNo(999).build();
