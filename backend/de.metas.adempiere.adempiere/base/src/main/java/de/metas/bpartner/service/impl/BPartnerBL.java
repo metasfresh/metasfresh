@@ -733,16 +733,16 @@ public class BPartnerBL implements IBPartnerBL
 		// Don't update the defaults if the current location is still valid.
 		if (validFrom.before(Env.getDate()))
 		{
-			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
-			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
+			bpLocation.setIsBillToDefault(bpLocation.isBillToDefault() || previousLocation.isBillToDefault());
+			bpLocation.setIsShipToDefault(bpLocation.isShipToDefault() || previousLocation.isShipToDefault());
 
 			previousLocation.setIsBillToDefault(false);
 			previousLocation.setIsShipToDefault(false);
 			bpartnersRepo.save(previousLocation);
 		}
 
-		bpLocation.setIsBillTo(previousLocation.isBillTo());
-		bpLocation.setIsShipTo(previousLocation.isShipTo());
+		bpLocation.setIsBillTo(bpLocation.isBillTo() || previousLocation.isBillTo());
+		bpLocation.setIsShipTo(bpLocation.isShipTo() || previousLocation.isShipTo());
 	}
 
 }
