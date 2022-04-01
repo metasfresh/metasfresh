@@ -271,6 +271,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -998,9 +1000,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IStatefulWorkpackageProcessorFactory packageProcessorFactory = Services.get(IStatefulWorkpackageProcessorFactory.class);
 		packageProcessorFactory.registerWorkpackageProcessor(packageProcessor);
 
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, packageProcessor.getClass());
+		final IWorkPackageQueue packageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, packageProcessor.getClass());
 
-		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(packageQueue);
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createSynchronousQueueProcessor(packageQueue);
 		queueProcessor.setWorkpackageProcessorFactory(packageProcessorFactory);
 
 		SynchronousProcessorPlanner.executeNow(queueProcessor);

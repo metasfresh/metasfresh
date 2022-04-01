@@ -132,6 +132,4 @@ public interface IQueueDAO extends ISingletonService
 	Set<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
 	List<I_C_Queue_WorkPackage> retrieveUnprocessedWorkPackagesByEnqueuedRecord(Class<? extends IWorkpackageProcessor> packageProcessorClass, TableRecordReference recordRef);
-
-	boolean isAutocreateWorkpackageProcessorRecordForClassname();
 }
