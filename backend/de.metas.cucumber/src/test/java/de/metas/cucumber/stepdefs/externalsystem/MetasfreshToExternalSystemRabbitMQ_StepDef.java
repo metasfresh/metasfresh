@@ -123,8 +123,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		final String requestBPartnerId = requestToRabbitMQ.getParameters().get(PARAM_BPARTNER_ID);
 
-		assertThat(Integer.valueOf(requestBPartnerId)).isEqualTo(bpartner.getC_BPartner_ID());
-		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue()).isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
+		assertThat(Integer.valueOf(requestBPartnerId))
+				.as("Wrong C_BPartner_ID in RabbitMQ request; identifier=%s; requests=%s", bpartnerIdentifier, requests)
+				.isEqualTo(bpartner.getC_BPartner_ID());
+		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue())
+				.as("Wrong ExternalSystem_Config_ID in RabbitMQ request; identifier=%s; requests=%s", externalSystemConfigIdentifier, requests)
+				.isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
 	}
 
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:")
