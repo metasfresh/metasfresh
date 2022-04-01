@@ -1174,7 +1174,7 @@ public class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int getSQLValue(final String trxName, final String sql, final Object... params)
+	public int getSQLValue(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		int retValue = -1;
 		try
@@ -2103,7 +2103,7 @@ public class DB
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
 	// TODO: remove this when BeanShell will support varargs methods
-	public int getSQLValue(final String trxName, final String sql)
+	public int getSQLValue(@Nullable final String trxName, final String sql)
 	{
 		return getSQLValue(trxName, sql, new Object[] {});
 	}

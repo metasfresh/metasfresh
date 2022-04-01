@@ -33,7 +33,7 @@ import de.metas.util.Loggables;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @task https://github.com/metasfresh/metasfresh/issues/251
+ * @implSpec https://github.com/metasfresh/metasfresh/issues/251
  */
 @Component
 public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask
