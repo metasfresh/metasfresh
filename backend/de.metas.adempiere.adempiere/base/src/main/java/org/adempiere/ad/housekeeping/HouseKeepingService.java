@@ -94,9 +94,9 @@ public class HouseKeepingService
 					task.executeTask();
 					logger.info("Finished executing task {}; elapsed time={}", taskName, currentTaskWatch.stop());
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					logger.warn("Failed to execute task {}; skipped; elapsed time={}", taskName, e, currentTaskWatch.stop());
+					logger.warn("Failed to execute task {}; skipped; elapsed time={}; exception={}", taskName, currentTaskWatch.stop(), e);
 				}
 			}
 		}
