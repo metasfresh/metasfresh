@@ -37,6 +37,7 @@ import java.io.File;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
+import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
 /**
  * Thx to https://medium.com/@hemanthsridhar/global-hooks-in-cucumber-jvm-afc1be13e487 !
@@ -82,7 +83,8 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty("java.awt.headless", "true"); // "simulate headless mode
 		System.setProperty("app-server-run-headless", "true"); //
 		System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
-		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait 
+		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
+		System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,
