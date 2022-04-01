@@ -2225,7 +2225,7 @@ public class DB
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
+	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);

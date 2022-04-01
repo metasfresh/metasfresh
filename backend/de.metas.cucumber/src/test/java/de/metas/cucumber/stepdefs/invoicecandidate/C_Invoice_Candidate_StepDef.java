@@ -511,6 +511,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private boolean isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
 		return invoiceCandidate.isProcessed();
 	}
 }
