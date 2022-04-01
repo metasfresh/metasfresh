@@ -78,7 +78,7 @@ function useProvideAuth() {
           return Promise.resolve(resp.data);
         })
         .catch((error) => {
-          if (error.response.status !== 500) {
+          if (error.response && error.response.status !== 500) {
             Promise.reject(error);
           }
         });
