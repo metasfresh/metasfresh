@@ -95,7 +95,7 @@ public class MainRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord)
+	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord, @NonNull final HighPriceProvider highPriceProvider)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
