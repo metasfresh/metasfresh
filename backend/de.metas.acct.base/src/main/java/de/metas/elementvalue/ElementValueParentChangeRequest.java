@@ -24,13 +24,13 @@ package de.metas.elementvalue;
 
 import de.metas.acct.api.impl.ElementValueId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class ElementValueRequest
+public class ElementValueParentChangeRequest
 {
-	ElementValueId elementValueId;
-
-	ElementValueId parentId;
+	@NonNull ElementValueId elementValueId;
+	@NonNull ElementValueId newParentId;
 }

@@ -18,53 +18,24 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.stream.IntStream;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
+import de.metas.process.IProcessExecutionListener;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ui.AProcess;
+import de.metas.process.ui.ProcessDialog;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
@@ -117,25 +88,24 @@ import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.process.AdProcessId;
-import de.metas.process.IProcessExecutionListener;
-import de.metas.process.ProcessClassInfo;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
-import de.metas.process.ui.AProcess;
-import de.metas.process.ui.ProcessDialog;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.stream.IntStream;
 
 /**
  * Main Panel of application window.
@@ -3096,7 +3066,8 @@ public class APanel extends CPanel
 			Object ps = m_curTab.getValue("Posted");
 			if (ps != null && ps.equals("Y"))
 			{
-				new org.compiere.acct.AcctViewer(Env.getContextAsInt(m_ctx, m_curWindowNo, "AD_Client_ID"), tableId, recordId);
+				//new org.compiere.acct.AcctViewer(Env.getContextAsInt(m_ctx, m_curWindowNo, "AD_Client_ID"), tableId, recordId);
+				throw new UnsupportedOperationException();
 			}
 			else
 			{
