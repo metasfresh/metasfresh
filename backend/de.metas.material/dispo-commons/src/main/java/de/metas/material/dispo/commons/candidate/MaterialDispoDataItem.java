@@ -56,16 +56,12 @@ public class MaterialDispoDataItem
 	BigDecimal atp;
 
 	BusinessCaseDetail businessCaseDetail;
-
-	@NonNull
-	Instant updated;
 	
 	public static MaterialDispoDataItem of(
 			@NonNull final Candidate dataCanddiate,
 			@NonNull final Candidate stockCandidate)
 	{
 		return MaterialDispoDataItem.builder()
-				.updated(TimeUtil.max(dataCanddiate.getUpdated(), stockCandidate.getUpdated()))
 				.materialDescriptor(dataCanddiate.getMaterialDescriptor())
 				.candidateId(dataCanddiate.getId())
 				.type(dataCanddiate.getType())

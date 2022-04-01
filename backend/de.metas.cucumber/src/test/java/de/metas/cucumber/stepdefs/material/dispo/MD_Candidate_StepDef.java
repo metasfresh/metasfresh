@@ -469,26 +469,6 @@ public class MD_Candidate_StepDef
 		return materialDispoRecord;
 	}
 
-	@And("the following MD_Candidates are validated")
-	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable) throws InterruptedException
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			validate_md_candidate_with_stock(tableRow, 60L); // TODO add timeout to step def
-		}
-	}
-
-	@And("the following stock MD_Candidates are validated")
-	public void validate_md_candidate_stock(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			validate_md_candidate_stock(tableRow);
-		}
-	}
-
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
 	{
 		final String stockCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -524,12 +504,6 @@ public class MD_Candidate_StepDef
 		final ItemProvider<MaterialDispoDataItem> itemProvider = () -> {
 
 			final MaterialDispoDataItem result = materialDispoRecordRepository.getBy(candidatesQuery);
-			final Instant updated = result.getUpdated();
-			if (!updated.isAfter(materialDispoDataItem.getRecordUpdated()))
-			{
-				return ProviderResult.resultWasNotFound("MaterialDispoDataItem with id=" + result.getCandidateId().getRepoId() + " was not updated since it was last added to the materialDispoDataItemStepDefData; materialDispoDataItem.getRecordUpdated()=" + materialDispoDataItem.getRecordUpdated());
-			}
-			materialDispoDataItemStepDefData.putOrReplace(materialDispoDataIdentifier, result); // update the item with its new updated value
 			return ProviderResult.resultWasFound(result);
 		};
 		final MaterialDispoDataItem freshMaterialDispoItemInfo = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, itemProvider);

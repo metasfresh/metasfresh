@@ -104,8 +104,6 @@ public class Candidate
 	List<TransactionDetail> transactionDetails;
 
 	Dimension dimension;
-
-	Instant updated;
 	
 	@Builder(toBuilder = true)
 	private Candidate(
@@ -121,8 +119,7 @@ public class Candidate
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
-			final Dimension dimension,
-			@Nullable final Instant updated)
+			final Dimension dimension)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -151,7 +148,6 @@ public class Candidate
 		}
 
 		this.dimension = dimension;
-		this.updated = CoalesceUtil.coalesceNotNull(updated, SystemTime.asInstant());
 	}
 
 	public static class CandidateBuilder
