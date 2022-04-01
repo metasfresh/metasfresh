@@ -12,4 +12,4 @@ sleep 30
 echo "starting installation with helm"
 # modify release-name, dir and namespace if needed
 # helm install <release-name> <dir> --namespace <namespace> --create-namespace
-helm install dev metasfresh-helm --namespace dev --create-namespace
+helm install demo metasfresh-helm --namespace demo --create-namespace
