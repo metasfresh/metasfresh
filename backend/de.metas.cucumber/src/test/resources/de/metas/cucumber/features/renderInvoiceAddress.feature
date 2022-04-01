@@ -25,7 +25,7 @@ Feature: Render invoice address
       | pp_product | plv_so                            | test_product_26_02      | 10.0     | Normal                        | PCE               |
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | customer_bp_26_02 | customer_bp_26_02 | ps_1                          | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
 

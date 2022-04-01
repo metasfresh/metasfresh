@@ -186,8 +186,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment              | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment              | p_3                     | 12          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1_1           | shipment              | p_3                     | 12          | true      |
 
 
   @from:cucumber
@@ -261,8 +261,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment_1            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_1            | p_3                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1_1           | shipment_1            | p_3                     | 10          | true      |
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
@@ -279,8 +279,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment_2            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_2            | p_3                     | 5           | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipmentLine1_1           | shipment_2            | p_3                     | 5           | true      |
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
