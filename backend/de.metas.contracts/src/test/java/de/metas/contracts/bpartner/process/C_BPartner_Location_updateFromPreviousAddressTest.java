@@ -46,7 +46,7 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 {
 	private int current_cBpartnerLocationId;
 	private int replacing_cBpartnerLocationId;
-	private int notYetActive_cBpartnerLocationId;
+	private int future_cBpartnerLocationId;
 
 	@BeforeAll
 	public static void init()
@@ -92,7 +92,7 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 		save(bpartnerLocation3);
 		replacing_cBpartnerLocationId = bpartnerLocation3.getC_BPartner_Location_ID();
 
-		// replacing location
+		// future replacing location
 		final I_C_BPartner_Location bpartnerLocation4 = newInstance(I_C_BPartner_Location.class);
 		bpartnerLocation4.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpartnerLocation4.setC_Location_ID(4);
@@ -100,7 +100,7 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 		bpartnerLocation4.setValidFrom(TimeUtil.addWeeks(now, 1));
 		bpartnerLocation4.setIsBillTo(true);
 		save(bpartnerLocation4);
-		notYetActive_cBpartnerLocationId = bpartnerLocation4.getC_BPartner_Location_ID();
+		future_cBpartnerLocationId = bpartnerLocation4.getC_BPartner_Location_ID();
 	}
 
 	@Test
@@ -129,11 +129,11 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 		assertThat(newLoc.isBillToDefault()).isTrue();
 		assertThat(newLoc.isShipToDefault()).isTrue();
 
-		final I_C_BPartner_Location notYetActiveLoc = load(notYetActive_cBpartnerLocationId, I_C_BPartner_Location.class);
-		assertThat(notYetActiveLoc.isActive()).isTrue();
-		assertThat(notYetActiveLoc.isBillTo()).isTrue();
-		assertThat(notYetActiveLoc.isShipTo()).isFalse();
-		assertThat(notYetActiveLoc.isBillToDefault()).isFalse();
-		assertThat(notYetActiveLoc.isShipToDefault()).isFalse();
+		final I_C_BPartner_Location futureLoc = load(future_cBpartnerLocationId, I_C_BPartner_Location.class);
+		assertThat(futureLoc.isActive()).isTrue();
+		assertThat(futureLoc.isBillTo()).isTrue();
+		assertThat(futureLoc.isShipTo()).isFalse();
+		assertThat(futureLoc.isBillToDefault()).isFalse();
+		assertThat(futureLoc.isShipToDefault()).isFalse();
 	}
 }
