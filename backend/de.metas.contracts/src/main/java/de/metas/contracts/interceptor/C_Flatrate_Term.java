@@ -23,7 +23,7 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
@@ -31,7 +31,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.contracts.impl.FlatrateBL;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;

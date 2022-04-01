@@ -1,8 +1,23 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.purchasecandidate.model.I_C_BP_PurchaseSchedule;
+import de.metas.purchasecandidate.model.X_C_BP_PurchaseSchedule;
+import de.metas.util.Services;
+import de.metas.util.time.generator.Frequency;
+import de.metas.util.time.generator.FrequencyType;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -14,26 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.CCache;
-import de.metas.calendar.CalendarId;
-import de.metas.purchasecandidate.model.I_C_BP_PurchaseSchedule;
-import de.metas.purchasecandidate.model.X_C_BP_PurchaseSchedule;
-import de.metas.util.Services;
-import de.metas.util.time.generator.Frequency;
-import de.metas.util.time.generator.FrequencyType;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

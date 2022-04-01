@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
 import de.metas.util.Check;
 import de.metas.util.TypedAccessor;

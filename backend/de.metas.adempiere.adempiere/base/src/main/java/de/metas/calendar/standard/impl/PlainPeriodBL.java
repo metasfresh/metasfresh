@@ -1,18 +1,10 @@
-package de.metas.calendar;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.calendar.standard.impl;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,29 +13,25 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class FixedNonBusinessDay implements NonBusinessDay
+
+import java.sql.Timestamp;
+import java.util.Properties;
+
+public class PlainPeriodBL extends PeriodBL
 {
-	@NonNull
-	LocalDate fixedDate;
-
-	@Nullable
-	String name;
-
 	@Override
-	public boolean isMatching(@NonNull final LocalDate date)
+	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
 	{
-		return fixedDate.equals(date);
+		// consider all period opens because we don't have plain support
+		return true;
 	}
-
 }

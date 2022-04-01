@@ -20,18 +20,18 @@
  * #L%
  */
 
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.CalendarNonBusinessDays;
-import de.metas.calendar.FixedNonBusinessDay;
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.NonBusinessDay;
-import de.metas.calendar.RecurrentNonBusinessDay;
-import de.metas.calendar.RecurrentNonBusinessDayFrequency;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.CalendarNonBusinessDays;
+import de.metas.calendar.standard.FixedNonBusinessDay;
+import de.metas.calendar.standard.ICalendarBL;
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.NonBusinessDay;
+import de.metas.calendar.standard.RecurrentNonBusinessDay;
+import de.metas.calendar.standard.RecurrentNonBusinessDayFrequency;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;

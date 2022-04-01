@@ -1,4 +1,4 @@
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
 /*
  * #%L
@@ -22,9 +22,8 @@ package de.metas.calendar.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -34,9 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.impl.PlainCalendarDAO;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class CalendarTestBase
 {

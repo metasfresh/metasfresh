@@ -1,22 +1,8 @@
-package de.metas.calendar;
-
-import java.time.LocalDate;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.calendar.IBusinessDayMatcher;
-
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Singular;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,18 @@ import lombok.Singular;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.calendar.standard;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.calendar.IBusinessDayMatcher;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Singular;
+
+import java.time.LocalDate;
 
 @EqualsAndHashCode
 public class CalendarNonBusinessDays implements IBusinessDayMatcher

@@ -1,19 +1,8 @@
-package de.metas.calendar;
-
-import java.util.Map;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_NonBusinessDay;
-
-import de.metas.util.GuavaCollectors;
-import lombok.Getter;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +19,16 @@ import lombok.Getter;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.calendar.standard;
+
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_NonBusinessDay;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 public enum RecurrentNonBusinessDayFrequency
 {

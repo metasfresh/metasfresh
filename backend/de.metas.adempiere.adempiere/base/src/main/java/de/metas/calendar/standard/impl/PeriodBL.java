@@ -1,4 +1,4 @@
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
 /*
  * #%L
@@ -22,13 +22,9 @@ package de.metas.calendar.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.calendar.standard.IPeriodBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -41,9 +37,11 @@ import org.compiere.model.X_C_PeriodControl;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.calendar.IPeriodBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 public class PeriodBL implements IPeriodBL
 {

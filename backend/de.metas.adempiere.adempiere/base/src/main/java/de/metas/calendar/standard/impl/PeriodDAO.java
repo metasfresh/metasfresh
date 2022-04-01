@@ -1,4 +1,4 @@
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
 /*
  * #%L
@@ -22,18 +22,16 @@ package de.metas.calendar.impl;
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.calendar.standard.IPeriodDAO;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_PeriodControl;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.calendar.IPeriodDAO;
-import de.metas.util.Services;
+import java.util.Map;
+import java.util.Properties;
 
 public class PeriodDAO implements IPeriodDAO
 {

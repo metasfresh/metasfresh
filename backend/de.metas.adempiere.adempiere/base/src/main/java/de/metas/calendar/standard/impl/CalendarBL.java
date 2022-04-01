@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.calendar.impl;
+package de.metas.calendar.standard.impl;
 
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarBL;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

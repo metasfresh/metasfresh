@@ -1,10 +1,15 @@
-package de.metas.calendar;
+package de.metas.calendar.standard.interceptor;
+
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.I_C_NonBusinessDay;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +27,11 @@ package de.metas.calendar;
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-
-import org.compiere.model.I_C_PeriodControl;
-
-import de.metas.util.ISingletonService;
-
-public interface IPeriodDAO extends ISingletonService
+@Interceptor(I_C_NonBusinessDay.class)
+public class C_NonBusinessDay
 {
-	Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
-
+	public void validate(final I_C_NonBusinessDay record)
+	{
+		Services.get(ICalendarDAO.class).validate(record);
+	}
 }

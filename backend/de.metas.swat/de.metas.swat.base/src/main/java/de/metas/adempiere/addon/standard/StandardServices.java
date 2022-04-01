@@ -1,9 +1,5 @@
 package de.metas.adempiere.addon.standard;
 
-import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
-import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
-import org.adempiere.misc.service.IPOService;
-import org.adempiere.misc.service.impl.POService;
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
@@ -15,8 +11,8 @@ import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.impl.CalendarDAO;
+import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.impl.CalendarDAO;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.InvoiceBL;
@@ -26,6 +22,10 @@ import de.metas.order.impl.OrderBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.impl.PriceListDAO;
 import de.metas.util.Services;
+import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
+import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
+import org.adempiere.misc.service.IPOService;
+import org.adempiere.misc.service.impl.POService;
 
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.

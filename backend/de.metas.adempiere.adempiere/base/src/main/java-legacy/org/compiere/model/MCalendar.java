@@ -19,12 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/**
- *	Calendar Model
- *	
- *  @author Jorg Janke
- *  @version $Id: MCalendar.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
- */
+// TODO delete me
+@Deprecated
 public class MCalendar extends X_C_Calendar
 {
 	/**
