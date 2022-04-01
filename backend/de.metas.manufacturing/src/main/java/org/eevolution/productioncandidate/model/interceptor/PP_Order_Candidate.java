@@ -188,7 +188,8 @@ public class PP_Order_Candidate
 					.appendParametersToMessage()
 					.setParameter("PP_Order_Candidate_ID", ppOrderCandidateRecord.getPP_Order_Candidate_ID())
 					.setParameter("QtyProcessed", ppOrderCandidateRecord.getQtyProcessed())
-					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered());
+					.setParameter("QtyEntered", ppOrderCandidateRecord.getQtyEntered())
+					.markAsUserValidationError();
 		}
 	}
 
