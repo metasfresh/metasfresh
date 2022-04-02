@@ -124,7 +124,7 @@ public abstract class StepDefData<T>
 		{
 			updatedOpt = Optional.empty();
 		}
-		
+
 		final Instant updated = updatedOpt.orElse(Instant.MIN);
 		return new RecordDataItem<T>(productRecord, Instant.now(), updated);
 	}

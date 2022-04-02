@@ -400,9 +400,7 @@ Feature: create production order
       | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 0   | -10                    |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | 0   | 0                      |
       | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100 | 100                    |
-    And the following stock MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | M_Product_ID.Identifier | DateProjected        | Qty |
-      | s_2                        | INVENTORY_UP      | p_11                    | 2021-04-14T21:00:00Z | 10  |
+      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10  | 0                      |
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past

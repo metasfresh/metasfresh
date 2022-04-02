@@ -516,8 +516,7 @@ public class C_Invoice_Candidate_StepDef
 			candQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
 		}
 
-		final IQuery<I_C_Invoice_Candidate> candidateIQuery = candQueryBuilder.create();
-		return candidateIQuery;
+		return candQueryBuilder.create();
 	}
 
 	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
@@ -544,9 +543,13 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
-	private boolean isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InterfaceWrapperHelper.refresh(invoiceCandidate);
-		return invoiceCandidate.isProcessed();
+		if (invoiceCandidate.isProcessed())
+		{
+			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
+		}
+		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
 	}
 }
