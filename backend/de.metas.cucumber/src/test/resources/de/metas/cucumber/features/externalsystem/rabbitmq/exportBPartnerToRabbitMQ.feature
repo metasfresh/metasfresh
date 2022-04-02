@@ -36,7 +36,7 @@ Feature: Validate BPartner is sent to RabbitMQ
     ],
     "syncAdvise": {
         "ifNotExists": "CREATE",
-        "ifExists": "UPDATE_MERGE"
+        "ifExists": "FAIL"
     }
 }
 """
