@@ -101,7 +101,8 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 		final Channel channel = connection.createChannel();
-		channel.queuePurge(QUEUE_NAME_MF_TO_ES);
+		final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(QUEUE_NAME_MF_TO_ES);
+		logger.info("Purged {} messages from queue {}", purgeOk.getMessageCount(), QUEUE_NAME_MF_TO_ES);
 	}
 
 	@Then("RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:")

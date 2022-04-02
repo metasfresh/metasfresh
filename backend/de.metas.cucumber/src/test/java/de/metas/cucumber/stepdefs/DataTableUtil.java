@@ -346,7 +346,8 @@ public class DataTableUtil
 		return result;
 	}
 
-	public static boolean extractBooleanForColumnNameOr(
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
