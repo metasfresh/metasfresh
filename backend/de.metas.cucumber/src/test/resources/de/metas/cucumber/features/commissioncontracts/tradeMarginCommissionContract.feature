@@ -10,7 +10,6 @@ Feature: Trade margin commission contract
 
   @from:cucumber
   @topic:commissionContracts
-  @dev:runThisOne
   Scenario: Margin commission combined having one sales rep and one customer
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
