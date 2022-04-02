@@ -366,10 +366,12 @@ Feature: create production order
     When the order identified by o_11 is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10   | 10                     |
       | c_11       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | -20  | -10                    |
       | c_22       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | -100                   |
       | c_l_2      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100  | 0                      |
+      | s_2        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
@@ -392,15 +394,15 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_33       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
-      | c_l_3      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | 0                      |
-    And after not more than 30s, MD_Candidates are found
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 0   | -10                    |
-      | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | 0   | 0                      |
-      | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100 | 100                    |
-      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10  | 0                      |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | s_1                        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10   | 10                     |
+      | c_11                       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | -20  | -10                    |
+      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 0    | -10                    |
+      | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | 0    | 0                      |
+      | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100  | 100                    |
+      | c_33                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
+      | c_l_3                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | 0                      |
+      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past

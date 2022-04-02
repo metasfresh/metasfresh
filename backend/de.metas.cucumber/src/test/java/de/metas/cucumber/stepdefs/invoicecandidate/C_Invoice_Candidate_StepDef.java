@@ -493,7 +493,7 @@ public class C_Invoice_Candidate_StepDef
 		final I_C_Invoice_Candidate invoiceCandidate = candidateIQuery.firstOnlyOrNull(I_C_Invoice_Candidate.class);
 		if (invoiceCandidate == null)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("no invoice candidate round for query " + candidateIQuery);
+			return ItemProvider.ProviderResult.resultWasNotFound("No invoice candidate found for query " + candidateIQuery);
 		}
 		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
 	}
