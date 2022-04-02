@@ -130,8 +130,8 @@ public class C_Order_StepDef
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT."+COLUMNNAME_DropShip_BPartner_ID);
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
+			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -161,10 +161,18 @@ public class C_Order_StepDef
 				order.setAD_User_ID(user.getAD_User_ID());
 			}
 
+			final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(billBPartnerIdentifier))
+			{
+				final I_C_BPartner billBPartner = bpartnerTable.get(billBPartnerIdentifier);
+				order.setC_BPartner_ID(billBPartner.getC_BPartner_ID());
+			}
+
 			final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bpBillLocationIdentifier))
 			{
 				final I_C_BPartner_Location billBPartnerLocation = bpartnerLocationTable.get(bpBillLocationIdentifier);
+				order.setBill_BPartner_ID(billBPartnerLocation.getC_BPartner_ID());
 				order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
 			}
 
@@ -198,7 +206,7 @@ public class C_Order_StepDef
 			}
 
 			final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_EMail);
-			if(Check.isNotBlank(email))
+			if (Check.isNotBlank(email))
 			{
 				order.setEMail(email);
 			}
@@ -243,13 +251,6 @@ public class C_Order_StepDef
 
 				order.setC_DocType_ID(docType.getC_DocType_ID());
 				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
-			}
-
-			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
-				order.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			}
 
 			saveRecord(order);
@@ -346,7 +347,7 @@ public class C_Order_StepDef
 				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
 			}
 
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." +I_C_Order.COLUMNNAME_IsDropShip, false);
+			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
 
 			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
@@ -551,7 +552,7 @@ public class C_Order_StepDef
 		}
 
 		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
-		if(Check.isNotBlank(invoiceRule))
+		if (Check.isNotBlank(invoiceRule))
 		{
 			assertThat(order.getInvoiceRule()).isEqualTo(invoiceRule);
 		}
