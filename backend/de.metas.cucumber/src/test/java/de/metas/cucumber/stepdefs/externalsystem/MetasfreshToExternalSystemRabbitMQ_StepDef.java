@@ -124,7 +124,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		final String requestBPartnerId = requestToRabbitMQ.getParameters().get(PARAM_BPARTNER_ID);
 
-		assertThat(Integer.valueOf(requestBPartnerId))
+		assertThat(Integer.parseInt(requestBPartnerId))
 				.as("Wrong C_BPartner_ID in RabbitMQ request; identifier=%s; requests=%s", bpartnerIdentifier, requests)
 				.isEqualTo(bpartner.getC_BPartner_ID());
 		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue())

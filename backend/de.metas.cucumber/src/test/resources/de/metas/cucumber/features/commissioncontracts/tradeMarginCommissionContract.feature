@@ -10,6 +10,7 @@ Feature: Trade margin commission contract
 
   @from:cucumber
   @topic:commissionContracts
+  @dev:runThisOne
   Scenario: Margin commission combined having one sales rep and one customer
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
@@ -122,9 +123,6 @@ Feature: Trade margin commission contract
     And after not more than 30s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
-    And recompute invoice candidates if required
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
-      | settlement_1                      | margin_salesRep             | commission_product      | 5                  |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
       | settlement_1                      | margin_salesRep                 | commission_product          | 0                   | false       | 5                  |

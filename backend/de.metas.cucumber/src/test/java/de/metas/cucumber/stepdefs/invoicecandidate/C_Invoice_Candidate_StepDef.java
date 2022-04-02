@@ -57,6 +57,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -205,7 +206,6 @@ public class C_Invoice_Candidate_StepDef
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-			assertThat(invoiceCandidate).isNotNull();
 
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
@@ -238,7 +238,7 @@ public class C_Invoice_Candidate_StepDef
 
 				Services.get(IInvoiceCandBL.class)
 						.updateInvalid()
-						.setContext(Env.getCtx(), null)
+						.setContext(Env.getCtx(), ITrx.TRXNAME_None)
 						.setTaggedWithAnyTag()
 						.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
 						.update();
@@ -254,6 +254,7 @@ public class C_Invoice_Candidate_StepDef
 		{
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+			InterfaceWrapperHelper.setTrxName(invoiceCandidate, ITrx.TRXNAME_None);
 
 			StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(invoiceCandidate));
 

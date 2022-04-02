@@ -63,7 +63,7 @@ public abstract class StepDefData<T>
 			records.replace(identifier, createRecordDataItem(productRecord));
 		}
 	}
-
+	
 	public void putAll(@NonNull final Map<String, T> map)
 	{
 		for (final Map.Entry<String, T> entry : map.entrySet())
@@ -128,7 +128,7 @@ public abstract class StepDefData<T>
 		final Instant updated = updatedOpt.orElse(Instant.MIN);
 		return new RecordDataItem<T>(productRecord, Instant.now(), updated);
 	}
-
+	
 	@Value
 	public static class RecordDataItem<T>
 	{

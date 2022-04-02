@@ -489,7 +489,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Reload given model from database.
 	 *
-	 * @param model
 	 * @param discardChanges hint for actual handler to tell that if there are any unsaved changes, it's ok to discard them.
 	 */
 	public static void refresh(final Object model, final boolean discardChanges)
