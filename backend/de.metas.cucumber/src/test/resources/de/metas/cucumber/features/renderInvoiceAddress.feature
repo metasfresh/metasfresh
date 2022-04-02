@@ -144,8 +144,8 @@ Feature: Render invoice address
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     And after not more than 40s, C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
-      | invoiceCand_1                     | orderLine_1               | 1                |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCand_1                     | orderLine_1               | customer_bp_26_02            | bpLocation_CH                         | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
