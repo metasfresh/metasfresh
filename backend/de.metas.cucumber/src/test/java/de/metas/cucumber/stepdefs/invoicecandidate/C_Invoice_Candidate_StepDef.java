@@ -241,17 +241,39 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("validate C_Invoice_Candidate:")
-	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
+	@And("validate invoice candidate")
+	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
 		{
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 
-			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
-			assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
+			StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(invoiceCandidate));
 
+			final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner billBPartner = bPartnerTable.get(billBPIdentifier);
+			assertThat(invoiceCandidate.getBill_BPartner_ID()).isEqualTo(billBPartner.getC_BPartner_ID());
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+			assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderIdentifier))
+			{
+				final I_C_Order order = orderTable.get(orderIdentifier);
+				assertThat(invoiceCandidate.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+			}
+			
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+			}
+			
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered);
 			if (qtyOrdered != null)
 			{
@@ -263,26 +285,30 @@ public class C_Invoice_Candidate_StepDef
 			{
 				assertThat(invoiceCandidate.getQtyDelivered()).isEqualTo(qtyDelivered);
 			}
+			
+			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+			if (qtyToInvoice != null)
+			{
+				assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
+			}
 
 			final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override);
 			if (qtyToInvoiceOverride != null)
 			{
 				assertThat(invoiceCandidate.getQtyToInvoice_Override()).isEqualTo(qtyToInvoiceOverride);
 			}
+						
+			final BigDecimal netAmtToInvoice = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_NetAmtToInvoice);
+			assertThat(invoiceCandidate.getNetAmtToInvoice()).isEqualTo(netAmtToInvoice);
 
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
+			final BigDecimal netAmountInvoiced = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtInvoiced);
+			if (netAmountInvoiced != null)
 			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				assertThat(invoiceCandidate.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+				assertThat(invoiceCandidate.getNetAmtInvoiced()).isEqualTo(netAmountInvoiced);
 			}
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			}
+			final boolean isSoTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
+			assertThat(invoiceCandidate.isSOTrx()).isEqualTo(isSoTrx);
 		}
 	}
 
@@ -311,49 +337,16 @@ public class C_Invoice_Candidate_StepDef
 					.setInvoicingParams(invoicingParams)
 					.enqueueSelection(invoiceCandidatesSelectionId);
 
-			//wait for the invoice to be created
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate));
+			//wait for the invoice to be processed
+			final Runnable logContext = () -> logger.error("C_Invoice_Candidate processed\n"
+																   + "**Identifier: {}\n"
+																   + "**C_Invoice_Candidate:**\n{}\n"
+																   + "**all C_Invoice_Candidates:**\n{}",
+														   invoiceCandIdentifier, invoiceCandidate,
+														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate), logContext);
 
 			DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
-		}
-	}
-
-	@And("validate invoice candidate")
-	public void validate_invoice_candidate(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-			assertThat(invoiceCandidate).isNotNull();
-
-			InterfaceWrapperHelper.refresh(invoiceCandidate);
-
-			InterfaceWrapperHelper.refresh(invoiceCandidate);
-
-			final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner billBPartner = bPartnerTable.get(billBPIdentifier);
-			assertThat(billBPartner).isNotNull();
-			assertThat(invoiceCandidate.getBill_BPartner_ID()).isEqualTo(billBPartner.getC_BPartner_ID());
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-			assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
-
-			final BigDecimal netAmtToInvoice = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_NetAmtToInvoice);
-			assertThat(invoiceCandidate.getNetAmtToInvoice()).isEqualTo(netAmtToInvoice);
-
-			final BigDecimal netAmountInvoiced = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtInvoiced);
-			if (netAmountInvoiced != null)
-			{
-				assertThat(invoiceCandidate.getNetAmtInvoiced()).isEqualTo(netAmountInvoiced);
-			}
-
-			final boolean isSoTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
-			assertThat(invoiceCandidate.isSOTrx()).isEqualTo(isSoTrx);
-
 		}
 	}
 
@@ -475,7 +468,7 @@ public class C_Invoice_Candidate_StepDef
 														   candidatesQuery.list(),
 														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
 			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
-			
+
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
@@ -551,5 +544,15 @@ public class C_Invoice_Candidate_StepDef
 			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
 		}
 		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
+	}
+
+	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateUpdated(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		InterfaceWrapperHelper.refresh(invoiceCandidate);
+		if (Services.get(IInvoiceCandDAO.class).isToRecompute(invoiceCandidate))
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " still needs updating");
+		}
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
 	}
 }

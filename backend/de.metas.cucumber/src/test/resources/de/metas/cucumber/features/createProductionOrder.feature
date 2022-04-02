@@ -638,7 +638,7 @@ Feature: create production order
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 0   | 100                    |
 
   @from:cucumber
-  Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated, 
+  Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated,
   then another BOM (newer than the previous one in terms of validFrom) is created from the API,
   Manufacturing order candidate and Material schedules are updated accordingly,
   then the manufacturing order is created from the manufacturing order candidate.

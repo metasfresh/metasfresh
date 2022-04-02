@@ -181,15 +181,15 @@ Feature: Call order contract
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | callOrderLine_1           | 4            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered |
-      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4            | 4              | 4                |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered |
+      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4                | 4              | 4                |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | 2                         |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
-      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2            | 4              | 4                | 2                         |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
+      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2                | 4              | 4                | 2                         |
     When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
       | C_Invoice_ID.Identifier |
       | invoice_1               |
@@ -234,9 +234,9 @@ Feature: Call order contract
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | 4                         |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
-      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4            | 4              | 4                | 4                         |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
+      | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4                | 4              | 4                | 4                         |
     When enqueue invoice candidate of order callOrder_1 for invoicing and after not more than 30s, the invoice is found
       | C_Invoice_ID.Identifier | OPT.InvoicesSize |
       | invoice_3               | 3                |
