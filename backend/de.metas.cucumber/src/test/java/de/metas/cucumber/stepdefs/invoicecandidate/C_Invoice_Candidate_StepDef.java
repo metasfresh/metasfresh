@@ -266,7 +266,7 @@ public class C_Invoice_Candidate_StepDef
 				final I_M_Product product = productTable.get(productIdentifier);
 				assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			}
-
+			
 			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orderIdentifier))
 			{
