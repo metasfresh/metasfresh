@@ -96,8 +96,8 @@ Feature: Trade margin commission contract
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | margin_customer             | transaction_product     | 20                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | so_invoice_candidate              | margin_customer             | transaction_product     | 0               | true    | 20                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | margin_customer                 | transaction_product         | 0               | true    | 20                 |
 
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
@@ -114,8 +114,8 @@ Feature: Trade margin commission contract
       |                                                  | -5.00            | FORECASTED            |
       |                                                  | 5.00             | FORECASTED            |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
-      | settlement_1                      | margin_salesRep             | commission_product      | 5               | false   |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
+      | settlement_1                      | margin_salesRep                 | commission_product          | 5               | false   |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_1                      |
@@ -126,11 +126,11 @@ Feature: Trade margin commission contract
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | settlement_1                      | margin_salesRep             | commission_product      | 5                  |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | settlement_1                      | margin_salesRep             | commission_product      | 0               | false   | 5                  |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | settlement_1                      | margin_salesRep                 | commission_product          | 0               | false   | 5                  |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
-      | invoiceSettled_1   | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
+      | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLineSettled_1        | invoiceSettled_1        | commission_product      | 5.00        | true      |

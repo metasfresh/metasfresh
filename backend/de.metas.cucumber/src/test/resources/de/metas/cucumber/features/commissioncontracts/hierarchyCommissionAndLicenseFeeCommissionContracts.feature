@@ -110,8 +110,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_1                  | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | so_invoice_candidate              | customer_1                  | transaction_product     | 0               | true    | 10                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_1                      | transaction_product         | 0               | true    | 10                 |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
@@ -145,10 +145,10 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | -0.50            | FORECASTED            |
       |                                                  | 0.50             | FORECASTED            |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
-      | hierarchy_settlement_1            | salesRep_1                  | commission_product      | 1               | false   |
-      | hierarchy_settlement_2            | super_salesRep              | commission_product      | 0.9             | false   |
-      | license_fee_settlement            | salesRep_1                  | commission_product      | 0.5             | true    |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
+      | hierarchy_settlement_1            | salesRep_1                      | commission_product          | 1               | false   |
+      | hierarchy_settlement_2            | super_salesRep                  | commission_product          | 0.9             | false   |
+      | license_fee_settlement            | salesRep_1                      | commission_product          | 0.5             | true    |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | hierarchy_settlement_1            |
@@ -165,10 +165,10 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchy_settlement_2            | super_salesRep              | commission_product      | 0.9                |
       | license_fee_settlement            | salesRep_1                  | commission_product      | 0.5                |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | hierarchy_settlement_1            | salesRep_1                  | commission_product      | 0               | false   | 1                  |
-      | hierarchy_settlement_2            | super_salesRep              | commission_product      | 0               | false   | 0.9                |
-      | license_fee_settlement            | salesRep_1                  | commission_product      | 0               | true    | 0.5                |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | hierarchy_settlement_1            | salesRep_1                      | commission_product          | 0               | false   | 1                  |
+      | hierarchy_settlement_2            | super_salesRep                  | commission_product          | 0               | false   | 0.9                |
+      | license_fee_settlement            | salesRep_1                      | commission_product          | 0               | true    | 0.5                |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
@@ -282,8 +282,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 0               | true    | 10                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | so_invoice_candidate              | customer_salesRep_1             | transaction_product         | 0               | true    | 10                 |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
@@ -303,8 +303,8 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.50             | FORECASTED            |
 
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
-      | settlement_so                     | customer_salesRep_1         | commission_product      | 0.5             | true    |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
+      | settlement_so                     | customer_salesRep_1             | commission_product          | 0.5             | true    |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_so                     |
@@ -315,8 +315,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | settlement_so                     | customer_salesRep_1         | commission_product      | 0.5                |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
-      | settlement_so                     | customer_salesRep_1         | commission_product      | 0               | true    | 0.5                |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | settlement_so                     | customer_salesRep_1             | commission_product          | 0               | true    | 0.5                |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_so       | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
