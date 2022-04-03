@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 
 /**
@@ -31,4 +30,8 @@ import org.compiere.model.I_C_InvoiceLine;
  */
 public class C_InvoiceLine_StepDefData extends StepDefData<I_C_InvoiceLine>
 {
+	public C_InvoiceLine_StepDefData()
+	{
+		super(I_C_InvoiceLine.class);
+	}
 }

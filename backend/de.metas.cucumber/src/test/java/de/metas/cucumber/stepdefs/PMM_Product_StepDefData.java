@@ -29,4 +29,8 @@ import de.metas.procurement.base.model.I_PMM_Product;
  */
 public class PMM_Product_StepDefData extends StepDefData<I_PMM_Product>
 {
+	public PMM_Product_StepDefData()
+	{
+		super(I_PMM_Product.class);
+	}
 }

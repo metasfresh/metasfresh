@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.contract.callorder;
 
-import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.cucumber.stepdefs.StepDefData;
 
@@ -31,4 +30,8 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_CallOrderSummary_StepDefData extends StepDefData<I_C_CallOrderSummary>
 {
+	public C_CallOrderSummary_StepDefData()
+	{
+		super(I_C_CallOrderSummary.class);
+	}
 }

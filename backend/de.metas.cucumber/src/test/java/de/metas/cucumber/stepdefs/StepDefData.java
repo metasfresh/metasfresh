@@ -25,10 +25,13 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +43,19 @@ public abstract class StepDefData<T>
 {
 	private final Map<String, RecordDataItem<T>> records = new HashMap<>();
 
-	public void put(@NonNull final String identifier, @NonNull final T productRecord)
+	private final Class<T> clazz;
+
+	/**
+	 * @param clazz used if this stepdef is about model classes. In that case the record's {@link TableRecordReference} is stored, and the given clazz is then used when the record is loaded again.
+	 */
+	public StepDefData(@Nullable final Class<T> clazz)
+	{
+		this.clazz = clazz;
+	}
+
+	public void put(
+			@NonNull final String identifier,
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
 
@@ -50,7 +65,9 @@ public abstract class StepDefData<T>
 				.isNull();
 	}
 
-	public void putOrReplace(@NonNull final String identifier, @NonNull final T productRecord)
+	public void putOrReplace(
+			@NonNull final String identifier,
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
@@ -63,8 +80,9 @@ public abstract class StepDefData<T>
 			records.replace(identifier, createRecordDataItem(productRecord));
 		}
 	}
-	
-	public void putAll(@NonNull final Map<String, T> map)
+
+	public void putAll(
+			@NonNull final Map<String, T> map)
 	{
 		for (final Map.Entry<String, T> entry : map.entrySet())
 		{
@@ -72,7 +90,9 @@ public abstract class StepDefData<T>
 		}
 	}
 
-	public void putIfMissing(@NonNull final String identifier, @NonNull final T record)
+	public void putIfMissing(
+			@NonNull final String identifier,
+			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
 
@@ -110,30 +130,68 @@ public abstract class StepDefData<T>
 		return records.values().stream().map(RecordDataItem::getRecord).collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @param productRecord the item to store.
+	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
+	 */
 	@NotNull
 	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
 	{
-		final Optional<Instant> updatedOpt;
-		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()))
+		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
 		{
-			updatedOpt = InterfaceWrapperHelper
+			final Instant updated = InterfaceWrapperHelper
 					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
-					.map(TimeUtil::asInstant);
-		}
-		else
-		{
-			updatedOpt = Optional.empty();
-		}
+					.map(TimeUtil::asInstant)
+					.orElse(Instant.MIN);
 
-		final Instant updated = updatedOpt.orElse(Instant.MIN);
-		return new RecordDataItem<T>(productRecord, Instant.now(), updated);
+			// just store ID and table name, to avoid any leaks
+			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
+
+			return new RecordDataItem<>((T)null,
+										tableRecordReference,
+										clazz,
+										Instant.now(),
+										updated);
+			
+		}
+		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
 	}
-	
+
 	@Value
 	public static class RecordDataItem<T>
 	{
+		@Nullable
 		T record;
+
+		@Nullable
+		TableRecordReference tableRecordReference;
+
+		@Nullable
+		Class<T> tableRecordReferenceClazz;
+
+		@NonNull
 		Instant recordAdded;
+		@NonNull
+
 		Instant recordUpdated;
+
+		public T getRecord()
+		{
+			if (record != null)
+			{
+				return record;
+			}
+
+			try
+			{
+				return tableRecordReference.getModel(tableRecordReferenceClazz);
+			}
+			catch (final RuntimeException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("recordDataItem", this);
+			}
+		}
+
 	}
 }

@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.shipment;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;

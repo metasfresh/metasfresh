@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 /**
@@ -31,4 +30,8 @@ import org.compiere.model.I_M_InOutLine;
  */
 public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
 {
+	public M_InOutLine_StepDefData()
+	{
+		super(I_M_InOutLine.class);
+	}
 }

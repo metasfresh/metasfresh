@@ -118,7 +118,7 @@ public class M_ShipmentSchedule_StepDef
 	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	
+
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
@@ -130,7 +130,7 @@ public class M_ShipmentSchedule_StepDef
 	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_InOut_StepDefData shipmentTable;
-	
+
 	private final TestContext testContext;
 	private final JsonAttributeService jsonAttributeService;
 
@@ -487,7 +487,7 @@ public class M_ShipmentSchedule_StepDef
 
 		assertThat(schedule).isNull();
 	}
-	
+
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);

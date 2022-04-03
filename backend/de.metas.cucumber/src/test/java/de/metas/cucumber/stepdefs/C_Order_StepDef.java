@@ -419,7 +419,7 @@ public class C_Order_StepDef
 	}
 
 	@And("update order")
-	public void update_order(@NonNull final DataTable dataTable) throws InterruptedException
+	public void update_order(@NonNull final DataTable dataTable) 
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
