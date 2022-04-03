@@ -68,7 +68,7 @@ import java.util.function.Predicate;
  * <p>
  * As a result of an allocation, you shall get:
  * <ul>
- * <li>From {@link #getItemToPack()}'s Qty, the HU's Qtys will be subtracted
+ * <li>From {@link #getPickFromHUs()}s Qty, the HU's Qtys will be subtracted
  * <li>to {@link PackingItemsMap} we will have newly packed items and also current Item to Pack
  * <li>{@link I_M_ShipmentSchedule_QtyPicked} records will be created (shipment schedules are taken from Item to Pack)
  * </ul>
@@ -289,6 +289,8 @@ public class HU2PackingItemsAllocator
 	 * QtyToDeliver).
 	 * <p>
 	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
+	 *
+	 * @return
 	 */
 	private HU2PackingItemsAllocator allocate()
 	{

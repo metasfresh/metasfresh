@@ -66,7 +66,8 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return true;
 	}
 
-	private final IInterfaceWrapperHelper getHelperThatCanHandleOrNull(final Object model)
+	@Nullable
+	private IInterfaceWrapperHelper getHelperThatCanHandleOrNull(final Object model)
 	{
 		for (final IInterfaceWrapperHelper helper : helpers)
 		{
@@ -79,7 +80,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		return null;
 	}
 
-	private final IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
+	private IInterfaceWrapperHelper getHelperThatCanHandle(final Object model)
 	{
 		final IInterfaceWrapperHelper helper = getHelperThatCanHandleOrNull(model);
 		if (helper == null)

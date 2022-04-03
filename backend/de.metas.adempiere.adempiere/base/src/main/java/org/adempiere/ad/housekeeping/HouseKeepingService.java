@@ -45,7 +45,7 @@ public class HouseKeepingService
 {
 	private static final Logger logger = LogManager.getLogger(HouseKeepingService.class);
 
-	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
+	public static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
 
 	private final ImmutableList<IStartupHouseKeepingTask> startupTasks;
 
@@ -63,7 +63,7 @@ public class HouseKeepingService
 		final boolean skipHouseKeeping = sysConfigBL.getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
 		if (skipHouseKeeping)
 		{
-			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
+			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping);
 			return;
 		}
 
@@ -71,7 +71,7 @@ public class HouseKeepingService
 		final Stopwatch allTasksWatch = Stopwatch.createStarted();
 
 		final ILoggable loggable = Loggables.logback(logger, Level.INFO);
-		try (final IAutoCloseable temporaryLoggable = Loggables.temporarySetLoggable(loggable);)
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(loggable);)
 		{
 			for (final IStartupHouseKeepingTask task : startupTasks)
 			{
@@ -94,9 +94,9 @@ public class HouseKeepingService
 					task.executeTask();
 					logger.info("Finished executing task {}; elapsed time={}", taskName, currentTaskWatch.stop());
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					logger.warn("Failed to execute task {}; skipped; elapsed time={}", taskName, e, currentTaskWatch.stop());
+					logger.warn("Failed to execute task {}; skipped; elapsed time={}; exception={}", taskName, currentTaskWatch.stop(), e);
 				}
 			}
 		}

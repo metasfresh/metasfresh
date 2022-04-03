@@ -33,6 +33,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;

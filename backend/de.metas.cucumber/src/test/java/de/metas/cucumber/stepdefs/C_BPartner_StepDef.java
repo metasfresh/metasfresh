@@ -78,7 +78,6 @@ public class C_BPartner_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final M_Product_StepDefData productTable;
-
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -103,10 +102,20 @@ public class C_BPartner_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			createC_BPartner(tableRow);
+			createC_BPartner(tableRow, true);
 		}
 	}
 
+	@Given("metasfresh contains C_BPartners without locations:")
+	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_BPartner(tableRow, false);
+		}
+	}
+	
 	@And("preexisting test data is put into tableData")
 	public void store_test_data_in_table_data(@NonNull final DataTable dataTable)
 	{
@@ -160,7 +169,7 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	private void createC_BPartner(@NonNull final Map<String, String> tableRow)
+	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
 		final String bPartnerValue = CoalesceUtil.coalesce(tableRow.get("Value"), bPartnerName);
@@ -244,7 +253,7 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
-		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
+		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 
 		if (alsoCreateLocation)
@@ -280,7 +289,7 @@ public class C_BPartner_StepDef
 
 	private void changeBPartner(@NonNull final Map<String, String> row)
 	{
-		final String bpartner = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final String bpartner = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final String name2 = DataTableUtil.extractStringOrNullForColumnName(row, "Name2");
 
 		final I_C_BPartner bPartner = bPartnerTable.get(bpartner);
@@ -300,7 +309,7 @@ public class C_BPartner_StepDef
 		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartnerIdOptional.get().getValue());
 		assertThat(bPartnerRecord).isNotNull();
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 }

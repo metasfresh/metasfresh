@@ -26,4 +26,8 @@ import org.compiere.model.I_M_Warehouse;
 
 public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
 {
+	public M_Warehouse_StepDefData()
+	{
+		super(I_M_Warehouse.class);
+	}
 }
