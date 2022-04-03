@@ -831,17 +831,17 @@ public class InterfaceWrapperHelper
 	/* package */@SuppressWarnings("serial")
 	static class MissingTableNameException extends AdempiereException
 	{
-		private static final MissingTableNameException notFound(final Class<?> modelClass)
+		private static MissingTableNameException notFound(final Class<?> modelClass)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
 		}
 
-		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		private static MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
 		}
 
-		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		private static MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
 		{
 			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
 					+ "\n modelClass=" + modelClass
@@ -900,8 +900,6 @@ public class InterfaceWrapperHelper
 	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
 	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
 	 *
-	 * @param modelClass
-	 * @param expectedTableName
 	 * @return model table name; never returns null
 	 */
 	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
