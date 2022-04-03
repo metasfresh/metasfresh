@@ -1,12 +1,12 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.Pointcut.PointcutBuilder;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
@@ -21,14 +21,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -40,12 +39,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,7 +59,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 
 	/**
 	 * Model class which is intercepted.
-	 *
+	 * <p>
 	 * Specified by {@link Interceptor} annotation.
 	 */
 	private Class<?> _modelClass = null;
@@ -97,34 +96,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 
 	private void loadAnnotatedClassDefinition()
 	{
-		final Class<?> modelClass;
-
-		final Interceptor annIterceptor = annotatedClass.getAnnotation(Interceptor.class);
-		if (annIterceptor == null)
-		{
-			// Fallback to Validator annotation
-			final Validator annValidator = annotatedClass.getAnnotation(Validator.class);
-			if (annValidator == null)
-			{
-				throw new AdempiereException("Each model interceptor class shall be marked with " + Interceptor.class + " annotation: " + annotatedClass);
-			}
-			else
-			{
-				modelClass = annValidator.value();
-			}
-		}
-		else
-		{
-			modelClass = annIterceptor.value();
-		}
-
-		//
-		// Make sure model class is specified
-		if (modelClass == null)
-		{
-			throw new AdempiereException("Annotation for " + annotatedClass + " does not specify the model class on which we are binding");
-		}
-
+		final Class<?> modelClass = getModelClassFromAnnotationsRecursively(annotatedClass);
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (tableName == null)
 		{
@@ -139,7 +111,8 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 		// * log warning if production mode
 		// ts: relaxing the check; in package de.metas.inoutcandidate.modelvalidator we have C_Order related MVs for both shipment and receipts schedule..therefore it shall be OK if the MV's class
 		// name *starts* with the table name.
-		if (!annotatedClass.getSimpleName().startsWith(tableName))
+		if (!annotatedClass.isAnonymousClass()
+				&& !annotatedClass.getSimpleName().startsWith(tableName))
 		{
 			final AdempiereException ex = new AdempiereException("According to metas best practices, model validator shall have the same name as the table."
 					+ "Please rename class " + annotatedClass + " to " + tableName);
@@ -152,6 +125,43 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 				logger.warn(ex.getLocalizedMessage(), ex);
 			}
 		}
+	}
+
+	@NonNull
+	private static Class<?> getModelClassFromAnnotationsRecursively(@NonNull final Class<?> annotatedClass)
+	{
+		Class<?> currentAnnotatedClass = annotatedClass;
+		while (currentAnnotatedClass != null)
+		{
+			final Class<?> modelClass = getModelClassFromAnnotations(currentAnnotatedClass);
+			if (modelClass != null)
+			{
+				return modelClass;
+			}
+
+			currentAnnotatedClass = currentAnnotatedClass.getSuperclass();
+		}
+
+		throw new AdempiereException("Each model interceptor class shall be marked with " + Interceptor.class + " annotation: " + annotatedClass);
+	}
+
+	@Nullable
+	private static Class<?> getModelClassFromAnnotations(@NonNull final Class<?> annotatedClass)
+	{
+		final Interceptor annIterceptor = annotatedClass.getAnnotation(Interceptor.class);
+		if (annIterceptor != null)
+		{
+			return annIterceptor.value();
+		}
+
+		// Fallback to Validator annotation
+		final Validator annValidator = annotatedClass.getAnnotation(Validator.class);
+		if (annValidator != null)
+		{
+			return annValidator.value();
+		}
+
+		return null;
 	}
 
 	private Class<?> getModelClass()
@@ -173,8 +183,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 	{
 		//
 		// Get all methods from annotated class, including those from super classes
-		@SuppressWarnings("unchecked")
-		final Set<Method> annotatedClassMethods = ReflectionUtils.getAllMethods(annotatedClass);
+		@SuppressWarnings("unchecked") final Set<Method> annotatedClassMethods = ReflectionUtils.getAllMethods(annotatedClass);
 
 		for (final Method method : annotatedClassMethods)
 		{
@@ -275,6 +284,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 		{
 			// shall not happen
 			final String msg = StringUtils.formatMessage("Pointcut {} was not added because another one was found in the list: {}", pointcut, pointcuts);
+			//noinspection ThrowableNotThrown
 			new AdempiereException(msg).throwOrLogSevere(Services.get(IDeveloperModeBL.class).isEnabled(), logger);
 		}
 

@@ -252,8 +252,8 @@ Feature: invoice rules
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceline_3_1             | invoice_3               | p_3                     | 5           | true      |
     And update shipment schedules
-      | M_ShipmentSchedule_ID.Identifier | QtyToDeliver_Override |
-      | s_s_3                            | 10                    |
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_3                            | 10                        |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_3                            | D                 | Y                  |

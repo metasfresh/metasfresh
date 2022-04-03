@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.acct.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,13 @@
  * #L%
  */
 
-package de.metas.treenode;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.acct.api.impl.ElementValueId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.model.tree.AdTreeId;
+import org.compiere.model.I_C_Tax;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class TreeNode
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_Tax_StepDefData extends StepDefData<I_C_Tax>
 {
-	@NonNull AdTreeId chartOfAccountsTreeId;
-	@NonNull ElementValueId nodeId;
-	@Nullable ElementValueId parentId;
-	int seqNo;
 }

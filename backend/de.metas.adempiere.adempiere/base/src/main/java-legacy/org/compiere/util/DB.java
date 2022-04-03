@@ -66,7 +66,6 @@ import org.compiere.model.POResultSet;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.sql.RowSet;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -1078,35 +1077,6 @@ public class DB
 		}
 		return true;
 	}    // commit
-
-	/**
-	 * Get Row Set. When a Rowset is closed, it also closes the underlying connection. If the created RowSet is transfered by RMI, closing it makes no difference
-	 *
-	 * @param sql sql
-	 * @return row set or null
-	 */
-	public RowSet getRowSet(final String sql, final List<Object> sqlParams)
-	{
-		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
-		final String sqlConverted = DB.getDatabase().convertStatement(sql);
-		final String trxName = ITrx.TRXNAME_None;
-		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, sqlConverted, trxName);
-		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
-		try
-		{
-			setParameters(stmt, sqlParams);
-			final RowSet retValue = stmt.getRowSet();
-			return retValue;
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			close(stmt);
-		}
-	}    // getRowSet
 
 	/**
 	 * Get int Value from sql

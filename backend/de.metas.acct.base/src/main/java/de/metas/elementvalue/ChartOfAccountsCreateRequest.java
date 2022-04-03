@@ -1,16 +1,8 @@
-package de.metas.acct.api.impl;
-
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,16 +20,17 @@ import org.compiere.Adempiere;
  * #L%
  */
 
-public class PlainAcctSchemaDAO extends AcctSchemaDAO
+package de.metas.elementvalue;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
+
+@Value
+@Builder
+public class ChartOfAccountsCreateRequest
 {
-	/**
-	 * @return {@code null}. If you need to test code that relies in this method returning not-null,
-	 *         the current practice is to register an anonymous subclass of {@link AcctSchemaDAO}.
-	 */
-	@Override
-	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)
-	{
-		Adempiere.assertUnitTestMode();
-		return null;
-	}
+	@NonNull String name;
+	@NonNull ClientId clientId;
 }

@@ -575,9 +575,19 @@ public class M_ShipmentSchedule_StepDef
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 
-		shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
+		if (qtyToDeliverOverride != null)
+		{
+			shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
+		}
+
+		final BigDecimal qtyToDeliverCatchOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override);
+
+		if (qtyToDeliverCatchOverride != null)
+		{
+			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
+		}
 
 		saveRecord(shipmentScheduleRecord);
 	}

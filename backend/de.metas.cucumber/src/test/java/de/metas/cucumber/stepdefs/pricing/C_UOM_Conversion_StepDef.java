@@ -84,7 +84,8 @@ public class C_UOM_Conversion_StepDef
 
 		final BigDecimal fromToMultiplier = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_MultiplyRate);
 
-		
+		final boolean isCatchUomForProduct = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_UOM_Conversion.COLUMNNAME_IsCatchUOMForProduct, false);
+
 		final Optional<UOMConversionRate> rateIfExists = uomConversionDAO.getProductConversions(productId).getRateIfExists(fromUomId, toUomId);
 		if (rateIfExists.isPresent())
 		{
@@ -93,6 +94,7 @@ public class C_UOM_Conversion_StepDef
 					.fromUomId(fromUomId)
 					.toUomId(toUomId)
 					.fromToMultiplier(fromToMultiplier)
+					.catchUOMForProduct(isCatchUomForProduct)
 					.build();
 			uomConversionDAO.updateUOMConversion(updateUOMConversionRequest);
 			return;
@@ -104,6 +106,7 @@ public class C_UOM_Conversion_StepDef
 				.fromUomId(fromUomId)
 				.toUomId(toUomId)
 				.fromToMultiplier(fromToMultiplier)
+				.catchUOMForProduct(isCatchUomForProduct)
 				.build();
 
 		uomConversionDAO.createUOMConversion(uomConversionRequest);

@@ -21,6 +21,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -33,10 +34,12 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.I_GL_Distribution;
@@ -101,6 +104,9 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
+
+		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
+		treeSupportFactory.register(I_C_ElementValue.Table_Name, MElementValueTreeSupport.class);
 
 		//
 		// Accounting service
