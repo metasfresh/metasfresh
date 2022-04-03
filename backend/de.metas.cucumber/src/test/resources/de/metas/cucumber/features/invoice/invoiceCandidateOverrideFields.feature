@@ -1,4 +1,5 @@
 @from:cucumber
+@dev:runThisOne
 Feature: Checking the effect of override fields on invoice candidate
 
   Background:
@@ -924,8 +925,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -991,8 +992,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1064,8 +1065,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 12          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 12          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1134,8 +1135,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 8           | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 8           | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1198,8 +1199,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1265,8 +1266,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1332,8 +1333,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1395,8 +1396,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 8           | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 8           | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1450,8 +1451,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1529,8 +1530,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
