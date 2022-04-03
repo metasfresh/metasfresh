@@ -47,6 +47,8 @@ import javax.annotation.Nullable;
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController
 {
+	public static final String EXTERNAL_REFERENCE_REST_CONTROLLER_PATH_V2 = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalRefs";
+	
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	public ExternalReferenceRestController(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)

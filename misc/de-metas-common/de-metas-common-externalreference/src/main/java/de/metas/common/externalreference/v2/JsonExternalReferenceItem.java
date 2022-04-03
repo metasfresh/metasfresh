@@ -39,13 +39,13 @@ public class JsonExternalReferenceItem
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null);
+		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null, null);
 	}
 
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return new JsonExternalReferenceItem(lookupItem, null, null, null, null);
+		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null);
 	}
 
 	@NonNull
@@ -67,6 +67,10 @@ public class JsonExternalReferenceItem
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonMetasfreshId externalReferenceId;
+	
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceItem(
@@ -74,12 +78,14 @@ public class JsonExternalReferenceItem
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
 			@JsonProperty("externalReference") @Nullable final String externalReference,
 			@JsonProperty("version") @Nullable final String version,
-			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl)
+			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl,
+			@JsonProperty("externalReferenceId") @Nullable final JsonMetasfreshId externalReferenceId)
 	{
 		this.lookupItem = lookupItem;
 		this.metasfreshId = metasfreshId;
 		this.externalReference = externalReference;
 		this.version = version;
 		this.externalReferenceUrl = externalReferenceUrl;
+		this.externalReferenceId = externalReferenceId;
 	}
 }

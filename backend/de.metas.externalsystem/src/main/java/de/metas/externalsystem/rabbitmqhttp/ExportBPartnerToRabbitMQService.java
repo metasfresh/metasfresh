@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -60,31 +60,56 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 
 	public ExportBPartnerToRabbitMQService(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
-			@NonNull final DataExportAuditRepository dataExportAuditRepository,
-			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
+			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
+			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService,
 			@NonNull final UserGroupRepository userGroupRepository)
 	{
-		super(externalSystemConfigRepo, externalSystemMessageSender, dataExportAuditLogRepository, dataExportAuditRepository, externalSystemConfigService);
+		super(externalSystemConfigRepo,
+			  externalSystemMessageSender,
+			  dataExportAuditLogRepository,
+			  dataExportAuditRepository,
+			  externalSystemConfigService);
 		this.userGroupRepository = userGroupRepository;
 	}
 
 	@Override
 	@NonNull
-	protected Map<String, String> buildParameters(
-			@NonNull final IExternalSystemChildConfig childConfig,
-			@NonNull final BPartnerId bPartnerId)
+	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(final @NonNull BPartnerId bPartnerId)
+	{
+		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
+
+		final Set<UserGroupId> assignedUserGroupIds = userGroupRepository.getAssignedGroupIdsByUserId(UserId.ofRepoId(bPartner.getCreatedBy()));
+
+		if (Check.isEmpty(assignedUserGroupIds))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(externalSystemConfigRepo.getActiveByType(getExternalSystemType())
+								   .stream()
+								   .map(ExternalSystemParentConfig::getChildConfig)
+								   .map(ExternalSystemRabbitMQConfig::cast)
+								   .filter(ExternalSystemRabbitMQConfig::isSyncBPartnerToRabbitMQ)
+								   .filter(config -> config.shouldExportBasedOnUserGroup(assignedUserGroupIds))
+								   .filter(config -> qualifiesForAutoExport(config, assignedUserGroupIds)) // TODO check - might be obsolete
+								   .map(ExternalSystemRabbitMQConfig::getId)
+								   .collect(ImmutableSet.toImmutableSet()));
+	}
+
+	@Override
+	@NonNull
+	protected Map<String, String> buildParameters(final @NonNull IExternalSystemChildConfig childConfig, final @NonNull BPartnerId bPartnerId)
 	{
 		final ExternalSystemRabbitMQConfig rabbitMQConfig = ExternalSystemRabbitMQConfig.cast(childConfig);
 
 		final Map<String, String> parameters = new HashMap<>();
 
-		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_HTTP_URL, rabbitMQConfig.getRemoteUrl());
+		parameters.put(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_URL, rabbitMQConfig.getRemoteUrl());
 		parameters.put(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_ROUTING_KEY, rabbitMQConfig.getRoutingKey());
 		parameters.put(ExternalSystemConstants.PARAM_BPARTNER_ID, String.valueOf(BPartnerId.toRepoId(bPartnerId)));
-		parameters.put(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN, rabbitMQConfig.getAuthToken());
-		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, rabbitMQConfig.getValue());
+		parameters.put(ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN, rabbitMQConfig.getAuthToken());
 
 		return parameters;
 	}
@@ -109,44 +134,11 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER;
 	}
 
-	@Override
-	@NonNull
-	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId)
-	{
-		final ImmutableSet<ExternalSystemRabbitMQConfig> rabbitMQConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ)
-				.stream()
-				.map(ExternalSystemParentConfig::getChildConfig)
-				.map(ExternalSystemRabbitMQConfig::cast)
-				.filter(ExternalSystemRabbitMQConfig::isAutoSendBPartnerEnabled)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (rabbitMQConfigs.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
-
-		final Set<UserGroupId> assignedUserGroupIds = userGroupRepository.getAssignedGroupIdsByUserId(UserId.ofRepoId(bPartner.getCreatedBy()));
-
-		if (Check.isEmpty(assignedUserGroupIds))
-		{
-			return Optional.empty();
-		}
-
-		final Set<IExternalSystemChildConfigId> rabbitMQConfigsToExportTo = rabbitMQConfigs.stream()
-				.filter(config -> qualifiesForAutoExport(config, assignedUserGroupIds))
-				.map(ExternalSystemRabbitMQConfig::getId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return Optional.of(rabbitMQConfigsToExportTo);
-	}
-
 	private boolean qualifiesForAutoExport(
 			@NonNull final ExternalSystemRabbitMQConfig rabbitMQConfig,
 			@NonNull final Set<UserGroupId> assignedUserGroupIds)
 	{
-		return rabbitMQConfig.isAutoSendBPartnerEnabled()
+		return rabbitMQConfig.isAutoSendSubjectWhenCreatedByUserGroup()
 				&& assignedUserGroupIds.contains(rabbitMQConfig.getUserGroupId());
 	}
 }

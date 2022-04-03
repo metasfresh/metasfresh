@@ -98,6 +98,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 
+	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";
+
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 
 	public static final String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";

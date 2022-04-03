@@ -91,7 +91,7 @@ public class ExportBPartnerRequestBuilder
 
 		final ExternalReferenceLookupCamelRequest externalReferenceSearchCamelRequest = ExternalReferenceLookupCamelRequest.builder()
 				.orgCode(routeContext.getOrgCode())
-				.externalReferenceLookupRequest(jsonExternalReferenceLookupRequest)
+				.jsonExternalReferenceLookupRequest(jsonExternalReferenceLookupRequest)
 				.build();
 
 		exchange.getIn().setBody(externalReferenceSearchCamelRequest);

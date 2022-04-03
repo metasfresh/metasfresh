@@ -202,7 +202,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-
+	
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -352,7 +352,8 @@ public class ExternalSystemConfigRepo
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
 				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
-				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getBPartnerCreatedByUserGroup_ID()))
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getSubjectCreatedByUserGroup_ID()))
+				.isSyncExternalReferencesToRabbitMQ(rabbitMQConfigRecord.isSyncExternalReferencesToRabbitMQ())
 				.build();
 	}
 
