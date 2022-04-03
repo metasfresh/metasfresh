@@ -9,8 +9,7 @@ import LoginRoute from './LoginRoute';
 import ResetPasswordRoute from './ResetPasswordRoute';
 
 // import PluginContainer, { pluginWrapper } from './components/PluginContainer';
-import PaypalReservationConfirm
-  from '../containers/PaypalReservationConfirm.js';
+import PaypalReservationConfirm from '../containers/PaypalReservationConfirm.js';
 
 /**
  * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
