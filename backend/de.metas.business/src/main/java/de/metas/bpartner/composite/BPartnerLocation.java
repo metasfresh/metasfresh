@@ -16,12 +16,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Set;
 
 import static de.metas.util.Check.isBlank;
 
@@ -67,6 +65,7 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String EPHEMERAL = "ephemeral";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -124,6 +123,7 @@ public class BPartnerLocation
 	@Nullable
 	private OrgMappingId orgMappingId;
 
+	private boolean ephemeral;
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -155,7 +155,8 @@ public class BPartnerLocation
 			@Nullable final String countryCode,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final Boolean ephemeral)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -183,6 +184,8 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+
+		this.ephemeral = ephemeral != null ? ephemeral : false;
 	}
 
 	public BPartnerLocation deepCopy()

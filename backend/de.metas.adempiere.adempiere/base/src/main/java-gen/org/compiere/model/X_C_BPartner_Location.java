@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1838532835L;
+	private static final long serialVersionUID = 96604076L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress() 
+	public java.lang.String getAddress()
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -299,6 +299,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getISDN() 
 	{
 		return get_ValueAsString(COLUMNNAME_ISDN);
+	}
+
+	@Override
+	public void setIsEphemeral (final boolean IsEphemeral)
+	{
+		set_Value (COLUMNNAME_IsEphemeral, IsEphemeral);
+	}
+
+	@Override
+	public boolean isEphemeral() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
 	}
 
 	@Override

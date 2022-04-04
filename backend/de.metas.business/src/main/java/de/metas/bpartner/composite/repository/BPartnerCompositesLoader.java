@@ -22,7 +22,6 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.marketing.base.model.CampaignId;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
@@ -35,6 +34,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.logging.LogManager;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -66,8 +66,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 
@@ -341,6 +341,7 @@ final class BPartnerCompositesLoader
 				.locationType(extractBPartnerLocationType(bPartnerLocationRecord))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);

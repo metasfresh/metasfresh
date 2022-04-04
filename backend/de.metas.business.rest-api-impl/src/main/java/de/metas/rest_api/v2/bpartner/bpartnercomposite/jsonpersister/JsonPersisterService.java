@@ -1641,6 +1641,12 @@ public class JsonPersisterService
 			location.setRegion(StringUtils.trim(jsonBPartnerLocation.getRegion()));
 		}
 
+		// ephemeral
+		if (jsonBPartnerLocation.isEphemeralSet())
+		{
+			location.setEphemeral(jsonBPartnerLocation.isEphemeral());
+		}
+
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}
