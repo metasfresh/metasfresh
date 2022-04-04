@@ -3616,27 +3616,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
-	 * Set Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
-
-	/**
-	 * Get Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Flatrate_Term_ID();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Flatrate_Term_ID", null);
-	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
-
-	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *

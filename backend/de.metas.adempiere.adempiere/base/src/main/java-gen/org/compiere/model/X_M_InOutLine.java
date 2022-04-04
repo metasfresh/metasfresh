@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOutLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 126875419L;
+	private static final long serialVersionUID = -271576557L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -68,14 +68,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
-		if (Catch_UOM_ID < 1)
+		if (Catch_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
 	@Override
-	public int getCatch_UOM_ID()
+	public int getCatch_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
@@ -129,7 +129,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public BigDecimal getConfirmedQty()
+	public BigDecimal getConfirmedQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -397,7 +397,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public BigDecimal getMovementQty()
+	public BigDecimal getMovementQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -713,20 +713,4 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
-
-	@Override
-	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
-	{
-		if (C_Flatrate_Term_ID < 1)
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
-	}
-
-	@Override
-	public int getC_Flatrate_Term_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
-	}
-
 }

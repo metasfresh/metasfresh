@@ -52,18 +52,15 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final C_Invoice_StepDefData invoiceTable;
-	final C_InvoiceLine_StepDefData invoiceLineTable;
 	final M_Product_StepDefData productTable;
 	final C_Tax_StepDefData taxTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.invoiceTable = invoiceTable;
-		this.invoiceLineTable = invoiceLineTable;
 		this.productTable = productTable;
 		this.taxTable = taxTable;
 	}
@@ -175,8 +172,5 @@ public class C_InvoiceLine_StepDef
 			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
 			assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
 		}
-
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}
 }

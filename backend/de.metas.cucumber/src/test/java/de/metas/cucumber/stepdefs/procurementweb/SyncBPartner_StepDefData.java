@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class SyncBPartner_StepDefData extends StepDefData<SyncBPartner>
 {
-	public SyncBPartner_StepDefData()
-	{
-		super(null);
-	}
 }

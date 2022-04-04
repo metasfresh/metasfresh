@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -1046,7 +1045,7 @@ public interface I_C_Order
 	String COLUMNNAME_DatePrinted = "DatePrinted";
 
 	/**
-	 * Set Date Promised.
+	 * Set Zugesagter Termin.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -1056,7 +1055,7 @@ public interface I_C_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Date Promised.
+	 * Get Zugesagter Termin.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime

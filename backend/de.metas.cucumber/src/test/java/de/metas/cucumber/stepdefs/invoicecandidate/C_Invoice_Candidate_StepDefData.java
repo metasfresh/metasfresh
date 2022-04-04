@@ -30,8 +30,4 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 public class C_Invoice_Candidate_StepDefData extends StepDefData<I_C_Invoice_Candidate>
 {
-	public C_Invoice_Candidate_StepDefData()
-	{
-		super(I_C_Invoice_Candidate.class);
-	}
 }

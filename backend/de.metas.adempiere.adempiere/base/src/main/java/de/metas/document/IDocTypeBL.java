@@ -57,6 +57,4 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isRequisition(DocTypeId docTypeId);
 
 	boolean isMediated(DocTypeId docTypeId);
-
-	boolean isCallOrder(DocTypeId docTypeId);
 }

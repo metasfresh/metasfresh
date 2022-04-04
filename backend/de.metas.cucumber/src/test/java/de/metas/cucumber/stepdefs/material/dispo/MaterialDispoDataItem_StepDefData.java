@@ -32,12 +32,6 @@ import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
  */
 public class MaterialDispoDataItem_StepDefData extends StepDefData<MaterialDispoDataItem>
 {
-
-	public MaterialDispoDataItem_StepDefData()
-	{
-		super(null);
-	}
-
 	public ImmutableSet<CandidateId> getCandidateIds()
 	{
 		return getRecords().stream().map(MaterialDispoDataItem::getCandidateId).collect(ImmutableSet.toImmutableSet());

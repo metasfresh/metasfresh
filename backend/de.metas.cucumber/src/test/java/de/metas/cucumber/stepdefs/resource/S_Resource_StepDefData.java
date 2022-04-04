@@ -27,8 +27,4 @@ import org.compiere.model.I_S_Resource;
 
 public class S_Resource_StepDefData extends StepDefData<I_S_Resource>
 {
-	public S_Resource_StepDefData()
-	{
-		super(I_S_Resource.class);
-	}
 }

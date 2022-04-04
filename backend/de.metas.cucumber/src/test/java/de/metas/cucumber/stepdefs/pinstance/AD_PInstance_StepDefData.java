@@ -30,8 +30,4 @@ import org.compiere.model.I_AD_PInstance;
  */
 public class AD_PInstance_StepDefData extends StepDefData<I_AD_PInstance>
 {
-	public AD_PInstance_StepDefData()
-	{
-		super(I_AD_PInstance.class);
-	}
 }

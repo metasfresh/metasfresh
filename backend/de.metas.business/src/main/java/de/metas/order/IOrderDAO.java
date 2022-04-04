@@ -9,6 +9,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 

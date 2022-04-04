@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="hazard_label" columnCount="5" printOrder="Horizontal" pageWidth="235" pageHeight="50" columnWidth="45" columnSpacing="1" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="hazard_label" columnCount="5" printOrder="Horizontal" pageWidth="235" pageHeight="50" columnWidth="36" columnSpacing="1" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -51,10 +51,10 @@ FROM  M_Product_HazardSymbol ph
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="45" splitType="Stretch">
+		<band height="35" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<image scaleImage="FillFrame" hAlign="Center" onErrorType="Blank">
-				<reportElement key="image-1" x="0" y="1" width="27" height="27" uuid="314ff598-49d7-4b36-9eb5-9e8dca503f00"/>
+				<reportElement key="image-1" x="0" y="4" width="27" height="27" uuid="314ff598-49d7-4b36-9eb5-9e8dca503f00"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -63,13 +63,6 @@ FROM  M_Product_HazardSymbol ph
 				</box>
 				<imageExpression><![CDATA["de/metas/docs/label/AD_Image-"+$F{hazard_image_id}+".jpg"]]></imageExpression>
 			</image>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="29" width="45" height="10" uuid="6bcbb446-fc06-4966-b842-e43ba5a19491"/>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="7" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{hazard_name}]]></textFieldExpression>
-			</textField>
 		</band>
 	</detail>
 	<columnFooter>

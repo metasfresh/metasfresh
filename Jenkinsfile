@@ -37,7 +37,7 @@ properties([
                         description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
 
-                booleanParam(defaultValue: false,
+                booleanParam(defaultValue: true,
                         description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
 

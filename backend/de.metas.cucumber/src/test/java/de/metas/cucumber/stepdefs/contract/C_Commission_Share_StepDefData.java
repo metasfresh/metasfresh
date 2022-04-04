@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_Commission_Share_StepDefData extends StepDefData<I_C_Commission_Share>
 {
-	public C_Commission_Share_StepDefData()
-	{
-		super(I_C_Commission_Share.class);
-	}
 }

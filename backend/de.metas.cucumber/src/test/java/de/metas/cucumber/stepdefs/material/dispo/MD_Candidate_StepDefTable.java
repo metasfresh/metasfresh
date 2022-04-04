@@ -29,7 +29,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -89,7 +88,6 @@ public class MD_Candidate_StepDefTable
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
-					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
 					.timeRangeEnd(DateAndSeqNo.builder()
 										  .date(time)
 										  .operator(DateAndSeqNo.Operator.INCLUSIVE)

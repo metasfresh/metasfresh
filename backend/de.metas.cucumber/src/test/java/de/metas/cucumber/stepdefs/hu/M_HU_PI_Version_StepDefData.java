@@ -27,8 +27,4 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
 public class M_HU_PI_Version_StepDefData extends StepDefData<I_M_HU_PI_Version>
 {
-	public M_HU_PI_Version_StepDefData()
-	{
-		super(I_M_HU_PI_Version.class);
-	}
 }

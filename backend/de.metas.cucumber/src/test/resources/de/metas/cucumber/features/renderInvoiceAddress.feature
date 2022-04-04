@@ -25,7 +25,7 @@ Feature: Render invoice address
       | pp_product | plv_so                            | test_product_26_02      | 10.0     | Normal                        | PCE               |
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
-    And metasfresh contains C_BPartners without locations:
+    And metasfresh contains C_BPartners:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | customer_bp_26_02 | customer_bp_26_02 | ps_1                          | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
 
@@ -54,7 +54,6 @@ Feature: Render invoice address
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
-    # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
     And after not more than 30s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
@@ -93,7 +92,6 @@ Feature: Render invoice address
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
-    # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
     And after not more than 30s, C_Invoice_Candidates are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCand_1                     | orderLine_1               | 1                |
@@ -144,10 +142,10 @@ Feature: Render invoice address
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
-    # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed 
-    And after not more than 30s, C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.COLUMNNAME_Bill_BPartner_ID.Identifier | OPT.COLUMNNAME_Bill_Location_ID.Identifier | OPT.QtyToInvoice |
-      | invoiceCand_1                     | orderLine_1               | customer_bp_26_02                          | bpLocation_CH                              | 1                |
+
+    And after not more than 40s, C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCand_1                     | orderLine_1               | 1                |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
@@ -221,13 +219,13 @@ Feature: Render invoice address
       | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        |
 
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine1_1           | shipment_1            | test_product_26_02      | 1           | true      |
+      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1            | test_product_26_02      | 1           | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
       | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1_1                 | invoice_1               | test_product_26_02      | 1           | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1               | test_product_26_02      | 1           | true      |

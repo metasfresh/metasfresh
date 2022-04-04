@@ -30,8 +30,4 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
  */
 public class ExternalSystem_Config_StepDefData extends StepDefData<I_ExternalSystem_Config>
 {
-	public ExternalSystem_Config_StepDefData()
-	{
-		super(I_ExternalSystem_Config.class);
-	}
 }

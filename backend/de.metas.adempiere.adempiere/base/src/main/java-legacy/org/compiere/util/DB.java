@@ -1144,7 +1144,7 @@ public class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int getSQLValue(@Nullable final String trxName, final String sql, final Object... params)
+	public int getSQLValue(final String trxName, final String sql, final Object... params)
 	{
 		int retValue = -1;
 		try
@@ -2073,7 +2073,7 @@ public class DB
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
 	// TODO: remove this when BeanShell will support varargs methods
-	public int getSQLValue(@Nullable final String trxName, final String sql)
+	public int getSQLValue(final String trxName, final String sql)
 	{
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
@@ -2195,7 +2195,7 @@ public class DB
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
+	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);

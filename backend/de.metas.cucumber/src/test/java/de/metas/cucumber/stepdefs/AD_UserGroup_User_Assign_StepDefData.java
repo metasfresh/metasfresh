@@ -29,8 +29,4 @@ import org.compiere.model.I_AD_UserGroup_User_Assign;
  */
 public class AD_UserGroup_User_Assign_StepDefData extends StepDefData<I_AD_UserGroup_User_Assign>
 {
-	public AD_UserGroup_User_Assign_StepDefData()
-	{
-		super(I_AD_UserGroup_User_Assign.class);
-	}
 }

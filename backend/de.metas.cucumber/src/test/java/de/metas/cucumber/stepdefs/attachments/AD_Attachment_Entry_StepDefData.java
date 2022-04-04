@@ -27,8 +27,4 @@ import org.compiere.model.I_AD_AttachmentEntry;
 
 public class AD_Attachment_Entry_StepDefData extends StepDefData<I_AD_AttachmentEntry>
 {
-	public AD_Attachment_Entry_StepDefData()
-	{
-		super(I_AD_AttachmentEntry.class);
-	}
 }

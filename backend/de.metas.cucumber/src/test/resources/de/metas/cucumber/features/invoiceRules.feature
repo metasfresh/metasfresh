@@ -46,21 +46,15 @@ Feature: invoice rules
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-    And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_1                              | ol_1                      | 10           |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_1                              |
-    Then after not more than 30s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic_1                              | invoice_1               |
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
+      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
+      | o_1                   | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick
@@ -105,21 +99,15 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_2                            | p_2                     | 6         | hu_1               |
-    And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_2                              | ol_2                      | 6            |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_2                              |
-    Then after not more than 30s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic_2                              | invoice_2               |
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
+      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
+      | o_2                   | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_2               | p_2                     | 6           | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity
@@ -164,21 +152,15 @@ Feature: invoice rules
     And the following qty is picked
       | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | QtyPicked | M_HU_ID.Identifier |
       | s_s_3                            | p_3                     | 12        | hu_2               |
-    And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_3                              | ol_3                      | 12           |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_3                              |
-    Then after not more than 30s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | ic_3                              | invoice_3               |
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
+      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
+      | o_3                   | invoice_3               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_3_1             | invoice_3               | p_3                     | 12          | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_3               | p_3                     | 12          | true      |
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment              | s_s_3                            | P                 | Y                  |
@@ -186,8 +168,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment              | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine1_1           | shipment              | p_3                     | 12          | true      |
+      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment              | p_3                     | 12          | true      |
 
 
   @from:cucumber
@@ -249,8 +231,8 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceline_3_1             | invoice_3               | p_3                     | 5           | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_3               | p_3                     | 5           | true      |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_3                            | 10                        |
@@ -261,8 +243,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment_1            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine1_1           | shipment_1            | p_3                     | 10          | true      |
+      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1            | p_3                     | 10          | true      |
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
@@ -279,8 +261,8 @@ Feature: invoice rules
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | shipment_2            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine1_1           | shipment_2            | p_3                     | 5           | true      |
+      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_2            | p_3                     | 5           | true      |
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
@@ -306,5 +288,5 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_4               | p_3                     | 10          | true      |

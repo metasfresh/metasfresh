@@ -26,8 +26,4 @@ import org.compiere.model.I_M_Locator;
 
 public class M_Locator_StepDefData extends StepDefData<I_M_Locator>
 {
-	public M_Locator_StepDefData()
-	{
-		super(I_M_Locator.class);
-	}
 }

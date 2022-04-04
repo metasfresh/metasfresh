@@ -62,7 +62,6 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -235,8 +234,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		// Case: when did not pass enough time between fist enqueue time and now
-		// Don't use our de.metas.common.util.time.SystemTime, because it might be set to a fixed value when testing.
-		final Timestamp now = TimeUtil.asTimestamp(Instant.now());
+		final Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
 
 		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(firstEnqueued, processedTimeOffsetMillis);
 

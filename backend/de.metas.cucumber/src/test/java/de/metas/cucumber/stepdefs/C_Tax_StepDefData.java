@@ -29,8 +29,4 @@ import org.compiere.model.I_C_Tax;
  */
 public class C_Tax_StepDefData extends StepDefData<I_C_Tax>
 {
-	public C_Tax_StepDefData()
-	{
-		super(I_C_Tax.class);
-	}
 }

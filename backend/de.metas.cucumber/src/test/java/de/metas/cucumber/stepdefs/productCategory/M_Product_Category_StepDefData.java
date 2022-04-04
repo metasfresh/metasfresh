@@ -30,8 +30,4 @@ import org.compiere.model.I_M_Product_Category;
  */
 public class M_Product_Category_StepDefData extends StepDefData<I_M_Product_Category>
 {
-	public M_Product_Category_StepDefData()
-	{
-		super(I_M_Product_Category.class);
-	}
 }

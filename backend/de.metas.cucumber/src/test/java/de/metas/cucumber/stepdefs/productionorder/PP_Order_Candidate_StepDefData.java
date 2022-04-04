@@ -27,8 +27,4 @@ import org.eevolution.model.I_PP_Order_Candidate;
 
 public class PP_Order_Candidate_StepDefData extends StepDefData<I_PP_Order_Candidate>
 {
-	public PP_Order_Candidate_StepDefData()
-	{
-		super(I_PP_Order_Candidate.class);
-	}
 }

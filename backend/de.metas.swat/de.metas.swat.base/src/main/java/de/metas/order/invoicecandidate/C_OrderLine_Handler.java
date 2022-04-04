@@ -311,19 +311,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setC_PaymentTerm(ic, orderLine);
 
-		setIncoterms(ic, orderLine);
-
-		setC_Flatrate_Term_ID(ic, orderLine);
-
 		setPaymentRule(ic, orderLine);
-	}
 
-	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
-		ic.setIncotermLocation(order.getIncotermLocation());
+		setIncoterms(ic, orderLine);
 	}
 
 	private void setPaymentRule(
@@ -363,6 +353,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+	}
+
+	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		ic.setIncotermLocation(order.getIncotermLocation());
 	}
 	
 	/**
@@ -516,13 +514,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
 	}
 
-	@Override
-	public final void invalidateCandidatesFor(final Object model)
-	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
-	}
-
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
@@ -546,8 +537,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	@Override
+	public final void invalidateCandidatesFor(final Object model)
 	{
-		candidate.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
+
 }

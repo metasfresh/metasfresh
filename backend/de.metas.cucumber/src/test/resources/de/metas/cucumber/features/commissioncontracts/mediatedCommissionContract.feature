@@ -86,7 +86,7 @@ Feature: Mediated commission
 """
     Then a PurchaseOrder with externalId '99898' is created after not more than 90 seconds and has values
       | ExternalPurchaseOrderURL     | POReference | OPT.C_Order_ID.Identifier |
-      | www.ExternalReferenceURL.com | poRef1      | purchaseOrder_1           |
+      | www.ExternalReferenceURL.com | poRef1       | purchaseOrder_1           |
     And after not more than 30s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
@@ -116,8 +116,8 @@ Feature: Mediated commission
       | settlement_1                                     | 10.00            | TO_SETTLE             |
       |                                                  | 10.00            | INVOICED              |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx |
-      | settlement_1                      | mediated_vendor                 | commission_product          | 10                  | true        |
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx |
+      | settlement_1                      | mediated_vendor             | commission_product      | 10              | true    |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_1                      |
@@ -128,14 +128,14 @@ Feature: Mediated commission
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | settlement_1                      | mediated_vendor             | commission_product      | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
-      | settlement_1                      | mediated_vendor                 | commission_product          | 0                   | true        | 10                 |
+      | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | NetAmtToInvoice | IsSOTrx | OPT.NetAmtInvoiced |
+      | settlement_1                      | mediated_vendor             | commission_product      | 0               | true    | 10                 |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1        | mediated_vendor          | mediated_vendor_location          | 10 Tage 1 % | true      | CO        | RD             |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLineSettled_1        | invoiceSettled_1        | commission_product      | 10.00       | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceSettled_1        | commission_product      | 10.00       | true      |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_MediatedCommissionSettingsLine_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
       | commissionShare_1                | metasfresh                        | mediated_vendor                | mediatedContract_1            | commission_product               | 0              | mediatedSettingsLine_1                             | true    | false        | 0                    | 0                     | 10.00              | 0                  | 10.00             |

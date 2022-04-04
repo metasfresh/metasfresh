@@ -27,8 +27,4 @@ import org.eevolution.model.I_PP_Product_BOM;
 
 public class PP_Product_BOM_StepDefData extends StepDefData<I_PP_Product_BOM>
 {
-	public PP_Product_BOM_StepDefData()
-	{
-		super(I_PP_Product_BOM.class);
-	}
 }

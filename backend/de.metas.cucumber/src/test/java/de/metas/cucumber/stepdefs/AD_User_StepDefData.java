@@ -29,8 +29,4 @@ import org.compiere.model.I_AD_User;
  */
 public class AD_User_StepDefData extends StepDefData<I_AD_User>
 {
-	public AD_User_StepDefData()
-	{
-		super(I_AD_User.class);
-	}
 }

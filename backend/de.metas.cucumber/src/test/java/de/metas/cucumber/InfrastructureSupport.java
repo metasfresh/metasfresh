@@ -103,7 +103,7 @@ public class InfrastructureSupport
 		{
 			// this image is from release-branch 2021-09-15. it is failrly old, 
 			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
-			final String fullImageName = "metasfresh/metasfresh-db:5.174.2_461_release";
+			final String fullImageName = "metasfresh/metasfresh-db:5.172.2_380_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated

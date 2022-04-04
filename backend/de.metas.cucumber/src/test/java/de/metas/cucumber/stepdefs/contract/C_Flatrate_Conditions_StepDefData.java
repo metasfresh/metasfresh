@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_Flatrate_Conditions_StepDefData extends StepDefData<I_C_Flatrate_Conditions>
 {
-	public C_Flatrate_Conditions_StepDefData()
-	{
-		super(I_C_Flatrate_Conditions.class);
-	}
 }

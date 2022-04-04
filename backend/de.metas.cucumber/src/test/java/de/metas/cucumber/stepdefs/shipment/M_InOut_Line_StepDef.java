@@ -22,17 +22,14 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.util.Check;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -43,26 +40,20 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_InOut_StepDefData shipmentTable;
-	private final M_InOutLine_StepDefData shipmentLineTable;
-	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 
 	public M_InOut_Line_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.shipmentTable = shipmentTable;
-		this.shipmentLineTable = shipmentLineTable;
-		this.orderLineTable = orderLineTable;
 		this.productTable = productTable;
 	}
 
@@ -77,44 +68,24 @@ public class M_InOut_Line_StepDef
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer expectedProductId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			final I_M_Product product = productTable.get(productIdentifier);
 
 			//dev-note: we assume the tests are not using the same product on different lines
-			final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
+			final I_M_InOutLine shipmentLineRecord = queryBL.createQueryBuilder(I_M_InOutLine.class)
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
-
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
-			}
-
-			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 					.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
 
 			validateShipmentLine(shipmentLineRecord, row);
-
-			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLineRecord);
 		}
 	}
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
-		final Integer expectedProductId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 	}

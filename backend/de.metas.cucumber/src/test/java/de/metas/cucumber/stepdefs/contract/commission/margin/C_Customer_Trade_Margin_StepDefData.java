@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_Customer_Trade_Margin_StepDefData extends StepDefData<I_C_Customer_Trade_Margin>
 {
-	public C_Customer_Trade_Margin_StepDefData()
-	{
-		super(I_C_Customer_Trade_Margin.class);
-	}
 }

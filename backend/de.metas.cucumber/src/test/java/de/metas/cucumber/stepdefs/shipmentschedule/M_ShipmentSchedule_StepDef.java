@@ -53,14 +53,12 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.OrderId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -90,7 +88,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -117,7 +114,6 @@ public class M_ShipmentSchedule_StepDef
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -130,7 +126,6 @@ public class M_ShipmentSchedule_StepDef
 	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_InOut_StepDefData shipmentTable;
-
 	private final TestContext testContext;
 	private final JsonAttributeService jsonAttributeService;
 
@@ -463,29 +458,6 @@ public class M_ShipmentSchedule_StepDef
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.update(updater);
-	}
-
-	@And("^there is no M_ShipmentSchedule for C_Order (.*)$")
-	public void validate_no_M_ShipmentSchedule_created(@NonNull final String orderIdentifier)
-	{
-		final I_C_Order order = orderTable.get(orderIdentifier);
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-
-		validateNoShipmentScheduleCreatedForOrder(orderId);
-
-		shipmentScheduleHandlerBL.createMissingCandidates(Env.getCtx());
-
-		validateNoShipmentScheduleCreatedForOrder(orderId);
-	}
-
-	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
-	{
-		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId.getRepoId())
-				.create()
-				.firstOnlyOrNull(I_M_ShipmentSchedule.class);
-
-		assertThat(schedule).isNull();
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
