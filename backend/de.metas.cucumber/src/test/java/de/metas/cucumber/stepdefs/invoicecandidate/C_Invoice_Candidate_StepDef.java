@@ -45,11 +45,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -75,9 +73,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -88,8 +84,8 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -104,7 +100,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -269,11 +264,7 @@ public class C_Invoice_Candidate_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-			InterfaceWrapperHelper.setTrxName(invoiceCandidate, ITrx.TRXNAME_None);
-
-			StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(invoiceCandidate));
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(row));
 
 			final String billBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(billBPIdentifier))
@@ -414,7 +405,11 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(tableRow));
+			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
+																   + "**tableRow:**\n{}\n"
+																   + "**all candidates:**\n{}",
+														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
 		}
 	}
 
@@ -545,15 +540,6 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
-	@NonNull
-	private Boolean checkNotMarkedAsToRecompute(@NonNull final Map<String, String> row)
-	{
-		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
-
-		return !invoiceCandDAO.isToRecompute(invoiceCandidateRecord);
-	}
-
 	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
 	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -652,13 +638,16 @@ public class C_Invoice_Candidate_StepDef
 		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " has Processed='N'");
 	}
 
-	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateUpdated(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	@NonNull
+	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateUpdated(@NonNull final Map<String, String> row)
 	{
-		InterfaceWrapperHelper.refresh(invoiceCandidate);
-		if (Services.get(IInvoiceCandDAO.class).isToRecompute(invoiceCandidate))
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
+
+		if (Services.get(IInvoiceCandDAO.class).isToRecompute(invoiceCandidateRecord))
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidate.getC_Invoice_Candidate_ID() + " is not updated yet");
+			return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
 		}
-		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidate);
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 	}
 }
