@@ -70,8 +70,8 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | 540008         | 2021-04-17   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | 540008         | 2021-04-16T21:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_2                     | PCE          | 10       | 0       |

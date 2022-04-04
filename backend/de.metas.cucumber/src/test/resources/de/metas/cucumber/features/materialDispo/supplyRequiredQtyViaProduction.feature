@@ -54,8 +54,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | endcustomer_1 | EndCustomer_31032022_1 | N            | Y              | ps_1                          |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | 540008         | 2021-04-17   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | 540008         | 2021-04-16T21:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
@@ -132,9 +132,9 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | endcustomer_1 | EndCustomer_31032022_2 | N            | Y              | ps_1                          |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | 540008         | 2021-04-17   |
-      | i_2        | 540008         | 2021-04-17   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | 540008         | 2021-04-16T21:00:00Z |
+      | i_2        | 540008         | 2021-04-16T21:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
@@ -215,8 +215,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | endcustomer_1 | EndCustomer_01042022_3 | N            | Y              | ps_1                          |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | 540008         | 2021-04-17   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | 540008         | 2021-04-16T21:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |

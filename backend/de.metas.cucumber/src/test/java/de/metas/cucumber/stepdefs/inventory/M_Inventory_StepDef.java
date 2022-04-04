@@ -56,7 +56,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -75,7 +77,6 @@ public class M_Inventory_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
-
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
@@ -168,7 +169,9 @@ public class M_Inventory_StepDef
 
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(WarehouseId.ofRepoId(warehouseId).getRepoId());
-		inventoryRecord.setMovementDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate));
+		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate);
+
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(movementDate));
 
 		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Inventory.COLUMNNAME_DocumentNo);
 		if (Check.isNotBlank(documentNo))
@@ -182,7 +185,7 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID,"M_Inventory"), inventoryRecord);
+		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory"), inventoryRecord);
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
@@ -216,6 +219,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryLine);
 
-		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID,"M_InventoryLine"), inventoryLine);
+		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID, "M_InventoryLine"), inventoryLine);
 	}
 }

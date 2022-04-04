@@ -53,6 +53,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -465,12 +466,28 @@ public class MD_Candidate_StepDef
 	{
 		validate_md_candidates(timeoutSec, table);
 
+		final ImmutableSet<ProductId> productIdSet = table.getRows()
+				.stream()
+				.map(MaterialDispoTableRow::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+
 		final int storedCandidatesSize = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productIdSet)
 				.create()
 				.count();
 
 		// expected count is twice the number of rows bc we integrated the stock md_candidate as a column in step def
 		final int expectedCandidateAndStocks = table.getRows().size() * 2;
+
+		if (expectedCandidateAndStocks != storedCandidatesSize)
+		{
+			final StringBuilder message = new StringBuilder();
+			message.append("Expected to find: ").append(expectedCandidateAndStocks)
+					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
+					.append(" See:\n");
+
+			logCandidateRecords(message);
+		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
 	}
@@ -562,6 +579,11 @@ public class MD_Candidate_StepDef
 				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
 				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
 
+		logCandidateRecords(message);
+	}
+
+	private void logCandidateRecords(@NonNull final StringBuilder message)
+	{
 		message.append("MD_Candidate records:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
