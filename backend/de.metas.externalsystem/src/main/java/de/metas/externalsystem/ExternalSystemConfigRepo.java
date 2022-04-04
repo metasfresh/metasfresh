@@ -28,10 +28,14 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.ebay.ApiMode;
+import de.metas.externalsystem.ebay.ExternalSystemEbayConfig;
+import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -98,6 +102,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemShopware6ConfigId.cast(id));
 			case Other:
 				return getById(ExternalSystemOtherConfigId.cast(id));
+			case Ebay:
+				return getById(ExternalSystemEbayConfigId.cast(id));
 			case RabbitMQ:
 				return getById(ExternalSystemRabbitMQConfigId.cast(id));
 			case WOO:
@@ -119,6 +125,10 @@ public class ExternalSystemConfigRepo
 						.map(this::getExternalSystemParentConfig);
 			case Shopware6:
 				return getShopware6ConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
+
+			case Ebay:
+				return getEbayConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
 			case WOO:
 				return getWooCommerceConfigByValue(value)
@@ -147,6 +157,8 @@ public class ExternalSystemConfigRepo
 			case Other:
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
+			case Ebay:
+				return getEbayConfigByParentId(id);
 			case RabbitMQ:
 				return getRabbitMQConfigByParentId(id);
 			case WOO:
@@ -499,6 +511,60 @@ public class ExternalSystemConfigRepo
 				.stream()
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getEbayConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Ebay.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Ebay.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Ebay.class)
+				.map(this::buildExternalSystemEbayConfig);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_Ebay> getEbayConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Ebay.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Ebay.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Ebay.class);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemEbayConfigId id)
+	{
+		final I_ExternalSystem_Config_Ebay config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Ebay.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Ebay config)
+	{
+		final ExternalSystemEbayConfig child = buildExternalSystemEbayConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemEbayConfig buildExternalSystemEbayConfig(@NonNull final I_ExternalSystem_Config_Ebay config)
+	{
+		return ExternalSystemEbayConfig.builder()
+				.id(ExternalSystemEbayConfigId.ofRepoId(config.getExternalSystem_Config_Ebay_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.appId(config.getAppId())
+				.certId(config.getCertId())
+				.devId(config.getDevId())
+				.redirectUrl(config.getRedirectURL())
+				.apiMode(ApiMode.valueOf(config.getAPI_Mode()))
+				.value(config.getExternalSystemValue())
+				.build();
 	}
 
 	@NonNull

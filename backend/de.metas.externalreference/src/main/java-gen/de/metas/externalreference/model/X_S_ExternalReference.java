@@ -73,6 +73,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_Shopware6 = "Shopware6";
 	/** Other = Other */
 	public static final String EXTERNALSYSTEM_Other = "Other";
+	/** Ebay = Ebay */
+	public static final String EXTERNALSYSTEM_Ebay = "Ebay";
 	/** WooCommerce = WooCommerce */
 	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
 	/** GRSSignum = GRSSignum */

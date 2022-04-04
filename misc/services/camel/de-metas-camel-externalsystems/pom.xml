@@ -21,6 +21,7 @@
         <module>alberta</module>
         <module>common</module>
         <module>de-metas-camel-shopware6</module>
+        <module>ebay</module>
         <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-woocommerce</module>
         <module>de-metas-camel-grssignum</module>
@@ -36,17 +37,5 @@
             <version>1.18.22</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
+    
 </project>

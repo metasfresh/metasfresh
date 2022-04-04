@@ -74,6 +74,83 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "redirectUrl" : "redirectUrl",
+      "apiMode" : "SANDBOX"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "baseUrl" : "baseUrl",
+      "tenantId" : "tenantId",
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testGRSSignumValue",
+    "baseUrl" : "baseUrl",
+    "tenantId" : "tenantId",
+    "camelHttpResourceAuthKey" : "authKey",
+    "authToken" : "authToken",
+    "syncBPartnersToRestEndpoint" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "GRSSignum",
+    "name" : "name",
+    "isActive" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testGRSSignumValue",
+      "tenantId" : "tenantId",
+      "baseUrl" : "baseUrl",
+      "camelHttpResourceAuthKey" : "authKey",
+      "authToken" : "authToken",
+      "syncBPartnersToRestEndpoint" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
     "id" : 100001,
@@ -188,6 +265,38 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
   }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "appId" : "appId",
+    "certId" : "certId",
+    "devId" : "devId",
+    "redirectUrl" : "redirectUrl",
+    "apiMode" : "SANDBOX"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "isActive" : true,
+    "childConfig" :{
+     "id" : 100002,
+     "parentId" : 100001,
+     "appId" : "appId",
+     "certId" : "certId",
+     "devId" : "devId",
+     "redirectUrl" : "redirectUrl",
+     "apiMode" : "SANDBOX"
+   }
+ }
 ]
 
 
