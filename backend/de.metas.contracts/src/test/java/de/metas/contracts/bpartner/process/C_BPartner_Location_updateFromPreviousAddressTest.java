@@ -21,6 +21,7 @@
  */
 package de.metas.contracts.bpartner.process;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
-import java.util.Map;
 
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -108,9 +108,9 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 	{
 		final C_BPartner_Location_UpdateFromPreviousAddress c_bPartner_location_updateFromPreviousAddress = new C_BPartner_Location_UpdateFromPreviousAddress()
 		{
-			protected void logDeactivation(final Map<Integer, Integer> oldLocToNewLoc, final Integer locationId)
+			protected void logDeactivation(final BPartnerLocationId oldBPLocationId, final BPartnerLocationId newBPLocationId)
 			{
-				System.out.println("Replacing " + locationId + " with " + oldLocToNewLoc.get(locationId));
+				System.out.println("Replacing " + oldBPLocationId + " with " + newBPLocationId);
 			}
 		};
 

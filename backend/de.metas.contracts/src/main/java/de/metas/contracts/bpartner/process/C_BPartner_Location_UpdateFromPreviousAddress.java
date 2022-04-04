@@ -22,6 +22,7 @@
 
 package de.metas.contracts.bpartner.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.command.BPartnerLocationReplaceCommand;
@@ -95,8 +96,7 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 		final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(newLocation.getC_BPartner_ID(), newLocation.getC_BPartner_Location_ID());
 		final LocationId newLocationId = LocationId.ofRepoId(newLocation.getC_Location_ID());
 
-		addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
-				oldBPLocationId.getRepoId(), newBPLocationId.getRepoId());
+		logDeactivation(oldBPLocationId, newBPLocationId);
 
 		BPartnerLocationReplaceCommand.builder()
 				.oldLocationId(oldLocationId)
@@ -107,6 +107,13 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 				.newLocation(newLocation)
 				.build()
 				.execute();
+	}
+
+	@VisibleForTesting
+	protected void logDeactivation(final BPartnerLocationId oldBPLocationId, final BPartnerLocationId newBPLocationId)
+	{
+		addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
+				oldBPLocationId.getRepoId(), newBPLocationId.getRepoId());
 	}
 
 }
