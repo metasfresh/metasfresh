@@ -23,8 +23,11 @@
 package de.metas.calendar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,11 +37,23 @@ import java.util.stream.Stream;
 public class MultiCalendarService
 {
 	private final ImmutableList<CalendarService> calendarServices;
+	private final ImmutableMap<CalendarServiceId, CalendarService> calendarServicesById;
 
 	public MultiCalendarService(
 			@NonNull final List<CalendarService> calendarServices)
 	{
 		this.calendarServices = ImmutableList.copyOf(calendarServices);
+		this.calendarServicesById = Maps.uniqueIndex(calendarServices, CalendarService::getCalendarServiceId);
+	}
+
+	private CalendarService getCalendarServiceById(@NonNull final CalendarServiceId calendarServiceId)
+	{
+		final CalendarService calendarService = calendarServicesById.get(calendarServiceId);
+		if (calendarService == null)
+		{
+			throw new AdempiereException("No calendar service found for " + calendarServiceId);
+		}
+		return calendarService;
 	}
 
 	public Stream<CalendarRef> streamAvailableCalendars(@NonNull final UserId userId)
@@ -51,5 +66,11 @@ public class MultiCalendarService
 	{
 		return calendarServices.stream()
 				.flatMap(calendarService -> calendarService.query(query));
+	}
+
+	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
+	{
+		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
+				.addEntry(request);
 	}
 }

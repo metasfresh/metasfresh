@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.calendar.resource;
+package de.metas.resource;
 
 import de.metas.product.ResourceId;
 import lombok.Builder;

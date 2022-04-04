@@ -29,7 +29,11 @@ import java.util.stream.Stream;
 
 public interface CalendarService
 {
+	CalendarServiceId getCalendarServiceId();
+
 	List<CalendarRef> getAvailableCalendars(UserId userId);
 
 	Stream<CalendarEntry> query(CalendarQuery query);
+
+	CalendarEntry addEntry(CalendarEntryAddRequest request);
 }

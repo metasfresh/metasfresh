@@ -24,9 +24,13 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang3.math.NumberUtils;
+
+import java.util.function.Function;
 
 @Value
 public class CalendarGlobalId
@@ -47,6 +51,13 @@ public class CalendarGlobalId
 			@NonNull final String localId)
 	{
 		return new CalendarGlobalId(calendarServiceId, localId);
+	}
+
+	public static CalendarGlobalId of(
+			@NonNull final CalendarServiceId calendarServiceId,
+			@NonNull final RepoIdAware id)
+	{
+		return new CalendarGlobalId(calendarServiceId, String.valueOf(id.getRepoId()));
 	}
 
 	@JsonCreator
@@ -74,5 +85,11 @@ public class CalendarGlobalId
 	public String getAsString()
 	{
 		return calendarServiceId.getAsString() + "-" + localId;
+	}
+
+	public <T> T getAsRepoId(@NonNull final Function<Integer, T> idMapper)
+	{
+		final int repoIdInt = NumberUtils.toInt(localId);
+		return idMapper.apply(repoIdInt);
 	}
 }

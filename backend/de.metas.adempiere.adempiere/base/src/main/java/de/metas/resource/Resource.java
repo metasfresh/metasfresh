@@ -20,21 +20,18 @@
  * #L%
  */
 
-package de.metas.calendar.resource;
+package de.metas.resource;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ResourceId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Set;
 
 @Value
 @Builder
-public class ResourceAssignmentQuery
+public class Resource
 {
-	@Nullable Set<ResourceId> resourceIds;
-	@Nullable ZonedDateTime startDate;
-	@Nullable ZonedDateTime endDate;
+	@NonNull ResourceId resourceId;
+	@NonNull ITranslatableString name;
 }

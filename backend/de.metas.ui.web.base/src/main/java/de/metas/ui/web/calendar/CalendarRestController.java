@@ -23,11 +23,14 @@
 package de.metas.ui.web.calendar;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.CalendarEntry;
+import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
+import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.config.WebConfig;
@@ -80,6 +83,8 @@ public class CalendarRestController
 	public JsonCalendarEntriesQueryResponse queryCalendarEntries(
 			@RequestBody(required = false) @Nullable final JsonCalendarEntriesQuery query)
 	{
+		userSession.assertLoggedIn();
+
 		final UserId loggedUserId = userSession.getLoggedUserId();
 		final ZoneId timeZone = userSession.getTimeZone();
 
@@ -113,5 +118,22 @@ public class CalendarRestController
 		}
 
 		return result.build();
+	}
+
+	@PostMapping("/entries/add")
+	public JsonCalendarEntry addCalendarEntry(@NonNull final JsonCalendarEntryAddRequest request)
+	{
+		userSession.assertLoggedIn();
+
+		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
+				.userId(userSession.getLoggedUserId())
+				.calendarId(request.getCalendarId())
+				.startDate(DateTimeConverters.fromObjectToZonedDateTime(request.getStartDate()))
+				.endDate(DateTimeConverters.fromObjectToZonedDateTime(request.getEndDate()))
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.build());
+
+		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
 	}
 }

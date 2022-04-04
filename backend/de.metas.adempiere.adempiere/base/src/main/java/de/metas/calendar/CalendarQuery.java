@@ -40,7 +40,6 @@ public class CalendarQuery
 
 	@NonNull @Singular Set<CalendarServiceId> onlyCalendarServiceIds;
 	@NonNull @Singular Set<CalendarGlobalId> onlyCalendarIds;
-	@NonNull @Singular Set<CalendarResourceId> onlyResourceIds;
 	@Nullable ZonedDateTime startDate;
 	@Nullable ZonedDateTime endDate;
 
@@ -48,10 +47,4 @@ public class CalendarQuery
 	{
 		return onlyCalendarServiceIds.isEmpty() || onlyCalendarServiceIds.contains(calendarServiceId);
 	}
-
-	public boolean isMatchingCalendarId(@NonNull final CalendarGlobalId calendarId)
-	{
-		return onlyCalendarIds.isEmpty() || onlyCalendarIds.contains(calendarId);
-	}
-
 }

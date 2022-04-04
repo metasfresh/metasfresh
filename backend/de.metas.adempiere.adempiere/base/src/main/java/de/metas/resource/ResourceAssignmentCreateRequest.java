@@ -20,14 +20,24 @@
  * #L%
  */
 
-package de.metas.calendar;
+package de.metas.resource;
 
+import de.metas.product.ResourceId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value(staticConstructor = "of")
-public class CalendarResourceId
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
+@Value
+@Builder
+public class ResourceAssignmentCreateRequest
 {
-	@NonNull String classifier; // e.g. tablename
-	@NonNull String id;
+	@NonNull ResourceId resourceId;
+	@NonNull ZonedDateTime startDate;
+	@NonNull ZonedDateTime endDate;
+
+	@NonNull String name;
+	@Nullable String description;
 }

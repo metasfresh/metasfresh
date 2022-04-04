@@ -31,6 +31,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @EqualsAndHashCode
 public class CalendarServiceId
 {
@@ -65,4 +68,6 @@ public class CalendarServiceId
 	{
 		return getAsString();
 	}
+
+	public static boolean equals(@Nullable final CalendarServiceId id1, @Nullable final CalendarServiceId id2) {return Objects.equals(id1, id2);}
 }

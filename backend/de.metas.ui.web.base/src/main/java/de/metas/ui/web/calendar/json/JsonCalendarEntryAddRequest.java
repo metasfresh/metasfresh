@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.ui.web.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,25 +20,25 @@
  * #L%
  */
 
-package de.metas.calendar;
+package de.metas.ui.web.calendar.json;
 
+import de.metas.calendar.CalendarGlobalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class CalendarEntry
+@Jacksonized
+public class JsonCalendarEntryAddRequest
 {
-	@NonNull String entryId;
-
 	@NonNull CalendarGlobalId calendarId;
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
+	@NonNull String startDate;
+	@NonNull String endDate;
 
-	@Nullable String title;
+	@NonNull String title;
 	@Nullable String description;
 }

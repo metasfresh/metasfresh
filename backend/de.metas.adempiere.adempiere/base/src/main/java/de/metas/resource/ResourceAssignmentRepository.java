@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.calendar.resource;
+package de.metas.resource;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -57,9 +58,9 @@ public class ResourceAssignmentRepository
 
 		//
 		// Filter by Resource IDs
-		if (query.getResourceIds() != null && !query.getResourceIds().isEmpty())
+		if (query.getOnlyResourceIds() != null && !query.getOnlyResourceIds().isEmpty())
 		{
-			sqlQueryBuilder.addInArrayFilter(I_S_ResourceAssignment.COLUMNNAME_S_Resource_ID, query.getResourceIds());
+			sqlQueryBuilder.addInArrayFilter(I_S_ResourceAssignment.COLUMNNAME_S_Resource_ID, query.getOnlyResourceIds());
 		}
 
 		//
@@ -93,5 +94,17 @@ public class ResourceAssignmentRepository
 				.name(record.getName())
 				.description(record.getDescription())
 				.build();
+	}
+
+	public ResourceAssignment create(@NonNull final ResourceAssignmentCreateRequest request)
+	{
+		final I_S_ResourceAssignment record = InterfaceWrapperHelper.newInstance(I_S_ResourceAssignment.class);
+		record.setS_Resource_ID(request.getResourceId().getRepoId());
+		record.setAssignDateFrom(TimeUtil.asTimestamp(request.getStartDate()));
+		record.setAssignDateTo(TimeUtil.asTimestamp(request.getEndDate()));
+		record.setName(request.getName());
+		record.setDescription(request.getDescription());
+		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
 	}
 }

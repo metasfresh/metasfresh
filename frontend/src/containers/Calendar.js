@@ -23,11 +23,13 @@ const Calendar = ({ className = 'container' }) => {
   }, []);
 
   const handleDateClick = (params) => {
+    console.log('handleDateClick', { params });
     if (confirm(`Would you like to add an event to ${params.dateStr}?`)) {
       setCalendarEvents(
         calendarEvents.concat({
           title: 'New Event',
           start: params.date,
+          end: params.date,
           allDay: params.allDay,
         })
       );

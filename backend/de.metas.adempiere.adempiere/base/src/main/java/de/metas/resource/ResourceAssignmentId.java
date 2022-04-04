@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.calendar.resource;
+package de.metas.resource;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
