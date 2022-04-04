@@ -16,9 +16,9 @@ Feature: stock changes accordingly
   Scenario: Changes stock by adding inventory
     # create two inventories, each one with one inventory-line
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
-      | 11                        | 540008         | 2021-07-12   | 1111           |
-      | 12                        | 540008         | 2021-07-12   | 2222           |
+      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate         | OPT.DocumentNo |
+      | 11                        | 540008         | 2021-07-11T21:00:00Z | 1111           |
+      | 12                        | 540008         | 2021-07-11T21:00:00Z | 2222           |
     And metasfresh contains M_InventoriesLines:
       | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | 21                            | 11                        | 222                     | PCE          | 10       | 0       |
