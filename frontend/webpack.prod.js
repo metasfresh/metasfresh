@@ -3,16 +3,13 @@ var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var fs = require('fs');
-const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 
 // check if we have already a config.js file. If we do not we need to create it otherwise webpack will complain that is missing
 if (!fs.existsSync('config.js')) {
   fs.copyFileSync('config.js.dist', 'config.js');
 }
 
-var commitHash = require('child_process')
-  .execSync('git rev-parse --short HEAD')
-  .toString();
+var commitHash = 'lulz1234';
 
 const plugins = [
   new webpack.DefinePlugin({
@@ -26,7 +23,6 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: './index.html',
   }),
-  new GitRevisionPlugin(),
   new CopyWebpackPlugin({
     patterns: [
       {
