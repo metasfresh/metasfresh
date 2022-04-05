@@ -73,11 +73,11 @@ public class BPartnerLocationReplaceCommand
 	{
 		this.oldBPLocationId = oldBPLocationId;
 		this.oldLocation = coalesce(oldLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(oldBPLocationId));
-		this.oldLocationId = coalesce(oldLocationId, LocationId.ofRepoId(oldLocation.getC_Location_ID()));
+		this.oldLocationId = coalesce(oldLocationId, LocationId.ofRepoId(this.oldLocation.getC_Location_ID()));
 
 		this.newBPLocationId = newBPLocationId;
 		this.newLocation = coalesce(newLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(newBPLocationId));
-		this.newLocationId = coalesce(newLocationId, LocationId.ofRepoId(newLocation.getC_Location_ID()));
+		this.newLocationId = coalesce(newLocationId, LocationId.ofRepoId(this.newLocation.getC_Location_ID()));
 	}
 
 	public void execute()

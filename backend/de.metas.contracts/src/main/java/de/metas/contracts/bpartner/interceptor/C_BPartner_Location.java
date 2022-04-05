@@ -52,7 +52,7 @@ public class C_BPartner_Location
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Previous_ID }, afterCommit = true)
+			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Previous_ID })
 	public void updateNextLocation(final I_C_BPartner_Location bpLocation)
 	{
 		if (bpLocation.getPrevious_ID() >= 0)
