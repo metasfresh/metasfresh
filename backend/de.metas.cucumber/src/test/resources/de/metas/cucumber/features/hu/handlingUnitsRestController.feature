@@ -213,7 +213,7 @@ Feature: Handling unit rest controller
 
     And store JsonSetClearanceStatusRequest in context
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | createdTU          | Cleared         | ClearedStatusNote |
+      | createdTU          | C               | ClearedStatusNote |
 
     And the metasfresh REST-API endpoint path '/api/v2/material/handlingunits/clearance' receives a 'PUT' request with the payload from context and responds with '200' status code
 
@@ -224,8 +224,8 @@ Feature: Handling unit rest controller
     Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs  | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
       | createdLU          | LU         | createdTU    | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | null                    | null                        | null              |
-      | createdTU          | TU         | newCreatedCU | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
-      | newCreatedCU       | CU         |              | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
+      | createdTU          | TU         | newCreatedCU | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | C                | Freigegeben                 | ClearedStatusNote |
+      | newCreatedCU       | CU         |              | huProduct            | huProduct             | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | C                | Freigegeben                 | ClearedStatusNote |
 
 
   Scenario: Set clearance status by QRCode on aggregated TU
@@ -320,7 +320,7 @@ Feature: Handling unit rest controller
 
     And store JsonSetClearanceStatusRequest in context
       | OPT.M_HU_QRCode_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | qr2                           | Cleared         | ClearedStatusNote |
+      | qr2                           | C               | ClearedStatusNote |
 
     When the metasfresh REST-API endpoint path '/api/v2/material/handlingunits/clearance' receives a 'PUT' request with the payload from context and responds with '200' status code
 
@@ -339,8 +339,8 @@ Feature: Handling unit rest controller
 
     Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | splitTU            | TU         | includedCU  | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
-      | includedCU         | CU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Cleared                 | Freigegeben                 | ClearedStatusNote |
+      | splitTU            | TU         | includedCU  | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | C                | Freigegeben                 | ClearedStatusNote |
+      | includedCU         | CU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | C                | Freigegeben                 | ClearedStatusNote |
 
     And store HU endpointPath /api/v2/material/handlingunits/byId/:processedLU in context
 

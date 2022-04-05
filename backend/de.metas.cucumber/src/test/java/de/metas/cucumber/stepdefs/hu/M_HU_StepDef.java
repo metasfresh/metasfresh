@@ -40,6 +40,9 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -47,6 +50,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -60,6 +64,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -77,6 +83,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.HU_ATTR_LOT_NUMBER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_ClearanceNote;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_ClearanceStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_HUStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
@@ -101,6 +108,10 @@ public class M_HU_StepDef
 	private final StepDefData<I_M_Locator> locatorTable;
 	private final StepDefData<I_M_Warehouse> warehouseTable;
 	private final StepDefData<I_M_HU_QRCode> qrCodesTable;
+
+	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	private final TestContext testContext;
 
 	public M_HU_StepDef(
@@ -179,6 +190,18 @@ public class M_HU_StepDef
 
 			assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID());
 			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
+
+			final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus);
+			if(Check.isNotBlank(clearanceStatus))
+			{
+				assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
+			}
+
+			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceNote);
+			if(Check.isNotBlank(clearanceNote))
+			{
+				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
+			}
 		}
 	}
 
@@ -379,6 +402,88 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
+	@And("store JsonSetClearanceStatusRequest in context")
+	public void store_JsonSetClearanceStatusRequest_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String clearanceStatus = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
+		final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU.COLUMNNAME_ClearanceNote);
+
+		final JsonClearanceStatus jsonClearanceStatus = JsonClearanceStatus.valueOf(clearanceStatus);
+
+		final JsonSetClearanceStatusRequest jsonSetClearanceStatusRequest = JsonSetClearanceStatusRequest.builder()
+				.huIdentifier(getHUIdentifier(row))
+				.clearanceStatus(jsonClearanceStatus)
+				.clearanceNote(clearanceNote)
+				.build();
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
+	}
+
+	@And("load M_HU by QR code:")
+	public void load_hu_by_qr_code(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
+			InterfaceWrapperHelper.refresh(qrCode);
+
+			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
+
+			assertThat(hu).isNotNull();
+
+			huTable.putOrReplace(huIdentifier, hu);
+			qrCodesTable.putOrReplace(qrCodeIdentifier, qrCode);
+		}
+	}
+
+	@And("update HU clearance status")
+	public void update_clearance_status(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU hu = huTable.get(huIdentifier);
+
+			final String clearanceStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ClearanceStatus);
+			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceNote);
+
+			final JsonSetClearanceStatusRequest.JsonHUIdentifier identifier = JsonSetClearanceStatusRequest.JsonHUIdentifier
+					.ofJsonMetasfreshId(JsonMetasfreshId.of(hu.getM_HU_ID()));
+
+			final JsonSetClearanceStatusRequest request = JsonSetClearanceStatusRequest.builder()
+					.huIdentifier(identifier)
+					.clearanceNote(clearanceNote)
+					.clearanceStatus(JsonClearanceStatus.valueOf(clearanceStatus))
+					.build();
+
+			handlingUnitsService.setClearanceStatus(request);
+
+			huTable.putOrReplace(huIdentifier, hu);
+		}
+	}
+
+	@And("destroy existing M_HUs")
+	public void destroy_existing_hus()
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newOutOfTrx());
+
+		final List<I_M_HU> availableHUs = queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_HU.class);
+
+		handlingUnitsBL.markDestroyed(huContext, availableHUs);
+	}
+
 	private void validateHU(
 			@NonNull final List<JsonHU> jsonHUs,
 			@NonNull final List<String> husIdentifiers,
@@ -483,47 +588,6 @@ public class M_HU_StepDef
 		huTable.putOrReplace(request.getHuIdentifier(), hu.get());
 
 		return true;
-	}
-
-	@And("store JsonSetClearanceStatusRequest in context")
-	public void store_JsonSetClearanceStatusRequest_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
-	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
-
-		final String clearanceStatus = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_ClearanceStatus);
-		final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_HU.COLUMNNAME_ClearanceNote);
-
-		final JsonClearanceStatus jsonClearanceStatus = JsonClearanceStatus.valueOf(clearanceStatus);
-
-		final JsonSetClearanceStatusRequest jsonSetClearanceStatusRequest = JsonSetClearanceStatusRequest.builder()
-				.huIdentifier(getHUIdentifier(row))
-				.clearanceStatus(jsonClearanceStatus)
-				.clearanceNote(clearanceNote)
-				.build();
-
-		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
-	}
-
-	@And("load M_HU by QR code:")
-	public void load_hu_by_qr_code(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String qrCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_QRCode.COLUMNNAME_M_HU_QRCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
-			InterfaceWrapperHelper.refresh(qrCode);
-
-			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
-
-			assertThat(hu).isNotNull();
-
-			huTable.putOrReplace(huIdentifier, hu);
-			qrCodesTable.putOrReplace(qrCodeIdentifier, qrCode);
-		}
 	}
 
 	@NonNull
