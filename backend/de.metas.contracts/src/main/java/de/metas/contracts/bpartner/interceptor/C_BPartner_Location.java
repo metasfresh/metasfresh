@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.bpartner.command.BPartnerLocationReplaceCommand;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -69,6 +70,7 @@ public class C_BPartner_Location
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
+	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
 	public void noTerminationInPast(final I_C_BPartner_Location bpLocation)
 	{
 		final Timestamp validFrom = bpLocation.getValidFrom();
