@@ -1,24 +1,21 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
 
-class Tab extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    const {
-      fetchTab,
-      tabId,
-      windowId,
-      onChange,
-      queryOnActivate,
-      singleRowView,
-      docId,
-      orderBy,
-    } = this.props;
-
+const Tab = ({
+  children,
+  onChange,
+  singleRowView,
+  windowId,
+  tabId,
+  docId,
+  queryOnActivate,
+  orderBy,
+  fetchTab,
+}) => {
+  useEffect(() => {
     if (docId && queryOnActivate) {
       if (singleRowView) {
         fetchTab({ tabId, windowId, docId, orderBy }).then((res) => {
@@ -32,14 +29,18 @@ class Tab extends PureComponent {
         });
       }
     }
-  }
+  }, [
+    docId,
+    queryOnActivate,
+    singleRowView,
+    windowId,
+    tabId,
+    orderBy,
+    onChange,
+  ]);
 
-  render() {
-    const { children } = this.props;
-
-    return <div className="row table-wrapper">{children}</div>;
-  }
-}
+  return <div className="row table-wrapper">{children}</div>;
+};
 
 Tab.propTypes = {
   children: PropTypes.any,
