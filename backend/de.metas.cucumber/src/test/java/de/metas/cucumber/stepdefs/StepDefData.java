@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs;
 
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.PO;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableCollection;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
@@ -84,6 +86,11 @@ public class StepDefData<T>
 	{
 		final T record = records.get(identifier);
 		assertThat(record).as("Missing record for identifier=%s", identifier).isNotNull();
+
+		if (record instanceof PO)
+		{
+			InterfaceWrapperHelper.refresh(record);
+		}
 
 		return record;
 	}

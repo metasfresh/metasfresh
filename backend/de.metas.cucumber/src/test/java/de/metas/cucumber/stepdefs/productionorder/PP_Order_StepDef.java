@@ -85,7 +85,7 @@ public class PP_Order_StepDef
 	private final StepDefData<I_PP_Order> ppOrderTable;
 	private final StepDefData<I_S_Resource> resourceTable;
 	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
-	private final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable;
+	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 
 	public PP_Order_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
@@ -95,7 +95,7 @@ public class PP_Order_StepDef
 			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
 			@NonNull final StepDefData<I_S_Resource> resourceTable,
 			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
-			@NonNull final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable)
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -104,7 +104,7 @@ public class PP_Order_StepDef
 		this.ppOrderTable = ppOrderTable;
 		this.resourceTable = resourceTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.ppOrderBomLineTable = ppOrderBomLineTable;
+		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -191,7 +191,25 @@ public class PP_Order_StepDef
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 
-			trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.ErrorMessage");
+
+			try
+			{
+				trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+
+				assertThat(errorMessage).as("ErrorMessage should be null if huPPOrderBL.processPlanning() finished with no error!").isNull();
+			}
+			catch (final Exception e)
+			{
+				if (errorMessage != null)
+				{
+					assertThat(e.getMessage()).contains(errorMessage);
+				}
+				else
+				{
+					throw e;
+				}
+			}
 		}
 	}
 
@@ -232,13 +250,13 @@ public class PP_Order_StepDef
 				return false;
 			}
 
-			ppOrderBomLineTable.putOrReplace(ppOrderBOMLineIdentifier, orderBOMLineRecord);
+			ppOrderBOMLineTable.putOrReplace(ppOrderBOMLineIdentifier, orderBOMLineRecord);
 			return true;
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
 
-		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBomLineTable.get(ppOrderBOMLineIdentifier);
+		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMLineTable.get(ppOrderBOMLineIdentifier);
 		assertThat(ppOrderBOMLine).isNotNull();
 
 		//validate asi
