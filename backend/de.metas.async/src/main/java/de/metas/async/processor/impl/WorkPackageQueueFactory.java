@@ -84,7 +84,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 
 		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID());
 
-		final QueueProcessorId queueProcessorId = queueProcessorDescriptorIndex.getProcessorForPackageProcessor(packageProcessorId);
+		final QueueProcessorId queueProcessorId = queueProcessorDescriptorIndex.getQueueProcessorForPackageProcessor(packageProcessorId);
 
 		return WorkPackageQueue.createForEnqueuing(
 				ctx,

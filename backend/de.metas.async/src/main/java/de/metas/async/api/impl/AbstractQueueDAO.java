@@ -24,6 +24,7 @@ package de.metas.async.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Async_Batch;
@@ -33,12 +34,15 @@ import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -414,5 +418,29 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true)
 				.create()
 				.list();
+	}
+
+	@Override
+	public int assignAsyncBatchForProcessing(
+			@NonNull final Set<QueuePackageProcessorId> queuePackageProcessorIds,
+			@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ILockManager lockManager = Services.get(ILockManager.class);
+
+		final ICompositeQueryUpdater<I_C_Queue_WorkPackage> updater = queryBL.createCompositeQueryUpdater(I_C_Queue_WorkPackage.class)
+				.addSetColumnValue(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
+
+		final IQuery<I_C_Queue_WorkPackage> updateQuery = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, queuePackageProcessorIds)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, null)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsReadyForProcessing, true)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, false)
+				.create();
+
+		return lockManager.addNotLockedClause(updateQuery)
+				.updateDirectly(updater);
 	}
 }

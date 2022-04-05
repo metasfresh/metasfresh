@@ -125,13 +125,13 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 	@Override
 	@Nullable
-	public IQueueProcessor getQueueProcessor(final int queueProcessorId)
+	public IQueueProcessor getQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
 	{
 		mainLock.lock();
 		try
 		{
 			return asyncProcessorPlanner
-					.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId))
+					.getQueueProcessor(queueProcessorId)
 					.orElse(null);
 		}
 		finally

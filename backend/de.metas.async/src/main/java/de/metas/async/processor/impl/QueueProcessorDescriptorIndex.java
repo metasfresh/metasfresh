@@ -91,7 +91,15 @@ public class QueueProcessorDescriptorIndex
 	}
 
 	@NonNull
-	public QueueProcessorId getProcessorForPackageProcessor(@NonNull final QueuePackageProcessorId packageProcessorId)
+	public QueueProcessorId getQueueProcessorForPackageProcessor(@NonNull final QueuePackageProcessorId packageProcessorId)
+	{
+		final I_C_Queue_Processor queueProcessor = getQueueProcessor(packageProcessorId);
+
+		return QueueProcessorId.ofRepoId(queueProcessor.getC_Queue_Processor_ID());
+	}
+
+	@NonNull
+	public I_C_Queue_Processor getQueueProcessor(@NonNull final QueuePackageProcessorId packageProcessorId)
 	{
 		final Map<QueueProcessorId, QueueProcessorDescriptor> queueProcessorDescriptors = getQueueProcessorIndex();
 
@@ -99,7 +107,7 @@ public class QueueProcessorDescriptorIndex
 				.values()
 				.stream()
 				.filter(descriptor -> descriptor.hasPackageProcessor(packageProcessorId))
-				.map(QueueProcessorDescriptor::getQueueProcessorId)
+				.map(QueueProcessorDescriptor::getQueueProcessor)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("There is no C_Queue_Processor assigned to C_Queue_PackageProcessor!")
 						.appendParametersToMessage()

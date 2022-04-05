@@ -351,11 +351,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
 		// task 09700
-		final UserId userIdInCharge = workPackageBL.getUserIdInCharge(workPackage).orElse(null);
-		if (userIdInCharge != null)
-		{
-			workPackage.setAD_User_InCharge_ID(userIdInCharge.getRepoId());
-		}
+		workPackageBL.getUserIdInCharge(workPackage)
+				.ifPresent(userIdInCharge -> workPackage.setAD_User_InCharge_ID(userIdInCharge.getRepoId()));
 
 		saveWorkPackage(workPackage);
 		localPackagecount++; // task 09049
@@ -672,6 +669,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// set also in thread
 		contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
 		return this;
+	}
+
+	public int assignAsyncBatchForProcessing(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return dao.assignAsyncBatchForProcessing(getQueuePackageProcessorIds(), asyncBatchId);
 	}
 
 	@NonNull

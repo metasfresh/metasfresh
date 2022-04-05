@@ -22,15 +22,17 @@ package de.metas.document.archive.process;
  * #L%
  */
 
-import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.impl.QueueProcessorService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 import java.util.Properties;
 
@@ -41,8 +43,10 @@ import java.util.Properties;
  */
 public class C_Doc_Outbound_CreatePDF extends JavaProcess
 {
-	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final transient IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+
+	private final QueueProcessorService queueProcessorService = SpringContextHolder.instance.getBean(QueueProcessorService.class);
 
 	@Override
 	protected void prepare()
@@ -55,11 +59,12 @@ public class C_Doc_Outbound_CreatePDF extends JavaProcess
 	{
 		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, DocOutboundWorkpackageProcessor.class);
+		final I_C_Queue_PackageProcessor packageProcessor = queueDAO.retrievePackageProcessorDefByClass(ctx, DocOutboundWorkpackageProcessor.class);
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID());
 
-		final IQueueProcessor queueProcessor = queueProcessorFactory.createSynchronousQueueProcessor(workPackageQueue);
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createAsynchronousQueueProcessor(packageProcessorId);
 
-		SynchronousProcessorPlanner.executeNow(queueProcessor);
+		queueProcessorService.runAndWait(queueProcessor);
 
 		final IQueueProcessorStatistics statistics = queueProcessor.getStatisticsSnapshot();
 

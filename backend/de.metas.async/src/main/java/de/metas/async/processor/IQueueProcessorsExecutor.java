@@ -22,7 +22,6 @@ package de.metas.async.processor;
  * #L%
  */
 
-
 import de.metas.async.model.I_C_Queue_Processor;
 
 /**
@@ -61,5 +60,5 @@ public interface IQueueProcessorsExecutor
 	 * @param queueProcessorId
 	 * @return
 	 */
-	IQueueProcessor getQueueProcessor(int queueProcessorId);
+	IQueueProcessor getQueueProcessor(QueueProcessorId queueProcessorId);
 }

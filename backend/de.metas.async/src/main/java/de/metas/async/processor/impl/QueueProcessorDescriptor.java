@@ -28,6 +28,7 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.Optional;
 public class QueueProcessorDescriptor
 {
 	@NonNull
+	@Getter
 	private final I_C_Queue_Processor queueProcessor;
 
 	@NonNull
