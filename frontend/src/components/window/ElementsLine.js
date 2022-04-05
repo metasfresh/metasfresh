@@ -1,71 +1,62 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import Element from './Element';
 
-class ElementsLine extends PureComponent {
-  render() {
-    const { elementsLineLayout } = this.props;
-
-    if (
-      elementsLineLayout.elements === undefined ||
-      elementsLineLayout.elements.length == 0
-    ) {
-      return null;
-    }
-
-    return (
-      <div className="elements-line">
-        {this.renderElements(elementsLineLayout.elements)}
-      </div>
-    );
+const ElementsLine = ({
+  elementsLineLayout,
+  elementsLineIndex,
+  elementGroupIndex,
+  columnIndex,
+  sectionIndex,
+  windowId,
+  tabId,
+  rowId,
+  dataId,
+  isFocused,
+  tabIndex,
+  isModal,
+  isAdvanced,
+  isFullScreen,
+  onBlurWidget,
+  addRefToWidgets,
+  disconnected,
+}) => {
+  if (
+    elementsLineLayout.elements === undefined ||
+    elementsLineLayout.elements.length === 0
+  ) {
+    return null;
   }
 
-  renderElements = (elements) => {
-    const {
-      windowId,
-      tabId,
-      rowId,
-      dataId,
-      tabIndex,
-      isFocused,
-      isModal,
-      isAdvanced,
-      isFullScreen,
-      addRefToWidgets,
-      onBlurWidget,
-      elementsLineIndex,
-      elementGroupIndex,
-      sectionIndex,
-      columnIndex,
-      disconnected,
-    } = this.props;
-
-    return elements.map((elementLayout, elementIndex) => (
-      <Element
-        key={'element' + elementIndex}
-        elementLayout={elementLayout}
-        elementIndex={elementIndex}
-        elementsLineIndex={elementsLineIndex}
-        elementGroupIndex={elementGroupIndex}
-        columnIndex={columnIndex}
-        sectionIndex={sectionIndex}
-        windowId={windowId}
-        tabId={tabId}
-        rowId={rowId}
-        dataId={dataId}
-        isFocused={isFocused}
-        tabIndex={tabIndex}
-        isModal={isModal}
-        isAdvanced={isAdvanced}
-        isFullScreen={isFullScreen}
-        onBlurWidget={onBlurWidget}
-        addRefToWidgets={addRefToWidgets}
-        disconnected={disconnected}
-      />
-    ));
-  };
-}
+  return (
+    <div className="elements-line">
+      {elementsLineLayout.elements.map((elementLayout, elementIndex) => (
+        <Element
+          key={'element' + elementIndex}
+          elementLayout={elementLayout}
+          elementIndex={elementIndex}
+          elementsLineIndex={elementsLineIndex}
+          elementGroupIndex={elementGroupIndex}
+          columnIndex={columnIndex}
+          sectionIndex={sectionIndex}
+          windowId={windowId}
+          tabId={tabId}
+          rowId={rowId}
+          dataId={dataId}
+          isFocused={isFocused}
+          tabIndex={tabIndex}
+          isModal={isModal}
+          isAdvanced={isAdvanced}
+          isFullScreen={isFullScreen}
+          onBlurWidget={onBlurWidget}
+          addRefToWidgets={addRefToWidgets}
+          disconnected={disconnected}
+        />
+      ))}
+    </div>
+  );
+};
 
 ElementsLine.propTypes = {
   elementsLineLayout: PropTypes.object.isRequired,
