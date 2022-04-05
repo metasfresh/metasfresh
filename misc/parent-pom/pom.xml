@@ -1055,7 +1055,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 -->
                                 <groupId>org.springframework</groupId>
                                 <artifactId>spring-beans</artifactId>
-                                <version>4.3.8.RELEASE</version>
+                                <version>5.3.18</version>
                             </dependency>
                             <dependency>
                                 <groupId>net.sf.barcode4j</groupId>
