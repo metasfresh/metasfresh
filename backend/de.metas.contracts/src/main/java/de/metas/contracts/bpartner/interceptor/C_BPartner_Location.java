@@ -25,18 +25,22 @@ package de.metas.contracts.bpartner.interceptor;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.bpartner.command.BPartnerLocationReplaceCommand;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 
-@Validator(I_C_BPartner_Location.class)
+@Component
+@Callout(I_C_BPartner_Location.class)
+@Interceptor(I_C_BPartner_Location.class)
 public class C_BPartner_Location
 {
 	@Init
@@ -63,8 +67,8 @@ public class C_BPartner_Location
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
 	public void noTerminationInPast(final I_C_BPartner_Location bpLocation)
 	{
 		final Timestamp validFrom = bpLocation.getValidFrom();
