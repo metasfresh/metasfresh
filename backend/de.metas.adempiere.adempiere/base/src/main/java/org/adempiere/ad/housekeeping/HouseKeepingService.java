@@ -1,22 +1,20 @@
 package org.adempiere.ad.housekeeping;
 
-import java.util.List;
-import java.util.Optional;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
