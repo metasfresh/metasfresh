@@ -28,6 +28,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "ephemeral" : false,
         "changeInfo" : {
           "createdMillis" : 1563553074,
           "createdBy" : 30,
@@ -263,6 +264,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
+        "ephemeral" : false,
         "existingLocationId" : 100017,
         "gln" : "l1_gln",
         "handles" : [ ],
@@ -320,6 +322,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
+        "ephemeral" : false,
         "existingLocationId" : 100019,
         "gln" : "l2_gln",
         "handles" : [ ],
@@ -596,6 +599,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -869,6 +873,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -1077,6 +1082,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -1285,6 +1291,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
@@ -1342,6 +1349,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation_city",
         "countryCode" : "DE",
+        "ephemeral" : false,
         "existingLocationId" : 100015,
         "gln" : "newLocation_gln",
         "handles" : [ ],
@@ -1452,6 +1460,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "ephemeral" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1479,6 +1488,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "ephemeral" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1506,6 +1516,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "shipToDefault" : false,
     "billTo" : false,
     "billToDefault" : false,
+    "ephemeral" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -1552,6 +1563,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "ephemeral" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1627,6 +1639,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "ephemeral" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1702,6 +1715,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "ephemeral" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -1783,6 +1797,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "ephemeral" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 30,
@@ -1854,6 +1869,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "ephemeral" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 31,
@@ -1933,6 +1949,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "ephemeral" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 32,
@@ -2004,6 +2021,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "ephemeral" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 33,
@@ -2082,6 +2100,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
             "shipToDefault" : false,
             "billTo" : false,
             "billToDefault" : false,
+            "ephemeral" : false,
             "changeInfo" : {
               "createdMillis" : 1561133544,
               "createdBy" : 34,

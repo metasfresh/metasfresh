@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
@@ -185,7 +186,7 @@ public class BPartnerLocation
 
 		this.orgMappingId = orgMappingId;
 
-		this.ephemeral = ephemeral != null ? ephemeral : false;
+		this.ephemeral = CoalesceUtil.coalesceNotNull(ephemeral, false);
 	}
 
 	public BPartnerLocation deepCopy()
