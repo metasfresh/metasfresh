@@ -1,10 +1,8 @@
-package de.metas.lock.model;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,25 +11,31 @@ package de.metas.lock.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.lock.spi;
 
-public interface I_T_Lock
+import lombok.Builder;
+import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.time.Instant;
+
+@Value
+@Builder
+public class ExistingLockInfo
 {
-	String Table_Name = "T_Lock";
-
-	String COLUMNNAME_T_Lock_ID = "T_Lock_ID";
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-	String COLUMNNAME_Record_ID = "Record_ID";
-	String COLUMNNAME_Owner = "Owner";
-	String COLUMNNAME_IsAllowMultipleOwners = "IsAllowMultipleOwners";
-	String COLUMNNAME_IsAutoCleanup = "IsAutoCleanup";
-	String COLUMNNAME_Created = "Created";
+	int lockId;
+	String ownerName;
+	TableRecordReference lockedRecord;
+	boolean autoCleanup;
+	boolean allowMultipleOwners;
+	Instant created;
 }
