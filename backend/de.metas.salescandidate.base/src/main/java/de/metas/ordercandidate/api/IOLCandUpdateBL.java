@@ -48,11 +48,6 @@ public interface IOLCandUpdateBL extends ISingletonService
 	 * </ul>
 	 * 
 	 * The given <code>params</code> don't have a value for any of these 3 columns, it will be set to <code>null</code>.
-	 * 
-	 * @param ctx
-	 * @param candsToUpdate
-	 * @param params
-	 * @return
 	 */
 	OLCandUpdateResult updateOLCands(Properties ctx, Iterator<I_C_OLCand> candsToUpdate, IParams params);
 
