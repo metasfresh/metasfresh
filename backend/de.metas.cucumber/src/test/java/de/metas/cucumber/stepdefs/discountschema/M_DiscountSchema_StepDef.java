@@ -73,7 +73,7 @@ public class M_DiscountSchema_StepDef
 		}
 	}
 
-	@And("metasfresh contains M_DiscountSchemaBreaks:")
+	@Given("metasfresh contains M_DiscountSchemaBreaks:")
 	public void created_discount_schema_break(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps();
