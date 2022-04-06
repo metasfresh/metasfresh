@@ -19,6 +19,7 @@ url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+add_pg_stat_statements_extension=${ADD_PG_STAT_STATEMENTS_EXTENSION:-n}
 
 echo "URL_SEED_DUMP=${url_seed_dump}" >> $PGDATA/provision_metasfresh_db.info
 echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}" >> $PGDATA/provision_metasfresh_db.info
@@ -35,6 +36,7 @@ echo_variable_values()
  echo "URL_SEED_DUMP=${url_seed_dump}"
  echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}"
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
+ echo "ADD_PG_STAT_STATEMENTS_EXTENSION=${add_pg_stat_statements_extension}"
  echo ""
 }
 
@@ -102,7 +104,7 @@ import_dump()
 	curl -o $OUTPUT_FILE $url_seed_dump
 	
 	echo "Populating database with initital seed... "
-	pg_restore -Fc --username "$db_user" --dbname "$db_password" $OUTPUT_FILE
+	pg_restore -Fc --username "$db_user" --dbname "$db_name" $OUTPUT_FILE
 	echo "=========="
 	echo " ...done!"
 	echo "=========="	
@@ -128,12 +130,12 @@ apply_migration_scripts_from_artifact()
 	
 	tar -xf $OUTPUT_FILE
 	
-	cat >dist/settings.properties <<EOL
+	cat >dist/install/settings.properties <<EOL
 METASFRESH_DB_SERVER=${db_host}
-METASFRESH_db_port=${db_port}
-METASFRESH_db_name=${db_name}
+METASFRESH_DB_PORT=${db_port}
+METASFRESH_DB_NAME=${db_name}
 METASFRESH_DB_USER=${db_user}
-METASFRESH_db_password=${db_password}
+METASFRESH_DB_PASSWORD=${db_password}
 EOL
 
 	echo "Running mg migrate... "
@@ -145,6 +147,21 @@ EOL
 	echo "=========="
 }
 
+activate_extensions() 
+{
+	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
+		# needs shared_preload_libraries = 'pg_stat_statements'	in postgresql.conf
+		echo "==========================================="
+		echo " activate pg_stat_statements extension ..."
+		echo "==========================================="
+		psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
+CREATE EXTENSION pg_stat_statements;
+EOSQL
+		echo "==========="
+		echo " ... done!"
+		echo "==========="
+	fi
+}
 # start printing all bash commands from here onwards, if activated
 if [ "$debug_print_bash_cmds" != "n" ];
 then
@@ -156,5 +173,6 @@ echo_variable_values
 create_role_if_not_exists
 create_db_and_import_seed_dump_if_not_exists
 apply_migration_scripts_from_artifact
+activate_extensions
 
 echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info
