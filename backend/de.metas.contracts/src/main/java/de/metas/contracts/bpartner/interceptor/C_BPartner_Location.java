@@ -55,7 +55,7 @@ public class C_BPartner_Location
 			ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Previous_ID })
 	public void updateNextLocation(final I_C_BPartner_Location bpLocation)
 	{
-		if (bpLocation.getPrevious_ID() >= 0)
+		if (bpLocation.getPrevious_ID() > 0)
 		{
 			final BPartnerLocationId oldBPLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getPrevious_ID());
 			final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
