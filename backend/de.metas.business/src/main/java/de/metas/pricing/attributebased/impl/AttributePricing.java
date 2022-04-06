@@ -1,5 +1,6 @@
 package de.metas.pricing.attributebased.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -22,6 +23,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -35,6 +37,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -75,19 +78,19 @@ public class AttributePricing implements IPricingRule
 	{
 		if (result.isCalculated())
 		{
-			logger.debug("Not applying because already calculated: {}", result);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because already calculated: {}", result);
 			return false;
 		}
 
 		if (pricingCtx.getProductId() == null)
 		{
-			logger.debug("Not applying because no product: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because no product: {}", pricingCtx);
 			return false;
 		}
 
 		if (!pricingCtx.getAttributeSetInstanceAware().isPresent())
 		{
-			logger.debug("Not applying because not ASI aware: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because not ASI aware: {}", pricingCtx);
 			return false;
 		}
 
@@ -96,7 +99,7 @@ public class AttributePricing implements IPricingRule
 		// If nothing found, this pricing rule does not apply.
 		if (!getProductPrice(pricingCtx).isPresent())
 		{
-			logger.debug("Not applying because no product price with an attribute found: {}" + pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because no product price with an attribute found: {}" + pricingCtx);
 			return false;
 		}
 
@@ -218,32 +221,32 @@ public class AttributePricing implements IPricingRule
 	{
 		if (productPriceId <= 0)
 		{
-			logger.debug("Returning null because M_ProductPrice_ID is not set: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID is not set: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(pricingCtx.getCtx(), productPriceId, I_M_ProductPrice.class, pricingCtx.getTrxName());
 		if (productPrice == null || productPrice.getM_ProductPrice_ID() <= 0)
 		{
-			logger.debug("Returning null because M_ProductPrice_ID={} was not found", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID={} was not found", productPriceId);
 			return Optional.empty();
 		}
 
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			logger.debug("Returning null because M_ProductPrice_ID={} is not active", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID={} is not active", productPriceId);
 			return Optional.empty();
 		}
 
 		// Make sure if the product price matches our pricing context
 		if (productPrice.getM_Product_ID() != ProductId.toRepoId(pricingCtx.getProductId()))
 		{
-			logger.debug("Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
 			return Optional.empty();
 		}
 
-		logger.debug("M_ProductPrice_ID={} is valid", productPriceId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - M_ProductPrice_ID={} is valid", productPriceId);
 		return Optional.of(productPrice);
 	}
 
@@ -260,14 +263,14 @@ public class AttributePricing implements IPricingRule
 		final I_M_AttributeSetInstance attributeSetInstance = getM_AttributeSetInstance(pricingCtx);
 		if (attributeSetInstance == null)
 		{
-			logger.debug("No M_AttributeSetInstance_ID found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No M_AttributeSetInstance_ID found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
 		if (ctxPriceListVersion == null)
 		{
-			logger.debug("No M_PriceList_Version found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -284,7 +287,7 @@ public class AttributePricing implements IPricingRule
 
 		if (productPrice == null)
 		{
-			logger.debug("No product price found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No product price found: {}", pricingCtx);
 			return Optional.empty(); // no matching
 		}
 
@@ -294,7 +297,6 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
-	 * @param pricingCtx
 	 * @return
 	 *         <ul>
 	 *         <li>ASI
@@ -303,7 +305,8 @@ public class AttributePricing implements IPricingRule
 	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
 	 *         </ul>
 	 */
-	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
+	@Nullable
+	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
 	{
 		final IAttributeSetInstanceAware asiAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (asiAware == null)

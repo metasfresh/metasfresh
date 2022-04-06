@@ -132,14 +132,12 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
 	{
-		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
-		{
+			// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
 			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
 			if(!qtyItemCapacity.isInfinite())
 			{
 				olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
 			}
-		}
 	}
 
 	private void validateLocation(@NonNull final I_C_OLCand olCand)
