@@ -46,6 +46,7 @@ Feature: credit limit
       | C_BPartner_ID.Identifier | SOCreditStatus.Code |
       | endcustomer_1            | S                   |
 
+#    we need the exact date and time (time zone) to be consistent when running on different time zones
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate         |
       | i_1        | 540008         | 2021-04-16T21:00:00Z |

@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_DiscountSchema;
@@ -62,7 +63,7 @@ public class M_DiscountSchema_StepDef
 		this.discountSchemaBreakTable = discountSchemaBreakTable;
 	}
 
-	@And("metasfresh contains M_DiscountSchemas:")
+	@Given("metasfresh contains M_DiscountSchemas:")
 	public void create_discount_schema(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps();

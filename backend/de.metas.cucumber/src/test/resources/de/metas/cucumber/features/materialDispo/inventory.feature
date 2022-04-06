@@ -32,8 +32,8 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
-    And the inventory identified by i_1 is completed
-    And after not more than 60s, MD_Candidates are found
+    When the inventory identified by i_1 is completed
+    Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 20                     |
@@ -64,8 +64,8 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
-    And the inventory identified by i_1 is completed
-    And after not more than 60s, MD_Candidates are found
+    When the inventory identified by i_1 is completed
+    Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |
       | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 20                     |
@@ -96,8 +96,8 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_2                     | PCE          | 10       | 0       |
-    And the inventory identified by i_1 is completed
-    And after not more than 60s, MD_Candidates are found
+    When the inventory identified by i_1 is completed
+    Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_2                     | 2021-04-10T21:00:00Z | 10  | 10                     |
       | c_2        | INVENTORY_UP      |                               | p_2                     | 2021-04-16T21:00:00Z | 10  | 20                     |

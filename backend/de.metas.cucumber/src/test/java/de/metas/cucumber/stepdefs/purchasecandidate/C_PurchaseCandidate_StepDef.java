@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
@@ -115,30 +116,17 @@ public class C_PurchaseCandidate_StepDef
 		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final Supplier<Boolean> isPurchaseCandidateCreated = () -> {
-
-			final I_C_PurchaseCandidate purchaseCandidateRecord = queryBL
-					.createQueryBuilder(I_C_PurchaseCandidate.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(COLUMNNAME_C_OrderSO_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(COLUMNNAME_C_OrderLineSO_ID, orderLineRecord.getC_OrderLine_ID())
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-					.create()
-					.firstOnly(I_C_PurchaseCandidate.class);
-
-			return purchaseCandidateRecord != null;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, isPurchaseCandidateCreated, () -> logCurrentContext(row));
-
-		final I_C_PurchaseCandidate purchaseCandidateRecord = queryBL
+		final Supplier<Optional<I_C_PurchaseCandidate>> isPurchaseCandidateCreated = () -> queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_C_OrderSO_ID, orderRecord.getC_Order_ID())
 				.addEqualsFilter(COLUMNNAME_C_OrderLineSO_ID, orderLineRecord.getC_OrderLine_ID())
 				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.create()
-				.firstOnlyNotNull(I_C_PurchaseCandidate.class);
+				.firstOnlyOptional(I_C_PurchaseCandidate.class);
+
+		final I_C_PurchaseCandidate purchaseCandidateRecord = StepDefUtil
+				.tryAndWaitForItem(timeoutSec, 500, isPurchaseCandidateCreated, () -> logCurrentContext(row));
 
 		purchaseCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID), purchaseCandidateRecord);
 	}
