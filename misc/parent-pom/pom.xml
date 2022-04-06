@@ -297,45 +297,6 @@
             <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
             but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
              -->
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.4</version>
-                <executions>
-                    <execution>
-                        <id>get-the-git-infos</id>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                        <!-- don't bind it to the initialization phase to avoid it being run on mvn clean -->
-                        <phase>prepare-package</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                    <!--includeOnlyProperties>
-                        For starts, we naively include everything.
-                        Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md
-                        <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
-                        <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-                    </includeOnlyProperties-->
-                    <commitIdGenerationMode>full</commitIdGenerationMode>
-                    <!--
-                    Using the native git binary gives us aprox-10 minutes in the metasfresh repo
-                    Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md
-                    Most notably, you can also call maven with `-Dmaven.gitcommitid.nativegit=false` to override this
-                    -->
-                    <useNativeGit>true</useNativeGit>
-
-                    <!-- Running only once and injecting the respective file into all submodules might save a lot of build-time, but we didn't yet get it to work -->
-                    <!--
-                        <runOnlyOnce>true</runOnlyOnce>
-                        <injectAllReactorProjects>true</injectAllReactorProjects>
-                        <skipPoms>false</skipPoms>
-                    -->
-                </configuration>
-            </plugin>
         </plugins>
 
         <pluginManagement>
