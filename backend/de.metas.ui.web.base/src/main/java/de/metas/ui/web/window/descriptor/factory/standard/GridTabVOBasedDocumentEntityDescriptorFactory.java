@@ -25,6 +25,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
