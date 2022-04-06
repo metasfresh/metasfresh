@@ -64,12 +64,15 @@ public class BPartnerLocationReplaceCommand
 	@NonNull
 	private final I_C_BPartner_Location newLocation;
 
+	private final boolean saveNewLocation;
+
 	public BPartnerLocationReplaceCommand(@NonNull final BPartnerLocationId oldBPLocationId,
 			@Nullable final LocationId oldLocationId,
 			@Nullable final I_C_BPartner_Location oldLocation,
 			@NonNull final BPartnerLocationId newBPLocationId,
 			@Nullable final LocationId newLocationId,
-			@Nullable final I_C_BPartner_Location newLocation)
+			@Nullable final I_C_BPartner_Location newLocation,
+			@Nullable final Boolean saveNewLocation)
 	{
 		this.oldBPLocationId = oldBPLocationId;
 		this.oldLocation = coalesce(oldLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(oldBPLocationId));
@@ -78,6 +81,7 @@ public class BPartnerLocationReplaceCommand
 		this.newBPLocationId = newBPLocationId;
 		this.newLocation = coalesce(newLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(newBPLocationId));
 		this.newLocationId = coalesce(newLocationId, LocationId.ofRepoId(this.newLocation.getC_Location_ID()));
+		this.saveNewLocation = coalesce(saveNewLocation, true);
 	}
 
 	public void execute()
@@ -90,6 +94,10 @@ public class BPartnerLocationReplaceCommand
 		updateInvoiceCandidates();
 		updateFlatrateTerms();
 		deactivateOldBPLocation();
+		if (saveNewLocation)
+		{
+			bpartnerDAO.save(newLocation);
+		}
 	}
 
 	private boolean verify()
@@ -192,6 +200,5 @@ public class BPartnerLocationReplaceCommand
 		oldLocation.setIsShipToDefault(false);
 		oldLocation.setIsActive(false);
 		bpartnerDAO.save(oldLocation);
-		bpartnerDAO.save(newLocation);
 	}
 }

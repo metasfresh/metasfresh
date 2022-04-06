@@ -63,6 +63,8 @@ public class C_BPartner_Location
 			BPartnerLocationReplaceCommand.builder()
 					.oldBPLocationId(oldBPLocationId)
 					.newBPLocationId(newBPLocationId)
+					.newLocation(bpLocation)
+					.saveNewLocation(false) // because it will be saved after validator is triggered
 					.build()
 					.execute();
 		}
