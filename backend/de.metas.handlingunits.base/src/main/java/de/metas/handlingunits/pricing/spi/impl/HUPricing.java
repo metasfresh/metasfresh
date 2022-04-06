@@ -48,7 +48,7 @@ public class HUPricing extends AttributePricing
 	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, NotEqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
-	protected Optional<I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)
+	protected Optional<I_M_ProductPrice> findMatchingProductPriceAttribute(final IPricingContext pricingCtx)
 	{
 		//
 		// Check if default price is set
@@ -56,7 +56,7 @@ public class HUPricing extends AttributePricing
 		final I_M_AttributeSetInstance attributeSetInstance = getM_AttributeSetInstance(pricingCtx);
 		if (attributeSetInstance == null)
 		{
-			final I_M_ProductPrice defaultProductPrice = findDefaultPriceOrNull(pricingCtx);
+			final I_M_ProductPrice defaultProductPrice = findDefaultPriceAttributeOrNull(pricingCtx);
 			if (defaultProductPrice != null)
 			{
 				// Our M_HU_PI_Item_Product matches the default price and there is no ASI to veto us from using that default.
@@ -105,8 +105,12 @@ public class HUPricing extends AttributePricing
 			@Nullable final HUPIItemProductId packingMaterialId)
 	{
 		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
-				.setProductId(productId)
-				.matching(createHUPIItemProductMatcher(packingMaterialId));
+				.setProductId(productId);
+
+		if(packingMaterialId.isRegular())
+		{
+			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+		}
 
 		// Match attributes if we have attributes.
 		if (attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
@@ -144,8 +148,7 @@ public class HUPricing extends AttributePricing
 	/**
 	 * @return the default product price, <b>if</b> it matches the <code>M_HU_PI_Item_Product_ID</code> of the given <code>pricingCtx</code>.
 	 */
-	@Nullable
-	private I_M_ProductPrice findDefaultPriceOrNull(final IPricingContext pricingCtx)
+	private I_M_ProductPrice findDefaultPriceAttributeOrNull(final IPricingContext pricingCtx)
 	{
 		//
 		// Get the price list version, if any
@@ -163,8 +166,7 @@ public class HUPricing extends AttributePricing
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
 						.onlyValidPrices(true)
-						.matching(HUPIItemProductMatcher_Any)
-						.retrieveStrictDefault(I_M_ProductPrice.class),
+						.retrieveDefault(I_M_ProductPrice.class),
 				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), de.metas.common.util.time.SystemTime.zoneId()));
 		if (defaultPrice == null)
 		{

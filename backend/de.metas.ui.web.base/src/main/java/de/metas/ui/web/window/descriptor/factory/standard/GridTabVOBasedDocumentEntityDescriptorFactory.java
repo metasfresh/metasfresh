@@ -425,15 +425,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			orderBySortNo = Integer.MAX_VALUE;
 		}
 
-		final String sqlColumnSql = gridFieldVO.getColumnSQL(false);
-
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
 				.setFieldName(sqlColumnName)
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(sqlColumnName)
-				.setColumnSql(sqlColumnSql)
-				.setVirtualColumn(gridFieldVO.isVirtualColumn())
+				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
@@ -487,6 +484,20 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	@Nullable
+	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
+	{
+		if(gridFieldVO.isVirtualColumn())
+		{
+			final String sql = gridFieldVO.getColumnSQL(false);
+			return ColumnSql.ofSql(sql, contextTableName);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -717,8 +728,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setTableName(entityBindings.getTableName())
 				.setTableAlias(entityBindings.getTableAlias())
 				.setColumnName(lookupDescriptor.getFieldName())
-				.setColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
-				.setVirtualColumn(true)
+				.setVirtualColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
 				.setMandatory(false)
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(DocumentFieldWidgetType.Labels.getValueClass())

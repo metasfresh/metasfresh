@@ -197,4 +197,10 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			icRecord.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
 		}
 	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(final Object model)
+	{
+		return true;
+	}
 }
