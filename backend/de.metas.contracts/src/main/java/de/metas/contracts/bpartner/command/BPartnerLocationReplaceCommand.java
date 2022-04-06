@@ -43,7 +43,7 @@ import java.sql.Timestamp;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@Builder
+@Builder(toBuilder = true)
 public class BPartnerLocationReplaceCommand
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -64,7 +64,8 @@ public class BPartnerLocationReplaceCommand
 	@NonNull
 	private final I_C_BPartner_Location newLocation;
 
-	private final boolean saveNewLocation;
+	@Builder.Default
+	private boolean saveNewLocation = true;
 
 	public BPartnerLocationReplaceCommand(@NonNull final BPartnerLocationId oldBPLocationId,
 			@Nullable final LocationId oldLocationId,
@@ -72,7 +73,7 @@ public class BPartnerLocationReplaceCommand
 			@NonNull final BPartnerLocationId newBPLocationId,
 			@Nullable final LocationId newLocationId,
 			@Nullable final I_C_BPartner_Location newLocation,
-			@Nullable final Boolean saveNewLocation)
+			@NonNull final Boolean saveNewLocation)
 	{
 		this.oldBPLocationId = oldBPLocationId;
 		this.oldLocation = coalesce(oldLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(oldBPLocationId));
@@ -81,7 +82,7 @@ public class BPartnerLocationReplaceCommand
 		this.newBPLocationId = newBPLocationId;
 		this.newLocation = coalesce(newLocation, bpartnerDAO.getBPartnerLocationByIdEvenInactive(newBPLocationId));
 		this.newLocationId = coalesce(newLocationId, LocationId.ofRepoId(this.newLocation.getC_Location_ID()));
-		this.saveNewLocation = coalesce(saveNewLocation, true);
+		this.saveNewLocation = saveNewLocation;
 	}
 
 	public void execute()
