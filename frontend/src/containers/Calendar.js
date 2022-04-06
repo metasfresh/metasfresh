@@ -7,46 +7,86 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 
 import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
+import CalendarAddEvent from '../components/calendar/CalendarAddEvent';
 
 const Calendar = ({ className = 'container' }) => {
   const [calendarEvents, setCalendarEvents] = React.useState([]);
+  const [calendarResources, setCalendarResources] = React.useState([]);
+  const [addEventRequest, setAddEventRequest] = React.useState(null);
 
   useEffect(() => {
-    api
-      .getCalendarEntries({})
-      .then(convertCalendarEntriesFromApi)
-      .then(setCalendarEvents);
+    api.getAvailableCalendars().then(setCalendarResources);
+  }, []);
+  useEffect(() => {
+    api.getCalendarEvents({}).then(setCalendarEvents);
   }, []);
 
   const handleDateClick = (params) => {
     console.log('handleDateClick', { params });
-    if (confirm(`Would you like to add an event to ${params.dateStr}?`)) {
-      setCalendarEvents(
-        calendarEvents.concat({
-          title: 'New Event',
-          start: params.date,
-          end: params.date,
-          allDay: params.allDay,
-        })
-      );
-    }
+    setAddEventRequest({
+      date: params.date,
+      allDay: true,
+    });
   };
 
+  const handleAddEventOK = (event) => {
+    console.log('handleAddEventOK', { event });
+    api
+      .addCalendarEvent({
+        calendarId: event.resourceId,
+        startDate: event.start,
+        endDate: event.end,
+        title: event.title,
+      })
+      .then((eventFromBackend) => {
+        console.log('handleAddEventOK: got from backend', { eventFromBackend });
+        setCalendarEvents([...calendarEvents, eventFromBackend]);
+        setAddEventRequest(null);
+      });
+  };
+  const handleAddEventCancel = (event) => {
+    console.log('handleAddEventCancel', { event });
+    setAddEventRequest(null);
+  };
+
+  console.log('render:', { calendarResources, calendarEvents });
   return (
     <div className={className}>
+      {addEventRequest && (
+        <CalendarAddEvent
+          calendars={calendarResources.map((resource) => ({
+            key: resource.id,
+            caption: resource.title,
+          }))}
+          date={addEventRequest.date}
+          allDay={addEventRequest.allDay}
+          onAddEvent={handleAddEventOK}
+          onCancel={handleAddEventCancel}
+        />
+      )}
       <FullCalendar
-        defaultView="dayGridMonth"
-        header={{
+        defaultView="resourceTimeline"
+        plugins={[
+          dayGridPlugin,
+          timeGridPlugin,
+          interactionPlugin,
+          resourceTimelinePlugin,
+        ]}
+        weekends="true"
+        editable="true"
+        headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+          right:
+            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
         }}
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        weekends="true"
+        resourceAreaHeaderContent="Resources"
+        resources={calendarResources}
         events={calendarEvents}
         dateClick={handleDateClick}
       />
@@ -56,14 +96,6 @@ const Calendar = ({ className = 'container' }) => {
 
 Calendar.propTypes = {
   className: PropTypes.string,
-};
-
-const convertCalendarEntriesFromApi = (apiResponse) => {
-  return apiResponse.entries.map((entry) => ({
-    title: entry.title,
-    start: entry.startDate,
-    end: entry.endDate,
-  }));
 };
 
 export default Calendar;

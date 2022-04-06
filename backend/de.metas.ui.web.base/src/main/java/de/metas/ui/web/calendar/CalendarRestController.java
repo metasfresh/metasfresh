@@ -121,7 +121,7 @@ public class CalendarRestController
 	}
 
 	@PostMapping("/entries/add")
-	public JsonCalendarEntry addCalendarEntry(@NonNull final JsonCalendarEntryAddRequest request)
+	public JsonCalendarEntry addCalendarEntry(@RequestBody @NonNull final JsonCalendarEntryAddRequest request)
 	{
 		userSession.assertLoggedIn();
 

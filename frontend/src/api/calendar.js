@@ -22,16 +22,64 @@
 
 import axios from 'axios';
 
-export function getCalendarEntries({
+const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
+
+export const getAvailableCalendars = () => {
+  return axios
+    .get(`${config.API_URL}/calendars/available`)
+    .then(extractAxiosResponseData)
+    .then(({ calendars }) =>
+      calendars.map((entry) => ({ id: entry.calendarId, title: entry.name }))
+    );
+};
+
+const convertFromAPICalendarEntryToCalendarEvent = (entry) => ({
+  title: entry.title,
+  start: entry.startDate,
+  end: entry.endDate,
+  resourceId: entry.calendarId,
+});
+
+export const getCalendarEvents = ({
   calendarIds = null,
   startDate = null,
   endDate = null,
-}) {
+}) => {
   return axios
     .post(`${config.API_URL}/calendars/entries/query`, {
       calendarIds: calendarIds || [],
       startDate,
       endDate,
     })
-    .then((axiosResult) => axiosResult.data);
-}
+    .then(extractAxiosResponseData)
+    .then(({ entries }) =>
+      entries.map(convertFromAPICalendarEntryToCalendarEvent)
+    );
+};
+
+export const addCalendarEvent = ({
+  calendarId,
+  startDate,
+  endDate,
+  title,
+  description = null,
+}) => {
+  console.log('api.addCalendarEvent', {
+    calendarId,
+    startDate,
+    endDate,
+    title,
+    description,
+  });
+
+  return axios
+    .post(`${config.API_URL}/calendars/entries/add`, {
+      calendarId,
+      startDate,
+      endDate,
+      title,
+      description,
+    })
+    .then(extractAxiosResponseData)
+    .then(convertFromAPICalendarEntryToCalendarEvent);
+};
