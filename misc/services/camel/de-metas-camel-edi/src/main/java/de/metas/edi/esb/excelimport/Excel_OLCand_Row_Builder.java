@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -91,6 +92,24 @@ public class Excel_OLCand_Row_Builder
 	private static final String MAPKEY_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 	int C_BPartner_Location_ID = -1;
 
+	private static final String MAPKEY_Bill_BPartner_ID = "Bill_BPartner_ID";
+	int Bill_BPartner_ID = -1;
+	
+	private static final String MAPKEY_Bill_Location_ID = "Bill_Location_ID";
+	int Bill_Location_ID = -1;
+	
+	private static final String MAPKEY_HandOver_Partner_ID = "HandOver_Partner_ID";
+	int HandOver_Partner_ID = -1;
+	
+	private static final String MAPKEY_HandOver_Location_ID = "HandOver_Location_ID";
+	int HandOver_Location_ID = -1;
+	
+	private static final String MAPKEY_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+	int DropShip_BPartner_ID = -1;
+	
+	private static final String MAPKEY_DropShip_Location_ID = "DropShip_Location_ID";
+	int DropShip_Location_ID = -1;
+
 	private static final List<DateFormat> dateFormats = ImmutableList.<DateFormat>builder()
 			.add(new SimpleDateFormat("dd.MM.yyyy"))
 			.add(new SimpleDateFormat("dd.MM.yy"))
@@ -140,8 +159,19 @@ public class Excel_OLCand_Row_Builder
 			//
 			this.M_ProductPrice_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_ID), -1);
 			this.M_ProductPrice_Attribute_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_M_ProductPrice_Attribute_ID), -1);
+			
 			this.C_BPartner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_ID), -1);
 			this.C_BPartner_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_C_BPartner_Location_ID), -1);
+
+			this.Bill_BPartner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_Bill_BPartner_ID), -1);
+			this.Bill_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_Bill_Location_ID), -1);
+			
+			this.HandOver_Partner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_HandOver_Partner_ID), -1);
+			this.HandOver_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_HandOver_Location_ID), -1);
+			
+			this.DropShip_BPartner_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_DropShip_BPartner_ID), -1);
+			this.DropShip_Location_ID = coalesce(extractInteger(caseInsensitiveKeysMap, MAPKEY_DropShip_Location_ID), -1);
+			
 			return this;
 		}
 		catch (final Exception e)
@@ -246,7 +276,6 @@ public class Excel_OLCand_Row_Builder
 				final Number parsed = numberFormat.parse(valueStr);
 				final BigDecimal numberCandidate = new BigDecimal(parsed.toString());
 
-
 				if (actualNumber == null)
 				{
 					actualNumber = numberCandidate;
@@ -256,7 +285,7 @@ public class Excel_OLCand_Row_Builder
 				final boolean isIntegerActual = isInteger(actualNumber);
 				final boolean isIntegerCandidate = isInteger(numberCandidate);
 
-				if(actualNumber.equals(numberCandidate))
+				if (actualNumber.equals(numberCandidate))
 				{
 					continue;
 				}
@@ -290,7 +319,7 @@ public class Excel_OLCand_Row_Builder
 		}
 		return null;
 	}
-	
+
 	private static boolean isInteger(final BigDecimal numberCandidate)
 	{
 		return numberCandidate.stripTrailingZeros().scale() <= 0;

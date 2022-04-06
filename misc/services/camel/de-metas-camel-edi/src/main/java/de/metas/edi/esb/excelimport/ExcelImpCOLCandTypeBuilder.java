@@ -43,11 +43,11 @@ import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
  * Builds {@link XLSImpCOLCandType}s.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class ExcelImpCOLCandTypeBuilder
 {
-	public static final ExcelImpCOLCandTypeBuilder newBuilder()
+	public static ExcelImpCOLCandTypeBuilder newBuilder()
 	{
 		return new ExcelImpCOLCandTypeBuilder();
 	}
@@ -117,7 +117,13 @@ public class ExcelImpCOLCandTypeBuilder
 		// BPartner
 		olcand.setCBPartnerID(toBigIntegerID(row.getC_BPartner_ID()));
 		olcand.setCBPartnerLocationID(toBigIntegerID(row.getC_BPartner_Location_ID()));
-
+		olcand.setBillBPartnerID(toBigIntegerID(row.getBill_BPartner_ID()));
+		olcand.setBillLocationID(toBigIntegerID(row.getBill_Location_ID()));
+		olcand.setHandOverPartnerID(toBigIntegerID(row.getHandOver_Partner_ID()));
+		olcand.setHandOverLocationID(toBigIntegerID(row.getHandOver_Location_ID()));
+		olcand.setDropShipBPartnerID(toBigIntegerID(row.getDropShip_BPartner_ID()));
+		olcand.setDropShipLocationID(toBigIntegerID(row.getDropShip_Location_ID()));
+		
 		//
 		// Product
 		olcand.setMProductID(toBigIntegerID(row.getM_Product_ID()));
@@ -179,7 +185,7 @@ public class ExcelImpCOLCandTypeBuilder
 		return this;
 	}
 
-	private static final EDIImpCCurrencyLookupISOCodeType currencyLookup(final String currencyISOCode)
+	private static EDIImpCCurrencyLookupISOCodeType currencyLookup(final String currencyISOCode)
 	{
 		if (currencyISOCode == null)
 		{
@@ -192,12 +198,12 @@ public class ExcelImpCOLCandTypeBuilder
 		return currencyLookup;
 	}
 
-	private static final BigInteger toBigIntegerOrNull(final Integer valueInteger)
+	private static BigInteger toBigIntegerOrNull(final Integer valueInteger)
 	{
 		return valueInteger == null ? null : BigInteger.valueOf(valueInteger);
 	}
 
-	private static final BigInteger toBigIntegerID(final int id)
+	private static BigInteger toBigIntegerID(final int id)
 	{
 		if (id <= 0)
 		{
