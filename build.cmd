@@ -1,1 +1,1 @@
-docker build build -t my-maven-build .
+docker build -t my-maven-build .
