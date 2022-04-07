@@ -172,6 +172,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",

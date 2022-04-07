@@ -267,6 +267,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
+        "ephemeral" : false,
         "existingLocationId" : 100013,
         "externalId" : "l1_externalId",
         "gln" : "l1_gln",
@@ -325,6 +326,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
+        "ephemeral" : false,
         "existingLocationId" : 100015,
         "externalId" : "l2_externalId",
         "gln" : "l2_gln",
@@ -570,7 +572,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "newsletter" : false,
         "phone" : "newContact-_phone",
         "subjectMatterContact" : false,
-        "roles" : [ ]        
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -603,6 +605,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
@@ -779,7 +782,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
-		"roles" : [ ],        
+		"roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -813,6 +816,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
@@ -989,7 +993,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
-        "roles" : [ ],        
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -1023,6 +1027,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
@@ -1199,7 +1204,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
-        "roles" : [ ],        
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -1233,6 +1238,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "ephemeral" : false,
         "existingLocationId" : 100008,
         "externalId" : "bpartnerLocation.externalId",
         "gln" : "bpartnerLocationRecord.gln",
@@ -1291,6 +1297,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation-_city",
         "countryCode" : "DE",
+        "ephemeral" : false,
         "existingLocationId" : 100011,
         "externalId" : "newLocation-_externalId",
         "gln" : "newLocation-_gln",

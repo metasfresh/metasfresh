@@ -22,23 +22,24 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import com.google.common.base.Joiner;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.alberta.common.util.BPartnerLocationCandidate;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
-import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import io.swagger.client.model.Order;
 import io.swagger.client.model.OrderDeliveryAddress;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-
-import java.util.StringJoiner;
 
 public class DeliveryAddressUpsertProcessor implements Processor
 {
@@ -76,21 +77,13 @@ public class DeliveryAddressUpsertProcessor implements Processor
 			@NonNull final OrderDeliveryAddress orderDeliveryAddress,
 			@NonNull final String patientId)
 	{
-		final String bPartnerLocationIdentifier = ExternalIdentifierFormat.formatDeliveryAddressExternalId(patientId);
+		final BPartnerLocationCandidate bPartnerLocationCandidate = BPartnerLocationCandidate.fromDeliveryAddress(orderDeliveryAddress);
 
-		final String addressName = Joiner.on(", ").skipNulls()
-				.join(orderDeliveryAddress.getAddress(), orderDeliveryAddress.getAdditionalAddress(), orderDeliveryAddress.getAdditionalAddress2());
+		final String locationHash = computeHashKey(bPartnerLocationCandidate);
 
-		final JsonRequestLocation deliveryAddressRequest = new JsonRequestLocation();
-		deliveryAddressRequest.setBpartnerName(orderDeliveryAddress.getName());
-		deliveryAddressRequest.setName(addressName);
-		deliveryAddressRequest.setAddress1(orderDeliveryAddress.getAddress());
-		deliveryAddressRequest.setAddress2(orderDeliveryAddress.getAdditionalAddress());
-		deliveryAddressRequest.setAddress3(orderDeliveryAddress.getAdditionalAddress2());
-		deliveryAddressRequest.setPostal(orderDeliveryAddress.getPostalCode());
-		deliveryAddressRequest.setCity(orderDeliveryAddress.getCity());
-		deliveryAddressRequest.setCountryCode(GetPatientsRouteConstants.COUNTRY_CODE_DE);
-		deliveryAddressRequest.setShipTo(true);
+		final String bPartnerLocationIdentifier = ExternalIdentifierFormat.formatDeliveryAddressExternalIdHash(patientId, locationHash);
+
+		final JsonRequestLocation deliveryAddressRequest = bPartnerLocationCandidate.toJsonRequestLocation();
 
 		return JsonRequestLocationUpsert.builder()
 				.requestItem(JsonRequestLocationUpsertItem.builder()
@@ -99,5 +92,27 @@ public class DeliveryAddressUpsertProcessor implements Processor
 									 .build())
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.build();
+	}
+
+	@VisibleForTesting
+	@NonNull
+	public static String computeHashKey(@NonNull final BPartnerLocationCandidate bPartnerLocationCandidate)
+	{
+		try
+		{
+			final String bpartnerLocationString = JsonObjectMapperHolder
+					.sharedJsonObjectMapper()
+					.writeValueAsString(bPartnerLocationCandidate);
+
+			final String hashedValue = StringUtils.createHash(StringUtils.removeWhitespaces(bpartnerLocationString).toLowerCase(), null);
+
+			Check.assumeNotNull(hashedValue, "hashedValue cannot be null! bPartnerLocationCandidate: {}", bPartnerLocationCandidate);
+
+			return hashedValue;
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Fail to process hashed value for " + bPartnerLocationCandidate + "; error: " + e);
+		}
 	}
 }

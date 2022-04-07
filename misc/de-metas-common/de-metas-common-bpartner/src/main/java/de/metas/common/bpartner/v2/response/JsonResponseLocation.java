@@ -60,6 +60,8 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 
+	public static final String EPHEMERAL = "ephemeral";
+
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
@@ -114,6 +116,8 @@ public class JsonResponseLocation
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean billToDefault;
 
+	boolean ephemeral;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
@@ -140,6 +144,7 @@ public class JsonResponseLocation
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
+			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -168,6 +173,8 @@ public class JsonResponseLocation
 		this.billTo = billTo;
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
+
+		this.ephemeral = ephemeral;
 
 		this.changeInfo = changeInfo;
 	}
