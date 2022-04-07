@@ -26,11 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_Bom_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -89,7 +89,7 @@ public class PP_Order_Candidate_StepDef
 	private final PP_Product_Planning_StepDefData productPlanningTable;
 	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final StepDefData<I_M_Warehouse> warehouseTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
 	private final PPOrderCandidateService ppOrderCandidateService;
@@ -107,7 +107,7 @@ public class PP_Order_Candidate_StepDef
 			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final StepDefData<I_M_Warehouse> warehouseTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
