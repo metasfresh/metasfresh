@@ -108,8 +108,8 @@ Feature: invoice rule after delivery
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_2                              | ol_2                      | 6            |
     When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_2                              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_2                              | 6               |
     Then after not more than 30s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_2                              | invoice_2               |

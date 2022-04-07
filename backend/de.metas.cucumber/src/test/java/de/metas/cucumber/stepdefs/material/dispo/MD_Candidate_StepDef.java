@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -72,20 +73,29 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjected;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
 import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private PostMaterialEventService postMaterialEventService;
@@ -339,16 +349,12 @@ public class MD_Candidate_StepDef
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			// make sure the given md_candidate has been created
-			final Supplier<Boolean> candidateCreated = () ->
-					candidateRepositoryRetrieval.retrieveLatestMatch(tableRow.createQuery())
-							.map(Candidate::getMaterialDescriptor)
-							.filter(materialDescriptor -> materialDescriptor.getQuantity().equals(tableRow.getQty()))
-							.filter(materialDescriptor -> materialDescriptor.getDate().equals(tableRow.getTime()))
-							.isPresent();
-
-			StepDefUtil.tryAndWait(timeoutSec, 1000, candidateCreated);
-
-			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
+			final Supplier<Optional<MaterialDispoDataItem>> candidateCreated = () -> materialDispoRecordRepository.getAllBy(tableRow.createQuery()).stream()
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
+					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
+					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
+					.findFirst();
+			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated, () -> logCurrentContext(tableRow));
 
 			assertThat(materialDispoRecord).isNotNull();
 
@@ -411,8 +417,8 @@ public class MD_Candidate_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty);
 
 		assertThat(stockCandidate.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(stockCandidate.getMaterialDescriptor().getProductId()).isEqualTo(productRecord.getM_Product_ID());
@@ -432,15 +438,15 @@ public class MD_Candidate_StepDef
 
 		final MaterialDispoDataItem freshMaterialDispoItemInfo = materialDispoRecordRepository.getBy(candidatesQuery);
 
-		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase);
+		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_MD_Candidate_BusinessCase);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
-		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
-		final String type = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty);
+		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty_AvailableToPromise);
+		final String type = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_Type);
 
 		if (businessCase == null)
 		{
@@ -505,5 +511,40 @@ public class MD_Candidate_StepDef
 			mdCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			mdCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 		}
+	}
+
+	private void logCurrentContext(@NonNull final MaterialDispoTableRow tableRow)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(tableRow.getType().getCode()).append("\n")
+				.append(COLUMNNAME_M_Product_ID).append(" : ").append(tableRow.getProductId().getRepoId()).append("\n")
+				.append(COLUMNNAME_DateProjected).append(" : ").append(tableRow.getTime()).append("\n")
+				.append(COLUMNNAME_Qty).append(" : ").append(tableRow.getQty()).append("\n")
+				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
+				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
+
+		logCandidateRecords(message);
+	}
+
+	private void logCandidateRecords(@NonNull final StringBuilder message)
+	{
+		message.append("MD_Candidate records:").append("\n");
+
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.create()
+				.stream(I_MD_Candidate.class)
+				.forEach(candidateRecord -> message
+						.append(COLUMNNAME_MD_Candidate_ID).append(" : ").append(candidateRecord.getMD_Candidate_ID()).append(" ; ")
+						.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(candidateRecord.getMD_Candidate_Type()).append(" ; ")
+						.append(COLUMNNAME_M_Product_ID).append(" : ").append(candidateRecord.getM_Product_ID()).append(" ; ")
+						.append(COLUMNNAME_DateProjected).append(" : ").append(candidateRecord.getDateProjected()).append(" ; ")
+						.append(COLUMNNAME_Qty).append(" : ").append(candidateRecord.getQty()).append(" ; ")
+						.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(candidateRecord.getQty_AvailableToPromise()).append(" ; ")
+						.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(candidateRecord.getMD_Candidate_BusinessCase()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while looking for MD_Candidate records, see current context: \n" + message);
 	}
 }

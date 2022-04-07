@@ -35,6 +35,9 @@ Feature: ASI support in Product BOM rest-api
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier |
       | customerLocation_SO | customerSO01 | customer_SO              |
+    And update duration for AD_Workflow nodes
+      | AD_Workflow_ID | Duration |
+      | 540075         | 0        |
 
   @from:cucumber
   Scenario: Create sales order with different ASI, on complete no production candidate is found
@@ -131,8 +134,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S1              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S1              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """
@@ -257,8 +260,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S2              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S2              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.PreparationDate  |
@@ -376,8 +379,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S3              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S3              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains M_PricingSystems
       | Identifier | Name  | Value | OPT.IsActive |
@@ -547,8 +550,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S4              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S4              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains M_PricingSystems
       | Identifier | Name  | Value | OPT.IsActive |
@@ -589,8 +592,8 @@ Feature: ASI support in Product BOM rest-api
     And the order identified by order_PO is completed
 
     And after not more than 30s, MD_Candidates are found
-      | Identifier  | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | po_supply   | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | po_supply  | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """

@@ -17,11 +17,14 @@ Feature: create multiple production candidates
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
+    And update duration for AD_Workflow nodes
+      | AD_Workflow_ID | Duration |
+      | 540075         | 0        |
 
   @from:cucumber
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
-  resulting in a second manufacturing candidate to supply the additional demand (140)
+  resulting in a second manufacturing candidate to supply the additional demand (S0129.1_140)
 
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
@@ -49,8 +52,8 @@ Feature: create multiple production candidates
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
     And metasfresh initially has no MD_Candidate data
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.event.model.I_AD_EventLog_Entry;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -30,15 +31,17 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
 
 public class AD_EventLog_Entry_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(AD_EventLog_Entry_StepDef.class);
+
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_AD_EventLog_Entry> eventLogEntryTable;
@@ -81,8 +84,35 @@ public class AD_EventLog_Entry_StepDef
 				return true;
 			};
 
-			final boolean recordFound = StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound);
-			assertThat(recordFound).isTrue();
+			StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound, () -> logCurrentContext(row));
 		}
+	}
+
+
+	private void logCurrentContext(@NonNull final Map<String, String> row)
+	{
+		final String classname = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog_Entry.COLUMNNAME_Classname);
+		final String msgText = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog_Entry.COLUMNNAME_MsgText);
+		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_AD_EventLog_Entry.COLUMNNAME_Processed);
+
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(I_AD_EventLog_Entry.COLUMNNAME_Classname).append(" : ").append(classname).append("\n")
+				.append(I_AD_EventLog_Entry.COLUMNNAME_MsgText).append(" : ").append(msgText).append("\n")
+				.append(I_AD_EventLog_Entry.COLUMNNAME_Processed).append(" : ").append(processed).append("\n");
+
+		message.append("AD_EventLog_Entry records:").append("\n");
+
+		queryBL.createQueryBuilder(I_AD_EventLog_Entry.class)
+				.create()
+				.stream(I_AD_EventLog_Entry.class)
+				.forEach(eventLogEntry -> message
+						.append(I_AD_EventLog_Entry.COLUMNNAME_Classname).append(" : ").append(eventLogEntry.getClassname()).append(" ; ")
+						.append(I_AD_EventLog_Entry.COLUMNNAME_MsgText).append(" : ").append(eventLogEntry.getMsgText()).append(" ; ")
+						.append(I_AD_EventLog_Entry.COLUMNNAME_Processed).append(" : ").append(eventLogEntry.isProcessed()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while looking for MD_Candidate records, see current context: \n" + message);
 	}
 }

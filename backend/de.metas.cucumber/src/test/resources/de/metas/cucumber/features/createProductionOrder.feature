@@ -21,7 +21,7 @@ Feature: create production order
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate (100) (2-100)
+  Scenario:  The manufacturing order is created from a manufacturing order candidate (S0129.1_100) (S0129.2_100)
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_1           | standard_category                    |
@@ -87,8 +87,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_1 | N            | Y              | ps_1                          |
@@ -148,7 +148,7 @@ Feature: create production order
       | c_l_2                      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it (2-130) (2-150) (2-170)
+  Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it (S0129.2_130) (S0129.2_150) (S0129.2_170)
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_3        | trackedProduct_2           | standard_category                    |
@@ -212,8 +212,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_2     | p_3                     | bomVersions_2                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_2     | p_3                     | bomVersions_2                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_3 | EndcustomerPP_2 | N            | Y              | ps_2                          |
@@ -342,8 +342,8 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_11    | p_11                    | bomVersions_3                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_11    | p_11                    | bomVersions_3                            | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
@@ -399,7 +399,7 @@ Feature: create production order
       | s_2                        | p_11                    | 2021-04-14T21:00:00Z | 10  |
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (2-200)
+  Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_111      | trackedProduct_4           | standard_category                    |
@@ -466,8 +466,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_111   | p_111                   | bomVersions_4                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_111   | p_111                   | bomVersions_4                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_222 | EndcustomerPP_4 | N            | Y              | ps_111                        |
@@ -566,8 +566,8 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_11    | p_11                    | bomVersions_5                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_11    | p_11                    | bomVersions_5                            | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
@@ -663,8 +663,8 @@ Feature: create production order
       | boml_2     | bom_1                        | p_comp_2                | 2021-04-01 | 15       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_6 | N            | Y              | ps_1                          |

@@ -135,8 +135,7 @@ public class PP_OrderLine_Candidate_StepDef
 			}
 		};
 
-		final boolean lineCandidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderLineCandidateQueryExecutor);
-		assertThat(lineCandidateFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderLineCandidateQueryExecutor);
 
 		final I_PP_OrderLine_Candidate ppOrderLineCandidate = ppOrderLineCandidateTable.get(orderLineCandidateRecordIdentifier);
 

@@ -17,22 +17,25 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
     And metasfresh initially has no MD_Candidate data
+    And update duration for AD_Workflow nodes
+      | AD_Workflow_ID | Duration |
+      | 540075         | 0        |
 
   @from:cucumber
-  Scenario: Partial stock available at demand time, supplied via production (110)
+  Scenario: Partial stock available at demand time, supplied via production (S0129.1_110)
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_31032022_2           | standard_category                    |
-      | p_2        | trackedProduct_component_31032022_2 | standard_category                    |
+      | p_1        | trackedProduct_31032022_1           | standard_category                    |
+      | p_2        | trackedProduct_component_31032022_1 | standard_category                    |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_31032022_2 | pricing_system_value_31032022_2 | pricing_system_description_31032022_2 | true         |
+      | ps_1       | pricing_system_name_31032022_1 | pricing_system_value_31032022_1 | pricing_system_description_31032022_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_31032022_2 | null            | true  | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_31032022_1 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
-      | plv_1      | pl_1                      | trackedProduct-PLV_31032022_2 | 2021-04-01 |
+      | plv_1      | pl_1                      | trackedProduct-PLV_31032022_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -50,16 +53,16 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
     And metasfresh contains C_BPartners:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | EndCustomer_31032022_2 | N            | Y              | ps_1                          |
+      | endcustomer_1 | EndCustomer_31032022_1 | N            | Y              | ps_1                          |
 
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate         |
       | i_1        | 540008         | 2021-04-16T21:00:00Z |
       | i_2        | 540008         | 2021-04-16T21:00:00Z |
     And metasfresh contains M_InventoriesLines:
-      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
-      | il_2       | i_2                       | p_1                     | PCE          | 5        | 0       |
+      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBooked |
+      | il_1       | i_1                       | p_1                     | PCE          | 10       | 0         |
+      | il_2       | i_2                       | p_1                     | PCE          | 5        | 0         |
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 

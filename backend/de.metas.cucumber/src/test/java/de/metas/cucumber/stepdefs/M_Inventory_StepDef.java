@@ -36,7 +36,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -99,8 +101,9 @@ public class M_Inventory_StepDef
 
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(WarehouseId.ofRepoId(warehouseId).getRepoId());
-		inventoryRecord.setMovementDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate));
+		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate);
 
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		saveRecord(inventoryRecord);
 
 		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "M_Inventory"), inventoryRecord);
@@ -118,7 +121,6 @@ public class M_Inventory_StepDef
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_Product_ID + ".Identifier");
 		final I_M_Product product = productTable.get(productIdentifier);
-
 
 		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
 		inventoryLine.setM_Product_ID(product.getM_Product_ID());
