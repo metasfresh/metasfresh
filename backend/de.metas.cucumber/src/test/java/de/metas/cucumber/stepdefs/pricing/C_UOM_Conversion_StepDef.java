@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.product.ProductId;
@@ -46,11 +47,11 @@ import java.util.Map;
 
 public class C_UOM_Conversion_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 
-	public C_UOM_Conversion_StepDef(@NonNull final StepDefData<I_M_Product> productTable)
+	public C_UOM_Conversion_StepDef(@NonNull final M_Product_StepDefData productTable)
 	{
 		this.productTable = productTable;
 	}

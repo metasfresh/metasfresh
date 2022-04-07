@@ -22,6 +22,9 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
@@ -65,16 +68,16 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
 	public C_Invoice_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.orderTable = orderTable;

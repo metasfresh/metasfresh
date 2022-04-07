@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.contract.commission;
+package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
@@ -46,10 +46,10 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_CommissionSettingsLines_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable;
+	private final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable;
 
 	public C_CommissionSettingsLines_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable)
+			@NonNull final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable)
 	{
 		this.commissionSettingsTable = commissionSettingsTable;
 	}

@@ -46,12 +46,12 @@ import static org.assertj.core.api.Assertions.*;
 
 public class PP_OrderCandidate_PP_Order_StepDef
 {
-	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
-	private final StepDefData<I_PP_Order> ppOrderTable;
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	private final PP_Order_StepDefData ppOrderTable;
 
 	public PP_OrderCandidate_PP_Order_StepDef(
-			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
-			@NonNull final StepDefData<I_PP_Order> ppOrderTable)
+			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable)
 	{
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.ppOrderTable = ppOrderTable;

@@ -23,8 +23,10 @@
 package de.metas.cucumber.stepdefs.billofmaterial;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Services;
@@ -62,18 +64,18 @@ public class PP_Product_Bom_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_PP_Product_BOM> productBOMTable;
-	private final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable;
-	private final StepDefData<I_PP_Product_BOMLine> productBOMLineTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_Product_StepDefData productTable;
+	private final PP_Product_BOM_StepDefData productBOMTable;
+	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
+	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public PP_Product_Bom_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
-			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBomVersionsTable,
-			@NonNull final StepDefData<I_PP_Product_BOMLine> productBOMLineTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
+			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
+			@NonNull final PP_Product_BOMLine_StepDefData productBOMLineTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;

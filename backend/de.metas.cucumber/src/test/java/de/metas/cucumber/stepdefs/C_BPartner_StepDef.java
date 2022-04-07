@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
@@ -62,15 +63,15 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.pricingSystemTable = pricingSystemTable;
