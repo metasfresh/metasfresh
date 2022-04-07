@@ -108,7 +108,6 @@ public class C_Invoice_Candidate_StepDef
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -145,8 +144,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = Services.get(IInvoiceCandDAO.class)
-				.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
@@ -265,6 +263,8 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : tableRows)
 		{
 			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(row));
+
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 			final String billBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(billBPIdentifier))
@@ -644,7 +644,7 @@ public class C_Invoice_Candidate_StepDef
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
-		if (Services.get(IInvoiceCandDAO.class).isToRecompute(invoiceCandidateRecord))
+		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
 			return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
 		}
