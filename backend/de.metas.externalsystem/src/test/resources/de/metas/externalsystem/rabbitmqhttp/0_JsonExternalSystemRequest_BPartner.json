@@ -6,11 +6,11 @@
   "adPInstanceId": 3,
   "externalSystemConfigId": 1,
   "externalSystemChildConfigValue": "value",
-  "writeAuditEndpoint": "fileFolder",
+  "writeAuditEndpoint": "auditFileFolder",
   "parameters": {
-    "RemoteURL": "remoteURL",
     "RoutingKey": "routingKey",
-    "RabbitMQAuthToken": "authToken",
-    "BPartnerId": "1000000"
+    "BPartnerId": "1000000",
+    "RemoteURL": "remoteURL",
+    "RabbitMQAuthToken": "authToken"
   }
 }
