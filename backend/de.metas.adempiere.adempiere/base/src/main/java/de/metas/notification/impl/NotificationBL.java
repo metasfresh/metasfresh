@@ -1,7 +1,5 @@
 package de.metas.notification.impl;
 
-import java.util.List;
-
 import de.metas.notification.INotificationBL;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
@@ -15,6 +13,8 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
