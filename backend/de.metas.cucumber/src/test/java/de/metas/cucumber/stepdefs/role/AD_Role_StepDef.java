@@ -99,7 +99,7 @@ public class AD_Role_StepDef
 		final I_AD_Role roleRecord = queryBL.createQueryBuilder(I_AD_Role.class)
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_Name, name)
 				.create()
-				.firstNotNull(I_AD_Role.class);
+				.firstOnlyNotNull(I_AD_Role.class);
 
 		roleTable.put(identifier, roleRecord);
 	}
