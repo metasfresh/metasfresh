@@ -3,12 +3,12 @@ FROM node:17
 RUN npm install -g webpack webpack-cli
 
 WORKDIR /app 
-COPY package.json /app 
-# COPY yarn.lock /app
+COPY frontend/package.json .
+# COPY yarn.lock .
 
 RUN yarn install
 
-COPY . /app
+COPY frontend/ .
 
 RUN yarn lint
 # RUN yarn test --ci

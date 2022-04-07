@@ -293,13 +293,21 @@
     </dependencyManagement>
 
     <build>
-        <plugins>
-            <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
-             -->
-        </plugins>
+		<extensions>
+			<extension>
+				<groupId>co.leantechniques</groupId>
+				<artifactId>maven-buildtime-extension</artifactId>
+				<version>2.0.3</version>
+			</extension>
+		</extensions>
+		
+		<plugins>
+			<!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
+			but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
+			 -->
+		</plugins>
 
-        <pluginManagement>
+		<pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
