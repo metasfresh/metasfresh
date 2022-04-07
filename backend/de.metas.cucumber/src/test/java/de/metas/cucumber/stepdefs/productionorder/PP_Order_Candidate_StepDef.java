@@ -24,9 +24,13 @@ package de.metas.cucumber.stepdefs.productionorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_Bom_StepDefData;
+import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -80,11 +84,11 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class PP_Order_Candidate_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_PP_Product_BOM> productBOMTable;
-	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
-	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_Product_StepDefData productTable;
+	private final PP_Product_Bom_StepDefData productBOMTable;
+	private final PP_Product_Planning_StepDefData productPlanningTable;
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final StepDefData<I_M_Warehouse> warehouseTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
@@ -98,11 +102,11 @@ public class PP_Order_Candidate_StepDef
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
 	public PP_Order_Candidate_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
-			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
-			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final PP_Product_Bom_StepDefData productBOMTable,
+			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
+			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final StepDefData<I_M_Warehouse> warehouseTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
@@ -376,7 +380,7 @@ public class PP_Order_Candidate_StepDef
 
 		final BigDecimal actualQtyLeft = orderCandidateRecord.getQtyEntered().subtract(orderCandidateRecord.getQtyProcessed());
 		assertThat(qtyToProcess).isGreaterThan(actualQtyLeft);
-		
+
 		orderCandidateRecord.setQtyToProcess(qtyToProcess);
 
 		try

@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.productionorder;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
@@ -44,14 +46,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class PP_Order_Qty_StepDef
 {
 	private final PP_Order_Qty_StepDefData ppOrderQtyTable;
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_HU_StepDefData huTable;
+	private final M_Product_StepDefData productTable;
 	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 
 	public PP_Order_Qty_StepDef(
 			@NonNull final PP_Order_Qty_StepDefData ppOrderQtyTable,
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable)
 	{
 		this.ppOrderQtyTable = ppOrderQtyTable;

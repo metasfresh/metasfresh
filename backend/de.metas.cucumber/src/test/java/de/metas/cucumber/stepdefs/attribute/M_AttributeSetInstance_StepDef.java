@@ -48,13 +48,13 @@ import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_Attribute
 
 public class M_AttributeSetInstance_StepDef
 {
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	private final JsonAttributeService jsonAttributeService;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public M_AttributeSetInstance_StepDef(@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+	public M_AttributeSetInstance_StepDef(@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 

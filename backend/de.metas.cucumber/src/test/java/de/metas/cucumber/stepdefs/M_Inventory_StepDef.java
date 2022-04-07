@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
@@ -50,14 +52,14 @@ public class M_Inventory_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final StepDefData<I_M_Inventory> inventoryTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
+	private final M_Inventory_StepDefData inventoryTable;
+	private final M_Product_StepDefData productTable;
+	private final M_InventoryLine_StepDefData inventoryLineTable;
 
 	public M_Inventory_StepDef(
-			@NonNull final StepDefData<I_M_Inventory> inventoryTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_InventoryLine> inventoryLineTable)
+			@NonNull final M_Inventory_StepDefData inventoryTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_InventoryLine_StepDefData inventoryLineTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.productTable = productTable;

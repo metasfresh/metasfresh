@@ -20,9 +20,12 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -43,12 +46,12 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
-	private final StepDefData<I_M_HU> huTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_HU_StepDefData huTable;
 
 	public M_ShipmentSchedule_QtyPicked_StepDef(
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
-			@NonNull final StepDefData<I_M_HU> huTable)
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			@NonNull final M_HU_StepDefData huTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.huTable = huTable;

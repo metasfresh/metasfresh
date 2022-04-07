@@ -24,8 +24,12 @@ package de.metas.cucumber.stepdefs.contract.callorder;
 
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -48,21 +52,21 @@ import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
 public class C_CallOrderSummary_StepDef
 {
-	private final StepDefData<I_C_CallOrderSummary> summaryTable;
-	private final StepDefData<I_C_Flatrate_Term> contractTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final C_CallOrderSummary_StepDefData summaryTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_Product_StepDefData productTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_CallOrderSummary_StepDef(
-			@NonNull final StepDefData<I_C_CallOrderSummary> summaryTable,
-			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final C_CallOrderSummary_StepDefData summaryTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.summaryTable = summaryTable;
 		this.contractTable = contractTable;

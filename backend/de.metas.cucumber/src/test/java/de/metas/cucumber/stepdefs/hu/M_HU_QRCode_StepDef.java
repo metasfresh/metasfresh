@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -53,19 +54,19 @@ public class M_HU_QRCode_StepDef
 {
 	private final HUQRCodesRepository huQRCodesRepository;
 
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_HU_QRCode> qrCodesTable;
-	private final StepDefData<I_M_HU_PI_Version> huPiVersionTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_HU_PI> huPiTable;
+	private final M_HU_StepDefData huTable;
+	private final M_HU_QRCode_StepDefData qrCodesTable;
+	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+	private final M_Product_StepDefData productTable;
+	private final M_HU_PI_StepDefData huPiTable;
 
 	public M_HU_QRCode_StepDef(
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_M_HU_QRCode> qrCodesTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_HU_QRCode_StepDefData qrCodesTable,
 			@NonNull final HUQRCodesRepository huQRCodesRepository,
-			@NonNull final StepDefData<I_M_HU_PI_Version> huPiVersionTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_HU_PI> huPiTable)
+			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_HU_PI_StepDefData huPiTable)
 	{
 		this.huQRCodesRepository = huQRCodesRepository;
 		this.huTable = huTable;

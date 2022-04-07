@@ -48,12 +48,12 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
 public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_AD_User> userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final AD_User_StepDefData userTable;
 
 	public AD_User_StepDef(
-			final StepDefData<I_C_BPartner> bpartnerTable,
-			final StepDefData<I_AD_User> userTable)
+			final C_BPartner_StepDefData bpartnerTable,
+			final AD_User_StepDefData userTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.userTable = userTable;
