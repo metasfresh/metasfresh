@@ -22,10 +22,12 @@
 
 package de.metas.contracts.bpartner.command;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.LocationId;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -35,11 +37,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -180,12 +184,15 @@ public class BPartnerLocationReplaceCommand
 
 	private void updateFlatrateTermsColumn(final String columnName, final RepoIdAware oldLocationId, final RepoIdAware newLocationId)
 	{
+		final Collection<String> disallowedFlatrateStatuses = ImmutableSet.of(X_C_Flatrate_Term.CONTRACTSTATUS_Voided, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		final ICompositeQueryUpdater<I_C_Flatrate_Term> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
 				.addSetColumnValue(columnName, newLocationId);
 		queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(columnName, oldLocationId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Processed, false)
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus,disallowedFlatrateStatuses)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, Env.getDate())
+				// .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Processed, false) in this case contracts are already processed
 				.create()
 				.update(queryUpdater);
 	}
