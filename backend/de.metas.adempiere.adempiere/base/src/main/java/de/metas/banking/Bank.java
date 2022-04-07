@@ -1,4 +1,14 @@
 /*
+package de.metas.banking;
+
+import javax.annotation.Nullable;
+
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.location.LocationId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
@@ -20,15 +30,6 @@
  * #L%
  */
 
-package de.metas.banking;
-
-import de.metas.location.LocationId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class Bank
@@ -43,6 +44,9 @@ public class Bank
 	String swiftCode;
 	@Nullable
 	String routingNo;
+
+	@Nullable
+	DataImportConfigId dataImportConfigId;
 
 	boolean cashBank;
 
