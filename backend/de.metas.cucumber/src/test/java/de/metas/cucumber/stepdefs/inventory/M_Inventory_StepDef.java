@@ -169,9 +169,7 @@ public class M_Inventory_StepDef
 
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(WarehouseId.ofRepoId(warehouseId).getRepoId());
-		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate);
-
-		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(movementDate));
+		inventoryRecord.setMovementDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_Inventory.COLUMNNAME_MovementDate));
 
 		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Inventory.COLUMNNAME_DocumentNo);
 		if (Check.isNotBlank(documentNo))

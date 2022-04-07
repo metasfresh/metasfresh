@@ -70,8 +70,8 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate         |
-      | i_1        | 540008         | 2021-04-16T21:00:00Z |
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | i_1        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_2                     | PCE          | 10       | 0       |
@@ -85,9 +85,9 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | hu_1               | 2021-04-16T21:00:00Z |
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_2                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | INVENTORY_DOWN    |                               | p_2                     | 2021-04-16T21:00:00Z | -10 | 0                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_2                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | INVENTORY_DOWN    |                               | p_2                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |

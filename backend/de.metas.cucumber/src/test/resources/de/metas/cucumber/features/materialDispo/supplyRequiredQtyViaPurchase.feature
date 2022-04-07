@@ -58,8 +58,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate         |
-      | i_1        | 540008         | 2021-04-16T21:00:00Z |
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | i_1        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
@@ -73,9 +73,9 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | hu_1               | 2021-04-16T21:00:00Z |
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -93,11 +93,11 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | pc_1                              | 10                |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |
-      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -10                    |
-      | c_4        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
+      | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -10                    |                                 |
+      | c_4        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |                                 |
 
 
   @from:cucumber
@@ -140,9 +140,9 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate         |
-      | i_1        | 540008         | 2021-04-16T21:00:00Z |
-      | i_2        | 540008         | 2021-04-16T21:00:00Z |
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | i_1        | 540008         | 2021-04-16   |
+      | i_2        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
@@ -159,10 +159,10 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | hu_1               | 2021-04-16T21:00:00Z |
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 5   | 15                     |
-      | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
+      | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -180,12 +180,12 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | pc_1                              | 5                 |
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 5   | 15                     |
-      | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |
-      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |
-      | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 5   | 15                     | 2021-04-16T00:00:00             |
+      | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
+      | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
+      | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
 
 
   @from:cucumber
@@ -228,16 +228,16 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate         |
-      | i_1        | 540008         | 2021-04-16T21:00:00Z |
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | i_1        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by i_1 is completed
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     |               | 10  | 10                     | 2021-04-16T00:00:00             |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -248,6 +248,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     When the order identified by o_1 is completed
 
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T21:00:00Z | 10  | 10                     |
-      | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
+      | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
