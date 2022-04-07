@@ -23,9 +23,12 @@
 package de.metas.cucumber.stepdefs.product;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -65,18 +68,18 @@ import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Categ
 
 public class M_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_M_Product_Category> productCategoryTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;

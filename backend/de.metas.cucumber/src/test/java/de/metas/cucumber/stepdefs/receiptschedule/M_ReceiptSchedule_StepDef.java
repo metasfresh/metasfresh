@@ -20,8 +20,17 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.receiptschedule;
 
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -62,22 +71,22 @@ public class M_ReceiptSchedule_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 
-	private final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_M_Warehouse> warehouseTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final M_Product_StepDefData productTable;
 
 	public M_ReceiptSchedule_StepDef(
-			@NonNull final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_M_Warehouse> warehouseTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.orderTable = orderTable;

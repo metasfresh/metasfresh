@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,16 +50,16 @@ public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_M_InOutLine> shipmentLineTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final M_InOutLine_StepDefData shipmentLineTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_Product_StepDefData productTable;
 
 	public M_InOut_Line_StepDef(
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_M_InOutLine> shipmentLineTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;

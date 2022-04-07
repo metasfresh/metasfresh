@@ -37,9 +37,9 @@ import static org.compiere.model.I_S_Resource.COLUMNNAME_S_Resource_ID;
 
 public class S_Resource_StepDef
 {
-	private final StepDefData<I_S_Resource> resourceTable;
+	private final S_Resource_StepDefData resourceTable;
 
-	public S_Resource_StepDef(@NonNull final StepDefData<I_S_Resource> resourceTable)
+	public S_Resource_StepDef(@NonNull final S_Resource_StepDefData resourceTable)
 	{
 		this.resourceTable = resourceTable;
 	}

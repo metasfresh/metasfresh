@@ -35,10 +35,13 @@ import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -100,14 +103,14 @@ public class M_HU_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
-	private final StepDefData<I_M_HU_PI_Item> huPiItemTable;
-	private final StepDefData<I_M_HU_PI_Version> huPiVersionTable;
-	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
-	private final StepDefData<I_M_Locator> locatorTable;
-	private final StepDefData<I_M_Warehouse> warehouseTable;
-	private final StepDefData<I_M_HU_QRCode> qrCodesTable;
+	private final M_HU_StepDefData huTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final M_HU_PI_Item_StepDefData huPiItemTable;
+	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+	private final M_InventoryLine_StepDefData inventoryLineTable;
+	private final M_Locator_StepDefData locatorTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -115,14 +118,14 @@ public class M_HU_StepDef
 	private final TestContext testContext;
 
 	public M_HU_StepDef(
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable,
-			@NonNull final StepDefData<I_M_HU_PI_Item> huPiItemTable,
-			@NonNull final StepDefData<I_M_HU_PI_Version> huPiVersionTable,
-			@NonNull final StepDefData<I_M_InventoryLine> inventoryLineTable,
-			@NonNull final StepDefData<I_M_Locator> locatorTable,
-			@NonNull final StepDefData<I_M_Warehouse> warehouseTable,
-			@NonNull final StepDefData<I_M_HU_QRCode> qrCodesTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
+			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
+			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
+			@NonNull final M_Locator_StepDefData locatorTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final M_HU_QRCode_StepDefData qrCodesTable,
 			@NonNull final TestContext testContext)
 	{
 		this.huTable = huTable;

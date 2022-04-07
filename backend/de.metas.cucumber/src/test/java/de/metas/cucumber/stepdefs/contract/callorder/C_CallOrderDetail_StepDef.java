@@ -24,8 +24,14 @@ package de.metas.cucumber.stepdefs.contract.callorder;
 
 import de.metas.contracts.model.I_C_CallOrderDetail;
 import de.metas.contracts.model.I_C_CallOrderSummary;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -51,27 +57,27 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_CallOrderDetail_StepDef
 {
-	private final StepDefData<I_C_CallOrderSummary> callOrderSummaryTable;
-	private final StepDefData<I_C_CallOrderDetail> callOrderDetailTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_InOut> inOutTable;
-	private final StepDefData<I_M_InOutLine> inOutLineTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_InvoiceLine> invoiceLineTable;
+	private final C_CallOrderSummary_StepDefData callOrderSummaryTable;
+	private final C_CallOrderDetail_StepDefData callOrderDetailTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_InOut_StepDefData inOutTable;
+	private final M_InOutLine_StepDefData inOutLineTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_CallOrderDetail_StepDef(
-			@NonNull final StepDefData<I_C_CallOrderSummary> callOrderSummaryTable,
-			@NonNull final StepDefData<I_C_CallOrderDetail> callOrderDetailTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_InOut> inOutTable,
-			@NonNull final StepDefData<I_M_InOutLine> inOutLineTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_InvoiceLine> invoiceLineTable)
+			@NonNull final C_CallOrderSummary_StepDefData callOrderSummaryTable,
+			@NonNull final C_CallOrderDetail_StepDefData callOrderDetailTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_InOutLine_StepDefData inOutLineTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable)
 	{
 		this.callOrderSummaryTable = callOrderSummaryTable;
 		this.callOrderDetailTable = callOrderDetailTable;
