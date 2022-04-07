@@ -40,6 +40,7 @@ import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.ProductHUInventory;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
@@ -146,7 +147,10 @@ public class WarehouseService
 		}
 		if (result == null)
 		{
-			throw new InvalidIdentifierException(warehouseIdentifier);
+			throw MissingResourceException.builder()
+					.resourceName("WarehouseId")
+					.detail(TranslatableStrings.constant("Did not find warehouseId for AD_Org_ID=" + orgId.getRepoId() + " and identifier=" + warehouseIdentifier))
+					.build();
 		}
 
 		return result;
@@ -183,7 +187,7 @@ public class WarehouseService
 				.orElse(null);
 
 		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", AttributeSetInstanceId.toRepoId(attributeSetInstanceId));
-		
+
 		final Optional<WarehouseId> targetWarehouseId = ALL.equals(warehouseIdentifier)
 				? Optional.empty()
 				: Optional.of(getWarehouseByIdentifier(orgId, warehouseIdentifier));

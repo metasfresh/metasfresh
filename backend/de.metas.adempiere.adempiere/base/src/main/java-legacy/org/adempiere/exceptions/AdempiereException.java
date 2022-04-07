@@ -295,7 +295,7 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;

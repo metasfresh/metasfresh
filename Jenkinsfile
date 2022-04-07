@@ -12,7 +12,7 @@ final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANC
 final String MF_SQL_SEED_DUMP_URL_DEFAULT =
         env.BRANCH_NAME == 'release'
                 ? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump'
-                : 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
+                : 'https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
