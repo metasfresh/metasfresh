@@ -77,13 +77,13 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
-import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
-import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -638,10 +638,12 @@ public class JsonPersisterService
 		if (jsonBPartner.isCompanyNameSet())
 		{
 			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
+			bpartner.setCompany(!Check.isBlank(jsonBPartner.getCompanyName()));
 		}
 		else if (isUpdateRemove)
 		{
 			bpartner.setCompanyName(null);
+			bpartner.setCompany(false);
 		}
 
 		// name
@@ -1748,21 +1750,20 @@ public class JsonPersisterService
 		requestItems.stream()
 				.map(JsonRequestLocationUpsertItem::getLocationExternalRef)
 				.filter(Objects::nonNull)
-				.map(locationExternalRef ->  {
+				.map(locationExternalRef -> {
 					final ExternalId locationExternalId = ExternalId.of(locationExternalRef.getExternalReferenceItem().getLookupItem().getId());
 
 					return Optional.ofNullable(externalLocationId2MetasfreshId.get(locationExternalId))
 							.map(locationMFId -> buildExternalRefWithMetasfreshId(locationExternalRef, locationMFId))
 							.orElseGet(() -> {
 								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
-													+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
+										+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
 								return null;
 							});
 				})
 				.filter(Objects::nonNull)
-				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode) );
+				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode));
 	}
-
 
 	@NonNull
 	private JsonSingleExternalReferenceCreateReq buildExternalRefWithMetasfreshId(
