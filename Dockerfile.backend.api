@@ -1,0 +1,12 @@
+FROM openjdk:8-jre
+
+RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/metasfresh/metasfresh-webui-api
+COPY --chmod=700 docker/start_metasfresh-webui-api_docker.sh .
+
+COPY --from=mvn-backend:latest /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
+COPY --from=mvn-backend:latest /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
+# maybe explode uber jar
+
+CMD ["/opt/metasfresh/metasfresh-webui-api/start_metasfresh-webui-api_docker.sh"]
