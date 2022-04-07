@@ -192,16 +192,16 @@ Feature: data export audit using bpartner metasfresh api
 
     Then process external reference lookup endpoint response
       | S_ExternalReference_ID.Identifier | ExternalReference            |
-      | externalRef_BPartner                       | BPartner_ER_Audit_25032022   |
-      | externalRef_BPLocation                       | BPLocation_ER_Audit_25032022 |
-      | externalRef_BPContact                       | BPContact_ER_Audit_25032022  |
+      | externalRef_BPartner              | BPartner_ER_Audit_25032022   |
+      | externalRef_BPLocation            | BPLocation_ER_Audit_25032022 |
+      | externalRef_BPContact             | BPContact_ER_Audit_25032022  |
     And after not more than 30s, there are added records in Data_Export_Audit
-      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | dataExport_BPartner                 | S_ExternalReference | externalRef_BPartner          |                                        |
-      | dataExport_BPLocation                 | S_ExternalReference | externalRef_BPLocation          |                                        |
-      | dataExport_BPContact                 | S_ExternalReference | externalRef_BPContact          |                                        |
+      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
+      | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
+      | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |
+      | dataExport_BPContact            | S_ExternalReference | externalRef_BPContact  |                                        |
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | dataExport_BPartner                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPLocation                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPContact                 | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPartner             | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPLocation           | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPContact            | Exported-Standalone | config_1                            | p_1                        |

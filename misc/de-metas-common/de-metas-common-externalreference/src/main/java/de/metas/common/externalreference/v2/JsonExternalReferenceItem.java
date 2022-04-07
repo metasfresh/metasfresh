@@ -25,6 +25,7 @@ package de.metas.common.externalreference.v2;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,13 +40,13 @@ public class JsonExternalReferenceItem
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null, null);
+		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null, null, null);
 	}
 
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null);
+		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null, null);
 	}
 
 	@NonNull
@@ -69,6 +70,10 @@ public class JsonExternalReferenceItem
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonExternalSystemName systemName;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalReferenceId;
 	
 	@JsonCreator
@@ -79,6 +84,7 @@ public class JsonExternalReferenceItem
 			@JsonProperty("externalReference") @Nullable final String externalReference,
 			@JsonProperty("version") @Nullable final String version,
 			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl,
+			@JsonProperty("systemName") @Nullable final JsonExternalSystemName systemName,
 			@JsonProperty("externalReferenceId") @Nullable final JsonMetasfreshId externalReferenceId)
 	{
 		this.lookupItem = lookupItem;
@@ -86,6 +92,7 @@ public class JsonExternalReferenceItem
 		this.externalReference = externalReference;
 		this.version = version;
 		this.externalReferenceUrl = externalReferenceUrl;
+		this.systemName = systemName;
 		this.externalReferenceId = externalReferenceId;
 	}
 }

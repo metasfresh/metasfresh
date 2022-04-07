@@ -138,13 +138,13 @@ Feature: Validate external reference is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier                       | OPT.Code           | Name               | OPT.CompanyName   | OPT.Language |
+      | C_BPartner_ID.Identifier | externalIdentifier                    | OPT.Code               | Name               | OPT.CompanyName   | OPT.Language |
       | created_bpartner         | ext-Shopware6-BPartner_ER_S2_25032022 | shopware6code_25032022 | shopware6nameAudit | shopware6cmpAudit | de           |
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference            | ExternalReferenceURL |
+      | ExternalSystem | Type             | ExternalReference         | ExternalReferenceURL |
       | Shopware6      | BPartner         | BPartner_ER_S2_25032022   | www.Shopware6.ro     |
-      | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 |   null                 |
+      | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                 |
       | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
 
     And add external system parent-child pair
@@ -176,25 +176,25 @@ Feature: Validate external reference is sent to RabbitMQ
     """
 
     Then process external reference lookup endpoint response
-      | S_ExternalReference_ID.Identifier | ExternalReference            |
-      | externalRef_BPartner                       | BPartner_ER_S2_25032022   |
-      | externalRef_BPLocation                       | BPLocation_ER_S2_25032022 |
-      | externalRef_BPContact                       | BPContact_ER_S2_25032022  |
+      | S_ExternalReference_ID.Identifier | ExternalReference         |
+      | externalRef_BPartner              | BPartner_ER_S2_25032022   |
+      | externalRef_BPLocation            | BPLocation_ER_S2_25032022 |
+      | externalRef_BPContact             | BPContact_ER_S2_25032022  |
     And after not more than 30s, there are added records in Data_Export_Audit
-      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | dataExport_BPartner                 | S_ExternalReference | externalRef_BPartner          |                                        |
-      | dataExport_BPLocation                 | S_ExternalReference | externalRef_BPLocation          |                                        |
-      | dataExport_BPContact                 | S_ExternalReference | externalRef_BPContact          |                                        |
+      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
+      | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
+      | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |
+      | dataExport_BPContact            | S_ExternalReference | externalRef_BPContact  |                                        |
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | dataExport_BPartner                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPLocation                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPContact                 | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPartner             | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPLocation           | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPContact            | Exported-Standalone | config_1                            | p_1                        |
 
     And the following S_ExternalReference is changed:
       | S_ExternalReference_ID.Identifier | OPT.Version |
-      | externalRef_BPartner                       | version_1   |
+      | externalRef_BPartner              | version_1   |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                           |
+      | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
       | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
