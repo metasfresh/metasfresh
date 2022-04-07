@@ -26,6 +26,9 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # app
 app_host=${APP_HOST:-app}
 
+# webui
+webui_frontend_url=${WEBUI_FRONTEND_URL:-NONE}
+
 echo_variable_values()
 {
  echo "Note: all these variables can be set using the -e parameter."
@@ -46,6 +49,7 @@ echo_variable_values()
  echo "ES_PORT=${es_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
+ echo "WEBUI_FRONTEND_URL=${webui_frontend_url}"
 }
 
 
@@ -91,6 +95,13 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
+ if [ "$webui_frontend_url" != "NONE" ]; 
+ then
+	webui_frontend_url_params="-Dwebui.frontend.url=${webui_frontend_url}"
+ else
+	webui_frontend_url_params=""
+ fi
+
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
  local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
@@ -111,6 +122,7 @@ run_metasfresh()
  ${rabbitmq_params} \
  ${metasfresh_admin_params} \
  ${metasfresh_db_connectionpool_params}\
+ ${webui_frontend_url_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
