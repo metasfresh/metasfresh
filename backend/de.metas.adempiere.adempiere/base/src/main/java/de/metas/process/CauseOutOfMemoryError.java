@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
-public class CauseOutOfMemoryException extends JavaProcess
+public class CauseOutOfMemoryError extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception
