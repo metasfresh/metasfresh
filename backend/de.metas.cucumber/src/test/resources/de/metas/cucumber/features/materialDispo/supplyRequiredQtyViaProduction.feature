@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Disposal is correctly considered in Material Dispo; Stock shortage solved via production
+Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
