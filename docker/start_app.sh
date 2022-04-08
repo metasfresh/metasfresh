@@ -126,7 +126,7 @@ local MEMORY_PARAMS="-Xmx1024M"
  ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- org.springframework.boot.loader.JarLauncher
+ -jar metasfresh-app.jar
 }
 
 echo_variable_values

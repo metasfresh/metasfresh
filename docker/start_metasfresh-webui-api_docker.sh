@@ -126,7 +126,7 @@ run_metasfresh()
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
- org.springframework.boot.loader.JarLauncher \
+ -jar metasfresh-webui-api.jar \
  || ( echo "java returned with exit code $?; sleeping for 30m" && sleep 30m )
 
 }
