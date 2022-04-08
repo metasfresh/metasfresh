@@ -35,7 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class QueueProcessorDescriptor
+/**
+ * To be used as the cached items within {@link QueueProcessorDescriptorIndex}, 
+ */
+class QueueProcessorDescriptor
 {
 	@NonNull
 	@Getter

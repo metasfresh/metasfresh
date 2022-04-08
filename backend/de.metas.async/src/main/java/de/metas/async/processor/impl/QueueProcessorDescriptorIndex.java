@@ -87,7 +87,7 @@ public class QueueProcessorDescriptorIndex
 				.map(QueueProcessorDescriptor::getQueuePackageProcessorIds)
 				.orElseThrow(() -> new AdempiereException("There are no C_Queue_PackageProcessor records assigned to C_Queue_Processor!")
 						.appendParametersToMessage()
-						.setParameter("C_Queue_Processor_ID", processorId));
+						.setParameter("C_Queue_Processor_ID", processorId.getRepoId()));
 	}
 
 	@NonNull
@@ -111,7 +111,7 @@ public class QueueProcessorDescriptorIndex
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("There is no C_Queue_Processor assigned to C_Queue_PackageProcessor!")
 						.appendParametersToMessage()
-						.setParameter("C_Queue_PackageProcessor", packageProcessorId));
+						.setParameter("C_Queue_PackageProcessor_ID", packageProcessorId.getRepoId()));
 	}
 
 	@NonNull
@@ -128,7 +128,7 @@ public class QueueProcessorDescriptorIndex
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("There is no C_Queue_PackageProcessor found!")
 						.appendParametersToMessage()
-						.setParameter("C_Queue_PackageProcessor", packageProcessorId));
+						.setParameter("C_Queue_PackageProcessor_ID", packageProcessorId.getRepoId()));
 	}
 
 	@NonNull
