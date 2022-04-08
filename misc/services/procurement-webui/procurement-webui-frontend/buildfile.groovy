@@ -15,10 +15,7 @@ Map build(final Map scmVars,
     final misc = new Misc()
 
     final def resultsMap = [:]
-    if(true)
-    {
-        resultsMap.buildDescription = """${resultsMap.buildDescription}<b>SKIPPING DUES TO BUILD ERROR - WE ARE ON IT</b>"""
-    }
+    resultsMap.buildDescription = "<h4>procurement-webui-frontend</h4>"
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
