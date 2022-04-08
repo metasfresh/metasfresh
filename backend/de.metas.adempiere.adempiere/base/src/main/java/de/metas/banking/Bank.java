@@ -1,14 +1,4 @@
 /*
-package de.metas.banking;
-
-import javax.annotation.Nullable;
-
-import de.metas.impexp.config.DataImportConfigId;
-import de.metas.location.LocationId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
@@ -29,6 +19,16 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.banking;
+
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.location.LocationId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder

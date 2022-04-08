@@ -22,11 +22,11 @@
 
 package de.metas.banking;
 
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.impexp.config.DataImportConfigId;
 
 import javax.annotation.Nullable;
 

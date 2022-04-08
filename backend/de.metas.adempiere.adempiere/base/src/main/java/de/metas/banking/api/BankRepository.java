@@ -37,10 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Bank;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import javax.annotation.Nullable;
 import java.util.Optional;
 

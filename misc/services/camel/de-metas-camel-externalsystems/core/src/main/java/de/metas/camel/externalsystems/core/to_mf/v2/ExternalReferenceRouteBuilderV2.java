@@ -47,7 +47,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 {
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(noErrorHandler());
 		
@@ -83,7 +83,7 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{metasfresh.search-externalreference.v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
+				.toD("{{metasfresh.lookup-externalreference-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
