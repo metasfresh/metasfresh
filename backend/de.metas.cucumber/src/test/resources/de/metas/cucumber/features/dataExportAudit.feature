@@ -104,3 +104,6 @@ Feature: data export audit using bpartner metasfresh api
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_2               | config_2                            |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_2                            |

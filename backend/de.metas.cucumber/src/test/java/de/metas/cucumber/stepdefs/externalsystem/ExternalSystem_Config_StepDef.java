@@ -211,6 +211,15 @@ public class ExternalSystem_Config_StepDef
 					configRabbitMQHttp.setIsActive(false);
 					InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
 					break;
+				case GRSSignum:
+					final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+							.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
+							.create()
+							.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
+
+					configGrsSignum.setIsActive(false);
+					InterfaceWrapperHelper.saveRecord(configGrsSignum);
+					break;
 				default:
 					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
