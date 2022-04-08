@@ -130,8 +130,6 @@ public class InvoiceHeaderImplBuilder
 
 		invoiceHeader.setPaymentRule(getPaymentRule());
 
-		invoiceHeader.setPaymentRule(getPaymentRule());
-
 		return invoiceHeader;
 	}
 
