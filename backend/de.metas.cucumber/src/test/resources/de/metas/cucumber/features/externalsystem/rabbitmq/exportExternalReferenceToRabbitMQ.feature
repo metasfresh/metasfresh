@@ -148,8 +148,8 @@ Feature: Validate external reference is sent to RabbitMQ
       | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
 
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue    | OPT.IsSyncExternalReferencesToRabbitMQ |
-      | config_1                            | RabbitMQ | externalReferenceAudit | true                                   |
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue       | OPT.IsSyncExternalReferencesToRabbitMQ |
+      | config_1                            | RabbitMQ | externalReferenceAudit_S2 | true                                   |
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |

@@ -22,6 +22,7 @@
 
 package de.metas.banking;
 
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,6 +46,9 @@ public class BankCreateRequest
 
 	@Nullable
 	LocationId locationId;
+
+	@Nullable
+	DataImportConfigId dataImportConfigId;
 
 	//
 	// ESR specific settings:
