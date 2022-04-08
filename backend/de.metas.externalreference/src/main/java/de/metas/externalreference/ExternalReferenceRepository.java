@@ -198,19 +198,6 @@ public class ExternalReferenceRepository
 		return UserId.ofRepoId(externalReference.getCreatedBy());
 	}
 
-	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
-	{
-		final IExternalReferenceType type = extractType(record);
-		final IExternalSystem externalSystem = extractSystem(record);
-
-		return ExternalReferenceQuery.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.externalReferenceType(type)
-				.externalSystem(externalSystem)
-				.externalReference(record.getExternalReference())
-				.build();
-	}
-
 	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final ExternalReferenceQuery query)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)

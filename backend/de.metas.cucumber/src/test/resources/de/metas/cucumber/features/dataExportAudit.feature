@@ -25,9 +25,9 @@ Feature: data export audit using bpartner metasfresh api
 
 
   Scenario: The request is good with config and pinstance parameters and the export audit data is created
-    And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue |
-      | config_1                            | RabbitMQ | testRabbitMQ        |
+    Given add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue    |
+      | config_1                            | RabbitMQ | testRabbitMQ_dataAudit |
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
@@ -45,12 +45,15 @@ Feature: data export audit using bpartner metasfresh api
       | bpartner_data_export            | Exported-Standalone      | config_1                            | p_1                        |
       | bp_location_data_export         | Exported-AlongWithParent | config_1                            | p_1                        |
       | location_data_export            | Exported-AlongWithParent | config_1                            | p_1                        |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |
 
 
   Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq
-    And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue |
-      | config_1                            | RabbitMQ | testRabbitMQ        |
+    Given add external system parent-child pair
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue           | OPT.IsSyncBPartnersToRabbitMQ |
+      | config_1                            | RabbitMQ | testRabbitMQ_exportToRabbitMQ | true                          |
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
@@ -75,6 +78,9 @@ Feature: data export audit using bpartner metasfresh api
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_1               | config_1                            |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |
 
   Scenario: When C_BPartner is changed, a proper camel-request is sent to GRS
     And add external system parent-child pair
@@ -104,6 +110,9 @@ Feature: data export audit using bpartner metasfresh api
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_2               | config_2                            |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_2                            |
 
   Scenario: External reference data export audit
     Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -192,16 +201,19 @@ Feature: data export audit using bpartner metasfresh api
 
     Then process external reference lookup endpoint response
       | S_ExternalReference_ID.Identifier | ExternalReference            |
-      | externalRef_BPartner                       | BPartner_ER_Audit_25032022   |
-      | externalRef_BPLocation                       | BPLocation_ER_Audit_25032022 |
-      | externalRef_BPContact                       | BPContact_ER_Audit_25032022  |
+      | externalRef_BPartner              | BPartner_ER_Audit_25032022   |
+      | externalRef_BPLocation            | BPLocation_ER_Audit_25032022 |
+      | externalRef_BPContact             | BPContact_ER_Audit_25032022  |
     And after not more than 30s, there are added records in Data_Export_Audit
-      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | dataExport_BPartner                 | S_ExternalReference | externalRef_BPartner          |                                        |
-      | dataExport_BPLocation                 | S_ExternalReference | externalRef_BPLocation          |                                        |
-      | dataExport_BPContact                 | S_ExternalReference | externalRef_BPContact          |                                        |
+      | Data_Export_Audit_ID.Identifier | TableName           | Record_ID.Identifier   | Data_Export_Audit_Parent_ID.Identifier |
+      | dataExport_BPartner             | S_ExternalReference | externalRef_BPartner   |                                        |
+      | dataExport_BPLocation           | S_ExternalReference | externalRef_BPLocation |                                        |
+      | dataExport_BPContact            | S_ExternalReference | externalRef_BPContact  |                                        |
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | dataExport_BPartner                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPLocation                 | Exported-Standalone | config_1                            | p_1                        |
-      | dataExport_BPContact                 | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPartner             | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPLocation           | Exported-Standalone | config_1                            | p_1                        |
+      | dataExport_BPContact            | Exported-Standalone | config_1                            | p_1                        |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |

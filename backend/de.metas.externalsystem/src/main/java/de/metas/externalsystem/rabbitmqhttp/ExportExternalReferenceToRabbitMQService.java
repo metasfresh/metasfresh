@@ -48,6 +48,7 @@ import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -84,9 +85,10 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
 			final @NonNull ExternalReferenceRepository externalReferenceRepository,
 			final @NonNull UserGroupRepository userGroupRepository,
-			final @NonNull BPartnerCompositeRepository bpartnerCompositeRepository)
+			final @NonNull BPartnerCompositeRepository bpartnerCompositeRepository,
+			final @NonNull ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalReferenceRepository);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender, externalReferenceRepository, externalSystemConfigService);
 
 		this.userGroupRepository = userGroupRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;

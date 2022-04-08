@@ -1,9 +1,11 @@
 {
   "orgCode": "orgCode",
   "externalSystemName": "RabbitMQRESTAPI",
+  "externalSystemChildConfigValue": "childValue",
   "command": "exportExternalReference",
   "adPInstanceId": 4,
   "externalSystemConfigId": 1,
+  "traceId": "traceId",
   "parameters": {
     "RemoteURL": "https://test",
     "RoutingKey": "routingKey",

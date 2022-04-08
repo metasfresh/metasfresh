@@ -5,6 +5,7 @@
         "id": "externalRef_bpartner",
         "type": "BPartner"
       },
+      "externalReference": "externalRef_bpartner",
       "metasfreshId": 2156428,
       "systemName": "ALBERTA",
       "externalReferenceId": 100000
@@ -14,6 +15,7 @@
         "id": "externalRef_bpLocation",
         "type": "BPartnerLocation"
       },
+      "externalReference": "externalRef_bpLocation",
       "metasfreshId": 2205178,
       "systemName": "ALBERTA",
       "externalReferenceId": 100001
@@ -23,6 +25,7 @@
         "id": "externalRef_user",
         "type": "UserID"
       },
+      "externalReference": "externalRef_user",
       "metasfreshId": 2188227,
       "systemName": "ALBERTA",
       "externalReferenceId": 100002

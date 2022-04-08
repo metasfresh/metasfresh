@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.common.v2.ExternalReferenceLookupCamelRequ
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -33,7 +34,6 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
@@ -50,7 +50,7 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 	public void configure()
 	{
 		errorHandler(noErrorHandler());
-		
+
 		from(direct(MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI))
 				.routeId(MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI)
 				.streamCaching()
@@ -70,7 +70,7 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 
 					if (externalReferenceLookupCamelRequest.getAdPInstanceId() != null)
 					{
-						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, externalReferenceLookupCamelRequest.getAdPInstanceId().getValue());
+						exchange.getIn().setHeader(ExternalSystemConstants.HEADER_PINSTANCE_ID, externalReferenceLookupCamelRequest.getAdPInstanceId().getValue());
 					}
 
 					final JsonExternalReferenceLookupRequest request = externalReferenceLookupCamelRequest.getJsonExternalReferenceLookupRequest();
@@ -83,7 +83,7 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{metasfresh.lookup-externalreference-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
+				.toD("{{metasfresh.lookup-externalreference-v2.api.uri}}/${header.orgCode}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

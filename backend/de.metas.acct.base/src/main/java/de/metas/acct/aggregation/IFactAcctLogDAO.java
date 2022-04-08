@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.QueryLimit;
 
 /*
  * #%L
@@ -49,7 +50,7 @@ public interface IFactAcctLogDAO extends ISingletonService
 	 * @param limit
 	 * @return
 	 */
-	IFactAcctLogIterable tagAndRetrieve(Properties ctx, final int limit);
+	IFactAcctLogIterable tagAndRetrieve(Properties ctx, final QueryLimit limit);
 
 	/**
 	 * Retrieves the {@link I_Fact_Acct_Summary} in which the given {@link IFactAcctSummaryKey} shall be aggregated.
