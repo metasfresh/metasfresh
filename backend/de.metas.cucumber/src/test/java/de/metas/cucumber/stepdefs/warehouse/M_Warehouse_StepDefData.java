@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.warehouse;
 
+import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_M_Warehouse;
 
 public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
