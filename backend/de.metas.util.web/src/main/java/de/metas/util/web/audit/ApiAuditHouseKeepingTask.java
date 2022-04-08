@@ -49,7 +49,7 @@ public class ApiAuditHouseKeepingTask implements IStartupHouseKeepingTask
 	public void executeTask()
 	{
 		final ApiRequestQuery apiRequestQuery = ApiRequestQuery.builder()
-				.apiRequestStatusSet(ImmutableSet.of(Status.ERROR))
+				.apiRequestStatusSet(ImmutableSet.of(Status.ERROR, Status.RECEIVED))
 				.isErrorAcknowledged(false)
 				.orderByTimeAscending(true)
 				.build();
