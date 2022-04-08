@@ -25,7 +25,10 @@ package de.metas.handlingunits.shipmentschedule.async;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -54,6 +57,8 @@ public final class CreateShipmentLatch implements ILatchStragegy
 
 	private static final transient Logger logger = LogManager.getLogger(CreateShipmentLatch.class);
 
+	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
 	private CreateShipmentLatch()
 	{
 	}
@@ -61,7 +66,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 	/**
 	 * The workpackage processors of the WPs this latch cares about
 	 */
-	private static final Set<String> CLASSNAMES = ImmutableSet.<String> of(
+	private static final Set<String> CLASSNAMES = ImmutableSet.of(
 			GenerateInOutFromShipmentSchedules.class.getName(),
 			GenerateInOutFromHU.class.getName()
 			);
@@ -87,13 +92,15 @@ public final class CreateShipmentLatch implements ILatchStragegy
 				.create()
 				.setOrderBy(queueDAO.getQueueOrderBy())
 				.list(I_C_Queue_WorkPackage.class);
-		if (!lockedWPs.isEmpty())
+
+		if (lockedWPs.isEmpty())
 		{
 			// as of now, this shall not happen (at least currentWorkPackage should be included),
 			// but *if* the framework implementation is changed, that shall not be this implementors bother.
 			logger.debug("no locked C_Queue_WorkPackages; returning (currentWorkPackage={})", currentWorkPackage);
 			return; // nothing to do
 		}
+
 		final boolean currentWpIsHighestPrio = lockedWPs.get(0).getC_Queue_WorkPackage_ID() == currentWorkPackage.getC_Queue_WorkPackage_ID();
 		if (currentWpIsHighestPrio)
 		{
@@ -113,7 +120,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 									trxName)
 							.create()
 							.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey);
-			distinctAggregationKeys = new ArrayList<Object>(distinctAggregationKeysFromQuery.size());
+			distinctAggregationKeys = new ArrayList<>(distinctAggregationKeysFromQuery.size());
 			for (final Map<String, Object> record : distinctAggregationKeysFromQuery)
 			{
 				distinctAggregationKeys.add(record.get(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey));
@@ -132,7 +139,9 @@ public final class CreateShipmentLatch implements ILatchStragegy
 				break;
 			}
 
-			final String lockedWpClassname = lockedWP.getC_Queue_PackageProcessor().getClassname();
+			final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(QueuePackageProcessorId.ofRepoId(lockedWP.getC_Queue_PackageProcessor_ID()));
+
+			final String lockedWpClassname = packageProcessor.getClassname();
 			if (!CLASSNAMES.contains(lockedWpClassname))
 			{
 				logger.debug("currently-locked WP {} belongs to the WP-processor {}; continuing.", new Object[] { lockedWP, lockedWpClassname });

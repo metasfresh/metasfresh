@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -134,14 +135,7 @@ public class StepDefUtil
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
-
-	private long computeDeadLineMillis(final long maxWaitSeconds)
-	{
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
-		return deadLineMillis;
-	}
-
+	
 	@NonNull
 	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
 	{
@@ -154,5 +148,19 @@ public class StepDefUtil
 	public List<String> splitIdentifiers(@NonNull final String identifiers)
 	{
 		return Arrays.asList(identifiers.split(","));
+	}
+
+
+	private long computeDeadLineMillis(final long maxWaitSeconds)
+	{
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L): Long.MAX_VALUE;
+		return deadLineMillis;
+	}
+
+	@Given("^wait (.*)s")
+	public void waitFor(final int secondsToWait) throws InterruptedException
+	{
+		Thread.sleep(secondsToWait * 1000);
 	}
 }

@@ -26,6 +26,7 @@ package de.metas.async.processor.impl;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.async.processor.QueueProcessorId;
 
 /**
  * Null implementation of {@link IQueueProcessorsExecutor}. Mainly, it does nothing.
@@ -60,7 +61,7 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public IQueueProcessor getQueueProcessor(final int queueProcessorId)
+	public IQueueProcessor getQueueProcessor(final QueueProcessorId queueProcessorId)
 	{
 		// nothing
 		return null;
