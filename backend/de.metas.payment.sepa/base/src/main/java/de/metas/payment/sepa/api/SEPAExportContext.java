@@ -1,10 +1,8 @@
-package de.metas.payment.sepa.api;
-
 /*
  * #%L
- * de.metas.payment.sepa
+ * de.metas.payment.sepa.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +20,14 @@ package de.metas.payment.sepa.api;
  * #L%
  */
 
-import de.metas.payment.sepa.model.I_SEPA_Export;
-import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_PaySelection;
+package de.metas.payment.sepa.api;
 
-import java.util.Date;
+import lombok.Builder;
+import lombok.Value;
 
-public interface ISEPADocumentBL extends ISingletonService
+@Value
+@Builder
+public class SEPAExportContext
 {
-	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from);
-
-	Date getDueDate(I_SEPA_Export_Line line);
-
-	/**
-	 * Generates the SEPA Credit Transfer xml from the given export header.
-	 */
-	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport, SEPAExportContext exportContext);
-
+	boolean referenceAsEndToEndId;
 }
