@@ -97,6 +97,6 @@ Feature: Handling unit export from manufacturing order
       | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
       | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
 
-    And update external system config:
-      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
-      | GRSConfig_manufacturing             | GRS  | false    |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | GRSConfig_manufacturing             |

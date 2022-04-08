@@ -198,3 +198,7 @@ Feature: Validate external reference is sent to RabbitMQ
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
       | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
+
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |
