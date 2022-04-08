@@ -28,6 +28,9 @@ import lombok.NonNull;
 
 import java.util.UUID;
 
+/**
+ * Only used for (unit) testing.
+ */
 public class SynchronousQueueProcessor extends AbstractQueueProcessor
 {
 	private final String name;
