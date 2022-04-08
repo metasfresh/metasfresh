@@ -43,8 +43,6 @@ import java.util.Properties;
 
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
-	private final QueueProcessorDAO queueProcessorDAO = QueueProcessorDAO.getInstance();
-
 	@Override
 	public IWorkPackageQueue getQueueForPackageProcessing(final I_C_Queue_Processor processor)
 	{
@@ -90,7 +88,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 			internalNameToUse = packageProcessor.getInternalName();
 		}
 
-		final QueueProcessorId queueProcessorId = queueProcessorDAO.getProcessorForPackage(packageProcessor)
+		final QueueProcessorId queueProcessorId = QueueProcessorDAO.getInstance().getProcessorForPackage(packageProcessor)
 				.orElseThrow(() -> new AdempiereException("C_Queue_PackageProcessor is not assign to any C_Queue_Processor!")
 						.appendParametersToMessage()
 						.setParameter("C_Queue_PackageProcessor_ID", packageProcessor.getC_Queue_PackageProcessor_ID()));
