@@ -48,7 +48,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -701,48 +700,6 @@ public class BPartnerBL implements IBPartnerBL
 			location.setPrevious_ID(locationCandidates.stream().findFirst().get().getC_BPartner_Location_ID());
 			bpartnersRepo.save(location);
 		}
-	}
-
-	@Override
-	public void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation)
-	{
-		updateFromPreviousLocationNoSave(bpLocation);
-		bpartnersRepo.save(bpLocation);
-	}
-
-	@Override
-	public void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation)
-	{
-		final int previousId = bpLocation.getPrevious_ID();
-		if (previousId <= 0)
-		{
-			return;
-		}
-
-		final Timestamp validFrom = bpLocation.getValidFrom();
-		if (validFrom == null)
-		{
-			return;
-		}
-
-		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
-		if (previousLocation == null)
-		{
-			return;
-		}
-		// Don't update the defaults if the current location is still valid.
-		if (validFrom.before(Env.getDate()))
-		{
-			bpLocation.setIsBillToDefault(bpLocation.isBillToDefault() || previousLocation.isBillToDefault());
-			bpLocation.setIsShipToDefault(bpLocation.isShipToDefault() || previousLocation.isShipToDefault());
-
-			previousLocation.setIsBillToDefault(false);
-			previousLocation.setIsShipToDefault(false);
-			bpartnersRepo.save(previousLocation);
-		}
-
-		bpLocation.setIsBillTo(bpLocation.isBillTo() || previousLocation.isBillTo());
-		bpLocation.setIsShipTo(bpLocation.isShipTo() || previousLocation.isShipTo());
 	}
 
 }

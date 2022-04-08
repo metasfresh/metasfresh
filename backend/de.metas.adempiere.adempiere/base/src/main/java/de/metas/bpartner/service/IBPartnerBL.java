@@ -240,7 +240,4 @@ public interface IBPartnerBL extends ISingletonService
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 
-	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
-
-	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
 }
