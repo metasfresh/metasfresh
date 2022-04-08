@@ -86,13 +86,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
@@ -422,7 +420,7 @@ public class MD_Candidate_StepDef
 	}
 
 	private MaterialDispoDataItem tryAndWaitforCandidate(
-			final int timeoutSec, 
+			final int timeoutSec,
 			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
 	{
 		final CandidatesQuery candidatesQuery = tableRow.createQuery();
@@ -434,7 +432,7 @@ public class MD_Candidate_StepDef
 			final ImmutableList<MaterialDispoDataItem> allByQuery = materialDispoRecordRepository.getAllBy(candidatesQuery);
 			for (final MaterialDispoDataItem item : allByQuery)
 			{
-				if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down 
+				if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
 				{
 					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the qty values are different\n");
 					continue;
@@ -461,7 +459,7 @@ public class MD_Candidate_StepDef
 													 tableRow, candidatesQuery,
 													 materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
 													 materialDispoRecordRepository.getAllAsString());
-		
+
 		final MaterialDispoDataItem materialDispoRecord = StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,

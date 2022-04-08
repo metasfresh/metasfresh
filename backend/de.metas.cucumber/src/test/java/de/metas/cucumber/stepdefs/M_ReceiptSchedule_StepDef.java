@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
