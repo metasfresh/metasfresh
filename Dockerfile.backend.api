@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-oraclelinux7
 
-RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
+RUN yum update -y && yum -y install nc && yum -y clean all && rm -rf /var/cache
 
 WORKDIR /opt/metasfresh/metasfresh-webui-api
 
