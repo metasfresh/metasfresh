@@ -22,9 +22,11 @@
 
 package de.metas.util.web.audit;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.ApiAuditLoggable;
 import de.metas.audit.request.ApiRequestAudit;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.request.Status;
 import de.metas.util.Loggables;
 import lombok.NonNull;
@@ -42,6 +44,12 @@ public class ApiRequestReplayService
 		this.apiAuditService = apiAuditService;
 	}
 
+	public void replayApiRequests(@NonNull final ApiRequestIterator apiRequestIterator)
+	{
+		apiRequestIterator.forEach(this::replayAction);
+	}
+
+	@VisibleForTesting
 	public void replayApiRequests(@NonNull final ImmutableList<ApiRequestAudit> apiRequestAuditTimeSortedList)
 	{
 		apiRequestAuditTimeSortedList.forEach(this::replayActionNoFailing);
