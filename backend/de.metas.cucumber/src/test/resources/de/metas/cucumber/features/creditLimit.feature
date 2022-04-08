@@ -71,6 +71,14 @@ Feature: credit limit
       | cl_1                                 | false     |
 
     # we need to wait 1 second to make sure the first "create-shipment" work package - which failed - will not share the same second with the next "create-shipment" work package that we are about to enqueue
+    # why can't it share the same second?
+    # Cosmin's reply:
+    # > it's related to de.metas.async.service.AsyncBatchService#getWorkPackagesFromCurrentRun, 
+    # > turns out we don't store milliseconds in C_Queue_Workpackage Created & Updated timestamp columns, 
+    # > so if the 1st attempt (which failed) and the 2nd one, run within the same second -> they will have the same created/update timestamp,
+    # > so the getWorkPackagesFromCurrentRun will consider both of them in the second run => the async batch fails
+    # > ... honestly, in a prod environment and real scenarios I don't think it will cause much trouble
+    # > ... after all, it's only a problem if that work package that's being wrongly considered it's a failed one...
     And wait 1s
 
     And the metasfresh REST-API endpoint path 'api/v2/shipments' receives a 'POST' request with the payload from context and responds with '200' status code
