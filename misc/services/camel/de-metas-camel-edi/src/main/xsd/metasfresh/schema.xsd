@@ -463,7 +463,6 @@
             <xsd:element minOccurs="0" name="GTIN" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_CU" type="xsd:string"/>
             <xsd:element minOccurs="0" name="UPC_TU" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_901_991_vType">
@@ -629,8 +628,8 @@
             <xsd:element minOccurs="0" name="C_Currency_ID" type="EDI_Imp_C_Currency_Lookup_ISOCodeType"/>
             <xsd:element minOccurs="0" name="C_UOM_ID" type="EDI_Imp_C_UOM_Lookup_UOMSymbolType"/>
             <xsd:element name="DateCandidate" type="xsd:date"/>
-            <xsd:element name="DeliveryRule" type="C_Order_DeliveryRuleEnum"/>
-            <xsd:element name="DeliveryViaRule" type="C_Order_DeliveryViaRuleEnum"/>
+            <xsd:element minOccurs="0" name="DeliveryRule" type="C_Order_DeliveryRuleEnum"/>
+            <xsd:element minOccurs="0" name="DeliveryViaRule" type="C_Order_DeliveryViaRuleEnum"/>
             <xsd:element minOccurs="0" name="Description" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ProductDescription" type="xsd:string"/>
             <xsd:element name="IsManualPrice" type="YES-NO"/>

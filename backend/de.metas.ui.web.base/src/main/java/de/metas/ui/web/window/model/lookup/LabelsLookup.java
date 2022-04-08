@@ -9,6 +9,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -299,11 +300,13 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		}
 	}
 
-	public String getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
+	public ColumnSql getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
 	{
-		return "SELECT array_agg(" + labelsValueColumnName + ")"
+		final String sql = "SELECT array_agg(" + labelsValueColumnName + ")"
 				+ " FROM " + labelsTableName
 				+ " WHERE " + labelsLinkColumnName + "=" + tableNameOrAlias + "." + linkColumnName
 				+ " AND IsActive='Y'";
+
+		return ColumnSql.ofSql(sql, tableNameOrAlias);
 	}
 }

@@ -83,8 +83,6 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_GET_BPARTNER_PRODUCTS_ROUTE_ID = "To-MF_GetBPartnerProducts-Route";
 
-	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID = "To-MF_LookupExternalReference-Route";
-
 	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 
 	public static final String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";

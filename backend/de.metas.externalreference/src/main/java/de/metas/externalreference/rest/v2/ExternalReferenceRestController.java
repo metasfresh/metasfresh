@@ -41,8 +41,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalRefs" })
+import static de.metas.externalreference.rest.v2.ExternalReferenceRestController.EXTERNAL_REFERENCE_REST_CONTROLLER_PATH_V2;
+
+@RequestMapping(value = { EXTERNAL_REFERENCE_REST_CONTROLLER_PATH_V2 })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController

@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.JsonExportDirectorySettings;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -49,6 +50,9 @@ public class ExportBPartnerRouteContext
 
 	@NonNull
 	private final String orgCode;
+
+	@NonNull
+	private final JsonMetasfreshId externalSystemConfigId;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)

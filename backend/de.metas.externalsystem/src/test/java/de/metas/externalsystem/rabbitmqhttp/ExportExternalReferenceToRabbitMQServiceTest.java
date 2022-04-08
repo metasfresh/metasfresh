@@ -37,6 +37,7 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemTestUtil;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -58,6 +59,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -87,6 +89,9 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 
 		AdempiereTestHelper.get().init();
 
+		final ExternalSystemConfigService externalSystemConfigServiceMock = Mockito.mock(ExternalSystemConfigService.class);
+		Mockito.when(externalSystemConfigServiceMock.getTraceId()).thenReturn("traceId");
+
 		exportExternalReferenceToRabbitMQService = new ExportExternalReferenceToRabbitMQService(
 				new DataExportAuditRepository(),
 				new DataExportAuditLogRepository(),
@@ -94,7 +99,8 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 				new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 				externalReferenceRepository,
 				new UserGroupRepository(),
-				bPartnerCompositeRepository);
+				bPartnerCompositeRepository,
+				externalSystemConfigServiceMock);
 
 		createPrerequisites();
 

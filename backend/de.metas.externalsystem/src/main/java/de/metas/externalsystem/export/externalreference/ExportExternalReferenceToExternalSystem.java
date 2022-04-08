@@ -34,6 +34,7 @@ import de.metas.externalreference.ExternalReferenceId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -61,17 +62,21 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 
 	protected final ExternalReferenceRepository externalReferenceRepository;
 	private final Debouncer<ExternalReferenceId> syncExternalReferenceDebouncer;
+	private final ExternalSystemConfigService externalSystemConfigService;
 
 	protected ExportExternalReferenceToExternalSystem(
 			final @NonNull DataExportAuditRepository dataExportAuditRepository,
 			final @NonNull DataExportAuditLogRepository dataExportAuditLogRepository,
 			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
 			final @NonNull ExternalSystemMessageSender externalSystemMessageSender,
-			final @NonNull ExternalReferenceRepository externalReferenceRepository)
+			final @NonNull ExternalReferenceRepository externalReferenceRepository,
+			final @NonNull ExternalSystemConfigService externalSystemConfigService)
+
 	{
 		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
 
 		this.externalReferenceRepository = externalReferenceRepository;
+		this.externalSystemConfigService = externalSystemConfigService;
 		this.syncExternalReferenceDebouncer = Debouncer.<ExternalReferenceId>builder()
 				.name("syncExternalReferenceDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
@@ -128,6 +133,9 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(config.getChildConfig(), externalReferenceId))
+								   .traceId(externalSystemConfigService.getTraceId())
+								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
+								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
 	}
 
