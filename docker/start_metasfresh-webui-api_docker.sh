@@ -15,10 +15,10 @@ es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
 
 # rabbitmq
-rabbitmq_host=${RABBITMQ_HOST:-localhost}
+rabbitmq_host=${RABBITMQ_HOST:-rabbitmq}
 rabbitmq_port=${RABBITMQ_PORT:-5672}
-rabbitmq_user=${RABBITMQ_USER:-guest}
-rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
+rabbitmq_user=${RABBITMQ_USER:-metasfresh}
+rabbitmq_password=${RABBITMQ_PASSWORD:-metasfresh}
 
 # metasfresh-admin
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
