@@ -37,6 +37,36 @@ file_env() {
 	unset "$fileVar"
 }
 
+start_internal_server() {
+	# internal start of server in order to allow set-up using psql-client
+	# does not listen on external TCP/IP and waits until start finishes
+	PGUSER="${PGUSER:-postgres}" \
+	pg_ctl -D "$PGDATA" \
+		-o "-c listen_addresses='localhost'" \
+		-w start
+
+	file_env 'POSTGRES_USER' 'postgres'
+	file_env 'POSTGRES_DB' "$POSTGRES_USER"
+}
+
+stop_internal_server() {
+	PGUSER="${PGUSER:-postgres}" \
+	pg_ctl -D "$PGDATA" -m fast -w stop
+}
+
+run_files() {
+	echo
+	for f in /docker-entrypoint-initdb.d/*; do
+		case "$f" in
+			*.sh)     echo "$0: running $f"; . "$f" ;;
+			*.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
+			*.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
+			*)        echo "$0: ignoring $f" ;;
+		esac
+		echo
+	done
+}
+
 if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
 fi
@@ -111,15 +141,7 @@ if [ "$1" = 'postgres' ]; then
 			echo "host all all all $authMethod"
 		} >> "$PGDATA/pg_hba.conf"
 
-		# internal start of server in order to allow set-up using psql-client
-		# does not listen on external TCP/IP and waits until start finishes
-		PGUSER="${PGUSER:-postgres}" \
-		pg_ctl -D "$PGDATA" \
-			-o "-c listen_addresses='localhost'" \
-			-w start
-
-		file_env 'POSTGRES_USER' 'postgres'
-		file_env 'POSTGRES_DB' "$POSTGRES_USER"
+		start_internal_server
 
 		psql=( psql -v ON_ERROR_STOP=1 )
 
@@ -141,24 +163,17 @@ if [ "$1" = 'postgres' ]; then
 		echo
 
 		psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
-
-		echo
-		for f in /docker-entrypoint-initdb.d/*; do
-			case "$f" in
-				*.sh)     echo "$0: running $f"; . "$f" ;;
-				*.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
-				*.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
-				*)        echo "$0: ignoring $f" ;;
-			esac
-			echo
-		done
-
-		PGUSER="${PGUSER:-postgres}" \
-		pg_ctl -D "$PGDATA" -m fast -w stop
+		run_files
+		stop_internal_server
 
 		echo
 		echo 'PostgreSQL init process complete; ready for start up.'
 		echo
+	else #always run migration script
+		start_internal_server
+		psql=( psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB")
+		run_files
+		stop_internal_server
 	fi
 fi
 
