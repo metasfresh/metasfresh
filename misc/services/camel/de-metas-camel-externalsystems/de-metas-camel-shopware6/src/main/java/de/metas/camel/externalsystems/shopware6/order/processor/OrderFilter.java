@@ -69,7 +69,9 @@ public class OrderFilter implements Processor
 
 		if (orderToImport.isEmpty())
 		{
-			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(false, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
+			final boolean orderInWorkingState = isOrderInWorkingState(orderAndCustomId, pInstanceId);
+			//if there order is no longer in working state, then we will not ever try to import it again
+			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(orderInWorkingState, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
 			exchange.getIn().setBody(null);
 			return;
 		}
@@ -77,6 +79,25 @@ public class OrderFilter implements Processor
 		routeContext.setOrderCompositeInfo(orderToImport.get());
 		routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
 		exchange.getIn().setBody(orderAndCustomId);
+	}
+
+	/**
+	 * Checks if the order is in the working state. https://developer.shopware.com/docs/concepts/commerce/checkout-concept/orders
+	 *
+	 * @param orderAndCustomId order to check
+	 * @param adPInstanceId      process instance ID
+	 * @return true if the order is in the working state
+	 */
+	private boolean isOrderInWorkingState(@NonNull final OrderCandidate orderAndCustomId, @Nullable final Integer adPInstanceId)
+	{
+		final JsonOrder order = orderAndCustomId.getJsonOrder();
+		final JsonStateMachine stateMachine = order.getStateMachine();
+		final boolean result = stateMachine == null || !stateMachine.getTechnicalName().equals(TechnicalNameEnum.CANCELLED.getValue());
+		if (!result)
+		{
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Permanently skipping due to StateMachineState=" + stateMachine, adPInstanceId);
+		}
+		return result;
 	}
 
 	private Optional<OrderCandidate> checkOrderState(@NonNull final OrderCandidate orderAndCustomId, @Nullable final Integer adPInstanceId)
@@ -127,8 +148,8 @@ public class OrderFilter implements Processor
 		if (!isOrderReadyForImportBasedOnTrx(orderTransaction, paymentMethod.get()))
 		{
 			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping based on transaction status & payment method"
-											 + " transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
-											 + " paymentType = " + paymentMethod.get().getShortName(), adPInstanceId);
+					+ " transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
+					+ " paymentType = " + paymentMethod.get().getShortName(), adPInstanceId);
 			return Optional.empty();
 		}
 
