@@ -36,6 +36,7 @@ import de.metas.order.OrderQuery;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
@@ -59,6 +60,7 @@ public class OrderService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	private final CurrencyService currencyService;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -82,6 +84,11 @@ public class OrderService
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Cannot find the orgId from either orgCode=" + request.getOrgCode() + " or the current user's context.");
+		}
+		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
+		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
+		{
+			throw new AdempiereException("Payment with externalId=" + paymentExternalId + " already exists in orgId=" + orgId);
 		}
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
@@ -113,7 +120,7 @@ public class OrderService
 					.tenderType(TenderType.DirectDeposit)
 					.dateAcct(dateTrx)
 					.dateTrx(dateTrx)
-					.externalId(ExternalId.ofOrNull(request.getExternalPaymentId()));
+					.externalId(paymentExternalId);
 
 			final IdentifierString orderIdentifier = IdentifierString.of(request.getOrderIdentifier());
 
