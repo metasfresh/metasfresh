@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,8 @@ package de.metas.audit.apirequest.request;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
+import de.metas.audit.request.ApiRequestIterator;
+import de.metas.audit.request.ApiRequestQuery;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;

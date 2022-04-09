@@ -2,7 +2,7 @@
  * #%L
  * de.metas.util.web
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,9 +24,9 @@ package de.metas.util.web.audit;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.audit.apirequest.request.ApiRequestIterator;
+import de.metas.audit.apirequest.request.Status;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.request.ApiRequestQuery;
-import de.metas.audit.request.Status;
 import lombok.NonNull;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.springframework.stereotype.Component;

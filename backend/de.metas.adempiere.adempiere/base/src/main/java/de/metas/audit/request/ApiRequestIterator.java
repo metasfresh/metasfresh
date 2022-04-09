@@ -22,6 +22,7 @@
 
 package de.metas.audit.request;
 
+import de.metas.audit.apirequest.request.ApiRequestAudit;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_API_Request_Audit;

@@ -23,6 +23,7 @@
 package de.metas.audit.request;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.audit.apirequest.request.Status;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

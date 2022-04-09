@@ -2,7 +2,7 @@
  * #%L
  * de.metas.util.web
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +23,8 @@
 package de.metas.util.web.audit.process;
 
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.audit.apirequest.request.ApiRequestIterator;
 import de.metas.audit.apirequest.request.Status;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

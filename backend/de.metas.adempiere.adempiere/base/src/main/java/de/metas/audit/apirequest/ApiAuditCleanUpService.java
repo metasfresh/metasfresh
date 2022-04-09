@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,12 +28,12 @@ import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.audit.request.ApiRequestIterator;
-import de.metas.audit.request.ApiRequestQuery;
-import de.metas.audit.request.Status;
+import de.metas.audit.apirequest.request.Status;
 import de.metas.audit.apirequest.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.apirequest.response.ApiResponseAudit;
 import de.metas.audit.apirequest.response.ApiResponseAuditRepository;
+import de.metas.audit.request.ApiRequestIterator;
+import de.metas.audit.request.ApiRequestQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +43,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 import java.util.function.Consumer;
 
 @Service
