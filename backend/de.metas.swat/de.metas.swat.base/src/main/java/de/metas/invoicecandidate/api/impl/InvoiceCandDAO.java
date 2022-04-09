@@ -63,7 +63,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -1621,7 +1620,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ic)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
-				.setLimit(QueryLimit.ONE)
+				.setLimit(1)
 				.create()
 				.anyMatch();
 	}

@@ -2,20 +2,7 @@ Feature: Validate BPartner is sent to RabbitMQ
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
-    
-  # Problem: as C_BPArtners are changed in previous scenarios,
-  # the method de.metas.externalsystem.rabbitmqhttp.interceptor.C_BPartner.triggerSyncBPartnerWithExternalSystem
-  # is called and adds those BPartner's IDs to the debouncer. 
-  # Those C_BPartner_IDs are then also exported to RabbitMQ, before the right one from this scenario.Scenario.
-  # Note that purging the rabbitmq-queue does not help.
-  # To analyze/reproduce: 
-  # - annotate this scenario and orderDocOutbound.feature with @dev:runThisOne and run only those 3.
-  # - set a breakpoint in constructor of de.metas.common.externalsystem.JsonExternalSystemRequest
-  #   - => whe the breakpoint is hit, you see that the request's BPartnerID is the one of the orderDocOutbound's bpartner.
-  #   - => it was collected previously, but not send (probably makes sense to debug that, too!)
-  # Possible solution: activate the "API-User, Shopware6" and use it in this test, rather than the metasfresh user.
-  @ignore
+
   Scenario: Export bpartner when created via rest-api
     Given metasfresh contains AD_UserGroup:
       | AD_UserGroup_ID.Identifier | Name        | IsActive | OPT.Description         |
@@ -30,6 +17,7 @@ Feature: Validate BPartner is sent to RabbitMQ
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.SubjectCreatedByUserGroup_ID.Identifier | OPT.IsSyncBPartnersToRabbitMQ |
       | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                 | true                          |
 
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -48,7 +36,7 @@ Feature: Validate BPartner is sent to RabbitMQ
     ],
     "syncAdvise": {
         "ifNotExists": "CREATE",
-        "ifExists": "DONT_UPDATE"
+        "ifExists": "UPDATE_MERGE"
     }
 }
 """

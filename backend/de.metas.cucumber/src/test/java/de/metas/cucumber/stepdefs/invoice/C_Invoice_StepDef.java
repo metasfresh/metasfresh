@@ -137,6 +137,59 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
+	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		final Map<String, String> row = table.asMaps().get(0);
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
+		//make sure the given invoice candidate is ready for processing
+		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
+		{
+			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+
+			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
+
+		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
+		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
+
+		//enqueue invoice candidate
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setSupplementMissingPaymentTermIds(true);
+
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setFailIfNothingEnqueued(true)
+				.setInvoicingParams(invoicingParams)
+				.enqueueSelection(invoiceCandidatesSelectionId);
+
+		//wait for the invoice to be created
+		final Supplier<Boolean> invoiceCreated = () ->
+		{
+			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+			if (invoices.isEmpty())
+			{
+				return false;
+			}
+			assertThat(invoices.size())
+					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
+					.isEqualTo(1);
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			invoiceTable.put(invoiceIdentifier, invoices.get(0));
+			return true;
+		};
+		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
+	}
+
 	@Then("^enqueue invoice candidate of order (.*) for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(@NonNull final String orderIdentifier, final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -336,6 +389,15 @@ public class C_Invoice_StepDef
 
 			assertThat(actualInvoiceDocType.getName()).isEqualTo(expectedDocTypeName);
 		}
+
+		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);
+		if (Check.isNotBlank(paymentRule))
+		{
+			assertThat(invoice.getPaymentRule()).isEqualTo(paymentRule);
+		}
+
+		assertThat(paymentTermId).isNotNull();
+		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 	}
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)

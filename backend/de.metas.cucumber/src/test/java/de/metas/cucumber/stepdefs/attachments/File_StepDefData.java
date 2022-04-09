@@ -28,8 +28,4 @@ import java.io.File;
 
 public class File_StepDefData extends StepDefData<File>
 {
-	public File_StepDefData()
-	{
-		super(null);
-	}
 }

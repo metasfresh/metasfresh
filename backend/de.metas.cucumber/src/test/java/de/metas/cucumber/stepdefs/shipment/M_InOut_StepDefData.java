@@ -30,8 +30,4 @@ import org.compiere.model.I_M_InOut;
  */
 public class M_InOut_StepDefData extends StepDefData<I_M_InOut>
 {
-	public M_InOut_StepDefData()
-	{
-		super(I_M_InOut.class);
-	}
 }

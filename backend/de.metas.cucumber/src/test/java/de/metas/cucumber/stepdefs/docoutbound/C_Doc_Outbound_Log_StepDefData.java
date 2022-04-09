@@ -30,8 +30,4 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
  */
 public class C_Doc_Outbound_Log_StepDefData extends StepDefData<I_C_Doc_Outbound_Log>
 {
-	public C_Doc_Outbound_Log_StepDefData()
-	{
-		super(I_C_Doc_Outbound_Log.class);
-	}
 }

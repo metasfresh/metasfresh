@@ -27,8 +27,4 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 
 public class MD_Candidate_StepDefData extends StepDefData<I_MD_Candidate>
 {
-	public MD_Candidate_StepDefData()
-	{
-		super(I_MD_Candidate.class);
-	}
 }

@@ -20,6 +20,7 @@
  * #L%
  */
 
+
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
@@ -216,6 +217,7 @@ public class C_Invoice_Candidate_StepDef
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+			assertThat(invoiceCandidate).isNotNull();
 
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
@@ -255,7 +257,6 @@ public class C_Invoice_Candidate_StepDef
 			}
 		}
 	}
-
 	@Then("validate invoice candidate")
 	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws InterruptedException
 	{

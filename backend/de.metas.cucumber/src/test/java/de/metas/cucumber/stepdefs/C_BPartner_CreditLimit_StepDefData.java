@@ -29,8 +29,4 @@ import org.compiere.model.I_C_BPartner_CreditLimit;
  */
 public class C_BPartner_CreditLimit_StepDefData extends StepDefData<I_C_BPartner_CreditLimit>
 {
-	public C_BPartner_CreditLimit_StepDefData()
-	{
-		super(I_C_BPartner_CreditLimit.class);
-	}
 }

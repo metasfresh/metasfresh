@@ -30,8 +30,4 @@ import org.compiere.model.I_M_AttributeSet;
  */
 public class M_AttributeSet_StepDefData extends StepDefData<I_M_AttributeSet>
 {
-	public M_AttributeSet_StepDefData()
-	{
-		super(I_M_AttributeSet.class);
-	}
 }

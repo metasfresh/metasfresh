@@ -30,8 +30,4 @@ import org.compiere.model.I_M_Inventory;
  */
 public class M_Inventory_StepDefData extends StepDefData<I_M_Inventory>
 {
-	public M_Inventory_StepDefData()
-	{
-		super(I_M_Inventory.class);
-	}
 }

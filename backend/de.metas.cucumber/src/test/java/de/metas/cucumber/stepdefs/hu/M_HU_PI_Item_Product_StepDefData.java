@@ -27,8 +27,4 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 public class M_HU_PI_Item_Product_StepDefData extends StepDefData<I_M_HU_PI_Item_Product>
 {
-	public M_HU_PI_Item_Product_StepDefData()
-	{
-		super(I_M_HU_PI_Item_Product.class);
-	}
 }

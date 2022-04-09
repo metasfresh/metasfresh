@@ -30,8 +30,4 @@ import de.metas.externalreference.model.I_S_ExternalReference;
  */
 public class S_ExternalReference_StepDefData extends StepDefData<I_S_ExternalReference>
 {
-	public S_ExternalReference_StepDefData()
-	{
-		super(I_S_ExternalReference.class);
-	}
 }

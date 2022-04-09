@@ -250,28 +250,30 @@ public class C_Order
 	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
 	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Order order)
 	{
-		if (!InterfaceWrapperHelper.isCopying(order))
+		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
 		{
-			final I_C_BPartner bpartner = order.getC_BPartner();
-			final PaymentRule paymentRule;
-			if (bpartner != null && bpartner.getPaymentRule() != null)
-			{
-				paymentRule = order.isSOTrx()
-						? PaymentRule.ofCode(bpartner.getPaymentRule())
-						: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-			}
-			else
-			{
-				paymentRule = invoiceBL.getDefaultPaymentRule();
-			}
-			order.setPaymentRule(paymentRule.getCode());
+			return;
 		}
+
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		final PaymentRule paymentRule;
+		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+		}
+		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+		}
+		else
+		{
+			paymentRule = invoiceBL.getDefaultPaymentRule();
+		}
+
+		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -529,6 +531,17 @@ public class C_Order
 	public void validateSupplierApprovalsOnChange(final I_C_Order order)
 	{
 		validateSupplierApprovals(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
+	public void updateOrderLineFromContract(final I_C_Order order)
+	{
+		orderDAO.retrieveOrderLines(order)
+				.stream()
+				.filter(line -> line.getC_Flatrate_Conditions_ID() > 0)
+				.forEach(orderLineBL::updatePrices);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )

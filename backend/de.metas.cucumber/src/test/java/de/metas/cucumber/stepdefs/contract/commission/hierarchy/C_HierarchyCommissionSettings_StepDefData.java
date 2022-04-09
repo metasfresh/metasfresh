@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_HierarchyCommissionSettings_StepDefData extends StepDefData<I_C_HierarchyCommissionSettings>
 {
-	public C_HierarchyCommissionSettings_StepDefData()
-	{
-		super(I_C_HierarchyCommissionSettings.class);
-	}
 }

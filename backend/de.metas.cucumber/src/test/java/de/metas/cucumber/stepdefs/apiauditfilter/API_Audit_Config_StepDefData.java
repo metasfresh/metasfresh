@@ -30,8 +30,4 @@ import org.compiere.model.I_API_Audit_Config;
  */
 public class API_Audit_Config_StepDefData extends StepDefData<I_API_Audit_Config>
 {
-	public API_Audit_Config_StepDefData()
-	{
-		super(I_API_Audit_Config.class);
-	}
 }

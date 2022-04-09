@@ -30,8 +30,4 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_MediatedCommissionSettings_StepDefData extends StepDefData<I_C_MediatedCommissionSettings>
 {
-	public C_MediatedCommissionSettings_StepDefData()
-	{
-		super(I_C_MediatedCommissionSettings.class);
-	}
 }

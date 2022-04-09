@@ -30,8 +30,4 @@ import org.compiere.model.I_M_PriceList;
  */
 public class M_PriceList_StepDefData extends StepDefData<I_M_PriceList>
 {
-	public M_PriceList_StepDefData()
-	{
-		super(I_M_PriceList.class);
-	}
 }

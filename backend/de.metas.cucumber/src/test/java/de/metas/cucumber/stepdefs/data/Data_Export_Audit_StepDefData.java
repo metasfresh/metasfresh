@@ -30,8 +30,4 @@ import org.compiere.model.I_Data_Export_Audit;
  */
 public class Data_Export_Audit_StepDefData extends StepDefData<I_Data_Export_Audit>
 {
-	public Data_Export_Audit_StepDefData()
-	{
-		super(I_Data_Export_Audit.class);
-	}
 }

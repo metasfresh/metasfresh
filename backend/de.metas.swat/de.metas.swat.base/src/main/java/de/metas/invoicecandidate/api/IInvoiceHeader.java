@@ -74,9 +74,9 @@ public interface IInvoiceHeader
 
 	int getC_Async_Batch_ID();
 
+	String getPaymentRule();
+
 	int getC_Incoterms_ID();
 
 	String getIncotermLocation();
-
-	String getPaymentRule();
 }

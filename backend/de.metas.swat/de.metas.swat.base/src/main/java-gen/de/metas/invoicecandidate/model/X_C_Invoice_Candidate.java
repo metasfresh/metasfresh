@@ -2378,21 +2378,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
 
-	@Override
-	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
-	{
-		if (C_Flatrate_Term_ID < 1)
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
-	}
-
-	@Override
-	public int getC_Flatrate_Term_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
-	}
-
 	/**
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule

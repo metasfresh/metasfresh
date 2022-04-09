@@ -27,9 +27,6 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_CallOrder;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
@@ -55,8 +52,7 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	COMMISSION(TYPE_CONDITIONS_Commission),
 	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
 	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
-	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
-	CALL_ORDER(TYPE_CONDITIONS_CallOrder)
+	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee)
 	;
 
 	@Getter
@@ -65,12 +61,6 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	TypeConditions(@NonNull final String code)
 	{
 		this.code = code;
-	}
-
-	@Nullable
-	public static TypeConditions ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
 	}
 
 	public static TypeConditions ofCode(@NonNull final String code)

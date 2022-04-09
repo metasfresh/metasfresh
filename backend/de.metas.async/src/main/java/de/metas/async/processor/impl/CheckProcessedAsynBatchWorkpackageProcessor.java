@@ -30,7 +30,6 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -84,8 +83,6 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 		if (delayUntilCheckingProcessedState.toMillis() > 0)
 		{
-			// a delay that didn't fit into Integer occured when during testing we got the async-batch's first/last processed from the actual time, but "now" from SystemTime with a fixed testing-value. 
-			Check.assume(delayUntilCheckingProcessedState.toMillis() <= Integer.MAX_VALUE, "The delay until re-checking processed state of C_Async_Batch_ID={} can't be too big", asyncBatch.getC_Async_Batch_ID());
 			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
 		}
 

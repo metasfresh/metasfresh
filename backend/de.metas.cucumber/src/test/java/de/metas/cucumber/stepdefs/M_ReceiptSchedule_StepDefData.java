@@ -26,8 +26,4 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
 public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
 {
-	public M_ReceiptSchedule_StepDefData()
-	{
-		super(I_M_ReceiptSchedule.class);
-	}
 }

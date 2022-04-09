@@ -54,6 +54,8 @@ public interface IInterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
+	 * @param model
+	 * @param useClientOrgFromModel
 	 * @return context
 	 */
 	Properties getCtx(final Object model, final boolean useClientOrgFromModel);

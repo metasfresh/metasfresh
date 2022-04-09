@@ -42,7 +42,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,7 +65,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	@Override
-	public void sendNotifications(@NonNull final I_C_Async_Batch asyncBatch)
+	public void sendNotifications(I_C_Async_Batch asyncBatch)
 	{
 		sendEMail(asyncBatch);
 		sendNote(asyncBatch);
@@ -78,7 +77,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 	 *
 	 * @see de.metas.letters.model.MADBoilerPlate#sendEMail(de.metas.letters.model.IEMailEditor, boolean)
 	 */
-	public void sendEMail(@NonNull final I_C_Async_Batch asyncBatch)
+	public void sendEMail(final I_C_Async_Batch asyncBatch)
 	{
 		final AsyncBatchType asyncBatchType = asyncBatchBL.getAsyncBatchType(asyncBatch)
 				.orElseThrow(() -> new AdempiereException("Async Batch type should not be null for async batch " + asyncBatch.getC_Async_Batch_ID()));
@@ -90,7 +89,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		if (boilerPlateId <= 0)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("sendEMail - C_Async_Batch_Type_ID={} of C_Async_Batch_ID={} has no AD_BoilerPlate_ID; -> not sending mail",
-					asyncBatchType.getId().getRepoId(), asyncBatch.getC_Async_Batch_ID());
+					asyncBatchType.getId());
 			return;
 		}
 

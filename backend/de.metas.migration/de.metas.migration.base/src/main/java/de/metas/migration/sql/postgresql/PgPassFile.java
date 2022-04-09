@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 public class PgPassFile
 {
-	public static final transient PgPassFile instance = new PgPassFile();
+	public static final PgPassFile instance = new PgPassFile();
 
 	public static final String ANY = "*";
 
@@ -57,7 +57,7 @@ public class PgPassFile
 	{
 		// see http://www.postgresql.org/docs/9.1/static/libpq-pgpass.html
 
-		File pgPassFile;
+		final File pgPassFile;
 		if (SystemUtils.IS_OS_WINDOWS)
 		{
 			final String appDataDir = System.getenv("APPDATA");
@@ -96,7 +96,7 @@ public class PgPassFile
 		}
 
 		int lineNo = 0;
-		final List<PgPassEntry> entries = new ArrayList<PgPassEntry>();
+		final List<PgPassEntry> entries = new ArrayList<>();
 
 		BufferedReader reader = null;
 		try
@@ -217,7 +217,7 @@ public class PgPassFile
 		return entry;
 	}
 
-	private static final String normalizedTokenEntry(final String token)
+	private static String normalizedTokenEntry(final String token)
 	{
 		if (token == null || token.isEmpty())
 		{
@@ -229,10 +229,6 @@ public class PgPassFile
 	/**
 	 * Gets Password for given configuration.
 	 *
-	 * @param hostname
-	 * @param port
-	 * @param dbName
-	 * @param username
 	 * @return password or null if configuration was not found
 	 */
 	public String getPassword(final String hostname, final String port, final String dbName, final String username)
@@ -257,7 +253,7 @@ public class PgPassFile
 				&& matchesToken(entry.getUser(), entryLookup.getUser());
 	}
 
-	private static final boolean matchesToken(final String token, final String tokenLookup)
+	private static boolean matchesToken(final String token, final String tokenLookup)
 	{
 		if (token == null)
 		{

@@ -51,9 +51,8 @@ public class C_OrderLine
 
 		final I_C_Order order = ol.getC_Order();
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final boolean isSubscription = subscriptionBL.isSubscription(ol);
 
-		if (productId == null || bPartnerId <= 0 || soTrx.isPurchase() || !isSubscription)
+		if (productId == null || bPartnerId <= 0 || soTrx.isPurchase())
 		{
 			return;
 		}
@@ -85,15 +84,11 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
 	public void onQtyEntered(final I_C_OrderLine ol, final ICalloutField field)
 	{
-		if (!subscriptionBL.isSubscription(ol))
-		{
-			return;
-		}
 
 		final I_C_Order order = ol.getC_Order();
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		if (soTrx.isPurchase())
+		if (soTrx.isPurchase() || ol.getC_Flatrate_Conditions_ID() <= 0)
 		{
 			return; // leave this job to the adempiere standard callouts
 		}

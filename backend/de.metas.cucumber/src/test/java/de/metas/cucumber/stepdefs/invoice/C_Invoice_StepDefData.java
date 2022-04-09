@@ -30,8 +30,4 @@ import org.compiere.model.I_C_Invoice;
  */
 public class C_Invoice_StepDefData extends StepDefData<I_C_Invoice>
 {
-	public C_Invoice_StepDefData()
-	{
-		super(I_C_Invoice.class);
-	}
 }

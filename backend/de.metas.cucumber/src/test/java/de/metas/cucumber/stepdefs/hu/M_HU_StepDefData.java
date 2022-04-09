@@ -27,8 +27,4 @@ import de.metas.handlingunits.model.I_M_HU;
 
 public class M_HU_StepDefData extends StepDefData<I_M_HU>
 {
-	public M_HU_StepDefData()
-	{
-		super(I_M_HU.class);
-	}
 }

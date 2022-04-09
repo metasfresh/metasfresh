@@ -5,7 +5,7 @@ Feature: ASI support in Product BOM rest-api
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-01-02T08:00:00+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-01-09T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh initially has no MD_Candidate data
 
@@ -27,7 +27,7 @@ Feature: ASI support in Product BOM rest-api
       | pl_SO      | ps_SO                         | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_SO     | pl_SO                     | plv_SO | 2021-01-01 |
+      | plv_SO     | pl_SO                     | plv_SO | 2022-01-02 |
 
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |

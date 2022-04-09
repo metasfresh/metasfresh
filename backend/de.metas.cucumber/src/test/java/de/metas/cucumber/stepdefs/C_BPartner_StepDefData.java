@@ -29,8 +29,4 @@ import org.compiere.model.I_C_BPartner;
  */
 public class C_BPartner_StepDefData extends StepDefData<I_C_BPartner>
 {
-	public C_BPartner_StepDefData()
-	{
-		super(I_C_BPartner.class);
-	}
 }

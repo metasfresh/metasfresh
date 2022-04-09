@@ -26,8 +26,4 @@ import de.metas.event.model.I_AD_EventLog_Entry;
 
 public class AD_EventLog_Entry_StepDefData extends StepDefData<I_AD_EventLog_Entry>
 {
-	public AD_EventLog_Entry_StepDefData()
-	{
-		super(I_AD_EventLog_Entry.class);
-	}
 }

@@ -368,7 +368,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}
-
+	
 	/**
 	 * Sets {@link I_C_Invoice_Candidate#COLUMNNAME_QtyDelivered C_Invoice_Candidate.QtyDelivered} to {@link I_C_OrderLine#COLUMNNAME_QtyDelivered C_OrderLine.QtyDelivered}.
 	 * <p>

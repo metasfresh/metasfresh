@@ -26,8 +26,4 @@ import de.metas.bpartner_product.BPartnerProduct;
 
 public class BPartnerProductStepDefData extends StepDefData<BPartnerProduct>
 {
-	public BPartnerProductStepDefData()
-	{
-		super(null);
-	}
 }

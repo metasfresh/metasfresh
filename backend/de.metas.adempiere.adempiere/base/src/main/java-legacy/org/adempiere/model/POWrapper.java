@@ -831,8 +831,12 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @throws IllegalArgumentException if model is null
 	 * @throws IllegalArgumentException if there is no underlying PO object (i.e. getPO(model) return null)
 	 */
-	public static void refresh(@NonNull final Object model)
+	public static void refresh(final Object model)
 	{
+		if (model == null)
+		{
+			throw new IllegalArgumentException("model is null");
+		}
 		final PO po = getStrictPO(model);
 		if (po == null)
 		{
