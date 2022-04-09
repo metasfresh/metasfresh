@@ -8,6 +8,7 @@ de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrg
       "keepRequestDays" : 101,
       "keepRequestBodyDays" : 100,
       "keepResponseDays" : 103,
+      "keepErroredRequestDays" : 104,
       "keepResponseBodyDays" : 102,
       "method" : "PUT",
       "pathPrefix" : "pathPrefix",
