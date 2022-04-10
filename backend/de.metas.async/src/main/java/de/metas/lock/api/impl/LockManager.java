@@ -27,12 +27,14 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.lock.spi.impl.SqlLockDatabase;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -181,5 +183,11 @@ public class LockManager implements ILockManager
 	public <T> IQuery<T> addNotLockedClause(final IQuery<T> query)
 	{
 		return getLockDatabase().addNotLockedClause(query);
+	}
+
+	@Override
+	public ExistingLockInfo getLockInfo(final TableRecordReference tableRecordReference, final LockOwner lockOwner)
+	{
+		return getLockDatabase().getLockInfo(tableRecordReference, lockOwner);
 	}
 }

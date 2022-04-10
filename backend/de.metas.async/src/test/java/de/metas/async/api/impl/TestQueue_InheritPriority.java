@@ -65,6 +65,7 @@ public class TestQueue_InheritPriority
 
 	private Properties ctx;
 	private String trxName;
+	private Helper helper;
 
 	@Before
 	public void init()
@@ -76,6 +77,7 @@ public class TestQueue_InheritPriority
 		// Setup test data
 		ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
+		helper = new Helper();
 	}
 
 	private I_C_Queue_Element createQueueElement(final I_C_Queue_WorkPackage workpackage, final int recordId)
@@ -131,7 +133,7 @@ public class TestQueue_InheritPriority
 
 		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
 
-		final IQueueProcessor processor = queueProcessorFactory.createSynchronousQueueProcessor(queueForPackageProcessing);
+		final IQueueProcessor processor = helper.newSynchronousQueueProcessor(queueForPackageProcessing);
 
 		SynchronousProcessorPlanner.executeNow(processor);
 

@@ -35,8 +35,8 @@ Feature: Handling unit rest controller
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
-      | huProduct_inventory       | 2022-01-02T00:00:00Z | 540008         |
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-01-02   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |
@@ -155,8 +155,8 @@ Feature: Handling unit rest controller
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
-      | huProduct_inventory       | 2022-01-02T00:00:00Z | 540008         |
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-01-02   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 9        | PCE          |

@@ -44,6 +44,9 @@ import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
+import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -64,6 +67,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -72,6 +76,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,12 +99,14 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_H
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -420,6 +427,15 @@ public class M_HU_StepDef
 		}
 	}
 
+	@And("M_HU are disposed:")
+	public void dispose_HU(@NonNull final DataTable table)
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			disposeHU(row);
+		}
+	}
+
 	private void validateHU(@NonNull final Map<String, String> row)
 	{
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -612,5 +628,28 @@ public class M_HU_StepDef
 
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
+	}
+
+	private void disposeHU(@NonNull final Map<String, String> row)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final ZonedDateTime movementDate = DataTableUtil.extractZonedDateTimeForColumnName(row, COLUMNNAME_MovementDate);
+
+		final I_M_HU huRecord = huTable.get(huIdentifier);
+
+		assertThat(huRecord).isNotNull();
+
+		final HUInternalUseInventoryCreateRequest huInternalUseInventoryCreateRequest = HUInternalUseInventoryCreateRequest.builder()
+				.hus(ImmutableList.of(huRecord))
+				.movementDate(movementDate)
+				.completeInventory(true)
+				.moveEmptiesToEmptiesWarehouse(true)
+				.build();
+
+		final HUInternalUseInventoryCreateResponse result = inventoryService.moveToGarbage(huInternalUseInventoryCreateRequest);
+
+		final boolean somethingWasProcessed = !result.getInventories().isEmpty();
+		assertThat(somethingWasProcessed).isTrue();
 	}
 }
