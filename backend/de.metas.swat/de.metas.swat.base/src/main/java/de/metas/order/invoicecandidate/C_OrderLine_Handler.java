@@ -317,8 +317,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setIncoterms(ic, orderLine);
 
-		setC_Flatrate_Term_ID(ic, orderLine);
-
 		setPaymentRule(ic, orderLine);
 	}
 
@@ -548,10 +546,5 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
-	}
-
-	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		candidate.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
 	}
 }
