@@ -21,39 +21,8 @@ package de.metas.fresh.picking.service.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefPalet;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createLUs;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUBuilder;
@@ -70,7 +39,10 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemParts;

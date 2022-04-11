@@ -44,10 +44,6 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
