@@ -69,9 +69,9 @@ public class OrderFilter implements Processor
 
 		if (orderToImport.isEmpty())
 		{
-			final boolean orderInWorkingState = isOrderInWorkingState(orderAndCustomId, pInstanceId);
-			//if there order is no longer in working state, then we will not ever try to import it again
-			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(orderInWorkingState, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
+			final boolean okToImportLater = !isOrderInWorkingState(orderAndCustomId, pInstanceId);
+			//if the order is no longer in working state, then we should not attempt to import it at a later date
+			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(okToImportLater, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
 			exchange.getIn().setBody(null);
 			return;
 		}
@@ -82,7 +82,7 @@ public class OrderFilter implements Processor
 	}
 
 	/**
-	 * Checks if the order is in the working state. https://developer.shopware.com/docs/concepts/commerce/checkout-concept/orders
+	 * Checks if the order is in a working state. https://developer.shopware.com/docs/concepts/commerce/checkout-concept/orders
 	 *
 	 * @param orderAndCustomId order to check
 	 * @param adPInstanceId      process instance ID
