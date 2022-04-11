@@ -87,16 +87,21 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterSO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
 			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_SalesOrder);
 			docTypeFilterSO.addFilter(NotQueryFilter.of(new InArrayQueryFilter<>(I_C_DocType.COLUMNNAME_DocSubType,
-																							X_C_DocType.DOCSUBTYPE_Proposal,
-																							X_C_DocType.DOCSUBTYPE_Quotation,
-																							X_C_DocType.DOCSUBTYPE_POSOrder,
-																							X_C_DocType.DOCSUBTYPE_FrameAgrement,
-					X_C_DocType.DOCSUBTYPE_CostEstimate)));
+																				 X_C_DocType.DOCSUBTYPE_Proposal,
+																				 X_C_DocType.DOCSUBTYPE_Quotation,
+																				 X_C_DocType.DOCSUBTYPE_POSOrder,
+																				 X_C_DocType.DOCSUBTYPE_FrameAgrement,
+																				 X_C_DocType.DOCSUBTYPE_CostEstimate)));
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
+			final ICompositeQueryFilter<I_C_DocType> docSubTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class)
+					.setJoinOr()
+					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null)
+					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_CallOrder);
+
 			docTypeFilterPO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_PurchaseOrder);
-			docTypeFilterPO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+			docTypeFilterPO.addFilter(docSubTypeFilterPO);
 			docTypeFilter.addFilter(docTypeFilterPO);
 
 			// Take only lines from completed orders

@@ -22,15 +22,12 @@
 
 package de.metas.contracts.callorder.invoice;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.invoice.filter.IGenerateInvoiceCandidateForModelFilter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenerateInvoiceCandidateForModelFilter
@@ -46,15 +43,14 @@ public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenera
 	@Override
 	public boolean isEligible(final Object model)
 	{
-		if (!getSupportedTypes().contains(model.getClass()))
+		if (!applies(model))
 		{
 			throw new AdempiereException("GenerateInvoiceEligibilityFilter_CallOrder called for an unsupported model type!")
 					.appendParametersToMessage()
-					.setParameter("model", model)
-					.setParameter("supportedTypes", getSupportedTypes());
+					.setParameter("model", model);
 		}
 
-		//dev-note: see getSupportedTypes();
+		//dev-note: see de.metas.contracts.callorder.invoice.GenerateInvoiceCandidateForModelFilter_CallOrder.applies()
 		final I_C_OrderLine orderLine = (I_C_OrderLine)model;
 
 		final boolean isCallOrderContractLine = callOrderContractService.isCallOrderContractLine(orderLine);
@@ -63,8 +59,8 @@ public class GenerateInvoiceCandidateForModelFilter_CallOrder implements IGenera
 	}
 
 	@Override
-	public Set<Class<?>> getSupportedTypes()
+	public boolean applies(@NonNull final Object model)
 	{
-		return ImmutableSet.of(I_C_OrderLine.class);
+		return model instanceof I_C_OrderLine;
 	}
 }

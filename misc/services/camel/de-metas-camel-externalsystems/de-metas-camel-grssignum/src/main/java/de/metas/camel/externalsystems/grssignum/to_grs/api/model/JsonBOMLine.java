@@ -45,6 +45,10 @@ public class JsonBOMLine
 	@JsonProperty("ARTNRID")
 	String productId;
 
+	@Nullable
+	@JsonProperty("HERKUNFTSLAND")
+	String countryCode;
+
 	@NonNull
 	@JsonProperty("POS")
 	Integer line;
@@ -60,12 +64,14 @@ public class JsonBOMLine
 	public JsonBOMLine(
 			@JsonProperty("ARTNR") final @NonNull String productValue,
 			@JsonProperty("ARTNRID") final @NonNull String productId,
-			@JsonProperty("POS") final @Nullable Integer line,
+			@JsonProperty("HERKUNFTSLAND") final @Nullable String countryCode,
+			@JsonProperty("POS") final @NonNull Integer line,
 			@JsonProperty("ANTEIL") final @NonNull BigDecimal qtyBOM,
 			@JsonProperty("UOM") final @NonNull String uom)
 	{
 		this.productValue = productValue;
 		this.productId = productId;
+		this.countryCode = countryCode;
 		this.line = line;
 		this.qtyBOM = qtyBOM;
 		this.uom = uom;

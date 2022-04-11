@@ -29,6 +29,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -85,6 +86,8 @@ public class MD_Candidate_StepDefTable
 		@Nullable
 		String attributeSetInstanceId;
 
+		boolean simulated;
+
 		public CandidatesQuery createQuery()
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
@@ -100,6 +103,7 @@ public class MD_Candidate_StepDefTable
 					.type(type)
 					.businessCase(businessCase)
 					.materialDescriptorQuery(materialDescriptorQuery)
+					.simulatedQueryQualifier(this.simulated ? SimulatedQueryQualifier.ONLY_SIMULATED : SimulatedQueryQualifier.EXCLUDE_SIMULATED)
 					.build();
 		}
 	}

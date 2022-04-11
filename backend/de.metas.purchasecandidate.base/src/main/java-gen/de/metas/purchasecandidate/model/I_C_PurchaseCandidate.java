@@ -570,6 +570,27 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
 
 	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
+
+	/**
 	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *

@@ -206,7 +206,7 @@ public class PickingJobCreateCommand
 		ProductId productId;
 	}
 
-	private static PickingJobLineKey extractPickingJobLineKey(@NonNull Packageable item)
+	private static PickingJobLineKey extractPickingJobLineKey(@NonNull final Packageable item)
 	{
 		return PickingJobLineKey.builder().productId(item.getProductId()).build();
 	}

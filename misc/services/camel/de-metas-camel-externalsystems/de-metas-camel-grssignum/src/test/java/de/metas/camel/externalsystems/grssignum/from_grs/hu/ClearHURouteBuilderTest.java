@@ -25,7 +25,7 @@ package de.metas.camel.externalsystems.grssignum.from_grs.hu;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.common.v2.ClearHUCamelRequest;
+import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -49,7 +49,7 @@ public class ClearHURouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_CLEAR_HU = "mock:clearHURoute";
 	private static final String JSON_HU_CLEAR = "1_JsonHUClear.json";
-	private static final String JSON_HU_CLEAR_CAMEL_REQUEST = "10_ClearHUCamelRequest.json";
+	private static final String JSON_CLEARANCE_STATUS_REQUEST = "10_ClearanceStatusRequest.json";
 
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
@@ -90,8 +90,8 @@ public class ClearHURouteBuilderTest extends CamelTestSupport
 		context.start();
 
 		final MockEndpoint clearHUMockEP = getMockEndpoint(MOCK_CLEAR_HU);
-		final InputStream clearHUCamelReq = ClearHURouteBuilderTest.class.getResourceAsStream(JSON_HU_CLEAR_CAMEL_REQUEST);
-		clearHUMockEP.expectedBodiesReceived(objectMapper.readValue(clearHUCamelReq, ClearHUCamelRequest.class));
+		final InputStream clearanceStatusReq = ClearHURouteBuilderTest.class.getResourceAsStream(JSON_CLEARANCE_STATUS_REQUEST);
+		clearHUMockEP.expectedBodiesReceived(objectMapper.readValue(clearanceStatusReq, JsonSetClearanceStatusRequest.class));
 
 		final String requestBodyAsString = loadAsString(JSON_HU_CLEAR);
 

@@ -177,9 +177,19 @@ public class C_Flatrate_Term_StepDef
 			final I_C_Flatrate_Conditions contractConditions = conditionsTable.get(flatrateConditionsIdentifier);
 			assertThat(contractConditions).isNotNull();
 
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+			assertThat(product).isNotNull();
+
 			final I_C_Flatrate_Term contract = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(COLUMNNAME_C_Flatrate_Conditions_ID, contractConditions.getC_Flatrate_Conditions_ID())
+					.addEqualsFilter(COLUMNNAME_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 					.create()
 					.firstOnlyNotNull(I_C_Flatrate_Term.class);
 
@@ -197,14 +207,6 @@ public class C_Flatrate_Term_StepDef
 				final I_C_Order order = orderTable.get(orderIdentifier);
 				assertThat(order).isNotNull();
 				assertThat(contract.getC_Order_Term_ID()).isEqualTo(order.getC_Order_ID());
-			}
-
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				assertThat(product).isNotNull();
-				assertThat(contract.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			}
 
 			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());

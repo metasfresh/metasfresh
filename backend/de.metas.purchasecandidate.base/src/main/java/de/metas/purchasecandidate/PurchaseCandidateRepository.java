@@ -417,6 +417,12 @@ public class PurchaseCandidateRepository
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+		record.setIsSimulated(purchaseCandidate.isSimulated());
+
+		if (purchaseCandidate.isSimulated())
+		{
+			record.setProcessed(true);
+		}
 
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));

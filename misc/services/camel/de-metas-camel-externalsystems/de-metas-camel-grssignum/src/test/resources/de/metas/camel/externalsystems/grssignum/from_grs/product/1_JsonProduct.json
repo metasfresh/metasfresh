@@ -12,7 +12,17 @@
       "LIEFERANTENFREIGABE": 1,
       "INAKTIV": 1,
       "METASFRESHID": "1",
-      "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf"
+      "ROHKREDDATA": {
+        "ATTACHMENT": [
+          {
+            "ID": "Test",
+            "FileName": "/directory/Attachment.pdf",
+            "ValidUntil": "2022-03-01T00:00:00",
+            "DocumentType": "DocumentType",
+            "DocumentGroup": "DocumentGroup"
+          }
+        ]
+      }
     },
     {
       "MKREDID": "vendorId2",

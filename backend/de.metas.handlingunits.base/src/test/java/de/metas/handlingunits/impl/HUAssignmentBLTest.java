@@ -1,5 +1,6 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.handlingunits.HuId;
@@ -16,6 +17,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -56,6 +60,9 @@ public class HUAssignmentBLTest
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
 
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		//
 		// Make sure Main handling units interceptor is registered
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
@@ -71,7 +78,7 @@ public class HUAssignmentBLTest
 				ddOrderService,
 				new PickingBOMService()));
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
-
+		
 		//
 		// BL under test
 		huAssignmentBL = Services.get(IHUAssignmentBL.class);

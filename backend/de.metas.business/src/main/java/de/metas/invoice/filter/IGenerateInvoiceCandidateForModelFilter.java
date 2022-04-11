@@ -22,14 +22,12 @@
 
 package de.metas.invoice.filter;
 
-import java.util.Set;
-
 public interface IGenerateInvoiceCandidateForModelFilter
 {
 	/**
-	 * @return the classnames - like e.g. `I_C_Order.class` - of the models with which this filter can be called. 
+	 * @return true, if the filter applies to the given {@code model}.
 	 */
-	Set<Class<?>> getSupportedTypes();
+	boolean applies(Object model);
 
 	/**
 	 * @return true if an invoice candidate should be created for the given {@code model}. 

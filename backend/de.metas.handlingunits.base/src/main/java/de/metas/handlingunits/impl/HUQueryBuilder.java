@@ -341,7 +341,7 @@ import java.util.Set;
 	@Override
 	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
-		ICompositeQueryFilter<I_M_HU> andFilters = queryBL.createCompositeQueryFilter(I_M_HU.class).setJoinAnd();
+		final ICompositeQueryFilter<I_M_HU> andFilters = queryBL.createCompositeQueryFilter(I_M_HU.class).setJoinAnd();
 
 		//
 		// Only Active HUs

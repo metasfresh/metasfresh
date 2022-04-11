@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1934139498L;
+	private static final long serialVersionUID = 1453414410L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -213,7 +213,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getDemandReference() 
+	public java.lang.String getDemandReference()
 	{
 		return get_ValueAsString(COLUMNNAME_DemandReference);
 	}
@@ -264,7 +264,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getExternalHeaderId() 
+	public java.lang.String getExternalHeaderId()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
 	}
@@ -276,7 +276,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getExternalLineId() 
+	public java.lang.String getExternalLineId()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
@@ -288,7 +288,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getExternalPurchaseOrderURL() 
+	public java.lang.String getExternalPurchaseOrderURL()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalPurchaseOrderURL);
 	}
@@ -351,6 +351,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isRequisitionCreated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRequisitionCreated);
+	}
+
+	@Override
+	public void setIsSimulated (final boolean IsSimulated)
+	{
+		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+	}
+
+	@Override
+	public boolean isSimulated()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}
 
 	@Override
@@ -483,7 +495,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getPOReference() 
+	public java.lang.String getPOReference()
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}
@@ -670,7 +682,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getSource() 
+	public java.lang.String getSource()
 	{
 		return get_ValueAsString(COLUMNNAME_Source);
 	}
@@ -682,7 +694,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString1() 
+	public java.lang.String getUserElementString1()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
@@ -694,7 +706,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString2() 
+	public java.lang.String getUserElementString2()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
@@ -706,7 +718,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString3() 
+	public java.lang.String getUserElementString3()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
@@ -718,7 +730,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString4() 
+	public java.lang.String getUserElementString4()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
@@ -730,7 +742,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString5() 
+	public java.lang.String getUserElementString5()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
@@ -742,7 +754,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString6() 
+	public java.lang.String getUserElementString6()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
@@ -754,7 +766,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getUserElementString7() 
+	public java.lang.String getUserElementString7()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}

@@ -115,7 +115,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
     withEnv(["MF_VERSION=${mfVersion}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
-                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx2048M', options: [artifactsPublisher(disabled: true)]) {
 
                     nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
                     stage('Build parent-pom & commons') { // for display purposes

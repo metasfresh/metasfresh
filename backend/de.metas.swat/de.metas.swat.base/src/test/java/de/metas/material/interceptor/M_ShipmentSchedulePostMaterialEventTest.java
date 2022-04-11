@@ -189,6 +189,13 @@ public class M_ShipmentSchedulePostMaterialEventTest
 	@Test
 	public void createShipmentscheduleEvent_after_change()
 	{
+		final OrderLineDescriptor orderLineDescriptor = OrderLineDescriptor.builder()
+				.orderBPartnerId(10)
+				.orderId(20)
+				.orderLineId(30)
+				.build();
+		setupShipmentScheduleReferencedLineFactory(orderLineDescriptor);
+
 		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 

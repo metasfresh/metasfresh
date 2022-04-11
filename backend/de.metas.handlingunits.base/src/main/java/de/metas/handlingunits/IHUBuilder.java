@@ -59,8 +59,6 @@ public interface IHUBuilder extends IHUIterator
 	 * <p>
 	 * Otherwise, if the item type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} (or if the given parent item is {@code null}),
 	 * then {@link #create(I_M_HU_PI_Version)} shall create a "normal" HU.
-	 *
-	 * @param parentItem
 	 */
 	IHUBuilder setM_HU_Item_Parent(@Nullable I_M_HU_Item parentItem);
 

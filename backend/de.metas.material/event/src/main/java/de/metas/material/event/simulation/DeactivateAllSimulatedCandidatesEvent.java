@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,28 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.v2;
+package de.metas.material.event.simulation;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = ClearHUCamelRequest.ClearHUCamelRequestBuilder.class)
-public class ClearHUCamelRequest
+public class DeactivateAllSimulatedCandidatesEvent implements MaterialEvent
 {
-	@NonNull
-	@JsonProperty("metasfreshId")
-	JsonMetasfreshId metasfreshId;
+	public static final String TYPE = "DeactivateAllSimulatedCandidatesEvent";
 
 	@NonNull
-	@JsonProperty("clearanceStatusRequest")
-	JsonSetClearanceStatusRequest clearanceStatusRequest;
+	EventDescriptor eventDescriptor;
+
+	@JsonCreator
+	@Builder
+	public DeactivateAllSimulatedCandidatesEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor)
+	{
+		this.eventDescriptor = eventDescriptor;
+	}
 }

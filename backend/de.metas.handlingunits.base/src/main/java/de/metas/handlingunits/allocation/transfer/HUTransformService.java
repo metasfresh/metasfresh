@@ -1173,6 +1173,29 @@ public class HUTransformService
 		return result.build();
 	}
 
+	/**
+	  * If the given HU is aggregated, split out one TU and assign the given QR-code to it. Otherwise do nothing and jsut return the given {@code huId}.
+	  */
+	@NonNull
+	public HuId extractIfAggregatedByQRCode(@NonNull final HuId huId, @NonNull final HUQRCode huQRCode)
+	{
+		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, huId);
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			final HuId extractedTUId = splitOutTUFromAggregated(hu);
+			huQRCodesService.get().assign(huQRCode, extractedTUId);
+
+			return extractedTUId;
+		}
+		else
+		{
+			return huId;
+		}
+	}
+
 	private List<I_M_HU> huToNewCUs(@NonNull final HUsToNewCUsRequest singleSourceHuRequest)
 	{
 		final I_M_HU sourceHU = CollectionUtils.singleElement(singleSourceHuRequest.getSourceHUs());
@@ -1372,6 +1395,7 @@ public class HUTransformService
 				}));
 	}
 
+	@NonNull
 	public HuId extractToTopLevelByQRCode(@NonNull final HuId huId, @NonNull final HUQRCode huQRCode)
 	{
 		huQRCodesService.get().assertQRCodeAssignedToHU(huQRCode, huId);
@@ -1383,10 +1407,7 @@ public class HUTransformService
 		}
 		else if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
-			final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
-			final HuId extractedTUId = HuId.ofRepoId(extractedTU.getM_HU_ID());
-
+			final HuId extractedTUId = splitOutTUFromAggregated(hu);
 			huQRCodesService.get().assign(huQRCode, extractedTUId);
 
 			return extractedTUId;
@@ -1398,4 +1419,11 @@ public class HUTransformService
 		}
 	}
 
+	@NonNull
+	private HuId splitOutTUFromAggregated(@NonNull final I_M_HU hu)
+	{
+			final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
+			final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
+			return HuId.ofRepoId(extractedTU.getM_HU_ID());
+	}
 }

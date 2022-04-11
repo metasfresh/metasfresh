@@ -38,6 +38,11 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.IProductDAO;
@@ -48,8 +53,12 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +71,8 @@ public class CallOrderContractService
 	private static final AdMessageKey MSG_WRONG_TYPE_CONDITIONS = AdMessageKey.of("WRONG_TYPE_CONDITIONS");
 	private static final AdMessageKey MSG_BPARTNERS_DO_NOT_MATCH = AdMessageKey.of("BPARTNERS_DO_NOT_MATCH");
 	private static final AdMessageKey MSG_PRODUCTS_DO_NOT_MATCH = AdMessageKey.of("PRODUCTS_DO_NOT_MATCH");
+	private static final AdMessageKey MSG_SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
+	private static final AdMessageKey MSG_PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -69,6 +80,8 @@ public class CallOrderContractService
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@NonNull
 	public I_C_Flatrate_Term createCallOrderContract(@NonNull final I_C_OrderLine orderLine)
@@ -149,24 +162,57 @@ public class CallOrderContractService
 	public FlatrateTermId validateCallOrderLine(@NonNull final I_C_OrderLine callOrderLine, @NonNull final I_C_Order callOrder)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoIdOrNull(callOrderLine.getC_Flatrate_Term_ID());
+		final int orderLineSeqNo = callOrderLine.getLine();
 
 		if (flatrateTermId == null)
 		{
-			throw new AdempiereException(MSG_MISSING_FLATRATE_TERM, callOrderLine.getLine()).markAsUserValidationError();
+			throw new AdempiereException(MSG_MISSING_FLATRATE_TERM, orderLineSeqNo).markAsUserValidationError();
 		}
 
 		final I_C_Flatrate_Term callOrderContract = flatrateBL.getById(flatrateTermId);
 
 		if (!isCallOrderContract(callOrderContract))
 		{
-			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, callOrderLine.getLine())
+			throw new AdempiereException(MSG_WRONG_TYPE_CONDITIONS, orderLineSeqNo)
 					.markAsUserValidationError();
 		}
 
-		validateProduct(callOrderContract, callOrderLine);
-		validateBillPartner(callOrderContract, callOrder, callOrderLine);
+		final ProductId orderLineProductId = ProductId.ofRepoId(callOrderLine.getM_Product_ID());
+		validateProduct(callOrderContract, orderLineProductId, orderLineSeqNo);
+
+		final BPartnerId orderBillBPartnerId = orderBL.getBillToLocationId(callOrder).getBpartnerId();
+		validateBillPartner(callOrderContract, orderBillBPartnerId, orderLineSeqNo);
+
+		validateSOTrx(callOrderContract, SOTrx.ofBoolean(callOrder.isSOTrx()), callOrderLine.getLine());
 
 		return flatrateTermId;
+	}
+
+	public void validateCallOrderInvoiceLine(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final FlatrateTermId callOrderContractId)
+	{
+		final I_C_Flatrate_Term callOrderContract = flatrateDAO.getById(callOrderContractId);
+		final int invoiceLineSeqNo = invoiceLine.getLine();
+
+		final ProductId invoiceLineProductId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		validateProduct(callOrderContract, invoiceLineProductId, invoiceLineSeqNo);
+
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		validateBillPartner(callOrderContract, billPartnerId, invoiceLineSeqNo);
+
+		validateSOTrx(callOrderContract, SOTrx.ofBoolean(invoice.isSOTrx()), invoiceLineSeqNo);
+	}
+
+	public void validateCallOrderInOutLine(@NonNull final I_M_InOutLine inOutLine, @NonNull final FlatrateTermId callOrderContractId)
+	{
+		final I_C_Flatrate_Term callOrderContract = flatrateDAO.getById(callOrderContractId);
+		final int inOutLineSeqNo = inOutLine.getLine();
+
+		final ProductId inOutLineProductId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+		validateProduct(callOrderContract, inOutLineProductId, inOutLineSeqNo);
+
+		final I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
+		validateSOTrx(callOrderContract, SOTrx.ofBoolean(inOut.isSOTrx()), inOutLineSeqNo);
 	}
 
 	public boolean doesContractMatchOrderLine(@NonNull final I_C_OrderLine callOrderLine, @NonNull final I_C_Flatrate_Term callOrderContract)
@@ -190,41 +236,45 @@ public class CallOrderContractService
 		return contractBillPartnerId.equals(orderBillBPartnerId);
 	}
 
-	private void validateProduct(@NonNull final I_C_Flatrate_Term callOrderContract, @NonNull final I_C_OrderLine ol)
+	private void validateProduct(
+			@NonNull final I_C_Flatrate_Term callOrderContract,
+			@NonNull final ProductId documentLineProductId,
+			final int documentLineSeqNo)
 	{
-		final ProductId orderLineProductId = ProductId.ofRepoId(ol.getM_Product_ID());
 		final ProductId contractProductId = ProductId.ofRepoIdOrNull(callOrderContract.getM_Product_ID());
 
-		if (!orderLineProductId.equals(contractProductId))
+		if (!documentLineProductId.equals(contractProductId))
 		{
-			final I_M_Product orderLineProduct = productDAO.getById(orderLineProductId);
+			final I_M_Product documentLineProduct = productDAO.getById(documentLineProductId);
 
 			final String contractProductValue = contractProductId != null
 					? productDAO.getById(contractProductId).getValue()
 					: null;
 
 			throw new AdempiereException(MSG_PRODUCTS_DO_NOT_MATCH,
-										 orderLineProduct.getValue(),
-										 ol.getLine(),
+										 documentLineProduct.getValue(),
+										 documentLineSeqNo,
 										 contractProductValue)
 					.markAsUserValidationError();
 		}
 	}
 
-	private void validateBillPartner(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine)
+	private void validateBillPartner(
+			@NonNull final I_C_Flatrate_Term callOrderContract,
+			@NonNull final BPartnerId documentBillPartnerId,
+			final int documentLineSeqNo)
 	{
-		final BPartnerId orderBillBPartnerId = orderBL.getBillToLocationId(order).getBpartnerId();
-		final BPartnerId contractBillPartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
+		final BPartnerId contractBillPartnerId = BPartnerId.ofRepoId(callOrderContract.getBill_BPartner_ID());
 
-		if (!contractBillPartnerId.equals(orderBillBPartnerId))
+		if (!contractBillPartnerId.equals(documentBillPartnerId))
 		{
-			final I_C_BPartner orderBillPartner = bPartnerDAO.getById(orderBillBPartnerId);
+			final I_C_BPartner documentBillPartner = bPartnerDAO.getById(documentBillPartnerId);
 			final I_C_BPartner contractPartner = bPartnerDAO.getById(contractBillPartnerId);
 
 			throw new AdempiereException(MSG_BPARTNERS_DO_NOT_MATCH,
-										 orderBillPartner.getValue(),
+										 documentBillPartner.getValue(),
 										 contractPartner.getValue(),
-										 orderLine.getLine())
+										 documentLineSeqNo)
 					.markAsUserValidationError();
 		}
 	}
@@ -232,5 +282,35 @@ public class CallOrderContractService
 	private boolean isCallOrderContract(@NonNull final I_C_Flatrate_Term contract)
 	{
 		return TypeConditions.CALL_ORDER.getCode().equals(contract.getType_Conditions());
+	}
+
+	private void validateSOTrx(
+			@NonNull final I_C_Flatrate_Term contract,
+			@NonNull final SOTrx documentSOTrx,
+			final int documentLineSeqNo)
+	{
+		final OrderId initiatingContractOrderId = OrderId.ofRepoIdOrNull(contract.getC_Order_Term_ID());
+
+		Check.assumeNotNull(initiatingContractOrderId, "C_Order_Term_ID cannot be null on CallOrder contracts!");
+
+		final I_C_Order initiatingContractOrder = orderBL.getById(initiatingContractOrderId);
+
+		if (initiatingContractOrder.isSOTrx() == documentSOTrx.toBoolean())
+		{
+			return;
+		}
+
+		if (initiatingContractOrder.isSOTrx())
+		{
+			throw new AdempiereException(MSG_SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH,
+										 contract.getDocumentNo(),
+										 documentLineSeqNo)
+					.markAsUserValidationError();
+		}
+
+		throw new AdempiereException(MSG_PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH,
+									 contract.getDocumentNo(),
+									 documentLineSeqNo)
+				.markAsUserValidationError();
 	}
 }

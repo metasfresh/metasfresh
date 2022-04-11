@@ -1,0 +1,35 @@
+.attributes {
+  position: static;
+  padding-top: 4px;
+  display: block;
+  min-width: 5rem;
+  max-width: 10rem;
+
+  &::selection {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
+.attributes-in-table {
+  padding: .3rem;
+  padding-left: .5rem;
+
+  .tag {
+    padding: .25rem .3rem .15rem;
+    line-height: 1;
+    font-size: 0.8rem;
+  }
+}
+
+.attributes-dropdown {
+  user-select: none;
+  position: absolute;
+  z-index: 50;
+  margin-top: 5px;
+  width: 450px;
+}
+
+.attributes-dropup {
+  bottom: 35px;
+}

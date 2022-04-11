@@ -97,7 +97,7 @@ public class M_InOut_StepDef
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
-			@NonNull final C_Order_StepDefData orderTable, 
+			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable	)
 	{
 		this.shipmentTable = shipmentTable;
@@ -251,6 +251,73 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
+	@And("^the (shipment|material receipt) identified by (.*) is (completed|reactivated|reversed)$")
+	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case completed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case reactivated:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case reversed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_InOut action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+	@And("load M_InOut:")
+	public void loadM_InOut(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
+
+			final IQueryBuilder<I_M_InOutLine> shipmentLineBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_QtyEntered, qtyEntered);
+
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				shipmentLineBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+
+			final I_M_InOutLine shipmentLine = shipmentLineBuilder.create()
+					.firstOnlyNotNull(I_M_InOutLine.class);
+
+			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+
+			final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
+			assertThat(shipment).isNotNull();
+
+			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocStatus);
+			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
+
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderIdentifier))
+			{
+				final I_C_Order order = orderTable.get(orderIdentifier);
+				assertThat(shipment.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+			}
+
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentTable.putOrReplace(shipmentIdentifier, shipment);
+		}
+	}
+
 	@And("perform shipment document action")
 	public void reverseShipment(@NonNull final DataTable table)
 	{
@@ -289,72 +356,5 @@ public class M_InOut_StepDef
 
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
 		shipmentTable.put(shipmentIdentifier, shipmentRecord);
-	}
-
-	@And("^the shipment identified by (.*) is (completed|reactivated|reversed)$")
-	public void shipment_action(@NonNull final String shipmentIdentifier, @NonNull final String action)
-	{
-		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
-
-		switch (StepDefDocAction.valueOf(action))
-		{
-			case completed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-				break;
-			case reactivated:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
-				break;
-			case reversed:
-				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
-				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
-				break;
-			default:
-				throw new AdempiereException("Unhandled M_InOut action")
-						.appendParametersToMessage()
-						.setParameter("action:", action);
-		}
-	}
-
-	@And("load shipment:")
-	public void loadM_shipment(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
-
-			final IQueryBuilder<I_M_InOutLine> shipmentLineBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_QtyEntered, qtyEntered);
-
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				shipmentLineBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
-			}
-
-			final I_M_InOutLine shipmentLine = shipmentLineBuilder.create()
-					.firstOnlyNotNull(I_M_InOutLine.class);
-
-			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
-
-			final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
-			assertThat(shipment).isNotNull();
-
-			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocStatus);
-			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
-
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
-			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				assertThat(shipment.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-			}
-
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentTable.putOrReplace(shipmentIdentifier, shipment);
-		}
 	}
 }

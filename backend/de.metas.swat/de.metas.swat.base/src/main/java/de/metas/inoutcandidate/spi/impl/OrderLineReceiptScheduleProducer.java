@@ -1,6 +1,49 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
+import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
+
 import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -23,52 +66,6 @@ import java.sql.Timestamp;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ILotNumberBL;
-import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_PP_Product_Planning;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
-import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 
 /**
  *
@@ -231,6 +228,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 		receiptSchedule.setQtyOrdered(line.getQtyOrdered());
 		// receiptSchedule.setQtyToMove(line.getQtyOrdered()); // QtyToMove will be computed in IReceiptScheduleQtysBL
+
+		//
+		// Contract
+		receiptSchedule.setC_Flatrate_Term_ID(line.getC_Flatrate_Term_ID());
 
 		//
 		// Update aggregation key
