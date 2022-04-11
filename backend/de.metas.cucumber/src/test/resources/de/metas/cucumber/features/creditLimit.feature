@@ -50,7 +50,7 @@ Feature: credit limit
     # make sure that we have some stock
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | 540008         | 2021-04-17   |
+      | i_1        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |

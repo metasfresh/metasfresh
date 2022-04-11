@@ -477,8 +477,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   Scenario: Order candidate to shipment and invoice flow and closed order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
-      | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory_1               | 2021-10-12   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |
@@ -553,8 +553,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   Scenario: Order candidate to shipment in first step and then invoice with close order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
-      | inventory_1               | 2021-10-12T00:00:00Z | 540008         |
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory_1               | 2021-10-12   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory_1               | inventoryLine_1               | 2005577                 | 0       | 100      | PCE          |

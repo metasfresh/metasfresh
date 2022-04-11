@@ -30,8 +30,8 @@ Feature: reversed shipment
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate         | M_Warehouse_ID |
-      | inv_1                     | 2021-04-01T00:00:00Z | 540008         |
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |

@@ -85,7 +85,7 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
     And metasfresh initially has no MD_Candidate data
     And metasfresh contains C_BPartners:
@@ -215,7 +215,7 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_2     | p_3                     | bomVersions_2                        | false        | productPlanningASI                       |
     And metasfresh initially has no MD_Candidate data
     And metasfresh contains C_BPartners:
@@ -348,7 +348,7 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_11    | p_11                    | bomVersions_3                        | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
@@ -472,7 +472,7 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
       | ppln_111   | p_111                   | bomVersions_4                        | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -570,7 +570,7 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_11    | p_11                    | bomVersions_5                        | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
@@ -671,7 +671,7 @@ Feature: create production order
       | boml_2     | bom_1                        | p_comp_2                | 2021-04-01 | 15       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                        | false        |
     And metasfresh initially has no MD_Candidate data
     And metasfresh contains C_BPartners:

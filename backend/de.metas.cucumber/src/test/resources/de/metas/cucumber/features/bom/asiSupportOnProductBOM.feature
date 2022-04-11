@@ -131,8 +131,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S1              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S1              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """
@@ -257,8 +257,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S2              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S2              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.PreparationDate  |
@@ -376,8 +376,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier      | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
-      | pp_finishedGood | product_S3              | bv_1                                 | false        | ppProductPlanningAttributeSetInstance    | true                 |
+      | Identifier      | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier | IsAttributeDependant |
+      | pp_finishedGood | product_S3              | bv_1                                     | false        | ppProductPlanningAttributeSetInstance    | true                 |
 
     And metasfresh contains M_PricingSystems
       | Identifier | Name  | Value | OPT.IsActive |

@@ -76,7 +76,6 @@ public class M_Inventory_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
 
-
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
@@ -182,7 +181,7 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID,"M_Inventory"), inventoryRecord);
+		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory"), inventoryRecord);
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
@@ -216,6 +215,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryLine);
 
-		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID,"M_InventoryLine"), inventoryLine);
+		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID, "M_InventoryLine"), inventoryLine);
 	}
 }
