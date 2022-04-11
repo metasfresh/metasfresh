@@ -94,7 +94,7 @@ public class ProductionSimulationService
 				.materialDescriptor(materialDescriptor)
 				.build();
 
-		postMaterialEventService.postEventNow(simulatedDemandCreatedEvent);
+		postMaterialEventService.postEventAsync(simulatedDemandCreatedEvent);
 
 		try
 		{
@@ -104,7 +104,7 @@ public class ProductionSimulationService
 		{
 			log.error("Error encountered while awaiting processing for traceId:" + traceId, exception);
 
-			postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+			postMaterialEventService.postEventAsync(DeactivateAllSimulatedCandidatesEvent.builder()
 														  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
 														  .build());
 		}
