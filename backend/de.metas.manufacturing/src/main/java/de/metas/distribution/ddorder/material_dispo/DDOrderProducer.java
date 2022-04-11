@@ -84,7 +84,8 @@ public class DDOrderProducer
 
 	public ImmutableList<I_DD_Order> createDDOrders(
 			@NonNull final DDOrder ddOrder,
-			@NonNull final Date dateOrdered)
+			@NonNull final Date dateOrdered,
+			@Nullable final String traceId)
 	{
 		final Map<FromToWarehouse, I_DD_Order> warehouses2ddOrder = new HashMap<>();
 		
@@ -95,7 +96,7 @@ public class DDOrderProducer
 
 			final I_DD_Order ddOrderRecord = warehouses2ddOrder.computeIfAbsent(
 					fromToWarehouseKey, 
-					key -> createDDOrderRecord(key, ddOrder, dateOrdered));
+					key -> createDDOrderRecord(key, ddOrder, dateOrdered, traceId));
 
 			createDDOrderLine(ddOrder, linePojo, networkDistributionLineRecord, fromToWarehouseKey, ddOrderRecord);
 		}

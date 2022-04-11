@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
@@ -123,6 +124,7 @@ public class M_HU_StepDef
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final StepDefData<I_M_HU_QRCode> qrCodesTable,
 			@NonNull final TestContext testContext)
 	{
 		this.productTable = productTable;
