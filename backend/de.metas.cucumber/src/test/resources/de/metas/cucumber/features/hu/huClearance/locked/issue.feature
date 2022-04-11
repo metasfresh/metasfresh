@@ -135,4 +135,4 @@ Feature: Locked HUs can not be issued to production order
 
     And complete planning for PP_Order:
       | PP_Order_ID.Identifier | OPT.ErrorMessage                         |
-      | ppOrder_manufacturing  | Only released HUs can be finally issued! |
+      | ppOrder_manufacturing  | Nur freigegebene HUs können final zugeteilt werden! |
