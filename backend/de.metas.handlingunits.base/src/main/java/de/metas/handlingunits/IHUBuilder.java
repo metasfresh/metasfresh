@@ -96,5 +96,5 @@ public interface IHUBuilder extends IHUIterator
 	 */
 	boolean isHUPlanningReceiptOwnerPM();
 
-	IHUBuilder setHUClearanceStatus(ClearanceStatus huClearanceStatus, String huClearanceNote);
+	IHUBuilder setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
 }

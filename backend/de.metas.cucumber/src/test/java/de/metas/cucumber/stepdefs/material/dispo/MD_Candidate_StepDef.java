@@ -23,9 +23,10 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -91,19 +92,21 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_MD_Candidate> stockCandidateTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
-	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+	private final M_Product_StepDefData productTable;
+	private final MD_Candidate_StepDefData stockCandidateTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 
 	public MD_Candidate_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_MD_Candidate> stockCandidateTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final MD_Candidate_StepDefData stockCandidateTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData)
 	{
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
 	}
 
 	@Before

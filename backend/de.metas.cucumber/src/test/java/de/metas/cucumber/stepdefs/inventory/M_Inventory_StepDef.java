@@ -24,8 +24,12 @@ package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
@@ -67,22 +71,22 @@ public class M_Inventory_StepDef
 {
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
-	private final StepDefData<I_M_Inventory> inventoryTable;
-	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_Inventory_StepDefData inventoryTable;
+	private final M_InventoryLine_StepDefData inventoryLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_Product_StepDefData productTable;
+	private final M_HU_StepDefData huTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public M_Inventory_StepDef(
-			final StepDefData<I_M_Inventory> inventoryTable,
-			final StepDefData<I_M_InventoryLine> inventoryLineTable,
-			final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
-			final StepDefData<I_M_Product> productTable,
-			final StepDefData<I_M_HU> huTable,
-			final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			final M_Inventory_StepDefData inventoryTable,
+			final M_InventoryLine_StepDefData inventoryLineTable,
+			final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			final M_Product_StepDefData productTable,
+			final M_HU_StepDefData huTable,
+			final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;

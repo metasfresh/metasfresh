@@ -22,10 +22,15 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_Bom_StepDefData;
+import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
@@ -78,24 +83,24 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_PP_Product_BOM> productBOMTable;
-	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_PP_Order> ppOrderTable;
-	private final StepDefData<I_S_Resource> resourceTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
-	private final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable;
+	private final M_Product_StepDefData productTable;
+	private final PP_Product_Bom_StepDefData productBOMTable;
+	private final PP_Product_Planning_StepDefData productPlanningTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final PP_Order_StepDefData ppOrderTable;
+	private final S_Resource_StepDefData resourceTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 
 	public PP_Order_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
-			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
-			@NonNull final StepDefData<I_S_Resource> resourceTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
-			@NonNull final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final PP_Product_Bom_StepDefData productBOMTable,
+			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final S_Resource_StepDefData resourceTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -104,7 +109,7 @@ public class PP_Order_StepDef
 		this.ppOrderTable = ppOrderTable;
 		this.resourceTable = resourceTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.ppOrderBomLineTable = ppOrderBomLineTable;
+		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -184,14 +189,25 @@ public class PP_Order_StepDef
 	}
 
 	@And("complete planning for PP_Order:")
-	public void process_pp_order(@NonNull final DataTable dataTable)
+	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 
-			trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.ErrorMessage");
+
+			try
+			{
+				trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+
+				assertThat(errorMessage).as("ErrorMessage should be null if huPPOrderBL.processPlanning() finished with no error!").isNull();
+			}
+			catch (final Exception e)
+			{
+				StepDefUtil.validateErrorMessage(e, errorMessage);
+			}
 		}
 	}
 
@@ -232,14 +248,14 @@ public class PP_Order_StepDef
 				return false;
 			}
 
-			ppOrderBomLineTable.putOrReplace(ppOrderBOMLineIdentifier, orderBOMLineRecord);
+			ppOrderBOMLineTable.putOrReplace(ppOrderBOMLineIdentifier, orderBOMLineRecord);
 			return true;
 		};
 
 		final boolean bomLineFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
 		assertThat(bomLineFound).isTrue();
 
-		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBomLineTable.get(ppOrderBOMLineIdentifier);
+		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMLineTable.get(ppOrderBOMLineIdentifier);
 		assertThat(ppOrderBOMLine).isNotNull();
 
 		//validate asi

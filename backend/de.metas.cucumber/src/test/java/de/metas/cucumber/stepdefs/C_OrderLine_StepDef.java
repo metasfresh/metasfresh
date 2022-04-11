@@ -24,6 +24,9 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -64,20 +67,20 @@ public class C_OrderLine_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
-	private final StepDefData<I_C_Flatrate_Conditions> flatrateConditionsTable;
-	private final StepDefData<I_C_Flatrate_Term> contractTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
 
 	public C_OrderLine_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> flatrateConditionsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;

@@ -23,11 +23,16 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -75,22 +80,22 @@ public class C_Invoice_StepDef
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_InvoiceLine> invoiceLineTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandidateTable;
 
 	public C_Invoice_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_InvoiceLine> invoiceLineTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandidateTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;

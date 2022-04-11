@@ -20,9 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -53,18 +58,18 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Invoice_Candidate_StepDef
 {
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandidateTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	public C_Invoice_Candidate_StepDef(
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandidateTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandidateTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.invoiceCandidateTable = invoiceCandidateTable;
 		this.orderTable = orderTable;

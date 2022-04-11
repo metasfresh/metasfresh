@@ -40,11 +40,11 @@ import static org.compiere.model.I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID;
 
 public class M_AttributeSet_StepDef
 {
-	private final StepDefData<I_M_AttributeSet> attributeSetTable;
+	private final M_AttributeSet_StepDefData attributeSetTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public M_AttributeSet_StepDef(@NonNull final StepDefData<I_M_AttributeSet> attributeSetTable)
+	public M_AttributeSet_StepDef(@NonNull final M_AttributeSet_StepDefData attributeSetTable)
 	{
 		this.attributeSetTable = attributeSetTable;
 	}

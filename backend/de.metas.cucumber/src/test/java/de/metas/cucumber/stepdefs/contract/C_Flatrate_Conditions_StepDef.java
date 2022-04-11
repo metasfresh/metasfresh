@@ -28,7 +28,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -49,14 +50,14 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
-	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
-	private final StepDefData<I_M_PricingSystem> pricingSysTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
+	private final M_PricingSystem_StepDefData pricingSysTable;
 
 	public C_Flatrate_Conditions_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSysTable)
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSysTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;
