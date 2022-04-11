@@ -177,4 +177,4 @@ Feature: Locked HUs can not be picked
 
     And process picking
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | OPT.ErrorMessage                               |
-      | newCreatedCU       | s_s_3                            | Only cleared HUs can be processed for picking! |
+      | newCreatedCU       | s_s_3                            | Nur freigegebene HUs können zur Kommissionierung verarbeitet werden! |
