@@ -41,23 +41,18 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -67,8 +62,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -76,7 +69,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -135,73 +127,6 @@ public class C_Invoice_StepDef
 
 			validateInvoice(invoice, row);
 		}
-	}
-
-	@Then("^enqueue invoice candidate of order (.*) for invoicing and after not more than (.*)s, the invoice is found$")
-	public void generateInvoice(@NonNull final String orderIdentifier, final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
-
-		//make sure the given invoice candidate is ready for processing
-		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
-		{
-			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-
-			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
-
-		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
-
-		//enqueue invoice candidate
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500,
-							   () -> {
-								   InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
-								   return invoiceCandidateRecord.isProcessed();
-							   },
-							   () -> logger.error(invoiceCandidateRecord + " was not processed"));
-
-		DB.deleteT_Selection(invoiceCandidatesSelectionId, ITrx.TRXNAME_None);
-
-		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-
-		final List<de.metas.adempiere.model.I_C_Invoice> sortedInvoices = invoices.stream()
-				.sorted(Comparator.comparing(de.metas.adempiere.model.I_C_Invoice::getCreated))
-				.collect(ImmutableList.toImmutableList());
-
-		final Integer invoicesSize = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.InvoicesSize");
-		if (invoicesSize != null)
-		{
-			assertThat(sortedInvoices.size()).isEqualTo(invoicesSize);
-		}
-		else
-		{
-			assertThat(sortedInvoices.size()).isEqualTo(1);
-		}
-
-		final I_C_Invoice invoice = sortedInvoices.get(sortedInvoices.size() - 1);
-
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceTable.put(invoiceIdentifier, invoice);
 	}
 
 	@And("^the invoice identified by (.*) is (reversed)$")
