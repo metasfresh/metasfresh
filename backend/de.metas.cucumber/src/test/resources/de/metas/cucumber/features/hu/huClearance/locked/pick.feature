@@ -72,7 +72,7 @@ Feature: Locked HUs can not be picked
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | newCreatedCU       | L               | Locked HU         |
+      | newCreatedCU       | Locked          | Locked HU         |
 
 
   Scenario: Locked HUs can not be picked on the fly
@@ -135,7 +135,7 @@ Feature: Locked HUs can not be picked
   Scenario: Preselect clear HU for picking then lock it before processing
     Given update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | createdLU          | C               | Cleared HU        |
+      | createdLU          | Cleared         | Cleared HU        |
 
     And metasfresh contains C_BPartners:
       | Identifier | Name                            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
@@ -173,7 +173,7 @@ Feature: Locked HUs can not be picked
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | newCreatedCU       | L               | Locked HU         |
+      | newCreatedCU       | Locked          | Locked HU         |
 
     And process picking
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | OPT.ErrorMessage                               |

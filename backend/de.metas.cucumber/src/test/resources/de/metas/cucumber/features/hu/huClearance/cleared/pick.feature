@@ -51,7 +51,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | createdCU          | C               | Cleared HU        |
+      | createdCU          | Cleared         | Cleared HU        |
 
 
   Scenario: Cleared HUs can be picked on the fly

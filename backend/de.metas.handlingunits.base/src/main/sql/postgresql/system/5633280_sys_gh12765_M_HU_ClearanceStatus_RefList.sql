@@ -33,6 +33,61 @@ UPDATE AD_Ref_List SET Name='L', Value='L',Updated=TO_TIMESTAMP('2022-04-04 18:5
 UPDATE AD_Ref_List SET Name='Q', Value='Q',Updated=TO_TIMESTAMP('2022-04-04 18:55:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543123
 ;
 
+-- 2022-04-11T06:29:15.807Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=1,Updated=TO_TIMESTAMP('2022-04-11 09:29:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=579206
+;
+
+-- 2022-04-11T06:40:55.685Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Only released HUs can be finally issued!',Updated=TO_TIMESTAMP('2022-04-11 09:40:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545117
+;
+
+-- 2022-04-11T06:41:09.289Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können final zugeteilt werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545117
+;
+
+-- 2022-04-11T06:41:15.262Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können final zugeteilt werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545117
+;
+
+-- 2022-04-11T06:41:21.232Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können final zugeteilt werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545117
+;
+
+-- 2022-04-11T06:41:38.444Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können zur Kommissionierung verarbeitet werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545116
+;
+
+-- 2022-04-11T06:41:47.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können zur Kommissionierung verarbeitet werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545116
+;
+
+-- 2022-04-11T06:41:52.635Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs können zur Kommissionierung verarbeitet werden!',Updated=TO_TIMESTAMP('2022-04-11 09:41:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545116
+;
+
+-- 2022-04-11T07:40:45.008Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Nur freigegebene HUs können zur Kommissionierung verarbeitet werden!',Updated=TO_TIMESTAMP('2022-04-11 10:40:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545116
+;
+
+-- 2022-04-11T07:42:49.712Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Nur freigegebene HUs können final zugeteilt werden!',Updated=TO_TIMESTAMP('2022-04-11 10:42:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545117
+;
+
+-- 2022-04-11T07:57:11.326Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Only released HUs can be finally issued!',Updated=TO_TIMESTAMP('2022-04-11 10:57:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545117
+;
+
 update m_hu set clearancestatus='L',Updated=TO_TIMESTAMP('2022-04-04 18:55:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=99 where clearancestatus='Locked'
 ;
 

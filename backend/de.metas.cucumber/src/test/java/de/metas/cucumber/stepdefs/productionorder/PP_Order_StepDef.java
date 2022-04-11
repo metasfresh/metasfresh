@@ -25,10 +25,8 @@ package de.metas.cucumber.stepdefs.productionorder;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.S_Resource_StepDef;
 import de.metas.cucumber.stepdefs.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_Bom_StepDefData;
@@ -191,7 +189,7 @@ public class PP_Order_StepDef
 	}
 
 	@And("complete planning for PP_Order:")
-	public void process_pp_order(@NonNull final DataTable dataTable)
+	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
@@ -208,14 +206,7 @@ public class PP_Order_StepDef
 			}
 			catch (final Exception e)
 			{
-				if (errorMessage != null)
-				{
-					assertThat(e.getMessage()).contains(errorMessage);
-				}
-				else
-				{
-					throw e;
-				}
+				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
 	}
