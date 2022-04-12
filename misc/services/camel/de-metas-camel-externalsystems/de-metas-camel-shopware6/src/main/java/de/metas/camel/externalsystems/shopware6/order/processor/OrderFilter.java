@@ -175,7 +175,7 @@ public class OrderFilter implements Processor
 
 		if (transactionList.size() > 1)
 		{
-			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Multiple transactions returned");
+			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Multiple active transactions returned");
 		}
 
 		return transactionList.stream().findFirst();
