@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.order.sales;
 
+import ch.qos.logback.classic.Level;
 import de.metas.RestUtils;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -29,6 +30,7 @@ import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -42,6 +44,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.payment.PaymentService;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -50,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -58,6 +62,8 @@ import java.util.Optional;
 @Service
 public class OrderService
 {
+	private final static transient Logger logger = LogManager.getLogger(OrderService.class);
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -88,6 +94,7 @@ public class OrderService
 		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
 		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.",orgId.getRepoId(), paymentExternalId.getValue());
 			return; // nothing to do, external payment already registered
 		}
 
