@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:17 as build
 
 RUN npm install -g webpack webpack-cli
 
@@ -13,3 +13,14 @@ COPY frontend/ .
 RUN yarn lint
 # RUN yarn test --ci
 RUN webpack --config webpack.prod.js
+
+
+FROM nginx as runtime
+
+COPY docker/frontend/config.js /usr/share/nginx/html
+COPY docker/frontend/default.conf /etc/nginx/conf.d
+COPY --chmod=700 docker/frontend/start_webui.sh .
+
+COPY --from=build /app/dist/* /usr/share/nginx/html/
+
+ENTRYPOINT ["/start_webui.sh"]

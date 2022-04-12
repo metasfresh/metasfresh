@@ -76,7 +76,7 @@ services:
       - "443:443"
     deploy:
       mode: replicated
-      replicas: 0
+      replicas: 1
 
 volumes: {}
 configs: {}

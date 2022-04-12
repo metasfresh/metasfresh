@@ -51,10 +51,10 @@
     "proxy-up": "node server.mjs&",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
     "lint-fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "start": "yarn run proxy-up && react-scripts start",
-    "build": "react-scripts build && mkdir -p build/static/media && cp src/static/images/logo.png build/static/media/logo.png",
-    "test": "react-scripts test",
-    "test:watch": "react-scripts test --watchAll=true",
+    "start": "yarn run proxy-up && react-scripts --openssl-legacy-provider start",
+    "build": "react-scripts --openssl-legacy-provider build && mkdir -p build/static/media && cp src/static/images/logo.png build/static/media/logo.png",
+    "test": "react-scripts --openssl-legacy-provider test",
+    "test:watch": "react-scripts --openssl-legacy-provider test --watchAll=true",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
