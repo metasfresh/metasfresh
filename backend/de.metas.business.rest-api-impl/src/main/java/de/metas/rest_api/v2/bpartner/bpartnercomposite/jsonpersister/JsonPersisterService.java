@@ -797,6 +797,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isCompanyNameSet())
 		{
 			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
+			bpartner.setCompany(Check.isNotBlank(jsonBPartner.getCompanyName()));
 		}
 
 		// name

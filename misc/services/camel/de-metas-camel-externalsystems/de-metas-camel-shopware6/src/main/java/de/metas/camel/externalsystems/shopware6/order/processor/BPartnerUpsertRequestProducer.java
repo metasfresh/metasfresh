@@ -155,9 +155,9 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		resultBuilder.jsonRequestBPartnerUpsert(JsonRequestBPartnerUpsert.builder()
-														.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-														.requestItem(bPartnerUpsertItem)
-														.build());
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(bPartnerUpsertItem)
+				.build());
 
 		return resultBuilder.build();
 	}
@@ -333,16 +333,16 @@ public class BPartnerUpsertRequestProducer
 		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(), billingAddressId)
 				? shippingAddress
 				: shopwareClient.getOrderAddressDetails(billingAddressId,
-														bPartnerLocationIdentifierCustomShopwarePath,
-														bPartnerLocationIdentifierCustomMetasfreshPath,
-														emailCustomPath)
+						bPartnerLocationIdentifierCustomShopwarePath,
+						bPartnerLocationIdentifierCustomMetasfreshPath,
+						emailCustomPath)
 				.orElseThrow(() -> new RuntimeException("Missing address details for addressId: " + billingAddressId));
 	}
 
 	private boolean isBillingAddressSameAsShippingAddress()
 	{
-		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(),
-							  billingAddress.getJsonOrderAddress().getId());
+		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(), billingAddress.getJsonOrderAddress().getId())
+				|| (shippingAddress.getCustomMetasfreshId() != null && Objects.equals(shippingAddress.getCustomMetasfreshId(), billingAddress.getCustomMetasfreshId()));
 	}
 
 	@NonNull
