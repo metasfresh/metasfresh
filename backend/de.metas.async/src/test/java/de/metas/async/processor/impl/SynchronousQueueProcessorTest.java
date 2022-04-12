@@ -30,7 +30,11 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 	@Test
 	public void test01()
 	{
-		helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
+		final I_C_Queue_PackageProcessor packageProcessorDef = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
+
+		final I_C_Queue_Processor queueProcessor = helper.createQueueProcessor(StaticMockedWorkpackageProcessor.class.getName(), 1, 1000);
+
+		helper.assignPackageProcessor(queueProcessor, packageProcessorDef);
 
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
