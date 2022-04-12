@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
+import de.metas.util.Check;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -135,7 +136,7 @@ public class StepDefUtil
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
-	
+
 	@NonNull
 	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
 	{
@@ -162,5 +163,17 @@ public class StepDefUtil
 	public void waitFor(final int secondsToWait) throws InterruptedException
 	{
 		Thread.sleep(secondsToWait * 1000);
+	}
+
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	{
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
 	}
 }

@@ -26,8 +26,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
@@ -35,10 +37,13 @@ import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,6 +62,8 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -75,19 +82,22 @@ public class M_Inventory_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_HU_StepDefData huTable)
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.productTable = productTable;
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")
@@ -159,6 +169,34 @@ public class M_Inventory_StepDef
 		huTable.put(huIdentifier, InterfaceWrapperHelper.load(huId, I_M_HU.class));
 	}
 
+	@And("metasfresh initially has M_Inventory data")
+	public void setupM_Inventory_Data(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createM_Inventory(dataTableRow);
+		}
+	}
+
+	@And("metasfresh initially has M_InventoryLine data")
+	public void setupM_InventoryLine_Data(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createM_InventoryLine(dataTableRow);
+		}
+	}
+
+	@And("complete inventory with inventoryIdentifier {string}")
+	public void complete_inventory(@NonNull final String inventoryIdentifier)
+	{
+		final I_M_Inventory inventory = inventoryTable.get(inventoryIdentifier);
+
+		inventoryService.completeDocument(InventoryId.ofRepoId(inventory.getM_Inventory_ID()));
+	}
+
 	private void addNewInventory(@NonNull final Map<String, String> tableRow)
 	{
 		final int warehouseId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
@@ -216,5 +254,64 @@ public class M_Inventory_StepDef
 		saveRecord(inventoryLine);
 
 		inventoryLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID, "M_InventoryLine"), inventoryLine);
+	}
+
+	private void createM_Inventory(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "M_Inventory_ID.Identifier");
+		final Timestamp movementDate = DataTableUtil.extractDateTimestampForColumnName(row, "MovementDate");
+		final String documentNo = DataTableUtil.extractStringForColumnName(row, "DocumentNo");
+
+		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		inventoryRecord.setC_DocType_ID(StepDefConstants.DOC_TYPE_ID_MMI.getRepoId());
+		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
+
+		inventoryRecord.setMovementDate(movementDate);
+		inventoryRecord.setDocumentNo(documentNo);
+
+		saveRecord(inventoryRecord);
+
+		inventoryTable.put(identifier, inventoryRecord);
+	}
+
+	private void createM_InventoryLine(@NonNull final Map<String, String> row)
+	{
+		final String inventoryIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Inventory_ID.Identifier");
+		final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InventoryLine_ID.Identifier");
+		final BigDecimal qtyBook = DataTableUtil.extractBigDecimalForColumnName(row, "QtyBook");
+		final BigDecimal qtyCount = DataTableUtil.extractBigDecimalForColumnName(row, "QtyCount");
+		final Integer productId = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.M_Product_ID");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+
+		final I_M_Inventory mInventory = inventoryTable.get(inventoryIdentifier);
+
+		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
+		inventoryLineRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		inventoryLineRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
+		inventoryLineRecord.setM_Locator_ID(StepDefConstants.LOCATOR_ID.getRepoId());
+		inventoryLineRecord.setM_AttributeSetInstance(null);
+		inventoryLineRecord.setHUAggregationType(HUAggregationType.SINGLE_HU.getCode());
+		inventoryLineRecord.setIsCounted(true);
+
+		inventoryLineRecord.setM_Inventory_ID(mInventory.getM_Inventory_ID());
+		inventoryLineRecord.setQtyBook(qtyBook);
+		inventoryLineRecord.setQtyCount(qtyCount);
+
+		if (productId == null)
+		{
+			final I_M_Product product = productTable.get(productIdentifier);
+			inventoryLineRecord.setM_Product_ID(product.getM_Product_ID());
+		}
+		else
+		{
+			final I_M_Product productById = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+			productTable.put(productIdentifier, productById);
+
+			inventoryLineRecord.setM_Product_ID(productById.getM_Product_ID());
+		}
+		InterfaceWrapperHelper.save(inventoryLineRecord);
+
+		inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord);
 	}
 }

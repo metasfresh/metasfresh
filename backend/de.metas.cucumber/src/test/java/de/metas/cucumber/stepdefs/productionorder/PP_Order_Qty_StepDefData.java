@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-manufacturing
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,9 +20,17 @@
  * #L%
  */
 
-package de.metas.common.handlingunits;
+package de.metas.cucumber.stepdefs.productionorder;
 
-public enum JsonClearanceStatus
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+
+import javax.annotation.Nullable;
+
+public class PP_Order_Qty_StepDefData extends StepDefData<I_PP_Order_Qty>
 {
-	Cleared, Locked, Quarantined
+	public PP_Order_Qty_StepDefData(@Nullable final Class<I_PP_Order_Qty> clazz)
+	{
+		super(I_PP_Order_Qty.class);
+	}
 }

@@ -24,7 +24,7 @@ package de.metas.handlingunits.allocation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import org.adempiere.ad.trx.api.ITrx;
@@ -95,5 +95,5 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 
 	IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM);
 
-	IHUProducerAllocationDestination setHUClearanceStatus(ClearanceStatus huClearanceStatus, String huClearanceNote);
+	IHUProducerAllocationDestination setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
 }

@@ -20,10 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.receiptschedule;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.order.OrderLineId;

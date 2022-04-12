@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,9 +45,11 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -73,7 +75,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -107,6 +111,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -337,6 +342,51 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	@And("validate C_Invoice_Candidate:")
+	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
+			assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
+
+			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered);
+			if (qtyOrdered != null)
+			{
+				assertThat(invoiceCandidate.getQtyOrdered()).isEqualTo(qtyOrdered);
+			}
+
+			final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered);
+			if (qtyDelivered != null)
+			{
+				assertThat(invoiceCandidate.getQtyDelivered()).isEqualTo(qtyDelivered);
+			}
+
+			final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override);
+			if (qtyToInvoiceOverride != null)
+			{
+				assertThat(invoiceCandidate.getQtyToInvoice_Override()).isEqualTo(qtyToInvoiceOverride);
+			}
+
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderIdentifier))
+			{
+				final I_C_Order order = orderTable.get(orderIdentifier);
+				assertThat(invoiceCandidate.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+			}
+
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+			}
+		}
+	}
+
 	@And("process invoice candidates")
 	public void process_invoice_cand(@NonNull final DataTable dataTable)
 	{
@@ -419,6 +469,38 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			updateInvoiceCandidates(tableRow);
+		}
+	}
+
+	@And("^process invoice candidates and wait (.*)s for C_Invoice_Candidate to be processed$")
+	public void process_invoice_cand(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
+
+			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+			invoicingParams.setIgnoreInvoiceSchedule(false);
+			invoicingParams.setSupplementMissingPaymentTermIds(true);
+
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(invoicingParams)
+					.enqueueSelection(invoiceCandidatesSelectionId);
+
+			//wait for the invoice to be created
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate));
+
+			DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
 		}
 	}
 

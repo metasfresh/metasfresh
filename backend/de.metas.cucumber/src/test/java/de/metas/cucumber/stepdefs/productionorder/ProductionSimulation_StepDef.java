@@ -22,9 +22,10 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.dispo.service.simulation.ProductionSimulationService;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.order.OrderLineId;
@@ -43,14 +44,14 @@ import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID;
 
 public class ProductionSimulation_StepDef
 {
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	private final ProductionSimulationService productionSimulationService = SpringContextHolder.instance.getBean(ProductionSimulationService.class);
 
 	public ProductionSimulation_StepDef(
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;

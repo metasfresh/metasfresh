@@ -87,6 +87,7 @@ public class M_InOut_StepDef
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);

@@ -190,14 +190,25 @@ public class PP_Order_StepDef
 	}
 
 	@And("complete planning for PP_Order:")
-	public void process_pp_order(@NonNull final DataTable dataTable)
+	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 
-			trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.ErrorMessage");
+
+			try
+			{
+				trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+
+				assertThat(errorMessage).as("ErrorMessage should be null if huPPOrderBL.processPlanning() finished with no error!").isNull();
+			}
+			catch (final Exception e)
+			{
+				StepDefUtil.validateErrorMessage(e, errorMessage);
+			}
 		}
 	}
 
