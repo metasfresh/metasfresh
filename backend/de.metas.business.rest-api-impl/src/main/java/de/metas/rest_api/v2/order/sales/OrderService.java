@@ -88,7 +88,7 @@ public class OrderService
 		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
 		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
 		{
-			throw new AdempiereException("Payment with externalId=" + paymentExternalId + " already exists in orgId=" + orgId);
+			return; // nothing to do, external payment already registered
 		}
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
