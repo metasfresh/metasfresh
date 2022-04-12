@@ -44,6 +44,7 @@ import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.NullQueueProcessorListener;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
@@ -91,7 +92,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private final transient IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
-	private final transient QueueProcessorDAO queueProcessorDAO = QueueProcessorDAO.getInstance();
+	private final transient QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+	private final transient IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 
 	private final Properties ctx;
 	private final ImmutableSet<QueuePackageProcessorId> packageProcessorIds;
@@ -349,18 +351,15 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
 		// task 09700
-		final UserId userIdInCharge = workPackageBL.getUserIdInCharge(workPackage).orElse(null);
-		if (userIdInCharge != null)
-		{
-			workPackage.setAD_User_InCharge_ID(userIdInCharge.getRepoId());
-		}
+		workPackageBL.getUserIdInCharge(workPackage)
+				.ifPresent(userIdInCharge -> workPackage.setAD_User_InCharge_ID(userIdInCharge.getRepoId()));
 
 		saveWorkPackage(workPackage);
 		localPackagecount++; // task 09049
 
 		//
 		// Statistics
-		final I_C_Queue_PackageProcessor queuePackageProcessor = queueProcessorDAO.getPackageProcessor(QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID()));
+		final I_C_Queue_PackageProcessor queuePackageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID()));
 		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = workpackageProcessorFactory.getWorkpackageProcessorStatistics(queuePackageProcessor);
 		workpackageProcessorStatistics.incrementQueueSize();
 
@@ -600,7 +599,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(workPackage))
 		{
-			final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
+			final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = queueProcessorFactory.getQueueProcessorEventDispatcher();
 
 			boolean success = false;
 
@@ -670,6 +669,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		// set also in thread
 		contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
 		return this;
+	}
+
+	public int assignAsyncBatchForProcessing(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return dao.assignAsyncBatchForProcessing(getQueuePackageProcessorIds(), asyncBatchId);
 	}
 
 	@NonNull

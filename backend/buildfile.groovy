@@ -114,10 +114,12 @@ Map build(
 				</ul>
 				"""
 
-                dir('de.metas.cucumber') {
-                    def cucumberBuildFile = load('buildfile.groovy')
-                    cucumberBuildFile.build(mvnConf, scmVars)
-                }
+// skipping for now; with the async-poll interval or 5secs, the tests run 1hr
+// with the interval at 500ms, they are prone to fail and hand, and the builds may take 10hrs and more                
+//                dir('de.metas.cucumber') {
+//                    def cucumberBuildFile = load('buildfile.groovy')
+//                    cucumberBuildFile.build(mvnConf, scmVars)
+//                }
 
                 final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
                 testSQLMigrationScripts(

@@ -10,10 +10,10 @@ Feature: warehouse out of stock notice
       | p_3        | salesProduct_46 | salesProduct_46 |
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
-      | i_2        | 540008         | 2021-04-17   |
+      | i_2        | 540008         | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | ol_2       | i_2                       | p_3                     | PCE          | 10       | 0         |
+      | ol_2       | i_2                       | p_3                     | PCE          | 10       | 0       |
     And the inventory identified by i_2 is completed
     And metasfresh contains M_PricingSystems
       | Identifier | Name                  | Value                  | OPT.Description              | OPT.IsActive |

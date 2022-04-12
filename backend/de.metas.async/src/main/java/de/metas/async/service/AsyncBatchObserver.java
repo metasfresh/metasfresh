@@ -33,6 +33,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -41,6 +42,7 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +69,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 
 	private final Map<AsyncBatchId, BatchProgress> asyncBatch2Completion = new ConcurrentHashMap<>();
+
+	@NonNull
+	public static LockOwner getLockOwnerForAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final String lockOwnerName = AsyncBatchObserver.class.getName() + "_" + I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID + "=" + asyncBatchId.getRepoId();
+
+		return LockOwner.forOwnerName(lockOwnerName);
+	}
 
 	@Override
 	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
@@ -102,7 +112,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
-		asyncBatch2Completion.put(id, new BatchProgress(Instant.now(), lock));
+		asyncBatch2Completion.put(id, new BatchProgress(lock));
 	}
 
 	/**
@@ -159,8 +169,12 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	@NonNull
 	public Optional<Instant> getStartMonitoringTimestamp(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		return Optional.ofNullable(asyncBatch2Completion.get(asyncBatchId))
-				.map(BatchProgress::getEnqueuedAt);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Async_Batch.Table_Name, asyncBatchId.getRepoId());
+
+		final ExistingLockInfo existingLockInfo = lockManager.getLockInfo(tableRecordReference, getLockOwnerForAsyncBatch(asyncBatchId));
+
+		return Optional.ofNullable(existingLockInfo)
+				.map(ExistingLockInfo::getCreated);
 	}
 
 	private void removeObserver(@NonNull final AsyncBatchId id)
@@ -206,14 +220,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
-		final String ownerName = AsyncBatchObserver.class.getName() + "_" + I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID + "=" + asyncBatch.getC_Async_Batch_ID();
+		final LockOwner lockOwner = getLockOwnerForAsyncBatch(asyncBatchId);
 		
 		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
 		
 		while (!timeoutReached.get())
 		{
 			final ILock lock = lockManager.lock()
-					.setOwner(LockOwner.forOwnerName(ownerName))
+					.setOwner(lockOwner)
 					.setAllowAdditionalLocks(ILockCommand.AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)
 					.setFailIfAlreadyLocked(false)
 					.addRecordByModel(asyncBatch)
@@ -243,18 +257,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	@Value
 	private static class BatchProgress
 	{
-		public BatchProgress(@NonNull final Instant enqueuedAt, @NonNull final ILock lock)
+		public BatchProgress(@NonNull final ILock lock)
 		{
 			this.completableFuture = new CompletableFuture<>();
-			this.enqueuedAt = enqueuedAt;
 			this.lock = lock;
 		}
 
 		@NonNull
 		CompletableFuture<Void> completableFuture;
-
-		@NonNull
-		Instant enqueuedAt;
 
 		@NonNull
 		ILock lock;

@@ -60,6 +60,9 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
 	private static final transient Logger logger = LogManager.getLogger(QueueProcessorsExecutor.class);
 
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+
 	private final ReentrantLock mainLock = new ReentrantLock();
 	private final AsyncProcessorPlanner asyncProcessorPlanner = new AsyncProcessorPlanner();
 
@@ -122,13 +125,13 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 	@Override
 	@Nullable
-	public IQueueProcessor getQueueProcessor(final int queueProcessorId)
+	public IQueueProcessor getQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
 	{
 		mainLock.lock();
 		try
 		{
 			return asyncProcessorPlanner
-					.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId))
+					.getQueueProcessor(queueProcessorId)
 					.orElse(null);
 		}
 		finally
@@ -204,8 +207,8 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 	private IQueueProcessor createProcessor(@NonNull final I_C_Queue_Processor processorDef)
 	{
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForPackageProcessing(processorDef);
-		return Services.get(IQueueProcessorFactory.class).createAsynchronousQueueProcessor(processorDef, queue);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForPackageProcessing(processorDef);
+		return queueProcessorFactory.createAsynchronousQueueProcessor(processorDef, queue);
 	}
 
 	private static String createJMXName(@NonNull final IQueueProcessor queueProcessor)

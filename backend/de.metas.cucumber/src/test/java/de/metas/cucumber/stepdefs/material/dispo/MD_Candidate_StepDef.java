@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -52,6 +53,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -76,6 +78,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -85,13 +88,19 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjected;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(MD_Candidate_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private PostMaterialEventService postMaterialEventService;
@@ -401,7 +410,7 @@ public class MD_Candidate_StepDef
 					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 					.findFirst();
-			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated);
+			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated, () -> logCurrentContext(tableRow));
 
 			assertThat(materialDispoRecord).isNotNull();
 
@@ -450,6 +459,37 @@ public class MD_Candidate_StepDef
 		{
 			validate_md_candidate_stock(tableRow);
 		}
+	}
+
+	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
+	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	{
+		validate_md_candidates(timeoutSec, table);
+
+		final ImmutableSet<ProductId> productIdSet = table.getRows()
+				.stream()
+				.map(MaterialDispoTableRow::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final int storedCandidatesSize = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productIdSet)
+				.create()
+				.count();
+
+		// expected count is twice the number of rows bc we integrated the stock md_candidate as a column in step def
+		final int expectedCandidateAndStocks = table.getRows().size() * 2;
+
+		if (expectedCandidateAndStocks != storedCandidatesSize)
+		{
+			final StringBuilder message = new StringBuilder();
+			message.append("Expected to find: ").append(expectedCandidateAndStocks)
+					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
+					.append(" See:\n");
+
+			logCandidateRecords(message);
+		}
+
+		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
@@ -525,5 +565,40 @@ public class MD_Candidate_StepDef
 
 			assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
 		}
+	}
+
+	private void logCurrentContext(@NonNull final MaterialDispoTableRow tableRow)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(tableRow.getType().getCode()).append("\n")
+				.append(COLUMNNAME_M_Product_ID).append(" : ").append(tableRow.getProductId().getRepoId()).append("\n")
+				.append(COLUMNNAME_DateProjected).append(" : ").append(tableRow.getTime()).append("\n")
+				.append(COLUMNNAME_Qty).append(" : ").append(tableRow.getQty()).append("\n")
+				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
+				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
+
+		logCandidateRecords(message);
+	}
+
+	private void logCandidateRecords(@NonNull final StringBuilder message)
+	{
+		message.append("MD_Candidate records:").append("\n");
+
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.create()
+				.stream(I_MD_Candidate.class)
+				.forEach(candidateRecord -> message
+						.append(COLUMNNAME_MD_Candidate_ID).append(" : ").append(candidateRecord.getMD_Candidate_ID()).append(" ; ")
+						.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(candidateRecord.getMD_Candidate_Type()).append(" ; ")
+						.append(COLUMNNAME_M_Product_ID).append(" : ").append(candidateRecord.getM_Product_ID()).append(" ; ")
+						.append(COLUMNNAME_DateProjected).append(" : ").append(candidateRecord.getDateProjected()).append(" ; ")
+						.append(COLUMNNAME_Qty).append(" : ").append(candidateRecord.getQty()).append(" ; ")
+						.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(candidateRecord.getQty_AvailableToPromise()).append(" ; ")
+						.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(candidateRecord.getMD_Candidate_BusinessCase()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while looking for MD_Candidate records, see current context: \n" + message);
 	}
 }
