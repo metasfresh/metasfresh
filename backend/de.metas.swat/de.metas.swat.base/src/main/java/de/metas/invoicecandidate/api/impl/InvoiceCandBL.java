@@ -32,13 +32,13 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.impl.QueueProcessorService;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -271,6 +271,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -998,12 +1000,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IStatefulWorkpackageProcessorFactory packageProcessorFactory = Services.get(IStatefulWorkpackageProcessorFactory.class);
 		packageProcessorFactory.registerWorkpackageProcessor(packageProcessor);
 
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, packageProcessor.getClass());
+		final I_C_Queue_PackageProcessor packageProcessorConfig = queueDAO.retrievePackageProcessorDefByClass(ctx, InvoiceCandWorkpackageProcessor.class);
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessorConfig.getC_Queue_PackageProcessor_ID());
 
-		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(packageQueue);
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createAsynchronousQueueProcessor(packageProcessorId);
 		queueProcessor.setWorkpackageProcessorFactory(packageProcessorFactory);
 
-		SynchronousProcessorPlanner.executeNow(queueProcessor);
+		final QueueProcessorService queueProcessorService = SpringContextHolder.instance.getBean(QueueProcessorService.class);
+
+		queueProcessorService.runAndWait(queueProcessor);
 
 		return result;
 	}

@@ -84,8 +84,7 @@ public class PP_Product_Planning_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String bomVersionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_PP_Product_BOMVersions bomVersions = productBomVersionsTable.get(bomVersionsIdentifier);
+		final String bomVersionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final boolean isCreatePlan = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Product_Planning.COLUMNNAME_IsCreatePlan);
 
@@ -95,11 +94,29 @@ public class PP_Product_Planning_StepDef
 		productPlanningRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productPlanningRecord.setAD_Org_ID(productRecord.getAD_Org_ID());
 		productPlanningRecord.setS_Resource_ID(TEST_PLANT_ID.getRepoId());
-		productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
 		productPlanningRecord.setAD_Workflow_ID(WORKFLOW_ID.getRepoId());
-		productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		productPlanningRecord.setIsCreatePlan(isCreatePlan);
 		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
+
+		if (bomVersionsIdentifier != null)
+		{
+			final I_PP_Product_BOMVersions bomVersions = productBomVersionsTable.get(bomVersionsIdentifier);
+
+			assertThat(bomVersions).isNotNull();
+
+			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+		}
+
+		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
+
+		if (isPurchased)
+		{
+			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
+		}
+		else
+		{
+			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
+		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
