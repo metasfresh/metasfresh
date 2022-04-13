@@ -1,5 +1,27 @@
 #!/bin/bash
 
+#
+# %L
+# metasfresh-dist-dist
+# %%
+# Copyright (C) 2022 metas GmbH
+# %%
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public
+# License along with this program. If not, see
+# <http://www.gnu.org/licenses/gpl-2.0.html>.
+# L%
+#
+
 set -e
 set -u
 
@@ -103,9 +125,14 @@ run_metasfresh()
  fi
 
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
-# MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
-# local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
-local MEMORY_PARAMS="-Xmx1024M"
+ # MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
+ # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+ local MEMORY_PARAMS="-Xmx1024M"
+
+  # Allow loading jars from /opt/metasfresh/external-lib.
+  # This assumes that the app uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
+  # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+ local external_lib_params="-Dloader.path=/opt/metasfresh/external-lib"
 
  local es_params="-Dmetasfresh.elasticsearch.host=${es_host}:${es_port}"
 
@@ -122,6 +149,7 @@ local MEMORY_PARAMS="-Xmx1024M"
  ${es_params} \
  ${metasfresh_es_enable_params} \
  ${rabbitmq_params} \
+ ${external_lib_params} \
  ${metasfresh_db_connectionpool_params} \
  ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
