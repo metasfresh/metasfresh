@@ -39,6 +39,7 @@ import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -272,11 +273,11 @@ public class ImportOrdersRouteContext
 				.orElse(null);
 	}
 
-	@Nullable
+	@NonNull
 	public ExternalIdentifier getMetasfreshId()
 	{
 		//FIXME to remove hardcoded paths in final version
-		return getId(CUSTOM_FIELD_METASFRESH_ID, false);
+		return CoalesceUtil.coalesce(getId(CUSTOM_FIELD_METASFRESH_ID, false), getUserId());
 	}
 
 	@NonNull
@@ -304,7 +305,7 @@ public class ImportOrdersRouteContext
 					.rawValue(id)
 					.build();
 		}
-		throw new RuntimeException("Couldn't find ID in " + bpLocationCustomJsonPath);
+		return null;
 	}
 
 	@Nullable

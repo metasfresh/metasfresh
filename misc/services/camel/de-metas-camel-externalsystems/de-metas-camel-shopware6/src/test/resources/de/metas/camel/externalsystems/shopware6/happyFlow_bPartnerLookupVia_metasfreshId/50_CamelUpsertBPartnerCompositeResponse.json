@@ -2,18 +2,18 @@
   "responseItems": [
     {
       "responseBPartnerItem": {
-        "identifier": "customerId",
+        "identifier": "ext-Shopware6-bodymedUserId1",
         "metasfreshId": 1,
         "syncOutcome": "UPDATED"
       },
       "responseLocationItems": [
         {
-          "identifier": "ext-Shopware6-customerId-billTo",
+          "identifier": "ext-Shopware6-bodymedUserId1-billTo",
           "metasfreshId": 2,
           "syncOutcome": "UPDATED"
         },
         {
-          "identifier": "ext-Shopware6-customerId-shipTo",
+          "identifier": "ext-Shopware6-bodymedUserId1-shipTo",
           "metasfreshId": 3,
           "syncOutcome": "UPDATED"
         }

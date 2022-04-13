@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "ext-Shopware6-bodymedUserId1",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -19,7 +19,7 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "ext-Shopware6-customerId-billTo",
+                "locationIdentifier": "ext-Shopware6-bodymedUserId1-billTo",
                 "location": {
                   "address1": "billingAddressStreet",
                   "address2": "additionalAddressLine1",
@@ -35,7 +35,7 @@
                 }
               },
               {
-                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "locationIdentifier": "ext-Shopware6-bodymedUserId1-shipTo",
                 "location": {
                   "address1": "ShippingAddressStreet",
                   "address2": "additionalAddressLine1",
@@ -59,7 +59,7 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-customerId",
+                "contactIdentifier": "ext-Shopware6-bodymedUserId1",
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
