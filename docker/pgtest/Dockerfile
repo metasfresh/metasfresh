@@ -1,0 +1,15 @@
+FROM postgres:9
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+# thx to https://stackoverflow.com/a/48311129/1012103
+RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen
+RUN locale-gen en_US.UTF-8
+ENV LC_ALL="en_US.UTF-8"
+ENV LC_CTYPE="en_US.UTF-8"
+
+COPY sql /docker-entrypoint-initdb.d/
+COPY metasfresh_latest.pgdump .
+
+EXPOSE 5432
