@@ -566,8 +566,8 @@ Feature: ASI support in Product BOM rest-api
       | Identifier  | Name        | Value         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | supplier_PO | supplier_PO | supplier_PO_1 | Y            | N              | ps_PO                         | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN          | C_BPartner_ID.Identifier |
-      | supplierLocation_PO | supplierP101 | supplier_PO              |
+      | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | supplierLocation_PO | supplierP101 | supplier_PO              | true                | true                |
 
     And metasfresh contains M_AttributeSetInstance with identifier "po_AttributeSetInstance":
   """
@@ -589,8 +589,8 @@ Feature: ASI support in Product BOM rest-api
     And the order identified by order_PO is completed
 
     And after not more than 30s, MD_Candidates are found
-      | Identifier  | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | po_supply   | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | po_supply  | SUPPLY            | PURCHASE                      | product_S4              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """

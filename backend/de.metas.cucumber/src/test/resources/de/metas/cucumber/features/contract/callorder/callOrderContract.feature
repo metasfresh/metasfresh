@@ -29,8 +29,11 @@ Feature: Call order contract
       | callOrderPP | callOrderPLV                      | call_order_product      | 2.00     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value | OPT.C_BPartner_Location_ID.Identifier | OPT.GLN       |
-      | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          | 1000002                    | bpartnerLocation_1                    | 1234312345487 |
+      | Identifier | Name         | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+      | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          | 1000002                    |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartnerLocation_1 | 1234312345487 | bpartner_1               | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
@@ -309,8 +312,8 @@ Feature: Call order contract
       | Identifier     | Name           | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
       | bp_callOrderPO | bp_callOrderPO | Y            | defaultPricingSystem          | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier              | GLN           | C_BPartner_ID.Identifier |
-      | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           |
+      | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
