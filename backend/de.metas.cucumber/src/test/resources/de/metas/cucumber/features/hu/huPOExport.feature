@@ -108,8 +108,8 @@ Feature: Handling unit export from purchase order
 
     Then validate "retrieve hu" response:
       | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
-      | processedTopHU     | LU         | processedTU | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | L                  | Gesperrt                    | Erwartet Freigabe durch GRS |
-      | processedTU        | TU         |             | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 2                     | A        | L                  | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | processedTopHU     | LU         | processedTU | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | processedTU        | TU         |             | purchaseProduct      | purchaseProduct       | 18           | PCE          | warehouseStd              | locatorHauptlager       | 2                     | A        | Locked                  | Gesperrt                    | Erwartet Freigabe durch GRS |
     And update external system config:
       | ExternalSystem_Config_ID.Identifier | Type | IsActive |
       | GRSConfig_PO                        | GRS  | false    |
