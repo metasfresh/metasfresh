@@ -194,8 +194,8 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2            | 4              | 4                | 2                         |
     When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier |
-      | invoiceCand_1                     |
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | invoiceCand_1                     | 2               |
     Then after not more than 30s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
