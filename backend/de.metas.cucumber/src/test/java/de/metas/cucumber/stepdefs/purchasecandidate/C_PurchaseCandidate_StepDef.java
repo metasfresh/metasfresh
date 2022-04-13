@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.purchasecandidate;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
@@ -42,8 +43,6 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID;
@@ -116,17 +115,8 @@ public class C_PurchaseCandidate_StepDef
 		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final Supplier<Optional<I_C_PurchaseCandidate>> isPurchaseCandidateCreated = () -> queryBL
-				.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(COLUMNNAME_C_OrderSO_ID, orderRecord.getC_Order_ID())
-				.addEqualsFilter(COLUMNNAME_C_OrderLineSO_ID, orderLineRecord.getC_OrderLine_ID())
-				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-				.create()
-				.firstOnlyOptional(I_C_PurchaseCandidate.class);
-
 		final I_C_PurchaseCandidate purchaseCandidateRecord = StepDefUtil
-				.tryAndWaitForItem(timeoutSec, 500, isPurchaseCandidateCreated, () -> logCurrentContext(row));
+				.tryAndWaitForItem(timeoutSec, 500, () -> getPurchaseCandidate(orderRecord, orderLineRecord, productRecord), () -> logCurrentContext(row));
 
 		purchaseCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID), purchaseCandidateRecord);
 	}
@@ -160,5 +150,26 @@ public class C_PurchaseCandidate_StepDef
 						.append("\n"));
 
 		logger.error("*** Error while looking for purchase candidate records, see current context: \n" + message);
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_C_PurchaseCandidate> getPurchaseCandidate(
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_C_OrderLine orderLineRecord,
+			@NonNull final I_M_Product productRecord)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_C_OrderSO_ID, orderRecord.getC_Order_ID())
+				.addEqualsFilter(COLUMNNAME_C_OrderLineSO_ID, orderLineRecord.getC_OrderLine_ID())
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.create()
+				.firstOnlyOptional(I_C_PurchaseCandidate.class)
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("Couldn't find any C_PurchaseCandidate querying by"
+																					   + " C_OrderSO_ID=" + orderRecord.getC_Order_ID()
+																					   + " C_OrderLineSO_ID=" + orderLineRecord.getC_OrderLine_ID()
+																					   + " M_Product_ID=" + productRecord.getM_Product_ID()));
 	}
 }
