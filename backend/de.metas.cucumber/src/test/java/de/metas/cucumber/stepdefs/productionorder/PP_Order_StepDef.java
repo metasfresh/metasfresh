@@ -189,7 +189,7 @@ public class PP_Order_StepDef
 	}
 
 	@And("complete planning for PP_Order:")
-	public void process_pp_order(@NonNull final DataTable dataTable)
+	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
@@ -206,14 +206,7 @@ public class PP_Order_StepDef
 			}
 			catch (final Exception e)
 			{
-				if (errorMessage != null)
-				{
-					assertThat(e.getMessage()).contains(errorMessage);
-				}
-				else
-				{
-					throw e;
-				}
+				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
 	}

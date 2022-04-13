@@ -24,6 +24,8 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
+import de.metas.util.Check;
+import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -151,5 +153,17 @@ public class StepDefUtil
 	public List<String> splitIdentifiers(@NonNull final String identifiers)
 	{
 		return Arrays.asList(identifiers.split(","));
+	}
+
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	{
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
 	}
 }

@@ -61,7 +61,7 @@ Feature: Cleared HU can be issued to production order
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | createdLU          | C               | Cleared HU        |
+      | createdLU          | Cleared         | Cleared HU        |
 
     And metasfresh contains PP_Product_BOM
       | Identifier        | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |

@@ -27,6 +27,10 @@ import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
@@ -39,6 +43,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -144,7 +149,7 @@ public class Picking_Terminal_StepDef
 	}
 
 	@And("process picking")
-	public void process_picking(@NonNull final DataTable dataTable)
+	public void process_picking(@NonNull final DataTable dataTable) throws Exception
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -168,14 +173,7 @@ public class Picking_Terminal_StepDef
 			}
 			catch (final Exception e)
 			{
-				if (Check.isNotBlank(errorMessage))
-				{
-					assertThat(e.getMessage()).contains(errorMessage);
-				}
-				else
-				{
-					throw e;
-				}
+				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
 	}
@@ -212,7 +210,7 @@ public class Picking_Terminal_StepDef
 	}
 
 	@And("^validate that there are no M_HUs available to pick for shipmentSchedule identified by (.*)$")
-	public void validate_no_M_HUs_available_to_pick_for_SS(@NonNull final String shipmentScheduleIdentifier)
+	public void validate_no_M_HUs_available_to_pick_for_ShipmentSched(@NonNull final String shipmentScheduleIdentifier)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		assertThat(shipmentSchedule).isNotNull();

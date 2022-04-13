@@ -24,6 +24,7 @@ package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
+import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonClearanceStatusInfo;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
@@ -72,6 +73,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
+import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
 
 @Service
 public class HandlingUnitsService
@@ -177,7 +181,7 @@ public class HandlingUnitsService
 
 		final HuId huId = resolveHUIdentifier(jsonHuIdentifier);
 
-		final ClearanceStatus clearanceStatus = ClearanceStatus.ofCode(request.getClearanceStatus().name());
+		final ClearanceStatus clearanceStatus = fromJsonClearanceStatus(request.getClearanceStatus());
 
 		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
 				.clearanceStatus(clearanceStatus)
@@ -362,8 +366,10 @@ public class HandlingUnitsService
 		final String caption = handlingUnitsBL.getClearanceStatusCaption(clearanceStatus)
 				.translate(Env.getAD_Language());
 
+		final JsonClearanceStatus jsonStatus = toJsonClearanceStatus(clearanceStatus);
+
 		return JsonClearanceStatusInfo.builder()
-				.key(clearanceStatus.getCode())
+				.key(jsonStatus.name())
 				.caption(caption)
 				.build();
 	}

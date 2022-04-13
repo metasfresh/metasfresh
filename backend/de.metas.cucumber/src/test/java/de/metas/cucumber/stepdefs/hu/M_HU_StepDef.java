@@ -74,6 +74,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.SpringContextHolder;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -412,6 +414,16 @@ public class M_HU_StepDef
 
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
+
+	@Given("M_HU are disposed:")
+	public void dispose_HU(@NonNull final DataTable table)
+	{
+		for (final Map<String, String> row : table.asMaps())
+		{
+			disposeHU(row);
+		}
+	}
+
 
 	@Given("M_HU are disposed:")
 	public void dispose_HU(@NonNull final DataTable table)

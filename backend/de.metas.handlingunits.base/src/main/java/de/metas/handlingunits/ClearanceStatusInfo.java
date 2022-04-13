@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits;
 
+import de.metas.handlingunits.model.I_M_HU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,5 +46,13 @@ public class ClearanceStatusInfo
 				.clearanceStatus(clearanceStatus)
 				.clearanceNote(clearanceNote)
 				.build();
+	}
+
+	@Nullable
+	public static ClearanceStatusInfo ofHU(@NonNull final I_M_HU hu)
+	{
+		return ClearanceStatus.ofCodeOptional(hu.getClearanceStatus())
+				.map(status -> ClearanceStatusInfo.of(status, hu.getClearanceNote()))
+				.orElse(null);
 	}
 }

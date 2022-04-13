@@ -60,7 +60,7 @@ Feature: Locked HUs can not be issued to production order
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | newCreatedCU       | L               | Locked HU         |
+      | newCreatedCU       | Locked          | Locked HU         |
 
 
   Scenario: Locked HUs can not be issued to a production order
@@ -95,7 +95,7 @@ Feature: Locked HUs can not be issued to production order
   Scenario: Preselect clear HU to be issued then lock it before processing
     Given update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | createdLU          | C               | Cleared HU        |
+      | createdLU          | Cleared         | Cleared HU        |
     And metasfresh contains M_Products:
       | Identifier              | Name                                     |
       | manufacturingProduct_HU | manufacturingProduct_IssuePreselectedHUs |
@@ -131,8 +131,8 @@ Feature: Locked HUs can not be issued to production order
 
     And update HU clearance status
       | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
-      | newCreatedCU       | L               | Locked HU         |
+      | newCreatedCU       | Locked          | Locked HU         |
 
     And complete planning for PP_Order:
-      | PP_Order_ID.Identifier | OPT.ErrorMessage                                                             |
-      | ppOrder_manufacturing  | Only cleared HUs can be finalized with their PP_Cost_Collector and destroyed |
+      | PP_Order_ID.Identifier | OPT.ErrorMessage                         |
+      | ppOrder_manufacturing  | Nur freigegebene HUs können final zugeteilt werden! |
