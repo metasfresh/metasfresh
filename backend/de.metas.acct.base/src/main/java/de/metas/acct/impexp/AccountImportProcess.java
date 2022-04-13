@@ -106,7 +106,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_ElementValue.COLUMNNAME_Value;
+		return I_I_ElementValue.COLUMNNAME_I_ElementValue_ID;
 	}
 
 	@Override
