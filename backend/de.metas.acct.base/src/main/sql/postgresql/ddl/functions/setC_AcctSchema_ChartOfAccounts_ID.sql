@@ -45,11 +45,15 @@ BEGIN
     END IF;
 
     UPDATE c_acctschema_element
-    SET c_element_id=v_newElementInfo.c_element_id
+    SET c_element_id=v_newElementInfo.c_element_id,
+        updated=NOW(), updatedby=0
     WHERE c_acctschema_element_id = v_acctSchemaInfo.c_acctschema_element_id;
 
     v_newAcctSchemaName := v_newElementInfo.element_name || ' / ' || v_acctSchemaInfo.currency_iso_code;
-    UPDATE c_acctschema cas SET name=v_newAcctSchemaName WHERE cas.c_acctschema_id = v_acctSchemaInfo.c_acctschema_id;
+    UPDATE c_acctschema cas
+    SET name=v_newAcctSchemaName,
+        updated=NOW(), updatedby=0
+    WHERE cas.c_acctschema_id = v_acctSchemaInfo.c_acctschema_id;
     RAISE NOTICE 'AcctSchema Name changed to: %', v_newAcctSchemaName;
 
     PERFORM de_metas_acct.update_accounts_from_c_elementvalue_default_account(
@@ -66,9 +70,11 @@ select * from c_acctschema;
 select c_element_id, name from c_element;
 select de_metas_acct.setC_AcctSchema_ChartOfAccounts_ID(
     p_C_AcctSchema_ID := 1000000,
-    p_New_C_Element_ID := 540014 -- SKR04
---     p_New_C_Element_ID := 1000001 -- SKR03
+--     p_New_C_Element_ID := 540014 -- SKR04
+    p_New_C_Element_ID := 1000001 -- SKR03
 );
+
+select * from m_product_acct;
  */
 
 

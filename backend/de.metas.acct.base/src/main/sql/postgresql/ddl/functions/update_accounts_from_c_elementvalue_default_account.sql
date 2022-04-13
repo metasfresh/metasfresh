@@ -91,6 +91,7 @@ BEGIN
         LOOP
             EXECUTE 'update ' || v_row.tablename || ' set '
                         || v_row.columnname || ' = ' || (CASE WHEN v_row.default_validcombination_id IS NOT NULL THEN v_row.default_validcombination_id::text ELSE 'null' END)
+                        || ', updated=now(), updatedby=0'
                         || ' where c_acctschema_id = ' || p_C_AcctSchema_ID;
             GET DIAGNOSTICS v_count = ROW_COUNT;
 
