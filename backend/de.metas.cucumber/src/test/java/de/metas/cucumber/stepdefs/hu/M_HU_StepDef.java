@@ -37,7 +37,6 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
@@ -71,9 +70,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.SpringContextHolder;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -414,16 +410,6 @@ public class M_HU_StepDef
 
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
-
-	@Given("M_HU are disposed:")
-	public void dispose_HU(@NonNull final DataTable table)
-	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			disposeHU(row);
-		}
-	}
-
 
 	@Given("M_HU are disposed:")
 	public void dispose_HU(@NonNull final DataTable table)

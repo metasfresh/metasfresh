@@ -23,10 +23,6 @@
 package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
-import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
-import de.metas.handlingunits.HuId;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
@@ -42,8 +38,6 @@ import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidate
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
