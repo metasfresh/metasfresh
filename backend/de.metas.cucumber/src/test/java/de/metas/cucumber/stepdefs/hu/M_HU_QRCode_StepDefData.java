@@ -25,11 +25,9 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
 
-import javax.annotation.Nullable;
-
 public class M_HU_QRCode_StepDefData extends StepDefData<I_M_HU_QRCode>
 {
-	public M_HU_QRCode_StepDefData(@Nullable final Class<I_M_HU_QRCode> clazz)
+	public M_HU_QRCode_StepDefData()
 	{
 		super(I_M_HU_QRCode.class);
 	}
