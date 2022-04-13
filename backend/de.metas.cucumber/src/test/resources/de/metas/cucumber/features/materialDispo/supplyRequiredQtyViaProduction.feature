@@ -25,8 +25,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
   Scenario: Partial stock available at demand time, supplied via production (S0129.1_110)
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_31032022_1           | standard_category                    |
-      | p_2        | trackedProduct_component_31032022_1 | standard_category                    |
+      | p_1        | trackedProduct_31032022_0           | standard_category                    |
+      | p_2        | trackedProduct_component_31032022_0 | standard_category                    |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
       | ps_1       | pricing_system_name_31032022_1 | pricing_system_value_31032022_1 | pricing_system_description_31032022_1 | true         |
@@ -101,6 +101,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -50 | -50                    |                                 |
+      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 50  | 0                      |                                 |
 
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured

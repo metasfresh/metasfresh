@@ -67,6 +67,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -75,6 +76,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -336,6 +338,21 @@ public class C_Invoice_StepDef
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)
 	{
+		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
+
+		if (invoiceIdentifiers.isEmpty())
+		{
+			throw new RuntimeException("No invoice identifier present for column: " +  COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		}
+
+		final boolean lookingForMultipleInvoices = invoiceIdentifiers.size() > 1;
+
+		return lookingForMultipleInvoices ? loadMultipleInvoices(row) : loadSingleInvoiceByDocStatus(row);
+	}
+
+	private Boolean loadMultipleInvoices(@NonNull final Map<String, String> row)
+	{
 		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 
@@ -372,42 +389,42 @@ public class C_Invoice_StepDef
 		return true;
 	}
 
-	// public Boolean loadInvoice(@NonNull final Map<String, String> row) //TODO: remove comment when done with mergeing
-	// {
-	// 	final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-	// 	final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-	//
-	// 	final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-	//
-	// 	final Set<InvoiceId> invoiceIds = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
-	// 			.stream()
-	// 			.map(I_C_InvoiceLine::getC_Invoice_ID)
-	// 			.map(InvoiceId::ofRepoId)
-	// 			.collect(ImmutableSet.toImmutableSet());
-	//
-	// 	if (invoiceIds.isEmpty())
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
-	//
-	// 	final String invoiceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocStatus);
-	// 	final String docStatus = Optional.ofNullable(invoiceStatus)
-	// 			.orElse(X_C_Invoice.DOCACTION_Complete);
-	//
-	// 	final Optional<I_C_Invoice> invoice = invoices.stream()
-	// 			.filter(i -> i.getDocStatus().equals(docStatus))
-	// 			.findFirst();
-	//
-	// 	if (!invoice.isPresent())
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-	// 	invoiceTable.putOrReplace(invoiceIdentifier, invoice.get());
-	//
-	// 	return true;
-	// }
+	private Boolean loadSingleInvoiceByDocStatus(@NonNull final Map<String, String> row)
+	{
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+		final Set<InvoiceId> invoiceIds = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
+				.stream()
+				.map(I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (invoiceIds.isEmpty())
+		{
+			return false;
+		}
+
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
+
+		final String invoiceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocStatus);
+		final String docStatus = Optional.ofNullable(invoiceStatus)
+				.orElse(X_C_Invoice.DOCACTION_Complete);
+
+		final Optional<I_C_Invoice> invoice = invoices.stream()
+				.filter(i -> i.getDocStatus().equals(docStatus))
+				.findFirst();
+
+		if (!invoice.isPresent())
+		{
+			return false;
+		}
+
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice.get());
+
+		return true;
+	}
 }

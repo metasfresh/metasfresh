@@ -253,7 +253,7 @@ Feature: Call order contract
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoiceLine_3               | invoice_3               | call_order_product      | 4           | true      |
+      | invoiceLine_3_1             | invoice_3               | call_order_product      | 4           | true      |
 
     And validate updated C_CallOrderSummary:
       | C_CallOrderSummary_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | IsSOTrx | OPT.QtyDeliveredInUOM | OPT.QtyInvoicedInUOM |
@@ -264,9 +264,9 @@ Feature: Call order contract
       | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |                             |                                 |                      |
       | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |                             |                                 |                      |
       | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |                             |                                 |                      |
-      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1                   | 2                    |
-      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2                   | -2                   |
-      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_3                   | invoiceLine_3                   | 4                    |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_1                   | invoiceLine_1_1                 | 2                    |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_2                   | invoiceLine_2_1                 | -2                   |
+      | orderDetail_invoice_1           | PCE               |                           |                               |                |                           |                               |                       | invoice_3                   | invoiceLine_3_1                 | 4                    |
 
 
   @from:cucumber
