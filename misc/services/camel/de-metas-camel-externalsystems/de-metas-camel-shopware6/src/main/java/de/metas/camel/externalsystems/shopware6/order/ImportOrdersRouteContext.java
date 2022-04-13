@@ -60,6 +60,8 @@ import java.util.function.BiFunction;
 @Builder
 public class ImportOrdersRouteContext
 {
+	public static final String CUSTOM_FIELD_USER_ID = "/orderCustomer/customFields/bodymedUserId";
+	public static final String CUSTOM_FIELD_METASFRESH_ID = "/orderCustomer/customFields/metasfreshId";
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private final String orgCode;
@@ -270,42 +272,39 @@ public class ImportOrdersRouteContext
 				.orElse(null);
 	}
 
-	@NonNull
-	public ExternalIdentifier getEffectiveCustomerId()
+	@Nullable
+	public ExternalIdentifier getMetasfreshId()
 	{
-		final JsonExternalSystemShopware6ConfigMapping configMapping = getMatchingShopware6Mapping();
-
-		final OrderCandidate order = getOrderNotNull();
-		if (configMapping == null
-				|| Check.isBlank(configMapping.getBpartnerIdJSONPath())
-				|| configMapping.getBpartnerLookup() == null)
-		{
-			final String customerId = order.getJsonOrder().getOrderCustomer().getCustomerId();
-
-			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
-					.rawValue(customerId)
-					.build();
-		}
 		//FIXME to remove hardcoded paths in final version
-		final String metasfreshId = order.getCustomField("/orderCustomer/customFields/metasfreshId");
-		final String bodymedUserId = order.getCustomField("/orderCustomer/customFields/bodymedUserId");
+		return getId(CUSTOM_FIELD_METASFRESH_ID, false);
+	}
 
-		if (!Check.isBlank(metasfreshId))
+	@NonNull
+	public ExternalIdentifier getUserId()
+	{
+		//FIXME to remove hardcoded paths in final version
+		final ExternalIdentifier id = getId(CUSTOM_FIELD_USER_ID, true);
+		if (id == null)
+		{
+			throw new RuntimeException("Couldn't find UserID in " + CUSTOM_FIELD_USER_ID);
+		}
+		return id;
+	}
+
+	@Nullable
+	public ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId)
+	{
+		final OrderCandidate order = getOrderNotNull();
+		final String id = order.getCustomField(bpLocationCustomJsonPath);
+
+		if (!Check.isBlank(id))
 		{
 			return ExternalIdentifier.builder()
-					.identifier(metasfreshId)
-					.rawValue(metasfreshId)
+					.identifier(asExternalId ? ExternalIdentifierFormat.formatExternalId(id) : id)
+					.rawValue(id)
 					.build();
 		}
-		else if (!Check.isBlank(bodymedUserId))
-		{
-			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(bodymedUserId))
-					.rawValue(bodymedUserId)
-					.build();
-		}
-		throw new RuntimeException("Couldn't find bpartner ID in either /orderCustomer/customFields/metasfreshId nor /orderCustomer/customFields/bodymedUserId");
+		throw new RuntimeException("Couldn't find ID in " + bpLocationCustomJsonPath);
 	}
 
 	@Nullable
