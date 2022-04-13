@@ -1,5 +1,6 @@
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Ebay
@@ -72,6 +73,7 @@ public interface I_ExternalSystem_Config_Ebay
 
 	/**
 	 * Set App ID.
+	 * Client ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -81,6 +83,7 @@ public interface I_ExternalSystem_Config_Ebay
 
 	/**
 	 * Get App ID.
+	 * Client ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -93,6 +96,7 @@ public interface I_ExternalSystem_Config_Ebay
 
 	/**
 	 * Set Cert ID.
+	 * Client Secret
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -102,6 +106,7 @@ public interface I_ExternalSystem_Config_Ebay
 
 	/**
 	 * Get Cert ID.
+	 * Client Secret
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -249,25 +254,47 @@ public interface I_ExternalSystem_Config_Ebay
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Redirect URL.
+	 * Set Price List.
+	 * Unique identifier of a Price List
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRedirectURL (java.lang.String RedirectURL);
+	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Redirect URL.
+	 * Get Price List.
+	 * Unique identifier of a Price List
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getRedirectURL();
+	int getM_PriceList_ID();
 
-	ModelColumn<I_ExternalSystem_Config_Ebay, Object> COLUMN_RedirectURL = new ModelColumn<>(I_ExternalSystem_Config_Ebay.class, "RedirectURL", null);
-	String COLUMNNAME_RedirectURL = "RedirectURL";
+	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Refresh Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRefreshToken (@Nullable java.lang.String RefreshToken);
+
+	/**
+	 * Get Refresh Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRefreshToken();
+
+	ModelColumn<I_ExternalSystem_Config_Ebay, Object> COLUMN_RefreshToken = new ModelColumn<>(I_ExternalSystem_Config_Ebay.class, "RefreshToken", null);
+	String COLUMNNAME_RefreshToken = "RefreshToken";
 
 	/**
 	 * Get Updated.

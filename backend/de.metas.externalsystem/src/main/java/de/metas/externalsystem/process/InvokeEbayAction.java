@@ -38,10 +38,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_API_MODE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_API_USER_REFRESH_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_APP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CERT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_DEV_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDIRECT_URL;
 
 public class InvokeEbayAction extends InvokeExternalSystemProcess
 {
@@ -78,7 +78,7 @@ public class InvokeEbayAction extends InvokeExternalSystemProcess
 		parameters.put(PARAM_APP_ID, ebayConfig.getAppId());
 		parameters.put(PARAM_CERT_ID, ebayConfig.getCertId());
 		parameters.put(PARAM_DEV_ID, ebayConfig.getDevId());
-		parameters.put(PARAM_REDIRECT_URL, ebayConfig.getRedirectUrl());
+		parameters.put(PARAM_API_USER_REFRESH_TOKEN, ebayConfig.getRefreshToken());
 		parameters.put(PARAM_API_MODE, ebayConfig.getApiMode().getCode());
 
 		return parameters;

@@ -29,6 +29,7 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -449,13 +450,16 @@ class ExternalSystemConfigRepoTest
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
 		saveRecord(parentRecord);
 
+		final String value = "testEbayValue";
+
 		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
 		childRecord.setAppId("appId");
 		childRecord.setDevId("devId");
 		childRecord.setCertId("certId");
-		childRecord.setRedirectURL("redirectUrl");
+		childRecord.setRefreshToken("refreshToken");
 		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue(value);
 		saveRecord(childRecord);
 
 		// when
@@ -482,11 +486,28 @@ class ExternalSystemConfigRepoTest
 		childRecord.setAppId("appId");
 		childRecord.setDevId("devId");
 		childRecord.setCertId("certId");
-		childRecord.setRedirectURL("redirectUrl");
+		childRecord.setRefreshToken("refreshToken");
 		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
+
+
+		final I_ExternalSystem_Config_Ebay_Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Ebay_Mapping.class);
+		childMappingRecord.setC_PaymentTerm_ID(10000);
+		childMappingRecord.setC_DocTypeOrder_ID(10000);
+		childMappingRecord.setPaymentRule("K");
+		childMappingRecord.setSeqNo(10);
+		childMappingRecord.setebayCustomerGroup("testWithAnä");
+		childMappingRecord.setebayPaymentMethod("test");
+		childMappingRecord.setDescription("test");
+		childMappingRecord.setExternalSystem_Config_Ebay_ID(childRecord.getExternalSystem_Config_Ebay_ID());
+		childMappingRecord.setIsInvoiceEmailEnabled(true);
+		childMappingRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childMappingRecord.setBPartner_IfNotExists("FAIL");
+		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
+		saveRecord(childMappingRecord);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
@@ -515,7 +536,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setAppId("appId");
 		childRecord.setDevId("devId");
 		childRecord.setCertId("certId");
-		childRecord.setRedirectURL("redirectUrl");
+		childRecord.setRefreshToken("refreshToken");
 		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
@@ -545,7 +566,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setAppId("appId");
 		childRecord.setDevId("devId");
 		childRecord.setCertId("certId");
-		childRecord.setRedirectURL("redirectUrl");
+		childRecord.setRefreshToken("refreshToken");
 		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());

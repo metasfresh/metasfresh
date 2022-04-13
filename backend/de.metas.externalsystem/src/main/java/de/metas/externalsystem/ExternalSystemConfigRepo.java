@@ -31,11 +31,13 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.ebay.ApiMode;
 import de.metas.externalsystem.ebay.ExternalSystemEbayConfig;
 import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
+import de.metas.externalsystem.ebay.ExternalSystemEbayConfigMapping;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -555,15 +557,55 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemEbayConfig buildExternalSystemEbayConfig(@NonNull final I_ExternalSystem_Config_Ebay config)
 	{
+
+		final ExternalSystemEbayConfigId externalSystemEbayConfigId =
+				ExternalSystemEbayConfigId.ofRepoId(config.getExternalSystem_Config_Ebay_ID());
+
+
 		return ExternalSystemEbayConfig.builder()
 				.id(ExternalSystemEbayConfigId.ofRepoId(config.getExternalSystem_Config_Ebay_ID()))
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.externalSystemEbayConfigMappingList(getExternalSystemEbayConfigMappingList(externalSystemEbayConfigId))
 				.appId(config.getAppId())
 				.certId(config.getCertId())
 				.devId(config.getDevId())
-				.redirectUrl(config.getRedirectURL())
+				.refreshToken(config.getRefreshToken())
 				.apiMode(ApiMode.valueOf(config.getAPI_Mode()))
 				.value(config.getExternalSystemValue())
+				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
+				.isActive(config.isActive())
+				.build();
+	}
+
+	private List<ExternalSystemEbayConfigMapping> getExternalSystemEbayConfigMappingList(@NonNull final ExternalSystemEbayConfigId externalSystemEbayConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Ebay_Mapping.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Ebay_Mapping.COLUMNNAME_ExternalSystem_Config_Ebay_ID, externalSystemEbayConfigId)
+				.create()
+				.list()
+				.stream()
+				.map(this::toExternalSystemEbayConfigMapping)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	@NonNull
+	private ExternalSystemEbayConfigMapping toExternalSystemEbayConfigMapping(@NonNull final I_ExternalSystem_Config_Ebay_Mapping record)
+	{
+		return ExternalSystemEbayConfigMapping.builder()
+				.docTypeOrderId(record.getC_DocTypeOrder_ID())
+				.paymentRule(record.getPaymentRule())
+				.paymentTermId(record.getC_PaymentTerm_ID())
+				.ebayCustomerGroup(record.getebayCustomerGroup())
+				.ebayPaymentMethod(record.getebayPaymentMethod())
+				.description(record.getDescription())
+				.seqNo(record.getSeqNo())
+				.isInvoiceEmailEnabled(record.isInvoiceEmailEnabled())
+				.bpartnerIfExists(record.getBPartner_IfExists())
+				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
+				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
+				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 

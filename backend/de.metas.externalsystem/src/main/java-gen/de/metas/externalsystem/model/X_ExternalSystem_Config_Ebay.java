@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Ebay
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Ebay extends org.compiere.model.PO implements I_ExternalSystem_Config_Ebay, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1838266686L;
+	private static final long serialVersionUID = -2015637973L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Ebay (final Properties ctx, final int ExternalSystem_Config_Ebay_ID, @Nullable final String trxName)
@@ -146,14 +146,29 @@ public class X_ExternalSystem_Config_Ebay extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setRedirectURL (final java.lang.String RedirectURL)
+	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
-		set_Value (COLUMNNAME_RedirectURL, RedirectURL);
+		if (M_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_M_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PriceList_ID, M_PriceList_ID);
 	}
 
 	@Override
-	public java.lang.String getRedirectURL() 
+	public int getM_PriceList_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_RedirectURL);
+		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
+	}
+
+	@Override
+	public void setRefreshToken (final @Nullable java.lang.String RefreshToken)
+	{
+		set_Value (COLUMNNAME_RefreshToken, RefreshToken);
+	}
+
+	@Override
+	public java.lang.String getRefreshToken() 
+	{
+		return get_ValueAsString(COLUMNNAME_RefreshToken);
 	}
 }
