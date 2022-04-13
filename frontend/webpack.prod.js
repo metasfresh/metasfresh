@@ -54,7 +54,7 @@ module.exports = {
   entry: ['./src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
+    filename: 'bundle-ab12zz-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,
@@ -70,7 +70,7 @@ module.exports = {
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name]-[git-revision-hash][ext]',
+          filename: '[path][name]-ab12zz[ext]',
         },
       },
       {

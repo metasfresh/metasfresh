@@ -23,4 +23,6 @@ COPY --chmod=700 docker/frontend/start_webui.sh .
 
 COPY --from=build /app/dist/* /usr/share/nginx/html/
 
+RUN mkdir /usr/share/nginx/html/src && mv /usr/share/nginx/html/assets /usr/share/nginx/html/src/assets
+
 ENTRYPOINT ["/start_webui.sh"]
