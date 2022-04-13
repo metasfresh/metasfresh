@@ -121,7 +121,6 @@ public class M_Inventory_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_Product_ID + ".Identifier");
 		final I_M_Product product = productTable.get(productIdentifier);
 
-
 		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
 		inventoryLine.setM_Product_ID(product.getM_Product_ID());
 

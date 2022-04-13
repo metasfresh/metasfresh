@@ -252,8 +252,7 @@ public class PP_Order_StepDef
 			return true;
 		};
 
-		final boolean bomLineFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
-		assertThat(bomLineFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
 
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMLineTable.get(ppOrderBOMLineIdentifier);
 		assertThat(ppOrderBOMLine).isNotNull();
@@ -326,8 +325,7 @@ public class PP_Order_StepDef
 			}
 		};
 
-		final boolean orderFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
-		assertThat(orderFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
 
 		final I_PP_Order ppOrder = ppOrderTable.get(orderRecordIdentifier);
 		assertThat(ppOrder).isNotNull();

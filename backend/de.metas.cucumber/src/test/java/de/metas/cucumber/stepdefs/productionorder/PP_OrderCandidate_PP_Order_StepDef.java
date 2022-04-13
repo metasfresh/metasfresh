@@ -91,9 +91,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 				return allocationRecord != null;
 			};
 
-			final boolean allocationFound = StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
-
-			assertThat(allocationFound).isTrue();
+			StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
 		}
 	}
 }

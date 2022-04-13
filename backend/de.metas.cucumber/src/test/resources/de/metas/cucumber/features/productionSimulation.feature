@@ -87,8 +87,8 @@ Feature: create production simulation
       | AD_Workflow_ID | Duration |
       | 540075         | 1        |
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
@@ -196,8 +196,8 @@ Feature: create production simulation
       | AD_Workflow_ID | Duration |
       | 540075         | 1        |
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
@@ -306,8 +306,8 @@ Feature: create production simulation
       | AD_Workflow_ID | Duration |
       | 540075         | 1        |
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
@@ -412,8 +412,8 @@ Feature: create production simulation
       | AD_Workflow_ID | Duration |
       | 540075         | 1        |
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | EndcustomerPS_1 | N            | Y              | ps_1                          |
