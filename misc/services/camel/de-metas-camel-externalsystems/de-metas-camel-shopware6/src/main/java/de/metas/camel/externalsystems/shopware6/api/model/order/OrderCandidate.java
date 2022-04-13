@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.shopware6.api.model.order;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,16 +48,11 @@ public class OrderCandidate
 	@JsonProperty("salesRepId")
 	String salesRepId;
 
-	@NonNull
+	@Nullable
 	public String getCustomField(@NonNull final String customPath)
 	{
 		final JsonNode customIdNode = orderNode.at(customPath);
 
-		if (customIdNode == null || Check.isBlank(customIdNode.asText()))
-		{
-			throw new RuntimeException("Failed to process order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "); Nothing found on the given customPath: " + customPath);
-		}
-
-		return customIdNode.asText();
+		return (customIdNode == null) ? null : customIdNode.asText();
 	}
 }
