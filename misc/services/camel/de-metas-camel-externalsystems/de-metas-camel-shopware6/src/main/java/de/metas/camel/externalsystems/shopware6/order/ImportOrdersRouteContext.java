@@ -275,33 +275,37 @@ public class ImportOrdersRouteContext
 	{
 		final JsonExternalSystemShopware6ConfigMapping configMapping = getMatchingShopware6Mapping();
 
+		final OrderCandidate order = getOrderNotNull();
 		if (configMapping == null
 				|| Check.isBlank(configMapping.getBpartnerIdJSONPath())
 				|| configMapping.getBpartnerLookup() == null)
 		{
-			final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+			final String customerId = order.getJsonOrder().getOrderCustomer().getCustomerId();
 
 			return ExternalIdentifier.builder()
 					.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
 					.rawValue(customerId)
 					.build();
 		}
+		//FIXME to remove hardcoded paths in final version
+		final String metasfreshId = order.getCustomField("/orderCustomer/customFields/metasfreshId");
+		final String bodymedUserId = order.getCustomField("/orderCustomer/customFields/bodymedUserId");
 
-		final String customBPartnerId = getOrderNotNull().getCustomField(configMapping.getBpartnerIdJSONPath());
-
-		return switch (configMapping.getBpartnerLookup())
-				{
-					case MetasfreshId -> ExternalIdentifier.builder()
-							.identifier(customBPartnerId)
-							.rawValue(customBPartnerId)
-							.build();
-					case ExternalReference -> ExternalIdentifier.builder()
-							.identifier(ExternalIdentifierFormat.formatExternalId(customBPartnerId))
-							.rawValue(customBPartnerId)
-							.build();
-
-					default -> throw new RuntimeException("Unsupported JsonBPartnerLookup=" + configMapping.getBpartnerLookup());
-				};
+		if (!Check.isBlank(metasfreshId))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(metasfreshId)
+					.rawValue(metasfreshId)
+					.build();
+		}
+		else if (!Check.isBlank(bodymedUserId))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(ExternalIdentifierFormat.formatExternalId(bodymedUserId))
+					.rawValue(bodymedUserId)
+					.build();
+		}
+		throw new RuntimeException("Couldn't find bpartner ID in either /orderCustomer/customFields/metasfreshId nor /orderCustomer/customFields/bodymedUserId");
 	}
 
 	@Nullable
@@ -317,13 +321,13 @@ public class ImportOrdersRouteContext
 				.map(s -> s + separator)
 				.orElse("");
 
-		final String locationBPartnerName = 
+		final String locationBPartnerName =
 				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
 				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
-				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
+						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
 
 		return StringUtils.trimBlankToNull(locationBPartnerName);
 	}
