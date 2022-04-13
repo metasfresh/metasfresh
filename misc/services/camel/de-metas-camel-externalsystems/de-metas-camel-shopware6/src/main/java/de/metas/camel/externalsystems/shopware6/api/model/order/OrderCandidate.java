@@ -53,6 +53,6 @@ public class OrderCandidate
 	{
 		final JsonNode customIdNode = orderNode.at(customPath);
 
-		return (customIdNode == null) ? null : customIdNode.asText();
+		return (customIdNode == null || customIdNode.isMissingNode()) ? null : customIdNode.asText();
 	}
 }
