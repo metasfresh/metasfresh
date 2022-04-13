@@ -32,7 +32,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
 public class JsonSetClearanceStatusRequest
 {
 	@NonNull
@@ -49,11 +48,11 @@ public class JsonSetClearanceStatusRequest
 
 	@Builder
 	public JsonSetClearanceStatusRequest(
-			@JsonProperty("huIdentifier") @NonNull final JsonSetClearanceStatusRequest.JsonHUIdentifier jsonHuIdentifier,
+			@JsonProperty("huIdentifier") @NonNull final JsonSetClearanceStatusRequest.JsonHUIdentifier huIdentifier,
 			@JsonProperty("clearanceStatus") @NonNull final JsonClearanceStatus clearanceStatus,
 			@JsonProperty("clearanceNote") @Nullable final String clearanceNote)
 	{
-		this.huIdentifier = jsonHuIdentifier;
+		this.huIdentifier = huIdentifier;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;
 	}

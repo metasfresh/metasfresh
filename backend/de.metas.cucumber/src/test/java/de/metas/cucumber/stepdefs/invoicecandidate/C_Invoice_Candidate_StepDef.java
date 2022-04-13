@@ -504,6 +504,39 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	@And("^process invoice candidates and wait (.*)s for C_Invoice_Candidate to be processed$")
+	@Deprecated
+	public void process_invoice_cand_old(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), Trx.TRXNAME_None);
+
+			final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+			invoicingParams.setIgnoreInvoiceSchedule(false);
+			invoicingParams.setSupplementMissingPaymentTermIds(true);
+
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(invoicingParams)
+					.enqueueSelection(invoiceCandidatesSelectionId);
+
+			//wait for the invoice to be created
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate));
+
+			DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+		}
+	}
+
 	private void updateInvoiceCandidates(@NonNull final Map<String, String> row)
 	{
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
