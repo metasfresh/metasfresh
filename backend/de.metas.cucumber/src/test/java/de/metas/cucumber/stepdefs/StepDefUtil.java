@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
-import io.cucumber.java.en.Given;
+import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -200,7 +200,6 @@ public class StepDefUtil
 				.map(StringUtils::trim)
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	@NonNull
 	public List<String> splitIdentifiers(@NonNull final String identifiers)

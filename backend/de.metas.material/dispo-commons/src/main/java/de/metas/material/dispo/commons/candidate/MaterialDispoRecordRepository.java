@@ -24,7 +24,6 @@ package de.metas.material.dispo.commons.candidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import lombok.NonNull;
@@ -32,8 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.List;
-
 import java.util.List;
 
 @Repository
@@ -107,15 +104,6 @@ public class MaterialDispoRecordRepository
 		return result.build();
 	}
 
-	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
-	{
-		if (query.getType().equals(CandidateType.STOCK))
-		{
-			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
-					.setParameter("candidatesQuery", query);
-		}
-	}
-
 	private MaterialDispoDataItem extractMaterialDispoItem(final @Nullable CandidatesQuery query, final @NonNull Candidate candidate)
 	{
 		final Candidate stockCandidate;
@@ -141,52 +129,12 @@ public class MaterialDispoRecordRepository
 		}
 	}
 
-	@NonNull
-	public List<MaterialDispoDataItem> getAllBy(@NonNull final CandidatesQuery query)
-	{
-		assertNotStockQuery(query);
-
-		final ImmutableList.Builder<MaterialDispoDataItem> result = ImmutableList.builder();
-
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		for (final Candidate candidate : candidates)
-		{
-			result.add(extractMaterialDispoItem(query, candidate));
-		}
-		return result.build();
-	}
-
 	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
 	{
 		if (query.getType().equals(CandidateType.STOCK))
 		{
 			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
 					.setParameter("candidatesQuery", query);
-		}
-	}
-
-	private MaterialDispoDataItem extractMaterialDispoItem(final @NonNull CandidatesQuery query, final @NonNull Candidate candidate)
-	{
-		final Candidate stockCandidate;
-		switch (candidate.getType())
-		{
-			case DEMAND:
-			case INVENTORY_DOWN:
-				stockCandidate = candidateRepositoryRetrieval
-						.retrieveSingleChild(candidate.getId())
-						.orElseThrow(() -> new AdempiereException("").appendParametersToMessage()
-								.setParameter("candidatesQuery", query)
-								.setParameter("candidate", candidate)
-						);
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
-			case SUPPLY:
-			case INVENTORY_UP:
-				stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getParentId()));
-				return MaterialDispoDataItem.of(candidate, stockCandidate);
-			default:
-				throw new AdempiereException("The CandidateType=" + candidate.getType() + " is not yet supported! Please add").appendParametersToMessage()
-						.setParameter("candidatesQuery", query)
-						.setParameter("candidate", candidate);
 		}
 	}
 }
