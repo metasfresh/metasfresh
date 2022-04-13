@@ -66,6 +66,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -109,6 +110,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
+import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 
 public class M_HU_StepDef
 {
@@ -454,7 +458,7 @@ public class M_HU_StepDef
 		}
 	}
 
-	@And("M_HU are disposed:")
+	@Given("M_HU are disposed:")
 	public void dispose_HU(@NonNull final DataTable table)
 	{
 		for (final Map<String, String> row : table.asMaps())

@@ -79,6 +79,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final Instant time;
 			final String timeInLocalTimeZone = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.DateProjected_LocalTimeZone");
+
 			if (timeInLocalTimeZone != null)
 			{
 				final LocalDateTime localDateTime = LocalDateTime.parse(timeInLocalTimeZone);

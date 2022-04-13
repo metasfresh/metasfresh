@@ -88,6 +88,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -95,6 +96,10 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjec
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
 import static org.assertj.core.api.Assertions.*;
@@ -543,8 +548,8 @@ public class MD_Candidate_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty);
 
 		assertThat(stockCandidate.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(stockCandidate.getMaterialDescriptor().getProductId()).isEqualTo(productRecord.getM_Product_ID());
@@ -571,15 +576,15 @@ public class MD_Candidate_StepDef
 		};
 		final MaterialDispoDataItem freshMaterialDispoItemInfo = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, itemProvider);
 
-		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase);
+		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_MD_Candidate_BusinessCase);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty);
-		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
-		final String type = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+		final String dateProjected = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DateProjected);
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty);
+		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty_AvailableToPromise);
+		final String type = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_Type);
 
 		if (businessCase == null)
 		{
