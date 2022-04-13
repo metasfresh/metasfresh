@@ -89,11 +89,11 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 
 		return Optional.of(externalSystemConfigRepo.getActiveByType(getExternalSystemType())
 								   .stream()
+								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)
 								   .map(ExternalSystemRabbitMQConfig::cast)
 								   .filter(ExternalSystemRabbitMQConfig::isSyncBPartnerToRabbitMQ)
 								   .filter(config -> config.shouldExportBasedOnUserGroup(assignedUserGroupIds))
-								   .filter(config -> qualifiesForAutoExport(config, assignedUserGroupIds)) // TODO check - might be obsolete
 								   .map(ExternalSystemRabbitMQConfig::getId)
 								   .collect(ImmutableSet.toImmutableSet()));
 	}
@@ -132,13 +132,5 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER;
-	}
-
-	private boolean qualifiesForAutoExport(
-			@NonNull final ExternalSystemRabbitMQConfig rabbitMQConfig,
-			@NonNull final Set<UserGroupId> assignedUserGroupIds)
-	{
-		return rabbitMQConfig.isAutoSendSubjectWhenCreatedByUserGroup()
-				&& assignedUserGroupIds.contains(rabbitMQConfig.getUserGroupId());
 	}
 }
