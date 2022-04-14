@@ -36,6 +36,8 @@ import org.springframework.util.SocketUtils;
 import java.io.IOException;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.core.from_mf.CallDispatcherRouteBuilder.DISPATCH_ASYNC_ROUTE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 import static org.assertj.core.api.Assertions.*;
 
 class CallDispatcherRouteBuilderTest extends CamelTestSupport
@@ -88,7 +90,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 
 		final String jsonRequest = "{\"externalSystemConfigId\":1, \"orgCode\":\"orgCode\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
 
-		template.requestBody("direct:dispatch", jsonRequest);
+		template.requestBody(direct(DISPATCH_ASYNC_ROUTE).getUri(), jsonRequest);
 
 		assertThat(notify.matchesWaitTime()).isTrue();
 		assertThat(postEndpoint.called).isEqualTo(1);
