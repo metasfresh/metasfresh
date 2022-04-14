@@ -140,6 +140,10 @@ public class RabbitMQEventBusConfiguration
 		{
 			return getLocalQueueName.apply(AsyncBatchQueueConfiguration.QUEUE_BEAN_NAME);
 		}
+		else if (MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return getLocalQueueName.apply(MaterialEventsQueueConfiguration.QUEUE_BEAN_NAME);
+		}
 		else
 		{
 			return getLocalQueueName.apply(DefaultQueueConfiguration.QUEUE_BEAN_NAME);
@@ -274,6 +278,7 @@ public class RabbitMQEventBusConfiguration
 	public static class AsyncBatchQueueConfiguration
 	{
 		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshAsyncBatchQueue.name}";
 		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
 		private static final String EXCHANGE_NAME = "metasfresh-async-batch-events";
 
@@ -297,6 +302,37 @@ public class RabbitMQEventBusConfiguration
 		public Binding asyncBatchBinding()
 		{
 			return BindingBuilder.bind(asyncBatchQueue()).to(asyncBatchExchange());
+		}
+	}
+
+	@Configuration
+	public static class MaterialEventsQueueConfiguration
+	{
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshMaterialEventsQueue.name}";
+		private static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.material");
+		private static final String QUEUE_BEAN_NAME = "metasfreshMaterialEventsQueue";
+		private static final String EXCHANGE_NAME = "metasfresh-material-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue materialEventsQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange materialEventsExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding materialEventsBinding()
+		{
+			return BindingBuilder.bind(materialEventsQueue()).to(materialEventsExchange());
 		}
 	}
 }
