@@ -160,7 +160,8 @@ if [ "$1" = 'postgres' ]; then
 		echo 'PostgreSQL init process complete; ready for start up.'
 		echo
 	else 
-		# always run migration script
+		# Always run migration scripts - in out case that's provision_metasfresh_db.sh.
+		# For this we need to start the DB also if $PGDATA/PG_VERSION is there, then run the SQL and then stop the DB again.
 		
 		# internal start of server in order to allow set-up using psql-client
 		# does not listen on external TCP/IP and waits until start finishes
