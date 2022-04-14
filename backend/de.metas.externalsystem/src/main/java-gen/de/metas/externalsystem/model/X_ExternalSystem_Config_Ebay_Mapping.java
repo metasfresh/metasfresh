@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Ebay_Mapping, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -823692147L;
+	private static final long serialVersionUID = 1204507935L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Ebay_Mapping (final Properties ctx, final int ExternalSystem_Config_Ebay_Mapping_ID, @Nullable final String trxName)
@@ -34,6 +34,15 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+	/** 
+	 * BPartner_IfExists AD_Reference_ID=541309
+	 * Reference name: SyncAdvice_IfExists
+	 */
+	public static final int BPARTNER_IFEXISTS_AD_Reference_ID=541309;
+	/** Update = UPDATE_MERGE */
+	public static final String BPARTNER_IFEXISTS_Update = "UPDATE_MERGE";
+	/** Nothing = DONT_UPDATE */
+	public static final String BPARTNER_IFEXISTS_Nothing = "DONT_UPDATE";
 	@Override
 	public void setBPartner_IfExists (final java.lang.String BPartner_IfExists)
 	{
@@ -46,6 +55,15 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 		return get_ValueAsString(COLUMNNAME_BPartner_IfExists);
 	}
 
+	/** 
+	 * BPartner_IfNotExists AD_Reference_ID=541310
+	 * Reference name: SyncAdvice_IfNotExists
+	 */
+	public static final int BPARTNER_IFNOTEXISTS_AD_Reference_ID=541310;
+	/** Create = CREATE */
+	public static final String BPARTNER_IFNOTEXISTS_Create = "CREATE";
+	/** Fail = FAIL */
+	public static final String BPARTNER_IFNOTEXISTS_Fail = "FAIL";
 	@Override
 	public void setBPartner_IfNotExists (final java.lang.String BPartner_IfNotExists)
 	{
@@ -58,6 +76,15 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 		return get_ValueAsString(COLUMNNAME_BPartner_IfNotExists);
 	}
 
+	/** 
+	 * BPartnerLocation_IfExists AD_Reference_ID=541309
+	 * Reference name: SyncAdvice_IfExists
+	 */
+	public static final int BPARTNERLOCATION_IFEXISTS_AD_Reference_ID=541309;
+	/** Update = UPDATE_MERGE */
+	public static final String BPARTNERLOCATION_IFEXISTS_Update = "UPDATE_MERGE";
+	/** Nothing = DONT_UPDATE */
+	public static final String BPARTNERLOCATION_IFEXISTS_Nothing = "DONT_UPDATE";
 	@Override
 	public void setBPartnerLocation_IfExists (final java.lang.String BPartnerLocation_IfExists)
 	{
@@ -70,6 +97,15 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 		return get_ValueAsString(COLUMNNAME_BPartnerLocation_IfExists);
 	}
 
+	/** 
+	 * BPartnerLocation_IfNotExists AD_Reference_ID=541310
+	 * Reference name: SyncAdvice_IfNotExists
+	 */
+	public static final int BPARTNERLOCATION_IFNOTEXISTS_AD_Reference_ID=541310;
+	/** Create = CREATE */
+	public static final String BPARTNERLOCATION_IFNOTEXISTS_Create = "CREATE";
+	/** Fail = FAIL */
+	public static final String BPARTNERLOCATION_IFNOTEXISTS_Fail = "FAIL";
 	@Override
 	public void setBPartnerLocation_IfNotExists (final java.lang.String BPartnerLocation_IfNotExists)
 	{
@@ -125,27 +161,27 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setebayCustomerGroup (final @Nullable java.lang.String ebayCustomerGroup)
+	public void setEBayCustomerGroup (final @Nullable java.lang.String EBayCustomerGroup)
 	{
-		set_Value (COLUMNNAME_ebayCustomerGroup, ebayCustomerGroup);
+		set_Value (COLUMNNAME_EBayCustomerGroup, EBayCustomerGroup);
 	}
 
 	@Override
-	public java.lang.String getebayCustomerGroup() 
+	public java.lang.String getEBayCustomerGroup() 
 	{
-		return get_ValueAsString(COLUMNNAME_ebayCustomerGroup);
+		return get_ValueAsString(COLUMNNAME_EBayCustomerGroup);
 	}
 
 	@Override
-	public void setebayPaymentMethod (final @Nullable java.lang.String ebayPaymentMethod)
+	public void setEBayPaymentMethod (final @Nullable java.lang.String EBayPaymentMethod)
 	{
-		set_Value (COLUMNNAME_ebayPaymentMethod, ebayPaymentMethod);
+		set_Value (COLUMNNAME_EBayPaymentMethod, EBayPaymentMethod);
 	}
 
 	@Override
-	public java.lang.String getebayPaymentMethod() 
+	public java.lang.String getEBayPaymentMethod() 
 	{
-		return get_ValueAsString(COLUMNNAME_ebayPaymentMethod);
+		return get_ValueAsString(COLUMNNAME_EBayPaymentMethod);
 	}
 
 	@Override

@@ -476,7 +476,114 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-04-13 20:08:53',
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-04-13 20:09:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582784
 ;
 
--- 2022-04-13T17:09:16.065Z
-/* DDL */ CREATE TABLE public.ExternalSystem_Config_Ebay_Mapping (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, BPartner_IfExists VARCHAR(500) NOT NULL, BPartner_IfNotExists VARCHAR(500) NOT NULL, BPartnerLocation_IfExists VARCHAR(500) NOT NULL, BPartnerLocation_IfNotExists VARCHAR(500) NOT NULL, C_DocTypeOrder_ID NUMERIC(10), C_PaymentTerm_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(1000), ebayCustomerGroup VARCHAR(500), ebayPaymentMethod VARCHAR(500), ExternalSystem_Config_Ebay_ID NUMERIC(10), ExternalSystem_Config_Ebay_Mapping_ID NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsInvoiceEmailEnabled CHAR(1) DEFAULT 'N' CHECK (IsInvoiceEmailEnabled IN ('Y','N')) NOT NULL, PaymentRule VARCHAR(500), SeqNo NUMERIC(10) DEFAULT 0 NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CDocTypeOrder_ExternalSystemConfigEbayMapping FOREIGN KEY (C_DocTypeOrder_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CPaymentTerm_ExternalSystemConfigEbayMapping FOREIGN KEY (C_PaymentTerm_ID) REFERENCES public.C_PaymentTerm DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ExternalSystemConfigEbay_ExternalSystemConfigEbayMapping FOREIGN KEY (ExternalSystem_Config_Ebay_ID) REFERENCES public.ExternalSystem_Config_Ebay DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ExternalSystem_Config_Ebay_Mapping_Key PRIMARY KEY (ExternalSystem_Config_Ebay_Mapping_ID))
+-- 2022-04-14T08:46:52.990Z
+UPDATE AD_Element SET ColumnName='EBayPaymentMethod',Updated=TO_TIMESTAMP('2022-04-14 11:46:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580780
 ;
+
+-- 2022-04-14T08:46:52.996Z
+UPDATE AD_Column SET ColumnName='EBayPaymentMethod', Name='eBay Payment Method', Description=NULL, Help=NULL WHERE AD_Element_ID=580780
+;
+
+-- 2022-04-14T08:46:52.997Z
+UPDATE AD_Process_Para SET ColumnName='EBayPaymentMethod', Name='eBay Payment Method', Description=NULL, Help=NULL, AD_Element_ID=580780 WHERE UPPER(ColumnName)='EBAYPAYMENTMETHOD' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-04-14T08:46:52.999Z
+UPDATE AD_Process_Para SET ColumnName='EBayPaymentMethod', Name='eBay Payment Method', Description=NULL, Help=NULL WHERE AD_Element_ID=580780 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-04-14T08:47:28.889Z
+UPDATE AD_Element SET ColumnName='EBayCustomerGroup',Updated=TO_TIMESTAMP('2022-04-14 11:47:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580779
+;
+
+-- 2022-04-14T08:47:28.893Z
+UPDATE AD_Column SET ColumnName='EBayCustomerGroup', Name='eBay Customer Group', Description=NULL, Help=NULL WHERE AD_Element_ID=580779
+;
+
+-- 2022-04-14T08:47:28.895Z
+UPDATE AD_Process_Para SET ColumnName='EBayCustomerGroup', Name='eBay Customer Group', Description=NULL, Help=NULL, AD_Element_ID=580779 WHERE UPPER(ColumnName)='EBAYCUSTOMERGROUP' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-04-14T08:47:28.896Z
+UPDATE AD_Process_Para SET ColumnName='EBayCustomerGroup', Name='eBay Customer Group', Description=NULL, Help=NULL WHERE AD_Element_ID=580779 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-04-14T08:48:52.169Z
+/* DDL */ CREATE TABLE public.ExternalSystem_Config_Ebay_Mapping (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, BPartner_IfExists VARCHAR(500) NOT NULL, BPartner_IfNotExists VARCHAR(500) NOT NULL, BPartnerLocation_IfExists VARCHAR(500) NOT NULL, BPartnerLocation_IfNotExists VARCHAR(500) NOT NULL, C_DocTypeOrder_ID NUMERIC(10), C_PaymentTerm_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, Description VARCHAR(1000), EBayCustomerGroup VARCHAR(500), EBayPaymentMethod VARCHAR(500), ExternalSystem_Config_Ebay_ID NUMERIC(10), ExternalSystem_Config_Ebay_Mapping_ID NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, IsInvoiceEmailEnabled CHAR(1) DEFAULT 'N' CHECK (IsInvoiceEmailEnabled IN ('Y','N')) NOT NULL, PaymentRule VARCHAR(500), SeqNo NUMERIC(10) DEFAULT 0 NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CDocTypeOrder_ExternalSystemConfigEbayMapping FOREIGN KEY (C_DocTypeOrder_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CPaymentTerm_ExternalSystemConfigEbayMapping FOREIGN KEY (C_PaymentTerm_ID) REFERENCES public.C_PaymentTerm DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ExternalSystemConfigEbay_ExternalSystemConfigEbayMapping FOREIGN KEY (ExternalSystem_Config_Ebay_ID) REFERENCES public.ExternalSystem_Config_Ebay DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ExternalSystem_Config_Ebay_Mapping_Key PRIMARY KEY (ExternalSystem_Config_Ebay_Mapping_ID))
+;
+
+
+
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartner_IfExists
+-- 2022-04-14T10:10:50.830Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541309,Updated=TO_TIMESTAMP('2022-04-14 13:10:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582781
+;
+
+-- 2022-04-14T10:10:51.622Z
+INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','BPartner_IfExists','VARCHAR(500)',null,null)
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartner_IfNotExists
+-- 2022-04-14T10:11:36.675Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541310,Updated=TO_TIMESTAMP('2022-04-14 13:11:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582782
+;
+
+-- 2022-04-14T10:11:37.223Z
+INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','BPartner_IfNotExists','VARCHAR(500)',null,null)
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartnerLocation_IfExists
+-- 2022-04-14T10:12:18.521Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541309,Updated=TO_TIMESTAMP('2022-04-14 13:12:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582783
+;
+
+-- 2022-04-14T10:12:19.069Z
+INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','BPartnerLocation_IfExists','VARCHAR(500)',null,null)
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartnerLocation_IfNotExists
+-- 2022-04-14T10:12:30.919Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541310,Updated=TO_TIMESTAMP('2022-04-14 13:12:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582784
+;
+
+-- 2022-04-14T10:12:31.513Z
+INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','BPartnerLocation_IfNotExists','VARCHAR(500)',null,null)
+;
+
+
+
+-- Table: ExternalSystem_Config_Ebay_Mapping
+-- 2022-04-14T10:36:10.670Z
+UPDATE AD_Table SET IsDeleteable='Y',Updated=TO_TIMESTAMP('2022-04-14 13:36:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542124
+;
+
+
+
+
+
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartner_IfExists
+-- 2022-04-14T10:37:53.349Z
+UPDATE AD_Column SET DefaultValue='UPDATE_MERGE',Updated=TO_TIMESTAMP('2022-04-14 13:37:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582781
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartnerLocation_IfExists
+-- 2022-04-14T10:37:57.812Z
+UPDATE AD_Column SET DefaultValue='UPDATE_MERGE',Updated=TO_TIMESTAMP('2022-04-14 13:37:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582783
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartner_IfNotExists
+-- 2022-04-14T10:37:59.451Z
+UPDATE AD_Column SET DefaultValue='CREATE',Updated=TO_TIMESTAMP('2022-04-14 13:37:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582782
+;
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.BPartnerLocation_IfNotExists
+-- 2022-04-14T10:38:03.995Z
+UPDATE AD_Column SET DefaultValue='CREATE',Updated=TO_TIMESTAMP('2022-04-14 13:38:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582784
+;
+
+
+
+
 

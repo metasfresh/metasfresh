@@ -54,7 +54,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Set If business partner exists.
 	 * Specifies what to do if a Shopware customer already exists as business partner in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -64,7 +64,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Get If business partner exists.
 	 * Specifies what to do if a Shopware customer already exists as business partner in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -77,7 +77,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Set If business partner doesn't exist.
 	 * Specifies what to do if a Shopware customer does not yet exist as business partner in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -87,7 +87,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Get If business partner doesn't exist.
 	 * Specifies what to do if a Shopware customer does not yet exist as business partner in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -100,7 +100,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Set If address exists.
 	 * Specifies what to do if a Shopware customer's address already exists in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -110,7 +110,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Get If address exists.
 	 * Specifies what to do if a Shopware customer's address already exists in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -123,7 +123,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Set If addr doesn't exist.
 	 * Specifies what to do if a Shopware customer's address does not yet exist in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -133,7 +133,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Get If addr doesn't exist.
 	 * Specifies what to do if a Shopware customer's address does not yet exist in metasfresh.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -239,7 +239,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setebayCustomerGroup (@Nullable java.lang.String ebayCustomerGroup);
+	void setEBayCustomerGroup (@Nullable java.lang.String EBayCustomerGroup);
 
 	/**
 	 * Get eBay Customer Group.
@@ -248,10 +248,10 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getebayCustomerGroup();
+	@Nullable java.lang.String getEBayCustomerGroup();
 
-	ModelColumn<I_ExternalSystem_Config_Ebay_Mapping, Object> COLUMN_ebayCustomerGroup = new ModelColumn<>(I_ExternalSystem_Config_Ebay_Mapping.class, "ebayCustomerGroup", null);
-	String COLUMNNAME_ebayCustomerGroup = "ebayCustomerGroup";
+	ModelColumn<I_ExternalSystem_Config_Ebay_Mapping, Object> COLUMN_EBayCustomerGroup = new ModelColumn<>(I_ExternalSystem_Config_Ebay_Mapping.class, "EBayCustomerGroup", null);
+	String COLUMNNAME_EBayCustomerGroup = "EBayCustomerGroup";
 
 	/**
 	 * Set eBay Payment Method.
@@ -260,7 +260,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setebayPaymentMethod (@Nullable java.lang.String ebayPaymentMethod);
+	void setEBayPaymentMethod (@Nullable java.lang.String EBayPaymentMethod);
 
 	/**
 	 * Get eBay Payment Method.
@@ -269,10 +269,10 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getebayPaymentMethod();
+	@Nullable java.lang.String getEBayPaymentMethod();
 
-	ModelColumn<I_ExternalSystem_Config_Ebay_Mapping, Object> COLUMN_ebayPaymentMethod = new ModelColumn<>(I_ExternalSystem_Config_Ebay_Mapping.class, "ebayPaymentMethod", null);
-	String COLUMNNAME_ebayPaymentMethod = "ebayPaymentMethod";
+	ModelColumn<I_ExternalSystem_Config_Ebay_Mapping, Object> COLUMN_EBayPaymentMethod = new ModelColumn<>(I_ExternalSystem_Config_Ebay_Mapping.class, "EBayPaymentMethod", null);
+	String COLUMNNAME_EBayPaymentMethod = "EBayPaymentMethod";
 
 	/**
 	 * Set eBay.

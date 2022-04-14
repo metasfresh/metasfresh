@@ -498,8 +498,8 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setC_DocTypeOrder_ID(10000);
 		childMappingRecord.setPaymentRule("K");
 		childMappingRecord.setSeqNo(10);
-		childMappingRecord.setebayCustomerGroup("testWithAnä");
-		childMappingRecord.setebayPaymentMethod("test");
+		childMappingRecord.setEBayCustomerGroup("testWithAnä");
+		childMappingRecord.setEBayPaymentMethod("test");
 		childMappingRecord.setDescription("test");
 		childMappingRecord.setExternalSystem_Config_Ebay_ID(childRecord.getExternalSystem_Config_Ebay_ID());
 		childMappingRecord.setIsInvoiceEmailEnabled(true);
