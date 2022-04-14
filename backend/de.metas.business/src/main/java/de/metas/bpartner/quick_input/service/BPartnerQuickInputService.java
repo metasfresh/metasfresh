@@ -127,7 +127,6 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
-	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -671,7 +670,7 @@ public class BPartnerQuickInputService
 								 .membershipContact(contactTemplate.isMembershipContact())
 								 .firstName(contactTemplate.getFirstname())
 								 .lastName(contactTemplate.getLastname())
-								 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+								 .name(IUserBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
 								 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 								 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 								 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
