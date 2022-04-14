@@ -50,6 +50,7 @@ public class CampaignService
 	private final ContactPersonRepository contactPersonRepository;
 	private final CampaignRepository campaignRepository;
 	private final PlatformRepository platformRepository;
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public CampaignService(
 			@NonNull final ContactPersonRepository contactPersonRepository,
@@ -79,7 +80,7 @@ public class CampaignService
 			@Nullable final DefaultAddressType defaultAddressType)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		users.forEach(user -> addToCampaignIfHasMaillAddressOrLocation(user, campaign, defaultAddressType));
+		users.forEach(user -> addToCampaignIfHasMailAddressOrLocation(user, campaign, defaultAddressType));
 	}
 
 	public void removeContactPersonsFromCampaign(
@@ -93,10 +94,10 @@ public class CampaignService
 			@NonNull final CampaignId campaignId)
 	{
 		final Campaign campaign = campaignRepository.getById(campaignId);
-		addToCampaignIfHasMaillAddressOrLocation(user, campaign, null);
+		addToCampaignIfHasMailAddressOrLocation(user, campaign, null);
 	}
 
-	private void addToCampaignIfHasMaillAddressOrLocation(
+	private void addToCampaignIfHasMailAddressOrLocation(
 			@NonNull final User user,
 			@NonNull final Campaign campaign,
 			@Nullable final DefaultAddressType defaultAddressType)
@@ -104,18 +105,15 @@ public class CampaignService
 
 		final Platform platform = platformRepository.getById(campaign.getPlatformId());
 
-		final boolean isRequiredMailAddres = platform.isRequiredMailAddress();
-
-		if (isRequiredMailAddres && Check.isEmpty(user.getEmailAddress(), true))
+		final boolean isRequiredMailAddress = platform.isRequiredMailAddress();
+		if (isRequiredMailAddress && Check.isBlank(user.getEmailAddress()))
 		{
 			Loggables.addLog("Skip user because it has no email address or campaign does not require mail address; user={}", user);
 			return;
 		}
 
 		final boolean isRequiredLocation = platform.isRequiredLocation() || defaultAddressType != null;
-
-		final BPartnerLocationId addressToUse = computeAddressToUse(user, defaultAddressType);
-
+		final BPartnerLocationId addressToUse = computeAddressToUse(user.getBpartnerId(), defaultAddressType);
 		if (isRequiredLocation && addressToUse == null)
 		{
 			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString();
@@ -130,30 +128,20 @@ public class CampaignService
 		contactPersonRepository.createUpdateConsent(savedContactPerson);
 	}
 
-	private BPartnerLocationId computeAddressToUse(final User user, final DefaultAddressType defaultAddressType)
+	private BPartnerLocationId computeAddressToUse(
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final DefaultAddressType defaultAddressType)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final BPartnerId bpartnerId = user.getBpartnerId();
-
 		if (bpartnerId == null)
 		{
 			// no address found
 			return null;
 		}
 
-		final BPartnerLocationId addressToUse;
-
-		if (DefaultAddressType.ShipToDefault.equals(defaultAddressType))
-		{
-			addressToUse = bpartnerDAO.getShiptoDefaultLocationIdByBpartnerId(bpartnerId);
-		}
-		else
-		{
-			// Keep as before, and consider Bill address as default
-			addressToUse = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(bpartnerId);
-		}
-
-		return addressToUse;
+		// Keep as before, and consider Billing address as default
+		return DefaultAddressType.ShipToDefault.equals(defaultAddressType)
+				? bpartnerDAO.getShiptoDefaultLocationIdByBpartnerId(bpartnerId)
+				: bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(bpartnerId);
 
 	}
 
