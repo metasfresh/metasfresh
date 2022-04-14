@@ -39,7 +39,7 @@ public class PlatformClientService
 
 	private final PlatformClientFactoryRegistry platformClientFactoryRegistry;
 
-	private PlatformClientService(
+	public PlatformClientService(
 			@NonNull final PlatformRepository platformRepository,
 			@NonNull final PlatformClientFactoryRegistry platformClientFactoryRegistry)
 	{
