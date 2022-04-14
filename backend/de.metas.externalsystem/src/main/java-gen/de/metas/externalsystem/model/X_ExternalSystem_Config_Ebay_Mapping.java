@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Ebay_Mapping, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1204507935L;
+	private static final long serialVersionUID = 314282995L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Ebay_Mapping (final Properties ctx, final int ExternalSystem_Config_Ebay_Mapping_ID, @Nullable final String trxName)
@@ -238,6 +238,33 @@ public class X_ExternalSystem_Config_Ebay_Mapping extends org.compiere.model.PO 
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
+	/** 
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{

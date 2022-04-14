@@ -368,7 +368,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -378,7 +378,7 @@ public interface I_ExternalSystem_Config_Ebay_Mapping
 	 * Get Payment Rule.
 	 * How you pay the invoice
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
