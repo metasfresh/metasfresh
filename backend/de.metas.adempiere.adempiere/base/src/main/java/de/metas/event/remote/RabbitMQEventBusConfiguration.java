@@ -2,10 +2,11 @@ package de.metas.event.remote;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.event.Topic;
+import de.metas.event.impl.EventBusMonitoringService;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.NonNull;
-import org.springframework.amqp.core.AmqpTemplate;
+import org.compiere.SpringContextHolder;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
@@ -23,6 +24,7 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -87,13 +89,9 @@ public class RabbitMQEventBusConfiguration
 	}
 
 	@Bean
-	public RabbitMQEventBusRemoteEndpoint eventBusRemoteEndpoint(
-			@NonNull final AmqpTemplate amqpTemplate,
-			@NonNull final Optional<PerformanceMonitoringService> performanceMonitoringService)
+	public EventBusMonitoringService eventBusMonitoringService(@NonNull final Optional<PerformanceMonitoringService> performanceMonitoringService)
 	{
-		return new RabbitMQEventBusRemoteEndpoint(
-				amqpTemplate,
-				performanceMonitoringService.orElse(NoopPerformanceMonitoringService.INSTANCE));
+		return new EventBusMonitoringService(performanceMonitoringService.orElse(NoopPerformanceMonitoringService.INSTANCE));
 	}
 
 	public static String getAMQPExchangeNameByTopicName(final String topicName)
@@ -106,16 +104,52 @@ public class RabbitMQEventBusConfiguration
 		{
 			return CacheInvalidationQueueConfiguration.EXCHANGE_NAME;
 		}
+		else if (ManageSchedulerQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return ManageSchedulerQueueConfiguration.EXCHANGE_NAME;
+		}
+		else if (AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return AsyncBatchQueueConfiguration.EXCHANGE_NAME;
+		}
 		else
 		{
 			return DefaultQueueConfiguration.EXCHANGE_NAME;
 		}
 	}
 
+	@NonNull
+	public static String getAMQPQueueNameByTopicName(final String topicName)
+	{
+		final Function<String, String> getLocalQueueName = (beanName) ->
+				SpringContextHolder.instance.getBean(AnonymousQueue.class, beanName).getName();
+
+		if (AccountingQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return getLocalQueueName.apply(AccountingQueueConfiguration.QUEUE_BEAN_NAME);
+		}
+		else if (CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return getLocalQueueName.apply(CacheInvalidationQueueConfiguration.QUEUE_BEAN_NAME);
+		}
+		else if (ManageSchedulerQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return getLocalQueueName.apply(ManageSchedulerQueueConfiguration.QUEUE_BEAN_NAME);
+		}
+		else if (AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName().equals(topicName))
+		{
+			return getLocalQueueName.apply(AsyncBatchQueueConfiguration.QUEUE_BEAN_NAME);
+		}
+		else
+		{
+			return getLocalQueueName.apply(DefaultQueueConfiguration.QUEUE_BEAN_NAME);
+		}
+	}
+
 	@Configuration
 	public static class DefaultQueueConfiguration
 	{
-		private static final String QUEUE_BEAN_NAME = "metasfreshEventsQueue";
+		public static final String QUEUE_BEAN_NAME = "metasfreshEventsQueue";
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshEventsQueue.name}";
 		private static final String EXCHANGE_NAME = "metasfresh-events";
 
@@ -145,7 +179,7 @@ public class RabbitMQEventBusConfiguration
 	@Configuration
 	public static class CacheInvalidationQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.cache.CacheInvalidationRemoteHandler");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.cache.CacheInvalidationRemoteHandler");
 		private static final String QUEUE_BEAN_NAME = "metasfreshCacheInvalidationEventsQueue";
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshCacheInvalidationEventsQueue.name}";
 		private static final String EXCHANGE_NAME = "metasfresh-cache-events";
@@ -177,7 +211,7 @@ public class RabbitMQEventBusConfiguration
 	@Configuration
 	public static class AccountingQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.acct.handler.DocumentPostRequest");
 		private static final String QUEUE_BEAN_NAME = "metasfreshAccountingEventsQueue";
 		public static final String QUEUE_NAME_SPEL = "#{metasfreshAccountingEventsQueue.name}";
 		private static final String EXCHANGE_NAME = "metasfresh-accounting-events";
@@ -208,7 +242,8 @@ public class RabbitMQEventBusConfiguration
 	@Configuration
 	public static class ManageSchedulerQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshManageSchedulerQueue.name}";
 		private static final String QUEUE_BEAN_NAME = "metasfreshManageSchedulerQueue";
 		private static final String EXCHANGE_NAME = "metasfresh-scheduler-events";
 
@@ -238,7 +273,7 @@ public class RabbitMQEventBusConfiguration
 	@Configuration
 	public static class AsyncBatchQueueConfiguration
 	{
-		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.async.eventbus.AsyncBatchNotifyRequest");
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.async.eventbus.AsyncBatchNotifyRequest");
 		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncBatchQueue";
 		private static final String EXCHANGE_NAME = "metasfresh-async-batch-events";
 

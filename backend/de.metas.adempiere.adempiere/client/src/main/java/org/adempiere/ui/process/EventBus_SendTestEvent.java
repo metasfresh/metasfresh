@@ -58,7 +58,7 @@ public class EventBus_SendTestEvent extends JavaProcess
 	{
 		final Topic topic = Topic.builder()
 				.name(p_TopicName)
-				.type(Type.REMOTE)
+				.type(Type.DISTRIBUTED)
 				.build();
 
 		final IEventBus eventBus = Services.get(IEventBusFactory.class)

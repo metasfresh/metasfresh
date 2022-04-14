@@ -111,7 +111,7 @@ public final class WorkflowExecutionContext
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.document.UserNotifications");
 
 	@NonNull
 	@Getter

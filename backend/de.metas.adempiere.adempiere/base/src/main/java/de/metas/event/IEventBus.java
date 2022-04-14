@@ -37,14 +37,9 @@ import java.util.function.Consumer;
 public interface IEventBus
 {
 	/**
-	 * @return the (topic-) name of this event bus.
+	 * @return the topic of this event bus. If the event bus is "distributed" then subscriber on other hosts will be notified about events on this host.
 	 */
-	String getTopicName();
-
-	/**
-	 * @return the type (remote or local) of this event bus. If the event bus is "remote" then subscriber on other hosts will be notified about events on this host.
-	 */
-	Type getType();
+	Topic getTopic();
 
 	/**
 	 * Subscribe to this bus.
@@ -60,7 +55,7 @@ public interface IEventBus
 
 	/**
 	 * Subscribe and expect events with to have bodys of a particular type.
-	 * Also see {@link #postObject(Object)}.
+	 * Also see {@link #enqueueObject(Object)}.
 	 *
 	 * @param type the class of the object the consumer is subscribed to.
 	 *             The event-bus will attempt to deserialize the event's body to an instance of this class.
@@ -74,10 +69,12 @@ public interface IEventBus
 	 */
 	void postEvent(Event event);
 
+	void enqueueEvent(Event event);
+
 	/**
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).
 	 */
-	void postObject(Object obj);
+	void enqueueObject(Object obj);
 
 	/**
 	 * @return {@code true} if the bus was destroyed and it no longer accepts events.

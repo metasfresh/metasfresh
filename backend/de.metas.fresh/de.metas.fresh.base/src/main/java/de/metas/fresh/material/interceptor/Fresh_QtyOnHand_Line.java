@@ -96,7 +96,7 @@ public class Fresh_QtyOnHand_Line
 		}
 		events.add(event);
 
-		events.forEach(materialEventService::postEventAfterNextCommit);
+		events.forEach(materialEventService::enqueueEventAfterNextCommit);
 	}
 
 	@NonNull

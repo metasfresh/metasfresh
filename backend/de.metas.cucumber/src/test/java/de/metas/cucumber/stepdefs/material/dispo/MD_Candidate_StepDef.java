@@ -164,7 +164,7 @@ public class MD_Candidate_StepDef
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
 
-		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
+		postMaterialEventService.enqueueEventNow(shipmentScheduleCreatedEvent);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
@@ -363,7 +363,7 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event, null);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 
 	@And("metasfresh has no MD_Candidate for identifier {string}")

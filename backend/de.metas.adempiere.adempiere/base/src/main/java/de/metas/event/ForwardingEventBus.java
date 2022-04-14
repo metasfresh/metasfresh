@@ -33,15 +33,9 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public String getTopicName()
+	public Topic getTopic()
 	{
-		return delegate().getTopicName();
-	}
-
-	@Override
-	public Type getType()
-	{
-		return delegate().getType();
+		return delegate().getTopic();
 	}
 
 	@Override
@@ -78,9 +72,18 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public void postObject(final Object obj)
+	public void enqueueEvent(final Event event)
 	{
-		delegate().postObject(obj);
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
+		{
+			delegate().enqueueEvent(event);
+		}
+	}
+
+	@Override
+	public void enqueueObject(final Object obj)
+	{
+		delegate().enqueueObject(obj);
 	}
 
 	@Override

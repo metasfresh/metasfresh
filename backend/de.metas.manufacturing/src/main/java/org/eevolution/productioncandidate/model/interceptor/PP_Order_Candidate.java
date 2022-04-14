@@ -159,7 +159,7 @@ public class PP_Order_Candidate
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
 	}
 
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -171,6 +171,6 @@ public class PP_Order_Candidate
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCandidateCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateCreatedEvent);
 	}
 }

@@ -83,7 +83,7 @@ public final class EventBusConfig
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
-	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
+	public static final Topic TOPIC_GeneralUserNotifications = Topic.distributed("de.metas.event.GeneralNotifications");
 
 	/**
 	 * Topic used for general notifications inside this JVM instance.

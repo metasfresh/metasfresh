@@ -404,7 +404,7 @@ public class NotificationSenderTemplate
 		{
 			final UserNotification notification = notificationsRepo.save(request);
 
-			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
+			final Topic topic = Topic.distributed(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
 					.getEventBus(topic)

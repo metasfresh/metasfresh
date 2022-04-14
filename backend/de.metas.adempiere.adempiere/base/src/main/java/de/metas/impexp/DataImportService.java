@@ -55,7 +55,7 @@ import lombok.NonNull;
 @Service
 public class DataImportService
 {
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.DISTRIBUTED);
 
 	private static final Logger logger = LogManager.getLogger(DataImportService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);

@@ -75,7 +75,7 @@ class ImportInvoiceResponseService
 
 	private static final Topic INVOICE_EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.invoicecandidate.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);

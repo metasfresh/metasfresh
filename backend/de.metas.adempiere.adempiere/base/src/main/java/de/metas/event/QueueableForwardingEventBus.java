@@ -197,10 +197,12 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	@Override
 	public String toString()
 	{
+		final Topic topic = getTopic();
+
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("topicName", getTopicName())
-				.add("type", getType())
+				.add("topicName", topic.getName())
+				.add("type", topic.getType())
 				.add("destroyed", isDestroyed() ? Boolean.TRUE : null)
 				.toString();
 	}

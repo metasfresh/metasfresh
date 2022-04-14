@@ -38,7 +38,7 @@ public final class UserRolePermissionsEventBus
 
 	private static final Topic EVENTBUS_TOPIC_Permissions = Topic.builder()
 			.name("de.metas.permissions")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final String EVENT_PROPERTY_Type = "eventType";
