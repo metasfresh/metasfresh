@@ -103,7 +103,7 @@ public class Candidate
 	List<TransactionDetail> transactionDetails;
 
 	Dimension dimension;
-
+	
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -118,7 +118,7 @@ public class Candidate
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
-			Dimension dimension)
+			final Dimension dimension)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;

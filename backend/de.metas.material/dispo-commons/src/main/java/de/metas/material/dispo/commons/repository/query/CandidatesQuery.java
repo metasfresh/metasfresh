@@ -52,7 +52,7 @@ import java.util.List;
  */
 @Value
 @With
-public final class CandidatesQuery
+public class CandidatesQuery
 {
 	/**
 	 * This query matches no candidate.

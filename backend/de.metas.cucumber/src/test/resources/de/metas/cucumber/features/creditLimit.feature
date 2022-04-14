@@ -7,8 +7,9 @@ Feature: credit limit
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  Scenario: validate the error thrown by the credit limit set on business partner when generating the shipments, then remove the credit limit, generate shipments and validate them
-    And metasfresh contains M_Products:
+  Scenario: validate the error thrown by the credit limit set on business partner when generating the shipments,
+  then remove the credit limit, generate shipments and validate them
+    Given metasfresh contains M_Products:
       | Identifier | Name       |
       | p_1        | cl_product |
     And metasfresh contains M_PricingSystems
@@ -23,7 +24,7 @@ Feature: credit limit
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | cl_Endcustomer | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
@@ -46,6 +47,7 @@ Feature: credit limit
       | C_BPartner_ID.Identifier | SOCreditStatus.Code |
       | endcustomer_1            | S                   |
 
+    # make sure that we have some stock
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-16   |
@@ -57,12 +59,14 @@ Feature: credit limit
     And the user creates a JsonCreateShipmentRequest and stores it in the context
       | M_ShipmentSchedule_ID.Identifier | MovementQty | M_Product_ID.Identifier | DeliveryRule | MovementDate              |
       | s_s_1                            | 10          | p_1                     | F            | 2021-04-18T10:15:30+02:00 |
-    When the metasfresh REST-API endpoint path 'api/v2/shipments' receives a 'POST' request with the payload from context and responds with '400' status code
 
+    # try to create the shipment via API, and expect the API-call to fail because of the creadit-stop
+    When the metasfresh REST-API endpoint path 'api/v2/shipments' receives a 'POST' request with the payload from context and responds with '400' status code
     And there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
 
+    # now remove the credit-stop and retry
     And upsert C_BPartner_Stats
       | C_BPartner_ID.Identifier | SOCreditStatus.Code |
       | endcustomer_1            | O                   |
@@ -73,8 +77,8 @@ Feature: credit limit
     # we need to wait 1 second to make sure the first "create-shipment" work package - which failed - will not share the same second with the next "create-shipment" work package that we are about to enqueue
     # why can't it share the same second?
     # Cosmin's reply:
-    # > it's related to de.metas.async.service.AsyncBatchService#getWorkPackagesFromCurrentRun, 
-    # > turns out we don't store milliseconds in C_Queue_Workpackage Created & Updated timestamp columns, 
+    # > it's related to de.metas.async.service.AsyncBatchService#getWorkPackagesFromCurrentRun,
+    # > turns out we don't store milliseconds in C_Queue_Workpackage Created & Updated timestamp columns,
     # > so if the 1st attempt (which failed) and the 2nd one, run within the same second -> they will have the same created/update timestamp,
     # > so the getWorkPackagesFromCurrentRun will consider both of them in the second run => the async batch fails
     # > ... honestly, in a prod environment and real scenarios I don't think it will cause much trouble
@@ -93,5 +97,5 @@ Feature: credit limit
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-17  | null        | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | s_line_1_1                | s_1                   | p_1                     | 10          | true      |

@@ -1,11 +1,10 @@
 package de.metas.invoicecandidate.housekeeping.sqi.impl;
 
+import de.metas.util.Loggables;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
-
-import de.metas.util.Loggables;
 
 /*
  * #%L
@@ -33,7 +32,7 @@ import de.metas.util.Loggables;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @task https://github.com/metasfresh/metasfresh/issues/251
+ * @implSpec https://github.com/metasfresh/metasfresh/issues/251
  */
 @Component
 public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask

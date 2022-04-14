@@ -54,7 +54,7 @@ public class MaterialDispoDataItem
 	BigDecimal atp;
 
 	BusinessCaseDetail businessCaseDetail;
-
+	
 	public static MaterialDispoDataItem of(
 			@NonNull final Candidate dataCanddiate,
 			@NonNull final Candidate stockCandidate)

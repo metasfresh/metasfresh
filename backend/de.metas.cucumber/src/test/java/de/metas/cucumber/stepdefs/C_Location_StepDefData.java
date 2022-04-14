@@ -29,4 +29,8 @@ import org.compiere.model.I_C_Location;
  */
 public class C_Location_StepDefData extends StepDefData<I_C_Location>
 {
+	public C_Location_StepDefData()
+	{
+		super(I_C_Location.class);
+	}
 }
