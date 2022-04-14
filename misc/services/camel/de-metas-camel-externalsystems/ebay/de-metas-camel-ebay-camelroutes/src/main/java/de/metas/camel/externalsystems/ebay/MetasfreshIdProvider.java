@@ -22,8 +22,8 @@
 
 package de.metas.camel.externalsystems.ebay;
 
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 
+ *
  * @author Werner Gaulke
  *
  */
