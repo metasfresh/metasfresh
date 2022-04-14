@@ -37,6 +37,6 @@ public class PlatformId
 
 	private PlatformId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Platform_ID");
 	}
 }
