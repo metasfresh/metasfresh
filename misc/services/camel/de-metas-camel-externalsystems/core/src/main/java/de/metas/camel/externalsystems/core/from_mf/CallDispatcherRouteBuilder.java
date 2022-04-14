@@ -34,18 +34,26 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.SEDA_BLOCK_WHEN_FULL_PROPERTY;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.SEDA_CONCURRENT_CONSUMERS_PROPERTY;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.SEDA_QUEUE_SIZE_PROPERTY;
 import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.seda;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
 	static final String DISPATCH_ROUTE_ID = "MF-To-ExternalSystem-Dispatcher";
+	static final String DISPATCH_ASYNC_ROUTE_ID = "MF-To-ExternalSystem-AsyncDispatcher";
+	static final String DISPATCH_ROUTE = "dispatch";
+	static final String DISPATCH_ASYNC_ROUTE = "asyncDispatch";
 
 	@NonNull
 	private final ProcessLogger processLogger;
 
-	private final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
+	final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
 
 	public CallDispatcherRouteBuilder(final @NonNull ProcessLogger processLogger)
 	{
@@ -61,9 +69,18 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 
 		from(FROM_MF_ROUTE)
 				.routeId(FROM_MF_ROUTE_ID)
-				.to("direct:dispatch");
+				.to(direct(DISPATCH_ASYNC_ROUTE));
 
-		from("direct:dispatch")
+		//dev-note: intermediate route for easy testing
+		from(direct(DISPATCH_ASYNC_ROUTE))
+				.routeId(DISPATCH_ASYNC_ROUTE_ID)
+				.to(seda(DISPATCH_ROUTE)
+							.size("{{" + SEDA_QUEUE_SIZE_PROPERTY + "}}")
+							.blockWhenFull("{{" + SEDA_BLOCK_WHEN_FULL_PROPERTY + "}}"));
+
+		from(seda(DISPATCH_ROUTE)
+					 .concurrentConsumers("{{" + SEDA_CONCURRENT_CONSUMERS_PROPERTY + "}}")
+					 .size("{{" + SEDA_QUEUE_SIZE_PROPERTY + "}}"))
 				.routeId(DISPATCH_ROUTE_ID)
 				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))

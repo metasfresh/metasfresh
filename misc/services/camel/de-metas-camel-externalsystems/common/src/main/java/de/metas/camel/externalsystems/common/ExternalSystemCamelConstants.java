@@ -31,6 +31,9 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
 	public static final String HEADER_PRICE_LIST_VERSION_IDENTIFIER = "priceListVersionIdentifier";
+	public static final String SEDA_CONCURRENT_CONSUMERS_PROPERTY = "dispatcher.seda.concurrentConsumers";
+	public static final String SEDA_QUEUE_SIZE_PROPERTY = "dispatcher.seda.queueSize";
+	public static final String SEDA_BLOCK_WHEN_FULL_PROPERTY = "dispatcher.seda.blockWhenFull";
 
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 

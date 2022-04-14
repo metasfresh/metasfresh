@@ -33,6 +33,10 @@ public interface CoreConstants
 	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
 			+ "?durable=true"
 			+ "&autoDelete=false"
+			+ "&prefetchCount=1"
+			+ "&prefetchEnabled=true"
+			+ "&prefetchGlobal=false"
+			+ "&prefetchSize=0"
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
 			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
 }
