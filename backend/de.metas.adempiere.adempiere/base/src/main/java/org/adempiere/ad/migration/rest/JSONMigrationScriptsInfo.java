@@ -1,21 +1,8 @@
-package de.metas.ui.web.devtools;
-
-import lombok.Builder;
-import lombok.ToString;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import io.swagger.annotations.ApiModelProperty;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,24 +20,34 @@ import io.swagger.annotations.ApiModelProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+package org.adempiere.ad.migration.rest;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
+
+@Value
 @Builder
-@ToString
+@Jacksonized
 public class JSONMigrationScriptsInfo
 {
-	private boolean enabled;
+	boolean enabled;
 
-	private String migrationScriptDirectory;
+	String migrationScriptDirectory;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "The file name of the SQL script to which the system currently records.")
-	private String currentScript;
+	String currentScript;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "The file names of recorded SQL scripts.")
-	private List<String> scripts;
+	List<String> scripts;
 }

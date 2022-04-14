@@ -1,9 +1,11 @@
 package de.metas.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.google.common.collect.ImmutableSet;
+import org.adempiere.util.lang.Mutable;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -15,12 +17,12 @@ import org.junit.jupiter.api.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,12 +61,8 @@ public class OptionalBooleanTest
 	{
 		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
 		assertThat(OptionalBoolean.UNKNOWN.isUnknown()).isTrue();
-
-		//noinspection ConstantConditions
-		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
-
-		//noinspection ConstantConditions
-		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
+		assertThat(OptionalBoolean.UNKNOWN.isTrue()).isFalse();
+		assertThat(OptionalBoolean.UNKNOWN.isFalse()).isFalse();
 	}
 
 	@Test
@@ -103,5 +101,33 @@ public class OptionalBooleanTest
 
 		assertThat(OptionalBoolean.UNKNOWN.orElseTrue()).isTrue();
 		assertThat(OptionalBoolean.UNKNOWN.orElseFalse()).isFalse();
+	}
+
+	@Nested
+	class ifPresent
+	{
+		@Test
+		void TRUE()
+		{
+			final Mutable<Boolean> captor = new Mutable<>(null);
+			OptionalBoolean.TRUE.ifPresent(captor::setValue);
+			assertThat(captor.getValue()).isTrue();
+		}
+
+		@Test
+		void FALSE()
+		{
+			final Mutable<Boolean> captor = new Mutable<>(null);
+			OptionalBoolean.FALSE.ifPresent(captor::setValue);
+			assertThat(captor.getValue()).isFalse();
+		}
+
+		@Test
+		void UNKNOWN()
+		{
+			final Mutable<Boolean> captor = new Mutable<>(null);
+			OptionalBoolean.UNKNOWN.ifPresent(captor::setValue);
+			assertThat(captor.getValue()).isNull();
+		}
 	}
 }

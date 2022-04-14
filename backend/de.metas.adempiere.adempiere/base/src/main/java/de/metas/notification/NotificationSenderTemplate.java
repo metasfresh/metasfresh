@@ -127,10 +127,17 @@ public class NotificationSenderTemplate
 	public void send(@NonNull final UserNotificationRequest request)
 	{
 		logger.trace("Prepare sending notification: {}", request);
-		Stream.of(resolve(request))
-				.flatMap(this::explodeByUser)
-				.flatMap(this::explodeByEffectiveNotificationsConfigs)
-				.forEach(this::send0);
+		try
+		{
+			Stream.of(resolve(request))
+					.flatMap(this::explodeByUser)
+					.flatMap(this::explodeByEffectiveNotificationsConfigs)
+					.forEach(this::send0);
+		}
+		catch(Exception ex)
+		{
+			logger.error("Failed to send notification: {}", request, ex);
+		}
 	}
 
 	private void send0(final UserNotificationRequest request)

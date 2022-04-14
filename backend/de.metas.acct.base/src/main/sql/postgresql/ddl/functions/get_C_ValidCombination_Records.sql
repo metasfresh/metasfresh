@@ -4,7 +4,7 @@ DROP FUNCTION IF EXISTS "de_metas_acct".get_C_ValidCombination_Records(
 ;
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".get_C_ValidCombination_Records(
-    p_AccountValueLike text
+    p_AccountValueLike text = NULL
 )
     RETURNS TABLE
             (
@@ -100,7 +100,7 @@ BEGIN
         END LOOP;
 
     v_sql := 'SELECT t.TableName, t.KeyColumnName, t.Record_ID, t.C_AcctSchema_ID, t.C_ValidCombination_ColumnName, t.C_ValidCombination_ID FROM (' || v_sql || ') t';
-    RAISE NOTICE 'sql: %', v_sql;
+    RAISE NOTICE 'get_C_ValidCombination_Records: sql: %', v_sql;
 
     RETURN QUERY EXECUTE v_sql;
 END;

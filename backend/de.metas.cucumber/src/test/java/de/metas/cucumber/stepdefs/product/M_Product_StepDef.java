@@ -230,6 +230,12 @@ public class M_Product_StepDef
 			productRecord.setDescription(description);
 		}
 
+		final boolean isSold = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsSold, true);
+		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsPurchased, true);
+
+		productRecord.setIsSold(isSold);
+		productRecord.setIsPurchased(isPurchased);
+
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
