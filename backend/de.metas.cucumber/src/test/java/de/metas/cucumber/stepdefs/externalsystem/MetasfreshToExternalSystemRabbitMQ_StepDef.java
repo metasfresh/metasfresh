@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.externalsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -33,7 +34,10 @@ import com.rabbitmq.client.Envelope;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -54,6 +58,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -75,6 +80,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -165,47 +171,107 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				}
 				assertThat(jsonExternalSystemRequest).isNotNull();
 			}
+
+			final String expectedJsonExternalReferenceLookupRequest = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters.JsonExternalReferenceLookupRequest");
+
+			if (EmptyUtil.isNotBlank(expectedJsonExternalReferenceLookupRequest))
+			{
+				final JsonExternalReferenceLookupRequest expectedRequest = objectMapper.readValue(expectedJsonExternalReferenceLookupRequest, JsonExternalReferenceLookupRequest.class);
+
+				final JsonExternalReferenceLookupRequest actualRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST))
+						.filter(Objects::nonNull)
+						.map(this::readJsonExternalReferenceLookupRequest)
+						.filter(expectedRequest::equals)
+						.findFirst()
+						.orElse(null);
+
+				assertThat(actualRequest).isNotNull();
+			}
+
+			final String bpIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (Check.isNotBlank(bpIdentifier))
+			{
+				final I_C_BPartner bPartner = bpartnerTable.get(bpIdentifier);
+				assertThat(bPartner).isNotNull();
+
+				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.filter(request -> String.valueOf(bPartner.getC_BPartner_ID()).equals(request.getParameters().get(PARAM_BPARTNER_ID)))
+						.findFirst()
+						.orElse(null);
+
+				assertThat(jsonExternalSystemRequest).isNotNull();
+			}
 		}
 	}
 
 	private List<JsonExternalSystemRequest> pollRequestFromQueue(final int numberOfMessages) throws IOException, TimeoutException, InterruptedException
 	{
-		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
-		final Channel channel = connection.createChannel();
+		Channel channel = null;
 
-		final CountDownLatch countDownLatch = new CountDownLatch(numberOfMessages);
-
-		final String[] messages = new String[numberOfMessages];
-
-		final DefaultConsumer consumer = new DefaultConsumer(channel)
+		try
 		{
-			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
+			channel = connection.createChannel();
+
+			final CountDownLatch countDownLatch = new CountDownLatch(numberOfMessages);
+
+			final String[] messages = new String[numberOfMessages];
+
+			final DefaultConsumer consumer = new DefaultConsumer(channel)
 			{
-				messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
-				countDownLatch.countDown();
+				@Override
+				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+				{
+					messages[(int)(numberOfMessages - countDownLatch.getCount())] = new String(body, StandardCharsets.UTF_8);
+					countDownLatch.countDown();
+				}
+			};
+
+			channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
+
+			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
+
+			assertThat(messageReceivedWithinTimeout).isTrue();
+
+			return Stream.of(messages)
+					.peek(message -> logger.info("*** {}: received message: {}", QUEUE_NAME_MF_TO_ES, message))
+					.map(message -> {
+						try
+						{
+							return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message, JsonExternalSystemRequest.class);
+						}
+						catch (final Exception e)
+						{
+							throw AdempiereException.wrapIfNeeded(e);
+						}
+					})
+					.collect(ImmutableList.toImmutableList());
+		}
+		finally
+		{
+			if (channel != null)
+			{
+				channel.close();
 			}
-		};
+		}
+	}
 
-		channel.basicConsume(QUEUE_NAME_MF_TO_ES, true, consumer);
-
-		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
-
-		assertThat(messageReceivedWithinTimeout).isTrue();
-
-		channel.close();
-
-		return Stream.of(messages)
-				.map(message -> {
-					try
-					{
-						return JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(message, JsonExternalSystemRequest.class);
-					}
-					catch (final JsonProcessingException e)
-					{
-						throw AdempiereException.wrapIfNeeded(e);
-					}
-				})
-				.collect(ImmutableList.toImmutableList());
+	@NonNull
+	private JsonExternalReferenceLookupRequest readJsonExternalReferenceLookupRequest(@NonNull final String jsonExternalReferenceLookupRequest)
+	{
+		try
+		{
+			return objectMapper.readValue(jsonExternalReferenceLookupRequest, JsonExternalReferenceLookupRequest.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("jsonExternalReferenceLookupRequest", jsonExternalReferenceLookupRequest);
+		}
 	}
 }

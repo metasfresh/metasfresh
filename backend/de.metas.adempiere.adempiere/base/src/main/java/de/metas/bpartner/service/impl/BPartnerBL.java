@@ -101,7 +101,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public String getBPartnerName(final BPartnerId bpartnerId)
+	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
 	{
 		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
@@ -112,7 +112,7 @@ public class BPartnerBL implements IBPartnerBL
 		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue() + "_" + bpartner.getName());
 	}
 
-	private String toBPartnerDisplayName(final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
+	private String toBPartnerDisplayName(@Nullable final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
 	{
 		if (bpartnerId == null)
 		{

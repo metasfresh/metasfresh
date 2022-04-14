@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -554,6 +555,7 @@ final class BPartnerCompositesLoader
 
 		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankAccountRecord.getC_BPartner_ID());
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccountRecord.getC_Bank_ID());
 
 		return BPartnerBankAccount.builder()
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
@@ -562,6 +564,7 @@ final class BPartnerCompositesLoader
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.bankId(bankId)
 				.build();
 	}
 

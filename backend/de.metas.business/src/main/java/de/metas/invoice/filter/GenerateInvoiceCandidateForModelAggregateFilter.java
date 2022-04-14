@@ -45,7 +45,7 @@ public class GenerateInvoiceCandidateForModelAggregateFilter
 	{
 		final List<IGenerateInvoiceCandidateForModelFilter> matchingFilters = filterList
 				.stream()
-				.filter(eligibilityFilter -> eligibilityFilter.getSupportedTypes().contains(model.getClass()))
+				.filter(eligibilityFilter -> eligibilityFilter.applies(model))
 				.collect(ImmutableList.toImmutableList());
 
 		if (matchingFilters.isEmpty())

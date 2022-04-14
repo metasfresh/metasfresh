@@ -590,6 +590,10 @@ public class InOutProducer implements IInOutProducer
 		// Order Line Link
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
 
+		//
+		// Contract
+		line.setC_Flatrate_Term_ID(rs.getC_Flatrate_Term_ID());
+
 		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
 		dimensionService.updateRecord(line, receiptScheduleDimension);
 	}

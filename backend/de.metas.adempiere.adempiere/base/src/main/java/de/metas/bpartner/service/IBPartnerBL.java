@@ -55,7 +55,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
-	String getBPartnerName(final BPartnerId bpartnerId);
+	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 

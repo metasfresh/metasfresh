@@ -27,4 +27,8 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 
 public class M_DiscountSchemaBreak_StepDefData extends StepDefData<I_M_DiscountSchemaBreak>
 {
+	public M_DiscountSchemaBreak_StepDefData()
+	{
+		super(I_M_DiscountSchemaBreak.class);
+	}
 }

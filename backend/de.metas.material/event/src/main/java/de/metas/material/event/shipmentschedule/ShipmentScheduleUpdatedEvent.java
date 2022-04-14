@@ -2,6 +2,7 @@ package de.metas.material.event.shipmentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
@@ -47,6 +48,8 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 
 	private final BigDecimal reservedQuantityDelta;
 
+	private final DocumentLineDescriptor documentLineDescriptor;
+
 	@JsonCreator
 	@Builder
 	public ShipmentScheduleUpdatedEvent(
@@ -56,7 +59,8 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
@@ -66,5 +70,6 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 
 		this.orderedQuantityDelta = orderedQuantityDelta;
 		this.reservedQuantityDelta = reservedQuantityDelta;
+		this.documentLineDescriptor = documentLineDescriptor;
 	}
 }

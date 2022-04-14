@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import java.util.Optional;
 
 /**
- *  Computes the price for sales order lines meant to initiate "call order contracts".
+ * Computes the price for sales order/purchase order lines meant to initiate "call order contracts".
  */
 public class CallOrderContractLinePricingRule implements IPricingRule
 {
@@ -151,7 +151,7 @@ public class CallOrderContractLinePricingRule implements IPricingRule
 
 		try
 		{
-			final I_M_PriceList callOrderPriceList = PricingUtil.retrievePriceListForConditionsAndCountry(countryId, pricingSystemId);
+			final I_M_PriceList callOrderPriceList = PricingUtil.retrievePriceListForConditionsAndCountry(countryId, pricingSystemId, pricingCtx.getSoTrx());
 
 			if (callOrderPriceList == null)
 			{
@@ -159,7 +159,7 @@ public class CallOrderContractLinePricingRule implements IPricingRule
 				return Optional.empty();
 			}
 
-			final IEditablePricingContext callOrderPricingCtx = PricingUtil.copyCtxOverridePriceList(pricingCtx, callOrderPriceList);
+			final IEditablePricingContext callOrderPricingCtx = PricingUtil.copyCtxOverridePriceListAndRefObject(pricingCtx, callOrderPriceList);
 
 			return Optional.of(pricingBL.calculatePrice(callOrderPricingCtx.setFailIfNotCalculated()));
 		}

@@ -180,10 +180,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendWhenCreatedByUserGroup" : false,
-      "autoSendBPartnerEnabled" : false,
-      "sendBPartnerAllowed" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -201,10 +201,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
+    "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncExternalReferencesToRabbitMQ" : false,
     "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
+    "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
 
@@ -226,10 +226,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 	  "isSyncBPartnerToRabbitMQ" : true,
 	  "isAutoSendWhenCreatedByUserGroup" : true,
 	  "userGroupId" : 1,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
 	  "syncBPartnerToRabbitMQ" : true,
-	  "autoSendWhenCreatedByUserGroup" : true,
-	  "autoSendBPartnerEnabled" : true,
-	  "sendBPartnerAllowed" : true
+	  "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -443,6 +443,35 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
   }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
+  [
+    {
+      "id" : 100001,
+      "type" : "RabbitMQ",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "notImportant",
+        "routingKey" : "routingKey",
+        "remoteUrl" : "remoteURL",
+        "authToken" : "authToken",
+        "isSyncBPartnerToRabbitMQ" : false,
+        "isAutoSendWhenCreatedByUserGroup" : false,
+        "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
+        "syncBPartnerToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false
+      },
+	  "writeAudit" : true,
+	  "auditFileFolder" : "auditFileFolder"
+    }
+  ]
 ]
 
 

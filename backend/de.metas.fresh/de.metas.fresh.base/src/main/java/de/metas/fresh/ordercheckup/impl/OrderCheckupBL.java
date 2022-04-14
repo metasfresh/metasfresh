@@ -22,23 +22,6 @@ package de.metas.fresh.ordercheckup.impl;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.slf4j.Logger;
-
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
@@ -57,6 +40,22 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -71,9 +70,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
 
+	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
+
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
+
+	private static final int BARCODE_ORDERCHECHUP_PROCESS_ID= 540814; // hardcoded ordercheckup_with_barcode/report.jasper
 
 	@Override
 	public void generateReportsIfEligible(final I_C_Order order)
@@ -268,6 +271,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@Override
 	public int getNumberOfCopies(final I_C_Printing_Queue queueItem)
 	{
+		if (BARCODE_ORDERCHECHUP_PROCESS_ID == queueItem.getAD_Process_ID())
+		{
+			final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			return copies;
+		}
+
 		final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		return copies;
 	}

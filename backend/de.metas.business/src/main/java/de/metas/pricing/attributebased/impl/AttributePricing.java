@@ -94,7 +94,7 @@ public class AttributePricing implements IPricingRule
 		//
 		// Gets the "attributed" "product price, if any.
 		// If nothing found, this pricing rule does not apply.
-		if (!getProductPrice(pricingCtx).isPresent())
+		if (!getProductPriceAttribute(pricingCtx).isPresent())
 		{
 			logger.debug("Not applying because no product price with an attribute found: {}" + pricingCtx);
 			return false;
@@ -108,7 +108,7 @@ public class AttributePricing implements IPricingRule
 	{
 		// Get the product price attribute to use
 		// NOTE: at this point it shall not be null because we just validate it in "applies".
-		final I_M_ProductPrice productPrice = getProductPrice(pricingCtx).get();
+		final I_M_ProductPrice productPrice = getProductPriceAttribute(pricingCtx).get();
 
 		setResultForProductPriceAttribute(pricingCtx, result, productPrice);
 	}
@@ -170,7 +170,7 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @param pricingCtx
 	 */
-	private final Optional<? extends I_M_ProductPrice> getProductPrice(@NonNull final IPricingContext pricingCtx)
+	private final Optional<? extends I_M_ProductPrice> getProductPriceAttribute(@NonNull final IPricingContext pricingCtx)
 	{
 		//
 		// Use the explicit Product Price Attribute, if set and if it's valid.
@@ -184,7 +184,7 @@ public class AttributePricing implements IPricingRule
 
 		//
 		// Find best matching product price attribute
-		final Optional<? extends I_M_ProductPrice> productPriceAttribute = findMatchingProductPrice(pricingCtx);
+		final Optional<? extends I_M_ProductPrice> productPriceAttribute = findMatchingProductPriceAttribute(pricingCtx);
 		return productPriceAttribute;
 	}
 
@@ -255,7 +255,7 @@ public class AttributePricing implements IPricingRule
 	 * @param pricingCtx
 	 * @return best matching {@link I_M_ProductPrice}
 	 */
-	protected Optional<? extends I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)
+	protected Optional<? extends I_M_ProductPrice> findMatchingProductPriceAttribute(final IPricingContext pricingCtx)
 	{
 		final I_M_AttributeSetInstance attributeSetInstance = getM_AttributeSetInstance(pricingCtx);
 		if (attributeSetInstance == null)

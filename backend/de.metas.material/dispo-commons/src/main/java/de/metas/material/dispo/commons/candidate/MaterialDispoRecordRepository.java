@@ -66,11 +66,11 @@ public class MaterialDispoRecordRepository
 	}
 
 	@NonNull
-	@VisibleForTesting	
+	@VisibleForTesting
 	public String getAllByQueryAsString(@NonNull final CandidatesQuery query)
 	{
 		assertNotStockQuery(query);
-		
+
 		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		return asString(query, candidates);
 	}
@@ -90,7 +90,7 @@ public class MaterialDispoRecordRepository
 		asMaterialDispoDataItem(query, candidates).forEach(item -> sb.append(item + "\n"));
 		return sb.toString();
 	}
-	
+
 	private ImmutableList<MaterialDispoDataItem> asMaterialDispoDataItem(
 			final @Nullable CandidatesQuery query,
 			final @NonNull List<Candidate> candidates)
@@ -102,15 +102,6 @@ public class MaterialDispoRecordRepository
 			result.add(extractMaterialDispoItem(query, candidate));
 		}
 		return result.build();
-	}
-
-	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
-	{
-		if (query.getType().equals(CandidateType.STOCK))
-		{
-			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
-					.setParameter("candidatesQuery", query);
-		}
 	}
 
 	private MaterialDispoDataItem extractMaterialDispoItem(final @Nullable CandidatesQuery query, final @NonNull Candidate candidate)
@@ -135,6 +126,15 @@ public class MaterialDispoRecordRepository
 				throw new AdempiereException("The CandidateType=" + candidate.getType() + " is not yet supported! Please add").appendParametersToMessage()
 						.setParameter("candidatesQuery", query)
 						.setParameter("candidate", candidate);
+		}
+	}
+
+	private void assertNotStockQuery(final @NonNull CandidatesQuery query)
+	{
+		if (query.getType().equals(CandidateType.STOCK))
+		{
+			throw new AdempiereException("The given candidatesQuery has an unsupported type=" + CandidateType.STOCK).appendParametersToMessage()
+					.setParameter("candidatesQuery", query);
 		}
 	}
 }

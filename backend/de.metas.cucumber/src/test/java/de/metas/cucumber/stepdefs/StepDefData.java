@@ -28,6 +28,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -107,7 +108,14 @@ public abstract class StepDefData<T>
 	@NonNull
 	public T get(@NonNull final String identifier)
 	{
-		return getRecordDataItem(identifier).getRecord();
+		final T record = getRecordDataItem(identifier).getRecord();
+
+		if (record instanceof PO)
+		{
+			InterfaceWrapperHelper.refresh(record);
+		}
+
+		return record;
 	}
 
 	@NonNull
@@ -152,7 +160,7 @@ public abstract class StepDefData<T>
 										clazz,
 										Instant.now(),
 										updated);
-			
+
 		}
 		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
 	}

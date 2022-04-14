@@ -49,7 +49,7 @@ Feature: invoice rules
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | ol_1                      | 10           |
-    When process invoice candidates
+    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | ic_1                              |
     Then after not more than 30s, C_Invoice are found:
@@ -108,9 +108,9 @@ Feature: invoice rules
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_2                              | ol_2                      | 6            |
-    When process invoice candidates
-      | C_Invoice_Candidate_ID.Identifier |
-      | ic_2                              |
+    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | ic_2                              | 6               |
     Then after not more than 30s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_2                              | invoice_2               |

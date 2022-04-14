@@ -133,5 +133,8 @@ public class C_CallOrderSummary_StepDef
 		{
 			assertThat(summary.getQtyInvoicedInUOM()).isEqualTo(qtyInvoiced);
 		}
+
+		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, I_C_CallOrderSummary.COLUMNNAME_IsSOTrx);
+		assertThat(summary.isSOTrx()).isEqualTo(soTrx);
 	}
 }

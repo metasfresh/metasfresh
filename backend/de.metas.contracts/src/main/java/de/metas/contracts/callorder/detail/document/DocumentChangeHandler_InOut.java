@@ -60,13 +60,13 @@ public class DocumentChangeHandler_InOut implements DocumentChangeHandler<I_M_In
 	@Override
 	public void onComplete(final I_M_InOut shipment)
 	{
-		shipmentDAO.retrieveLines(shipment).forEach(this::syncShipmentLine);
+		shipmentDAO.retrieveLines(shipment).forEach(this::syncInOutLine);
 	}
 
 	@Override
 	public void onReverse(final I_M_InOut shipment)
 	{
-		shipmentDAO.retrieveLines(shipment).forEach(this::syncShipmentLine);
+		shipmentDAO.retrieveLines(shipment).forEach(this::syncInOutLine);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class DocumentChangeHandler_InOut implements DocumentChangeHandler<I_M_In
 		detailRepo.resetDeliveredQtyForShipment(InOutId.ofRepoId(shipment.getM_InOut_ID()));
 	}
 
-	private void syncShipmentLine(@NonNull final I_M_InOutLine inOutLine)
+	private void syncInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLine.getC_Flatrate_Term_ID());
 
@@ -88,6 +88,8 @@ public class DocumentChangeHandler_InOut implements DocumentChangeHandler<I_M_In
 		{
 			return;
 		}
+
+		callOrderContractService.validateCallOrderInOutLine(inOutLine, flatrateTermId);
 
 		final UpsertCallOrderDetailRequest request = UpsertCallOrderDetailRequest.builder()
 				.callOrderContractId(flatrateTermId)

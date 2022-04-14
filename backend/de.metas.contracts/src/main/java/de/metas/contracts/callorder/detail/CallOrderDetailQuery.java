@@ -38,7 +38,8 @@ import java.util.stream.Stream;
 @Value
 public class CallOrderDetailQuery
 {
-	@NonNull CallOrderSummaryId summaryId;
+	@NonNull
+	CallOrderSummaryId summaryId;
 
 	@Nullable
 	OrderLineId orderLineId;

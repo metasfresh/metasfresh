@@ -83,7 +83,7 @@ Feature: credit limit
     # > so the getWorkPackagesFromCurrentRun will consider both of them in the second run => the async batch fails
     # > ... honestly, in a prod environment and real scenarios I don't think it will cause much trouble
     # > ... after all, it's only a problem if that work package that's being wrongly considered it's a failed one...
-    And wait 1s
+    And wait for 1s
 
     And the metasfresh REST-API endpoint path 'api/v2/shipments' receives a 'POST' request with the payload from context and responds with '200' status code
 

@@ -24,7 +24,8 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
-import io.cucumber.java.en.Given;
+import de.metas.util.Check;
+import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -84,12 +86,11 @@ public class StepDefUtil
 		}
 	}
 
-	public void tryAndWait(
-			final long maxWaitSeconds,
-			final long checkingIntervalMs,
-			@NonNull final Supplier<Boolean> worker) throws InterruptedException
+	@And("^wait for (.*)s$")
+	public void waitFor(final int waitingTimeSec) throws InterruptedException
 	{
-		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+		final long waitingTimeMillis = waitingTimeSec * 1000L;
+		Thread.sleep(waitingTimeMillis);
 	}
 
 	/**
@@ -136,6 +137,55 @@ public class StepDefUtil
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker) throws InterruptedException
+	{
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker,
+			@Nullable final Runnable logContext) throws InterruptedException
+	{
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
+
+		while (deadLineMillis > System.currentTimeMillis())
+		{
+			Thread.sleep(checkingIntervalMs);
+			final Optional<T> workerResult = worker.get();
+			if (workerResult.isPresent())
+			{
+				return workerResult.get();
+			}
+		}
+
+		if (logContext != null)
+		{
+			logContext.run();
+		}
+		Assertions.fail("the given spllier didn't succeed within the " + maxWaitSeconds + "second timeout");
+		return null;
+
+	}
+
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Optional<T>> worker) throws InterruptedException
+	{
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
 	private long computeDeadLineMillis(final long maxWaitSeconds)
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
@@ -157,9 +207,15 @@ public class StepDefUtil
 		return Arrays.asList(identifiers.split(","));
 	}
 
-	@Given("^wait (.*)s")
-	public void waitFor(final int secondsToWait) throws InterruptedException
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
 	{
-		Thread.sleep(secondsToWait * 1000);
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
 	}
 }

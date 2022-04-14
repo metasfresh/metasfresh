@@ -124,6 +124,7 @@ public class M_HU_LUTU_Configuration_StepDef
 			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 			assertThat(receiptSchedule).isNotNull();
+			InterfaceWrapperHelper.refresh(receiptSchedule);
 
 			final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = InterfaceWrapperHelper.load(receiptSchedule.getM_ReceiptSchedule_ID(), de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
 
@@ -215,7 +216,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		InterfaceWrapperHelper.saveRecord(lutuConfig);
 
 		final String lutuIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
-		huLutuConfigurationTable.put(lutuIdentifier, lutuConfig);
+		huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig);
 
 		return lutuConfig;
 	}
