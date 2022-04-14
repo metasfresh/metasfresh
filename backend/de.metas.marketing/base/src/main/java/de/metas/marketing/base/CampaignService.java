@@ -8,6 +8,7 @@ import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonId;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformRepository;
@@ -50,13 +51,26 @@ public class CampaignService
 	private final CampaignRepository campaignRepository;
 	private final PlatformRepository platformRepository;
 
-	public CampaignService(@NonNull final ContactPersonRepository contactPersonRepository,
+	public CampaignService(
+			@NonNull final ContactPersonRepository contactPersonRepository,
 			@NonNull final CampaignRepository campaignRepository,
 			@NonNull final PlatformRepository platformRepository)
 	{
 		this.contactPersonRepository = contactPersonRepository;
 		this.campaignRepository = campaignRepository;
 		this.platformRepository = platformRepository;
+	}
+
+	public Campaign getById(@NonNull final CampaignId campaignId)
+	{
+		return campaignRepository.getById(campaignId);
+	}
+
+	public void addContactPersonToCampaign(
+			@NonNull final ContactPersonId contactPersonId,
+			@NonNull final CampaignId campaignId)
+	{
+		campaignRepository.addContactPersonToCampaign(contactPersonId, campaignId);
 	}
 
 	public void addAsContactPersonsToCampaign(
@@ -102,10 +116,10 @@ public class CampaignService
 
 		final BPartnerLocationId addressToUse = computeAddressToUse(user, defaultAddressType);
 
-		if (isRequiredLocation && addressToUse == null )
+		if (isRequiredLocation && addressToUse == null)
 		{
-			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString() ;
-			Loggables.addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage,user);
+			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString();
+			Loggables.addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage, user);
 			return;
 		}
 

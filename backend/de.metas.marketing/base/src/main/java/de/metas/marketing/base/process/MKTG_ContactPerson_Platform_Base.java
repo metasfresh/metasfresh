@@ -1,13 +1,9 @@
 package de.metas.marketing.base.process;
 
-import java.util.List;
-
-import org.compiere.Adempiere;
-
+import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.PlatformClientService;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
@@ -16,6 +12,9 @@ import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+
+import java.util.List;
 
 /*
  * #%L
@@ -41,11 +40,9 @@ import lombok.NonNull;
 
 public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 {
-	private final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-
-	private final ContactPersonRepository contactPersonRepository = Adempiere.getBean(ContactPersonRepository.class);
-
-	private final PlatformClientService platformClientService = Adempiere.getBean(PlatformClientService.class);
+	private final CampaignService campaignService = SpringContextHolder.instance.getBean(CampaignService.class);
+	private final ContactPersonRepository contactPersonRepository = SpringContextHolder.instance.getBean(ContactPersonRepository.class);
+	private final PlatformClientService platformClientService = SpringContextHolder.instance.getBean(PlatformClientService.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -56,7 +53,7 @@ public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 
 		final CampaignId campaignId = CampaignId.ofRepoId(getRecord_ID());
 
-		final Campaign campaign = campaignRepository.getById(campaignId);
+		final Campaign campaign = campaignService.getById(campaignId);
 		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
 
 		final List<ContactPerson> contactPersons = contactPersonRepository.getByCampaignId(campaignId);
@@ -65,7 +62,7 @@ public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 		for (final SyncResult syncResult : syncResults)
 		{
 			final ContactPerson savedContactPerson = contactPersonRepository.saveCampaignSyncResult(syncResult);
-			campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaignId);
+			campaignService.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaignId);
 		}
 
 		return MSG_OK;
