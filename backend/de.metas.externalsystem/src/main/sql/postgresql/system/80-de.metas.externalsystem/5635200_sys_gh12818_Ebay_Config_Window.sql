@@ -2239,3 +2239,12 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 
 
 
+-- Table: ExternalSystem_Config_Ebay_Mapping
+-- 2022-04-14T16:11:14.041806400Z
+UPDATE AD_Table SET AD_Window_ID=541468,Updated=TO_TIMESTAMP('2022-04-14 19:11:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542124
+;
+
+-- Table: ExternalSystem_Config_Ebay
+-- 2022-04-14T16:11:40.975205600Z
+UPDATE AD_Table SET AD_Window_ID=541468,Updated=TO_TIMESTAMP('2022-04-14 19:11:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541741
+;

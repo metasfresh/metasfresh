@@ -596,3 +596,18 @@ UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=195, AD_Val_Rule_
 INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','PaymentRule','VARCHAR(500)',null,null)
 ;
 
+
+
+
+-- Column: ExternalSystem_Config_Ebay_Mapping.C_DocTypeOrder_ID
+-- 2022-04-14T16:27:12.214276500Z
+UPDATE AD_Column SET AD_Val_Rule_ID=207,Updated=TO_TIMESTAMP('2022-04-14 19:27:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582779
+;
+
+-- 2022-04-14T16:27:13.533354900Z
+INSERT INTO t_alter_column values('externalsystem_config_ebay_mapping','C_DocTypeOrder_ID','NUMERIC(10)',null,null)
+;
+
+
+
+
