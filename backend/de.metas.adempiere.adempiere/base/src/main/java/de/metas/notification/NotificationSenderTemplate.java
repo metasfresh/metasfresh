@@ -415,7 +415,7 @@ public class NotificationSenderTemplate
 
 			eventBusFactory
 					.getEventBus(topic)
-					.postEvent(UserNotificationUtils.toEvent(notification));
+					.enqueueEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
 		{

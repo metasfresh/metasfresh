@@ -232,7 +232,7 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void postEvent(@NonNull final Event event)
+	public void processEvent(@NonNull final Event event)
 	{
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{

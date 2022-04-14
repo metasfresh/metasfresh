@@ -64,7 +64,7 @@ public class BPartnerProductStatsEventSender
 	private void sendEventNow(final Topic topic, final Event event)
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
-		eventBus.postEvent(event);
+		eventBus.enqueueEvent(event);
 	}
 
 	private static Event toEvent(final Object event)

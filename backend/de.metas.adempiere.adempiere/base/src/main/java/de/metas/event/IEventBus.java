@@ -67,7 +67,7 @@ public interface IEventBus
 	/**
 	 * Post given event on this bus.
 	 */
-	void postEvent(Event event);
+	void processEvent(Event event);
 
 	void enqueueEvent(Event event);
 
@@ -92,7 +92,7 @@ public interface IEventBus
 	 * <li>analog to the PROD and CONs of async</li>
 	 * <li>note that only one thread per eventbus is allowed to process its event (analog to the one worker thread that we have at async=true)</li>
 	 *
-	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
+	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #processEvent(Event)} doesn't have to wait for the listeners to be invoked.
 	 */
 	boolean isAsync();
 

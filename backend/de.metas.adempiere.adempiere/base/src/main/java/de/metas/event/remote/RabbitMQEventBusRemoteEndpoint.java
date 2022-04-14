@@ -126,7 +126,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			@NonNull final Event event,
 			@NonNull final String topicName)
 	{
-		localEventBus.postEvent(event);
+		localEventBus.processEvent(event);
 
 		final long durationMillis = System.currentTimeMillis() - event.getWhen().toEpochMilli();
 		logger.debug("Received and processed event in {}ms, topic={}: {}", durationMillis, topicName, event);

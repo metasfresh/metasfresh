@@ -75,7 +75,7 @@ public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 				EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID()),
 				handlerToIgnore);
 
-		eventBus.postEvent(event);
+		eventBus.enqueueEvent(event);
 
 		return MSG_OK;
 	}

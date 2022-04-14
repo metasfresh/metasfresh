@@ -29,6 +29,6 @@ class ForwardingEventListener implements IEventListener
 			return;
 		}
 
-		this.eventBusTo.postEvent(event);
+		this.eventBusTo.enqueueEvent(event);
 	}
 }

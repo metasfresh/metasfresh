@@ -103,7 +103,7 @@ public final class EventBusConfig
 		return SENDER_ID;
 	}
 
-	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
+	/** @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
 		// NOTE: in case of unit tests which are checking what notifications were arrived,

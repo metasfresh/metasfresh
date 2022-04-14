@@ -62,7 +62,7 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 		final Event event = eventLogService.loadEventForReposting(eventLogId);
 
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
-		eventBus.postEvent(event);
+		eventBus.enqueueEvent(event);
 
 		return MSG_OK;
 	}

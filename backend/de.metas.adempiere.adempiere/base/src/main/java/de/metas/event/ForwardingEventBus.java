@@ -63,11 +63,11 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public void postEvent(final Event event)
+	public void processEvent(final Event event)
 	{
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
-			delegate().postEvent(event);
+			delegate().processEvent(event);
 		}
 	}
 
