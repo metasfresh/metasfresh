@@ -107,6 +107,19 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 			I_M_HU_LUTU_Configuration lutuConfiguration,
 			BigDecimal qtyTUsTotal);
 
+
+	/**
+	 * Calculate how many LUs we would need (using given configuration) for given total TU quantity using  packing material max load weight
+	 *
+	 * @param lutuConfiguration
+	 * @param qtyTUsTotal
+	 * @return
+	 */
+	BigDecimal calculateQtyLUForTotalQtyTUsByMaxWeight(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			BigDecimal qtyTUsTotal);
+
+
 	/**
 	 * Adjust Qty CU, TU and LU to preciselly match our given <code>qtyTUsTotal</code>/<code>qtyCUsTotal</code>.
 	 * <p>
@@ -129,6 +142,17 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return how many LUs are needed or ZERO if we are dealing with infinite capacities
 	 */
 	int calculateQtyLUForTotalQtyCUs(
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			Quantity qtyCUsTotal);
+
+	/**
+	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity using  packing material max load weight
+	 *
+	 * @param lutuConfiguration
+	 * @param qtyCUsTotal
+	 * @return
+	 */
+	BigDecimal calculateQtyLUForTotalQtyCUsByLUMaxWeight(
 			I_M_HU_LUTU_Configuration lutuConfiguration,
 			Quantity qtyCUsTotal);
 

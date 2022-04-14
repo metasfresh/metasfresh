@@ -701,9 +701,18 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = //
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
-		final int qtyOrderedLU = //
-				lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
-		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+		final boolean isQtyLUByMaxLoadWeight =  lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
+		if(isQtyLUByMaxLoadWeight)
+		{
+			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective);
+			shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
+		}
+		else
+		{
+			final int qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
+			shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+		}
+
 	}
 
 	private void updatePackingRelatedQtys(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

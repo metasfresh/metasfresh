@@ -311,17 +311,24 @@ public class PackingInfoProcessParams
 		//
 		// LU
 		{
-			final int qtyLU;
 			if (availableQtyTU.signum() <= 0)
 			{
-				qtyLU = 0;
+				defaultLUTUConfig.setQtyLU(BigDecimal.ZERO);
+				return;
+			}
+
+			final boolean isQtyLUByMaxLoadWeight =  defaultLUTUConfig.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
+			if(isQtyLUByMaxLoadWeight)
+			{
+				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(defaultLUTUConfig, availableQtyTU);
+				defaultLUTUConfig.setQtyLU(qtyOrderedLU);
 			}
 			else
 			{
-				qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(defaultLUTUConfig, availableQtyTU);
+				final int qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(defaultLUTUConfig, availableQtyTU);
+				defaultLUTUConfig.setQtyLU(BigDecimal.valueOf(qtyOrderedLU));
 			}
 
-			defaultLUTUConfig.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
 	}
 

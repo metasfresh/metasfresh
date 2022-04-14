@@ -92,8 +92,19 @@ import java.util.Properties;
 			final Quantity undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
 			lutuConfiguration.setQtyTU(undeliveredQtyTU.toBigDecimal().min(lutuConfiguration.getQtyTU()));
 
-			final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
-			lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
+
+			final boolean isQtyLUByMaxLoadWeight =  lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
+			if(isQtyLUByMaxLoadWeight)
+			{
+				final BigDecimal qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, undeliveredQtyCU);
+				lutuConfiguration.setQtyLU(qtyLU);
+			}
+			else
+			{
+				final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
+				lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
+			}
+
 		}
 
 		// Update LU/TU configuration

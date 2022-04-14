@@ -101,18 +101,24 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 		//
 		// LU
 		{
-			final int qtyLU;
 			if (qtyToReceiveTU.signum() <= 0)
 			{
-				qtyLU = 0;
+				lutuConfig.setQtyLU(BigDecimal.ZERO);
+				return;
+			}
+
+			final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+			final boolean isQtyLUByMaxLoadWeight =  lutuConfig.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
+			if(isQtyLUByMaxLoadWeight)
+			{
+				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfig, qtyToReceiveTU);
+				lutuConfig.setQtyLU(qtyOrderedLU);
 			}
 			else
 			{
-				final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-				qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfig, qtyToReceiveTU);
+				final int qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfig, qtyToReceiveTU);
+				lutuConfig.setQtyLU(BigDecimal.valueOf(qtyOrderedLU));
 			}
-
-			lutuConfig.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
 	}
 
