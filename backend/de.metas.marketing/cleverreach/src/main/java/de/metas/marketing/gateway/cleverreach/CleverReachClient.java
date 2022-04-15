@@ -48,7 +48,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -164,7 +163,7 @@ public class CleverReachClient implements PlatformClient
 	@VisibleForTesting
 	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
 	{
-		final String remoteGroupId = Objects.requireNonNull(campaign.getRemoteId());
+		final String remoteGroupId = Check.assumeNotNull(campaign.getRemoteId(), "campaign's remoteId is set: {}", campaign);
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
 		return PagedIterator.<Receiver>builder()
@@ -404,10 +403,9 @@ public class CleverReachClient implements PlatformClient
 		final ImmutableList.Builder<RemoteToLocalSyncResult> syncResults = ImmutableList.builder();
 
 		final List<ContactPerson> personsWithEmailOrRemoteId = filterForPersonsWithEmailOrRemoteId(contactPersons, syncResults);
-
 		final ImmutableList<ContactPerson> contactPersonsWithEmail = personsWithEmailOrRemoteId
 				.stream()
-				.filter(c -> c.getEmailAddressStringOrNull() != null)
+				.filter(ContactPerson::hasEmailAddress)
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(
