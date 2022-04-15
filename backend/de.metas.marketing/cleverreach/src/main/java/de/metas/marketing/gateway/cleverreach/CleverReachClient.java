@@ -1,7 +1,42 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import static de.metas.util.Check.assumeNotEmpty;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignRemoteUpdate;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
+import de.metas.marketing.base.model.DataRecord;
+import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
+import de.metas.marketing.base.model.LocalToRemoteSyncResult;
+import de.metas.marketing.base.model.PlatformId;
+import de.metas.marketing.base.model.RemoteToLocalSyncResult;
+import de.metas.marketing.base.spi.PlatformClient;
+import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
+import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
+import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
+import de.metas.marketing.gateway.cleverreach.restapi.models.ReceiverUpsert;
+import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.PagedIterator;
+import de.metas.util.collections.PagedIterator.Page;
+import de.metas.util.collections.PagedIterator.PageFetcher;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.util.email.EmailValidator;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.core.ParameterizedTypeReference;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,44 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.email.EmailValidator;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.core.ParameterizedTypeReference;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-
-import de.metas.logging.TableRecordMDC;
-import de.metas.marketing.base.model.Campaign;
-import de.metas.marketing.base.model.CampaignRemoteUpdate;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
-import de.metas.marketing.base.model.DataRecord;
-import de.metas.marketing.base.model.EmailAddress;
-import de.metas.marketing.base.model.I_MKTG_Campaign;
-import de.metas.marketing.base.model.LocalToRemoteSyncResult;
-import de.metas.marketing.base.model.PlatformId;
-import de.metas.marketing.base.model.RemoteToLocalSyncResult;
-import de.metas.marketing.base.spi.PlatformClient;
-import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
-import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
-import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
-import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import de.metas.util.collections.PagedIterator;
-import de.metas.util.collections.PagedIterator.Page;
-import de.metas.util.collections.PagedIterator.PageFetcher;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
@@ -82,7 +80,7 @@ import lombok.Value;
 public class CleverReachClient implements PlatformClient
 {
 	// @formatter:off
-	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST =  new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
+	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST = new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
 
 	// @formatter:off
 	private static final ParameterizedTypeReference<List<Group>> LIST_OF_GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // @formatter:on
@@ -98,7 +96,7 @@ public class CleverReachClient implements PlatformClient
 	@Getter(value = AccessLevel.PRIVATE, lazy = true)
 	private final CleverReachLowLevelClient lowLevelClient = CleverReachLowLevelClient.createAndLogin(cleverReachConfig);
 
-	private PlatformId platformId;
+	private final PlatformId platformId;
 
 	public CleverReachClient(@NonNull final CleverReachConfig cleverReachConfig)
 	{
@@ -108,23 +106,21 @@ public class CleverReachClient implements PlatformClient
 
 	private Group createGroup(@NonNull final Campaign campaign)
 	{
-		final Group newGroup = getLowLevelClient()
+		return getLowLevelClient()
 				.post(
 						CreateGroupRequest.ofName(campaign.getName()),
 						SINGLE_GROUP_TYPE,
 						"/groups.json/");
-		return newGroup;
 	}
 
 	private Group updateGroup(@NonNull final Campaign campaign)
 	{
 		final String url = String.format("/groups.json/%s", campaign.getRemoteId());
-		final Group updatedGroup = getLowLevelClient()
+		return getLowLevelClient()
 				.put(
 						UpdateGroupRequest.ofName(campaign.getName()),
 						SINGLE_GROUP_TYPE,
 						url);
-		return updatedGroup;
 	}
 
 	public LocalToRemoteSyncResult deleteCampaign(@NonNull final Campaign campaign)
@@ -161,9 +157,8 @@ public class CleverReachClient implements PlatformClient
 	private List<Group> retriveAllGroups()
 	{
 		final String url = "/groups.json";
-		final List<Group> groups = getLowLevelClient()
+		return getLowLevelClient()
 				.get(LIST_OF_GROUPS_TYPE, url);
-		return groups;
 	}
 
 	@VisibleForTesting
@@ -174,19 +169,17 @@ public class CleverReachClient implements PlatformClient
 
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
-		final PagedIterator<Receiver> pagedIterator = PagedIterator.<Receiver> builder()
+		return PagedIterator.<Receiver>builder()
 				.pageSize(pageSize)
 				.pageFetcher(pageFetcher)
 				.build();
-		return pagedIterator;
 	}
 
 	private PageFetcher<Receiver> createReceiversPageFetcher(@NonNull final String remoteGroupId)
 	{
 		final String urlPathAndParams = "/groups.json/{group_id}/receivers?pagesize={pagesize}&page={page}";
 
-		final PageFetcher<Receiver> pageFetcher = (firstRow, pageSize) -> {
-
+		return (firstRow, pageSize) -> {
 			final int zeroBasedPageNo = firstRow / Check.assumeGreaterThanZero(pageSize, "currentPageSize");
 			final List<Receiver> receivers = getLowLevelClient()
 					.get(
@@ -200,7 +193,6 @@ public class CleverReachClient implements PlatformClient
 			}
 			return Page.ofRows(receivers);
 		};
-		return pageFetcher;
 	}
 
 	/**
@@ -220,12 +212,11 @@ public class CleverReachClient implements PlatformClient
 				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
 				.forEach(resultToAddErrorsTo::add);
 
-		final List<T> personsWithEmail = okAndNotOkDataRecords.get(true);
-		return personsWithEmail;
+		return okAndNotOkDataRecords.get(true);
 	}
 
 	/**
-	 * @param resultToAddTo to each contactPerson without an email, and error result is added to this list builder.
+	 * @param resultToAddErrorsTo to each contactPerson without an email, and error result is added to this list builder.
 	 * @return the persons that do have a non-empty email
 	 */
 	private List<ContactPerson> filterForPersonsWithEmail(
@@ -242,8 +233,7 @@ public class CleverReachClient implements PlatformClient
 				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
 				.forEach(resultToAddErrorsTo::add);
 
-		final List<ContactPerson> personsWithEmail = personsWithAndWithoutEmail.get(true);
-		return personsWithEmail;
+		return personsWithAndWithoutEmail.get(true);
 	}
 
 	private List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
@@ -260,18 +250,16 @@ public class CleverReachClient implements PlatformClient
 				.map(p -> RemoteToLocalSyncResult.error(p, errorMessage))
 				.forEach(syncResultsToAddErrorsTo::add);
 
-		final List<ContactPerson> personsWithEmailOrRemoteId = personsWithAndWithoutEmailOrRemoteId.get(true);
-		return personsWithEmailOrRemoteId;
+		return personsWithAndWithoutEmailOrRemoteId.get(true);
 	}
 
 	private static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
 			final List<T> dataRecordToPartition,
 			final Predicate<T> okPredicate)
 	{
-		final Map<Boolean, List<T>> okAndNotOkDataRecords = dataRecordToPartition
+		return dataRecordToPartition
 				.stream()
 				.collect(Collectors.partitioningBy(okPredicate));
-		return okAndNotOkDataRecords;
 	}
 
 	@Override
@@ -302,16 +290,16 @@ public class CleverReachClient implements PlatformClient
 			return syncResults.build();
 		}
 
-		final ImmutableList<Receiver> receivers = personsWithEmail
+		final ImmutableList<ReceiverUpsert> receiversUpserts = personsWithEmail
 				.stream()
-				.map(Receiver::of)
+				.map(ReceiverUpsert::of)
 				.collect(ImmutableList.toImmutableList());
 
 		final String groupRemoteId = assumeNotEmpty(campaign.getRemoteId(), "Then given campaign needs to have a RemoteId; campagin={}", campaign);
 		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", groupRemoteId);
 
 		final List<Object> results = getLowLevelClient()
-				.post(receivers,
+				.post(receiversUpserts,
 						HETEROGENOUS_LIST,
 						insertUrl);
 
@@ -374,7 +362,7 @@ public class CleverReachClient implements PlatformClient
 
 		for (final Campaign campaign : campaignsWithCorrectPlatformId)
 		{
-			try (final MDCCloseable campaignMDC = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
 			{
 				syncResults.add(createOrUpdateGroup(campaign));
 			}
@@ -567,12 +555,8 @@ public class CleverReachClient implements PlatformClient
 		{
 			return invalidEmailIfno;
 		}
-		final Optional<InvalidEmail> createduplicateEmailInfo = createInvalidEmailInfo(regExpDuplicateAddress, singleResult);
-		if (createduplicateEmailInfo.isPresent())
-		{
-			return createduplicateEmailInfo;
-		}
-		return Optional.empty();
+
+		return createInvalidEmailInfo(regExpDuplicateAddress, singleResult);
 	}
 
 	public Optional<InvalidEmail> createInvalidEmailInfo(final Pattern regExpInvalidAddress, final String reponseString)
