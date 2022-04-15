@@ -78,7 +78,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(Optional.empty(), new SimpleMeterRegistry()));
 
 		final ExecutorService executor = null;
-		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new RabbitTemplate(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));
+		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
+import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
@@ -36,7 +37,6 @@ import de.metas.event.Type;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.StringUtils;
 import lombok.AllArgsConstructor;
@@ -47,19 +47,11 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.MessagePostProcessor;
 
 import javax.annotation.Nullable;
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-
-import static de.metas.event.EventBusConfig.getSenderId;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_SenderId;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicName;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicType;
 
 final class EventBus implements IEventBus
 {
@@ -94,7 +86,7 @@ final class EventBus implements IEventBus
 
 	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 
-	private final AmqpTemplate amqpTemplate;
+	private final EventEnqueuer eventEnqueuer;
 
 	private final EventBusMonitoringService eventBusMonitoringService;
 
@@ -107,14 +99,14 @@ final class EventBus implements IEventBus
 			@NonNull final Topic topic,
 			@Nullable final ExecutorService executor,
 			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector,
-			@NonNull final AmqpTemplate amqpTemplate,
+			@NonNull final EventEnqueuer eventEnqueuer,
 			@NonNull final EventBusMonitoringService eventBusMonitoringService,
 			@NonNull final EventLogService eventLogService)
 	{
 		this.micrometerEventBusStatsCollector = micrometerEventBusStatsCollector;
 		this.executorOrNull = executor;
 		this.topic = topic;
-		this.amqpTemplate = amqpTemplate;
+		this.eventEnqueuer = eventEnqueuer;
 		this.eventBusMonitoringService = eventBusMonitoringService;
 		this.eventLogService = eventLogService;
 
@@ -400,47 +392,11 @@ final class EventBus implements IEventBus
 	{
 		if (Type.LOCAL == topic.getType())
 		{
-			enqueueLocalEvent(event);
+			eventEnqueuer.enqueueLocalEvent(event, topic);
 		}
 		else
 		{
-			enqueueDistributedEvent(event);
+			eventEnqueuer.enqueueDistributedEvent(event, topic);
 		}
-	}
-
-	private void enqueueLocalEvent(@NonNull final Event event)
-	{
-		final String queueName = RabbitMQEventBusConfiguration.getAMQPQueueNameByTopicName(topic.getName());
-
-		amqpTemplate.convertAndSend(queueName,
-									event,
-									getMessagePostProcessor());
-
-		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
-	}
-
-	private void enqueueDistributedEvent(@NonNull final Event event)
-	{
-		final String amqpExchangeName = RabbitMQEventBusConfiguration.getAMQPExchangeNameByTopicName(topic.getName());
-		final String routingKey = ""; // ignored for fan-out exchanges
-		amqpTemplate.convertAndSend(
-				amqpExchangeName,
-				routingKey,
-				event,
-				getMessagePostProcessor());
-
-		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
-	}
-
-	@NonNull
-	private MessagePostProcessor getMessagePostProcessor()
-	{
-		return message -> {
-			final Map<String, Object> headers = message.getMessageProperties().getHeaders();
-			headers.put(HEADER_SenderId, getSenderId());
-			headers.put(HEADER_TopicName, topic.getName());
-			headers.put(HEADER_TopicType, topic.getType());
-			return message;
-		};
 	}
 }

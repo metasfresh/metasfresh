@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import de.metas.event.EventBusConfig;
+import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
@@ -28,7 +29,6 @@ import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -66,7 +66,7 @@ public class EventBusFactory implements IEventBusFactory
 
 	private final IEventBusRemoteEndpoint remoteEndpoint;
 	private final MeterRegistry meterRegistry;
-	private final AmqpTemplate amqpTemplate;
+	private final EventEnqueuer eventEnqueuer;
 	private final EventBusMonitoringService eventBusMonitoringService;
 	private final EventLogService eventLogService;
 
@@ -75,13 +75,13 @@ public class EventBusFactory implements IEventBusFactory
 	public EventBusFactory(
 			@NonNull final IEventBusRemoteEndpoint remoteEndpoint,
 			@NonNull final MeterRegistry meterRegistry,
-			@NonNull final AmqpTemplate amqpTemplate,
+			@NonNull final EventEnqueuer eventEnqueuer,
 			@NonNull final EventBusMonitoringService eventBusMonitoringService,
 			@NonNull final EventLogService eventLogService)
 	{
 		this.remoteEndpoint = remoteEndpoint;
 		this.meterRegistry = meterRegistry;
-		this.amqpTemplate = amqpTemplate;
+		this.eventEnqueuer = eventEnqueuer;
 		this.eventBusMonitoringService = eventBusMonitoringService;
 		this.eventLogService = eventLogService;
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
@@ -149,7 +149,7 @@ public class EventBusFactory implements IEventBusFactory
 		final MicrometerEventBusStatsCollector statsCollector = createMicrometerEventBusStatsCollector(topic, meterRegistry);
 
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic, createExecutorOrNull(topic), statsCollector, amqpTemplate, eventBusMonitoringService, eventLogService);
+		final EventBus eventBus = new EventBus(topic, createExecutorOrNull(topic), statsCollector, eventEnqueuer, eventBusMonitoringService, eventLogService);
 
 		// Add our global listeners
 		final Set<IEventListener> globalListeners = globalEventListeners.get(topic);
