@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
@@ -74,6 +75,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -701,8 +703,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = //
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
-		final boolean isQtyLUByMaxLoadWeight =  lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
-		if(isQtyLUByMaxLoadWeight)
+		//
+		// Check if we had a packing material
+		final I_M_HU_PackingMaterial hu_packingMaterial = lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial();
+		if (Objects.nonNull(hu_packingMaterial)
+				&& hu_packingMaterial.isQtyLUByMaxLoadWeight())
 		{
 			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective);
 			shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
