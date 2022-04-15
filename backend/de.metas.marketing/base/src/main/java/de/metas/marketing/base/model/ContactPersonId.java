@@ -25,10 +25,15 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * MKTG_ContactPerson_ID
+ */
 @Value
 public class ContactPersonId
 {
-	/** the internal metasfresh-ID (PK) of the underlying record */
+	/**
+	 * the internal metasfresh-ID (PK) of the underlying record
+	 */
 	int repoId;
 
 	public static ContactPersonId ofRepoId(final int repoId)
@@ -38,6 +43,6 @@ public class ContactPersonId
 
 	private ContactPersonId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_ContactPerson_ID");
 	}
 }
