@@ -114,6 +114,11 @@ public class ContactPerson implements DataRecord
 		return EmailAddress.getEmailAddressStringOrNull(getAddress());
 	}
 
+	public boolean hasEmailAddress()
+	{
+		return getEmailAddressStringOrNull() != null;
+	}
+
 	public DeactivatedOnRemotePlatform getDeactivatedOnRemotePlatform()
 	{
 		return EmailAddress.getDeactivatedOnRemotePlatform(getAddress());

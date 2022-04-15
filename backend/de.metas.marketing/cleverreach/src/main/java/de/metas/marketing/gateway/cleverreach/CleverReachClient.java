@@ -200,14 +200,15 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<T> records,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<T> predicate = r -> Objects.equals(r.getPlatformId(), platformId);
 		final String errorMessage = StringUtils.formatMessage("Data record's platformId={} does not match this client's platFormId={}", platformId);
 
-		final Map<Boolean, List<T>> okAndNotOkDataRecords = partitionByOkAndNotOk(records, predicate);
+		final Map<Boolean, List<T>> okAndNotOkDataRecords = records
+				.stream()
+				.collect(Collectors.partitioningBy(record -> PlatformId.equals(record.getPlatformId(), platformId)));
 
 		okAndNotOkDataRecords.get(false)
 				.stream()
-				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
+				.map(record -> LocalToRemoteSyncResult.error(record, errorMessage))
 				.forEach(resultToAddErrorsTo::add);
 
 		return okAndNotOkDataRecords.get(true);
@@ -217,47 +218,20 @@ public class CleverReachClient implements PlatformClient
 	 * @param resultToAddErrorsTo to each contactPerson without an email, and error result is added to this list builder.
 	 * @return the persons that do have a non-empty email
 	 */
-	private List<ContactPerson> filterForPersonsWithEmail(
+	private static List<ContactPerson> filterForPersonsWithEmail(
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddressStringOrNull());
-		final String errorMessage = "Contact person has no (valid) email address";
-
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(contactPersons, predicate);
+		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = contactPersons
+				.stream()
+				.collect(Collectors.partitioningBy(contactPerson -> EmailValidator.isValid(contactPerson.getEmailAddressStringOrNull())));
 
 		personsWithAndWithoutEmail.get(false)
 				.stream()
-				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
+				.map(contactPerson -> LocalToRemoteSyncResult.error(contactPerson, "Contact person has no (valid) email address"))
 				.forEach(resultToAddErrorsTo::add);
 
 		return personsWithAndWithoutEmail.get(true);
-	}
-
-	private List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
-			@NonNull final List<ContactPerson> contactPersons,
-			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
-	{
-		final Predicate<ContactPerson> predicate = c -> c.getEmailAddressStringOrNull() != null;
-		final String errorMessage = "contact person has no email address";
-
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = partitionByOkAndNotOk(contactPersons, predicate);
-
-		personsWithAndWithoutEmailOrRemoteId.get(false)
-				.stream()
-				.map(p -> RemoteToLocalSyncResult.error(p, errorMessage))
-				.forEach(syncResultsToAddErrorsTo::add);
-
-		return personsWithAndWithoutEmailOrRemoteId.get(true);
-	}
-
-	private static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
-			final List<T> dataRecordToPartition,
-			final Predicate<T> okPredicate)
-	{
-		return dataRecordToPartition
-				.stream()
-				.collect(Collectors.partitioningBy(okPredicate));
 	}
 
 	@Override
@@ -533,7 +507,23 @@ public class CleverReachClient implements PlatformClient
 		return syncResults.build();
 	}
 
-	public ImmutableList<LocalToRemoteSyncResult> createErrorResults(
+	private static List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
+			@NonNull final List<ContactPerson> contactPersons,
+			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
+	{
+		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = contactPersons
+				.stream()
+				.collect(Collectors.partitioningBy(ContactPerson::hasEmailAddress));
+
+		personsWithAndWithoutEmailOrRemoteId.get(false)
+				.stream()
+				.map(contactPerson -> RemoteToLocalSyncResult.error(contactPerson, "contact person has no email address"))
+				.forEach(syncResultsToAddErrorsTo::add);
+
+		return personsWithAndWithoutEmailOrRemoteId.get(true);
+	}
+
+	private static ImmutableList<LocalToRemoteSyncResult> createErrorResults(
 			@NonNull final ImmutableListMultimap<String, ContactPerson> email2contactPersons,
 			@NonNull final InvalidEmail invalidEmailInfo)
 	{
@@ -547,7 +537,7 @@ public class CleverReachClient implements PlatformClient
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Optional<InvalidEmail> createInvalidEmailInfo(final String singleResult)
+	private static Optional<InvalidEmail> createInvalidEmailInfo(final String singleResult)
 	{
 		final Pattern regExpInvalidAddress = Pattern.compile(".*invalid address *'(.*)'.*");
 		final Pattern regExpDuplicateAddress = Pattern.compile(".*duplicate address *'(.*).*'");
@@ -560,7 +550,7 @@ public class CleverReachClient implements PlatformClient
 		return createInvalidEmailInfo(regExpDuplicateAddress, singleResult);
 	}
 
-	public Optional<InvalidEmail> createInvalidEmailInfo(final Pattern regExpInvalidAddress, final String reponseString)
+	private static Optional<InvalidEmail> createInvalidEmailInfo(final Pattern regExpInvalidAddress, final String reponseString)
 	{
 		final Matcher invalidAddressMatcher = regExpInvalidAddress.matcher(reponseString);
 		if (invalidAddressMatcher.matches())

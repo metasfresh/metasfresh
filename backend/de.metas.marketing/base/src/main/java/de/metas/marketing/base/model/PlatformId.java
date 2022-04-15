@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /*
  * #%L
  * marketing-base
@@ -52,5 +55,10 @@ public class PlatformId
 	public int toJson()
 	{
 		return getRepoId();
+	}
+
+	public static boolean equals(@Nullable final PlatformId id1, @Nullable final PlatformId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }
