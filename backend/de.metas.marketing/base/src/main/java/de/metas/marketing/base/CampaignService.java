@@ -12,6 +12,7 @@ import de.metas.marketing.base.model.ContactPersonId;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformRepository;
+import de.metas.marketing.base.model.SyncResult;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -121,10 +122,10 @@ public class CampaignService
 			return;
 		}
 
-		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), addressToUse);
-		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
+		final ContactPerson savedContactPerson = contactPersonRepository.save(ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), addressToUse));
+		final ContactPersonId contactPersonId = Check.assumeNotNull(savedContactPerson.getContactPersonId(), "contact shall be saved: {}", savedContactPerson);
 
-		campaignRepository.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaign.getCampaignId());
+		campaignRepository.addContactPersonToCampaign(contactPersonId, campaign.getCampaignId());
 		contactPersonRepository.createUpdateConsent(savedContactPerson);
 	}
 
@@ -154,7 +155,7 @@ public class CampaignService
 		BPartnerLocationId billToDefaultLocationId = null;
 		if (user.getBpartnerId() != null)
 		{
-			billToDefaultLocationId = Services.get(IBPartnerDAO.class).getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
+			billToDefaultLocationId = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
 		}
 		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
@@ -163,4 +164,8 @@ public class CampaignService
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
 
+	public Campaign saveCampaignSyncResult(@NonNull final SyncResult syncResult)
+	{
+		return campaignRepository.saveCampaignSyncResult(syncResult);
+	}
 }

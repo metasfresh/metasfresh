@@ -136,7 +136,7 @@ public class CampaignRepository
 				.build();
 	}
 
-	public void saveCampaignSyncResult(@NonNull final SyncResult syncResult)
+	public Campaign saveCampaignSyncResult(@NonNull final SyncResult syncResult)
 	{
 		final Campaign campaign = Campaign.cast(syncResult.getSynchedDataRecord());
 		final I_MKTG_Campaign campaignRecord = createOrUpdateRecordDontSave(campaign);
@@ -162,6 +162,8 @@ public class CampaignRepository
 			throw new AdempiereException("The given syncResult has an unexpected type of " + syncResult.getClass() + "; syncResult=" + syncResult);
 		}
 		saveRecord(campaignRecord);
+
+		return fromRecord(campaignRecord);
 	}
 
 	private I_MKTG_Campaign createOrUpdateRecordDontSave(@NonNull final Campaign campaign)
