@@ -58,7 +58,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -451,12 +453,42 @@ public class OLCandRequestProcessor implements Processor
 
 		final MutableInt sequence = new MutableInt(ORDER_LINE_SEQUENCE_INITIAL_VALUE);
 
+		final HashMap<String, List<JsonOLCandCreateRequest>> groupKey2CompensationLines = new HashMap<>();
+
+		olCandCreateRequests.stream()
+				.filter(req -> req.getOrderLineGroup() != null && !req.getOrderLineGroup().isGroupMainItem())
+				.forEach(req -> {
+					final ArrayList<JsonOLCandCreateRequest> requests = new ArrayList<>();
+					requests.add(req);
+
+					groupKey2CompensationLines.merge(req.getOrderLineGroup().getGroupKey(), requests, (l1, l2) -> {
+						l1.addAll(l2);
+						return l1;
+					});
+				});
+
 		olCandCreateRequests
 				.stream()
-				.map(request -> request.toBuilder()
-						.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
-						.build())
-				.forEach(bulkRequestBuilder::request);
+				.filter(request -> request.getOrderLineGroup() == null || request.getOrderLineGroup().isGroupMainItem())
+				.sorted(Comparator.comparingInt(JsonOLCandCreateRequest::getLine))
+				.forEach(request -> {
+					final List<JsonOLCandCreateRequest> compensationLines = groupKey2CompensationLines.get(request.getExternalLineId());
+
+					if (compensationLines != null)
+					{
+						compensationLines
+								.stream()
+								.sorted(Comparator.comparingInt(JsonOLCandCreateRequest::getLine))
+								.map(line -> line.toBuilder()
+										.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+										.build())
+								.forEach(bulkRequestBuilder::request);
+					}
+
+					bulkRequestBuilder.request(request.toBuilder()
+													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+													   .build());
+				});
 
 		return bulkRequestBuilder.build();
 	}

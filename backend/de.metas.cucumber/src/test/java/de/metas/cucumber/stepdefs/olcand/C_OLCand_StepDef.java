@@ -40,6 +40,8 @@ import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Services;
@@ -47,14 +49,18 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
@@ -121,6 +127,40 @@ public class C_OLCand_StepDef
 		{
 			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
 		}
+	}
+
+	@Then("validate order line allocated 'line'")
+	public void validate_OrderLine_Allocated_Line(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> tableRows = table.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validateOrderLineAllocatedLine(tableRow);
+		}
+	}
+
+	private void validateOrderLineAllocatedLine(@NonNull final Map<String, String> row)
+	{
+		final String externalLineId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalLineId);
+		final int olCandLine = DataTableUtil.extractIntForColumnName(row, I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_Line);
+		final int olLine = DataTableUtil.extractIntForColumnName(row, I_C_OrderLine.Table_Name + "." + I_C_OrderLine.COLUMNNAME_Line);
+
+		final I_C_OLCand olCand = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_ExternalLineId, externalLineId)
+				.create()
+				.firstOnlyNotNull(I_C_OLCand.class);
+
+		final I_C_Order_Line_Alloc orderLineAlloc = queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_C_OLCand_ID, olCand.getC_OLCand_ID())
+				.create()
+				.firstOnlyNotNull(I_C_Order_Line_Alloc.class);
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(orderLineAlloc.getC_OrderLine_ID(), I_C_OrderLine.class);
+
+		assertThat(olCand.getLine()).isEqualTo(olCandLine);
+		assertThat(orderLine.getLine()).isEqualTo(olLine);
 	}
 
 	private void processOrderResponse(
