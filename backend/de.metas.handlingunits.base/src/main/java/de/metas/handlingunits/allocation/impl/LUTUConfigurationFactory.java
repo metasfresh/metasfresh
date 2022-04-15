@@ -36,6 +36,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -64,6 +65,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
@@ -463,10 +465,12 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		return qtyLU;
 	}
 
+
 	@Override
 	public BigDecimal calculateQtyLUForTotalQtyTUsByMaxWeight(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
-			final BigDecimal qtyTUsTotal)
+			final BigDecimal qtyTUsTotal,
+			@NonNull final I_M_HU_PackingMaterial packingMaterial)
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 
@@ -503,7 +507,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		I_M_Product pp =InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
 		I_C_UOM productUOM = InterfaceWrapperHelper.load(pp.getC_UOM_ID(), I_C_UOM.class);
 
-		final BigDecimal qtyLU = calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, Quantity.of(totalQtyCUs, productUOM));
+		final BigDecimal qtyLU = calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, Quantity.of(totalQtyCUs, productUOM), packingMaterial);
 		return qtyLU;
 	}
 
@@ -540,10 +544,12 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		return qtyLUs;
 	}
 
+
 	@Override
 	public BigDecimal calculateQtyLUForTotalQtyCUsByLUMaxWeight(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
-			final Quantity qtyCUsTotal)
+			final Quantity qtyCUsTotal,
+			@NonNull final I_M_HU_PackingMaterial packingMaterial)
 	{
 		if (qtyCUsTotal == null || qtyCUsTotal.signum() <= 0)
 		{
@@ -561,8 +567,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many CUs can be handled by an LU
-		final BigDecimal luMaxLoadWeight =  lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().getMaxLoadWeight();
-		if (luMaxLoadWeight.signum() <= 0)
+		final BigDecimal luMaxLoadWeight =  packingMaterial.getMaxLoadWeight();
+		if (Objects.nonNull(luMaxLoadWeight)
+				&& luMaxLoadWeight.signum() <= 0)
 		{
 			return BigDecimal.ZERO;
 		}

@@ -254,6 +254,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
 
+	I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(HuPackingInstructionsVersionId versionId,
+			@Nullable BPartnerId bpartnerId);
+
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
 	IHUQueryBuilder createHUQueryBuilder();

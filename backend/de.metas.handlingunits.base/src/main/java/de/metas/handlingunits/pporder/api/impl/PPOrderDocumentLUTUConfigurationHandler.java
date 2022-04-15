@@ -1,11 +1,14 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -24,6 +27,7 @@ import org.eevolution.api.IPPOrderBL;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -66,6 +70,7 @@ import java.util.Properties;
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
@@ -92,17 +97,21 @@ import java.util.Properties;
 			final Quantity undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
 			lutuConfiguration.setQtyTU(undeliveredQtyTU.toBigDecimal().min(lutuConfiguration.getQtyTU()));
 
+			//
+			// extract the packing material from lutu configuration
+			final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PI_Version_ID());
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(lutuConfiguration.getC_BPartner_ID()));
 
-			final boolean isQtyLUByMaxLoadWeight =  lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
-			if(isQtyLUByMaxLoadWeight)
+			if (Objects.nonNull(packingMaterial)
+					&& packingMaterial.isQtyLUByMaxLoadWeight())
 			{
-				final BigDecimal qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, undeliveredQtyCU);
-				lutuConfiguration.setQtyLU(qtyLU);
+				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, undeliveredQtyCU, packingMaterial);
+				lutuConfiguration.setQtyLU(qtyOrderedLU);
 			}
 			else
 			{
-				final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
-				lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
+				final int qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
+				lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyOrderedLU));
 			}
 
 		}

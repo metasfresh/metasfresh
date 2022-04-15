@@ -4,9 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -317,10 +320,16 @@ public class PackingInfoProcessParams
 				return;
 			}
 
-			final boolean isQtyLUByMaxLoadWeight =  defaultLUTUConfig.getM_LU_HU_PI_Item().getM_HU_PackingMaterial().isQtyLUByMaxLoadWeight();
-			if(isQtyLUByMaxLoadWeight)
+			//
+			// extract the packing material from lutu configuration
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(defaultLUTUConfig.getM_LU_HU_PI_Item().getM_HU_PI_Version_ID());
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(defaultLUTUConfig.getC_BPartner_ID()));
+
+			if (Objects.nonNull(packingMaterial)
+					&& packingMaterial.isQtyLUByMaxLoadWeight())
 			{
-				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(defaultLUTUConfig, availableQtyTU);
+				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(defaultLUTUConfig, availableQtyTU, packingMaterial);
 				defaultLUTUConfig.setQtyLU(qtyOrderedLU);
 			}
 			else

@@ -28,6 +28,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -117,7 +118,8 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 */
 	BigDecimal calculateQtyLUForTotalQtyTUsByMaxWeight(
 			I_M_HU_LUTU_Configuration lutuConfiguration,
-			BigDecimal qtyTUsTotal);
+			BigDecimal qtyTUsTotal,
+			final I_M_HU_PackingMaterial packingMaterial);
 
 
 	/**
@@ -152,9 +154,11 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @param qtyCUsTotal
 	 * @return
 	 */
+
 	BigDecimal calculateQtyLUForTotalQtyCUsByLUMaxWeight(
-			I_M_HU_LUTU_Configuration lutuConfiguration,
-			Quantity qtyCUsTotal);
+			@NonNull I_M_HU_LUTU_Configuration lutuConfiguration,
+			Quantity qtyCUsTotal,
+			@NonNull I_M_HU_PackingMaterial packingMaterial);
 
 	/**
 	 * Calculates how many CUs (in total).

@@ -10,6 +10,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -704,12 +705,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
 		//
-		// Check if we had a packing material
-		final I_M_HU_PackingMaterial hu_packingMaterial = lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PackingMaterial();
-		if (Objects.nonNull(hu_packingMaterial)
-				&& hu_packingMaterial.isQtyLUByMaxLoadWeight())
+		// extract the packing material from lutu configuration
+		final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PI_Version_ID());
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID()));
+
+		if (Objects.nonNull(packingMaterial)
+				&& packingMaterial.isQtyLUByMaxLoadWeight())
 		{
-			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective);
+			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective, packingMaterial);
 			shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
 		}
 		else
