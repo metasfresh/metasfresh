@@ -1,10 +1,12 @@
 package de.metas.bpartner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.user.UserId;
 import org.junit.Test;
 
-import de.metas.user.UserId;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -16,12 +18,12 @@ import de.metas.user.UserId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,6 +47,24 @@ public class BPartnerContactIdTest
 
 		assertThat(BPartnerContactId.ofRepoIdOrNull(bpartnerId, 123)).isNotNull();
 		assertThat(BPartnerContactId.ofRepoIdOrNull(bpartnerId, UserId.SYSTEM.getRepoId())).isNull();
+	}
+
+	@Test
+	public void test_toJson_ofJsonString()
+	{
+		final BPartnerContactId bpContactId = BPartnerContactId.ofRepoId(123, 456);
+		assertThat(BPartnerContactId.ofJsonString(bpContactId.toJson())).isEqualTo(bpContactId);
+	}
+
+	@Test
+	public void testSerializeDeserialize() throws JsonProcessingException
+	{
+		final BPartnerContactId bpContactId = BPartnerContactId.ofRepoId(123, 456);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final String json = jsonObjectMapper.writeValueAsString(bpContactId);
+		final BPartnerContactId bpContactIdDeserialized = jsonObjectMapper.readValue(json, BPartnerContactId.class);
+		assertThat(bpContactIdDeserialized).isEqualTo(bpContactId);
 	}
 
 }
