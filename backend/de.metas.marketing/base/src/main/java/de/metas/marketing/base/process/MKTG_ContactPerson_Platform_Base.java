@@ -61,7 +61,7 @@ public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 
 		for (final SyncResult syncResult : syncResults)
 		{
-			final ContactPerson savedContactPerson = contactPersonRepository.saveCampaignSyncResult(syncResult);
+			final ContactPerson savedContactPerson = contactPersonRepository.saveSyncResult(syncResult);
 			campaignService.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaignId);
 		}
 

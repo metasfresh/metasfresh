@@ -12,6 +12,7 @@ import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DataRecord;
+import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
@@ -22,6 +23,7 @@ import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
 import de.metas.marketing.gateway.cleverreach.restapi.models.ReceiverUpsert;
+import de.metas.marketing.gateway.cleverreach.restapi.models.SendEmailActivationFormRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -83,6 +85,9 @@ public class CleverReachClient implements PlatformClient
 	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST = new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
 
 	// @formatter:off
+	private static final ParameterizedTypeReference<Object> SINGLE_HETEROGENOUS_TYPE = new ParameterizedTypeReference<Object>() {}; // @formatter:on
+
+	// @formatter:off
 	private static final ParameterizedTypeReference<List<Group>> LIST_OF_GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // @formatter:on
 
 	// @formatter:off
@@ -113,14 +118,13 @@ public class CleverReachClient implements PlatformClient
 						"/groups.json/");
 	}
 
-	private Group updateGroup(@NonNull final Campaign campaign)
+	private void updateGroup(@NonNull final Campaign campaign)
 	{
 		final String url = String.format("/groups.json/%s", campaign.getRemoteId());
-		return getLowLevelClient()
-				.put(
-						UpdateGroupRequest.ofName(campaign.getName()),
-						SINGLE_GROUP_TYPE,
-						url);
+		getLowLevelClient().put(
+				UpdateGroupRequest.ofName(campaign.getName()),
+				SINGLE_GROUP_TYPE,
+				url);
 	}
 
 	public LocalToRemoteSyncResult deleteCampaign(@NonNull final Campaign campaign)
@@ -138,10 +142,7 @@ public class CleverReachClient implements PlatformClient
 	public Campaign retrieveCampaign(@NonNull final String groupId)
 	{
 		final String url = String.format("/groups.json/%s", groupId);
-
-		final Group group = getLowLevelClient()
-				.get(SINGLE_GROUP_TYPE, url);
-
+		final Group group = getLowLevelClient().get(SINGLE_GROUP_TYPE, url);
 		return group.toCampaign();
 	}
 
@@ -157,14 +158,13 @@ public class CleverReachClient implements PlatformClient
 	private List<Group> retriveAllGroups()
 	{
 		final String url = "/groups.json";
-		return getLowLevelClient()
-				.get(LIST_OF_GROUPS_TYPE, url);
+		return getLowLevelClient().get(LIST_OF_GROUPS_TYPE, url);
 	}
 
 	@VisibleForTesting
 	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
 	{
-		final String remoteGroupId = campaign.getRemoteId();
+		final String remoteGroupId = Objects.requireNonNull(campaign.getRemoteId());
 		final int pageSize = 1000; // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
@@ -309,7 +309,7 @@ public class CleverReachClient implements PlatformClient
 		for (int i = 0; i < results.size(); i++)
 		{
 			final Object resultObj = results.get(i);
-			if (isNotEmptyString(resultObj))
+			if (isNotBlankString(resultObj))
 			{
 				final String resultStr = (String)resultObj;
 				final Optional<InvalidEmail> invalidEmailInfo = createInvalidEmailInfo(resultStr);
@@ -344,13 +344,16 @@ public class CleverReachClient implements PlatformClient
 		return syncResults.build();
 	}
 
-	public boolean isNotEmptyString(@Nullable final Object resultObj)
+	private static boolean isNotBlankString(@Nullable final Object resultObj)
 	{
 		if (resultObj instanceof String)
 		{
-			return !Check.isEmpty((String)resultObj, true);
+			return Check.isNotBlank((String)resultObj);
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override
@@ -441,7 +444,7 @@ public class CleverReachClient implements PlatformClient
 
 		final Map<Boolean, List<ContactPerson>> contactPersonsWithAndWithoutRemoteId = personsWithEmailOrRemoteId
 				.stream()
-				.collect(Collectors.partitioningBy(c -> !Check.isEmpty(c.getRemoteId(), true)));
+				.collect(Collectors.partitioningBy(c -> !Check.isBlank(c.getRemoteId())));
 
 		final ImmutableSet<ContactPerson> contactPersonsWithRemoteId = ImmutableSet.copyOf(contactPersonsWithAndWithoutRemoteId.get(true));
 
@@ -498,11 +501,11 @@ public class CleverReachClient implements PlatformClient
 					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteEmail(updatedContactPerson));
 				}
 
-				final Boolean activeOnRemotePlatform = EmailAddress.getActiveOnRemotePlatformOrNull(contactPersonUpdate.getAddress());
+				final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = EmailAddress.getDeactivatedOnRemotePlatform(contactPersonUpdate.getAddress());
 
-				final boolean existingContactHasDifferentActiveStatus = !Objects.equals(
-						contactPerson.getEmailAddressIsActivatedOrNull(),
-						activeOnRemotePlatform);
+				final boolean existingContactHasDifferentActiveStatus = !DeactivatedOnRemotePlatform.equals(
+						contactPerson.getDeactivatedOnRemotePlatform(),
+						deactivatedOnRemotePlatform);
 				if (existingContactHasDifferentActiveStatus)
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedEmailBounceInfo(updatedContactPerson));
@@ -592,6 +595,25 @@ public class CleverReachClient implements PlatformClient
 
 		updateGroup(campaign);
 		return LocalToRemoteSyncResult.updated(campaign);
+	}
+
+	@Override
+	public void sendEmailActivationForm(
+			@NonNull final String formId,
+			@NonNull final String email)
+	{
+		final String url = "/forms/" + formId + "/send/activate";
+		final SendEmailActivationFormRequest body = SendEmailActivationFormRequest.builder()
+				.email(email)
+				.doidata(SendEmailActivationFormRequest.DoubleOptInData.builder()
+						.user_ip("1.2.3.4")
+						.referer("metasfresh")
+						.user_agent("metasfresh")
+						.build())
+				.build();
+
+		getLowLevelClient().post(body, SINGLE_HETEROGENOUS_TYPE, url);
+		// returns the email as string in case of success
 	}
 
 }

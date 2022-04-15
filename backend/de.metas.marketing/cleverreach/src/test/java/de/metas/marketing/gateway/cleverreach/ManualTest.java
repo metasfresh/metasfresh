@@ -1,9 +1,13 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Files;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.common.util.time.SystemTime;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult.LocalToRemoteStatus;
@@ -12,14 +16,16 @@ import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
-import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -51,21 +57,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({ "OptionalGetWithoutIsPresent", "SameParameterValue" })
 public class ManualTest
 {
-
-	private static final PlatformId PLATFORM_ID = PlatformId.ofRepoId(30);
+	public static final String CONFIG_FILENAME = "./cleverreach-developer-config.json";
 	private static final String MANUAL_GROUP_REMOTE_ID = "";
+
+	private PlatformId platformId;
 	private CleverReachClient cleverReachClient;
 
 	@BeforeEach
 	public void init()
 	{
-		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
-				.client_id("")
-				.login("")
-				.password("")
-				.platformId(PLATFORM_ID)
-				.build();
+		final CleverReachConfig cleverReachConfig = getCleverReachConfig();
+		this.platformId = cleverReachConfig.getPlatformId();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
+	}
+
+	private CleverReachConfig getCleverReachConfig()
+	{
+		final File file = new File(CONFIG_FILENAME).getAbsoluteFile();
+		try
+		{
+			final String configJsonString = Files.asCharSource(file, Charsets.UTF_8).read();
+			final CleverReachConfig cleverReachConfig = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(configJsonString, CleverReachConfig.class);
+			System.out.println("Read config from " + file + ":" + configJsonString);
+			return cleverReachConfig;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed reading " + file, ex);
+		}
 	}
 
 	private static Condition<SyncResult> emailEqualsTo(@Nullable final String email)
@@ -83,7 +102,7 @@ public class ManualTest
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
 		final Campaign campaignToAdd = Campaign.builder()
 				.name(nameOfCampaignToAdd)
-				.platformId(PLATFORM_ID)
+				.platformId(platformId)
 				.build();
 
 		final List<LocalToRemoteSyncResult> addedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToAdd));
@@ -121,7 +140,7 @@ public class ManualTest
 	{
 		final Campaign campaign = Campaign.builder()
 				.remoteId(MANUAL_GROUP_REMOTE_ID)
-				.platformId(PLATFORM_ID).build();
+				.platformId(platformId).build();
 		final Iterator<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
 
 		assertThat(contactPersons).hasNext();
@@ -224,7 +243,93 @@ public class ManualTest
 					assertThat(contactPerson.getRemoteId()).isNotEmpty();
 
 					final EmailAddress email = EmailAddress.cast(contactPerson.getAddress()).get();
-					assertThat(email.getDeactivatedOnRemotePlatform()).isEqualTo(OptionalBoolean.TRUE);
+					assertThat(email.getDeactivatedOnRemotePlatform()).isEqualTo(DeactivatedOnRemotePlatform.YES);
 				});
+	}
+
+	@Test
+	@Disabled
+	void publishPersonsWithDifferentActivationStatus()
+	{
+		final String domain = "a" + System.currentTimeMillis() + ".com";
+		System.out.println("Using domain: " + domain);
+
+		final Campaign campaign = Campaign.builder().platformId(platformId).remoteId("524972").build();
+
+		final ContactPerson.ContactPersonBuilder personTemplate = ContactPerson.builder().platformId(platformId);
+		ImmutableList<ContactPerson> persons = ImmutableList.of(
+				personTemplate.address(EmailAddress.of("inactive@" + domain, DeactivatedOnRemotePlatform.YES)).build(),
+				personTemplate.address(EmailAddress.of("active@" + domain, DeactivatedOnRemotePlatform.NO)).build(),
+				personTemplate.address(EmailAddress.of("unknown_status@" + domain, DeactivatedOnRemotePlatform.UNKNOWN)).build()
+		);
+
+		// Send them to CleverReach (first time)
+		{
+			final List<LocalToRemoteSyncResult> results = cleverReachClient.syncContactPersonsLocalToRemote(campaign, persons);
+			System.out.println("Got results (1):");
+			results.forEach(System.out::println);
+
+			persons = results.stream()
+					.map(LocalToRemoteSyncResult::getSynchedDataRecord)
+					.map(ContactPerson.class::cast)
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		// Send them to CleverReach (second time)
+		{
+			System.out.println("\n----------------------------------------------------------------------------------");
+			System.out.println("Sending them again...");
+
+			final List<LocalToRemoteSyncResult> results = cleverReachClient.syncContactPersonsLocalToRemote(campaign, persons);
+			System.out.println("Got results (1):");
+			results.forEach(System.out::println);
+		}
+	}
+
+	@Test
+	@Disabled
+	void publishInactiveEmailAndThenSendActivationForm()
+	{
+		final String domain = "a" + System.currentTimeMillis() + ".com";
+		final String email = "inactive@" + domain;
+		System.out.println("Using email: " + email);
+
+		final Campaign campaign = Campaign.builder().platformId(platformId).remoteId("524972").build();
+
+		final ContactPerson.ContactPersonBuilder personTemplate = ContactPerson.builder().platformId(platformId);
+
+		final List<LocalToRemoteSyncResult> results = cleverReachClient.syncContactPersonsLocalToRemote(
+				campaign,
+				ImmutableList.of(personTemplate.address(EmailAddress.of(email, DeactivatedOnRemotePlatform.YES)).build()));
+		System.out.println("Got result:");
+		results.forEach(System.out::println);
+
+		while (true)
+		{
+			System.out.println("Sending activation form...");
+			try
+			{
+				cleverReachClient.sendEmailActivationForm("324200", email);
+				System.out.println("Sent OK");
+				break;
+			}
+			catch (Exception ex)
+			{
+				System.out.println("Got exception while sending activation email:");
+				ex.printStackTrace();
+			}
+
+			System.out.println("Sleeping 1 second...");
+			try
+			{
+				//noinspection BusyWait
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+				break;
+			}
+		}
 	}
 }

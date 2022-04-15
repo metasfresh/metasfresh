@@ -1,5 +1,7 @@
 package de.metas.marketing.base.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import lombok.Value;
 
@@ -30,13 +32,25 @@ public class PlatformId
 {
 	int repoId;
 
+	private PlatformId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Platform_ID");
+	}
+
 	public static PlatformId ofRepoId(final int repoId)
 	{
 		return new PlatformId(repoId);
 	}
 
-	private PlatformId(final int repoId)
+	@JsonCreator
+	public static PlatformId ofString(final String string)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Platform_ID");
+		return ofRepoId(Integer.parseInt(string));
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
 	}
 }

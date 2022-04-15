@@ -22,12 +22,17 @@
 
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.util.time.SystemTime;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -39,15 +44,43 @@ public class ReceiverUpsert
 	 */
 	public static ReceiverUpsert of(@NonNull final ContactPerson contactPerson)
 	{
-		final int id = StringUtils.trimBlankToOptional(contactPerson.getRemoteId()).map(Integer::parseInt).orElse(0);
+		final long nowAsUnixTimestamp = SystemTime.asInstant().getEpochSecond();
+
+		final Integer id = StringUtils.trimBlankToOptional(contactPerson.getRemoteId()).map(Integer::parseInt).orElse(null);
+		final boolean isNew = id == null || id <= 0;
+		final Long registered = isNew ? nowAsUnixTimestamp : null;
+
+		final Long activated;
+		final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = contactPerson.getDeactivatedOnRemotePlatform();
+		if (deactivatedOnRemotePlatform.isYes())
+		{
+			activated = 0L;
+		}
+		else if (deactivatedOnRemotePlatform.isNo())
+		{
+			activated = nowAsUnixTimestamp;
+		}
+		else // unknown
+		{
+			activated = isNew ? nowAsUnixTimestamp : null;
+		}
 
 		return builder()
 				.id(id)
 				.email(contactPerson.getEmailAddressStringOrNull())
+				.registered(registered)
+				.activated(activated)
 				.build();
 	}
 
-	int id;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable Integer id;
 	@NonNull String email;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable Long registered;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable Long activated;
 
 }

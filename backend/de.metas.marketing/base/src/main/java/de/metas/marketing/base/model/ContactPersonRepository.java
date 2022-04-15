@@ -59,15 +59,19 @@ public class ContactPersonRepository
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public ContactPerson getById(@NonNull final ContactPersonId contactPersonId)
+	{
+		final I_MKTG_ContactPerson record = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
+		return asContactPerson(record);
+	}
+
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 		saveRecord(contactPersonRecord);
 
 		final ContactPersonId contactPersonId = ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID());
-		return !ContactPersonId.equals(contactPerson.getContactPersonId(), contactPersonId)
-				? contactPerson.toBuilder().contactPersonId(contactPersonId).build()
-				: contactPerson;
+		return contactPerson.withContactPersonId(contactPersonId);
 	}
 
 	private I_MKTG_ContactPerson createOrUpdateRecordDontSave(
@@ -104,18 +108,8 @@ public class ContactPersonRepository
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());
 
-		// set email stuff
-		final Optional<EmailAddress> email = EmailAddress.cast(contactPerson.getAddress());
-
-		final String emailString = email.map(EmailAddress::getValue).orElse(null);
-		contactPersonRecord.setEMail(emailString);
-
-		// set deactivated stuff
-		final Boolean deactivatedBool = email.map(EmailAddress::getActiveOnRemotePlatformOrNull).orElse(null);
-		final String deactivatedString = StringUtils.ofBoolean(
-				deactivatedBool,
-				X_MKTG_ContactPerson.DEACTIVATEDONREMOTEPLATFORM_UNKNOWN);
-		contactPersonRecord.setDeactivatedOnRemotePlatform(deactivatedString);
+		contactPersonRecord.setEMail(contactPerson.getEmailAddressStringOrNull());
+		contactPersonRecord.setDeactivatedOnRemotePlatform(contactPerson.getDeactivatedOnRemotePlatform().getCode());
 
 		return contactPersonRecord;
 	}
@@ -177,12 +171,12 @@ public class ContactPersonRepository
 		return Optional.ofNullable(contactPersonRecord);
 	}
 
-	public void saveCampaignSyncResults(@NonNull final Collection<? extends SyncResult> syncResults)
+	public void saveSyncResults(@NonNull final Collection<? extends SyncResult> syncResults)
 	{
-		syncResults.forEach(this::saveCampaignSyncResult);
+		syncResults.forEach(this::saveSyncResult);
 	}
 
-	public ContactPerson saveCampaignSyncResult(@NonNull final SyncResult syncResult)
+	public ContactPerson saveSyncResult(@NonNull final SyncResult syncResult)
 	{
 		final ContactPerson contactPerson = ContactPerson.cast(syncResult.getSynchedDataRecord())
 				.orElseThrow(() -> new AdempiereException("Expected to have a contact person: " + syncResult));
@@ -208,11 +202,10 @@ public class ContactPersonRepository
 		{
 			throw new AdempiereException("The given syncResult has an unexpected type of " + syncResult.getClass() + "; syncResult=" + syncResult);
 		}
+
 		saveRecord(contactPersonRecord);
-		return contactPerson
-				.toBuilder()
-				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
-				.build();
+
+		return contactPerson.withContactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()));
 	}
 
 	public List<ContactPerson> getByCampaignId(@NonNull final CampaignId campaignId)
@@ -225,7 +218,7 @@ public class ContactPersonRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(this::asContactPerson)
+				.map(ContactPersonRepository::asContactPerson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -257,18 +250,14 @@ public class ContactPersonRepository
 		return contactPerson;
 	}
 
-	public ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public static ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
-		final String emailDeactivated = contactPersonRecord.getDeactivatedOnRemotePlatform();
-
 		final ContactPersonBuilder builder = ContactPerson.builder();
-		if (!Check.isEmpty(contactPersonRecord.getEMail(), true))
+		final String email = StringUtils.trimBlankToNull(contactPersonRecord.getEMail());
+		if (email != null)
 		{
-			final EmailAddress emailAddress = EmailAddress.of(
-					contactPersonRecord.getEMail(),
-					StringUtils.toBoolean(emailDeactivated, null));
-
-			builder.address(emailAddress);
+			final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = DeactivatedOnRemotePlatform.ofCode(contactPersonRecord.getDeactivatedOnRemotePlatform());
+			builder.address(EmailAddress.of(email, deactivatedOnRemotePlatform));
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactPersonRecord.getC_BPartner_ID());
@@ -316,7 +305,8 @@ public class ContactPersonRepository
 	public void revokeConsent(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_Consent consent = getConsentRecord(contactPerson.getContactPersonId());
+		final ContactPersonId contactPersonId = Check.assumeNotNull(contactPerson.getContactPersonId(), "contact is saved: {}", contactPerson);
+		final I_MKTG_Consent consent = getConsentRecord(contactPersonId);
 
 		if (consent != null)
 		{
@@ -336,15 +326,13 @@ public class ContactPersonRepository
 				.first(I_MKTG_Consent.class);
 	}
 
-	public ContactPerson updateBPartnerLocation(final ContactPerson contactPerson, BPartnerLocationId bpLocationId)
+	public void updateBPartnerLocation(final ContactPerson contactPerson, BPartnerLocationId bpLocationId)
 	{
 		contactPerson.toBuilder()
 				.bpLocationId(bpLocationId)
 				.build();
 
 		save(contactPerson);
-
-		return contactPerson;
 	}
 
 	public Set<ContactPerson> getByBPartnerLocationId(@NonNull final BPartnerLocationId bpLocationId)
@@ -355,7 +343,7 @@ public class ContactPersonRepository
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_C_BPartner_Location_ID, bpLocationId.getRepoId())
 				.create()
 				.stream()
-				.map(this::asContactPerson)
+				.map(ContactPersonRepository::asContactPerson)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -367,7 +355,7 @@ public class ContactPersonRepository
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_AD_User_ID, userId.getRepoId())
 				.create()
 				.stream()
-				.map(this::asContactPerson)
+				.map(ContactPersonRepository::asContactPerson)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
