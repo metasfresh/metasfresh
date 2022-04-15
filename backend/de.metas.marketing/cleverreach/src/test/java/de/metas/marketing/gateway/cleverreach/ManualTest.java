@@ -136,11 +136,13 @@ public class ManualTest
 
 	@Test
 	@Disabled
-	public void retrieveAllContactPersonsOfCampagin()
+	public void retrieveAllContactPersonsOfCampaign()
 	{
 		final Campaign campaign = Campaign.builder()
 				.remoteId(MANUAL_GROUP_REMOTE_ID)
-				.platformId(platformId).build();
+				.platformId(platformId)
+				.build();
+
 		final Iterator<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
 
 		assertThat(contactPersons).hasNext();

@@ -165,12 +165,10 @@ public class CleverReachClient implements PlatformClient
 	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
 	{
 		final String remoteGroupId = Objects.requireNonNull(campaign.getRemoteId());
-		final int pageSize = 1000; // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
-
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
 		return PagedIterator.<Receiver>builder()
-				.pageSize(pageSize)
+				.pageSize(1000) // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 				.pageFetcher(pageFetcher)
 				.build();
 	}
