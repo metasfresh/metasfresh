@@ -62,11 +62,9 @@ public class ContactPerson implements DataRecord
 
 	public static Optional<ContactPerson> cast(@Nullable final DataRecord dataRecord)
 	{
-		if (dataRecord instanceof ContactPerson)
-		{
-			return Optional.ofNullable((ContactPerson)dataRecord);
-		}
-		return Optional.empty();
+		return dataRecord instanceof ContactPerson
+				? Optional.of((ContactPerson)dataRecord)
+				: Optional.empty();
 	}
 
 	String name;
@@ -80,11 +78,15 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	ContactAddress address;
 
-	/** might be null if the contact person was not stored yet */
+	/**
+	 * might be null if the contact person was not stored yet
+	 */
 	@Nullable
 	ContactPersonId contactPersonId;
 
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
+	/**
+	 * the remote system's ID which we can use to sync with the campaign on the remote marketing tool
+	 */
 	String remoteId;
 
 	@NonNull
