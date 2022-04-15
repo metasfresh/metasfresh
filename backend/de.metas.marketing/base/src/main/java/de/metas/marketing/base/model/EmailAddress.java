@@ -35,21 +35,17 @@ public class EmailAddress implements ContactAddress
 {
 	public static Optional<EmailAddress> cast(@Nullable final ContactAddress contactAddress)
 	{
-		if (contactAddress != null && contactAddress instanceof EmailAddress)
-		{
-			return Optional.of((EmailAddress)contactAddress);
-		}
-		return Optional.empty();
+		return contactAddress instanceof EmailAddress
+				? Optional.of((EmailAddress)contactAddress)
+				: Optional.empty();
 	}
 
-	public static String getEmailAddessStringOrNull(@Nullable final ContactAddress contactAddress)
+	public static String getEmailAddressStringOrNull(@Nullable final ContactAddress contactAddress)
 	{
-		final Optional<String> stringIfPresent = EmailAddress
-				.cast(contactAddress)
+		return EmailAddress.cast(contactAddress)
 				.map(EmailAddress::getValue)
-				.filter(s -> !Check.isEmpty(s, true));
-
-		return stringIfPresent.orElse(null);
+				.filter(Check::isNotBlank)
+				.orElse(null);
 	}
 
 	public static Boolean getActiveOnRemotePlatformOrNull(@Nullable final ContactAddress contactAddress)
@@ -68,11 +64,9 @@ public class EmailAddress implements ContactAddress
 
 	public static EmailAddress ofStringOrNull(@Nullable final String emailAddress)
 	{
-		if (Check.isEmpty(emailAddress, true))
-		{
-			return null;
-		}
-		return new EmailAddress(emailAddress, null);
+		return emailAddress != null && !Check.isBlank(emailAddress)
+				? new EmailAddress(emailAddress, null)
+				: null;
 	}
 
 	public static EmailAddress of(
@@ -84,7 +78,9 @@ public class EmailAddress implements ContactAddress
 
 	String value;
 
-	/** null means "unknown" */
+	/**
+	 * null means "unknown"
+	 */
 	Boolean deactivatedOnRemotePlatform;
 
 	public EmailAddress(

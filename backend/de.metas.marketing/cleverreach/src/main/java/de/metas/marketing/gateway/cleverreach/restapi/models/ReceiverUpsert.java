@@ -43,7 +43,7 @@ public class ReceiverUpsert
 
 		return builder()
 				.id(id)
-				.email(contactPerson.getEmailAddessStringOrNull())
+				.email(contactPerson.getEmailAddressStringOrNull())
 				.build();
 	}
 

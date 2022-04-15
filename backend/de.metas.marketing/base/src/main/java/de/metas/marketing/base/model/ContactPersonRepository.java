@@ -64,9 +64,10 @@ public class ContactPersonRepository
 		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 		saveRecord(contactPersonRecord);
 
-		return contactPerson.toBuilder()
-				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
-				.build();
+		final ContactPersonId contactPersonId = ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID());
+		return !ContactPersonId.equals(contactPerson.getContactPersonId(), contactPersonId)
+				? contactPerson.toBuilder().contactPersonId(contactPersonId).build()
+				: contactPerson;
 	}
 
 	private I_MKTG_ContactPerson createOrUpdateRecordDontSave(
@@ -160,7 +161,7 @@ public class ContactPersonRepository
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, contactPerson.getLocationId());
 		}
 
-		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
+		final String emailAddress = contactPerson.getEmailAddressStringOrNull();
 
 		if (contactPersonRecord == null && emailAddress != null)
 		{

@@ -108,12 +108,12 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	Language language;
 
-	public String getEmailAddessStringOrNull()
+	public String getEmailAddressStringOrNull()
 	{
-		return EmailAddress.getEmailAddessStringOrNull(getAddress());
+		return EmailAddress.getEmailAddressStringOrNull(getAddress());
 	}
 
-	public Boolean getEmailAddessIsActivatedOrNull()
+	public Boolean getEmailAddressIsActivatedOrNull()
 	{
 		return EmailAddress.getActiveOnRemotePlatformOrNull(getAddress());
 	}

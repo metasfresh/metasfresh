@@ -49,7 +49,7 @@ public class Receiver
 
 		return builder()
 				.id(id)
-				.email(contactPerson.getEmailAddessStringOrNull())
+				.email(contactPerson.getEmailAddressStringOrNull())
 				.build();
 	}
 

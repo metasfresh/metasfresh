@@ -232,7 +232,7 @@ public class ManualTest
 				email,
 				ContactPerson
 						.cast(r.getSynchedDataRecord())
-						.map(ContactPerson::getEmailAddessStringOrNull)
+						.map(ContactPerson::getEmailAddressStringOrNull)
 						.orElse(null));
 
 		return new Condition<>(

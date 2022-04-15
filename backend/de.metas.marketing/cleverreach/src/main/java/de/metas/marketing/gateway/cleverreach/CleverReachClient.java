@@ -223,7 +223,7 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddessStringOrNull());
+		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddressStringOrNull());
 		final String errorMessage = "Contact person has no (valid) email address";
 
 		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(contactPersons, predicate);
@@ -240,7 +240,7 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
 	{
-		final Predicate<ContactPerson> predicate = c -> c.getEmailAddessStringOrNull() != null;
+		final Predicate<ContactPerson> predicate = c -> c.getEmailAddressStringOrNull() != null;
 		final String errorMessage = "contact person has no email address";
 
 		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = partitionByOkAndNotOk(contactPersons, predicate);
@@ -281,7 +281,7 @@ public class CleverReachClient implements PlatformClient
 						syncResults),
 				syncResults);
 
-		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(personsWithEmail, ContactPerson::getEmailAddessStringOrNull);
+		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(personsWithEmail, ContactPerson::getEmailAddressStringOrNull);
 
 		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutErrorResponse = new HashMap<>(email2contactPersons.asMap());
 
@@ -432,12 +432,12 @@ public class CleverReachClient implements PlatformClient
 
 		final ImmutableList<ContactPerson> contactPersonsWithEmail = personsWithEmailOrRemoteId
 				.stream()
-				.filter(c -> c.getEmailAddessStringOrNull() != null)
+				.filter(c -> c.getEmailAddressStringOrNull() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(
 				contactPersonsWithEmail,
-				ContactPerson::getEmailAddessStringOrNull);
+				ContactPerson::getEmailAddressStringOrNull);
 
 		final Map<Boolean, List<ContactPerson>> contactPersonsWithAndWithoutRemoteId = personsWithEmailOrRemoteId
 				.stream()
@@ -453,7 +453,7 @@ public class CleverReachClient implements PlatformClient
 
 		final HashMap<String, Collection<ContactPerson>> remoteId2contactPersonsNotYetFound = new HashMap<>(remoteId2contactPersons.asMap());
 		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutIdNotYetFound = new HashMap<>(Multimaps
-				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddessStringOrNull)
+				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddressStringOrNull)
 				.asMap());
 
 		final Iterator<Receiver> allReceivers = retrieveAllReceivers(campaign);
@@ -469,7 +469,7 @@ public class CleverReachClient implements PlatformClient
 		for (final ContactPersonRemoteUpdate contactPersonUpdate : contactPersonUpdates)
 		{
 			final String receivedEmailAddress = Check.assumeNotEmpty(
-					EmailAddress.getEmailAddessStringOrNull(contactPersonUpdate.getAddress()),
+					EmailAddress.getEmailAddressStringOrNull(contactPersonUpdate.getAddress()),
 					"A contactPersonUpdate received from the remote API has an email address; contactPersonUpdate={}", contactPersonUpdate);
 
 			remoteId2contactPersonsNotYetFound.remove(contactPersonUpdate.getRemoteId());
@@ -491,7 +491,7 @@ public class CleverReachClient implements PlatformClient
 				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPerson);
 
 				final boolean existingContactHasDifferentEmail = !Objects.equals(
-						contactPerson.getEmailAddessStringOrNull(),
+						contactPerson.getEmailAddressStringOrNull(),
 						receivedEmailAddress);
 				if (existingContactHasDifferentEmail)
 				{
@@ -501,7 +501,7 @@ public class CleverReachClient implements PlatformClient
 				final Boolean activeOnRemotePlatform = EmailAddress.getActiveOnRemotePlatformOrNull(contactPersonUpdate.getAddress());
 
 				final boolean existingContactHasDifferentActiveStatus = !Objects.equals(
-						contactPerson.getEmailAddessIsActivatedOrNull(),
+						contactPerson.getEmailAddressIsActivatedOrNull(),
 						activeOnRemotePlatform);
 				if (existingContactHasDifferentActiveStatus)
 				{

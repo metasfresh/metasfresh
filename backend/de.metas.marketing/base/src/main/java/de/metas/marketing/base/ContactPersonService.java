@@ -71,7 +71,7 @@ public class ContactPersonService
 			@Nullable final String oldUserEmail,
 			@Nullable final Language oldUserLanguage)
 	{
-		final boolean updateContactMail = isFitForUpdate(contactPerson.getEmailAddessStringOrNull(), oldUserEmail);
+		final boolean updateContactMail = isFitForUpdate(contactPerson.getEmailAddressStringOrNull(), oldUserEmail);
 		final boolean updateContactLanguage = isFitForUpdate(contactPerson.getLanguage(), oldUserLanguage);
 		if (!updateContactMail && !updateContactLanguage)
 		{

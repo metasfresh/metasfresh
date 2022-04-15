@@ -3,6 +3,9 @@ package de.metas.marketing.base.model;
 import de.metas.util.Check;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /*
  * #%L
  * marketing-base
@@ -44,5 +47,10 @@ public class ContactPersonId
 	private ContactPersonId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_ContactPerson_ID");
+	}
+
+	public static boolean equals(@Nullable final ContactPersonId id1, @Nullable final ContactPersonId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

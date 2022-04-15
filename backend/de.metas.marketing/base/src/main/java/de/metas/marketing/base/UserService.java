@@ -70,7 +70,7 @@ public class UserService
 		final UserBuilder updatedUser = user.toBuilder();
 		if (updateUserMail)
 		{
-			updatedUser.emailAddress(contactPerson.getEmailAddessStringOrNull());
+			updatedUser.emailAddress(contactPerson.getEmailAddressStringOrNull());
 		}
 		if (updateUserLanguage)
 		{
