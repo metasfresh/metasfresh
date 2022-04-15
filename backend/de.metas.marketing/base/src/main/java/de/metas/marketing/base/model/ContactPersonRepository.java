@@ -18,9 +18,11 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -55,6 +57,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ContactPersonRepository
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
@@ -119,14 +122,10 @@ public class ContactPersonRepository
 	private Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		I_MKTG_ContactPerson contactPersonRecord = null;
-
 		if (contactPerson.getContactPersonId() != null)
 		{
 			final ContactPersonId contactPersonId = contactPerson.getContactPersonId();
-			contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
+			final I_MKTG_ContactPerson contactPersonRecord = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
 			return Optional.of(contactPersonRecord);
 		}
 
@@ -140,7 +139,8 @@ public class ContactPersonRepository
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID, userId.getRepoId());
 		}
 
-		if (contactPersonRecord == null && !Check.isEmpty(contactPerson.getRemoteId(), true))
+		I_MKTG_ContactPerson contactPersonRecord = null;
+		if (!Check.isBlank(contactPerson.getRemoteId()))
 		{
 			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
 					.filter(baseQueryFilter)
@@ -176,9 +176,15 @@ public class ContactPersonRepository
 		return Optional.ofNullable(contactPersonRecord);
 	}
 
+	public void saveCampaignSyncResults(@NonNull final Collection<? extends SyncResult> syncResults)
+	{
+		syncResults.forEach(this::saveCampaignSyncResult);
+	}
+
 	public ContactPerson saveCampaignSyncResult(@NonNull final SyncResult syncResult)
 	{
-		final ContactPerson contactPerson = ContactPerson.cast(syncResult.getSynchedDataRecord()).get();
+		final ContactPerson contactPerson = ContactPerson.cast(syncResult.getSynchedDataRecord())
+				.orElseThrow(() -> new AdempiereException("Expected to have a contact person: " + syncResult));
 		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 
 		if (syncResult instanceof LocalToRemoteSyncResult)
@@ -199,7 +205,7 @@ public class ContactPersonRepository
 		}
 		else
 		{
-			Check.fail("The given syncResult has an unexpected type of {}; syncResult={}", syncResult.getClass(), syncResult);
+			throw new AdempiereException("The given syncResult has an unexpected type of " + syncResult.getClass() + "; syncResult=" + syncResult);
 		}
 		saveRecord(contactPersonRecord);
 		return contactPerson
@@ -210,7 +216,7 @@ public class ContactPersonRepository
 
 	public List<ContactPerson> getByCampaignId(@NonNull final CampaignId campaignId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId.getRepoId())
@@ -224,7 +230,7 @@ public class ContactPersonRepository
 
 	public Set<Integer> getIdsByCampaignId(final int campaignId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create()
@@ -265,17 +271,14 @@ public class ContactPersonRepository
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactPersonRecord.getC_BPartner_ID());
-
-		BPartnerLocationId bpartnerlocationId = null;
-		LocationId locationId = null;
-		if (contactPersonRecord.getC_BPartner_ID() > 0 && contactPersonRecord.getC_BPartner_Location_ID() > 0)
+		final BPartnerLocationId bpartnerlocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactPersonRecord.getC_BPartner_Location_ID());
+		final LocationId locationId;
+		if (bpartnerlocationId != null)
 		{
-			bpartnerlocationId = BPartnerLocationId.ofRepoId(bpartnerId, contactPersonRecord.getC_BPartner_Location_ID());
 			locationId = LocationId.ofRepoId(contactPersonRecord.getC_BPartner_Location().getC_Location_ID());
 		}
 		else
 		{
-			bpartnerlocationId = null;
 			locationId = LocationId.ofRepoIdOrNull(contactPersonRecord.getC_Location_ID());
 		}
 
@@ -295,15 +298,16 @@ public class ContactPersonRepository
 	public void createUpdateConsent(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_Consent consentExistingRecord = getConsentRecord(contactPerson);
+		final ContactPersonId contactPersonId = Check.assumeNotNull(contactPerson.getContactPersonId(), "contact is saved: {}", contactPerson);
+		final I_MKTG_Consent consentExistingRecord = getConsentRecord(contactPersonId);
 
 		final I_MKTG_Consent consent = consentExistingRecord != null ? consentExistingRecord : newInstance(I_MKTG_Consent.class);
 
 		consent.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		consent.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		consent.setConsentDeclaredOn(de.metas.common.util.time.SystemTime.asTimestamp());
-		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
+		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setMKTG_ContactPerson_ID(contactPersonId.getRepoId());
 
 		saveRecord(consent);
 	}
@@ -311,7 +315,7 @@ public class ContactPersonRepository
 	public void revokeConsent(
 			@NonNull final ContactPerson contactPerson)
 	{
-		final I_MKTG_Consent consent = getConsentRecord(contactPerson);
+		final I_MKTG_Consent consent = getConsentRecord(contactPerson.getContactPersonId());
 
 		if (consent != null)
 		{
@@ -320,12 +324,12 @@ public class ContactPersonRepository
 		}
 	}
 
-	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPerson contactPerson)
+	private I_MKTG_Consent getConsentRecord(@NonNull final ContactPersonId contactPersonId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Consent.class)
+		return queryBL.createQueryBuilder(I_MKTG_Consent.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_ConsentRevokedOn, null)
-				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPerson.getContactPersonId().getRepoId())
+				.addEqualsFilter(I_MKTG_Consent.COLUMNNAME_MKTG_ContactPerson_ID, contactPersonId.getRepoId())
 				.orderByDescending(I_MKTG_Consent.COLUMNNAME_ConsentDeclaredOn)
 				.create()
 				.first(I_MKTG_Consent.class);
@@ -344,7 +348,7 @@ public class ContactPersonRepository
 
 	public Set<ContactPerson> getByBPartnerLocationId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_C_BPartner_Location_ID, bpLocationId.getRepoId())
@@ -356,7 +360,7 @@ public class ContactPersonRepository
 
 	public Set<ContactPerson> getByUserId(@NonNull final UserId userId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_AD_User_ID, userId.getRepoId())
