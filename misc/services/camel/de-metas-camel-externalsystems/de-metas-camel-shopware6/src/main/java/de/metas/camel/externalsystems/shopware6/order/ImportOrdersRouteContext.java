@@ -277,23 +277,18 @@ public class ImportOrdersRouteContext
 	public ExternalIdentifier getMetasfreshId()
 	{
 		//FIXME to remove hardcoded paths in final version
-		return CoalesceUtil.coalesce(getId(CUSTOM_FIELD_METASFRESH_ID, false), getUserId());
+		return CoalesceUtil.coalesce(getId(CUSTOM_FIELD_METASFRESH_ID, false, false), getUserId());
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
 		//FIXME to remove hardcoded paths in final version
-		final ExternalIdentifier id = getId(CUSTOM_FIELD_USER_ID, true);
-		if (id == null)
-		{
-			throw new RuntimeException("Couldn't find UserID in " + CUSTOM_FIELD_USER_ID);
-		}
-		return id;
+		return getId(CUSTOM_FIELD_USER_ID, true, true);
 	}
 
 	@Nullable
-	public ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId)
+	private ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId, final boolean throwException)
 	{
 		final OrderCandidate order = getOrderNotNull();
 		final String id = order.getCustomField(bpLocationCustomJsonPath);
@@ -304,6 +299,10 @@ public class ImportOrdersRouteContext
 					.identifier(asExternalId ? ExternalIdentifierFormat.formatExternalId(id) : id)
 					.rawValue(id)
 					.build();
+		}
+		if (throwException)
+		{
+			throw new RuntimeException("Order: " + order.getJsonOrder().getId() + "Couldn't find jsonPath of " + CUSTOM_FIELD_USER_ID);
 		}
 		return null;
 	}
