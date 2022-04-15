@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,6 +66,13 @@ public class ManualTest
 				.platformId(PLATFORM_ID)
 				.build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
+	}
+
+	private static Condition<SyncResult> emailEqualsTo(@Nullable final String email)
+	{
+		return new Condition<>(
+				syncResult -> Objects.equals(email, ContactPerson.cast(syncResult.getSynchedDataRecord()).map(ContactPerson::getEmailAddressStringOrNull).orElse(null)),
+				"is contactperson with email=%s", email);
 	}
 
 	@Test
@@ -135,23 +141,23 @@ public class ManualTest
 				campaign, ImmutableList.of(newPerson1, newPerson2, newPerson3, newPerson4));
 
 		assertThat(results)
-				.filteredOn(email("test2-invalidmail"))
+				.filteredOn(emailEqualsTo("test2-invalidmail"))
 				.extracting(LocalToRemoteSyncResult::getLocalToRemoteStatus)
 				.containsOnlyOnce(LocalToRemoteStatus.ERROR);
 
 		assertThat(results)
-				.filteredOn(email("test4-invalidmail"))
+				.filteredOn(emailEqualsTo("test4-invalidmail"))
 				.extracting(LocalToRemoteSyncResult::getLocalToRemoteStatus)
 				.containsOnlyOnce(LocalToRemoteStatus.ERROR);
 
 		assertThat(results)
-				.filteredOn(email("test10@newemail.com"))
+				.filteredOn(emailEqualsTo("test10@newemail.com"))
 				.hasSize(1)
 				.extracting(LocalToRemoteSyncResult::getLocalToRemoteStatus)
 				.contains(LocalToRemoteStatus.UPSERTED_ON_REMOTE);
 
 		assertThat(results)
-				.filteredOn(email("test30@newemail.com"))
+				.filteredOn(emailEqualsTo("test30@newemail.com"))
 				.hasSize(1)
 				.allSatisfy(singleResult -> {
 					assertThat(singleResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPSERTED_ON_REMOTE);
@@ -178,23 +184,23 @@ public class ManualTest
 		final List<RemoteToLocalSyncResult> result = cleverReachClient.syncContactPersonsRemoteToLocal(
 				campaign, ImmutableList.of(person1, person2, person3, person4, person5));
 		assertThat(result)
-				.filteredOn(email("test1@email"))
+				.filteredOn(emailEqualsTo("test1@email"))
 				.extracting(RemoteToLocalSyncResult::getRemoteToLocalStatus)
 				.containsOnlyOnce(RemoteToLocalStatus.NOT_YET_ADDED_TO_REMOTE_PLATFORM);
 
 		assertThat(result)
-				.filteredOn(email("test2@email"))
+				.filteredOn(emailEqualsTo("test2@email"))
 				.extracting(RemoteToLocalSyncResult::getRemoteToLocalStatus)
 				.containsOnlyOnce(RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM);
 
 		assertThat(result)
-				.filteredOn(email("real-email1"))
+				.filteredOn(emailEqualsTo("real-email1"))
 				.hasSize(1)
 				.extracting(RemoteToLocalSyncResult::getRemoteToLocalStatus)
 				.contains(RemoteToLocalStatus.OBTAINED_REMOTE_ID);
 
 		assertThat(result)
-				.filteredOn(email("real-email2"))
+				.filteredOn(emailEqualsTo("real-email2"))
 				.hasSize(1)
 				.allSatisfy(singleResult -> {
 					assertThat(singleResult.getRemoteToLocalStatus()).isEqualTo(RemoteToLocalStatus.OBTAINED_REMOTE_ID);
@@ -203,13 +209,13 @@ public class ManualTest
 					assertThat(contactPerson.getRemoteId()).isNotEmpty();
 				});
 
-		assertThat(result).filteredOn(email("test1@newemail.com"))
+		assertThat(result).filteredOn(emailEqualsTo("test1@newemail.com"))
 				.hasSize(1)
 				.extracting(RemoteToLocalSyncResult::getRemoteToLocalStatus)
 				.contains(RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON);
 
 		assertThat(result)
-				.filteredOn(email("bounce-email1"))
+				.filteredOn(emailEqualsTo("bounce-email1"))
 				.hasSize(1)
 				.allSatisfy(singleResult -> {
 					assertThat(singleResult.getRemoteToLocalStatus()).isEqualTo(RemoteToLocalStatus.OBTAINED_EMAIL_BOUNCE_INFO);
@@ -221,19 +227,4 @@ public class ManualTest
 					assertThat(email.getDeactivatedOnRemotePlatform()).isEqualTo(OptionalBoolean.TRUE);
 				});
 	}
-
-	private Condition<SyncResult> email(@Nullable final String email)
-	{
-		final Predicate<SyncResult> p = r -> Objects.equals(
-				email,
-				ContactPerson
-						.cast(r.getSynchedDataRecord())
-						.map(ContactPerson::getEmailAddressStringOrNull)
-						.orElse(null));
-
-		return new Condition<>(
-				p,
-				"is contactperson with email=%s", email);
-	}
-
 }
