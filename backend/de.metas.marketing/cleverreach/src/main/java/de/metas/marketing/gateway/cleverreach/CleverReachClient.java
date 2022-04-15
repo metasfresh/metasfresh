@@ -148,14 +148,14 @@ public class CleverReachClient implements PlatformClient
 
 	public List<Campaign> retrieveAllCampaigns()
 	{
-		final List<Group> groups = retriveAllGroups();
+		final List<Group> groups = retrieveAllGroups();
 
 		return groups.stream()
 				.map(Group::toCampaign)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<Group> retriveAllGroups()
+	private List<Group> retrieveAllGroups()
 	{
 		final String url = "/groups.json";
 		return getLowLevelClient().get(LIST_OF_GROUPS_TYPE, url);
@@ -382,7 +382,7 @@ public class CleverReachClient implements PlatformClient
 
 		final HashMap<String, Collection<Campaign>> remoteId2campaignsNotYetFound = new HashMap<>(remoteId2campaigns.asMap());
 
-		final List<CampaignRemoteUpdate> campaignUpdates = retriveAllGroups()
+		final List<CampaignRemoteUpdate> campaignUpdates = retrieveAllGroups()
 				.stream()
 				.map(Group::toCampaignUpdate)
 				.collect(ImmutableList.toImmutableList());
