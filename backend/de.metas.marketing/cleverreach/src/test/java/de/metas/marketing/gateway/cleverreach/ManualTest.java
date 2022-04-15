@@ -1,22 +1,7 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.assertj.core.api.Condition;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.EmailAddress;
@@ -27,7 +12,20 @@ import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
+import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
+import org.assertj.core.api.Condition;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -59,7 +57,7 @@ public class ManualTest
 	private static final String MANUAL_GROUP_REMOTE_ID = "";
 	private CleverReachClient cleverReachClient;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
@@ -72,8 +70,8 @@ public class ManualTest
 	}
 
 	@Test
-	@Ignore
-	public void createUpdateDeleteCampagin()
+	@Disabled
+	public void createUpdateDeleteCampaign()
 	{
 		// add one campaign
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
@@ -112,7 +110,7 @@ public class ManualTest
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void retrieveAllContactPersonsOfCampagin()
 	{
 		final Campaign campaign = Campaign.builder()
@@ -124,7 +122,7 @@ public class ManualTest
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void syncContactPersonsLocalToRemote()
 	{
 		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
@@ -162,7 +160,7 @@ public class ManualTest
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void syncContactPersonsRemoteToLocal()
 	{
 		final Campaign campaign = Campaign.builder().remoteId(MANUAL_GROUP_REMOTE_ID).build();
@@ -220,9 +218,7 @@ public class ManualTest
 					assertThat(contactPerson.getRemoteId()).isNotEmpty();
 
 					final EmailAddress email = EmailAddress.cast(contactPerson.getAddress()).get();
-					assertThat(email.getDeactivatedOnRemotePlatform())
-							.isNotNull()
-							.isTrue();
+					assertThat(email.getDeactivatedOnRemotePlatform()).isEqualTo(OptionalBoolean.TRUE);
 				});
 	}
 
