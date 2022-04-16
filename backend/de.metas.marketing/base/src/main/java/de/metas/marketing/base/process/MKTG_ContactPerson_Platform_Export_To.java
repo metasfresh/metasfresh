@@ -35,9 +35,9 @@ public class MKTG_ContactPerson_Platform_Export_To extends MKTG_ContactPerson_Pl
 	@Override
 	protected List<? extends SyncResult> invokeClient(
 			@NonNull final PlatformClient platformClient,
-			@NonNull final Campaign campgain,
+			@NonNull final Campaign campaign,
 			@NonNull final List<ContactPerson> contactPersons)
 	{
-		return platformClient.syncContactPersonsLocalToRemote(campgain, contactPersons);
+		return platformClient.syncContactPersonsLocalToRemote(campaign, contactPersons);
 	}
 }
