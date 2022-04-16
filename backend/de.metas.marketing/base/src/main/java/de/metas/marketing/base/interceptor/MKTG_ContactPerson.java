@@ -46,12 +46,9 @@ public class MKTG_ContactPerson
 {
 	private final UserService userService;
 
-	private final ContactPersonRepository contactPersonRepo;
-
-	private MKTG_ContactPerson(@NonNull final UserService userService, @NonNull final ContactPersonRepository contactPersonRepo)
+	private MKTG_ContactPerson(@NonNull final UserService userService)
 	{
 		this.userService = userService;
-		this.contactPersonRepo = contactPersonRepo;
 	}
 
 	/**
@@ -100,7 +97,7 @@ public class MKTG_ContactPerson
 		final String oldContactPersonMail = oldContactPerson.getEMail();
 		final Language oldContactPersonLanguage = Language.asLanguage(oldContactPerson.getAD_Language());
 
-		final ContactPerson contactPerson = contactPersonRepo.asContactPerson(contactPersonRecord);
+		final ContactPerson contactPerson = ContactPersonRepository.toContactPerson(contactPersonRecord);
 
 		userService.updateUserFromContactPersonIfFeasible(
 				contactPerson,

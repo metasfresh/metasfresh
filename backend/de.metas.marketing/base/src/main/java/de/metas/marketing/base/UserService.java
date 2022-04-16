@@ -83,7 +83,7 @@ public class UserService
 		userRepo.save(updatedUser.build());
 	}
 
-	private boolean isFitForUpdate(
+	private static boolean isFitForUpdate(
 			@Nullable final Object currentUserValue,
 			@Nullable final Object oldContactValue)
 	{
@@ -93,6 +93,7 @@ public class UserService
 		}
 
 		// if user and contact were in sync, then keep them in sync, i.e. forward the new contact value to the user.
+		//noinspection UnnecessaryLocalVariable
 		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentUserValue, oldContactValue);
 		return userValueInSyncWithOldcontactValue;
 	}

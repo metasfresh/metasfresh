@@ -62,7 +62,7 @@ public class ContactPersonRepository
 	public ContactPerson getById(@NonNull final ContactPersonId contactPersonId)
 	{
 		final I_MKTG_ContactPerson record = load(contactPersonId.getRepoId(), I_MKTG_ContactPerson.class);
-		return asContactPerson(record);
+		return toContactPerson(record);
 	}
 
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
@@ -80,8 +80,8 @@ public class ContactPersonRepository
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
 				.orElse(newInstance(I_MKTG_ContactPerson.class));
 
-		contactPersonRecord.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
-		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
+		contactPersonRecord.setAD_User_ID(UserId.toRepoId(contactPerson.getUserId()));
+		contactPersonRecord.setC_BPartner_ID(BPartnerId.toRepoId(contactPerson.getBPartnerId()));
 
 		if (contactPerson.getBPartnerId() != null)
 		{
@@ -184,17 +184,17 @@ public class ContactPersonRepository
 
 		if (syncResult instanceof LocalToRemoteSyncResult)
 		{
-			contactPersonRecord.setLastSyncOfLocalToRemote(SystemTime.asTimestamp());
-
 			final LocalToRemoteSyncResult localToRemoteSyncResult = (LocalToRemoteSyncResult)syncResult;
+
+			contactPersonRecord.setLastSyncOfLocalToRemote(SystemTime.asTimestamp());
 			contactPersonRecord.setLastSyncStatus(localToRemoteSyncResult.getLocalToRemoteStatus().toString());
 			contactPersonRecord.setLastSyncDetailMessage(localToRemoteSyncResult.getErrorMessage());
 		}
 		else if (syncResult instanceof RemoteToLocalSyncResult)
 		{
-			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
-
 			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
+
+			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
 			contactPersonRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
 			contactPersonRecord.setLastSyncDetailMessage(remoteToLocalSyncResult.getErrorMessage());
 		}
@@ -205,7 +205,7 @@ public class ContactPersonRepository
 
 		saveRecord(contactPersonRecord);
 
-		return contactPerson.withContactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()));
+		return toContactPerson(contactPersonRecord);
 	}
 
 	public List<ContactPerson> getByCampaignId(@NonNull final CampaignId campaignId)
@@ -218,7 +218,7 @@ public class ContactPersonRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(ContactPersonRepository::asContactPerson)
+				.map(ContactPersonRepository::toContactPerson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -238,7 +238,7 @@ public class ContactPersonRepository
 	public ContactPerson getByCampaignContactPersonId(final int campaignContactPersonID)
 	{
 		final I_MKTG_Campaign_ContactPerson campaignContactPersonRecord = load(campaignContactPersonID, I_MKTG_Campaign_ContactPerson.class);
-		ContactPerson contactPerson = asContactPerson(campaignContactPersonRecord.getMKTG_ContactPerson());
+		ContactPerson contactPerson = toContactPerson(campaignContactPersonRecord.getMKTG_ContactPerson());
 		final int boilerPlateId = campaignContactPersonRecord.getMKTG_Campaign().getAD_BoilerPlate_ID();
 		if (boilerPlateId > 0)
 		{
@@ -250,9 +250,10 @@ public class ContactPersonRepository
 		return contactPerson;
 	}
 
-	public static ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public static ContactPerson toContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final ContactPersonBuilder builder = ContactPerson.builder();
+
 		final String email = StringUtils.trimBlankToNull(contactPersonRecord.getEMail());
 		if (email != null)
 		{
@@ -277,7 +278,7 @@ public class ContactPersonRepository
 				.bPartnerId(bpartnerId)
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
-				.remoteId(contactPersonRecord.getRemoteRecordId())
+				.remoteId(StringUtils.trimBlankToNull(contactPersonRecord.getRemoteRecordId()))
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.bpLocationId(bpartnerlocationId)
 				.locationId(locationId)
@@ -343,7 +344,7 @@ public class ContactPersonRepository
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_C_BPartner_Location_ID, bpLocationId.getRepoId())
 				.create()
 				.stream()
-				.map(ContactPersonRepository::asContactPerson)
+				.map(ContactPersonRepository::toContactPerson)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -355,7 +356,7 @@ public class ContactPersonRepository
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_AD_User_ID, userId.getRepoId())
 				.create()
 				.stream()
-				.map(ContactPersonRepository::asContactPerson)
+				.map(ContactPersonRepository::toContactPerson)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
