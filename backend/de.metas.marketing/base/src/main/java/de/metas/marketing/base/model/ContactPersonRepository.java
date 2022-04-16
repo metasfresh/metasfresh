@@ -192,7 +192,7 @@ public class ContactPersonRepository
 		}
 		else if (syncResult instanceof RemoteToLocalSyncResult)
 		{
-			contactPersonRecord.setLastSyncOfRemoteToLocal(de.metas.common.util.time.SystemTime.asTimestamp());
+			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
 
 			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
 			contactPersonRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
@@ -310,7 +310,7 @@ public class ContactPersonRepository
 
 		if (consent != null)
 		{
-			consent.setConsentRevokedOn(de.metas.common.util.time.SystemTime.asTimestamp());
+			consent.setConsentRevokedOn(SystemTime.asTimestamp());
 			saveRecord(consent);
 		}
 	}
