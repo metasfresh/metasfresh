@@ -46,7 +46,7 @@ public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 	private final PlatformClientService platformClientService = SpringContextHolder.instance.getBean(PlatformClientService.class);
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		Check.errorUnless(I_MKTG_Campaign.Table_Name.equals(getTableName()),
 				"This process only with tableName={} MKTG_Campaign records; tableName",
