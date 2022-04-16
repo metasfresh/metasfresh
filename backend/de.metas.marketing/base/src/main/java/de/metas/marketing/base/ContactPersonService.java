@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.Language;
@@ -43,10 +45,14 @@ public class ContactPersonService
 {
 
 	private final ContactPersonRepository contactPersonRepo;
+	private final UserRepository userRepo;
 
-	public ContactPersonService(@NonNull final ContactPersonRepository contactPersonRepo)
+	public ContactPersonService(
+			@NonNull final ContactPersonRepository contactPersonRepo,
+			@NonNull final UserRepository userRepo)
 	{
 		this.contactPersonRepo = contactPersonRepo;
+		this.userRepo = userRepo;
 	}
 
 	public void updateContactPersonsEmailFromUser(
@@ -93,18 +99,41 @@ public class ContactPersonService
 
 	}
 
-	// private ContactPerson updateContactPersonEmail(
-	// @NonNull final ContactPerson contactPerson,
-	// final EmailAddress newEmailaddress)
-	// {
-	// final ContactPerson updatedContactPerson = contactPerson.toBuilder()
-	// .address(newEmailaddress)
-	// .build();
-	//
-	// contactPersonRepo.save(updatedContactPerson);
-	//
-	// return updatedContactPerson;
-	// }
+	public void updateUserFromContactPersonIfFeasible(
+			@NonNull final ContactPerson contactPerson,
+			@Nullable final String oldContactPersonMail,
+			@Nullable final Language oldContactPersonLanguage)
+	{
+		final UserId userId = contactPerson.getUserId();
+		if (userId == null)
+		{
+			return; // no user to update the email
+		}
+
+		final User user = userRepo.getByIdInTrx(userId);
+
+		final boolean updateUserMail = isFitForUpdate(user.getEmailAddress(), oldContactPersonMail);
+		final boolean updateUserLanguage = isFitForUpdate(user.getUserLanguage(), oldContactPersonLanguage);
+		if (!updateUserMail && !updateUserLanguage)
+		{
+			return; // nothing to do
+		}
+
+		final User.UserBuilder updatedUser = user.toBuilder();
+		if (updateUserMail)
+		{
+			updatedUser.emailAddress(contactPerson.getEmailAddressStringOrNull());
+		}
+		if (updateUserLanguage)
+		{
+			updatedUser.userLanguage(contactPerson.getLanguage());
+			if (contactPerson.getLanguage() != null)
+			{
+				updatedUser.language(contactPerson.getLanguage());
+			}
+		}
+		userRepo.save(updatedUser.build());
+	}
 
 	private boolean isFitForUpdate(
 			@Nullable final Object currentContactValue,
@@ -116,6 +145,7 @@ public class ContactPersonService
 		}
 
 		// if user and contact were in sync, then keep them in sync, i.e. forward the new user value to the contact.
+		//noinspection UnnecessaryLocalVariable
 		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentContactValue, oldUserValue);
 		return userValueInSyncWithOldcontactValue;
 	}

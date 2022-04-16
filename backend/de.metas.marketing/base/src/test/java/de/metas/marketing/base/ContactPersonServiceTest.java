@@ -1,16 +1,19 @@
 package de.metas.marketing.base;
 
 import de.metas.i18n.Language;
+import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -65,15 +68,7 @@ public class ContactPersonServiceTest
 		AdempiereTestHelper.get().init();
 
 		userRepository = new UserRepository();
-		contactPersonService = new ContactPersonService(new ContactPersonRepository());
-	}
-
-	private void createContactPersonRecord(
-			@NonNull final User user,
-			@Nullable final String emailAddress,
-			@NonNull final PlatformId platformId)
-	{
-		createContactPersonRecord(user, emailAddress, LANGUAGE_en_AU, platformId);
+		contactPersonService = new ContactPersonService(new ContactPersonRepository(), userRepository);
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -91,20 +86,21 @@ public class ContactPersonServiceTest
 		return userRepository.save(user);
 	}
 
-	private void createContactPersonRecord(
-			@NonNull final User user,
+	private ContactPerson createContactPersonRecord(
+			@NonNull final UserId userId,
 			@Nullable final String emailAddress,
 			@Nullable final Language language,
 			@NonNull final PlatformId platformId)
 	{
-		final I_MKTG_ContactPerson contactPerson = newInstance(I_MKTG_ContactPerson.class);
+		final I_MKTG_ContactPerson record = newInstance(I_MKTG_ContactPerson.class);
 
-		contactPerson.setAD_User_ID(user.getId().getRepoId());
-		contactPerson.setEMail(emailAddress);
-		contactPerson.setAD_Language(asLanguageStringOrNull(language));
-		contactPerson.setMKTG_Platform_ID(platformId.getRepoId());
+		record.setAD_User_ID(userId.getRepoId());
+		record.setEMail(emailAddress);
+		record.setAD_Language(asLanguageStringOrNull(language));
+		record.setMKTG_Platform_ID(platformId.getRepoId());
 
-		save(contactPerson);
+		save(record);
+		return ContactPersonRepository.toContactPerson(record);
 	}
 
 	private PlatformId createPlatformId()
@@ -116,19 +112,34 @@ public class ContactPersonServiceTest
 
 	}
 
-	private List<I_MKTG_ContactPerson> retrieveContactPersons()
+	@SuppressWarnings("unused")
+	interface UserAndContactPersonSyncTests
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		void sameOldEmail();
+
+		void differentOldEmail();
+
+		void nullOldEmail();
+
+		void emptyOldEmail();
+
+		void sameOldEmailAndLanguage();
 	}
 
 	@Nested
-	class updateContactPersonsEmailFromUser
+	class updateContactPersonsEmailFromUser implements UserAndContactPersonSyncTests
 	{
+		private List<I_MKTG_ContactPerson> retrieveContactPersons()
+		{
+			return Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_ContactPerson.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.list();
+		}
+
 		@Test
-		public void sameOldAddress()
+		@Override
+		public void sameOldEmail()
 		{
 			final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
 			final User user1 = createUser("name1", newUserAddress, LANGUAGE_en_AU);
@@ -137,7 +148,7 @@ public class ContactPersonServiceTest
 
 			final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 
-			createContactPersonRecord(user1, oldEmailAddress, platformId);
+			createContactPersonRecord(user1.getId(), oldEmailAddress, LANGUAGE_en_AU, platformId);
 
 			contactPersonService.updateContactPersonsEmailFromUser(user1, oldEmailAddress, LANGUAGE_en_AU);
 
@@ -150,7 +161,8 @@ public class ContactPersonServiceTest
 		}
 
 		@Test
-		public void sameOldAddressAndLanguage()
+		@Override
+		public void sameOldEmailAndLanguage()
 		{
 			final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
 			final Language newLanguage = LANGUAGE_en_US;
@@ -162,7 +174,7 @@ public class ContactPersonServiceTest
 			final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 			final Language oldLanguage = LANGUAGE_en_GB;
 
-			createContactPersonRecord(user1, oldEmailAddress, oldLanguage, platformId);
+			createContactPersonRecord(user1.getId(), oldEmailAddress, oldLanguage, platformId);
 
 			contactPersonService.updateContactPersonsEmailFromUser(user1, oldEmailAddress, oldLanguage);
 
@@ -174,7 +186,8 @@ public class ContactPersonServiceTest
 		}
 
 		@Test
-		public void differentOldAddress()
+		@Override
+		public void differentOldEmail()
 		{
 			final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
 			final User user1 = createUser("name1", newUserAddress, LANGUAGE_en_AU);
@@ -183,7 +196,7 @@ public class ContactPersonServiceTest
 
 			final String contactPersonAddress = "Anothertestmail@Anothertestmail.Anothertestmail";
 
-			createContactPersonRecord(user1, contactPersonAddress, platformId);
+			createContactPersonRecord(user1.getId(), contactPersonAddress, LANGUAGE_en_AU, platformId);
 
 			final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 			contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
@@ -198,7 +211,8 @@ public class ContactPersonServiceTest
 		}
 
 		@Test
-		public void emptyOldAddress()
+		@Override
+		public void emptyOldEmail()
 		{
 			final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
 			final User user1 = createUser("name1", newUserAddress, LANGUAGE_en_AU);
@@ -207,7 +221,7 @@ public class ContactPersonServiceTest
 
 			final String contactPersonAddress = "";
 
-			createContactPersonRecord(user1, contactPersonAddress, platformId);
+			createContactPersonRecord(user1.getId(), contactPersonAddress, LANGUAGE_en_AU, platformId);
 
 			final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 			contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
@@ -221,15 +235,15 @@ public class ContactPersonServiceTest
 		}
 
 		@Test
-		public void nullOldAddress()
+		@Override
+		public void nullOldEmail()
 		{
 			final String newUserAddress = "Newtestmail@Newtestmail.Newtestmail";
 			final User user1 = createUser("name1", newUserAddress, LANGUAGE_en_AU);
 
 			final PlatformId platformId = createPlatformId();
 
-			final String contactPersonAddress = null;
-			createContactPersonRecord(user1, contactPersonAddress, platformId);
+			createContactPersonRecord(user1.getId(), null, LANGUAGE_en_AU, platformId);
 
 			final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 			contactPersonService.updateContactPersonsEmailFromUser(user1, oldUserAddress, LANGUAGE_en_AU);
@@ -242,4 +256,151 @@ public class ContactPersonServiceTest
 			assertThat(resultAddress).isSameAs(newUserAddress);
 		}
 	}
+
+	@Nested
+	class updateUserEmailFromContactPerson implements UserAndContactPersonSyncTests
+	{
+		private List<I_AD_User> retrieveUsers()
+		{
+			return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
+					.addOnlyActiveRecordsFilter()
+					.addNotEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, UserId.SYSTEM) // the test helper is creating an extra user with id 0, so exclude it
+					.create()
+					.list();
+		}
+
+		@SuppressWarnings("SameParameterValue")
+		private UserId createUser(
+				@NonNull final String name,
+				@Nullable final String mail,
+				@Nullable final Language language)
+		{
+			final I_AD_User userRecord = newInstance(I_AD_User.class);
+
+			userRecord.setName(name);
+			userRecord.setEMail(mail);
+			userRecord.setAD_Language(asLanguageStringOrNull(language));
+
+			save(userRecord);
+			return UserId.ofRepoId(userRecord.getAD_User_ID());
+		}
+
+		@Override
+		@Test
+		public void sameOldEmail()
+		{
+			final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
+			final UserId userId = createUser("name1", oldEmailAddress, LANGUAGE_en_AU);
+
+			final PlatformId platformId = createPlatformId();
+			final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
+			ContactPerson contactPerson = createContactPersonRecord(userId, newContactPersonAddress, LANGUAGE_en_AU, platformId);
+
+			contactPersonService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
+
+			final List<I_AD_User> resultUsers = retrieveUsers();
+
+			assertThat(resultUsers).hasSize(1);
+
+			final String resultEmailAddress = resultUsers.get(0).getEMail();
+
+			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
+		}
+
+		@Override
+		@Test
+		public void differentOldEmail()
+		{
+			final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
+			final UserId userId = createUser("name1", oldUserAddress, LANGUAGE_en_AU);
+
+			final PlatformId platformId = createPlatformId();
+			final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
+			ContactPerson contactPerson = createContactPersonRecord(userId, newContactPersonAddress, LANGUAGE_en_AU, platformId);
+
+			final String anotherEmailAddress = "AnotheremailAddress@AnotherEmailAddress.AnotherEmailAddress";
+
+			contactPersonService.updateUserFromContactPersonIfFeasible(contactPerson, anotherEmailAddress, null);
+
+			final List<I_AD_User> resultUsers = retrieveUsers();
+
+			assertThat(resultUsers).hasSize(1);
+
+			final String resultEmailAddress = resultUsers.get(0).getEMail();
+
+			assertThat(resultEmailAddress)
+					.isNotSameAs(newContactPersonAddress)
+					.isSameAs(oldUserAddress);
+		}
+
+		@Override
+		@Test
+		public void nullOldEmail()
+		{
+			final String oldEmailAddress = null;
+			final UserId userId = createUser("name1", oldEmailAddress, LANGUAGE_en_AU);
+
+			final PlatformId platformId = createPlatformId();
+			final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
+			ContactPerson contactPerson = createContactPersonRecord(userId, newContactPersonAddress, LANGUAGE_en_AU, platformId);
+
+			contactPersonService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
+
+			final List<I_AD_User> resultUsers = retrieveUsers();
+
+			assertThat(resultUsers).hasSize(1);
+
+			final String resultEmailAddress = resultUsers.get(0).getEMail();
+
+			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
+		}
+
+		@Override
+		@Test
+		public void emptyOldEmail()
+		{
+			final String oldEmailAddress = "";
+			final UserId userId = createUser("name1", oldEmailAddress, LANGUAGE_en_AU);
+
+			final PlatformId platformId = createPlatformId();
+			final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
+			ContactPerson contactPerson = createContactPersonRecord(userId, newContactPersonAddress, LANGUAGE_en_AU, platformId);
+
+			contactPersonService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
+
+			final List<I_AD_User> resultUsers = retrieveUsers();
+
+			assertThat(resultUsers).hasSize(1);
+
+			final String resultEmailAddress = resultUsers.get(0).getEMail();
+
+			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
+		}
+
+		@Override
+		@Test
+		public void sameOldEmailAndLanguage()
+		{
+			final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
+			final Language oldLanguage = LANGUAGE_en_GB;
+
+			final UserId userId = createUser("name1", oldEmailAddress, oldLanguage);
+
+			final PlatformId platformId = createPlatformId();
+			final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
+			final Language newLanguage = LANGUAGE_en_US;
+
+			ContactPerson contactPerson = createContactPersonRecord(userId, newContactPersonAddress, newLanguage, platformId);
+
+			// invoke the method under test
+			contactPersonService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, oldLanguage);
+
+			final List<I_AD_User> resultRecords = retrieveUsers();
+
+			assertThat(resultRecords).hasSize(1);
+			assertThat(resultRecords.get(0).getEMail()).isEqualTo(newContactPersonAddress);
+			assertThat(resultRecords.get(0).getAD_Language()).isEqualTo(newLanguage.getAD_Language());
+		}
+	}
+
 }

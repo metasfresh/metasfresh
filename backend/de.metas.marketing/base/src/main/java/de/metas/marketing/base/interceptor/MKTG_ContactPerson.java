@@ -1,5 +1,13 @@
 package de.metas.marketing.base.interceptor;
 
+import de.metas.i18n.Language;
+import de.metas.marketing.base.ContactPersonService;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
+import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -8,15 +16,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.i18n.Language;
-import de.metas.marketing.base.UserService;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
-import de.metas.marketing.base.model.I_MKTG_ContactPerson;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -44,11 +43,11 @@ import lombok.NonNull;
 @Interceptor(I_MKTG_ContactPerson.class)
 public class MKTG_ContactPerson
 {
-	private final UserService userService;
+	private final ContactPersonService contactPersonService;
 
-	private MKTG_ContactPerson(@NonNull final UserService userService)
+	private MKTG_ContactPerson(@NonNull final ContactPersonService contactPersonService)
 	{
-		this.userService = userService;
+		this.contactPersonService = contactPersonService;
 	}
 
 	/**
@@ -99,7 +98,7 @@ public class MKTG_ContactPerson
 
 		final ContactPerson contactPerson = ContactPersonRepository.toContactPerson(contactPersonRecord);
 
-		userService.updateUserFromContactPersonIfFeasible(
+		contactPersonService.updateUserFromContactPersonIfFeasible(
 				contactPerson,
 				oldContactPersonMail,
 				oldContactPersonLanguage);
