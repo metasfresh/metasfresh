@@ -12,6 +12,7 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonId;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.Platform;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.user.User;
@@ -68,6 +69,16 @@ public class CampaignService
 	public Campaign getById(@NonNull final CampaignId campaignId)
 	{
 		return campaignRepository.getById(campaignId);
+	}
+
+	public List<Campaign> getByPlatformId(@NonNull final PlatformId platformId)
+	{
+		return campaignRepository.getByPlatformId(platformId);
+	}
+
+	public PlatformId getPlatformIdByCampaignId(@NonNull final CampaignId campaignId)
+	{
+		return getById(campaignId).getPlatformId();
 	}
 
 	public void addContactPersonToCampaign(
@@ -177,7 +188,15 @@ public class CampaignService
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
 
-	public Campaign saveCampaignSyncResult(@NonNull final SyncResult syncResult)
+	public void saveSyncResults(@NonNull final List<? extends SyncResult> syncResults)
+	{
+		for (final SyncResult syncResult : syncResults)
+		{
+			campaignRepository.saveCampaignSyncResult(syncResult);
+		}
+	}
+
+	public Campaign saveSyncResult(@NonNull final SyncResult syncResult)
 	{
 		return campaignRepository.saveCampaignSyncResult(syncResult);
 	}

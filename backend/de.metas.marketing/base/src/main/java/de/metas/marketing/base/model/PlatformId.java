@@ -3,6 +3,7 @@ package de.metas.marketing.base.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -31,7 +32,7 @@ import java.util.Objects;
  */
 
 @Value
-public class PlatformId
+public class PlatformId implements RepoIdAware
 {
 	int repoId;
 
