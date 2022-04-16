@@ -3,6 +3,7 @@ package de.metas.marketing.base.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
@@ -102,28 +103,37 @@ public class CampaignRepository
 				.build();
 	}
 
-	public void addContactPersonToCampaign(
-			@NonNull final ContactPersonId contactPersonId,
-			@NonNull final CampaignId campaignId)
+	public void addContactPersonsToCampaign(final Set<ContactPersonId> contactPersonIds, final CampaignId campaignId)
 	{
-		final int contactPersonRepoId = contactPersonId.getRepoId();
-		final int campaignRepoId = campaignId.getRepoId();
-
-		final boolean associationAlreadyExists = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignRepoId)
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPersonRepoId)
-				.create()
-				.anyMatch();
-		if (associationAlreadyExists)
+		if (contactPersonIds.isEmpty())
 		{
 			return;
 		}
 
-		final I_MKTG_Campaign_ContactPerson newAssociation = newInstance(I_MKTG_Campaign_ContactPerson.class);
-		newAssociation.setMKTG_Campaign_ID(campaignRepoId);
-		newAssociation.setMKTG_ContactPerson_ID(contactPersonRepoId);
-		saveRecord(newAssociation);
+		final ImmutableSet<ContactPersonId> alreadyAddedContactPersonIds = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
+				.addInArrayFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPersonIds)
+				.create()
+				.stream()
+				.map(record -> ContactPersonId.ofRepoId(record.getMKTG_ContactPerson_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<ContactPersonId> contactPersonIdsToAdd = Sets.difference(contactPersonIds, alreadyAddedContactPersonIds);
+		for(final ContactPersonId contactPersonId : contactPersonIdsToAdd)
+		{
+			final I_MKTG_Campaign_ContactPerson newAssociation = newInstance(I_MKTG_Campaign_ContactPerson.class);
+			newAssociation.setMKTG_Campaign_ID(campaignId.getRepoId());
+			newAssociation.setMKTG_ContactPerson_ID(contactPersonId.getRepoId());
+			saveRecord(newAssociation);
+		}
+	}
+
+	public void addContactPersonToCampaign(
+			@NonNull final ContactPersonId contactPersonId,
+			@NonNull final CampaignId campaignId)
+	{
+		addContactPersonsToCampaign(ImmutableSet.of(contactPersonId), campaignId);
 	}
 
 	public Campaign saveCampaign(@NonNull final Campaign campaign)

@@ -1,6 +1,7 @@
 package de.metas.marketing.base.process;
 
 import de.metas.marketing.base.CampaignService;
+import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.PlatformClientService;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
@@ -41,7 +42,7 @@ import java.util.List;
 public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 {
 	private final CampaignService campaignService = SpringContextHolder.instance.getBean(CampaignService.class);
-	private final ContactPersonRepository contactPersonRepository = SpringContextHolder.instance.getBean(ContactPersonRepository.class);
+	private final ContactPersonService contactPersonService = SpringContextHolder.instance.getBean(ContactPersonService.class);
 	private final PlatformClientService platformClientService = SpringContextHolder.instance.getBean(PlatformClientService.class);
 
 	@Override
@@ -56,14 +57,11 @@ public abstract class MKTG_ContactPerson_Platform_Base extends JavaProcess
 		final Campaign campaign = campaignService.getById(campaignId);
 		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
 
-		final List<ContactPerson> contactPersons = contactPersonRepository.getByCampaignId(campaignId);
-		final List<? extends SyncResult> syncResults = invokeClient(platformClient, campaign, contactPersons);
+		final List<ContactPerson> contactsToSync = contactPersonService.getByCampaignId(campaignId);
+		final List<? extends SyncResult> syncResults = invokeClient(platformClient, campaign, contactsToSync);
 
-		for (final SyncResult syncResult : syncResults)
-		{
-			final ContactPerson savedContactPerson = contactPersonRepository.saveSyncResult(syncResult);
-			campaignService.addContactPersonToCampaign(savedContactPerson.getContactPersonId(), campaignId);
-		}
+		final List<ContactPerson> savedContacts = contactPersonService.saveSyncResults(syncResults);
+		campaignService.addContactPersonsToCampaign(savedContacts, campaignId);
 
 		return MSG_OK;
 	}

@@ -1,10 +1,14 @@
 package de.metas.marketing.base;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.SyncResult;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -53,6 +57,11 @@ public class ContactPersonService
 	{
 		this.contactPersonRepo = contactPersonRepo;
 		this.userRepo = userRepo;
+	}
+
+	public List<ContactPerson> getByCampaignId(final CampaignId campaignId)
+	{
+		return contactPersonRepo.getByCampaignId(campaignId);
 	}
 
 	public void updateContactPersonsEmailFromUser(
@@ -148,5 +157,17 @@ public class ContactPersonService
 		//noinspection UnnecessaryLocalVariable
 		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentContactValue, oldUserValue);
 		return userValueInSyncWithOldcontactValue;
+	}
+
+	public List<ContactPerson> saveSyncResults(final List<? extends SyncResult> syncResults)
+	{
+		final ArrayList<ContactPerson> savedContactPersons = new ArrayList<>(syncResults.size());
+		for (final SyncResult syncResult : syncResults)
+		{
+			final ContactPerson savedContactPerson = contactPersonRepo.saveSyncResult(syncResult);
+			savedContactPersons.add(savedContactPerson);
+		}
+
+		return savedContactPersons;
 	}
 }

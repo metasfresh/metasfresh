@@ -1,5 +1,6 @@
 package de.metas.marketing.base;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,6 +22,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.stream.Stream;
 
 /*
@@ -73,6 +75,17 @@ public class CampaignService
 			@NonNull final CampaignId campaignId)
 	{
 		campaignRepository.addContactPersonToCampaign(contactPersonId, campaignId);
+	}
+
+	public void addContactPersonsToCampaign(
+			@NonNull final List<ContactPerson> contactPersons,
+			@NonNull final CampaignId campaignId)
+	{
+		final ImmutableSet<ContactPersonId> contactPersonIds = contactPersons.stream()
+				.map(contactPerson -> Check.assumeNotNull(contactPerson.getContactPersonId(), "expected contact to be saved: {}", contactPerson))
+				.collect(ImmutableSet.toImmutableSet());
+
+		campaignRepository.addContactPersonsToCampaign(contactPersonIds, campaignId);
 	}
 
 	public void addAsContactPersonsToCampaign(
