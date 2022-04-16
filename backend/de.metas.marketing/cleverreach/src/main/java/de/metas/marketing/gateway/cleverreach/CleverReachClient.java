@@ -41,7 +41,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -161,15 +160,17 @@ public class CleverReachClient implements PlatformClient
 	}
 
 	@VisibleForTesting
-	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
+	Stream<Receiver> streamAllReceivers(@NonNull final Campaign campaign)
 	{
 		final String remoteGroupId = Check.assumeNotNull(campaign.getRemoteId(), "campaign's remoteId is set: {}", campaign);
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
-		return PagedIterator.<Receiver>builder()
+		final PagedIterator<Receiver> iterator = PagedIterator.<Receiver>builder()
 				.pageSize(1000) // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 				.pageFetcher(pageFetcher)
 				.build();
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 	}
 
 	private PageFetcher<Receiver> createReceiversPageFetcher(@NonNull final String remoteGroupId)
@@ -429,13 +430,7 @@ public class CleverReachClient implements PlatformClient
 				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddressStringOrNull)
 				.asMap());
 
-		final Iterator<Receiver> allReceivers = retrieveAllReceivers(campaign);
-
-		final Stream<Receiver> allReceiversStream = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(allReceivers, Spliterator.ORDERED),
-				false);
-
-		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = allReceiversStream
+		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = streamAllReceivers(campaign)
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
