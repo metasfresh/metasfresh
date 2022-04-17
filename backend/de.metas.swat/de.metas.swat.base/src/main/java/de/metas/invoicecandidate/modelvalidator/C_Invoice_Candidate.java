@@ -21,6 +21,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.lock.api.ILockManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
@@ -72,10 +73,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 public class C_Invoice_Candidate
 {
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
+
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
-	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IDocumentLocationBL documentLocationBL;
 
 	public C_Invoice_Candidate(
@@ -434,6 +440,7 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
+
 		if (ic.isProcessed()
 				|| invoiceCandBL.extractProcessedOverride(ic).isTrue()
 				|| isBackgroundProcessInProcess)
@@ -441,7 +448,12 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+		if (lockManager.isLocked(ic))
+		{
+			invoiceCandDAO.invalidateCand(ic);
+			return;
+		}
+
 		aggregationBL.setHeaderAggregationKey(ic);
 	}
 
