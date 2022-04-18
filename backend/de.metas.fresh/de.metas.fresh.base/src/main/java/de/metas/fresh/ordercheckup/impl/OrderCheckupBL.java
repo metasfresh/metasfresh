@@ -87,7 +87,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse
 	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
-`
+	
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
