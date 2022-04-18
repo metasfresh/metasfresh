@@ -117,9 +117,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return
 	 */
 	BigDecimal calculateQtyLUForTotalQtyTUsByMaxWeight(
-			I_M_HU_LUTU_Configuration lutuConfiguration,
+			@NonNull I_M_HU_LUTU_Configuration lutuConfiguration,
 			BigDecimal qtyTUsTotal,
-			final I_M_HU_PackingMaterial packingMaterial);
+			@NonNull I_M_HU_PackingMaterial packingMaterial);
 
 
 	/**
