@@ -70,6 +70,15 @@ import de.metas.util.Services;
 public class OrderCheckupBL implements IOrderCheckupBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderCheckupBL.class);
+	public static final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+
+	final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	final IMsgBL msgBL = Services.get(IMsgBL.class);
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
@@ -78,13 +87,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse
 	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
-
+`
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
 
 	@Override
-	public void generateReportsIfEligible(final I_C_Order order)
+	public void generateReportsIfEligible(@NonNull final I_C_Order order)
 	{
 		// Make sure the order is eligible for reporting
 		if (!isEligibleForReporting(order))
@@ -96,9 +105,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
-		// services
-		final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
@@ -168,9 +174,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 			if (plantId == null)
 			{
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 				final boolean throwIt = sysConfigBL.getBooleanValue(SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT, true);
 
 				new AdempiereException(
@@ -208,7 +211,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public boolean isEligibleForReporting(final I_C_Order order)
+	public boolean isEligibleForReporting(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
@@ -223,14 +226,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public final boolean isGenerateReportsOnOrderComplete(final I_C_Order order)
+	public final boolean isGenerateReportsOnOrderComplete(@NonNull final I_C_Order order)
 	{
 		if (!isEligibleForReporting(order))
 		{
 			return false; // nothing to do; log messages were already created in isEligibleForReporting
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean sysConfigValueIsTrue = sysConfigBL.getBooleanValue(
 				SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE,
 				false, // by default, do nothing. This needs to set up and tested by the customer to make sense
@@ -248,7 +250,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			return false; // nothing to do
 		}
 		
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Services.get(IOrderBL.class).getBPartner(order), I_C_BPartner.class);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(orderBL.getBPartner(order), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{
 			logger.debug("C_BPartner {} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {}.",
@@ -263,9 +265,9 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public void voidReports(final I_C_Order order)
+	public void voidReports(@NonNull final I_C_Order order)
 	{
-		final List<I_C_Order_MFGWarehouse_Report> reports = Services.get(IOrderCheckupDAO.class).retrieveAllReports(order);
+		final List<I_C_Order_MFGWarehouse_Report> reports = orderCheckupDAO.retrieveAllReports(order);
 		for (final I_C_Order_MFGWarehouse_Report report : reports)
 		{
 			report.setIsActive(false);
@@ -291,12 +293,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@Override
 	public final I_C_Order_MFGWarehouse_Report getReportOrNull(@NonNull final I_AD_Archive printOut)
 	{
-		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
+		if (!tableDAO.isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
 		{
 			return null;
 		}
 
-		final I_C_Order_MFGWarehouse_Report report = Services.get(IArchiveDAO.class).retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
+		final I_C_Order_MFGWarehouse_Report report = archiveDAO.retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
 		if (report == null)
 		{
 			new AdempiereException("No report was found for " + printOut)

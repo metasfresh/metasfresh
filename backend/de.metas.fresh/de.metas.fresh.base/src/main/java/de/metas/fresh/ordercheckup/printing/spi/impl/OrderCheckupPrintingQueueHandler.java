@@ -68,7 +68,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
-		final int copies = Services.get(IOrderCheckupBL.class).getNumberOfCopies(queueItem, printOut);
+		final int copies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
 		queueItem.setCopies(copies);
 	}
 
