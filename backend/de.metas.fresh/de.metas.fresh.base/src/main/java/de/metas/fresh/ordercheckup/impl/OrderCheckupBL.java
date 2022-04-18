@@ -274,7 +274,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public int getNumberOfCopies(@NonNull final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
+	public int getNumberOfCopies(@NonNull final I_C_Printing_Queue queueItem, @NonNull final I_AD_Archive printOut)
 	{
 		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
 
@@ -289,7 +289,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public final I_C_Order_MFGWarehouse_Report getReportOrNull(final I_AD_Archive printOut)
+	public final I_C_Order_MFGWarehouse_Report getReportOrNull(@NonNull final I_AD_Archive printOut)
 	{
 		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
 		{
