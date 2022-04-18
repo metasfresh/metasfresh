@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -32,6 +34,7 @@ import com.rabbitmq.client.Envelope;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
+import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -53,6 +56,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -70,6 +74,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -139,13 +144,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 			if (EmptyUtil.isNotBlank(expectedJsonExternalReferenceLookupRequest))
 			{
-				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+				final JsonExternalReferenceLookupRequest expectedRequest = objectMapper.readValue(expectedJsonExternalReferenceLookupRequest, JsonExternalReferenceLookupRequest.class);
+
+				final JsonExternalReferenceLookupRequest actualRequest = requests.stream()
 						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-						.filter(request -> expectedJsonExternalReferenceLookupRequest.equals(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST)))
+						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST))
+						.filter(Objects::nonNull)
+						.map(this::readJsonExternalReferenceLookupRequest)
+						.filter(expectedRequest::equals)
 						.findFirst()
 						.orElse(null);
 
-				assertThat(jsonExternalSystemRequest).isNotNull();
+				assertThat(actualRequest).isNotNull();
 			}
 
 			final String bpIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.parameters" + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -215,6 +225,21 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			{
 				channel.close();
 			}
+		}
+	}
+
+	@NonNull
+	private JsonExternalReferenceLookupRequest readJsonExternalReferenceLookupRequest(@NonNull final String jsonExternalReferenceLookupRequest)
+	{
+		try
+		{
+			return objectMapper.readValue(jsonExternalReferenceLookupRequest, JsonExternalReferenceLookupRequest.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("jsonExternalReferenceLookupRequest", jsonExternalReferenceLookupRequest);
 		}
 	}
 }

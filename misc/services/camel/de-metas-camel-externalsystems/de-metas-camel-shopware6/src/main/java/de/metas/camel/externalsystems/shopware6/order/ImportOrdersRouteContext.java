@@ -39,6 +39,7 @@ import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -272,31 +273,25 @@ public class ImportOrdersRouteContext
 				.orElse(null);
 	}
 
-	@Nullable
+	@NonNull
 	public ExternalIdentifier getMetasfreshId()
 	{
 		//FIXME to remove hardcoded paths in final version
-		return getId(CUSTOM_FIELD_METASFRESH_ID, false);
+		return CoalesceUtil.coalesce(getId(CUSTOM_FIELD_METASFRESH_ID, false, false), getUserId());
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
 		//FIXME to remove hardcoded paths in final version
-		final ExternalIdentifier id = getId(CUSTOM_FIELD_USER_ID, true);
-		if (id == null)
-		{
-			throw new RuntimeException("Couldn't find UserID in " + CUSTOM_FIELD_USER_ID);
-		}
-		return id;
+		return getId(CUSTOM_FIELD_USER_ID, true, true);
 	}
 
 	@Nullable
-	public ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId)
+	private ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId, final boolean throwException)
 	{
 		final OrderCandidate order = getOrderNotNull();
 		final String id = order.getCustomField(bpLocationCustomJsonPath);
-
 		if (!Check.isBlank(id))
 		{
 			return ExternalIdentifier.builder()
@@ -304,7 +299,11 @@ public class ImportOrdersRouteContext
 					.rawValue(id)
 					.build();
 		}
-		throw new RuntimeException("Couldn't find ID in " + bpLocationCustomJsonPath);
+		if (throwException)
+		{
+			throw new RuntimeException("Order: " + order.getJsonOrder().getId() + "Couldn't find jsonPath of " + CUSTOM_FIELD_USER_ID);
+		}
+		return null;
 	}
 
 	@Nullable

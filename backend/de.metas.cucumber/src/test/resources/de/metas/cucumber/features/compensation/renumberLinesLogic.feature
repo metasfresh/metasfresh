@@ -213,14 +213,17 @@ Feature: Check renumber lines logic
   ]
 }
 """
-    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/clearToProcess' and fulfills with '200' status code
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-  "externalHeaderId": "externalHeaderId04152022",
-  "inputDataSourceName": "int-Shopware"
+    "externalHeaderId": "externalHeaderId04152022",
+    "inputDataSourceName": "int-Shopware",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
 }
 """
-    And ProcessOLCands is called
     Then validate order line allocated 'line'
       | ExternalLineId           | C_OLCand.Line | C_OrderLine.Line |
       | externalLineId04152022   | 1             | 20               |
