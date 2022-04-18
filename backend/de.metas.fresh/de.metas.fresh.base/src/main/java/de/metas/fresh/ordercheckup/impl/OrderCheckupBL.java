@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.document.archive.model.I_AD_Archive;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -69,15 +72,15 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
+	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
 
+	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse
 	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
 
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
 	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
-
-	private static final int BARCODE_ORDERCHECHUP_PROCESS_ID= 540814; // hardcoded ordercheckup_with_barcode/report.jasper
 
 	@Override
 	public void generateReportsIfEligible(final I_C_Order order)
@@ -270,9 +273,11 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public int getNumberOfCopies(final I_C_Printing_Queue queueItem)
+	public int getNumberOfCopies(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
-		if (BARCODE_ORDERCHECHUP_PROCESS_ID == queueItem.getAD_Process_ID())
+		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
+
+		if (report != null && report.getDocumentType().equals(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse))
 		{
 			final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 			return copies;
@@ -280,5 +285,23 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		final int copies = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		return copies;
+	}
+
+	@Override
+	public final I_C_Order_MFGWarehouse_Report getReportOrNull(final I_AD_Archive printOut)
+	{
+		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
+		{
+			return null;
+		}
+
+		final I_C_Order_MFGWarehouse_Report report = Services.get(IArchiveDAO.class).retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
+		if (report == null)
+		{
+			new AdempiereException("No report was found for " + printOut)
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+		}
+
+		return report;
 	}
 }
