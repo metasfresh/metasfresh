@@ -37,27 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_OrderLine;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
@@ -448,7 +427,7 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		if (lockManager.isLocked(ic))
+		if (ic.getC_Invoice_Candidate_ID() > 0 && lockManager.isLocked(ic))
 		{
 			invoiceCandDAO.invalidateCand(ic);
 			return;
