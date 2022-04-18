@@ -10,6 +10,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -25,6 +26,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
@@ -74,6 +76,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -701,9 +704,22 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = //
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
-		final int qtyOrderedLU = //
-				lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
-		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+		//
+		// extract the packing material from lutu configuration
+		final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PI_Version_ID());
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID()));
+
+		if (Objects.nonNull(packingMaterial)
+				&& packingMaterial.isQtyLUByMaxLoadWeight())
+		{
+			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective, packingMaterial);
+			shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
+		}
+		else
+		{
+			final int qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
+			shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+		}
 	}
 
 	private void updatePackingRelatedQtys(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

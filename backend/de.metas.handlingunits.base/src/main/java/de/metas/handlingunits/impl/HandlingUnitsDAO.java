@@ -830,6 +830,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull final HuPackingInstructionsVersionId versionId, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePIVersionById(versionId);
+		return retrievePackingMaterial(version, bpartnerId);
+	}
+
+	@Override
 	public List<I_M_HU> retrieveVirtualHUs(final I_M_HU_Item itemMaterial)
 	{
 		return retrieveIncludedHUs(itemMaterial);
