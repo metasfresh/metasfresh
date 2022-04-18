@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -273,7 +274,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public int getNumberOfCopies(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
+	public int getNumberOfCopies(@NonNull final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
 		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
 
