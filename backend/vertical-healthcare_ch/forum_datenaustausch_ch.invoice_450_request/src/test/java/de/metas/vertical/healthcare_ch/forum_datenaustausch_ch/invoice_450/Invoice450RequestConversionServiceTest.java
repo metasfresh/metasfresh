@@ -219,6 +219,7 @@ public class Invoice450RequestConversionServiceTest
 		bankAccount.setC_Currency_ID(123);
 		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
 		bankAccount.setIBAN("123");
+		bankAccount.setSwiftCode("123");
 		InterfaceWrapperHelper.save(bankAccount);
 
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);

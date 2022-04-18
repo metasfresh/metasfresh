@@ -628,9 +628,13 @@ public final class MPayment extends X_C_Payment
 		{
 			if (Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
 			{
+				if (getIBAN() != null)
+				{
+					documentNo = getIBAN() + ": ";
+				}
 				if (getRoutingNo() != null)
 				{
-					documentNo = getRoutingNo() + ": ";
+					documentNo += getRoutingNo();
 				}
 				if (getAccountNo() != null)
 				{

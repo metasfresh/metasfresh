@@ -559,6 +559,7 @@ final class BPartnerCompositesLoader
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.active(bankAccountRecord.isActive())
 				.iban(iban)
+				.swiftCode(bankAccountRecord.getSwiftCode())
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)

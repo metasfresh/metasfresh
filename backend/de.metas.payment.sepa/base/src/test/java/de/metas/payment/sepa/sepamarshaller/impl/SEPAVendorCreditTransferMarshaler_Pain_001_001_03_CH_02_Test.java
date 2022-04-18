@@ -157,7 +157,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
 			final String iban,
-			final String bic,
+			final String swiftCode,
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
@@ -170,13 +170,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(iban);
+		bankAccount.setSwiftCode(swiftCode);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
 		line.setIBAN(iban);
-		line.setSwiftCode(bic);
+		line.setSwiftCode(swiftCode);
 		line.setAmt(amt);
 		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);

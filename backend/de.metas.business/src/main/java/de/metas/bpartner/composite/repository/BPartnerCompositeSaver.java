@@ -654,6 +654,7 @@ final class BPartnerCompositeSaver
 			record.setC_BPartner_ID(bpartnerId.getRepoId());
 
 			record.setIBAN(bankAccount.getIban());
+			record.setSwiftCode(bankAccount.getSwiftCode());
 			record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 			record.setIsActive(bankAccount.isActive());
 

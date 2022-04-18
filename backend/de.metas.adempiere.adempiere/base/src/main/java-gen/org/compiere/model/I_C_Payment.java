@@ -1849,6 +1849,29 @@ public interface I_C_Payment
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIBAN (@Nullable java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIBAN();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_IBAN = new ModelColumn<>(I_C_Payment.class, "IBAN", null);
+	String COLUMNNAME_IBAN = "IBAN";
+
+	/**
 	 * Set BLZ.
 	 * Bank Routing Number
 	 *

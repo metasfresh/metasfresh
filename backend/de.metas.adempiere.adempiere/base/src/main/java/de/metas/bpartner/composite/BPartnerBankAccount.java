@@ -68,6 +68,7 @@ public class BPartnerBankAccount
 	public static final String ID = "id";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String IBAN = "iban";
+	public static final String SWIFTCODE = "swiftCode";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
 
@@ -83,6 +84,9 @@ public class BPartnerBankAccount
 
 	@NonNull
 	private String iban;
+
+	@NonNull
+	private String swiftCode;
 
 	@Nullable
 	private String qrIban;
@@ -100,6 +104,7 @@ public class BPartnerBankAccount
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
 			@NonNull final String iban,
+			@NonNull final String swiftCode,
 			@Nullable final String qrIban,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
@@ -108,6 +113,7 @@ public class BPartnerBankAccount
 	{
 		setId(id);
 		this.iban = iban;
+		this.swiftCode = swiftCode;
 		this.qrIban = qrIban;
 		this.currencyId = currencyId;
 		this.active = coalesce(active, true);

@@ -493,6 +493,20 @@ class ClientSetup
 		return this;
 	}
 
+	public String getSwiftCode()
+	{
+		return orgBankAccount.getSwiftCode();
+	}
+
+	public ClientSetup setSwiftCode(final String swiftCode)
+	{
+		if (!Check.isEmpty(swiftCode, true))
+		{
+			orgBankAccount.setSwiftCode(swiftCode.trim());
+		}
+		return this;
+	}
+
 	public ClientSetup setC_Bank_ID(final int bankId)
 	{
 		if (bankId > 0)

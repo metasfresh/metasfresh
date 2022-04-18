@@ -57,6 +57,9 @@ public class BankAccount
 	String IBAN;
 
 	@Nullable
+	String SwiftCode;
+
+	@Nullable
 	String QR_IBAN;
 
 	@Nullable
