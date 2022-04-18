@@ -504,8 +504,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// CUs are counted by product's UOM
-		I_M_Product pp =InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
-		I_C_UOM productUOM = InterfaceWrapperHelper.load(pp.getC_UOM_ID(), I_C_UOM.class);
+		final I_M_Product pp =InterfaceWrapperHelper.load(lutuConfiguration.getM_Product_ID(), I_M_Product.class);
+		final I_C_UOM productUOM = InterfaceWrapperHelper.load(pp.getC_UOM_ID(), I_C_UOM.class);
 
 		final BigDecimal qtyLU = calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, Quantity.of(totalQtyCUs, productUOM), packingMaterial);
 		return qtyLU;
