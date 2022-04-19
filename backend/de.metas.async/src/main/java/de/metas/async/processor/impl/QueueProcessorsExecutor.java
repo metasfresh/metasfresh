@@ -25,12 +25,12 @@ package de.metas.async.processor.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.jmx.JMXQueueProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.processor.impl.planner.AsyncProcessorPlanner;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -71,12 +71,12 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	}
 
 	@Override
-	public void addQueueProcessor(@NonNull final I_C_Queue_Processor processorDef)
+	public void addQueueProcessor(@NonNull final QueueProcessorDescriptor processorDef)
 	{
 		mainLock.lock();
 		try
 		{
-			final int queueProcessorId = processorDef.getC_Queue_Processor_ID();
+			final int queueProcessorId = processorDef.getQueueProcessorId().getRepoId();
 			removeQueueProcessor0(queueProcessorId);
 
 			final IQueueProcessor processor = createProcessor(processorDef);
@@ -205,7 +205,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private IQueueProcessor createProcessor(@NonNull final I_C_Queue_Processor processorDef)
+	private IQueueProcessor createProcessor(@NonNull final QueueProcessorDescriptor processorDef)
 	{
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForPackageProcessing(processorDef);
 		return queueProcessorFactory.createAsynchronousQueueProcessor(processorDef, queue);

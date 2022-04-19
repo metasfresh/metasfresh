@@ -32,6 +32,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -94,14 +95,14 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		workpackageProcessorDef = helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
-		processorsExecutor.addQueueProcessor(processorDef);
+		processorsExecutor.addQueueProcessor(QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef));
 		processor = processorsExecutor.getQueueProcessor(QueueProcessorId.ofRepoId(processorDef.getC_Queue_Processor_ID()));
 
 		//
 		// Create Queue
 		workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
-		workpackageProcessorStatistics = processor.getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(workpackageProcessorDef);
+		workpackageProcessorStatistics = processor.getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(QueueProcessorDescriptorRepository.mapToPackageProcessor(workpackageProcessorDef));
 	}
 
 	@Test

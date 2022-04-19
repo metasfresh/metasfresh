@@ -31,8 +31,9 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.util.Services;
@@ -108,9 +109,9 @@ public class TestQueue_InheritPriority
 	private void doTheTestWithPrio(final ConstantWorkpackagePrio priorityToForward)
 	{
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-		final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 
 		final I_C_Queue_Processor queueProcessorDef = createProcessor();
+		final QueueProcessorDescriptor queueProcessor = QueueProcessorDescriptorRepository.mapToQueueProcessor(queueProcessorDef);
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
@@ -131,7 +132,7 @@ public class TestQueue_InheritPriority
 
 		InterfaceWrapperHelper.save(wp1);
 
-		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
+		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessor);
 
 		final IQueueProcessor processor = helper.newSynchronousQueueProcessor(queueForPackageProcessing);
 
@@ -148,9 +149,12 @@ public class TestQueue_InheritPriority
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final Helper helper = new Helper();
 
+		helper.createPackageProcessor(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
+
 		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
 
 		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
+
 		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
 
 		return queueProcessorDef;

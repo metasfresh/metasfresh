@@ -4,6 +4,8 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.util.Services;
 import org.adempiere.util.concurrent.DelayedRunnableExecutor;
 import org.compiere.util.Ini;
@@ -85,7 +87,9 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 
 		for (final I_C_Queue_Processor processorDef : queueDAO.retrieveAllProcessors())
 		{
-			executor.addQueueProcessor(processorDef);
+			final QueueProcessorDescriptor queueProcessorDescriptor = QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef);
+
+			executor.addQueueProcessor(queueProcessorDescriptor);
 		}
 	}
 

@@ -22,22 +22,20 @@ package de.metas.async.processor;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.compiere.util.Env;
-
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.ISingletonService;
+import org.compiere.util.Env;
+
+import java.util.Properties;
 
 public interface IWorkPackageQueueFactory extends ISingletonService
 {
 	/**
 	 * Return a queue for a <b>queue processor</b>, in order to poll and lock and process work-packages that were enqueued earlier.
 	 */
-	IWorkPackageQueue getQueueForPackageProcessing(I_C_Queue_Processor processor);
+	IWorkPackageQueue getQueueForPackageProcessing(QueueProcessorDescriptor processor);
 
 	/**
 	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.

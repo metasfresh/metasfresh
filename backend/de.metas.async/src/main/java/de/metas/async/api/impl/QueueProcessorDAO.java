@@ -23,6 +23,9 @@
 package de.metas.async.api.impl;
 
 import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_Processor_Assign;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,7 +33,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class QueueProcessorDAO
@@ -50,11 +53,24 @@ public class QueueProcessorDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public List<I_C_Queue_Processor> getAllQueueProcessors()
+	public Optional<I_C_Queue_Processor> getById(@NonNull final QueueProcessorId processorId)
 	{
 		return queryBL.createQueryBuilder(I_C_Queue_Processor.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_Processor.COLUMNNAME_C_Queue_Processor_ID, processorId)
 				.create()
-				.list();
+				.firstOnlyOptional(I_C_Queue_Processor.class);
+	}
+
+	@NonNull
+	public Optional<QueueProcessorId> getByPackageProcessorId(@NonNull final QueuePackageProcessorId packageProcessorId)
+	{
+		return queryBL.createQueryBuilder(I_C_Queue_Processor_Assign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessorId)
+				.andCollect(I_C_Queue_Processor.COLUMNNAME_C_Queue_Processor_ID, I_C_Queue_Processor.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnlyOptional(QueueProcessorId::ofRepoIdOrNull);
 	}
 }
