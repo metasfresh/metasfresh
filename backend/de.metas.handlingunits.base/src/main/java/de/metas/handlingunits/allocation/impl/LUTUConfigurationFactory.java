@@ -729,7 +729,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// calculate total CUs per LU
-		final BigDecimal totalQtyCUs =qtyTUsPerLU.multiply(qtyCUsPerTU);
+		final BigDecimal totalQtyCUs =qtyCUsPerTU.multiply(qtyTUsTotal);
 
 		//
 		// CUs are counted by product's UOM

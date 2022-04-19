@@ -233,9 +233,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 /* DDL */ SELECT public.db_alter_table('M_HU_PackingMaterial','ALTER TABLE public.M_HU_PackingMaterial ADD COLUMN isQtyLUByMaxLoadWeight CHAR(1) DEFAULT ''N'' CHECK (isQtyLUByMaxLoadWeight IN (''Y'',''N'')) NOT NULL')
 ;
 
-
-
-
 -- 2022-04-14T14:32:08.876Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Element_Trl SET Name='LU-Menge nach max. Traglast', PrintName='LU-Menge nach max. Traglast',Updated=TO_TIMESTAMP('2022-04-14 15:32:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='de_DE'
@@ -311,4 +308,83 @@ UPDATE AD_Element_Trl SET Name='LU-Menge nach max. Traglast', PrintName='LU-Meng
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580783,'de_CH') 
 ;
 
+-- 2022-04-19T14:02:51.973Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht',Updated=TO_TIMESTAMP('2022-04-19 15:02:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='de_DE'
+;
+
+-- 2022-04-19T14:02:51.989Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580783,'de_DE')
+;
+
+-- 2022-04-19T14:02:52Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580783,'de_DE')
+;
+
+-- 2022-04-19T14:02:52.001Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID=580783
+;
+
+-- 2022-04-19T14:02:52.003Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL, AD_Element_ID=580783 WHERE UPPER(ColumnName)='ISQTYLUBYMAXLOADWEIGHT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-04-19T14:02:52.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID=580783 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-04-19T14:02:52.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580783) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580783)
+;
+
+-- 2022-04-19T14:02:52.017Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580783
+;
+
+-- 2022-04-19T14:02:52.019Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID = 580783
+;
+
+-- 2022-04-19T14:02:52.020Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'LU-Menge nach max. Traglast', Description = 'Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580783
+;
+
+-- 2022-04-19T14:03:16.555Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht',Updated=TO_TIMESTAMP('2022-04-19 15:03:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='nl_NL'
+;
+
+-- 2022-04-19T14:03:16.559Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580783,'nl_NL')
+;
+
+-- 2022-04-19T14:03:19.508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht',Updated=TO_TIMESTAMP('2022-04-19 15:03:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='de_CH'
+;
+
+-- 2022-04-19T14:03:19.511Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580783,'de_CH')
+;
+
+-- 2022-04-19T14:03:37.448Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='When Yes, Calculate Qty Ordered LU based on the Packing Materiel''s Max. Load Weight and Product Weight',Updated=TO_TIMESTAMP('2022-04-19 15:03:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='en_US'
+;
+
+-- 2022-04-19T14:03:37.451Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580783,'en_US')
+;
 
