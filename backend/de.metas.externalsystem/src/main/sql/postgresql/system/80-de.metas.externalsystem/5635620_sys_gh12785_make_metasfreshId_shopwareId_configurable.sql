@@ -15,7 +15,7 @@ UPDATE AD_Element_Trl SET Name='Business partner mapping - metasfresh-ID JSON-Pa
 
 -- 2022-04-19T09:35:16.551Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'en_US')
 ;
 
 -- 2022-04-19T09:58:57.604Z
@@ -25,82 +25,82 @@ UPDATE AD_Element_Trl SET Description='JSON path that specifies where within a c
 
 -- 2022-04-19T09:58:57.639Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'en_US')
 ;
 
 -- 2022-04-19T09:59:07.225Z
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='de_CH'
 ;
 
 -- 2022-04-19T09:59:07.262Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'de_CH')
 ;
 
 -- 2022-04-19T09:59:08.491Z
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='de_DE'
 ;
 
 -- 2022-04-19T09:59:08.525Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'de_DE')
 ;
 
 -- 2022-04-19T09:59:08.599Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(580786,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580786,'de_DE')
 ;
 
 -- 2022-04-19T09:59:08.633Z
 -- URL zum Konzept
-UPDATE AD_Column SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID=580786
+UPDATE AD_Column SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID=580786
 ;
 
 -- 2022-04-19T09:59:08.670Z
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL, AD_Element_ID=580786 WHERE UPPER(ColumnName)='JSONPATHMETASFRESHID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL, AD_Element_ID=580786 WHERE UPPER(ColumnName)='JSONPATHMETASFRESHID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2022-04-19T09:59:08.707Z
 -- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID=580786 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='JSONPathMetasfreshID', Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID=580786 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2022-04-19T09:59:08.740Z
 -- URL zum Konzept
-UPDATE AD_Field SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580786) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580786)
+UPDATE AD_Field SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580786) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580786)
 ;
 
 -- 2022-04-19T09:59:08.802Z
 -- URL zum Konzept
-UPDATE AD_Tab SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580786
+UPDATE AD_Tab SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580786
 ;
 
 -- 2022-04-19T09:59:08.837Z
 -- URL zum Konzept
-UPDATE AD_WINDOW SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID = 580786
+UPDATE AD_WINDOW SET Name='Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', Help=NULL WHERE AD_Element_ID = 580786
 ;
 
 -- 2022-04-19T09:59:08.871Z
 -- URL zum Konzept
-UPDATE AD_Menu SET   Name = 'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580786
+UPDATE AD_Menu SET   Name = 'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path', Description = 'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580786
 ;
 
 -- 2022-04-19T09:59:11.989Z
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Description='JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.',Updated=TO_TIMESTAMP('2022-04-19 12:59:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580786 AND AD_Language='nl_NL'
 ;
 
 -- 2022-04-19T09:59:12.022Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580786,'nl_NL')
 ;
 
 -- 2022-04-19T10:01:56.731Z
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580787,0,'JSONPathShopwareID',TO_TIMESTAMP('2022-04-19 13:01:56','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die Shopware6-Referenz des Kunden ausgelesen werden kann.','D','Y','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',TO_TIMESTAMP('2022-04-19 13:01:56','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580787,0,'JSONPathShopwareID',TO_TIMESTAMP('2022-04-19 13:01:56','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die Shopware6-Referenz des Kunden ausgelesen werden kann.','D','Y','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',TO_TIMESTAMP('2022-04-19 13:01:56','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-19T10:01:56.958Z
@@ -115,12 +115,12 @@ UPDATE AD_Element_Trl SET Description='JSON path that specifies where within a c
 
 -- 2022-04-19T10:02:20.707Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580787,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580787,'en_US')
 ;
 
 -- 2022-04-19T10:04:02.830Z
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,582801,580786,0,10,541585,'JSONPathMetasfreshID',TO_TIMESTAMP('2022-04-19 13:04:02','YYYY-MM-DD HH24:MI:SS'),100,'N','JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',0,0,TO_TIMESTAMP('2022-04-19 13:04:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,582801,580786,0,10,541585,'JSONPathMetasfreshID',TO_TIMESTAMP('2022-04-19 13:04:02','YYYY-MM-DD HH24:MI:SS'),100,'N','JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',0,0,TO_TIMESTAMP('2022-04-19 13:04:02','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-04-19T10:04:02.939Z
@@ -130,12 +130,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-04-19T10:04:03.011Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(580786) 
+/* DDL */  select update_Column_Translation_From_AD_Element(580786)
 ;
 
 -- 2022-04-19T10:04:27.061Z
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,582802,580787,0,10,541585,'JSONPathShopwareID',TO_TIMESTAMP('2022-04-19 13:04:26','YYYY-MM-DD HH24:MI:SS'),100,'N','JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die Shopware6-Referenz des Kunden ausgelesen werden kann.','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',0,0,TO_TIMESTAMP('2022-04-19 13:04:26','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,582802,580787,0,10,541585,'JSONPathShopwareID',TO_TIMESTAMP('2022-04-19 13:04:26','YYYY-MM-DD HH24:MI:SS'),100,'N','JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die Shopware6-Referenz des Kunden ausgelesen werden kann.','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',0,0,TO_TIMESTAMP('2022-04-19 13:04:26','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-04-19T10:04:27.287Z
@@ -145,12 +145,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-04-19T10:04:27.363Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(580787) 
+/* DDL */  select update_Column_Translation_From_AD_Element(580787)
 ;
 
 -- 2022-04-19T10:05:43.204Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582801,691712,0,543838,0,TO_TIMESTAMP('2022-04-19 13:05:42','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.',0,'D',0,'Y','Y','Y','N','N','N','N','N','Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',0,20,0,1,1,TO_TIMESTAMP('2022-04-19 13:05:42','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582801,691712,0,543838,0,TO_TIMESTAMP('2022-04-19 13:05:42','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.',0,'D',0,'Y','Y','Y','N','N','N','N','N','Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',0,20,0,1,1,TO_TIMESTAMP('2022-04-19 13:05:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-19T10:05:43.428Z
@@ -160,7 +160,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-04-19T10:05:43.470Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580786) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580786)
 ;
 
 -- 2022-04-19T10:05:43.522Z
@@ -175,7 +175,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=691712
 
 -- 2022-04-19T10:05:59.613Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582802,691713,0,543838,0,TO_TIMESTAMP('2022-04-19 13:05:58','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die Shopware6-Referenz des Kunden ausgelesen werden kann.',0,'D',0,'Y','Y','Y','N','N','N','N','N','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',0,30,0,1,1,TO_TIMESTAMP('2022-04-19 13:05:58','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582802,691713,0,543838,0,TO_TIMESTAMP('2022-04-19 13:05:58','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die Shopware6-Referenz des Kunden ausgelesen werden kann.',0,'D',0,'Y','Y','Y','N','N','N','N','N','Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',0,30,0,1,1,TO_TIMESTAMP('2022-04-19 13:05:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-19T10:05:59.732Z
@@ -185,7 +185,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-04-19T10:05:59.768Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580787) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580787)
 ;
 
 -- 2022-04-19T10:05:59.807Z
@@ -200,12 +200,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=691713
 
 -- 2022-04-19T10:06:38.022Z
 -- URL zum Konzept
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,691712,0,543838,545816,605359,'F',TO_TIMESTAMP('2022-04-19 13:06:37','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die metasfresh-ID (C_BPartner_ID) des Kunden ausgelesen werden kann.','Y','N','N','Y','N','N','N',0,'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',50,0,0,TO_TIMESTAMP('2022-04-19 13:06:37','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,691712,0,543838,545816,605359,'F',TO_TIMESTAMP('2022-04-19 13:06:37','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die metasfresh-ID des Kunden (C_BPartner_ID) ausgelesen werden kann.','Y','N','N','Y','N','N','N',0,'Geschäftspartner-Zuordnung - metasfresh-ID JSON-Path',50,0,0,TO_TIMESTAMP('2022-04-19 13:06:37','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-19T10:06:49.427Z
 -- URL zum Konzept
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,691713,0,543838,545816,605360,'F',TO_TIMESTAMP('2022-04-19 13:06:49','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die Shopware6-Referenz des Kunden ausgelesen werden kann.','Y','N','N','Y','N','N','N',0,'Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',60,0,0,TO_TIMESTAMP('2022-04-19 13:06:49','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,691713,0,543838,545816,605360,'F',TO_TIMESTAMP('2022-04-19 13:06:49','YYYY-MM-DD HH24:MI:SS'),100,'JSON-Pfad, der angibt, wo innerhalb einer benutzerdefinierten Shopware-Bestellung die Shopware6-Referenz des Kunden ausgelesen werden kann.','Y','N','N','Y','N','N','N',0,'Geschäftspartner-Zuordnung - Shopware6-ID JSON-Path',60,0,0,TO_TIMESTAMP('2022-04-19 13:06:49','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-19T11:06:21.207Z
@@ -248,6 +248,11 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=673830
 DELETE FROM AD_Field WHERE AD_Field_ID=673830
 ;
 
+-- 2022-04-19T11:12:58.080Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_Shopware6Mapping','ALTER TABLE ExternalSystem_Config_Shopware6Mapping DROP COLUMN IF EXISTS BPartnerLookupVia')
+;
+
 -- 2022-04-19T11:12:58.082Z
 -- URL zum Konzept
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578849
@@ -258,6 +263,11 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578849
 DELETE FROM AD_Column WHERE AD_Column_ID=578849
 ;
 
+-- 2022-04-19T11:13:04.360Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_Shopware6Mapping','ALTER TABLE ExternalSystem_Config_Shopware6Mapping DROP COLUMN IF EXISTS jsonpathconstantbpartnerid')
+;
+
 -- 2022-04-19T11:13:04.370Z
 -- URL zum Konzept
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578850
@@ -266,5 +276,15 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=578850
 -- 2022-04-19T11:13:04.578Z
 -- URL zum Konzept
 DELETE FROM AD_Column WHERE AD_Column_ID=578850
+;
+
+-- 2022-04-19T12:29:26.453Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_Shopware6','ALTER TABLE public.ExternalSystem_Config_Shopware6 ADD COLUMN JSONPathMetasfreshID VARCHAR(255)')
+;
+
+-- 2022-04-19T12:29:33Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_Shopware6','ALTER TABLE public.ExternalSystem_Config_Shopware6 ADD COLUMN JSONPathShopwareID VARCHAR(255)')
 ;
 
