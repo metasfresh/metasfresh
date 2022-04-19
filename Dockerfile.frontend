@@ -17,9 +17,9 @@ RUN webpack --config webpack.prod.js
 
 FROM nginx as runtime
 
-COPY docker/frontend/config.js /usr/share/nginx/html
-COPY docker/frontend/default.conf /etc/nginx/conf.d
-COPY --chmod=700 docker/frontend/start_webui.sh .
+COPY docker-builds/frontend/config.js /usr/share/nginx/html
+COPY docker-builds/frontend/default.conf /etc/nginx/conf.d
+COPY --chmod=700 docker-builds/frontend/start_webui.sh .
 
 COPY --from=build /app/dist/* /usr/share/nginx/html/
 

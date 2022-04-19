@@ -4,8 +4,8 @@ RUN yum update -y && yum -y install nc && yum -y clean all && rm -rf /var/cache
 
 WORKDIR /opt/metasfresh/metasfresh-webui-api
 
-COPY --chmod=700 docker/start_metasfresh-webui-api_docker.sh .
+COPY --chmod=700 docker-builds/api/start.sh .
 COPY --from=mvn-backend:latest /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
 COPY --from=mvn-backend:latest /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
 
-CMD ["/opt/metasfresh/metasfresh-webui-api/start_metasfresh-webui-api_docker.sh"]
+CMD ["/opt/metasfresh/metasfresh-webui-api/start.sh"]

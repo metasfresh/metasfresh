@@ -14,8 +14,8 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
 ENV MAVEN_HOME /usr/share/maven
 ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
 
-COPY docker/java-mvn/mvn-entrypoint.sh /usr/local/bin/mvn-entrypoint.sh
-COPY docker/java-mvn/settings-docker.xml /usr/share/maven/ref/
+COPY docker-builds/java-mvn/mvn-entrypoint.sh /usr/local/bin/mvn-entrypoint.sh
+COPY docker-builds/java-mvn/settings-docker.xml /usr/share/maven/ref/
 
 COPY --from=mvn-common:latest /root/.m2 /root/.m2/
 

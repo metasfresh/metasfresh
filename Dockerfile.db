@@ -9,7 +9,7 @@ RUN locale-gen en_US.UTF-8
 ENV LC_ALL="en_US.UTF-8"
 ENV LC_CTYPE="en_US.UTF-8"
 
-COPY docker/db/sql /docker-entrypoint-initdb.d/
-COPY docker/db/metasfresh_latest.pgdump .
+COPY docker-builds/db/sql /docker-entrypoint-initdb.d/
+COPY docker-builds/db/metasfresh_latest.pgdump .
 
 EXPOSE 5432

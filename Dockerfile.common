@@ -1,6 +1,6 @@
 FROM maven:3.8.4-jdk-8
 
-COPY docker/settings.xml /root/.m2/
+COPY docker-builds/mvn/settings.xml /root/.m2/
 
 WORKDIR /parent
 COPY misc/parent-pom .
