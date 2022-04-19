@@ -14,6 +14,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -21,6 +23,8 @@ import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -38,6 +42,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -69,6 +74,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -145,6 +151,7 @@ class OLCandOrderFactory
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
+	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandProcessingError");
 
 	//
 	// Parameters
@@ -154,6 +161,7 @@ class OLCandOrderFactory
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
+	private final IOLCandValidator olCandValidator;
 
 	//
 	private I_C_Order order;
@@ -170,9 +178,11 @@ class OLCandOrderFactory
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
-			final IOLCandListener olCandListeners)
+			final IOLCandListener olCandListeners,
+			@NonNull final IOLCandValidator olCandValidator)
 	{
 		this.orderDefaults = orderDefaults;
+		this.olCandValidator = olCandValidator;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
@@ -338,7 +348,13 @@ class OLCandOrderFactory
 				for (final OLCand candidate : candidates)
 				{
 					candidate.setError(errorMsg, note.getAD_Note_ID());
+
+					final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(ex);
+					candidate.setAdIssueId(adIssueId);
+
 					save(candidate.unbox());
+
+					sendUserNotificationError(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
 		}
@@ -402,9 +418,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
+															.build());
 	}
 
 	@NonNull
@@ -444,12 +460,19 @@ class OLCandOrderFactory
 	{
 		try
 		{
+			olCandValidator.validate(candidate.unbox());
+
 			addOLCand0(candidate);
+
 			olcandBL.markAsProcessed(candidate);
 		}
 		catch (final Exception ex)
 		{
 			olcandBL.markAsError(userInChargeId, candidate, ex);
+
+			sendUserNotificationError(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
+
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -613,6 +636,17 @@ class OLCandOrderFactory
 		save(note);
 
 		return note;
+	}
+
+	private void sendUserNotificationError(@NonNull final TableRecordReference candidateRecordReference)
+	{
+		Services.get(INotificationBL.class)
+				.send(UserNotificationRequest.builder()
+							  .recipientUserId(Env.getLoggedUserIdIfExists().orElse(userInChargeId))
+							  .contentADMessage(MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR)
+							  .contentADMessageParam(candidateRecordReference)
+							  .targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
+							  .build());
 	}
 
 	@Nullable

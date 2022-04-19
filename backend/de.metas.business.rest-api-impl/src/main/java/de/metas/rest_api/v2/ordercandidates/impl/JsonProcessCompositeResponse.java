@@ -24,7 +24,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
+import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import lombok.Builder;
@@ -36,7 +36,7 @@ import java.util.List;
 @JsonDeserialize(builder = JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder.class)
 public class JsonProcessCompositeResponse
 {
-	JsonOLCandProcessResponse olCandProcessResponse;
+	JsonGenerateOrdersResponse ordersResponse;
 
 	JsonCreateShipmentResponse shipmentResponse;
 
@@ -44,11 +44,11 @@ public class JsonProcessCompositeResponse
 
 	@Builder
 	JsonProcessCompositeResponse(
-			@JsonProperty("olCandProcessResponse") final JsonOLCandProcessResponse olCandProcessResponse,
+			@JsonProperty("ordersResponse") final JsonGenerateOrdersResponse ordersResponse,
 			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
 			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)
 	{
-		this.olCandProcessResponse = olCandProcessResponse;
+		this.ordersResponse = ordersResponse;
 		this.shipmentResponse = shipmentResponse;
 		this.invoiceInfoResponse = invoiceInfoResponse;
 	}

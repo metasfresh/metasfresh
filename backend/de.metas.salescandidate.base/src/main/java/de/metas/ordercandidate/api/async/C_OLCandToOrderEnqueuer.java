@@ -2,7 +2,7 @@
  * #%L
  * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,44 +22,260 @@
 
 package de.metas.ordercandidate.api.async;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.api.OLCandId;
+import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandProcessorRepository;
+import de.metas.ordercandidate.api.source.EligibleOLCandProvider;
+import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.process.rpl.model.I_C_OLCand;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.util.Env;
+import org.joda.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
+import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.OLCandProcessor_ID;
 import static org.compiere.util.Env.getCtx;
 
 @Service
 public class C_OLCandToOrderEnqueuer
 {
+	private static final Logger logger = LogManager.getLogger(C_OLCandToOrderEnqueuer.class);
+
+	private static final String LOCK_OWNER_PREFIX = "C_OLCandToOrderEnqueuer";
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
-	@NonNull
-	public QueueWorkPackageId enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
-	{
-		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
-				.parameter(OLCandProcessor_ID, olCandProcessorId);
+	private final OLCandProcessorRepository olCandProcessorRepo;
+	private final EligibleOLCandProvider eligibleOLCandProvider;
 
-		if (asyncBatchId != null)
+	public C_OLCandToOrderEnqueuer(
+			@NonNull final OLCandProcessorRepository olCandProcessorRepo,
+			@NonNull final EligibleOLCandProvider eligibleOLCandProvider)
+	{
+		this.olCandProcessorRepo = olCandProcessorRepo;
+		this.eligibleOLCandProvider = eligibleOLCandProvider;
+	}
+
+	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final PInstanceId batchSelectionId = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.create()
+				.createSelection();
+
+		return lockAndEnqueueSelection(batchSelectionId, asyncBatchId);
+	}
+
+	@NonNull
+	public OlCandEnqueueResult enqueueSelection(@NonNull final PInstanceId selectionId)
+	{
+		final AsyncBatchId asyncBatchId = null;
+		return lockAndEnqueueSelection(selectionId, asyncBatchId);
+	}
+
+	@NonNull
+	private OlCandEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId selectionId, @Nullable final AsyncBatchId asyncBatchId)
+	{
+		final ILock mainLock = lockSelection(selectionId);
+		try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
-			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-			workPackageBuilder.setC_Async_Batch(asyncBatch);
+			return enqueueSelectionInTrx(mainLock, selectionId, asyncBatchId);
+		}
+	}
+
+	@NonNull
+	private OlCandEnqueueResult enqueueSelectionInTrx(
+			@NonNull final ILock mainLock,
+			@NonNull final PInstanceId selectionId,
+			@Nullable final AsyncBatchId asyncBatchId)
+	{
+		final OLCandProcessorDescriptor descriptor = olCandProcessorRepo.getById(C_OlCandProcessor_ID_Default);
+
+		final EnqueueWorkPackageRequest request = EnqueueWorkPackageRequest.builder()
+				.mainLock(mainLock)
+				.orderLineCandSelectionId(selectionId)
+				.olCandProcessorDescriptor(descriptor)
+				.asyncBatchId(asyncBatchId)
+				.build();
+
+		final OlCandEnqueueResult result = new OlCandEnqueueResult(enqueueWorkPackages(request));
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog("*** C_OLCandToOrderEnqueuer.OlCandEnqueueResult : {}", result);
+
+		return result;
+	}
+
+	@NonNull
+	private ImmutableList<QueueWorkPackageId> enqueueWorkPackages(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
+	{
+		final List<OLCand> candidates = getEligibleOLCand(request);
+
+		if (candidates.isEmpty())
+		{
+			return ImmutableList.of();
 		}
 
-		final I_C_Queue_WorkPackage result = workPackageBuilder.build();
-		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
+		final IWorkPackageBlockBuilder blockBuilder = getWorkPackageBlockBuilder(request);
+
+		final BiFunction<OLCand, OLCand, Boolean> shouldSplitOrder = (previousCand, currentCand) ->
+				previousCand != null && eligibleOLCandProvider.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
+
+		IWorkPackageBuilder workPackageBuilder = null;
+		OLCand previousCandidate = null;
+
+		final ImmutableList.Builder<QueueWorkPackageId> enqueuedWorkPackageCollector = ImmutableList.builder();
+
+		for (final OLCand currentCandidate : candidates)
+		{
+			final OLCandId currentCandidateId = OLCandId.ofRepoId(currentCandidate.getId());
+			final TableRecordReference candidateRecordReference = TableRecordReference.of(I_C_OLCand.Table_Name, currentCandidateId);
+
+			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidateRecordReference))
+			{
+				if (shouldSplitOrder.apply(previousCandidate, currentCandidate))
+				{
+					enqueuedWorkPackageCollector.add(workPackageBuilder.buildAndGetId());
+					workPackageBuilder = null;
+				}
+
+				previousCandidate = currentCandidate;
+
+				if (workPackageBuilder == null)
+				{
+					workPackageBuilder = initiateWorkPackageBuilder(blockBuilder, request.getMainLock(), request.getAsyncBatchId());
+				}
+
+				workPackageBuilder.addElement(candidateRecordReference);
+			}
+		}
+
+		//dev-note: make sure to enqueue last work package
+		Optional.ofNullable(workPackageBuilder)
+				.map(IWorkPackageBuilder::buildAndGetId)
+				.ifPresent(enqueuedWorkPackageCollector::add);
+
+		return enqueuedWorkPackageCollector.build();
+	}
+
+	@NonNull
+	private List<OLCand> getEligibleOLCand(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
+	{
+		final GetEligibleOLCandRequest eligibleOLCandRequest = GetEligibleOLCandRequest.builder()
+				.selection(request.getOrderLineCandSelectionId())
+				.orderDefaults(request.getOlCandProcessorDescriptor().getDefaults())
+				.aggregationInfo(request.getOlCandProcessorDescriptor().getAggregationInfo())
+				.asyncBatchId(request.getAsyncBatchId())
+				.build();
+
+		return eligibleOLCandProvider.getEligibleOLCand(eligibleOLCandRequest);
+	}
+
+	@NonNull
+	private IWorkPackageBlockBuilder getWorkPackageBlockBuilder(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
+	{
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class);
+
+		return queue.newBlock()
+				.setAD_PInstance_Creator_ID(request.getOrderLineCandSelectionId())
+				.setContext(getCtx());
+	}
+
+	@NonNull
+	private IWorkPackageBuilder initiateWorkPackageBuilder(
+			@NonNull final IWorkPackageBlockBuilder blockBuilder,
+			@NonNull final ILock mainLock,
+			@Nullable final AsyncBatchId asyncBatchId)
+	{
+		final IWorkPackageBuilder workpackageBuilder = blockBuilder.newWorkpackage()
+				// we want the enqueuing user to be notified on problems
+				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+				.parameter(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
+
+		Optional.ofNullable(asyncBatchId)
+				.map(asyncBatchDAO::retrieveAsyncBatchRecord)
+				.ifPresent(workpackageBuilder::setC_Async_Batch);
+
+		workpackageBuilder.setElementsLocker(splitLock(mainLock));
+
+		return workpackageBuilder;
+	}
+
+	@NonNull
+	private ILockCommand splitLock(@NonNull final ILock mainLock)
+	{
+		//
+		// Create a new locker which will grab the locked candidate from initial lock
+		// and it will move them to a new owner which is created per workpackage
+		final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ProcessOLCand_" + Instant.now());
+		return mainLock
+				.split()
+				.setOwner(workpackageElementsLockOwner)
+				.setAutoCleanup(false);
+	}
+
+	@NonNull
+	private ILock lockSelection(@NonNull final PInstanceId selectionId)
+	{
+		final LockOwner lockOwner = LockOwner.newOwner(LOCK_OWNER_PREFIX, I_AD_PInstance.COLUMN_AD_PInstance_ID + "=" + selectionId.getRepoId());
+
+		return lockManager.lock()
+				.setOwner(lockOwner)
+				.setFailIfAlreadyLocked(true)
+				.setRecordsBySelection(I_C_OLCand.class, selectionId)
+				.acquire();
+	}
+
+	@Builder
+	@Value
+	private static class EnqueueWorkPackageRequest
+	{
+		@NonNull
+		ILock mainLock;
+
+		@NonNull
+		PInstanceId orderLineCandSelectionId;
+
+		@NonNull
+		OLCandProcessorDescriptor olCandProcessorDescriptor;
+
+		@Nullable
+		AsyncBatchId asyncBatchId;
 	}
 }

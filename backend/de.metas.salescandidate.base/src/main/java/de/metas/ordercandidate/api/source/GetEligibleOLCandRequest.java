@@ -2,7 +2,7 @@
  * #%L
  * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,31 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api;
+package de.metas.ordercandidate.api.source;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.ordercandidate.api.OLCandAggregation;
+import de.metas.ordercandidate.api.OLCandOrderDefaults;
+import de.metas.process.PInstanceId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-public class OLCandValidationResult
+@Builder
+public class GetEligibleOLCandRequest
 {
 	@NonNull
-	OLCandId olCandId;
+	PInstanceId selection;
 
-	boolean isOk;
+	@NonNull
+	OLCandAggregation aggregationInfo;
 
-	public static OLCandValidationResult ok(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, true);
-	}
+	@NonNull
+	OLCandOrderDefaults orderDefaults;
 
-	public static OLCandValidationResult error(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, false);
-	}
+	@Nullable
+	AsyncBatchId asyncBatchId;
 }

@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -152,12 +153,18 @@ public class C_OrderLine_StepDef
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final Integer expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+			final Integer qtyOrdered = DataTableUtil.extractIntForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
 					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
 					.create()
 					.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -170,13 +177,17 @@ public class C_OrderLine_StepDef
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
-		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
+		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final BigDecimal price = DataTableUtil.extractBigDecimalWithScaleForColumnName(row, "price");
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final Integer expectedProductId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
@@ -184,11 +195,15 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).isEqualTo(processed);
-		assertThat(orderLine.getM_Product_ID()).isEqualTo(productId);
+		assertThat(orderLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
 		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
 	}
 }
