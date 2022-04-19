@@ -2,13 +2,8 @@
 
 services:
 
-  nginx:
-    image: nginx:1.16.0-alpine
-    ports:
-      - "8088:80"
-
   db:
-    image: my-db:latest
+    image: metas-db:latest
     ports:
       - "15432:5432"
     healthcheck:
@@ -22,7 +17,7 @@ services:
       replicas: 1
 
   db-init:
-    image: my-db-init:latest
+    image: metas-db-init:latest
     depends_on:
       db:
         condition: service_healthy
@@ -56,7 +51,7 @@ services:
 # -------------------------------------------------------------------------------
 
   webapi:
-    image: my-api:latest
+    image: metas-api:latest
     ports:
       - "8080:8080"
       - "8789:8789"
@@ -70,7 +65,7 @@ services:
       replicas: 1
 
   app:
-    image: my-app:latest
+    image: metas-app:latest
     ports:
       - "8282:8282"
       - "61616:61616"
@@ -85,7 +80,7 @@ services:
       replicas: 1
 
   webui:
-    image: my-frontend:latest
+    image: metas-frontend:latest
     ports:
       - "80:80"
       - "443:443"

@@ -11,8 +11,8 @@ WORKDIR /tmp/init
 COPY --chmod=700 docker-builds/db/apply-migrations.sh .
 COPY docker-builds/db/migrate.properties .
 
-COPY --from=mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/sql ./sql
-COPY --from=mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/install/lib .
+COPY --from=metas-mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/sql ./sql
+COPY --from=metas-mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/install/lib .
 
 ENTRYPOINT ["/bin/bash"]
 CMD ["/tmp/init/apply-migrations.sh"]

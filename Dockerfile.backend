@@ -1,6 +1,6 @@
 FROM maven:3.8.4-jdk-8
 
-COPY --from=mvn-common:latest /root/.m2 /root/.m2/
+COPY --from=metas-mvn-common:latest /root/.m2 /root/.m2/
 
 WORKDIR /backend
 COPY backend .
