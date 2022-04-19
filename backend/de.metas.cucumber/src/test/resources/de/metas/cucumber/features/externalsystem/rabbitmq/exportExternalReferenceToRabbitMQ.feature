@@ -3,7 +3,6 @@ Feature: Validate external reference is sent to RabbitMQ
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And RabbitMQ MF_TO_ExternalSystem queue is purged
-    And set sys config int value 100 for sys config de.metas.externalsystem.debouncer.delayInMillis
 
   Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     Given metasfresh contains AD_UserGroup:

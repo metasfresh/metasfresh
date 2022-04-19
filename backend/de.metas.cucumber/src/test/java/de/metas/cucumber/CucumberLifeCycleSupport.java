@@ -36,6 +36,7 @@ import org.springframework.util.SocketUtils;
 import java.io.File;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
+import static de.metas.async.model.validator.Main.SYSCONFIG_DEBOUNCER_DELAY_MILLIS;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 
 /**
@@ -83,6 +84,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty("app-server-run-headless", "true"); //
 		System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
 		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait 
+		System.setProperty(SYSCONFIG_DEBOUNCER_DELAY_MILLIS, "100");
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,
