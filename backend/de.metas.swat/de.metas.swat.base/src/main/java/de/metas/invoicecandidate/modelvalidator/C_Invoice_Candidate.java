@@ -461,7 +461,7 @@ public class C_Invoice_Candidate
 		}
 		else
 		{
-			//dev-note: basically saying, it couldn't be locked it now => invalidate the candidate (so the update invalid process can take care)
+			//dev-note: basically saying, it couldn't be locked now => invalidate the candidate (so the update invalid process can take care)
 			invoiceCandDAO.invalidateCand(ic);
 		}
 	}
