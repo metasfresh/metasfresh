@@ -1,5 +1,4 @@
 # docker-compose.yml file
-version: '3.2'
 
 services:
 
@@ -9,19 +8,25 @@ services:
       - "8088:80"
 
   db:
-    image: metasfresh/metasfresh-db:5.174
+    image: my-db:latest
     ports:
       - "15432:5432"
-    environment:
-      - METASFRESH_USERNAME=metasfresh
-      - METASFRESH_PASSWORD=metasfresh
-      - METASFRESH_DBNAME=metasfresh
-      - DB_SYSPASS=System
-      - POSTGRES_PASSWORD=ip2LmNzXX8p8iXg9lZTWEJ9524kQDbXFudB7LR03T-xK9fLweX3TLMkA2AYcEiaS
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 24
     deploy:
       mode: replicated
       replicas: 1
 
+  db-init:
+    image: my-db-init:latest
+    depends_on:
+      db:
+        condition: service_healthy
+      
   rabbitmq:
     image: rabbitmq:3.9.13-management
     ports:
@@ -48,6 +53,8 @@ services:
       mode: replicated
       replicas: 1
 
+# -------------------------------------------------------------------------------
+
   webapi:
     image: my-api:latest
     ports:
@@ -55,6 +62,9 @@ services:
       - "8789:8789"
     environment:
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
     deploy:
       mode: replicated
       replicas: 1
@@ -65,15 +75,23 @@ services:
       - "8282:8282"
       - "61616:61616"
       - "8788:8788"
+    environment:
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
     deploy:
       mode: replicated
-      replicas: 0
+      replicas: 1
 
   webui:
-    image: yarn-frontend:latest
+    image: my-frontend:latest
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - webapi
+      - app
     deploy:
       mode: replicated
       replicas: 1
