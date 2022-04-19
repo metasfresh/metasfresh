@@ -1,0 +1,18 @@
+FROM postgres:9
+
+RUN apt -y update \
+    && apt -y upgrade \
+    && apt -y install openjdk-8-jre-headless \
+    && apt -y autoremove \
+    && apt -y clean
+	
+WORKDIR /tmp/init
+
+COPY --chmod=700 apply-migrations.sh .
+COPY migrate.properties .
+
+COPY --from=mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/sql ./sql
+COPY --from=mvn-backend:latest /backend/metasfresh-dist/dist/target/dist/install/lib .
+
+ENTRYPOINT ["/bin/bash"]
+CMD ["/tmp/init/apply-migrations.sh"]

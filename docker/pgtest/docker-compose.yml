@@ -1,0 +1,25 @@
+services:
+
+  db:
+    image: pgtest:latest
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 12
+  init-db:
+    image: pginit:latest
+    depends_on:
+      db:
+        condition: service_healthy
+volumes: {}
+configs: {}
+secrets: {}
+
+
+# service_healthy
+# service_completed_successfully
+# tar -czv -f pgdata.tar.gz /var/lib/postgresql/data

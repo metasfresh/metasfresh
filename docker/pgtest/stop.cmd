@@ -1,2 +1,1 @@
-docker stop pgtest
-docker rm pgtest
+docker-compose down
