@@ -25,6 +25,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
@@ -704,16 +705,20 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = //
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
-		//
-		// extract the packing material from lutu configuration
-		final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(lutuConfiguration.getM_LU_HU_PI_Item().getM_HU_PI_Version_ID());
-		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID()));
-
-		if (Objects.nonNull(packingMaterial)
-				&& packingMaterial.isQtyLUByMaxLoadWeight())
+		final I_M_HU_PI_Item m_lu_hu_pi_item = lutuConfiguration.getM_LU_HU_PI_Item();
+		if(Objects.nonNull(m_lu_hu_pi_item))
 		{
-			final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective, packingMaterial);
-			shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
+			//
+			// extract the packing material from lutu configuration
+			final HuPackingInstructionsVersionId versionId = HuPackingInstructionsVersionId.ofRepoId(m_lu_hu_pi_item.getM_HU_PI_Version_ID());
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID()));
+
+			if (Objects.nonNull(packingMaterial)
+					&& packingMaterial.isQtyLUByMaxLoadWeight())
+			{
+				final BigDecimal qtyOrderedLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUsByMaxWeight(lutuConfiguration, qtyTU_Effective, packingMaterial);
+				shipmentSchedule.setQtyOrdered_LU(qtyOrderedLU);
+			}
 		}
 		else
 		{
