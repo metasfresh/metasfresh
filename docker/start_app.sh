@@ -11,14 +11,14 @@ db_host=${DB_HOST:-db}
 db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
-db_password=${DB_PASSWORD:-$(echo $secret_db_password)}
+db_password=${DB_PASSWORD:-metasfresh}
 db_connection_pool_max_size=${DB_CONNECTION_POOL_MAX_SIZE:-UNSET}
 
 # rabbitmq
-rabbitmq_host=${RABBITMQ_HOST:-localhost}
+rabbitmq_host=${RABBITMQ_HOST:-rabbitmq}
 rabbitmq_port=${RABBITMQ_PORT:-5672}
-rabbitmq_user=${RABBITMQ_USER:-guest}
-rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
+rabbitmq_user=${RABBITMQ_USER:-metasfresh}
+rabbitmq_password=${RABBITMQ_PASSWORD:-metasfresh}
 
 # elastic search
 es_host=${ES_HOST:-search}
