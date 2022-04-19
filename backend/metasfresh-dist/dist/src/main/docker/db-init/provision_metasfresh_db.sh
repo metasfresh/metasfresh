@@ -155,7 +155,7 @@ activate_extensions()
 		echo " activate pg_stat_statements extension ..."
 		echo "==========================================="
 		psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-CREATE EXTENSION pg_stat_statements;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 EOSQL
 		echo "==========="
 		echo " ... done!"
