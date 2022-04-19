@@ -433,6 +433,12 @@ public class C_Invoice_Candidate
 			return;
 		}
 
+		if (invoiceCandDAO.isToRecompute(ic))
+		{
+			//the header aggregation will be set during recompute
+			return;
+		}
+
 		aggregationBL.setHeaderAggregationKey(ic);
 	}
 
