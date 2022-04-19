@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2077061296L;
+	private static final long serialVersionUID = -425168857L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
@@ -116,27 +116,6 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public java.lang.String getBPartnerLocation_IfNotExists() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerLocation_IfNotExists);
-	}
-
-	/** 
-	 * BPartnerLookupVia AD_Reference_ID=541524
-	 * Reference name: ShopwareValidID
-	 */
-	public static final int BPARTNERLOOKUPVIA_AD_Reference_ID=541524;
-	/** metasfresh-ID = metasfreshId */
-	public static final String BPARTNERLOOKUPVIA_Metasfresh_ID = "MetasfreshId";
-	/** Shopware6-ID = externalReference */
-	public static final String BPARTNERLOOKUPVIA_Shopware6_ID = "ExternalReference";
-	@Override
-	public void setBPartnerLookupVia (final @Nullable java.lang.String BPartnerLookupVia)
-	{
-		set_Value (COLUMNNAME_BPartnerLookupVia, BPartnerLookupVia);
-	}
-
-	@Override
-	public java.lang.String getBPartnerLookupVia() 
-	{
-		return get_ValueAsString(COLUMNNAME_BPartnerLookupVia);
 	}
 
 	@Override
@@ -244,18 +223,6 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
-	@Override
-	public void setJSONPathConstantBPartnerID (final @Nullable java.lang.String JSONPathConstantBPartnerID)
-	{
-		set_Value (COLUMNNAME_JSONPathConstantBPartnerID, JSONPathConstantBPartnerID);
-	}
-
-	@Override
-	public java.lang.String getJSONPathConstantBPartnerID() 
-	{
-		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerID);
-	}
-
 	/** 
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
@@ -277,6 +244,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = PE */
+	public static final String PAYMENTRULE_PayPalExtern = "PE";
+	/** Kreditkarte Extern = CE */
+	public static final String PAYMENTRULE_KreditkarteExtern = "CE";
+	/** Sofortüberweisung = BE */
+	public static final String PAYMENTRULE_Sofortueberweisung = "BE";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{

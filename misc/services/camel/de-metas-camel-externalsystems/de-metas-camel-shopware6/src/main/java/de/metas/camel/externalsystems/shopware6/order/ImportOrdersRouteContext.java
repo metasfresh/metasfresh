@@ -39,7 +39,6 @@ import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -61,8 +60,6 @@ import java.util.function.BiFunction;
 @Builder
 public class ImportOrdersRouteContext
 {
-	public static final String CUSTOM_FIELD_USER_ID = "/orderCustomer/customFields/bodymedUserId";
-	public static final String CUSTOM_FIELD_METASFRESH_ID = "/orderCustomer/customFields/metasfreshId";
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private final String orgCode;
@@ -130,6 +127,12 @@ public class ImportOrdersRouteContext
 	private LocalDate dateRequired;
 
 	private boolean isMultipleShippingAddresses;
+
+	@Nullable
+	private String metasfreshIdJsonPath;
+
+	@Nullable
+	private String shopwareIdJsonPath;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)
@@ -276,33 +279,43 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public ExternalIdentifier getMetasfreshId()
 	{
-		//FIXME to remove hardcoded paths in final version
-		return CoalesceUtil.coalesce(getId(CUSTOM_FIELD_METASFRESH_ID, false, false), getUserId());
+		final String id = getId(metasfreshIdJsonPath, false);
+		if (!Check.isBlank(id))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(id)
+					.rawValue(id)
+					.build();
+		}
+		return getUserId();
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		//FIXME to remove hardcoded paths in final version
-		return getId(CUSTOM_FIELD_USER_ID, true, true);
+		final String id = getId(shopwareIdJsonPath, true);
+		return ExternalIdentifier.builder()
+				.identifier(ExternalIdentifierFormat.formatExternalId(id))
+				.rawValue(id)
+				.build();
 	}
 
 	@Nullable
-	private ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId, final boolean throwException)
+	private String getId(@Nullable final String bpLocationCustomJsonPath, final boolean throwException)
 	{
+		if (Check.isBlank(bpLocationCustomJsonPath))
+		{
+			return null;
+		}
 		final OrderCandidate order = getOrderNotNull();
 		final String id = order.getCustomField(bpLocationCustomJsonPath);
-
 		if (!Check.isBlank(id))
 		{
-			return ExternalIdentifier.builder()
-					.identifier(asExternalId ? ExternalIdentifierFormat.formatExternalId(id) : id)
-					.rawValue(id)
-					.build();
+			return id;
 		}
 		if (throwException)
 		{
-			throw new RuntimeException("Order: " + order.getJsonOrder().getId() + "Couldn't find jsonPath of " + CUSTOM_FIELD_USER_ID);
+			throw new RuntimeException("Order: " + order.getJsonOrder().getId() + "Couldn't find jsonPath of " + bpLocationCustomJsonPath);
 		}
 		return null;
 	}
