@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * work-metas
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 #!/usr/bin/env groovy
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
@@ -36,6 +58,10 @@ properties([
                 booleanParam(defaultValue: true,
                         description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
 
                 string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
                         description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
