@@ -150,6 +150,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, BPartnerLocationType.SHIP_TO_DEFAULT)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, BPartnerLocationType.SHIP_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, BPartnerLocation.ACTIVE)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsEphemeral, BPartnerLocation.EPHEMERAL)
 			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
