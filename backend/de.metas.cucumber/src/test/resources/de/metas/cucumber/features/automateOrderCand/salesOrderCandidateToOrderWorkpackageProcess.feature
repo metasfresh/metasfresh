@@ -37,9 +37,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_Customer_location | 1354423215434 | olCand_Customer          |
 
     # we create 4 OLCands with externalHeaderId `14042022`
-    # OLCands with externalLineId `14042022_0` and `14042022_1` are on the same order
-    # OLCands with externalLineId `14042022_2` is on a new order
-    # OLCands with externalLineId `14042022_3` is on a new order
+    # OLCands with externalLineId `14042022_0` and `14042022_1` should end up in the same order
+    # OLCand with externalLineId `14042022_2` should end up in an individual order
+    # OLCand with externalLineId `14042022_3` should end up in an individual order
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
@@ -184,3 +184,13 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And validate AD_Issue
       | AD_Issue_ID.Identifier | IssueSummary                         |
       | issue_olCand_3         | Produkt ist nicht auf der Preisliste |
+
+    And locate C_Queue_WorkPackage by enqueued element
+      | C_Queue_WorkPackage_ID.Identifier | C_Queue_PackageProcessor_ID.InternalName | AD_Table_ID.TableName | Record_ID.Identifier |
+      | wp_order_1                        | C_OLCandToOrderWorkpackageProcessor      | C_OLCand              | olCand_1             |
+      | wp_order_2                        | C_OLCandToOrderWorkpackageProcessor      | C_OLCand              | olCand_4             |
+
+    # we validate that olCand_2 and olCand_1 end up in the same work package
+    And validate enqueued elements for C_Queue_WorkPackage
+      | C_Queue_Element_ID.Identifier | C_Queue_WorkPackage_ID.Identifier | AD_Table_ID.TableName | Record_ID.Identifier |
+      | queueElement_olCand_2         | wp_order_1                        | C_OLCand              | olCand_2             |
