@@ -26,13 +26,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
@@ -41,18 +47,24 @@ import org.compiere.model.I_AD_PInstance;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class AD_Issue_StepDef
 {
+	private final StepDefData<I_AD_Issue> issueTable;
+
 	private PInstanceId pInstanceId;
 	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public AD_Issue_StepDef(final TestContext testContext)
+	public AD_Issue_StepDef(
+			@NonNull final StepDefData<I_AD_Issue> issueTable,
+			@NonNull final TestContext testContext)
 	{
+		this.issueTable = issueTable;
 		this.testContext = testContext;
 	}
 
@@ -103,5 +115,19 @@ public class AD_Issue_StepDef
 		assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
 		assertThat(orgId).isNotNull();
 		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+	}
+
+	@And("validate AD_Issue")
+	public void validate_AD_Issue(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Issue.COLUMNNAME_AD_Issue_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Issue issue = issueTable.get(issueIdentifier);
+
+			final String issueSummary = DataTableUtil.extractStringForColumnName(row, I_AD_Issue.COLUMNNAME_IssueSummary);
+			final boolean containsSummary = issue.getIssueSummary().contains(issueSummary);
+			assertThat(containsSummary).isTrue();
+		}
 	}
 }

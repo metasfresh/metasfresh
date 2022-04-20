@@ -35,6 +35,7 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
+import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -51,7 +52,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
-import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 
 @Service
 public class OrderService
@@ -104,8 +104,12 @@ public class OrderService
 
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 
-		trxManager.runInNewTrx(
-				() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
+		final OlCandEnqueueResult result = trxManager.callInNewTrx(() -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId));
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestoneId, true);
+		}
 
 		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 	}

@@ -1,23 +1,24 @@
 package de.metas.ordercandidate.api;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_OrderLine;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.NullOLCandListener;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -190,6 +191,10 @@ public class OLCandRegistry
 							.setParameter("OLCandValidator", olCandValdiator.getClass().getSimpleName());
 					olCand.setIsError(true);
 					olCand.setErrorMsg(me.getLocalizedMessage());
+
+					final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+					olCand.setAD_Issue_ID(issueId.getRepoId());
+
 					break;
 				}
 			}

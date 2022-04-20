@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
-import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OLCandRequestProcessor;
@@ -37,9 +36,6 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -82,10 +78,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.split(body())
 					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()
-				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
-				.to(direct(CLEAR_ORDERS_ROUTE_ID))
-				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
-						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
+				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID));
 
 		from(direct(PROCESS_ORDER_ROUTE_ID))
 				.routeId(PROCESS_ORDER_ROUTE_ID)
@@ -116,15 +109,6 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.endDoTry()
 				.doCatch(Exception.class)
 					.to(direct(MF_ERROR_ROUTE_ID))
-				.end();
-
-		from(direct(CLEAR_ORDERS_ROUTE_ID))
-				.routeId(CLEAR_ORDERS_ROUTE_ID)
-				.log("Route invoked")
-				.process(new ClearOrdersProcessor()).id(CLEAR_OLCAND_PROCESSOR_ID)
-				.split(body())
-					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to clear orders: ${body}")
-					.to(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 				.end();
 
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))

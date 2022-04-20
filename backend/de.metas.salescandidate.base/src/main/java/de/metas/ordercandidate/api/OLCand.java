@@ -5,6 +5,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -131,6 +132,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final BigDecimal qtyShipped;
 
+	@Getter
+	private final AdIssueId adIssueId;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -149,7 +153,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final OrderLineGroup orderLineGroup,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
-			@Nullable final Quantity qtyItemCapacityEff)
+			@Nullable final Quantity qtyItemCapacityEff,
+			@Nullable final AdIssueId adIssueId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -188,6 +193,8 @@ public final class OLCand implements IProductPriceAware
 
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
+
+		this.adIssueId = adIssueId;
 	}
 
 	@Override
@@ -308,11 +315,12 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
-	public void setError(final String errorMsg, final int adNoteId)
+	public void setError(final String errorMsg, final int adNoteId, @Nullable final AdIssueId adIssueId)
 	{
 		olCandRecord.setIsError(true);
 		olCandRecord.setErrorMsg(errorMsg);
 		olCandRecord.setAD_Note_ID(adNoteId);
+		olCandRecord.setAD_Issue_ID(AdIssueId.toRepoId(adIssueId));
 	}
 
 	public String getPOReference()

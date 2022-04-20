@@ -1,8 +1,9 @@
 package de.metas.ordercandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -72,6 +73,26 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_OLCand.class, "AD_InputDataSource_ID", null);
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
+	 * Set Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
+
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
 	 * Set Statusmeldung.

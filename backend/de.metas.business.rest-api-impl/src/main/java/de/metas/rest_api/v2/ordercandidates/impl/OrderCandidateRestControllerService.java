@@ -23,20 +23,16 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
@@ -50,9 +46,6 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandValidationResult;
-import de.metas.ordercandidate.api.OLCandValidatorService;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.invoice.impl.InvoiceService;
@@ -74,7 +67,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Service
@@ -90,7 +82,6 @@ public class OrderCandidateRestControllerService
 	private final OLCandRepository olCandRepo;
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
-	private final OLCandValidatorService olCandValidatorService;
 	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
 	private final OrderService orderService;
@@ -100,7 +91,6 @@ public class OrderCandidateRestControllerService
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
-			@NonNull final OLCandValidatorService olCandValidatorService,
 			@NonNull final ShipmentService shipmentService,
 			@NonNull final InvoiceService invoiceService,
 			@NonNull final OrderService orderService)
@@ -109,7 +99,6 @@ public class OrderCandidateRestControllerService
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
-		this.olCandValidatorService = olCandValidatorService;
 		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
 		this.orderService = orderService;
@@ -248,44 +237,16 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
-	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
-	{
-		return clearOLCandidates(clearRequest.getInputDataSourceName(), clearRequest.getExternalHeaderId(), null);
-	}
-
-	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
+		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
 
-		final JsonOLCandClearingResponse clearingResponse =
-				clearOLCandidates(request.getInputDataSourceName(), request.getExternalHeaderId(), asyncBatchId);
-
-		final JsonOLCandProcessResponse.JsonOLCandProcessResponseBuilder jsonOLCandProcessResponseBuilder = JsonOLCandProcessResponse.builder()
-				.jsonOLCandClearingResponse(clearingResponse);
-
-		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder();
-
-		if (!clearingResponse.isSuccessfullyCleared())
-		{
-			return responseBuilder
-					.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build())
-					.build();
-		}
-
-		final Set<OLCandId> validOlCandIds = clearingResponse.getOlCandIdToValidationStatus().keySet().stream()
-				.map(OLCandId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(validOlCandIds);
+		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(olCandIds);
 
 		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 
-		jsonOLCandProcessResponseBuilder
-				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
-				.build();
-
-		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
+		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
+				.ordersResponse(buildGenerateOrdersResponse(orderIds));
 
 		if (request.getShip())
 		{
@@ -307,7 +268,7 @@ public class OrderCandidateRestControllerService
 			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
 		}
 
-		asyncBatchBL.updateProcessedFromMilestones(asyncBatchId);
+		asyncBatchId2OLCandIds.keySet().forEach(asyncBatchBL::updateProcessedFromMilestones);
 
 		if (Boolean.TRUE.equals(request.getCloseOrder()))
 		{
@@ -343,29 +304,6 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
-	private JsonOLCandClearingResponse clearOLCandidates(
-			@NonNull final String inputDataSource,
-			@NonNull final String externalHeaderId,
-			@Nullable final AsyncBatchId asyncBatchId)
-	{
-		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(inputDataSource);
-
-		final List<I_C_OLCand> olCands = getOLCands(inputDataSourceIdentifier, externalHeaderId);
-
-		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands, asyncBatchId);
-
-		final boolean successfullyCleared = olCandValidationResults.stream().allMatch(OLCandValidationResult::isOk);
-
-		final Map<Integer, Boolean> olCandId2ValidationStatus = olCandValidationResults.stream()
-				.collect(ImmutableMap.toImmutableMap(result -> result.getOlCandId().getRepoId(), OLCandValidationResult::isOk));
-
-		return JsonOLCandClearingResponse.builder()
-				.olCandIdToValidationStatus(olCandId2ValidationStatus)
-				.successfullyCleared(successfullyCleared)
-				.build();
-	}
-
-	@NonNull
 	private JsonGenerateOrdersResponse buildGenerateOrdersResponse(@NonNull final Set<OrderId> orderIds)
 	{
 		final List<JsonMetasfreshId> orderMetasfreshIds = orderIds.stream()
@@ -379,7 +317,7 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
-	private List<I_C_OLCand> getOLCands(
+	private Set<OLCandId> getOLCands(
 			@NonNull final IdentifierString identifierString,
 			@NonNull final String externalHeaderId)
 	{
@@ -390,7 +328,8 @@ public class OrderCandidateRestControllerService
 
 		return olCandRepo.getByQuery(olCandQuery)
 				.stream()
-				.map(OLCand::unbox)
-				.collect(ImmutableList.toImmutableList());
+				.map(OLCand::getId)
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
