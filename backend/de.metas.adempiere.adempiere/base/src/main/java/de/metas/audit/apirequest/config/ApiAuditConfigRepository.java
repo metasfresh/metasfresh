@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.config.ApiAuditConfigsMap;
 import de.metas.cache.CCache;
+import de.metas.audit.config.ApiAuditConfigsMap;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
 import de.metas.util.Services;
@@ -46,6 +48,18 @@ public class ApiAuditConfigRepository
 	public ImmutableList<ApiAuditConfig> getActiveConfigsByOrgId(@NonNull final OrgId orgId)
 	{
 		return getMap().getActiveConfigsByOrgId(orgId);
+	}
+
+	public ImmutableList<ApiAuditConfig> getAllConfigsByOrgId(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_API_Audit_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_API_Audit_Config.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.list()
+				.stream()
+				.map(ApiAuditConfigRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -70,7 +84,7 @@ public class ApiAuditConfigRepository
 	}
 
 	@NonNull
-	private static ApiAuditConfig fromRecord(@NonNull final I_API_Audit_Config record)
+	private ApiAuditConfig fromRecord(@NonNull final I_API_Audit_Config record)
 	{
 		return ApiAuditConfig.builder()
 				.apiAuditConfigId(ApiAuditConfigId.ofRepoId(record.getAPI_Audit_Config_ID()))
@@ -82,6 +96,7 @@ public class ApiAuditConfigRepository
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
