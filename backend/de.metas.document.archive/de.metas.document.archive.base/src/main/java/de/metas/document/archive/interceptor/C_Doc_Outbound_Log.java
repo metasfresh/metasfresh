@@ -1,28 +1,26 @@
 package de.metas.document.archive.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.acct.Doc;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
-import de.metas.document.archive.model.I_C_BPartner;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -79,13 +77,21 @@ public class C_Doc_Outbound_Log
 		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
 
 		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
-		if (!Check.isEmpty(documentEmail, true))
+		final String userEmailAddress = user.getEmailAddress();
+		final String locationEmail = docOutBoundService.getLocationEmail(docOutboundlogRecord);
+
+		// #12448 Only update the email address with a non-blank value
+		if (!Check.isBlank(documentEmail))
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
 		}
-		else
+		else if (!Check.isBlank(userEmailAddress))
 		{
-			docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress()); // might be empty!
+			docOutboundlogRecord.setCurrentEMailAddress(userEmailAddress);
+		}
+		else if (!Check.isBlank(locationEmail))
+		{
+			docOutboundlogRecord.setCurrentEMailAddress(locationEmail);
 		}
 
 		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
