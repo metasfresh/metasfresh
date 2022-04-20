@@ -65,8 +65,8 @@ public class ApiAuditConfigRepository
 				queryBL.createQueryBuilder(I_API_Audit_Config.class)
 						.create()
 						.stream()
-						.map(ApiAuditConfigRepository::fromRecord)
-						.collect(ImmutableList.toImmutableList()));
+				.map(ApiAuditConfigRepository::buildConfigFromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -82,6 +82,7 @@ public class ApiAuditConfigRepository
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))

@@ -113,6 +113,18 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
+	public void setKeepErroredRequestDays (final int KeepErroredRequestDays)
+	{
+		set_Value (COLUMNNAME_KeepErroredRequestDays, KeepErroredRequestDays);
+	}
+
+	@Override
+	public int getKeepErroredRequestDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_KeepErroredRequestDays);
+	}
+
+	@Override
 	public void setKeepRequestBodyDays (final int KeepRequestBodyDays)
 	{
 		set_Value (COLUMNNAME_KeepRequestBodyDays, KeepRequestBodyDays);
