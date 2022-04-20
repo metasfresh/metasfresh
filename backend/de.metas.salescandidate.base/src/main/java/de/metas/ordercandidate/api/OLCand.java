@@ -315,11 +315,12 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
-	public void setError(final String errorMsg, final int adNoteId)
+	public void setError(final String errorMsg, final int adNoteId, @Nullable final AdIssueId adIssueId)
 	{
 		olCandRecord.setIsError(true);
 		olCandRecord.setErrorMsg(errorMsg);
 		olCandRecord.setAD_Note_ID(adNoteId);
+		olCandRecord.setAD_Issue_ID(AdIssueId.toRepoId(adIssueId));
 	}
 
 	public String getPOReference()
@@ -453,10 +454,5 @@ public final class OLCand implements IProductPriceAware
 		}
 
 		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
-	}
-
-	public void setAdIssueId(@NonNull final AdIssueId adIssueId)
-	{
-		olCandRecord.setAD_Issue_ID(adIssueId.getRepoId());
 	}
 }

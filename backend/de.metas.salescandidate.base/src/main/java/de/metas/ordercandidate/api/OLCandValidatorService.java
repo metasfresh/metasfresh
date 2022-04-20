@@ -1,20 +1,17 @@
 package de.metas.ordercandidate.api;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class OLCandValidatorService
@@ -23,23 +20,26 @@ public class OLCandValidatorService
 	 * AD_Message to be used by users of this implementation.
 	 */
 	public static final AdMessageKey MSG_ERRORS_FOUND = AdMessageKey.of("de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors");
+	private static final AdMessageKey MSG_OL_CAND_VALIDATION_ERROR = AdMessageKey.of("OLCandValidatorService.OLCandValidationError");
+
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ThreadLocal<Boolean> validationProcessInProgress = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
 	private final OLCandRegistry olCandRegistry;
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public OLCandValidatorService(@NonNull final OLCandRegistry olCandRegistry)
 	{
 		this.olCandRegistry = olCandRegistry;
 	}
 
-	public boolean validate(@NonNull final I_C_OLCand olCand)
+	public I_C_OLCand validate(@NonNull final I_C_OLCand olCand)
 	{
 		final IOLCandValidator validators = olCandRegistry.getValidators();
 
 		// 08072
-		// before validating, unset the isserror and set the error message on null.
+		// before validating, unset the isError and set the error message on null.
 		// this way they will be up to date after validation
 		olCand.setErrorMsg(null);
 		olCand.setIsError(false);
@@ -48,7 +48,18 @@ public class OLCandValidatorService
 
 		validators.validate(olCand);
 
-		return !olCand.isError();
+		if (olCand.isError())
+		{
+			sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getC_OLCand_ID()));
+		}
+
+		if (!olCand.isError())
+		{
+			InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
+			return olCand;
+		}
+
+		return olCand;
 	}
 
 	/**
@@ -72,30 +83,13 @@ public class OLCandValidatorService
 		return isUpdateProcess;
 	}
 
-	public Set<OLCandId> updateOLCandidates(
-			@NonNull final List<I_C_OLCand> olCandList,
-			@Nullable final AsyncBatchId asyncBatchId)
+	public void sendNotificationAfterCommit(@NonNull final TableRecordReference candidateRecordReference)
 	{
-		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
-				.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
-
-		if (asyncBatchId != null)
-		{
-			updater.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
-		}
-
-		final Set<Integer> olCandIdsToUpdate = olCandList.stream()
-				.map(I_C_OLCand::getC_OLCand_ID)
-				.collect(Collectors.toSet());
-
-		queryBL.createQueryBuilder(org.adempiere.process.rpl.model.I_C_OLCand.class)
-				.addInArrayFilter(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIdsToUpdate)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false) // already processed records shall not be loaded
-				.create()
-				.update(updater);
-
-		return olCandIdsToUpdate.stream()
-				.map(OLCandId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		trxManager.runAfterCommit(() -> notificationBL.send(UserNotificationRequest.builder()
+																	.recipientUserId(Env.getLoggedUserId())
+																	.contentADMessage(MSG_OL_CAND_VALIDATION_ERROR)
+																	.contentADMessageParam(candidateRecordReference)
+																	.targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
+																	.build()));
 	}
 }

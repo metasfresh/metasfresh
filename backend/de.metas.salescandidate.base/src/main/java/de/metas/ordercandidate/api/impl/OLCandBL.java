@@ -115,7 +115,6 @@ public class OLCandBL implements IOLCandBL
 				.olCandListeners(olCandRegistry.getListeners())
 				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
 				.eligibleOLCandProvider(eligibleOLCandProvider)
-				.olCandValidator(olCandRegistry.getValidators())
 				.selectionId(selectionId)
 				.asyncBatchId(asyncBatchId)
 				.build()
@@ -481,10 +480,8 @@ public class OLCandBL implements IOLCandBL
 
 		final I_AD_Note note = createOLCandErrorNote(userInChargeId, olCand, ex);
 
-		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID());
-
 		final AdIssueId issueId = errorManager.createIssue(ex);
-		olCand.setAdIssueId(issueId);
+		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID(), issueId);
 
 		saveCandidate(olCand);
 	}

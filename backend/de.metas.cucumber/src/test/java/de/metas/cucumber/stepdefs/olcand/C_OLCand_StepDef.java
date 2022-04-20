@@ -54,6 +54,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
@@ -81,6 +82,7 @@ public class C_OLCand_StepDef
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_AD_Issue> issueTable;
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -97,6 +99,7 @@ public class C_OLCand_StepDef
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
 			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_AD_Issue> issueTable,
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;
@@ -106,6 +109,7 @@ public class C_OLCand_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.productTable = productTable;
+		this.issueTable = issueTable;
 		this.testContext = testContext;
 	}
 
@@ -250,10 +254,13 @@ public class C_OLCand_StepDef
 				assertThat(olCand.getPriceActual()).isEqualTo(priceActual);
 			}
 
-			final boolean thereIsAdIssue = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_OLCand.COLUMNNAME_AD_Issue_ID + ".boolean", false);
-			if (thereIsAdIssue)
+			final String issueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_AD_Issue_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(issueIdentifier))
 			{
-				assertThat(olCand.getAD_Issue_ID()).isNotNull();
+				final I_AD_Issue issue = InterfaceWrapperHelper.load(olCand.getAD_Issue_ID(), I_AD_Issue.class);
+				assertThat(issue).isNotNull();
+
+				issueTable.putOrReplace(issueIdentifier, issue);
 			}
 		}
 	}

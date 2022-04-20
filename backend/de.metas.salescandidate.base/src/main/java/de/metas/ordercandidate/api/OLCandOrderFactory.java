@@ -23,8 +23,6 @@ import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -42,7 +40,6 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -66,6 +63,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -146,12 +145,15 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
-	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandProcessingError");
 
 	//
 	// Parameters
@@ -161,7 +163,6 @@ class OLCandOrderFactory
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
-	private final IOLCandValidator olCandValidator;
 
 	//
 	private I_C_Order order;
@@ -178,11 +179,9 @@ class OLCandOrderFactory
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
-			final IOLCandListener olCandListeners,
-			@NonNull final IOLCandValidator olCandValidator)
+			final IOLCandListener olCandListeners)
 	{
 		this.orderDefaults = orderDefaults;
-		this.olCandValidator = olCandValidator;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
@@ -347,14 +346,12 @@ class OLCandOrderFactory
 				final I_AD_Note note = createOrderCompleteErrorNote(errorMsg);
 				for (final OLCand candidate : candidates)
 				{
-					candidate.setError(errorMsg, note.getAD_Note_ID());
-
-					final AdIssueId adIssueId = Services.get(IErrorManager.class).createIssue(ex);
-					candidate.setAdIssueId(adIssueId);
+					final AdIssueId adIssueId = errorManager.createIssue(ex);
+					candidate.setError(errorMsg, note.getAD_Note_ID(), adIssueId);
 
 					save(candidate.unbox());
 
-					sendUserNotificationError(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
+					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
 		}
@@ -370,6 +367,8 @@ class OLCandOrderFactory
 		{
 			candidate.setGroupingError(ex.getLocalizedMessage());
 			save(candidate.unbox());
+
+			olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 		}
 	}
 
@@ -460,7 +459,7 @@ class OLCandOrderFactory
 	{
 		try
 		{
-			olCandValidator.validate(candidate.unbox());
+			validateCandidate(candidate.unbox());
 
 			addOLCand0(candidate);
 
@@ -470,7 +469,7 @@ class OLCandOrderFactory
 		{
 			olcandBL.markAsError(userInChargeId, candidate, ex);
 
-			sendUserNotificationError(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
+			olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
@@ -638,15 +637,29 @@ class OLCandOrderFactory
 		return note;
 	}
 
-	private void sendUserNotificationError(@NonNull final TableRecordReference candidateRecordReference)
+	private void validateCandidate(@NonNull final I_C_OLCand candidate)
 	{
-		Services.get(INotificationBL.class)
-				.send(UserNotificationRequest.builder()
-							  .recipientUserId(Env.getLoggedUserIdIfExists().orElse(userInChargeId))
-							  .contentADMessage(MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR)
-							  .contentADMessageParam(candidateRecordReference)
-							  .targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
-							  .build());
+		olCandValidatorService.setValidationProcessInProgress(true);
+
+		try
+		{
+			final I_C_OLCand validatedOlCand = olCandValidatorService.validate(candidate);
+
+			if (!validatedOlCand.isError())
+			{
+				final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
+						.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
+
+				queryBL.createQueryBuilder(org.adempiere.process.rpl.model.I_C_OLCand.class)
+						.addEqualsFilter(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidate.getC_OLCand_ID())
+						.create()
+						.update(updater);
+			}
+		}
+		finally
+		{
+			olCandValidatorService.setValidationProcessInProgress(false);
+		}
 	}
 
 	@Nullable

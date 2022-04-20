@@ -11,7 +11,6 @@ import de.metas.ordercandidate.api.source.EligibleOLCandProvider;
 import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -68,7 +67,6 @@ public class OLCandsProcessorExecutor
 	private final IOLCandListener olCandListeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
 	private final EligibleOLCandProvider eligibleOLCandProvider;
-	private final IOLCandValidator olCandValidator;
 
 	private final int olCandProcessorId;
 	private final UserId userInChargeId;
@@ -83,7 +81,6 @@ public class OLCandsProcessorExecutor
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
 			@NonNull final EligibleOLCandProvider eligibleOLCandProvider,
-			@NonNull final IOLCandValidator olCandValidator,
 			@NonNull final PInstanceId selectionId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
@@ -92,7 +89,6 @@ public class OLCandsProcessorExecutor
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
 		this.eligibleOLCandProvider = eligibleOLCandProvider;
-		this.olCandValidator = olCandValidator;
 
 		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
@@ -210,7 +206,6 @@ public class OLCandsProcessorExecutor
 				.loggable(loggable)
 				.olCandProcessorId(olCandProcessorId)
 				.olCandListeners(olCandListeners)
-				.olCandValidator(olCandValidator)
 				.build();
 	}
 
