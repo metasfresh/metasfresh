@@ -181,7 +181,7 @@ public class BPartnerLocation
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final Boolean ephemeral
+			@Nullable final Boolean ephemeral,
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,

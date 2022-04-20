@@ -22,15 +22,12 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import com.google.common.base.Joiner;
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.common.util.BPartnerLocationCandidate;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
-import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
