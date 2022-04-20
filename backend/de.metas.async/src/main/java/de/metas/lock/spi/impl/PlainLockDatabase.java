@@ -460,8 +460,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 			if (existingLockInfo == null && !isAllowMultipleOwners() && !locksByLockOwner.isEmpty())
 			{
-				// development error
-				throw new LockFailedException("Cannot create lock " + lockInfo + " because we found a lockInfo which has allowMultipleOwners set: " + this);
+				logger.warn("Locked by a different owner: {} with allowMultipleOwner={}, see lockCandidateInfo={}",lockOwner, isAllowMultipleOwners(), lockInfo);
+				return false;
 			}
 
 			if (existingLockInfo != null)

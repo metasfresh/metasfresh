@@ -175,7 +175,7 @@ public class CandidateServiceTests
 												.qty(TEN)
 												.build());
 
-		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3), null);
 		assertThat(distributionOrderEvent).isNotNull();
 
 		assertThat(distributionOrderEvent.getEventDescriptor()).isNotNull();

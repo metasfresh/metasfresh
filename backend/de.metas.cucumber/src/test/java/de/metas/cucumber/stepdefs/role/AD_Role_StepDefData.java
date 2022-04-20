@@ -30,4 +30,8 @@ import org.compiere.model.I_AD_Role;
  */
 public class AD_Role_StepDefData extends StepDefData<I_AD_Role>
 {
+	public AD_Role_StepDefData()
+	{
+		super(I_AD_Role.class);
+	}
 }

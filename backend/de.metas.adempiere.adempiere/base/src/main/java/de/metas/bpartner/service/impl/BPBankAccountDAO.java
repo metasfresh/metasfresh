@@ -24,6 +24,7 @@ package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
@@ -165,6 +166,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.iban(record.getIBAN())
 				.swiftCode(record.getSwiftCode())
 				.qrIban(record.getQR_IBAN())
+				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID()))
 				//.changeLog()
 				.build();
 	}

@@ -27,4 +27,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 public class M_HU_Storage_StepDefData extends StepDefData<I_M_HU_Storage>
 {
+	public M_HU_Storage_StepDefData()
+	{
+		super(I_M_HU_Storage.class);
+	}
 }

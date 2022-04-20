@@ -106,4 +106,11 @@ public class CandidateId implements RepoIdAware
 	{
 		return repoId == IdConstants.UNSPECIFIED_REPO_ID;
 	}
+
+	public static boolean isRegularNonNull(@Nullable final CandidateId candidateId)
+	{
+		return candidateId != null
+				&& !candidateId.isUnspecified()
+				&& !candidateId.isNull();
+	}
 }

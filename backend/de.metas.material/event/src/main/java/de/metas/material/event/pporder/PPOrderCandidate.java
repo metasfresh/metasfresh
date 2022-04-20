@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -38,6 +39,9 @@ public class PPOrderCandidate
 {
 	int ppOrderCandidateId;
 
+	boolean simulated;
+
+	@With
 	PPOrderData ppOrderData;
 
 	List<PPOrderLineCandidate> lines;
@@ -46,10 +50,12 @@ public class PPOrderCandidate
 	@Builder(toBuilder = true)
 	public PPOrderCandidate(
 			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
+			@JsonProperty("simulated") final boolean simulated,
 			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
 			@JsonProperty("lines") @Nullable final List<PPOrderLineCandidate> lines)
 	{
 		this.ppOrderCandidateId = ppOrderCandidateId;
+		this.simulated = simulated;
 		this.ppOrderData = ppOrderData;
 		this.lines = lines;
 	}

@@ -195,6 +195,9 @@ public class PPOrderUtil
 		orderBOMLine.setM_Locator_ID(fromOrder.getM_Locator_ID());
 	}
 
+	/**
+	 * @return {@code true} if the respective ppOrder's matching product planning exists and has {@code PP_Product_Planning.IsPickDirectlyIfFeasible='Y'}
+	 */
 	public boolean pickIfFeasible(@NonNull final PPOrderData ppOrderData)
 	{
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);

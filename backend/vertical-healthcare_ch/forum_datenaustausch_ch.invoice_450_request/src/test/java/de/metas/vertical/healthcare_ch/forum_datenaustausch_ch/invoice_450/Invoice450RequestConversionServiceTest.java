@@ -22,12 +22,21 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPBankAcctUse;
+import de.metas.greeting.GreetingRepository;
+import de.metas.location.LocationId;
+import de.metas.location.LocationRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlAddress;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsr9;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsrQR;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
@@ -35,8 +44,12 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.SnapshotHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,12 +73,20 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
 public class Invoice450RequestConversionServiceTest
 {
 
+	public static final String BANK_NAME = "Test Bank";
+	public static final String BANK_COUNTRY_CODE = "DE";
+	public static final String BANK_CITY = "Bonn";
+	public static final String BANK_POSTAL = "12345";
 	private Invoice450RequestConversionService invoice450RequestConversionService;
+
+	private static final int bPartnerId = 10;
+	private static final int bpBankAccountId = 20;
 
 	@BeforeClass
 	public static void initStatic()
 	{
 		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
+		AdempiereTestHelper.get().staticInit();
 	}
 
 	@AfterClass
@@ -79,7 +100,9 @@ public class Invoice450RequestConversionServiceTest
 	{
 		invoice450RequestConversionService = new Invoice450RequestConversionService();
 		invoice450RequestConversionService.setUsePrettyPrint(true);
-		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(LocationRepository.class, new LocationRepository());
+		SpringContextHolder.registerJUnitBean(BankRepository.class, new BankRepository());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	@Test
@@ -161,10 +184,9 @@ public class Invoice450RequestConversionServiceTest
 	}
 
 	@Test
-	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment()
+	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment_BankFromXML()
 	{
-		final int bPartnerId = createBPartnerTestSetup();
-
+		createBPartnerTestSetup(false);
 		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450.xml";
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
@@ -185,10 +207,9 @@ public class Invoice450RequestConversionServiceTest
 	}
 
 	@Test
-	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment_no_Bank()
+	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment_no_BankInDB()
 	{
-		final int bPartnerId = createBPartnerTestSetup();
-
+		createBPartnerTestSetup(false);
 		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450_noEsrBank.xml";
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
@@ -209,23 +230,87 @@ public class Invoice450RequestConversionServiceTest
 		assertOutputMatchesSnapshot(outputStream);
 	}
 
-	private int createBPartnerTestSetup()
+	@Test
+	public void exampleFile_Abrechnung_Praktischer_Arzt_TARMED_450_with_augment_with_BankInDB()
 	{
-		final int bPartnerId = 10;
+		createBPartnerTestSetup(true);
+		final String inputXmlFileName = "/public_examples/Abrechnung Praktischer Arzt TARMED 450_noEsrBank.xml";
+		final InputStream inputStream = createInputStream(inputXmlFileName);
+		assertXmlIsValid(inputStream); // guard
+
+		final XmlRequest xRequest = invoice450RequestConversionService.toCrossVersionRequest(createInputStream(inputXmlFileName));
+
+		assertThat(xRequest.getPayload().getBody().getEsr()).isOfAnyClassIn(XmlEsr9.class);
+		assertThat(((XmlEsr9)xRequest.getPayload().getBody().getEsr()).getBank()).isNull();
+
+		final XmlRequest withMod = invoice450RequestConversionService.augmentRequest(xRequest, BPartnerId.ofRepoId(bPartnerId));
+
+		final XmlEsr esr = withMod.getPayload().getBody().getEsr();
+		assertThat(esr).isOfAnyClassIn(XmlEsrQR.class);
+
+		final XmlAddress bank = ((XmlEsrQR)esr).getBank();
+		assertThat(bank).isNotNull();
+
+		final XmlCompany company = bank.getCompany();
+		assertThat(company.getCompanyname()).isEqualTo(BANK_NAME);
+
+		final XmlPostal postal = company.getPostal();
+		assertThat(postal.getCity()).isEqualTo(BANK_CITY);
+		assertThat(postal.getCountryCode()).isEqualTo(BANK_COUNTRY_CODE);
+		assertThat(postal.getZip()).isEqualTo(BANK_POSTAL);
+
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		invoice450RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
+
+		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		assertOutputMatchesSnapshot(outputStream);
+	}
+
+	private void createBPartnerTestSetup(final boolean createBankDetails)
+	{
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bPartner.setC_BPartner_ID(bPartnerId);
+		InterfaceWrapperHelper.save(bPartner);
 
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BP_BankAccount_ID(bpBankAccountId);
 		bankAccount.setC_BPartner_ID(bPartnerId);
 		bankAccount.setQR_IBAN("CH0930769016110591261");
 		bankAccount.setC_Currency_ID(123);
 		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
 		bankAccount.setIBAN("123");
 		bankAccount.setSwiftCode("123");
+		if (createBankDetails)
+		{
+			final BankId bankId = addBankRecord();
+			bankAccount.setC_Bank_ID(bankId.getRepoId());
+		}
 		InterfaceWrapperHelper.save(bankAccount);
+	}
 
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bPartner.setC_BPartner_ID(bPartnerId);
-		InterfaceWrapperHelper.save(bPartner);
-		return bPartnerId;
+	private BankId addBankRecord()
+	{
+		final LocationId bankLocation = createBankLocation();
+		final I_C_Bank bank = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
+		bank.setC_Location_ID(bankLocation.getRepoId());
+		bank.setName(BANK_NAME);
+		InterfaceWrapperHelper.save(bank);
+		return BankId.ofRepoId(bank.getC_Bank_ID());
+	}
+
+	private LocationId createBankLocation()
+	{
+		final I_C_Country country = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+		country.setCountryCode(BANK_COUNTRY_CODE);
+		country.setC_Country_ID(101);
+		InterfaceWrapperHelper.save(country);
+
+		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		location.setCity(BANK_CITY);
+		location.setPostal(BANK_POSTAL);
+		location.setC_Country_ID(101);
+		InterfaceWrapperHelper.save(location);
+		return LocationId.ofRepoId(location.getC_Location_ID());
 	}
 
 	private void testWithPublicExampleXmlFile(@NonNull final String inputXmlFileName)

@@ -22,7 +22,6 @@
 
 package de.metas.common.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -32,7 +31,6 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonClearanceStatusInfo.JsonClearanceStatusInfoBuilder.class)
 public class JsonClearanceStatusInfo
 {

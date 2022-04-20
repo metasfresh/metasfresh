@@ -1,446 +1,324 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import classnames from 'classnames';
-import FocusTrap from 'focus-trap-react';
 
+import * as api from '../../../api/attributes';
+import { formatDateWithZeros } from '../../../utils/documentListHelper';
 import {
-  getAttributesInstance,
-  getLayout,
-  patchRequest,
-  completeRequest,
-} from '../../../api';
-import {
-  parseToDisplay,
-  formatDateWithZeros,
-} from '../../../utils/documentListHelper';
-import AttributesDropdown from './AttributesDropdown';
-import {
-  DROPUP_START,
   DROPDOWN_OFFSET_BIG,
-  DROPDOWN_OFFSET_SMALL,
+  DROPUP_OFFSET_SMALL,
+  DROPUP_START,
 } from '../../../constants/Constants';
 import { getTableId } from '../../../reducers/tables';
 
+import AttributesDropdown from './AttributesDropdown';
+
 /**
- * @file Class based component.
- * @module Attributes
- * @extends Component
+ * @component
  */
-export default class Attributes extends Component {
-  constructor(props) {
-    super(props);
+const Attributes = ({
+  entity,
+  docType,
+  dataId,
+  tabId,
+  rowId,
+  viewId,
+  disconnected,
+  fieldName,
+  //
+  value,
+  attributeType,
+  //
+  rowIndex,
+  tabIndex,
+  readonly,
+  isModal,
+  //
+  patch,
+  handleBackdropLock,
+  updateHeight,
+  openModal,
+  closeModal,
+  setTableNavigation,
+}) => {
+  const [layout, setLayout] = useState(null);
+  const [editingInstanceId, setEditingInstanceId] = useState(null);
+  const [fieldsByName, setFieldsByName] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    this.state = {
-      dropdown: false,
-      layout: null,
-      data: null,
-      loading: false,
-    };
-  }
+  const loadDropdownData = () => {
+    const templateId =
+      value && value.key
+        ? parseInt(value.key, 10) // assume 'value' is a key/buttonCaption lookup value
+        : parseInt(value, 10); // assume 'value' is string or int
 
-  /**
-   * @method handleInit
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleInit = () => {
-    const {
+    const source = computeEditingSource({
+      entity,
       docType,
       dataId,
       tabId,
       rowId,
       viewId,
       fieldName,
-      attributeType,
-      widgetData,
-      entity,
-    } = this.props;
+    });
 
-    const templateId =
-      widgetData.value && widgetData.value.key
-        ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
-        : parseInt(widgetData.value, 10); // assume 'value' is string or int
-
-    let source;
-    if (entity === 'window') {
-      source = {
-        windowId: docType,
-        documentId: dataId,
-        tabId: tabId,
-        rowId: rowId,
-        fieldName: fieldName,
-      };
-    } else if (entity === 'documentView') {
-      source = {
-        viewId: viewId,
-        rowId: rowId,
-        fieldName: fieldName,
-      };
-    } else if (entity === 'process') {
-      source = {
-        processId: docType,
-        documentId: dataId,
-        fieldName: fieldName,
-      };
-    } else {
-      // eslint-disable-next-line no-console
-      console.error('Unknown entity: ' + entity);
-    }
-
-    this.setState(
-      {
-        loading: true,
-      },
-      () => {
-        return getAttributesInstance(attributeType, templateId, source)
-          .then((response) => {
-            const { id, fieldsByName } = response.data;
-
-            this.setState({
-              data: parseToDisplay(fieldsByName),
-            });
-
-            return getLayout(attributeType, id);
-          })
-          .then((response) => {
-            const { elements } = response.data;
-
-            this.setState({
-              layout: elements,
-              loading: false,
-            });
-          })
-          .then(() => {
-            this.setState({
-              dropdown: true,
-            });
-          })
-          .catch((error) => {
-            // eslint-disable-next-line no-console
-            console.error('Attributes handleInit error: ', error.message);
-            this.setState({
-              loading: false,
-            });
-          });
-      }
-    );
+    setIsLoading(true);
+    return api
+      .createAttributesEditingInstance(attributeType, templateId, source)
+      .then(({ id, layout, fieldsByName }) => {
+        setEditingInstanceId(id);
+        setLayout(layout.elements);
+        setFieldsByName(mergeFieldsByNames({}, fieldsByName));
+        setIsDropdownOpen(true);
+      })
+      .catch((error) =>
+        console.error(
+          'Failed creating a new editing attributes instance: ',
+          error.message
+        )
+      )
+      .finally(() => setIsLoading(false));
   };
 
-  /**
-   * @method handleToggle
-   * @summary ToDo: Describe the method
-   * @param {bool} show
-   * @todo Write the documentation
-   */
-  handleToggle = (show) => {
-    const {
-      handleBackdropLock,
-      updateHeight,
-      rowIndex,
-      isModal,
-      setTableNavigation,
-      docType,
-      dataId,
-      tabId,
-    } = this.props;
-    const { loading, dropdown } = this.state;
+  const showHideDropdown = (show) => {
+    // Do nothing if readonly. Shall not happen
+    if (readonly) {
+      return;
+    }
 
     // this is limited to tables only
-    if (rowIndex != null) {
-      const tableId = getTableId({ windowId: docType, docId: dataId, tabId });
+    if (rowIndex != null && setTableNavigation) {
+      const tableId = getTableId({
+        windowId: docType,
+        viewId,
+        docId: dataId,
+        tabId,
+      });
       setTableNavigation(tableId, !show);
     }
 
-    !dropdown &&
+    !isDropdownOpen &&
       !isModal &&
       rowIndex < DROPUP_START &&
       updateHeight(DROPDOWN_OFFSET_BIG);
-    dropdown &&
+    isDropdownOpen &&
       !isModal &&
       rowIndex < DROPUP_START &&
-      updateHeight(DROPDOWN_OFFSET_SMALL);
+      updateHeight(DROPUP_OFFSET_SMALL);
 
-    if (!loading) {
-      this.setState(
-        {
-          data: null,
-          layout: null,
-          dropdown: null,
-        },
-        () => {
-          //Method is disabling outside click in parents
-          //elements if there is some
-          handleBackdropLock && handleBackdropLock(!!show);
+    if (!isLoading) {
+      setLayout(null);
+      setFieldsByName(null);
+      setIsDropdownOpen(false);
 
-          if (show) {
-            this.handleInit();
-          }
-        }
-      );
+      //Method is disabling outside click in parents elements if there is some
+      handleBackdropLock && handleBackdropLock(!!show);
+
+      if (show) {
+        loadDropdownData();
+      }
     }
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @todo Write the documentation
-   */
-  handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      this.handleCompletion();
-    }
+  const mergeFieldsByNameIntoState = (fieldsByNameToMerge) => {
+    setFieldsByName(mergeFieldsByNames(fieldsByName, fieldsByNameToMerge));
   };
 
-  /**
-   * @method handleChange
-   * @summary ToDo: Describe the method
-   * @param {*} field
-   * @param {*} value
-   * @todo Write the documentation
-   */
-  handleChange = async (field, value) => {
-    const { dropdown, data } = this.state;
-    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+  const handleFieldChange = (fieldName, value) => {
+    // Add special case of formatting for the case when people input 04.7.2020 to be transformed to 04.07.2020
     value =
-      dropdown && data[field].widgetType === 'Date'
-        ? await formatDateWithZeros(value)
+      isDropdownOpen && fieldsByName[fieldName].widgetType === 'Date'
+        ? formatDateWithZeros(value)
         : value;
 
-    this.setState((prevState) => ({
-      data: Object.assign({}, prevState.data, {
-        [field]: Object.assign({}, prevState.data[field], { value }),
-      }),
-    }));
+    mergeFieldsByNameIntoState({ [fieldName]: { value } });
   };
 
-  /**
-   * @method handlePatch
-   * @summary ToDo: Describe the method
-   * @param {*} prop
-   * @param {*} value
-   * @param {*} id
-   * @param {func} cb
-   * @todo Write the documentation
-   */
-  handlePatch = (prop, value, id, cb) => {
-    const { attributeType } = this.props;
-    const { data, loading } = this.state;
+  const handleFieldPatch = (fieldName, value, editingInstanceId) => {
+    if (!isLoading && fieldsByName) {
+      mergeFieldsByNameIntoState({ [fieldName]: { value } });
 
-    if (!loading && data) {
-      return patchRequest({
-        entity: attributeType,
-        docType: null,
-        docId: id,
-        property: prop,
-        value,
-      }).then((response) => {
-        if (response.data && response.data.length) {
-          const { fieldsByName, id } = response.data[0];
-          let fetchLayout = false;
-          const updatedDataState = this.state.data;
-
-          Object.keys(fieldsByName).map((fieldName) => {
-            if (
-              updatedDataState[fieldName].displayed !==
-              fieldsByName[fieldName].displayed
-            ) {
-              fetchLayout = true;
-            }
-
-            updatedDataState[fieldName] = {
-              ...updatedDataState[fieldName],
-              ...fieldsByName[fieldName],
-            };
-          });
-
-          this.setState({ data: updatedDataState }, cb);
-
-          if (fetchLayout) {
-            getLayout(attributeType, id).then((response) => {
-              const { elements } = response.data;
-
-              this.setState({
-                layout: elements,
-                loading: false,
-              });
-            });
-          }
-
-          return Promise.resolve(true);
-        }
-        return Promise.resolve(false);
-      });
+      return api
+        .patchAttributes({
+          attributeType,
+          editingInstanceId,
+          fieldName,
+          value,
+        })
+        .then((fieldsByName) => mergeFieldsByNameIntoState(fieldsByName));
+    } else {
+      return Promise.resolve();
     }
-    return Promise.resolve(true);
   };
 
-  /**
-   * @method handleCompletion
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleCompletion = () => {
-    const { data, loading } = this.state;
-    const { disconnected } = this.props;
-
-    if (!loading && data) {
-      const mandatory = Object.keys(data).filter(
-        (fieldName) => data[fieldName].mandatory
+  const handleCompletion = () => {
+    if (!isLoading && fieldsByName) {
+      const mandatoryFieldNames = Object.keys(fieldsByName).filter(
+        (fieldName) => fieldsByName[fieldName].mandatory
       );
-      const valid = !mandatory.filter((field) => !data[field].value).length;
+      const valid = !mandatoryFieldNames.filter(
+        (fieldName) => !fieldsByName[fieldName].value
+      ).length;
 
       //there are required values that are not set. just close
-      if (mandatory.length && !valid) {
-        /** we are treating the inlineTab differently - we don't show this confirm dialog  */
+      if (mandatoryFieldNames.length && !valid) {
+        /** we are treating the inlineTab differently - we don't show this confirmation dialog  */
         if (disconnected === 'inlineTab') {
           /** TODO: here we might use a prompt explaining that the settings were not saved */
-          this.handleToggle(false);
+          showHideDropdown(false);
         } else {
           /** the generic case  */
           if (window.confirm('Do you really want to leave?')) {
-            this.handleToggle(false);
+            showHideDropdown(false);
           }
         }
-        return;
+      } else {
+        doCompleteRequest();
+        showHideDropdown(false);
       }
-
-      this.doCompleteRequest();
-      this.handleToggle(false);
     }
   };
 
-  /**
-   * @method doCompleteRequest
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  doCompleteRequest = () => {
-    const { attributeType, patch, openModal, closeModal } = this.props;
-    const { data } = this.state;
-    const attrId = data && data.ID ? data.ID.value : -1;
-
-    completeRequest(attributeType, attrId).then((response) => {
-      patch(response.data).then(({ triggerActions }) => {
-        // post PATCH actions if we have `triggerActions` present
-        if (triggerActions) {
-          closeModal();
-          triggerActions.forEach((itemTriggerAction) => {
-            let {
-              selectedDocumentPath: { documentId },
-              processId,
-            } = itemTriggerAction;
-
-            openModal({
-              windowId: processId,
-              modalType: 'process',
-              viewDocumentIds: [`${documentId}`],
-            });
-          });
-        }
-      });
-    });
+  const doCompleteRequest = () => {
+    api
+      .completeAttributesEditing(attributeType, editingInstanceId, fieldsByName)
+      .then((createdLookupValue) => patch(createdLookupValue))
+      .then(handleAfterPatchTriggerActions);
   };
 
-  render() {
-    const {
-      widgetData,
-      dataId,
-      rowId,
-      attributeType,
-      tabIndex,
-      readonly,
-      rowIndex,
-    } = this.props;
+  const handleAfterPatchTriggerActions = ({ triggerActions }) => {
+    // post PATCH actions if we have `triggerActions` present
+    if (triggerActions) {
+      closeModal();
+      triggerActions.forEach((itemTriggerAction) => {
+        const {
+          selectedDocumentPath: { documentId },
+          processId,
+        } = itemTriggerAction;
 
-    const { dropdown, data, layout } = this.state;
-    const { value } = widgetData;
-    const label = value ? value.caption : '';
-    const attrId = data && data.ID ? data.ID.value : -1;
+        openModal({
+          windowId: processId,
+          modalType: 'process',
+          viewDocumentIds: [`${documentId}`],
+        });
+      });
+    }
+  };
 
-    return (
-      <FocusTrap active={!!dropdown}>
-        <div
-          onKeyDown={this.handleKeyDown}
-          className={classnames('attributes', {
-            'attributes-in-table': rowId,
-          })}
-        >
-          <button
-            tabIndex={tabIndex}
-            onClick={() => this.handleToggle(true)}
-            className={classnames(
-              'btn btn-block tag tag-lg tag-block tag-secondary pointer',
-              {
-                'tag-disabled': dropdown,
-                'tag-disabled disabled': readonly,
-              }
-            )}
-          >
-            {label ? label : 'Edit'}
-          </button>
-          {dropdown && (
-            <AttributesDropdown
-              {...this.props}
-              attributeType={attributeType}
-              dataId={dataId}
-              tabIndex={tabIndex}
-              onClickOutside={this.handleCompletion}
-              data={data}
-              layout={layout}
-              handlePatch={this.handlePatch}
-              handleChange={this.handleChange}
-              attrId={attrId}
-              rowIndex={rowIndex}
-            />
-          )}
-        </div>
-      </FocusTrap>
-    );
-  }
-}
+  const buttonCaption = value?.caption || 'Edit';
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} patch
- * @prop {func} handleBackdropLock
- * @prop {bool} [isModal]
- * @prop {*} widgetData
- * @prop {*} dataId
- * @prop {*} rowId
- * @prop {*} attributeType
- * @prop {*} tabIndex
- * @prop {*} readonly
- * @prop {*} onBlur
- * @prop {*} docType
- * @prop {*} tabId
- * @prop {*} viewId
- * @prop {*} fieldName
- * @prop {*} entity
- * @todo Check props. Which proptype? Required or optional?
- */
+  return (
+    <div className={classnames('attributes', { 'attributes-in-table': rowId })}>
+      <button
+        tabIndex={tabIndex}
+        onClick={() => showHideDropdown(true)}
+        className={classnames(
+          'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+          {
+            'tag-disabled': isDropdownOpen,
+            'tag-disabled disabled': readonly,
+          }
+        )}
+      >
+        {buttonCaption}
+      </button>
+      {isDropdownOpen && layout && fieldsByName && (
+        <AttributesDropdown
+          attributeType={attributeType}
+          editingInstanceId={editingInstanceId}
+          layout={layout}
+          fieldsByName={fieldsByName}
+          rowIndex={rowIndex}
+          tabIndex={tabIndex}
+          isModal={isModal}
+          //
+          onFieldChange={handleFieldChange}
+          onFieldPatch={handleFieldPatch}
+          onCompletion={handleCompletion}
+        />
+      )}
+    </div>
+  );
+};
+
 Attributes.propTypes = {
+  entity: PropTypes.string.isRequired, // i.e. window, documentView, process
+  docType: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // i.e. windowId or processId
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tabId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  viewId: PropTypes.string,
+  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
+  fieldName: PropTypes.string,
+  //
+  value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]), // lookup value, e.g. { key: 1234, caption: 'ASI description' }, { key: 333, caption: 'Location Description'  }, ""
+  attributeType: PropTypes.string.isRequired,
+  //
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  tabIndex: PropTypes.number,
+  readonly: PropTypes.bool,
+  isModal: PropTypes.bool,
+  //
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
-  isModal: PropTypes.bool,
-  widgetData: PropTypes.any,
-  dataId: PropTypes.any,
-  rowId: PropTypes.any,
-  attributeType: PropTypes.any,
-  tabIndex: PropTypes.any,
-  readonly: PropTypes.any,
-  onBlur: PropTypes.any,
-  docType: PropTypes.any,
-  tabId: PropTypes.any,
-  viewId: PropTypes.any,
-  fieldName: PropTypes.any,
-  entity: PropTypes.any,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
-  widgetType: PropTypes.string,
-  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
   openModal: PropTypes.func,
   closeModal: PropTypes.func,
   setTableNavigation: PropTypes.func,
 };
+
+const computeEditingSource = ({
+  entity,
+  docType,
+  dataId,
+  tabId,
+  rowId,
+  fieldName,
+  viewId,
+}) => {
+  if (entity === 'window') {
+    return {
+      windowId: docType,
+      documentId: dataId,
+      tabId: tabId,
+      rowId: rowId,
+      fieldName: fieldName,
+    };
+  } else if (entity === 'documentView') {
+    return {
+      viewId: viewId,
+      rowId: rowId,
+      fieldName: fieldName,
+    };
+  } else if (entity === 'process') {
+    return {
+      processId: docType,
+      documentId: dataId,
+      fieldName: fieldName,
+    };
+  } else {
+    throw 'Unknown entity: ' + entity;
+  }
+};
+
+const mergeFieldsByNames = (existingFieldsByName, fieldsByNameToMerge) => {
+  const result = existingFieldsByName ? { ...existingFieldsByName } : {};
+
+  Object.keys(fieldsByNameToMerge).forEach((fieldName) => {
+    // Skip pseudo-field "ID". We already have editingInstanceId in our state.
+    if (fieldName === 'ID') {
+      return;
+    }
+
+    const fieldData = fieldsByNameToMerge[fieldName];
+    result[fieldName] = {
+      ...result[fieldName],
+      ...fieldData,
+    };
+  });
+
+  return result;
+};
+
+export default Attributes;

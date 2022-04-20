@@ -22,12 +22,16 @@
 
 package de.metas.camel.externalsystems.common.v2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -35,10 +39,19 @@ import lombok.Value;
 public class ExternalReferenceLookupCamelRequest
 {
 	@NonNull
+	@JsonProperty("jsonExternalReferenceLookupRequest")
+	JsonExternalReferenceLookupRequest jsonExternalReferenceLookupRequest;
+
+	@NonNull
+	@JsonProperty("externalSystemConfigId")
+	JsonMetasfreshId externalSystemConfigId;
+
+	@NonNull
 	@JsonProperty("orgCode")
 	String orgCode;
 
-	@NonNull
-	@JsonProperty("externalReferenceLookupRequest")
-	JsonExternalReferenceLookupRequest externalReferenceLookupRequest;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonProperty("adPInstanceId")
+	JsonMetasfreshId adPInstanceId;
 }

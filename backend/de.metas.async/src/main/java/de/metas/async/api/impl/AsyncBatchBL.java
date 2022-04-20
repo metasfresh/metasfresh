@@ -24,7 +24,6 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
@@ -50,6 +49,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -62,6 +62,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -84,6 +85,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final CCache<AsyncBatchTypeId, AsyncBatchType> asyncBatchTypesById = CCache.<AsyncBatchTypeId, AsyncBatchType>builder()
 			.tableName(I_C_Async_Batch_Type.Table_Name)
 			.build();
+
+	/**
+	 * See {@link #computeNowTimestamp()}
+	 */
+	@Setter
+	private boolean useMetasfreshSystemTime;
 
 	@Override
 	public IAsyncBatchBuilder newAsyncBatch()
@@ -233,8 +240,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return Duration.ofMillis(processedTimeOffsetMillis);
 		}
 
-		// Case: when did not pass enough time between fist enqueue time and now
-		final Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
+		// Case: when did not pass enough time between fist enqueue time and now.
+		final Timestamp now = computeNowTimestamp();
 
 		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(firstEnqueued, processedTimeOffsetMillis);
 
@@ -257,6 +264,20 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		//
 		// If we reach this point, we can move on and check if the async batch is processed
 		return Duration.ZERO;
+	}
+
+	/**
+	 * When running some unit-tests, we need to use {@link SystemTime}.
+	 * But otherwise, don't use our de.metas.common.util.time.SystemTime, because it might be set to a fixed value when cucumber-testing which might lead to inter-overflows
+	 */
+	@Nullable
+	private Timestamp computeNowTimestamp()
+	{
+		if(useMetasfreshSystemTime)
+		{
+			return SystemTime.asTimestamp();
+		}
+		return TimeUtil.asTimestamp(Instant.now());
 	}
 
 	@Override

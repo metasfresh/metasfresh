@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -116,7 +116,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 
 		if (!isSyncBPartnerEnabled(config.getChildConfig()))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSyncBPartners to external system is false! No action is performed!", config.getChildConfig().getId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSendBPartnerAllowed to external system is false! No action is performed!", config.getChildConfig().getId());
 			return Optional.empty();
 		}
 
