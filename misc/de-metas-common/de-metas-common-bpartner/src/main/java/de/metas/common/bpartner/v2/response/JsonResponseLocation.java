@@ -68,6 +68,8 @@ public class JsonResponseLocation
 	public static final String REMIT_TO = "remitTo";
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
+	public static final String EPHEMERAL = "ephemeral";
+
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
@@ -128,6 +130,8 @@ public class JsonResponseLocation
 	@ApiModelProperty()
 	boolean billToDefault;
 
+	boolean ephemeral;
+
 	@JsonInclude(Include.NON_EMPTY)
 	String setupPlaceNo;
 
@@ -171,6 +175,7 @@ public class JsonResponseLocation
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
+			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
 			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
 
 			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
@@ -213,6 +218,8 @@ public class JsonResponseLocation
 		this.remitTo = remitTo;
 		this.handoverLocation = handoverLocation;
 		this.replicationLookupDefault = replicationLookupDefault;
+
+		this.ephemeral = ephemeral;
 
 		this.changeInfo = changeInfo;
 	}

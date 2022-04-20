@@ -163,20 +163,27 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
-	@ApiModelProperty(position = 200)
+	@ApiModelProperty(position = 200, //
+			value = "Translates to C_BPartner_Location.IsEphemeral")
+	private boolean ephemeral;
+
+	@ApiModelProperty(hidden = true)
+	private boolean ephemeralSet;
+
+	@ApiModelProperty(position = 210)
 	@Nullable
 	private String email;
 
 	@ApiModelProperty(hidden = true)
 	private boolean emailSet;
 
-	@ApiModelProperty(position = 210)
+	@ApiModelProperty(position = 220)
 	private String phone;
 
 	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
-	@ApiModelProperty(position = 220, //
+	@ApiModelProperty(position = 230, //
 			value = "Translates to C_BPartner_Location.VisitorsAddress")
 	private Boolean visitorsAddress;
 
@@ -289,6 +296,12 @@ public class JsonRequestLocation
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
+	}
+
+	public void setEphemeral(final Boolean ephemeral)
+	{
+		this.ephemeral = ephemeral;
+		this.ephemeralSet = true;
 	}
 
 	public void setEmail(@Nullable final String email)
