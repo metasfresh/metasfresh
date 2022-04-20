@@ -322,14 +322,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setPaymentRule(ic, orderLine);
 	}
 
-	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
-		ic.setIncotermLocation(order.getIncotermLocation());
-	}
-
 	private void setPaymentRule(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
@@ -354,6 +346,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 		}
+	}
+
+
+	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		ic.setIncotermLocation(order.getIncotermLocation());
 	}
 
 	private void setC_PaymentTerm(
