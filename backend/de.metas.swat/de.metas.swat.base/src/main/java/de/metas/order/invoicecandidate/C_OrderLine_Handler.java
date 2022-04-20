@@ -355,7 +355,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 		}
 	}
-
+	
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
