@@ -23,8 +23,8 @@ package de.metas.contracts.interceptor;
  */
 
 import de.metas.contracts.Contracts_Constants;
-import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
+import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleCallOrderVetoer;
