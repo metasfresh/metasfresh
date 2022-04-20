@@ -80,7 +80,6 @@ public class C_Doc_Outbound_Log
 		final String userEmailAddress = user.getEmailAddress();
 		final String locationEmail = docOutBoundService.getLocationEmail(docOutboundlogRecord);
 
-		// #12448 Only update the email address with a non-blank value
 		if (!Check.isBlank(documentEmail))
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
@@ -89,7 +88,7 @@ public class C_Doc_Outbound_Log
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(userEmailAddress);
 		}
-		else if (!Check.isBlank(locationEmail))
+		else
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(locationEmail);
 		}
