@@ -26,8 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.config.ApiAuditConfigsMap;
 import de.metas.cache.CCache;
-import de.metas.audit.config.ApiAuditConfigsMap;
-import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
 import de.metas.util.Services;
@@ -84,7 +82,7 @@ public class ApiAuditConfigRepository
 	}
 
 	@NonNull
-	private ApiAuditConfig fromRecord(@NonNull final I_API_Audit_Config record)
+	private static ApiAuditConfig fromRecord(@NonNull final I_API_Audit_Config record)
 	{
 		return ApiAuditConfig.builder()
 				.apiAuditConfigId(ApiAuditConfigId.ofRepoId(record.getAPI_Audit_Config_ID()))

@@ -24,7 +24,6 @@ package de.metas.audit.apirequest;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
-import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
@@ -40,10 +39,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-import java.util.List;
 import java.util.function.Consumer;
 
 @Service
@@ -81,10 +76,8 @@ public class ApiAuditCleanUpService
 			return;
 		}
 
-		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
-
 		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
-			if (isReadyForCleanup(apiRequestAudit, apiAuditConfigShortTimeIndex))
+			if (isReadyForCleanup(apiRequestAudit))
 			{
 				deleteProcessedRequestInNewTrx(apiRequestAudit);
 			}
@@ -110,8 +103,7 @@ public class ApiAuditCleanUpService
 		apiRequestAuditRepository.deleteRequestAudit(apiRequestAudit.getIdNotNull());
 	}
 
-	private boolean isReadyForCleanup(
-			@NonNull final ApiRequestAudit apiRequestAudit)
+	private boolean isReadyForCleanup(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		final ApiAuditConfig apiAuditConfig = apiAuditConfigRepository.getConfigById(apiRequestAudit.getApiAuditConfigId());
 
