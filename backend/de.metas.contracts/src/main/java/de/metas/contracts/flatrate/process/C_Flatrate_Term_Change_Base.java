@@ -45,6 +45,8 @@ public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
 
 	public static final String PARAM_IsCreditOpenInvoices = "IsCreditOpenInvoices";
 
+	public static final String PARAM_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
+
 	@Param(parameterName = PARAM_ACTION, mandatory = true)
 	private String action;
 
@@ -60,6 +62,9 @@ public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
 	@Param(parameterName = PARAM_IsCreditOpenInvoices)
 	private boolean isCreditOpenInvoices;
 
+	@Param(parameterName = PARAM_IsCloseInvoiceCandidate)
+	private boolean isCloseInvoiceCandidate;
+
 	@Override
 	protected String doIt()
 	{
@@ -70,7 +75,7 @@ public abstract class C_Flatrate_Term_Change_Base extends JavaProcess
 
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(changeDate)
-				.isCloseInvoiceCandidate(true)
+				.isCloseInvoiceCandidate(isCloseInvoiceCandidate)
 				.terminationMemo(terminationMemo)
 				.terminationReason(terminationReason)
 				.isCreditOpenInvoices(isCreditOpenInvoices)
