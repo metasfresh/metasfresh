@@ -7,3 +7,19 @@ jobs:
       - uses: actions/checkout@v3
       - name: build-commons
         run: docker build -f Dockerfile.common -t metas-mvn-common:latest .
+      - name: build-backend
+        run: docker build -f Dockerfile.backend -t metas-mvn-backend:latest .
+      - name: build-camel
+        run: docker build -f Dockerfile.camel -t metas-mvn-camel:latest .
+      - name: build-api
+        run: docker build -f Dockerfile.backend.api -t metas-api:latest .
+      - name: build-app
+        run: docker build -f Dockerfile.backend.app -t metas-app:latest .
+      - name: build-externalsystems
+        run: docker build -f Dockerfile.camel.externalsystems -t metas-externalsystems:latest .
+      - name: build-frontend
+        run: docker build -f Dockerfile.frontend -t metas-frontend:latest .
+      - name: build-db
+        run: docker build -f Dockerfile.db -t metas-db:latest .
+      - name: build-db-init
+        run: docker build -f Dockerfile.db-init -t metas-db-init:latest .
