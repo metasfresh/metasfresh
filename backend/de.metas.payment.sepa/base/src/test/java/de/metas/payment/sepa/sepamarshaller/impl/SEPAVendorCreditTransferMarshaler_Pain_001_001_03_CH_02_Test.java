@@ -278,14 +278,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
-		return createSEPAExportLine(sepaExport, SEPA_MandateRefNo, iban, bic, amt, currencyId, null);
+		return createSEPAExportLine(sepaExport, SEPA_MandateRefNo, iban, swiftCode, amt, currencyId, null);
 	}
 
 	private I_SEPA_Export_Line createSEPAExportLine(
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
 			final String iban,
-			final String bic,
+			final String swiftCode,
 			final BigDecimal amt,
 			final CurrencyId currencyId,
 			final String structuredRemittanceInfo)

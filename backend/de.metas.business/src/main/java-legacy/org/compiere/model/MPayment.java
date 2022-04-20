@@ -632,10 +632,6 @@ public final class MPayment extends X_C_Payment
 				{
 					documentNo = getIBAN() + ": ";
 				}
-				if (getRoutingNo() != null)
-				{
-					documentNo += getRoutingNo();
-				}
 				if (getAccountNo() != null)
 				{
 					documentNo += getAccountNo();
