@@ -9,11 +9,9 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
-import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
@@ -23,9 +21,6 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
 import de.metas.logging.TableRecordMDC;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
@@ -48,7 +43,6 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
@@ -60,9 +54,7 @@ public class C_Invoice_Candidate
 
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-	private final IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
@@ -439,31 +431,7 @@ public class C_Invoice_Candidate
 			return;
 		}
 
-		final ILock lock = lockManager.lock()
-				.setOwner(LockOwner.forOwnerName("C_Invoice_Candidate_" + ic.getC_Invoice_Candidate_ID() + "_" + Instant.now().getEpochSecond()))
-				.setFailIfAlreadyLocked(false)
-				.setRecordByModel(ic)
-				.acquire();
-
-		if (lock.getCountLocked() == 1)
-		{
-			try
-			{
-				aggregationBL.setHeaderAggregationKey(ic);
-			}
-			finally
-			{
-				lock.unlockAll();
-			}
-
-			//dev-note: making sure that temporary locking the c_invoice_candidate will not leave an update request unanswered
-			invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(ic));
-		}
-		else
-		{
-			//dev-note: basically saying, it couldn't be locked now => invalidate the candidate (so the update invalid process can take care)
-			invoiceCandDAO.invalidateCand(ic);
-		}
+		invoiceCandDAO.invalidateCand(ic);
 	}
 
 
