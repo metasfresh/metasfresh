@@ -76,8 +76,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		mainLock.lock();
 		try
 		{
-			final int queueProcessorId = processorDef.getQueueProcessorId().getRepoId();
-			removeQueueProcessor0(queueProcessorId);
+			removeQueueProcessor0(processorDef.getQueueProcessorId());
 
 			final IQueueProcessor processor = createProcessor(processorDef);
 			Check.assumeNotNull(processor, "processor not null"); // shall not happen
@@ -97,7 +96,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	}
 
 	@Override
-	public void removeQueueProcessor(final int queueProcessorId)
+	public void removeQueueProcessor(@NonNull final QueueProcessorId queueProcessorId)
 	{
 		mainLock.lock();
 		try
@@ -110,9 +109,9 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		}
 	}
 
-	private void removeQueueProcessor0(final int queueProcessorId)
+	private void removeQueueProcessor0(final QueueProcessorId queueProcessorId)
 	{
-		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId));
+		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(queueProcessorId);
 		if (!queueProcessor.isPresent())
 		{
 			return;
@@ -151,7 +150,6 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			asyncProcessorPlanner.getRegisteredQueueProcessors()
 					.stream()
 					.map(IQueueProcessor::getQueueProcessorId)
-					.map(QueueProcessorId::getRepoId)
 					.forEach(this::removeQueueProcessor0);
 
 			this.asyncProcessorPlanner.shutdown();

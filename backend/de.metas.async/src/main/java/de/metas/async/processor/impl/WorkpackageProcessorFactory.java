@@ -22,18 +22,16 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.ConfigurationException;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.IMBeanAwareService;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -45,6 +43,8 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final WorkpackageProcessorBlackList blacklist = new WorkpackageProcessorBlackList();
+
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	public WorkpackageProcessorFactory()
 	{
@@ -58,18 +58,19 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 		blacklist.assertNotBlacklisted(packageProcessorId);
 
 		//
-		// Load Package Processor Defintion
-		final I_C_Queue_PackageProcessor packageProcessorDef = Services.get(IQueueDAO.class).retrievePackageProcessorDefById(ctx, packageProcessorId);
-
-		if (packageProcessorDef == null)
+		// Load Package Processor Definition
+		final QueuePackageProcessor queuePackageProcessor;
+		try
 		{
-			final ConfigurationException exception = new ConfigurationException("No package processor definition found for ID=" + packageProcessorId);
-			blacklist.addToBlacklist(packageProcessorId, null, exception);
-			throw exception;
+			queuePackageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(QueuePackageProcessorId.ofRepoId(packageProcessorId));
+		}
+		catch (final ConfigurationException e)
+		{
+			blacklist.addToBlacklist(packageProcessorId, null, e);
+			throw e;
 		}
 
-		final QueuePackageProcessor packageProcessor = QueueProcessorDescriptorRepository.mapToPackageProcessor(packageProcessorDef);
-		return getWorkpackageProcessor(packageProcessor);
+		return getWorkpackageProcessor(queuePackageProcessor);
 	}
 
 	@Override
@@ -79,7 +80,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 		return getWorkpackageProcessor(packageProcessorDef, checkBlacklist);
 	}
 
-	protected IWorkpackageProcessor getWorkpackageProcessor(@NonNull final QueuePackageProcessor packageProcessorDef, boolean checkBlacklist)
+	protected IWorkpackageProcessor getWorkpackageProcessor(@NonNull final QueuePackageProcessor packageProcessorDef, final boolean checkBlacklist)
 	{
 		Check.assumeNotNull(packageProcessorDef, "packageProcessorDef not null");
 
@@ -150,7 +151,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull IWorkpackageProcessor workpackageProcessor)
+	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull final IWorkpackageProcessor workpackageProcessor)
 	{
 		// NOTE: keep in sync with getWorkpackageProcessorStatistics(I_C_Queue_PackageProcessor workpackage). Both methods shall build the name in the same way
 		final String workpackageProcessorName = workpackageProcessor.getClass().getName();

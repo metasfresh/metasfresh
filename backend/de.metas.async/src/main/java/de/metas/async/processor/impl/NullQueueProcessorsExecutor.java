@@ -43,7 +43,7 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public void removeQueueProcessor(final int queueProcessorId)
+	public void removeQueueProcessor(final QueueProcessorId queueProcessorId)
 	{
 	}
 

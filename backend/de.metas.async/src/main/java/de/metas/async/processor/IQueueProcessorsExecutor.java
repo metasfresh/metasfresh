@@ -47,7 +47,7 @@ public interface IQueueProcessorsExecutor
 	 * 
 	 * @param queueProcessorId
 	 */
-	void removeQueueProcessor(final int queueProcessorId);
+	void removeQueueProcessor(final QueueProcessorId queueProcessorId);
 
 	/**
 	 * Stops all {@link de.metas.async.processor.impl.planner.QueueProcessorPlanner} and {@link IQueueProcessor} threads

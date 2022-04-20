@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.impl.QueueProcessorDAO;
+import de.metas.async.exceptions.ConfigurationException;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
@@ -37,7 +38,6 @@ import de.metas.async.processor.descriptor.model.QueueProcessorDescriptorIndex;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
@@ -134,6 +134,17 @@ public class QueueProcessorDescriptorRepository
 	}
 
 	@NonNull
+	public ImmutableSet<QueueProcessorDescriptor> getAllQueueProcessors()
+	{
+		return queueDAO.retrieveAllProcessors()
+				.stream()
+				.map(I_C_Queue_Processor::getC_Queue_Processor_ID)
+				.map(QueueProcessorId::ofRepoId)
+				.map(this::getQueueProcessorIndex)
+				.map(QueueProcessorDescriptorIndex::getQueueProcessor)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+	@NonNull
 	private QueueProcessorDescriptorIndex getQueueProcessorIndex(@NonNull final QueueProcessorId key)
 	{
 		return queueProcessorId2QueueProcessorIndexCCache.getOrLoad(key, this::loadQueueProcessorIndex);
@@ -153,7 +164,7 @@ public class QueueProcessorDescriptorRepository
 		final Optional<I_C_Queue_Processor> queueProcessor = queueProcessorDAO.getById(processorId);
 
 		return queueProcessor.map(this::buildQueueProcessorDescriptorIndex)
-				.orElseThrow(() -> new AdempiereException("There is no C_QueueProcessor found!")
+				.orElseThrow(() -> new ConfigurationException("There is no C_QueueProcessor found!")
 						.appendParametersToMessage()
 						.setParameter("C_Queue_Processor_ID", processorId.getRepoId()));
 	}
@@ -164,7 +175,7 @@ public class QueueProcessorDescriptorRepository
 		final Optional<QueueProcessorId> queueProcessor = queueProcessorDAO.getByPackageProcessorId(packageProcessorId);
 
 		return queueProcessor
-				.orElseThrow(() -> new AdempiereException("There is no C_QueueProcessor found for QueuePackageProcessorId!")
+				.orElseThrow(() -> new ConfigurationException("There is no C_QueueProcessor found for QueuePackageProcessorId!")
 						.appendParametersToMessage()
 						.setParameter("C_Queue_PackageProcessor_ID", packageProcessorId.getRepoId()));
 	}
@@ -179,7 +190,7 @@ public class QueueProcessorDescriptorRepository
 
 		if (packageProcessorsList.isEmpty())
 		{
-			throw new AdempiereException("There are no C_Queue_PackageProcessor records assigned to C_Queue_Processor!")
+			throw new ConfigurationException("There are no C_Queue_PackageProcessor records assigned to C_Queue_Processor!")
 					.appendParametersToMessage()
 					.setParameter("C_Queue_Processor_ID", queueProcessor.getC_Queue_Processor_ID());
 		}

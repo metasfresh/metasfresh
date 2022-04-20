@@ -26,6 +26,7 @@ import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.process.JavaProcess;
@@ -101,11 +102,11 @@ public class C_Queue_Processor_Manage extends JavaProcess
 		}
 		else if (ACTION_STOP.equals(action))
 		{
-			executor.removeQueueProcessor(p_C_Queue_Processor_ID);
+			executor.removeQueueProcessor(QueueProcessorId.ofRepoId(p_C_Queue_Processor_ID));
 		}
 		else if (ACTION_RESTART.equals(action))
 		{
-			executor.removeQueueProcessor(p_C_Queue_Processor_ID);
+			executor.removeQueueProcessor(QueueProcessorId.ofRepoId(p_C_Queue_Processor_ID));
 			executor.addQueueProcessor(queueProcessorDescriptor);
 		}
 		else
