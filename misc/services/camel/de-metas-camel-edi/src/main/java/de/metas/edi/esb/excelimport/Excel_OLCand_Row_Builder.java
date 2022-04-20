@@ -39,14 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.edi.esb.commons.SystemTime;
-import de.metas.edi.esb.commons.Util;
-import lombok.Getter;
-import lombok.NonNull;
-
 /**
  * Builds {@link Excel_OLCand_Row}.
  *

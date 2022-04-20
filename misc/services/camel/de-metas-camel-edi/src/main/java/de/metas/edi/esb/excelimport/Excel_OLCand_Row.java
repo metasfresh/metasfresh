@@ -34,9 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 /**
  * Internal row representation of a customer's Excel file which shall be imported to C_OLCands.
  *
