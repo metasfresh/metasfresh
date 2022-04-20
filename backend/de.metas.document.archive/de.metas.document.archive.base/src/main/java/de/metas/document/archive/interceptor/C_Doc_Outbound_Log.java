@@ -79,13 +79,20 @@ public class C_Doc_Outbound_Log
 		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
 
 		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
-		if (!Check.isEmpty(documentEmail, true))
+		final String userEmailAddress = user.getEmailAddress();
+
+		if (!Check.isBlank(documentEmail))
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
 		}
+		else if (!Check.isBlank(userEmailAddress))
+		{
+			docOutboundlogRecord.setCurrentEMailAddress(userEmailAddress);
+		}
 		else
 		{
-			docOutboundlogRecord.setCurrentEMailAddress(user.getEmailAddress()); // might be empty!
+			final String locationEmail = docOutBoundService.getLocationEmail(docOutboundlogRecord);
+			docOutboundlogRecord.setCurrentEMailAddress(locationEmail);
 		}
 
 		docOutboundlogRecord.setIsInvoiceEmailEnabled(user.isInvoiceAsEmail()); // might be true even if the mailaddress is empty!
