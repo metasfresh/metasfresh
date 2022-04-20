@@ -219,6 +219,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
+			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
@@ -527,6 +528,7 @@ public class JsonRetrieverService
 					.handoverLocation(location.isHandOverLocation())
 					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
+					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
 					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))

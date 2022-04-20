@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
@@ -68,6 +69,7 @@ public class BPartnerLocation
 	public static final String COUNTRYCODE = "countryCode";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String EPHEMERAL = "ephemeral";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -129,6 +131,8 @@ public class BPartnerLocation
 	@Nullable
 	private OrgMappingId orgMappingId;
 
+	private boolean ephemeral;
+
 	@Nullable
 	private String mobile;
 
@@ -177,6 +181,7 @@ public class BPartnerLocation
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final Boolean ephemeral,
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
@@ -211,6 +216,8 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+
+		this.ephemeral = CoalesceUtil.coalesceNotNull(ephemeral, false);
 
 		this.phone = phone;
 

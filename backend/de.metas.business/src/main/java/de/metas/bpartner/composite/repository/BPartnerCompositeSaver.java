@@ -353,7 +353,9 @@ final class BPartnerCompositeSaver
 				assertCanCreateOrUpdate(bpartnerLocationRecord);
 			}
 
-			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(partnerLocation.getOrgMappingId()));
+			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerLocation.getOrgMappingId()));
+
+			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
 			saveRecord(bpartnerLocationRecord);
 
 			//
@@ -591,7 +593,7 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
-			
+
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
