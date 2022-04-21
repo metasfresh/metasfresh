@@ -22,10 +22,16 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
+import java.math.BigDecimal;
+
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceDocBaseType;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
@@ -193,6 +199,13 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				.build();
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 		if (docTypeIdOrNull != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
+		}
+	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(final Object model)
 		{
 			icRecord.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
 		}
