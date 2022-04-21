@@ -44,7 +44,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import sun.nio.cs.ext.JIS_X_0208_MS5022X;
 
 import java.util.ArrayList;
 import java.util.Collection;
