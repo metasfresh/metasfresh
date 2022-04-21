@@ -28,7 +28,7 @@ FROM (
                          ELSE 0
                  END)                 AS proc
          FROM C_Queue_WorkPackage qw
-                  INNER JOIN C_Queue_Element qe ON (qe.C_Queue_WorkPackage_ID = qw.C_Queue_WorkPackage_ID)
+                  LEFT OUTER JOIN C_Queue_Element qe ON (qe.C_Queue_WorkPackage_ID = qw.C_Queue_WorkPackage_ID)
                   INNER JOIN C_Queue_Block qb ON (qb.C_Queue_Block_ID = qw.C_Queue_Block_ID)
          GROUP BY qb.C_Queue_PackageProcessor_ID,
                   qe.AD_Table_ID,
