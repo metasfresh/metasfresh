@@ -100,6 +100,10 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID = "To_MF_Lookup_External_Reference-Route";
 
+	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_ROUTE_ID = "To_MF_Lookup_External_Reference-Route";
+
+	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_V2_CAMEL_URI = "metasfresh.lookup-externalreference.v2.api.uri";
+
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 
 	public static final String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";
