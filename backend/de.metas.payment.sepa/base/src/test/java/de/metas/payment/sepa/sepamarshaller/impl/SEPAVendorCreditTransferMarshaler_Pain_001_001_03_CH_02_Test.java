@@ -31,14 +31,6 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {

@@ -32,7 +32,6 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;

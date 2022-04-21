@@ -24,7 +24,6 @@ package de.metas.material.dispo.commons.candidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import lombok.NonNull;
@@ -32,8 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.List;
-
 import java.util.List;
 
 @Repository
