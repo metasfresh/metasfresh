@@ -325,42 +325,42 @@ UPDATE AD_Element_Trl SET Description='Wenn angehakt, dann wird die LU-Menge in 
 
 -- 2022-04-19T14:02:52.001Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID=580783
+UPDATE AD_Column SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL WHERE AD_Element_ID=580783
 ;
 
 -- 2022-04-19T14:02:52.003Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL, AD_Element_ID=580783 WHERE UPPER(ColumnName)='ISQTYLUBYMAXLOADWEIGHT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL, AD_Element_ID=580783 WHERE UPPER(ColumnName)='ISQTYLUBYMAXLOADWEIGHT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2022-04-19T14:02:52.004Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID=580783 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='isQtyLUByMaxLoadWeight', Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL WHERE AD_Element_ID=580783 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2022-04-19T14:02:52.004Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580783) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580783)
+UPDATE AD_Field SET Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580783) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580783)
 ;
 
 -- 2022-04-19T14:02:52.017Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Tab SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580783
+UPDATE AD_Tab SET Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580783
 ;
 
 -- 2022-04-19T14:02:52.019Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_WINDOW SET Name='LU-Menge nach max. Traglast', Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', Help=NULL WHERE AD_Element_ID = 580783
+UPDATE AD_WINDOW SET Name='LU-Menge nach max. Traglast', Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', Help=NULL WHERE AD_Element_ID = 580783
 ;
 
 -- 2022-04-19T14:02:52.020Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'LU-Menge nach max. Traglast', Description = 'Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580783
+UPDATE AD_Menu SET   Name = 'LU-Menge nach max. Traglast', Description = 'Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580783
 ;
 
 -- 2022-04-19T14:03:16.555Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht',Updated=TO_TIMESTAMP('2022-04-19 15:03:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.',Updated=TO_TIMESTAMP('2022-04-19 15:03:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='nl_NL'
 ;
 
 -- 2022-04-19T14:03:16.559Z
