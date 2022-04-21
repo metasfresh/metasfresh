@@ -23,7 +23,6 @@
 package de.metas.picking.service.impl;
 
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
