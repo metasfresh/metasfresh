@@ -310,7 +310,7 @@ UPDATE AD_Element_Trl SET Name='LU-Menge nach max. Traglast', PrintName='LU-Meng
 
 -- 2022-04-19T14:02:51.973Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Description='Wenn Ja, Berechnung der bestellten Menge LU basierend auf dem Max. Lastgewicht und Produktgewicht',Updated=TO_TIMESTAMP('2022-04-19 15:02:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, dann wird die LU-Menge in der Transport-Dispo anhand des Produktgewichts und des maximalen Ladegewichts bestimmt.',Updated=TO_TIMESTAMP('2022-04-19 15:02:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580783 AND AD_Language='de_DE'
 ;
 
 -- 2022-04-19T14:02:51.989Z
