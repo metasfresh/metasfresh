@@ -24,6 +24,7 @@ package de.metas.audit.apirequest;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
+import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
@@ -35,6 +36,7 @@ import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.request.ApiRequestQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
@@ -78,12 +80,7 @@ public class ApiAuditCleanUpService
 			return;
 		}
 
-		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
-			if (isReadyForCleanup(apiRequestAudit))
-			{
-				deleteProcessedRequestInNewTrx(apiRequestAudit);
-			}
-		};
+		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
 
 		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
 			if (isReadyForCleanup(apiRequestAudit, apiAuditConfigShortTimeIndex))
@@ -112,9 +109,11 @@ public class ApiAuditCleanUpService
 		apiRequestAuditRepository.deleteRequestAudit(apiRequestAudit.getIdNotNull());
 	}
 
-	private boolean isReadyForCleanup(@NonNull final ApiRequestAudit apiRequestAudit)
+	private boolean isReadyForCleanup(
+			@NonNull final ApiRequestAudit apiRequestAudit,
+			@NonNull final ApiAuditConfigShortTimeIndex apiAuditConfigIndex)
 	{
-		final ApiAuditConfig apiAuditConfig = apiAuditConfigRepository.getConfigById(apiRequestAudit.getApiAuditConfigId());
+		final ApiAuditConfig apiAuditConfig = apiAuditConfigIndex.getConfig(apiRequestAudit.getApiAuditConfigId());
 
 		final long daysSinceLastUpdate = (Instant.now().getEpochSecond() - apiRequestAudit.getTime().getEpochSecond()) / (60 * 60 * 24);
 
@@ -132,9 +131,17 @@ public class ApiAuditCleanUpService
 	{
 		Map<ApiAuditConfigId, ApiAuditConfig> configId2Config = new HashMap<>();
 
-		final boolean deleteErroredRequest = Status.ERROR.equals(apiRequestAudit.getStatus())
-				&& daysSinceLastUpdate > apiAuditConfig.getKeepErroredRequestDays();
+		ApiAuditConfigRepository apiAuditConfigRepository;
 
-		return deleteErroredRequest || deleteProcessedRequest;
+		public ApiAuditConfigShortTimeIndex(final ApiAuditConfigRepository apiAuditConfigRepository)
+		{
+			this.apiAuditConfigRepository = apiAuditConfigRepository;
+		}
+
+		@NonNull
+		public ApiAuditConfig getConfig(@NonNull final ApiAuditConfigId apiAuditConfigId)
+		{
+			return configId2Config.computeIfAbsent(apiAuditConfigId, apiAuditConfigRepository::getConfigById);
+		}
 	}
 }
