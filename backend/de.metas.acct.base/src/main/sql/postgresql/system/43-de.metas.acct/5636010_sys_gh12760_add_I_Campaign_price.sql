@@ -640,7 +640,7 @@ ALTER TABLE I_Campaign_Price ADD CONSTRAINT CCampaignPrice_ICampaignPrice FOREIG
 
 -- 2022-04-20T14:23:26.009Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_ImpFormat (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,FileCharset,FormatType,IsActive,IsManualImport,IsMultiLine,Name,Processing,SkipFirstNRows,Updated,UpdatedBy) VALUES (0,540073,0,542118,TO_TIMESTAMP('2022-04-20 17:23:25','YYYY-MM-DD HH24:MI:SS'),100,'windows-1252','C','Y','N','N','Campaign Price','N',1,TO_TIMESTAMP('2022-04-20 17:23:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_ImpFormat (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,FileCharset,FormatType,IsActive,IsManualImport,IsMultiLine,Name,Processing,SkipFirstNRows,Updated,UpdatedBy) VALUES (0,540073,0,542118,TO_TIMESTAMP('2022-04-20 17:23:25','YYYY-MM-DD HH24:MI:SS'),100,'utf-8','C','Y','N','N','Campaign Price','N',1,TO_TIMESTAMP('2022-04-20 17:23:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-04-20T14:32:30.528Z
