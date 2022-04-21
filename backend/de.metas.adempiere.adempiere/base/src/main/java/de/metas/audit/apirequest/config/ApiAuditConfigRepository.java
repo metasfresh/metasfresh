@@ -56,7 +56,7 @@ public class ApiAuditConfigRepository
 				.create()
 				.list()
 				.stream()
-				.map(ApiAuditConfigRepository::fromRecord)
+				.map(ApiAuditConfigRepository::buildConfigFromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 

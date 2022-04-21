@@ -39,6 +39,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 @Service
@@ -83,6 +85,13 @@ public class ApiAuditCleanUpService
 			}
 		};
 
+		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
+			if (isReadyForCleanup(apiRequestAudit, apiAuditConfigShortTimeIndex))
+			{
+				deleteProcessedRequestInNewTrx(apiRequestAudit);
+			}
+		};
+
 		processedApiRequests.forEach(deleteIfTime);
 	}
 
@@ -111,6 +120,17 @@ public class ApiAuditCleanUpService
 
 		final boolean deleteProcessedRequest = (apiRequestAudit.isErrorAcknowledged() || Status.PROCESSED.equals(apiRequestAudit.getStatus()))
 				&& daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
+
+		final boolean deleteErroredRequest = Status.ERROR.equals(apiRequestAudit.getStatus())
+				&& daysSinceLastUpdate > apiAuditConfig.getKeepErroredRequestDays();
+
+		return deleteErroredRequest || deleteProcessedRequest;
+	}
+
+	@Value
+	private static class ApiAuditConfigShortTimeIndex
+	{
+		Map<ApiAuditConfigId, ApiAuditConfig> configId2Config = new HashMap<>();
 
 		final boolean deleteErroredRequest = Status.ERROR.equals(apiRequestAudit.getStatus())
 				&& daysSinceLastUpdate > apiAuditConfig.getKeepErroredRequestDays();
