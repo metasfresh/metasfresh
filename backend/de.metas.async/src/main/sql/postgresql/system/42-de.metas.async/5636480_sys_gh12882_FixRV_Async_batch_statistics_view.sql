@@ -1,4 +1,4 @@
---DROP VIEW rv_async_batch_statistics
+DROP VIEW rv_async_batch_statistics
 ;
 
 CREATE OR REPLACE VIEW rv_async_batch_statistics AS
@@ -45,5 +45,4 @@ GROUP BY C_Queue_PackageProcessor_ID,
          AD_Org_ID,
          CreatedBy
 ;
-
 
