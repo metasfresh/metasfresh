@@ -65,7 +65,7 @@ public class C_Doc_Outbound_Log
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
-	public void updateFromRecipientId(final I_C_Doc_Outbound_Log docOutboundlogRecord)
+	public void updateFromRecipientId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
 		final DocOutBoundRecipientId userId = DocOutBoundRecipientId.ofRepoIdOrNull(docOutboundlogRecord.getCurrentEMailRecipient_ID());
 		if (userId == null)
@@ -100,7 +100,7 @@ public class C_Doc_Outbound_Log
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID)
-	public void updateFromBPartnerId(final I_C_Doc_Outbound_Log docOutboundlogRecord)
+	public void updateFromBPartnerId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{
 		if (docOutboundlogRecord.getC_BPartner_ID() <= 0)
 		{
