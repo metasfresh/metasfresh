@@ -172,7 +172,8 @@ public class OLCandRegistry
 		}
 
 		/**
-		 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
+		 * Change {@link I_C_OLCand#COLUMN_IsError IsError}, {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg},
+		 * {@link I_C_OLCand#COLUMNNAME_AD_Issue_ID ADIssueID} accordingly, but <b>do not</b> save.
 		 */
 		@Override
 		public void validate(@NonNull final I_C_OLCand olCand)

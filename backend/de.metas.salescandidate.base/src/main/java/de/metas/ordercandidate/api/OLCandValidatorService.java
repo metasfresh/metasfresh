@@ -48,18 +48,18 @@ public class OLCandValidatorService
 
 		validators.validate(olCand);
 
-		if (olCand.isError())
-		{
-			sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getC_OLCand_ID()));
-		}
-
 		if (!olCand.isError())
 		{
-			InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
+			final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssues = InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
+			olCandWithIssues.setIsImportedWithIssues(false);
+			return olCandWithIssues;
+		}
+		else
+		{
+			sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getC_OLCand_ID()));
+
 			return olCand;
 		}
-
-		return olCand;
 	}
 
 	/**

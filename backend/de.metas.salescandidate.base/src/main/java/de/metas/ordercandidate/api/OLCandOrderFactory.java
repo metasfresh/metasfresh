@@ -63,9 +63,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -104,6 +103,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -146,7 +146,7 @@ class OLCandOrderFactory
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -459,7 +459,7 @@ class OLCandOrderFactory
 	{
 		try
 		{
-			validateCandidate(candidate.unbox());
+			validateCandidateOutOfTrx(candidate.unbox());
 
 			addOLCand0(candidate);
 
@@ -637,23 +637,24 @@ class OLCandOrderFactory
 		return note;
 	}
 
-	private void validateCandidate(@NonNull final I_C_OLCand candidate)
+	private void validateCandidateOutOfTrx(@NonNull final I_C_OLCand candidate)
 	{
 		olCandValidatorService.setValidationProcessInProgress(true);
 
 		try
 		{
-			final I_C_OLCand validatedOlCand = olCandValidatorService.validate(candidate);
+			final I_C_OLCand validatedOlCand = trxManager.callInNewTrx(() -> {
+				final I_C_OLCand cand = olCandValidatorService.validate(candidate);
 
-			if (!validatedOlCand.isError())
+				saveRecord(cand);
+				return cand;
+			});
+
+			if (validatedOlCand.isError())
 			{
-				final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
-						.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
-
-				queryBL.createQueryBuilder(org.adempiere.process.rpl.model.I_C_OLCand.class)
-						.addEqualsFilter(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidate.getC_OLCand_ID())
-						.create()
-						.update(updater);
+				throw new AdempiereException("Fail to validate candidate.")
+						.appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getC_OLCand_ID());
 			}
 		}
 		finally
