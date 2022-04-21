@@ -708,7 +708,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// task:10876 : calculate Qty Ordered LU  based on the Packing Material Max. Load Weight
 		final I_M_HU_PI_Item m_lu_hu_pi_item = lutuConfiguration.getM_LU_HU_PI_Item();
 		final HuPackingInstructionsVersionId versionId = Objects.nonNull(m_lu_hu_pi_item) ?
-														 HuPackingInstructionsVersionId.ofRepoId(m_lu_hu_pi_item.getM_HU_PI_Version_ID())  :
+				                                         HuPackingInstructionsVersionId.ofRepoId(m_lu_hu_pi_item.getM_HU_PI_Version_ID())  :
 				                                         null;
 		final I_M_HU_PackingMaterial packingMaterial = Objects.nonNull(versionId) ?
 				                                       handlingUnitsDAO.retrievePackingMaterialByPIVersionID(versionId, BPartnerId.ofRepoId(shipmentSchedule.getC_BPartner_ID())):
