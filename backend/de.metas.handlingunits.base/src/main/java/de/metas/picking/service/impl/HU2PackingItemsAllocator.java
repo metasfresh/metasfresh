@@ -27,6 +27,7 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.picking.api.PickingConfigRepository;

@@ -6,6 +6,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
