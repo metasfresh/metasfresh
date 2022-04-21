@@ -14,7 +14,7 @@
         "email": "orderCustomerEmail@example.com",
         "customFields": {
           "externalReference": "customerId",
-          "bodymedUserId": "bodymedUserId1"
+          "customUserId": "userId1"
           }
         },
       "currencyId": "currencyId",

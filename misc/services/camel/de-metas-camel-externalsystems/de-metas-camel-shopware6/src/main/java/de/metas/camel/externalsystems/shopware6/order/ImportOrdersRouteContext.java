@@ -279,7 +279,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public ExternalIdentifier getMetasfreshId()
 	{
-		final String id = getId(metasfreshIdJsonPath, false);
+		final String id = getId(metasfreshIdJsonPath);
 		if (!Check.isBlank(id))
 		{
 			return ExternalIdentifier.builder()
@@ -293,15 +293,24 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		final String id = getId(shopwareIdJsonPath, true);
+		final String id = getId(shopwareIdJsonPath);
+		if (!Check.isBlank(id))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(ExternalIdentifierFormat.formatExternalId(id))
+					.rawValue(id)
+					.build();
+		}
+		final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+
 		return ExternalIdentifier.builder()
-				.identifier(ExternalIdentifierFormat.formatExternalId(id))
-				.rawValue(id)
+				.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
+				.rawValue(customerId)
 				.build();
 	}
 
 	@Nullable
-	private String getId(@Nullable final String bpLocationCustomJsonPath, final boolean throwException)
+	private String getId(@Nullable final String bpLocationCustomJsonPath)
 	{
 		if (Check.isBlank(bpLocationCustomJsonPath))
 		{
@@ -312,10 +321,6 @@ public class ImportOrdersRouteContext
 		if (!Check.isBlank(id))
 		{
 			return id;
-		}
-		if (throwException)
-		{
-			throw new RuntimeException("Order: " + order.getJsonOrder().getId() + "Couldn't find jsonPath of " + bpLocationCustomJsonPath);
 		}
 		return null;
 	}
