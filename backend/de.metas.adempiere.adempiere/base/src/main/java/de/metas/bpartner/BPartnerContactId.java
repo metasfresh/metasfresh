@@ -1,5 +1,6 @@
 package de.metas.bpartner;
 
+import de.metas.location.LocationId;
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -7,6 +8,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -137,6 +139,11 @@ public class BPartnerContactId implements RepoIdAware
 	public static UserId toUserIdOrNull(@Nullable final BPartnerContactId id)
 	{
 		return id != null ? id.getUserId() : null;
+	}
+
+	public static boolean equals(@Nullable final BPartnerContactId id1, @Nullable final BPartnerContactId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 
 }

@@ -221,7 +221,7 @@ public class InvoiceHeaderImplBuilder
 		}
 		else if (!BPartnerInfo.equals(this.billTo, billTo))
 		{
-			if (!BPartnerInfo.equals(this.billTo.withLocationId(null), billTo.withLocationId(null)))
+			if (!BPartnerInfo.equals(this.billTo.withLocationId(null).withContactId(null), billTo.withLocationId(null).withContactId(null)))
 			{
 				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
 			}
