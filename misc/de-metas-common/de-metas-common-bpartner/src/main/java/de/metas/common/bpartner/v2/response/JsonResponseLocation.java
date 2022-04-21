@@ -70,8 +70,6 @@ public class JsonResponseLocation
 
 	public static final String EPHEMERAL = "ephemeral";
 
-	public static final String EPHEMERAL = "ephemeral";
-
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
@@ -222,9 +220,7 @@ public class JsonResponseLocation
 		this.replicationLookupDefault = replicationLookupDefault;
 
 		this.ephemeral = ephemeral;
-
-		this.ephemeral = ephemeral;
-
+		
 		this.changeInfo = changeInfo;
 	}
 }
