@@ -38,9 +38,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-
-import java.sql.Timestamp;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
