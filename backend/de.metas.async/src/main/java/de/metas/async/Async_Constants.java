@@ -65,6 +65,7 @@ public final class Async_Constants
 	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
+	public static final String C_Async_Batch_InternalName_DunningCandidate_Processing = "DunningCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";	
 	public static final String C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation = "EnqueueInvoiceCandidateCreation";
 	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
