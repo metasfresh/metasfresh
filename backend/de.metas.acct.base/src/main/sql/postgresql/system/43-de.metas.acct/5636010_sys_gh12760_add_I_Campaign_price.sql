@@ -893,6 +893,19 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2022-04-20 15:58:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564080
 ;
 
+-- 2022-04-20T12:55:15.853Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541573,TO_TIMESTAMP('2022-04-20 12:55:15','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Campaign_Price',TO_TIMESTAMP('2022-04-20 12:55:15','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2022-04-20T12:55:15.854Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Reference_ID=541573 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+INSERT INTO AD_Ref_Table (ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_table_id, ad_key, isvaluedisplayed, entitytype, showinactivevalues) VALUES (541573, 0, 0, 'Y', TO_TIMESTAMP('2022-04-20 12:56:16','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2022-04-20 12:56:16','YYYY-MM-DD HH24:MI:SS'), 100, 541174, 564069, 'N', 'D',  'N')
+;
+
 -- 2022-04-20T12:59:34.329Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Reference_ID=19, AD_Reference_Value_ID=541573, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2022-04-20 15:59:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582845
