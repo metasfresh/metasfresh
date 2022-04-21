@@ -110,6 +110,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
+import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 
 public class M_HU_StepDef
 {

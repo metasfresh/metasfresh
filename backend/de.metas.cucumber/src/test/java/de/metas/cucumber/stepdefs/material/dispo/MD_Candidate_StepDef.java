@@ -88,6 +88,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -95,6 +96,10 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjec
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_Type;
+import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise;
 import static org.assertj.core.api.Assertions.*;
