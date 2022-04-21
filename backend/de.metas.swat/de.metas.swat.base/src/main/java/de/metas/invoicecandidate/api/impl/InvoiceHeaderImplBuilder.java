@@ -124,13 +124,11 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setExternalId(getExternalId());
 		invoiceHeader.setEMail(getEmail());
 
+		invoiceHeader.setPaymentRule(getPaymentRule());
+
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
-
-		invoiceHeader.setPaymentRule(getPaymentRule());
-
-		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		return invoiceHeader;
 	}
