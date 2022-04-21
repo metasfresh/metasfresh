@@ -213,7 +213,7 @@ public class CampaignPriceImportTableSqlUpdater
 				+ " AND i.AD_Org_ID=c.AD_Org_ID "
 				+ " AND i.AD_Client_ID=c.AD_Client_ID "
 				+ " AND i.C_Country_ID=c.C_Country_ID "
-				+ " AND (i.validFrom = c.validFrom OR i.validTo > now()) ORDER BY validFrom desc LIMIT 1) "
+				+ " AND i.validFrom = c.validFrom) "
 				+ "WHERE C_Campaign_Price_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
 				+ selection.toSqlWhereClause("i");
