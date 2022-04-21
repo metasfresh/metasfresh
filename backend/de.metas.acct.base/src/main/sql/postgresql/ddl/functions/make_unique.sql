@@ -72,6 +72,3 @@ COMMENT ON FUNCTION make_unique(varchar,
         p_uniqueForOrganization boolean DEFAULT FALSE -- Whether the column should be unique for the same organization (default false)
     ';
 ;
-
-SELECT make_unique('tabelDeTest', 'name', true)
-;
