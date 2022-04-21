@@ -221,7 +221,7 @@ public class OrgChangeCommand
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(request.getStartDate())))
-				.isCloseInvoiceCandidate(true)
+				.isCloseInvoiceCandidate(request.isCloseInvoiceCandidate())
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_OrgChange)
 				.isCreditOpenInvoices(false)
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)

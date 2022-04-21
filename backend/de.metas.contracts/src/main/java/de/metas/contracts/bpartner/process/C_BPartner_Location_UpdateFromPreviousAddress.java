@@ -22,18 +22,14 @@
 
 package de.metas.contracts.bpartner.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.contracts.bpartner.command.BPartnerLocationReplaceCommand;
 import de.metas.location.LocationId;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
@@ -41,7 +37,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /*
@@ -51,7 +46,6 @@ import java.util.stream.Collectors;
 public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -68,6 +62,7 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 				.addCompareFilter(I_C_BPartner_Location.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, now)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_C_BPartner_Location.COLUMNNAME_Previous_ID)
+				.orderBy(I_C_BPartner_Location.COLUMNNAME_ValidFrom)
 				.create()
 				.map(I_C_BPartner_Location.class, I_C_BPartner_Location::getC_BPartner_Location_ID);
 
@@ -90,123 +85,35 @@ public class C_BPartner_Location_UpdateFromPreviousAddress extends JavaProcess
 			// nothing to do
 			return;
 		}
-		locationsToDeactivate.keySet()
-				.forEach(
-						locationId -> addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
-								locationId, oldLocToNewLoc.get(locationId)));
 
 		locationsToDeactivate.forEach((oldLocId, location) -> replaceLocation(location, newLocations.get(oldLocToNewLoc.get(oldLocId))));
-
-		deactivateLocations(locationsToDeactivate.keySet());
-	}
-
-	private void deactivateLocations(final Set<Integer> keySet)
-	{
-		final ICompositeQueryUpdater<I_C_BPartner_Location> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BPartner_Location.class)
-				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_IsActive, false);
-		queryBL
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, keySet)
-				.create()
-				.update(queryUpdater);
 	}
 
 	private void replaceLocation(final I_C_BPartner_Location oldLocation, final I_C_BPartner_Location newLocation)
 	{
-		updateOLCands(oldLocation, newLocation);
-		updateInvoiceCandidates(oldLocation, newLocation);
-		updateFlatrateTerms(oldLocation, newLocation);
-		bpartnerBL.updateFromPreviousLocation(newLocation);
-	}
-
-	private void updateFlatrateTerms(final I_C_BPartner_Location oldLocation, final I_C_BPartner_Location newLocation)
-	{
 		final BPartnerLocationId oldBPLocationId = BPartnerLocationId.ofRepoId(oldLocation.getC_BPartner_ID(), oldLocation.getC_BPartner_Location_ID());
-		final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(newLocation.getC_BPartner_ID(), newLocation.getC_BPartner_Location_ID());
-
-		updateFlatrateTermsColumn(I_C_Flatrate_Term.COLUMNNAME_Bill_Location_ID, oldBPLocationId, newBPLocationId);
-		updateFlatrateTermsColumn(I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID, oldBPLocationId, newBPLocationId);
-	}
-
-	private void updateFlatrateTermsColumn(final String columnName, final RepoIdAware oldLocationId, final RepoIdAware newLocationId)
-	{
-		final ICompositeQueryUpdater<I_C_Flatrate_Term> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
-				.addSetColumnValue(columnName, newLocationId);
-		queryBL
-				.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(columnName, oldLocationId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Processed, false)
-				.create()
-				.update(queryUpdater);
-	}
-
-	private void updateInvoiceCandidates(final I_C_BPartner_Location oldLocation, final I_C_BPartner_Location newLocation)
-	{
-		final BPartnerLocationId oldBPLocationId = BPartnerLocationId.ofRepoId(oldLocation.getC_BPartner_ID(), oldLocation.getC_BPartner_Location_ID());
-		final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(newLocation.getC_BPartner_ID(), newLocation.getC_BPartner_Location_ID());
 		final LocationId oldLocationId = LocationId.ofRepoId(oldLocation.getC_Location_ID());
+		final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(newLocation.getC_BPartner_ID(), newLocation.getC_BPartner_Location_ID());
 		final LocationId newLocationId = LocationId.ofRepoId(newLocation.getC_Location_ID());
 
-		updateInvoiceCandidateColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID, oldBPLocationId, newBPLocationId);
-		updateInvoiceCandidateColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_Value_ID, oldLocationId, newLocationId);
+		logDeactivation(oldBPLocationId, newBPLocationId);
 
-		updateInvoiceCandidateColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_Override_ID, oldBPLocationId, newBPLocationId);
-		updateInvoiceCandidateColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_Override_Value_ID, oldLocationId, newLocationId);
-
-		updateInvoiceCandidateColumn(I_C_Invoice_Candidate.COLUMNNAME_First_Ship_BPLocation_ID, oldLocationId, newLocationId);
+		BPartnerLocationReplaceCommand.builder()
+				.oldLocationId(oldLocationId)
+				.oldBPLocationId(oldBPLocationId)
+				.oldLocation(oldLocation)
+				.newBPLocationId(newBPLocationId)
+				.newLocationId(newLocationId)
+				.newLocation(newLocation)
+				.build()
+				.execute();
 	}
 
-	private void updateInvoiceCandidateColumn(final String columnName, final RepoIdAware oldLocationId, final RepoIdAware newLocationId)
+	@VisibleForTesting
+	protected void logDeactivation(final BPartnerLocationId oldBPLocationId, final BPartnerLocationId newBPLocationId)
 	{
-		final ICompositeQueryUpdater<I_C_Invoice_Candidate> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
-				.addSetColumnValue(columnName, newLocationId);
-		queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(columnName, oldLocationId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
-				.create()
-				.update(queryUpdater);
-	}
-
-	private void updateOLCands(final I_C_BPartner_Location oldLocation, final I_C_BPartner_Location newLocation)
-	{
-		final BPartnerLocationId oldBPLocationId = BPartnerLocationId.ofRepoId(oldLocation.getC_BPartner_ID(), oldLocation.getC_BPartner_Location_ID());
-		final BPartnerLocationId newBPLocationId = BPartnerLocationId.ofRepoId(newLocation.getC_BPartner_ID(), newLocation.getC_BPartner_Location_ID());
-		final LocationId oldLocationId = LocationId.ofRepoId(oldLocation.getC_Location_ID());
-		final LocationId newLocationId = LocationId.ofRepoId(newLocation.getC_Location_ID());
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_C_BPartner_Location_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_Bill_Location_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_DropShip_Location_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_DropShip_Location_Override_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_DropShip_Location_Override_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_HandOver_Location_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_HandOver_Location_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_HandOver_Location_Override_Value_ID, oldLocationId, newLocationId);
-
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, oldBPLocationId, newBPLocationId);
-		updateOLCandColumn(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_Value_ID, oldLocationId, newLocationId);
-	}
-
-	private void updateOLCandColumn(final String columnName, final RepoIdAware oldLocationId, final RepoIdAware newLocationId)
-	{
-		final ICompositeQueryUpdater<I_C_OLCand> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
-				.addSetColumnValue(columnName, newLocationId);
-		queryBL
-				.createQueryBuilder(I_C_OLCand.class)
-				.addEqualsFilter(columnName, oldLocationId)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
-				.create()
-				.update(queryUpdater);
+		addLog("Business Partner Location {} was deactivated because it's being replaced by {}.",
+				oldBPLocationId.getRepoId(), newBPLocationId.getRepoId());
 	}
 
 }

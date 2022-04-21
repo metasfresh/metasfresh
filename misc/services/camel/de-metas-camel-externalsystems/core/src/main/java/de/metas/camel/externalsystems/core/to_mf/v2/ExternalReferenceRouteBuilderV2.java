@@ -39,10 +39,6 @@ import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRoute
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-/**
- * This route invokes the metasfresh REST-API to retrieve external reference data.
- * It expects to have a {@link ExternalReferenceLookupCamelRequest} as exchange body.
- */
 @Component
 public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 {

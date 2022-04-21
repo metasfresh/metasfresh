@@ -60,6 +60,8 @@ import java.util.function.BiFunction;
 @Builder
 public class ImportOrdersRouteContext
 {
+	public static final String CUSTOM_FIELD_USER_ID = "/orderCustomer/customFields/bodymedUserId";
+	public static final String CUSTOM_FIELD_METASFRESH_ID = "/orderCustomer/customFields/metasfreshId";
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private final String orgCode;
@@ -270,38 +272,39 @@ public class ImportOrdersRouteContext
 				.orElse(null);
 	}
 
-	@NonNull
-	public ExternalIdentifier getEffectiveCustomerId()
+	@Nullable
+	public ExternalIdentifier getMetasfreshId()
 	{
-		final JsonExternalSystemShopware6ConfigMapping configMapping = getMatchingShopware6Mapping();
+		//FIXME to remove hardcoded paths in final version
+		return getId(CUSTOM_FIELD_METASFRESH_ID, false);
+	}
 
-		if (configMapping == null
-				|| Check.isBlank(configMapping.getBpartnerIdJSONPath())
-				|| configMapping.getBpartnerLookup() == null)
+	@NonNull
+	public ExternalIdentifier getUserId()
+	{
+		//FIXME to remove hardcoded paths in final version
+		final ExternalIdentifier id = getId(CUSTOM_FIELD_USER_ID, true);
+		if (id == null)
 		{
-			final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+			throw new RuntimeException("Couldn't find UserID in " + CUSTOM_FIELD_USER_ID);
+		}
+		return id;
+	}
 
+	@Nullable
+	public ExternalIdentifier getId(final String bpLocationCustomJsonPath, final boolean asExternalId)
+	{
+		final OrderCandidate order = getOrderNotNull();
+		final String id = order.getCustomField(bpLocationCustomJsonPath);
+
+		if (!Check.isBlank(id))
+		{
 			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
-					.rawValue(customerId)
+					.identifier(asExternalId ? ExternalIdentifierFormat.formatExternalId(id) : id)
+					.rawValue(id)
 					.build();
 		}
-
-		final String customBPartnerId = getOrderNotNull().getCustomField(configMapping.getBpartnerIdJSONPath());
-
-		return switch (configMapping.getBpartnerLookup())
-				{
-					case MetasfreshId -> ExternalIdentifier.builder()
-							.identifier(customBPartnerId)
-							.rawValue(customBPartnerId)
-							.build();
-					case ExternalReference -> ExternalIdentifier.builder()
-							.identifier(ExternalIdentifierFormat.formatExternalId(customBPartnerId))
-							.rawValue(customBPartnerId)
-							.build();
-
-					default -> throw new RuntimeException("Unsupported JsonBPartnerLookup=" + configMapping.getBpartnerLookup());
-				};
+		throw new RuntimeException("Couldn't find ID in " + bpLocationCustomJsonPath);
 	}
 
 	@Nullable
@@ -317,13 +320,13 @@ public class ImportOrdersRouteContext
 				.map(s -> s + separator)
 				.orElse("");
 
-		final String locationBPartnerName = 
+		final String locationBPartnerName =
 				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
 				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
-				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
+						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
 
 		return StringUtils.trimBlankToNull(locationBPartnerName);
 	}

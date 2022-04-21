@@ -100,7 +100,6 @@ import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_ClearanceStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_HUStatus;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
-import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_Locator_ID;
 import static de.metas.handlingunits.model.I_M_HU.COLUMN_M_HU_Item_Parent_ID;
 import static de.metas.handlingunits.model.I_M_HU_Item_Storage.COLUMNNAME_Qty;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID;
@@ -109,6 +108,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
+import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class M_HU_StepDef
