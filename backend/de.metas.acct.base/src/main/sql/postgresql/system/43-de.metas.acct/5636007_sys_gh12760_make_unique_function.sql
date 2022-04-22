@@ -63,12 +63,12 @@ COMMENT ON FUNCTION make_unique(varchar,
     varchar,
     boolean,
     boolean)
-    IS 'Used to remove duplicates from a table''s column. This is useful when needing to introduce a unique constraint on a column that exists and may not be unique in the database
+    IS 'Used to remove duplicates from a table''s column. This is useful when needing to introduce a unique constraint on a column that exists and may not have unique values in the database.
 
     Parameters:
         p_tableName             varchar, -- The table name
         p_columnName            varchar, -- The column name
-        p_uniqueForClient       boolean DEFAULT FALSE, -- Whether the column should be unique for the same client (default false)
-        p_uniqueForOrganization boolean DEFAULT FALSE -- Whether the column should be unique for the same organization (default false)
+        p_uniqueForClient       boolean DEFAULT FALSE, -- Whether the column should be unique for the same client (default false) aka unique constraint will also include ad_client_id
+        p_uniqueForOrganization boolean DEFAULT FALSE -- Whether the column should be unique for the same organization (default false)  aka unique constraint will also include ad_org_id
     ';
 ;
