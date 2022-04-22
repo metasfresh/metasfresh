@@ -14,7 +14,7 @@ $body$
 DECLARE
     _index                   int     := 0;
     _colLength               int;
-    _suffixLengthMinusSuffix int;
+    _suffixLengthMinusSuffixSize int;
     _group_record            record;
     _record                  record;
     _newValue                varchar;
@@ -48,8 +48,8 @@ BEGIN
             _index := 1;
             FOR _record IN EXECUTE _query USING _index
                 LOOP
-                    _suffixLengthMinusSuffix := _colLength - LENGTH('' || _index);
-                    _newValue := CASE WHEN LENGTH(_group_record.VAL) > _suffixLengthMinusSuffix THEN SUBSTRING(_group_record.VAL, _suffixLengthMinusSuffix) ELSE _group_record.VAL END || '-' || _index;
+                    _suffixLengthMinusSuffixSize := _colLength - LENGTH('' || _index);
+                    _newValue := CASE WHEN LENGTH(_group_record.VAL) > _suffixLengthMinusSuffixSize THEN SUBSTRING(_group_record.VAL, _suffixLengthMinusSuffixSize) ELSE _group_record.VAL END || '-' || _index;
                     EXECUTE 'UPDATE ' || p_tableName || ' SET ' || p_columnName || ' = ''' || _newValue || ''', updatedBy=100, updated=TO_TIMESTAMP(''2022-04-20 12:00:00'', ''YYYY-MM-DD HH24:MI:SS'') WHERE ' || _idColumn || ' = ' || _record.ID;
                     _index := _index + 1;
                 END LOOP;
@@ -64,7 +64,7 @@ COMMENT ON FUNCTION make_unique(varchar,
     boolean,
     boolean)
     IS 'Used to remove duplicates from a table''s column. This is useful when needing to introduce a unique constraint on a column that exists and may not have unique values in the database.
-
+    Limitations: Column needs to be varchar/text.
     Parameters:
         p_tableName             varchar, -- The table name
         p_columnName            varchar, -- The column name
