@@ -1,6 +1,6 @@
 -- View: Report.fresh_Attributes
 
--- DROP VIEW IF EXISTS Report.fresh_Attributes;
+DROP VIEW IF EXISTS Report.fresh_Attributes;
 
 CREATE OR REPLACE VIEW Report.fresh_Attributes AS 
 SELECT * FROM
