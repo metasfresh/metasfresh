@@ -110,7 +110,7 @@ public class BPartnerBankAccount
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
 			@NonNull final String iban,
-			@NonNull final String swiftCode,
+			@Nullable final String swiftCode,
 			@Nullable final String qrIban,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
