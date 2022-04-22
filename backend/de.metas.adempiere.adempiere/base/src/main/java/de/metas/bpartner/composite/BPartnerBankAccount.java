@@ -86,7 +86,7 @@ public class BPartnerBankAccount
 	@NonNull
 	private String iban;
 
-	@NonNull
+	@Nullable
 	private String swiftCode;
 
 	@Nullable
