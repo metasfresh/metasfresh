@@ -1,5 +1,6 @@
 @import './variables.css';
 @import './buttons.css';
+@import './attributes.scss';
 
 /*
 *  MAIN PROPERTIES
@@ -551,6 +552,10 @@ input:checked + .input-slider:before {
   margin-top: 0.1rem;
 }
 
+.input-icon-clickable {
+    cursor: pointer;
+}
+
 .input-dropdown-container {
     position: relative;
     cursor: pointer;
@@ -752,10 +757,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
         -webkit-appearance: none;
         margin: 0;
     }
-
-    .meta-icon-calendar {
-        display: none;
-    }
 }
 
 .input-flex {
@@ -858,56 +859,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     background-color: $brand-border-color;
 }
 
-.meta-icon-calendar {
-    font-size: 18px;
-    line-height: 1.2;
-    position: absolute;
-    right: 10px;
-    pointer-events: none;
-}
-
 .lookup-tooltip {
     flex: 0.02;
     justify-content: flex-end;
     pointer-events: initial;
-}
-
-/* Attributes */
-
-.attributes {
-    position: static;
-    padding-top: 4px;
-    display: block;
-    min-width: 5rem;
-    max-width: 10rem;
-
-    &::selection {
-        background-color: none;
-        color: inherit;
-    }
-}
-
-.attributes-in-table {
-    padding: .3rem;
-    padding-left: .5rem;
-
-     .tag {
-        padding: .25rem .3rem .15rem;
-        line-height: 1;
-        font-size: 0.8rem;
-    }
-}
-
-.attributes-dropdown {
-    user-select: none;
-    position: absolute;
-    z-index: 50;
-    margin-top:5px;
-    width: 450px;
-}
-
-.attributes-dropup {
-  bottom: 35px;
 }
 
 /* Others */

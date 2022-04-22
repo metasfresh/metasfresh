@@ -22,14 +22,12 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.ISingletonService;
+import org.adempiere.util.api.IParams;
 
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.adempiere.util.api.IParams;
-
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.ISingletonService;
 
 /**
  * Updates order line candidates.
@@ -48,11 +46,6 @@ public interface IOLCandUpdateBL extends ISingletonService
 	 * </ul>
 	 * 
 	 * The given <code>params</code> don't have a value for any of these 3 columns, it will be set to <code>null</code>.
-	 * 
-	 * @param ctx
-	 * @param candsToUpdate
-	 * @param params
-	 * @return
 	 */
 	OLCandUpdateResult updateOLCands(Properties ctx, Iterator<I_C_OLCand> candsToUpdate, IParams params);
 

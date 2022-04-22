@@ -1,5 +1,8 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
 
+import de.metas.banking.api.BankRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.location.LocationRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.Invoice450RequestConversionService;
@@ -8,7 +11,9 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.SnapshotHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,6 +66,7 @@ public class Invoice440To450RequestConversionServiceTest
 	public static void initStatic()
 	{
 		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
+		AdempiereTestHelper.get().staticInit();
 	}
 
 	@AfterClass
@@ -74,6 +80,9 @@ public class Invoice440To450RequestConversionServiceTest
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
 		invoice450RequestConversionService = new Invoice450RequestConversionService();
+		SpringContextHolder.registerJUnitBean(LocationRepository.class, new LocationRepository());
+		SpringContextHolder.registerJUnitBean(BankRepository.class, new BankRepository());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	/**

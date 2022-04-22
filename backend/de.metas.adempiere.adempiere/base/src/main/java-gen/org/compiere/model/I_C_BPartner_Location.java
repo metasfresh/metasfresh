@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -504,6 +505,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ISDN = new ModelColumn<>(I_C_BPartner_Location.class, "ISDN", null);
 	String COLUMNNAME_ISDN = "ISDN";
+
+	/**
+	 * Set Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEphemeral (boolean IsEphemeral);
+
+	/**
+	 * Get Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEphemeral();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsEphemeral = new ModelColumn<>(I_C_BPartner_Location.class, "IsEphemeral", null);
+	String COLUMNNAME_IsEphemeral = "IsEphemeral";
 
 	/**
 	 * Set Handover Location.

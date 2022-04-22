@@ -256,7 +256,7 @@ public class ManufacturingJobService
 	public ManufacturingJob receiveGoodsAndAggregateToLU(
 			@NonNull final ManufacturingJob job,
 			@NonNull final FinishedGoodsReceiveLineId lineId,
-			@NonNull JsonAggregateToLU aggregateToLU,
+			@NonNull final JsonAggregateToLU aggregateToLU,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date)
 	{

@@ -8,10 +8,13 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
@@ -76,6 +79,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
@@ -352,7 +356,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice )
+	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice)
 	{
 		final org.compiere.model.I_C_Invoice referencedInvoice = getReferencedInvoice(invoice);
 		final DocStatus originalInvoiceDocStatus;
@@ -360,7 +364,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		{
 			originalInvoiceDocStatus = DocStatus.ofCode(referencedInvoice.getDocStatus());
 		}
-		else {
+		else
+		{
 			originalInvoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
 		}
 		return originalInvoiceDocStatus.isReversed();
@@ -440,27 +445,23 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public boolean hasCompletedInvoicesReferencing(@NonNull final InvoiceId invoiceId)
-	{
-		return retainIfHasCompletedInvoicesReferencing(ImmutableSet.of(invoiceId))
-				.contains(invoiceId);
-	}
-
-	@Override
-	public ImmutableSet<InvoiceId> retainIfHasCompletedInvoicesReferencing(@NonNull final Collection<InvoiceId> invoiceIds)
+	@NonNull
+	public ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(@NonNull final Collection<InvoiceId> invoiceIds, @Nullable final DocBaseAndSubType targetDocType)
 	{
 		if (invoiceIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final IQueryBL queryBL = this.queryBL;
-		final List<Integer> resultingInvoiceRepoIds = queryBL.createQueryBuilder(I_C_Invoice.class)
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceIds)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
-				.listDistinct(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, Integer.class);
-		return InvoiceId.fromIntSet(resultingInvoiceRepoIds);
+				.stream()
+				.filter(invoice -> matchesDocType(invoice, targetDocType))
+				.map(I_C_Invoice::getRef_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -588,5 +589,23 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
 				.listIds(lineId -> InvoiceLineId.ofRepoId(id, lineId));
+	}
+
+	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)
+	{
+		if (targetDocType == null)
+		{
+			return true;
+		}
+
+		final DocTypeId docTypeId = CoalesceUtil.coalesceNotNull(
+				DocTypeId.ofRepoIdOrNull(serviceFeeInvoiceCandidate.getC_DocType_ID()),
+				DocTypeId.ofRepoId(serviceFeeInvoiceCandidate.getC_DocTypeTarget_ID()));
+
+		final I_C_DocType docTypeRecord = docTypeDAO.getById(docTypeId);
+
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+
+		return docBaseAndSubType.equals(targetDocType);
 	}
 }

@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -93,6 +94,7 @@ import java.util.Set;
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient HUReservationRepository huReservationRepository;
+	private final transient AgeAttributesService ageAttributesService;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -129,6 +131,7 @@ import java.util.Set;
 	/**
 	 * {@code null} means "no restriction". Empty means that no HU matches.
 	 */
+	@Nullable
 	private Set<HuId> _onlyHUIds = null;
 
 	private final Set<HuId> _huIdsToExclude = new HashSet<>();
@@ -139,11 +142,13 @@ import java.util.Set;
 	private HUReservationDocRef _excludeReservedToOtherThanRef = null;
 	private boolean _excludeReserved = false;
 
+	@Nullable
 	private IQuery<I_M_HU> huSubQueryFilter = null;
 
 	/**
 	 * Other Filters to be applied
 	 */
+	@Nullable
 	private ICompositeQueryFilter<I_M_HU> otherFilters = null;
 
 	private Boolean locked = null;
@@ -155,17 +160,20 @@ import java.util.Set;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
+	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
 	{
 		this.huReservationRepository = huReservationRepository;
 
+		this.ageAttributesService = ageAttributesService;
+
 		this.locators = new HUQueryBuilder_Locator();
-		this.attributes = new HUQueryBuilder_Attributes();
+		this.attributes = new HUQueryBuilder_Attributes(ageAttributesService);
 	}
 
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
 		this.huReservationRepository = from.huReservationRepository;
+		this.ageAttributesService = from.ageAttributesService;
 
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
@@ -333,7 +341,7 @@ import java.util.Set;
 	@Override
 	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
-		ICompositeQueryFilter<I_M_HU> andFilters = queryBL.createCompositeQueryFilter(I_M_HU.class).setJoinAnd();
+		final ICompositeQueryFilter<I_M_HU> andFilters = queryBL.createCompositeQueryFilter(I_M_HU.class).setJoinAnd();
 
 		//
 		// Only Active HUs
@@ -977,9 +985,19 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
+	public IHUQueryBuilder addOnlyWithAttributes(@NonNull final ImmutableAttributeSet attributeSet)
 	{
 		attributes.addOnlyWithAttributes(attributeSet);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableAttributeSet attributeSet)
+	{
+		attributes.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 		return this;
 	}
 

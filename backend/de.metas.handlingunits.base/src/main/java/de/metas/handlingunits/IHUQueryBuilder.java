@@ -299,6 +299,8 @@ public interface IHUQueryBuilder
 	/** Convenience method that works {@link #addOnlyWithAttribute(I_M_Attribute, Object)} for all attributes from the given {@code attributeSet}. */
 	IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet);
 
+	IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(BPartnerId bpartnerId, ProductId productId, ImmutableAttributeSet attributeSet);
+
 	/**
 	 * Filter only those HUs which have attribute with given <code>value</code>.
 	 *
@@ -473,4 +475,6 @@ public interface IHUQueryBuilder
 	 * If false or not set = all HUs are included (the field {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} is ignored when filtering the HUs)
 	 */
 	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
+
+
 }

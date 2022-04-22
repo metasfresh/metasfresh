@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.grssignum.from_grs.product;
 
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
-import de.metas.common.util.Check;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -38,13 +38,5 @@ public class PushRawMaterialsRouteContext
 	private final JsonProduct jsonProduct;
 
 	@Nullable
-	private String basePathForExportDirectories;
-
-	@NonNull
-	public String getBasePathForExportDirectoriesNotNull()
-	{
-		Check.assumeNotNull(basePathForExportDirectories,"basePathForExportDirectories is not null!");
-
-		return basePathForExportDirectories;
-	}
+	private JsonMetasfreshId currentBPartnerID;
 }

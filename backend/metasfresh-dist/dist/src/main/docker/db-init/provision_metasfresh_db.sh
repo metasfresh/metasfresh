@@ -147,7 +147,7 @@ EOL
 	echo "=========="
 }
 
-activate_extensions() 
+activate_extensions()
 {
 	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
 		# needs shared_preload_libraries = 'pg_stat_statements'	in postgresql.conf

@@ -51,4 +51,6 @@ public class MaterialRequest implements IMaterialRequest
 	IMaterialPlanningContext  mrpContext;
 
 	Instant demandDate;
+
+	boolean isSimulated;
 }

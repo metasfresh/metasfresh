@@ -31,7 +31,8 @@ public enum TechnicalNameEnum
 {
 	OPEN("open"),
 	IN_PROGRESS("in_progress"),
-	PAID("paid");
+	PAID("paid"),
+	CANCELLED("cancelled");
 
 	private final String value;
 }

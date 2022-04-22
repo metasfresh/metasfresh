@@ -6,6 +6,7 @@ import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -240,9 +241,10 @@ public class RepositoryCommonsTest
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
 		final List<IQueryFilter<I_MD_Candidate>> filters = compositeFilter.getFilters();
-		assertThat(filters).hasSize(2);
+		assertThat(filters).hasSize(3);
 
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
 		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, expectedQueryOperator, TimeUtil.asTimestamp(NOW));
+		assertThat(compositeFilter).hasNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
 	}
 }

@@ -86,8 +86,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
   Scenario: we can invoice more than received; soTrx=N (110)
@@ -168,8 +168,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | invoice_1               | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | invoice_1               | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
   Scenario: we can override the quality discount percent at invoice candidate stage; soTrx=N (120)
@@ -250,9 +250,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
-      | p_1                     | -1          | true      | 10               | 10              | -10            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
+      | invoiceLine1_2              | p_1                     | -1          | true      | 10               | 10              | -10            | 0            |
 
   @from:cucumber
   Scenario: we can receive and invoice more than ordered; soTrx=N (130)
@@ -330,8 +330,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
   Scenario: we can receive and invoice less than ordered; soTrx=N (140)
@@ -409,8 +409,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
   Scenario: we can override the actual price at invoice candidate stage; soTrx=N (150)
@@ -491,8 +491,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
 
   @from:cucumber
   Scenario: we can override the discount at invoice candidate stage; soTrx=N (160)
@@ -573,8 +573,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
 
   @from:cucumber
   Scenario: we can override the DateToInvoice to be in the future at invoice candidate stage, making the record non billable; soTrx=N (170)
@@ -799,8 +799,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
-      | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_22032022_1            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_22032022_1            |
 
   @from:cucumber
   Scenario: we can invoice less than received and change invoice doc type at invoice candidate stage; soTrx=N (200)
@@ -881,8 +881,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Provisionsabrechnung  |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
   Scenario: we can invoice less than delivered; soTrx=Y (210)
@@ -924,8 +924,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -948,8 +948,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
   Scenario: we can invoice more than delivered; soTrx=Y (220)
@@ -991,8 +991,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1015,8 +1015,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
   Scenario: we can deliver and invoice more than ordered; soTrx=Y (230)
@@ -1064,8 +1064,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 12          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 12          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1085,8 +1085,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
   Scenario: we can deliver and invoice less than ordered; soTrx=Y (240)
@@ -1134,8 +1134,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 8           | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 8           | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1155,8 +1155,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
   Scenario: we can override the price at invoice candidate stage; sOTrx=Y (250)
@@ -1198,8 +1198,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1222,8 +1222,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
 
   @from:cucumber
   Scenario: we can override the discount at invoice candidate stage; soTrx=Y (260)
@@ -1265,8 +1265,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1289,8 +1289,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
 
   @from:cucumber
   Scenario: we can override the DateToInvoice to be in the future at invoice candidate stage, making the record non billable; soTrx=Y (270)
@@ -1332,8 +1332,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1395,8 +1395,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 8           | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 8           | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1450,8 +1450,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1477,8 +1477,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
-      | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_18032022_1            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_18032022_1            |
 
   @from:cucumber
   Scenario: we can override Qty to deliver catch on shipment schedule and then override qty to invoice on invoice candidate and it is reflected on C_InvoiceLine (300)
@@ -1529,8 +1529,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | s_1                   | p_1                     | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | sl1_1                     | s_1                   | p_1                     | 10          | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
@@ -1553,8 +1553,8 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 40.00          | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 40.00          | 0            |
 
   @from:cucumber
   Scenario: we can invoice a service product, less than ordered, without shipping (310)
@@ -1608,5 +1608,5 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
-      | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
+      | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
