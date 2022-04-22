@@ -213,7 +213,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -245,7 +245,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
