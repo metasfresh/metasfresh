@@ -1,16 +1,15 @@
 package de.metas.acct.aggregation.impl;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.model.I_Fact_Acct_Log;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.model.I_Fact_Acct_Log;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -36,17 +35,15 @@ import de.metas.acct.model.I_Fact_Acct_Log;
 
 public class Fact_Acct_Log_Builder
 {
-	public static final Fact_Acct_Log_Builder newBuilder()
+	public static Fact_Acct_Log_Builder newBuilder()
 	{
 		return new Fact_Acct_Log_Builder();
 	}
 
-	private Properties ctx;
-	private String trxName = ITrx.TRXNAME_None;
 	private I_C_Period period;
-	private Date dateAcct;
-	private Integer C_AcctSchema_ID;
-	private Integer C_ElementValue_ID;
+	private LocalDate dateAcct;
+	private AcctSchemaId C_AcctSchema_ID;
+	private ElementValueId C_ElementValue_ID;
 	private String postingType;
 	private String action;
 	private BigDecimal amtAcctDr = BigDecimal.ZERO;
@@ -60,11 +57,11 @@ public class Fact_Acct_Log_Builder
 
 	public I_Fact_Acct_Log build()
 	{
-		final I_Fact_Acct_Log log = InterfaceWrapperHelper.create(ctx, I_Fact_Acct_Log.class, trxName);
+		final I_Fact_Acct_Log log = InterfaceWrapperHelper.newInstance(I_Fact_Acct_Log.class);
 		//
-		log.setAD_Org_ID(Env.getAD_Org_ID(ctx));
-		log.setC_AcctSchema_ID(C_AcctSchema_ID);
-		log.setC_ElementValue_ID(C_ElementValue_ID);
+		log.setAD_Org_ID(Env.getAD_Org_ID(Env.getCtx()));
+		log.setC_AcctSchema_ID(C_AcctSchema_ID.getRepoId());
+		log.setC_ElementValue_ID(C_ElementValue_ID.getRepoId());
 		log.setC_Period(period);
 		log.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 		//
@@ -79,42 +76,30 @@ public class Fact_Acct_Log_Builder
 		return log;
 	}
 
-	public Fact_Acct_Log_Builder setCtx(final Properties ctx)
-	{
-		this.ctx = ctx;
-		return this;
-	}
-
-	public Fact_Acct_Log_Builder setTrxName(final String trxName)
-	{
-		this.trxName = trxName;
-		return this;
-	}
-
 	public Fact_Acct_Log_Builder setC_Period(final I_C_Period period)
 	{
 		this.period = period;
 		return this;
 	}
 
-	public Fact_Acct_Log_Builder setDateAcct(Date dateAcct)
+	public Fact_Acct_Log_Builder setDateAcct(LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
 		return this;
 	}
 
-	public Fact_Acct_Log_Builder setDateAcct(int year, int month, int day)
+	public Fact_Acct_Log_Builder setDateAcct(String dateAcct)
 	{
-		return setDateAcct(TimeUtil.getDay(year, month, day));
+		return setDateAcct(LocalDate.parse(dateAcct));
 	}
 
-	public Fact_Acct_Log_Builder setC_AcctSchema_ID(final int C_AcctSchema_ID)
+	public Fact_Acct_Log_Builder setC_AcctSchema_ID(final AcctSchemaId C_AcctSchema_ID)
 	{
 		this.C_AcctSchema_ID = C_AcctSchema_ID;
 		return this;
 	}
 
-	public Fact_Acct_Log_Builder setC_ElementValue_ID(final int C_ElementValue_ID)
+	public Fact_Acct_Log_Builder setC_ElementValue_ID(final ElementValueId C_ElementValue_ID)
 	{
 		this.C_ElementValue_ID = C_ElementValue_ID;
 		return this;

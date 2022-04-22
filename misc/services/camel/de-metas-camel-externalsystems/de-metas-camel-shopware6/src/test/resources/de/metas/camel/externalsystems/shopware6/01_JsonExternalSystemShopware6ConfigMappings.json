@@ -16,9 +16,7 @@
       "bpartnerLocationSyncAdvice": {
         "ifNotExists": "FAIL",
         "ifExists": "UPDATE_MERGE"
-      },
-      "bpartnerIdJSONPath": null,
-      "bpartnerLookup": null
+      }
     },
     {
       "description": "this one should be considered",
@@ -36,9 +34,7 @@
       "bpartnerLocationSyncAdvice": {
         "ifNotExists": "FAIL",
         "ifExists": "DONT_UPDATE"
-      },
-      "bpartnerIdJSONPath": "/orderCustomer/customFields/externalReference",
-      "bpartnerLookup": "ExternalReference"
+      }
     }
   ]
 }

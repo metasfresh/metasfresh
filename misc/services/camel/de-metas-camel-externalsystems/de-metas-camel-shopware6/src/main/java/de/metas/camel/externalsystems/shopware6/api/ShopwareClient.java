@@ -528,8 +528,9 @@ public class ShopwareClient
 
 			if (Check.isNotBlank(salesRepJSONPath))
 			{
-				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
-				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
+				final JsonNode node = orderJson.at(salesRepJSONPath);
+				final String salesRepId = node.isNull() ? null : node.asText();
+				orderCandidateBuilder.salesRepId(Check.isBlank(salesRepId) ? null : salesRepId);
 			}
 
 			return Optional.of(orderCandidateBuilder.build());
@@ -565,8 +566,8 @@ public class ShopwareClient
 
 			if (Check.isNotBlank(customShopwareIdJSONPath))
 			{
-				final String customShopwareId = orderAddressJson.at(customShopwareIdJSONPath).asText();
-
+				final JsonNode node = orderAddressJson.at(customShopwareIdJSONPath);
+				final String customShopwareId = node.isNull() ? null : node.asText();
 				if (Check.isNotBlank(customShopwareId))
 				{
 					jsonOrderAddressWithCustomId.customShopwareId(customShopwareId);
@@ -576,20 +577,18 @@ public class ShopwareClient
 					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonOrderAddress.getId());
 				}
 			}
-
 			if (Check.isNotBlank(customMetasfreshIdJSONPath))
 			{
-				final String customMetasfreshId = orderAddressJson.at(customMetasfreshIdJSONPath).asText();
-				if (Check.isNotBlank(customMetasfreshId))
-				{
-					jsonOrderAddressWithCustomId.customMetasfreshId(customMetasfreshId);
-				}
+				final JsonNode node = orderAddressJson.at(customMetasfreshIdJSONPath);
+				final String customMetasfreshId = node.isNull() ? null : node.asText();
+				jsonOrderAddressWithCustomId.customMetasfreshId(Check.isBlank(customMetasfreshId) ? null : customMetasfreshId);
 			}
 
 			if (Check.isNotBlank(emailJSONPath))
 			{
-				final String email = orderAddressJson.at(emailJSONPath).asText();
-				jsonOrderAddressWithCustomId.customEmail(email.isEmpty() ? null : email);
+				final JsonNode node = orderAddressJson.at(emailJSONPath);
+				final String email = node.isNull() ? null : node.asText();
+				jsonOrderAddressWithCustomId.customEmail(Check.isBlank(email) ? null : email);
 			}
 
 			return Optional.ofNullable(jsonOrderAddressWithCustomId.build());

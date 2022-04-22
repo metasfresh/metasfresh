@@ -63,60 +63,6 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-// TableRow props
-export const tableRowPropTypes = {
-  lastPage: PropTypes.string,
-  cols: PropTypes.array.isRequired,
-  onClick: PropTypes.func.isRequired,
-  item: PropTypes.object.isRequired,
-  dataKey: PropTypes.string.isRequired,
-  handleSelect: PropTypes.func,
-  onDoubleClick: PropTypes.func,
-  indentSupported: PropTypes.bool,
-  collapsible: PropTypes.bool,
-  collapsed: PropTypes.bool,
-  processed: PropTypes.bool,
-  notSaved: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  odd: PropTypes.number,
-  caption: PropTypes.string,
-  changeListenOnTrue: PropTypes.func,
-  onRowCollapse: PropTypes.func,
-  handleRightClick: PropTypes.func,
-  fieldsByName: PropTypes.object,
-  indent: PropTypes.array,
-  rowId: PropTypes.string,
-  supportOpenRecord: PropTypes.bool,
-  changeListenOnFalse: PropTypes.func,
-  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  mainTable: PropTypes.bool,
-  newRow: PropTypes.bool,
-  tabIndex: PropTypes.number,
-  entity: PropTypes.string,
-  colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
-  // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
-  viewId: PropTypes.string,
-  docId: PropTypes.string,
-  windowId: PropTypes.string,
-  lastChild: PropTypes.bool,
-  includedDocuments: PropTypes.array,
-  contextType: PropTypes.any,
-  focusOnFieldName: PropTypes.string,
-  modalVisible: PropTypes.bool,
-  isGerman: PropTypes.bool,
-  keyProperty: PropTypes.string,
-  page: PropTypes.number,
-  activeSort: PropTypes.bool,
-  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table
-  hasComments: PropTypes.bool,
-  handleFocusAction: PropTypes.func,
-  tableId: PropTypes.string,
-  updatePropertyValue: PropTypes.func,
-  onFastInlineEdit: PropTypes.func,
-  navigationActive: PropTypes.bool,
-};
-
 /**
  * @method getAmountFormatByPrecisiont
  * @param {string} precision

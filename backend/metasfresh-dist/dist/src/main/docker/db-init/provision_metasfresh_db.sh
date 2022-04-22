@@ -147,7 +147,7 @@ EOL
 	echo "=========="
 }
 
-activate_extensions() 
+activate_extensions()
 {
 	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
 		# needs shared_preload_libraries = 'pg_stat_statements'	in postgresql.conf
@@ -155,7 +155,7 @@ activate_extensions()
 		echo " activate pg_stat_statements extension ..."
 		echo "==========================================="
 		psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-CREATE EXTENSION pg_stat_statements;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 EOSQL
 		echo "==========="
 		echo " ... done!"

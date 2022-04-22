@@ -131,6 +131,15 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setStorageAttributesKey(ppAttributesKeys.getAsString());
 		}
 
+		if (bomVersionsIdentifier != null)
+		{
+			final I_PP_Product_BOMVersions bomVersions = productBomVersionsTable.get(bomVersionsIdentifier);
+
+			assertThat(bomVersions).isNotNull();
+
+			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+		}
+
 		InterfaceWrapperHelper.save(productPlanningRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Product_Planning.Table_Name);

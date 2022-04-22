@@ -284,7 +284,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(request.getAttributeSetInstanceId()));
 
 		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
-		bomRecord.setC_DocType_ID(getBOMDocTypeId().getRepoId());
+		bomRecord.setC_DocType_ID(getBOMDocTypeId(orgId).getRepoId());
 		bomRecord.setDocStatus(DocStatus.Drafted.getCode());
 		bomRecord.setDocAction(X_PP_Product_BOM.DOCACTION_Complete);
 
@@ -393,6 +393,9 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return getLatestBOMRecordByVersion(bomVersionsId, null);
 	}
 
+	/**
+	 * @param docStatus if set, then more recent versions without the given docstatus are skipped, and the returned version - if any - has this docStatus.
+	 */
 	@Override
 	@NonNull
 	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
@@ -464,9 +467,10 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@NonNull
-	private DocTypeId getBOMDocTypeId()
+	private DocTypeId getBOMDocTypeId(@NonNull final OrgId orgId)
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
+				.adOrgId(orgId.getRepoId())
 				.docBaseType(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion)
 				.adClientId(Env.getAD_Client_ID())
 				.build();

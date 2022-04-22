@@ -60,7 +60,9 @@ public class DataTableUtil
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String fallbackPrefix)
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER), () -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	public String extractRecordIdentifier(
@@ -68,7 +70,7 @@ public class DataTableUtil
 			@NonNull final String columnNamePrefix,
 			@NonNull final String fallbackPrefix)
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
 				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
 				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
@@ -119,7 +121,7 @@ public class DataTableUtil
 	{
 		return extractIntOrDefaultForColumnName(dataTableRow, columnName, 0);
 	}
-	
+
 	public int extractIntOrMinusOneForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
@@ -128,7 +130,7 @@ public class DataTableUtil
 	}
 
 	private int extractIntOrDefaultForColumnName(
-			final @NotNull Map<String, String> dataTableRow, 
+			final @NotNull Map<String, String> dataTableRow,
 			final @NotNull String columnName,
 			final int defaultValue)
 	{
@@ -271,7 +273,6 @@ public class DataTableUtil
 		}
 	}
 
-
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -345,7 +346,8 @@ public class DataTableUtil
 		return result;
 	}
 
-	public static boolean extractBooleanForColumnNameOr(
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)

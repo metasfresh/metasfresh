@@ -24,6 +24,7 @@ package de.metas.externalreference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -57,6 +58,6 @@ public class ExternalReferenceId implements RepoIdAware
 
 	private ExternalReferenceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Issue_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID);
 	}
 }

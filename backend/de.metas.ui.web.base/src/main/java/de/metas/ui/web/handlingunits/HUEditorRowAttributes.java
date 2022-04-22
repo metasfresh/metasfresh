@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -19,7 +18,6 @@ import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.window.controller.Execution;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -90,10 +88,9 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return (HUEditorRowAttributes)attributes;
 	}
 
-	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
-
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
+	private final String clearanceNote;
 
 	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
@@ -116,6 +113,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		this.attributesStorage = attributesStorage;
 
 		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage, hu));
+
+		this.clearanceNote = hu.getClearanceNote();
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
@@ -219,7 +218,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts, final DocumentId huId)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 
@@ -228,7 +227,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
 
-		getClearanceNoteField(huId, jsonOpts).ifPresent(jsonFields::add);
+		getClearanceNoteField(jsonOpts).ifPresent(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
 
@@ -419,25 +418,16 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	}
 
 	@NonNull
-	private Optional<JSONDocumentField> getClearanceNoteField(@NonNull final DocumentId huId, @NonNull final JSONOptions jsonOptions)
+	private Optional<JSONDocumentField> getClearanceNoteField(@NonNull final JSONOptions jsonOptions)
 	{
 		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
 
-		if (!isDisplayedClearanceStatus)
+		if (!isDisplayedClearanceStatus || Check.isBlank(clearanceNote))
 		{
 			return Optional.empty();
 		}
 
-		final HUEditorRowId huEditorRowId = HUEditorRowId.ofDocumentId(huId);
-
-		final I_M_HU hu = huDAO.getById(huEditorRowId.getHuId());
-
-		if (Check.isBlank(hu.getClearanceNote()))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(toJSONDocumentField(hu.getClearanceNote(), jsonOptions));
+		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
 	}
 
 

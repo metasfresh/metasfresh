@@ -24,6 +24,7 @@ package org.eevolution.productioncandidate.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
@@ -38,7 +39,6 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderCreateRequest;
-import de.metas.inout.ShipmentScheduleId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -59,6 +59,8 @@ public class PPOrderCandidateCreateRequest
 	Instant dateStartSchedule;
 	OrderLineId salesOrderLineId;
 	ShipmentScheduleId shipmentScheduleId;
+	boolean simulated;
+	String traceId;
 
 	@Builder
 	public PPOrderCandidateCreateRequest(
@@ -73,7 +75,9 @@ public class PPOrderCandidateCreateRequest
 			@NonNull final Instant datePromised,
 			@NonNull final Instant dateStartSchedule,
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final ShipmentScheduleId shipmentScheduleId)
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
+			final boolean simulated,
+			@Nullable final String traceId)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -89,6 +93,8 @@ public class PPOrderCandidateCreateRequest
 		this.dateStartSchedule = dateStartSchedule;
 		this.salesOrderLineId = salesOrderLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
+		this.simulated = simulated;
+		this.traceId = traceId;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

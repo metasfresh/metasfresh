@@ -26,15 +26,18 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
+import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
+import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMLine;
-import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
-import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
-import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import de.metas.common.rest_api.v2.bom.JsonCreateBOMLine;
+import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -88,7 +91,7 @@ public class PushBOMProductsProcessor implements Processor
 	@NonNull
 	private static JsonCreateBOMLine getJsonCreateBOMLine(@NonNull final JsonBOMLine jsonBOMLine, @Nullable final BigDecimal scrap)
 	{
-		return JsonCreateBOMLine.builder()
+		final JsonCreateBOMLine.JsonCreateBOMLineBuilder jsonCreateBOMLineBuilder = JsonCreateBOMLine.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOMLine.getProductId()))
 				.line(jsonBOMLine.getLine())
 				.isQtyPercentage(Boolean.TRUE)
@@ -96,8 +99,19 @@ public class PushBOMProductsProcessor implements Processor
 								.qty(jsonBOMLine.getQtyBOM())
 								.uomCode(jsonBOMLine.getUom())
 								.build())
-				.scrap(scrap)
-				.build();
+				.scrap(scrap);
+
+		if (Check.isNotBlank(jsonBOMLine.getCountryCode()))
+		{
+			jsonCreateBOMLineBuilder.attributeSetInstance(JsonAttributeSetInstance.builder()
+																  .attributeInstance(JsonAttributeInstance.builder()
+																							 .attributeCode(GRSSignumConstants.HERKUNFT_ATTRIBUTE_CODE)
+																							 .valueStr(jsonBOMLine.getCountryCode())
+																							 .build())
+																  .build());
+		}
+
+		return jsonCreateBOMLineBuilder.build();
 	}
 
 	@NonNull

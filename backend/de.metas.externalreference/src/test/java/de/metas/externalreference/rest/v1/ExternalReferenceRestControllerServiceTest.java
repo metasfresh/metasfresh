@@ -22,6 +22,7 @@
 
 package de.metas.externalreference.rest.v1;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.externalreference.v1.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.v1.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v1.JsonExternalReferenceLookupItem;
@@ -29,6 +30,7 @@ import de.metas.common.externalreference.v1.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -86,8 +88,9 @@ class ExternalReferenceRestControllerServiceTest
 	void performInsert()
 	{
 		// given
+		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of("system");
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
-				.systemName(JsonExternalSystemName.of("system"))
+				.systemName(externalSystemName)
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
 								.id("id1")
 								.type("bpartner")
@@ -129,11 +132,27 @@ class ExternalReferenceRestControllerServiceTest
 		final List<JsonExternalReferenceItem> items = response.getItems();
 		assertThat(items.get(0).getLookupItem()).isEqualTo(lookupItem1);
 		assertThat(items.get(0).getMetasfreshId()).isNull();
+		assertThat(items.get(0).getSystemName()).isNull();
+		assertThat(items.get(0).getExternalReferenceId()).isNull();
 
+		final I_S_ExternalReference externalReference_24 = getExternalRefByRecordId(records, 24);
 		assertThat(items.get(1).getLookupItem()).isEqualTo(lookupItem2);
 		assertThat(items.get(1).getMetasfreshId().getValue()).isEqualTo(24);
+		assertThat(items.get(1).getSystemName()).isEqualTo(externalSystemName);
+		assertThat(items.get(1).getExternalReferenceId().getValue()).isEqualTo(externalReference_24.getS_ExternalReference_ID());
 
+		final I_S_ExternalReference externalReference_23 = getExternalRefByRecordId(records, 23);
 		assertThat(items.get(2).getLookupItem()).isEqualTo(lookupItem3);
 		assertThat(items.get(2).getMetasfreshId().getValue()).isEqualTo(23);
+		assertThat(items.get(2).getSystemName()).isEqualTo(externalSystemName);
+		assertThat(items.get(2).getExternalReferenceId().getValue()).isEqualTo(externalReference_23.getS_ExternalReference_ID());
+	}
+
+	private I_S_ExternalReference getExternalRefByRecordId(final List<I_S_ExternalReference> allExternalReferences, final int recordId)
+	{
+		return Check.singleElement(allExternalReferences
+				.stream()
+				.filter(record -> record.getRecord_ID() == recordId)
+				.collect(ImmutableList.toImmutableList()));
 	}
 }

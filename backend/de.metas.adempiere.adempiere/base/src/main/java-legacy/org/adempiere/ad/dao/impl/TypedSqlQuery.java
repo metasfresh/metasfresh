@@ -1620,14 +1620,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
-		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
+		// NOTE: avoid leading/trailing "spaces" in sqlDeleteFrom and fromClause,
+		// in order to be matched by our migration scripts "dontLog" matcher.
+		// In case of fromClause we need a trailing space.
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE");
+		final StringBuilder fromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
 		final String groupByClause = null;
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		final int no = DB.executeUpdateEx(sql, params, trxName);
-		return no;
+		return DB.executeUpdateEx(sql, params, trxName);
 	}
 
 	@Override

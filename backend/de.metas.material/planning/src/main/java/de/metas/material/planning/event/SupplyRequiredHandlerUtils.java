@@ -64,6 +64,7 @@ public class SupplyRequiredHandlerUtils
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
+				.isSimulated(supplyRequiredDescriptor.isSimulated())
 				.build();
 	}
 }
