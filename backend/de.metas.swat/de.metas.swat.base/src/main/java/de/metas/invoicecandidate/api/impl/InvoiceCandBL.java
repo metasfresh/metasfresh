@@ -1422,10 +1422,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final boolean isAdjustmentChargeInvoice =invoiceBL.isAdjustmentCharge(invoice);
+
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 
 		final I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -1528,7 +1532,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// reversalQtyInvoiced = 5 (because we reverse a credit memo), qtyInvoicedForIc = 1 => overlap=2 => create ila with qty -5-(+2)=3
 					final StockQtyAndUOMQty overlap = reversalQtyInvoiced.add(qtyInvoicedForIc);
-					qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
+
+					//
+					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
+					if(isAdjustmentChargeInvoice){
+						qtyInvoicedForIla = reversalQtyInvoiced;
+					}
+					else
+					{
+						qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
+					}
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + reversalQtyInvoiced
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc
