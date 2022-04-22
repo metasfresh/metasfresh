@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
@@ -122,9 +123,12 @@ public class M_PriceList_StepDef
 		m_pricingSystem.setIsActive(isActive);
 		m_pricingSystem.setDescription(description);
 
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
+
+		final Optional<I_M_PricingSystem> existingPricingSystem = pricingSystemTable.getOptional(recordIdentifier);
+		existingPricingSystem.ifPresent(InterfaceWrapperHelper::delete);
 		saveRecord(m_pricingSystem);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 		pricingSystemTable.putOrReplace(recordIdentifier, m_pricingSystem);
 	}
 
