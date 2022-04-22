@@ -43,6 +43,7 @@ private
 # Intellij Idea
 *.iml
 /.metadata/
+.idea
 
 #
 # VSCode
