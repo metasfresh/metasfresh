@@ -121,8 +121,23 @@ public class PriceListDAO implements IPriceListDAO
 		return loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
 	}
 
+	@NonNull
 	@Override
 	public PricingSystemId getPricingSystemIdByValue(@NonNull final String value)
+	{
+		final PricingSystemId pricingSystemId = getPricingSystemIdByValueOrNull(value);
+
+		if (pricingSystemId == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@ (@Value@=" + value + ")");
+		}
+
+		return pricingSystemId;
+	}
+
+	@Nullable
+	@Override
+	public PricingSystemId getPricingSystemIdByValueOrNull(@NonNull final String value)
 	{
 		final int pricingSystemId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PricingSystem.class)
@@ -131,12 +146,7 @@ public class PriceListDAO implements IPriceListDAO
 				.create()
 				.firstIdOnly();
 
-		if (pricingSystemId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@ (@Value@=" + value + ")");
-		}
-
-		return PricingSystemId.ofRepoId(pricingSystemId);
+		return PricingSystemId.ofRepoIdOrNull(pricingSystemId);
 	}
 
 	@Override

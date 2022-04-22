@@ -53,7 +53,7 @@ public class CountryId implements RepoIdAware
 		return repoId > 0 ? new CountryId(repoId) : null;
 	}
 
-	public static int toRepoId(final CountryId id)
+	public static int toRepoId(@Nullable final CountryId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
