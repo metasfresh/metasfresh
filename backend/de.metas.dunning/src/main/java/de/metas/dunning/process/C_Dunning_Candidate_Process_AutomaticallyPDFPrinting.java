@@ -92,6 +92,7 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
+				.setOrgId(p_OrgId)
 				.setName(m_AsyncBatchName)
 				.setDescription(m_AsyncBatchDesc)
 				.build();

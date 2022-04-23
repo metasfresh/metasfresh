@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_DunningCandidate_Processing;
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting;
 
 class ConcatenatePDFsCommand
 {
@@ -154,7 +154,7 @@ class ConcatenatePDFsCommand
 
 	private boolean isDunning(@NonNull final String asyncBatchType)
 	{
-		return C_Async_Batch_InternalName_DunningCandidate_Processing.equals(asyncBatchType);
+		return C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting.equals(asyncBatchType);
 	}
 
 	private IQuery<I_C_Printing_Queue> createPrintingQueueQuery(@NonNull final String whereClause)

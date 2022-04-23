@@ -45,7 +45,7 @@ public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_DunningDoc.class))
 		{
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mahnung);
-			
+
 			final I_C_DunningDoc dunningDoc = InterfaceWrapperHelper.create(archiveRerencedModel, I_C_DunningDoc.class);
 			handleDunnings(queueItem, dunningDoc);
 		}
