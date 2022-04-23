@@ -267,26 +267,31 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 430, //
+			value = "Translates to C_OLCand.qtyItemCapacity")
+	@JsonInclude(Include.NON_NULL)
+	BigDecimal qtyItemCapacity;
+
+	@ApiModelProperty(position = 440, //
 			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 440, //
+	@ApiModelProperty(position = 450, //
 			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
 	@JsonInclude(Include.NON_NULL)
 	String bpartnerName;
 
-	@ApiModelProperty(position = 450, //
+	@ApiModelProperty(position = 460, //
 			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String email;
 
-	@ApiModelProperty(position = 460, //
+	@ApiModelProperty(position = 470, //
 			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(position = 470)
+	@ApiModelProperty(position = 480)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
@@ -336,6 +341,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
+			@JsonProperty("qtyItemCapacity") final @Nullable BigDecimal qtyItemCapacity,
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
@@ -389,6 +395,7 @@ public class JsonOLCandCreateRequest
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
+		this.qtyItemCapacity = qtyItemCapacity;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 	}
 

@@ -315,6 +315,11 @@ public class OLCandRepository
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
 
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
+
 		saveRecord(olCandWithIssuesInterface);
 
 		return olCandWithIssuesInterface;
