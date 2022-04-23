@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
 import de.metas.async.api.AsyncBatchType;
 import de.metas.async.api.AsyncBatchTypeId;
 import de.metas.async.api.IAsyncBatchBL;
@@ -47,8 +48,6 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -528,6 +527,19 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return internalName != null && internalName.equals(expectedInternalName);
 	}
 
+	@Override
+	public boolean isAsyncBatchForAutomaticallyInvoicePDFPrinting(@NonNull I_C_Async_Batch asyncBatch)
+	{
+		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
+		return internalName != null	&& internalName.equals(Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting);
+	}
+
+	@Override
+	public boolean isAsyncBatchForAutomaticallyDunningPDFPrinting(@NonNull I_C_Async_Batch asyncBatch)
+	{
+		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
+		return internalName != null && internalName.equals(Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting);
+	}
 
 	@Override
 	public Optional<AsyncBatchType> getAsyncBatchType(@NonNull final I_C_Async_Batch asyncBatch)
