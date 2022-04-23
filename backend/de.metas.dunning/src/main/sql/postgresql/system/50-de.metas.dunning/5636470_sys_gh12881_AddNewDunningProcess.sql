@@ -422,3 +422,32 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=11, Updated=now(), UpdatedBy=1
 UPDATE AD_Menu SET AD_Process_ID=585043, EntityType='U',Updated=TO_TIMESTAMP('2022-04-21 20:23:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541929
 ;
 
+
+
+-- 2022-04-23T07:15:09.452844600Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545122,0,TO_TIMESTAMP('2022-04-23 10:15:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.dunning','Y','Mahnungen PDF wurde erstellt.','I',TO_TIMESTAMP('2022-04-23 10:15:09','YYYY-MM-DD HH24:MI:SS'),100,'AutomaticallyDunningPdfPrintinAsyncBatchListener_Pdf_Done')
+;
+
+-- 2022-04-23T07:15:09.454402100Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Message_ID=545122 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+
+
+
+
+INSERT INTO c_async_batch_type (ad_boilerplate_id, ad_client_id, ad_org_id, c_async_batch_type_id, created, createdby, internalname, isactive, updated, updatedby, keepalivetimehours, notificationtype, skiptimeoutmillis, description)
+VALUES (NULL, 1000000, 1000000, 540027, '2022-04-21 17:25:01.000000 +00:00', 100, 'DunningCandidate_Processing', 'Y', '2022-04-21 17:25:01.000000 +00:00', 100, NULL, 'ABP', 0, NULL)
+;
+
+
+
+INSERT INTO c_async_batch_type (ad_boilerplate_id, ad_client_id, ad_org_id, c_async_batch_type_id, created, createdby, internalname, isactive, updated, updatedby, keepalivetimehours, notificationtype, skiptimeoutmillis, description)
+VALUES (NULL, 1000000, 1000000, 540028, '2022-04-23 07:18:47.000000 +00:00', 100, 'AutomaticallyDunningPdfPrinting', 'Y', '2022-04-23 07:18:47.000000 +00:00', 100, NULL, 'ABP', 0, NULL)
+;
+
+
+
+
