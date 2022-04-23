@@ -69,7 +69,6 @@ public class BPartnerBankAccount
 	public static final String ID = "id";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String IBAN = "iban";
-	public static final String SWIFTCODE = "swiftCode";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
 
