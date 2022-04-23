@@ -51,8 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting;
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_DunningCandidate_Processing;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
@@ -77,7 +77,21 @@ class ConcatenatePDFsCommand
 	{
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(printingQueueItemsGeneratedAsyncBatch.getAD_Client_ID(), printingQueueItemsGeneratedAsyncBatch.getAD_Org_ID());
 		this.printingQueueItemsGeneratedAsyncBatchId = AsyncBatchId.ofRepoId(printingQueueItemsGeneratedAsyncBatch.getC_Async_Batch_ID());
-		this.asyncBatchType = printingQueueItemsGeneratedAsyncBatch.getC_Async_Batch_Type().getInternalName();
+
+		final String oldAsyncBatchType = printingQueueItemsGeneratedAsyncBatch.getC_Async_Batch_Type().getInternalName();
+
+		if (isInvoice(oldAsyncBatchType))
+		{
+			this.asyncBatchType = C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
+		}
+		else if (isDunning(oldAsyncBatchType))
+		{
+			this.asyncBatchType = C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting;
+		}
+		else
+		{
+			this.asyncBatchType = null;
+		}
 	}
 
 	public void execute()
@@ -164,11 +178,11 @@ class ConcatenatePDFsCommand
 		String itemName;
 		if (isInvoice(asyncBatchType))
 		{
-			itemName= X_C_Printing_Queue.ITEMNAME_Rechnung;
+			itemName = X_C_Printing_Queue.ITEMNAME_Rechnung;
 		}
 		else if (isDunning(asyncBatchType))
 		{
-			itemName= X_C_Printing_Queue.ITEMNAME_Mahnung;
+			itemName = X_C_Printing_Queue.ITEMNAME_Mahnung;
 		}
 		else
 		{
