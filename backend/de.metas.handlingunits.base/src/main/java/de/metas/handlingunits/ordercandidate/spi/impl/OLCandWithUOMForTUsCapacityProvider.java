@@ -47,7 +47,7 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 
 		final UomId uomId = olCandEffectiveValuesBL.getEffectiveUomId(olCand);
 
-		return uomDAO.isUOMForTUs(uomId); // nothing to do
+		return uomDAO.isUOMForTUs(uomId);
 	}
 
 	@NonNull
