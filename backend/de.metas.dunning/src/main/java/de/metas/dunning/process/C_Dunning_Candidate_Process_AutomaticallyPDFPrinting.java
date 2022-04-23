@@ -27,7 +27,6 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
@@ -38,9 +37,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 import java.util.Iterator;
 
@@ -48,7 +47,6 @@ import java.util.Iterator;
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates and triggering PDF Printing
  *
  * @author cg
- *
  */
 public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaProcess
 {
@@ -70,7 +68,6 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 
 	@Param(parameterName = "IsComplete", mandatory = true)
 	private boolean p_isAutoProcess = true;
-
 
 	@Override
 	protected String doIt()
@@ -101,8 +98,7 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 
 		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchDunningDoc, asyncBatch);
 
-		final String whereclause = I_C_Dunning_Candidate.COLUMNNAME_AD_Org_ID + "=?";
-		final SelectedDunningCandidatesSource source = new SelectedDunningCandidatesSource(getProcessInfo().getWhereClause());
+		final OrgDunningCandidatesSource source = new OrgDunningCandidatesSource(p_OrgId);
 		source.setDunningContext(context);
 
 		dunningBL.processCandidates(context, source);
@@ -111,24 +107,22 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 	}
 
 	/**
-	 * This dunning candidate source returns only those candidates that have been selected by the user.
-	 *
-	 * @author ts
-	 *
+	 * This dunning candidate source returns only those candidates that have been filtered by Org.
 	 */
-	private static final class SelectedDunningCandidatesSource extends AbstractDunningCandidateSource
+	private static final class OrgDunningCandidatesSource extends AbstractDunningCandidateSource
 	{
-		private final String whereClause;
+		private final OrgId orgId;
 
-		public SelectedDunningCandidatesSource(final String whereClause)
+		public OrgDunningCandidatesSource(@NonNull final OrgId orgId)
 		{
-			this.whereClause = whereClause;
+			this.orgId = orgId;
 		}
 
 		@Override
 		public Iterator<I_C_Dunning_Candidate> iterator()
 		{
 			final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
+			final String whereClause = I_C_Dunning_Candidate.COLUMNNAME_AD_Org_ID + "=" + orgId.getRepoId();
 			final Iterator<I_C_Dunning_Candidate> it = dunningDAO.retrieveNotProcessedCandidatesIteratorRW(getDunningContext(), whereClause);
 			return it;
 		}
