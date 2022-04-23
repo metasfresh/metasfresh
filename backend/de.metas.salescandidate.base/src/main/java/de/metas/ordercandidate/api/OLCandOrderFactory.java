@@ -460,6 +460,8 @@ class OLCandOrderFactory
 			currentOrderLine = newOrderLine(candidate);
 		}
 
+		setExternalBPartnerInfo(currentOrderLine, candidate);
+
 		currentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
@@ -620,5 +622,22 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	{
+		orderLine.setExternalSeqNo(candidate.getLine());
+
+		final I_C_OLCand olCand = candidate.unbox();
+
+		orderLine.setBPartner_QtyItemCapacity(olCand.getQtyItemCapacity());
+
+		final UomId uomId = UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
+
+		if (uomId != null)
+		{
+			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
+			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+		}
 	}
 }

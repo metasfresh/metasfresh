@@ -1,44 +1,10 @@
 package de.metas.invoice.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.costing.ChargeId;
-import de.metas.costing.impl.ChargeRepository;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
-import de.metas.location.LocationId;
-import de.metas.tax.api.TaxId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.TaxCategoryNotFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Charge;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MTax;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -46,12 +12,15 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.IOrgDAO;
@@ -140,6 +109,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
@@ -568,5 +538,18 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
+	}
+
+	@NonNull
+	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+
+		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
+
+		return Quantitys.create(
+				qtyEntered,
+				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
+				stockUOMId);
 	}
 }

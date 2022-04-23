@@ -284,6 +284,11 @@ public class OLCandRepository
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
 
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
+
 		saveRecord(olCandWithIssuesInterface);
 
 		return olCandWithIssuesInterface;
