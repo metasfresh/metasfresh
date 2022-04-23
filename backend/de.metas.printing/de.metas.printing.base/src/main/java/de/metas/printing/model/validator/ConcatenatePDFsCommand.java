@@ -165,12 +165,14 @@ class ConcatenatePDFsCommand
 
 	private boolean isInvoice(@NonNull final String asyncBatchType)
 	{
-		return C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType);
+		return C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType)
+				|| C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType);
 	}
 
 	private boolean isDunning(@NonNull final String asyncBatchType)
 	{
-		return C_Async_Batch_InternalName_DunningCandidate_Processing.equals(asyncBatchType);
+		return C_Async_Batch_InternalName_DunningCandidate_Processing.equals(asyncBatchType)
+				|| C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting.equals(asyncBatchType);
 	}
 
 	private IQuery<I_C_Printing_Queue> createPrintingQueueQuery(@NonNull final String whereClause)
