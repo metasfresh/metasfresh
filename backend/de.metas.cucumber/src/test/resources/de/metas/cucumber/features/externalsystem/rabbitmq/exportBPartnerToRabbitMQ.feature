@@ -2,6 +2,7 @@ Feature: Validate BPartner is sent to RabbitMQ
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
   Scenario: Export bpartner when created via rest-api
     Given metasfresh contains AD_Users:
@@ -21,10 +22,9 @@ Feature: Validate BPartner is sent to RabbitMQ
       | AD_UserGroup_User_Assign_ID.Identifier | AD_UserGroup_ID.Identifier | AD_User_ID.Identifier | IsActive |
       | userGroupAssign_1                      | userGroup_1                | testUser_1            | true     |
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.BPartnerCreatedByUserGroup_ID.Identifier |
-      | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                  |
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.SubjectCreatedByUserGroup_ID.Identifier | OPT.IsSyncBPartnersToRabbitMQ |
+      | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                 | true                          |
 
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -43,7 +43,7 @@ Feature: Validate BPartner is sent to RabbitMQ
     ],
     "syncAdvise": {
         "ifNotExists": "CREATE",
-        "ifExists": "UPDATE_MERGE"
+        "ifExists": "DONT_UPDATE"
     }
 }
 """

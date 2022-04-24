@@ -797,6 +797,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isCompanyNameSet())
 		{
 			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
+			bpartner.setCompany(Check.isNotBlank(jsonBPartner.getCompanyName()));
 		}
 
 		// name
@@ -1664,6 +1665,12 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isRegionSet())
 		{
 			location.setRegion(StringUtils.trim(jsonBPartnerLocation.getRegion()));
+		}
+
+		// ephemeral
+		if (jsonBPartnerLocation.isEphemeralSet())
+		{
+			location.setEphemeral(jsonBPartnerLocation.isEphemeral());
 		}
 
 		// bpartnerName

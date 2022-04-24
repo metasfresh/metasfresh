@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.logging.LogManager;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class MD_Stock_StepDef
 {
@@ -114,7 +114,7 @@ public class MD_Stock_StepDef
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
 		final int productId = productTable.get(productIdentifier).getM_Product_ID();
-		
+
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
 
 		final I_MD_Stock mdStock = queryBL.createQueryBuilder(I_MD_Stock.class)

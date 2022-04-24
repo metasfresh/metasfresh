@@ -6,16 +6,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for MD_Candidate
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_MD_Candidate
+public interface I_MD_Candidate 
 {
 
 	String Table_Name = "MD_Candidate";
 
-	//	/** AD_Table_ID=540808 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540808 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -388,7 +388,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMD_Candidate_BusinessCase (@Nullable java.lang.String MD_Candidate_BusinessCase);
+	void setMD_Candidate_BusinessCase (@Nullable String MD_Candidate_BusinessCase);
 
 	/**
 	 * Get Business case.
@@ -397,7 +397,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMD_Candidate_BusinessCase();
+	@Nullable String getMD_Candidate_BusinessCase();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
 	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
@@ -462,11 +462,11 @@ public interface I_MD_Candidate
 	 */
 	int getMD_Candidate_Parent_ID();
 
-	@Nullable de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
+	@Nullable I_MD_Candidate getMD_Candidate_Parent();
 
-	void setMD_Candidate_Parent(@Nullable de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
+	void setMD_Candidate_Parent(@Nullable I_MD_Candidate MD_Candidate_Parent);
 
-	ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+	ModelColumn<I_MD_Candidate, I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", I_MD_Candidate.class);
 	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
 
 	/**
@@ -476,7 +476,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMD_Candidate_Status (@Nullable java.lang.String MD_Candidate_Status);
+	void setMD_Candidate_Status (@Nullable String MD_Candidate_Status);
 
 	/**
 	 * Get Status.
@@ -485,28 +485,28 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMD_Candidate_Status();
+	@Nullable String getMD_Candidate_Status();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
 	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
 
 	/**
-	 * Set Typ.
+	 * Set Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
+	void setMD_Candidate_Type (String MD_Candidate_Type);
 
 	/**
-	 * Get Typ.
+	 * Get Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getMD_Candidate_Type();
+	String getMD_Candidate_Type();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
 	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
@@ -702,7 +702,7 @@ public interface I_MD_Candidate
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
-	 lowest number comes first
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -713,7 +713,7 @@ public interface I_MD_Candidate
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
-	 lowest number comes first
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -731,7 +731,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+	void setStorageAttributesKey (String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -740,7 +740,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getStorageAttributesKey();
+	String getStorageAttributesKey();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_MD_Candidate.class, "StorageAttributesKey", null);
 	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
@@ -777,7 +777,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+	void setUserElementString1 (@Nullable String UserElementString1);
 
 	/**
 	 * Get UserElementString1.
@@ -786,7 +786,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString1();
+	@Nullable String getUserElementString1();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString1", null);
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
@@ -798,7 +798,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+	void setUserElementString2 (@Nullable String UserElementString2);
 
 	/**
 	 * Get UserElementString2.
@@ -807,7 +807,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString2();
+	@Nullable String getUserElementString2();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString2", null);
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
@@ -819,7 +819,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+	void setUserElementString3 (@Nullable String UserElementString3);
 
 	/**
 	 * Get UserElementString3.
@@ -828,7 +828,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString3();
+	@Nullable String getUserElementString3();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString3", null);
 	String COLUMNNAME_UserElementString3 = "UserElementString3";
@@ -840,7 +840,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+	void setUserElementString4 (@Nullable String UserElementString4);
 
 	/**
 	 * Get UserElementString4.
@@ -849,7 +849,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString4();
+	@Nullable String getUserElementString4();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString4", null);
 	String COLUMNNAME_UserElementString4 = "UserElementString4";
@@ -861,7 +861,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+	void setUserElementString5 (@Nullable String UserElementString5);
 
 	/**
 	 * Get UserElementString5.
@@ -870,7 +870,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString5();
+	@Nullable String getUserElementString5();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString5", null);
 	String COLUMNNAME_UserElementString5 = "UserElementString5";
@@ -882,7 +882,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+	void setUserElementString6 (@Nullable String UserElementString6);
 
 	/**
 	 * Get UserElementString6.
@@ -891,7 +891,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString6();
+	@Nullable String getUserElementString6();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString6", null);
 	String COLUMNNAME_UserElementString6 = "UserElementString6";
@@ -903,7 +903,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+	void setUserElementString7 (@Nullable String UserElementString7);
 
 	/**
 	 * Get UserElementString7.
@@ -912,7 +912,7 @@ public interface I_MD_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString7();
+	@Nullable String getUserElementString7();
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_MD_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";

@@ -22,30 +22,41 @@
 
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
+import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_IsAnonymousHuPickedOnTheFly;
 import static org.assertj.core.api.Assertions.*;
 
 public class M_ShipmentSchedule_QtyPicked_StepDef
 {
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-	public M_ShipmentSchedule_QtyPicked_StepDef(@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final M_HU_StepDefData huTable;
+
+	public M_ShipmentSchedule_QtyPicked_StepDef(
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			@NonNull final M_HU_StepDefData huTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
+		this.huTable = huTable;
 	}
 
 	@And("there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules")
@@ -84,6 +95,38 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		assertThat(shipmentScheduleQtyPickedRecord.getQtyPicked()).isEqualTo(qtyPicked);
 		assertThat(shipmentScheduleQtyPickedRecord.isProcessed()).isEqualTo(isProcessed);
 		assertThat(shipmentScheduleQtyPickedRecord.isAnonymousHuPickedOnTheFly()).isEqualTo(isAnonymousHuPickedOnTheFly);
+	}
+
+	@And("validate M_ShipmentSchedule_QtyPicked:")
+	public void validate_picked_HU(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+			final I_M_ShipmentSchedule_QtyPicked ssQtyPicked = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.create()
+					.firstOnly(I_M_ShipmentSchedule_QtyPicked.class);
+
+			assertThat(ssQtyPicked).isNotNull();
+
+			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(huIdentifier))
+			{
+				final I_M_HU hu = huTable.get(huIdentifier);
+				assertThat(ssQtyPicked.getVHU_ID()).isEqualTo(hu.getM_HU_ID());
+			}
+			else
+			{
+				assertThat(ssQtyPicked.getVHU_ID()).isEqualTo(0);
+			}
+
+			final boolean isAnonymousHuPickedOnTheFly = DataTableUtil.extractBooleanForColumnNameOr(row, COLUMNNAME_IsAnonymousHuPickedOnTheFly, false);
+			assertThat(ssQtyPicked.isAnonymousHuPickedOnTheFly()).isEqualTo(isAnonymousHuPickedOnTheFly);
+		}
 	}
 
 	private void validateNoShipmentScheduleQtyPickedRecords(@NonNull final Map<String, String> tableRow)

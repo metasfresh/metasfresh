@@ -56,7 +56,7 @@ export const getQueryString = (query) => {
 };
 
 // TODO: Move to api ?
-export function createPatchRequestPayload(property, value) {
+export const createPatchRequestPayload = (property, value) => {
   if (Array.isArray(property) && Array.isArray(value)) {
     return property.map((item, index) => ({
       op: 'replace',
@@ -81,7 +81,13 @@ export function createPatchRequestPayload(property, value) {
     // never return undefined; backend does not support it
     return [];
   }
-}
+};
+
+export const toSingleFieldPatchRequest = (fieldName, value) => ({
+  op: 'replace',
+  path: fieldName,
+  value,
+});
 
 export const arePropTypesIdentical = (nextProps, currentProps) => {
   for (const key of Object.keys(nextProps)) {
@@ -170,8 +176,8 @@ export function preFormatPostDATA({ target, postData }) {
 /**
  * Opens the url given as param in a new window and focuses on that window
  * @param {string} urlPath
- * @param {fnct} dispatch
- * @param {fnct} function to dispatch - added this in case we need to perform custom actions when opening new tab ()
+ * @param {function} dispatch
+ * @param {function} actionName to dispatch - added this in case we need to perform custom actions when opening new tab ()
  *               https://github.com/metasfresh/metasfresh/issues/10145 (in this case we send setProcessSaved that will
  *               update the store flag - processStatus)
  */

@@ -30,4 +30,8 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
  */
 public class C_Doc_Outbound_Log_Line_StepDefData extends StepDefData<I_C_Doc_Outbound_Log_Line>
 {
+	public C_Doc_Outbound_Log_Line_StepDefData()
+	{
+		super(I_C_Doc_Outbound_Log_Line.class);
+	}
 }

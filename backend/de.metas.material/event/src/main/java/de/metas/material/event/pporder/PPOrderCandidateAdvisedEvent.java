@@ -63,7 +63,7 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 	private final boolean tryUpdateExistingCandidate;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public PPOrderCandidateAdvisedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrderCandidate") @NonNull final PPOrderCandidate ppOrderCandidate,

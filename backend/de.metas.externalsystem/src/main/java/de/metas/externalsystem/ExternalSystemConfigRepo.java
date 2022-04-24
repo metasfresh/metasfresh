@@ -43,7 +43,6 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -202,7 +201,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-
+	
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -352,7 +351,8 @@ public class ExternalSystemConfigRepo
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
 				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
-				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getBPartnerCreatedByUserGroup_ID()))
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getSubjectCreatedByUserGroup_ID()))
+				.isSyncExternalReferencesToRabbitMQ(rabbitMQConfigRecord.isSyncExternalReferencesToRabbitMQ())
 				.build();
 	}
 
@@ -462,8 +462,6 @@ public class ExternalSystemConfigRepo
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
-				.bPartnerlookup(BPartnerLookup.ofCodeOrNull(record.getBPartnerLookupVia()))
-				.bPartnerIdJSONPath(record.getJSONPathConstantBPartnerID())
 				.build();
 	}
 

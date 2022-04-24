@@ -1,18 +1,6 @@
 package de.metas.distribution.ddorder.material_dispo;
 
-import static de.metas.document.engine.IDocument.ACTION_Complete;
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-
-import java.util.Collection;
-import java.util.Date;
-
 import ch.qos.logback.classic.Level;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_Order;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
@@ -24,6 +12,17 @@ import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_Order;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Date;
+
+import static de.metas.document.engine.IDocument.ACTION_Complete;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 
 /*
  * #%L
@@ -83,8 +82,9 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
 		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
+		final String ddOrderRequestedEventTrace = ddOrderRequestedEvent.getEventDescriptor().getTraceId();
 
-		final ImmutableList<I_DD_Order> ddOrderRecords = ddOrderProducer.createDDOrders(ddOrder, dateOrdered);
+		final ImmutableList<I_DD_Order> ddOrderRecords = ddOrderProducer.createDDOrders(ddOrder, dateOrdered, ddOrderRequestedEventTrace);
 
 		for (final I_DD_Order ddOrderRecord : ddOrderRecords)
 		{

@@ -56,6 +56,8 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 
 	private static final transient Logger logger = LogManager.getLogger(OrderCheckupPrintingQueueHandler.class);
 
+	private final transient IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
+
 	/**
 	 * Set the number of copies to the configured value.
 	 * Note that this handler is invoked after the "standard" handler, because the main validator of de.metas.fresh
@@ -66,7 +68,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
-		final int copies = Services.get(IOrderCheckupBL.class).getNumberOfCopies(queueItem);
+		final int copies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
 		queueItem.setCopies(copies);
 	}
 
@@ -75,7 +77,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	{
 		//
 		// Get the underlying report if applies
-		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
+		final I_C_Order_MFGWarehouse_Report report = orderCheckupBL.getReportOrNull(printOut);
 		if (report == null)
 		{
 			return;
@@ -93,22 +95,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		return Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID());
 	}
 
-	private final I_C_Order_MFGWarehouse_Report getReportOrNull(final I_AD_Archive printOut)
-	{
-		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
-		{
-			return null;
-		}
 
-		final I_C_Order_MFGWarehouse_Report report = Services.get(IArchiveDAO.class).retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
-		if (report == null)
-		{
-			new AdempiereException("No report was found for " + printOut)
-					.throwIfDeveloperModeOrLogWarningElse(logger);
-		}
-
-		return report;
-	}
 
 	private final void setUserToPrint(final I_C_Printing_Queue queueItem, final I_C_Order_MFGWarehouse_Report report)
 	{

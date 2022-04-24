@@ -48,6 +48,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -73,6 +74,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -133,6 +135,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -273,6 +276,8 @@ public class DesadvBL implements IDesadvBL
 		}
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
+		setExternalBPartnerInfo(newDesadvLine, orderLineRecord);
+
 		InterfaceWrapperHelper.save(newDesadvLine);
 		return newDesadvLine;
 	}
@@ -393,7 +398,7 @@ public class DesadvBL implements IDesadvBL
 		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
 		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
-		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true/* add */);
+		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, orderLineRecord, true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
@@ -811,7 +816,7 @@ public class DesadvBL implements IDesadvBL
 				inOutLineRecord,
 				InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn()));
 
-		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, false/* add=false, i.e. subtract */);
+		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null/*orderLine*/, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
@@ -822,17 +827,25 @@ public class DesadvBL implements IDesadvBL
 	void addOrSubtractInOutLineQty(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final StockQtyAndUOMQty inOutLineQty,
+			@Nullable final I_C_OrderLine orderLine,
 			final boolean add)
 	{
 		final StockQtyAndUOMQty inOutLineQtyEff = inOutLineQty.negateIfNot(add);
 
 		final Quantity inOutLineStockQty = inOutLineQtyEff.getStockQty();
+		final BigDecimal oldMovementQtyInStockUOM = desadvLineRecord.getQtyDeliveredInStockingUOM();
 		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(inOutLineStockQty.toBigDecimal());
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
 		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 		final Quantity newQtyDeliveredInUOM = addInOutLineQtyToDesadvLineQty(inOutLineQtyEff, desadvLineQtyDelivered, desadvLineRecord);
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM.toBigDecimal());
+
+		final Optional<BigDecimal> newQtyEnteredInBPartnerUOM = orderLine != null
+				? computeDeliveredQtyInBPartnerUOM(orderLine, desadvLineRecord)
+				: computeDeliveredQtyInBPartnerUOM(desadvLineRecord, oldMovementQtyInStockUOM);
+
+		newQtyEnteredInBPartnerUOM.ifPresent(desadvLineRecord::setQtyEnteredInBPartnerUOM);
 
 		// convert the delivered qty (which *might* also be in catch-weight!) to the invoicing-UOM
 		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
@@ -1092,5 +1105,66 @@ public class DesadvBL implements IDesadvBL
 				MSG_EDI_DESADV_RefuseSending,
 				minimumSumPercentage, skippedDesadvsString.toString());
 		return Optional.of(msg);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> computeDeliveredQtyInBPartnerUOM(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final I_EDI_DesadvLine desadvLine)
+	{
+		if (desadvLine.getC_UOM_BPartner_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final UomId stockUOMId = productBL.getStockUOMId(orderLine.getM_Product_ID());
+		final I_C_UOM stockUOM = uomDAO.getById(stockUOMId);
+
+		//dev-note: calculating deliveredQtyInBPartnerUOM using proportion to avoid missing UOM conversion between
+		//BPartner_UOM_ID - which might not be considered at all in metas internal processing - and actual stock UOM
+		final BigDecimal deliveredQtyInBPartnerUOM = desadvLine.getQtyDeliveredInStockingUOM()
+				.multiply(orderLine.getQtyEnteredInBPartnerUOM())
+				.divide(orderLine.getQtyOrdered(), stockUOM.getStdPrecision(), RoundingMode.HALF_UP);
+
+		if (deliveredQtyInBPartnerUOM.signum() < 0)
+		{
+			return Optional.of(ZERO);
+		}
+
+		return Optional.of(deliveredQtyInBPartnerUOM);
+	}
+
+	private Optional<BigDecimal> computeDeliveredQtyInBPartnerUOM(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final BigDecimal oldMovementQtyInStockUOM)
+	{
+		if (desadvLine.getC_UOM_BPartner_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final UomId stockUOMId = productBL.getStockUOMId(desadvLine.getM_Product_ID());
+		final I_C_UOM stockUOM = uomDAO.getById(stockUOMId);
+
+		//dev-note: calculating deliveredQtyInBPartnerUOM using proportion to avoid missing UOM conversion between
+		//BPartner_UOM_ID - which might not be considered at all in metas internal processing - and actual stock UOM
+		final BigDecimal deliveredQtyInBPartnerUOM = desadvLine.getQtyEnteredInBPartnerUOM()
+				.multiply(desadvLine.getQtyDeliveredInStockingUOM())
+				.divide(oldMovementQtyInStockUOM, stockUOM.getStdPrecision(), RoundingMode.HALF_UP);
+
+		if (deliveredQtyInBPartnerUOM.signum() < 0)
+		{
+			return Optional.of(ZERO);
+		}
+
+		return Optional.of(deliveredQtyInBPartnerUOM);
+	}
+
+	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
+	{
+		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());
+		newDesadvLine.setC_UOM_BPartner_ID(orderLineRecord.getC_UOM_BPartner_ID());
+		newDesadvLine.setQtyEnteredInBPartnerUOM(ZERO);
+		newDesadvLine.setBPartner_QtyItemCapacity(orderLineRecord.getBPartner_QtyItemCapacity());
 	}
 }
