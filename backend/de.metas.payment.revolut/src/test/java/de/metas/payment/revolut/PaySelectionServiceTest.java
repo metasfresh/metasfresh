@@ -132,7 +132,7 @@ public class PaySelectionServiceTest
 		bp_bankAccount.setC_Bank_ID(bank.getC_Bank_ID());
 		bp_bankAccount.setC_Currency_ID(currency.getC_Currency_ID());
 		bp_bankAccount.setIBAN("iban");
-		bp_bankAccount.setSwiftCode("swiftCode");
+		bp_bankAccount.setSwiftCode("SwiftCode");
 		bp_bankAccount.setRoutingNo("routingNo");
 		save(bp_bankAccount);
 
