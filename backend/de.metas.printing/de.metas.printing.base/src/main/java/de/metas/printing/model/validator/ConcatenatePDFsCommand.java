@@ -141,7 +141,7 @@ class ConcatenatePDFsCommand
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
-		Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+		final Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
 		final Collection<String> keys = filtersMap.keySet();
 
 		final ArrayList<PrintingQueueQueryRequest> queries = new ArrayList<>();
@@ -164,7 +164,7 @@ class ConcatenatePDFsCommand
 	private boolean isInvoice(@NonNull final String asyncBatchType)
 	{
 		return C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType)
-				|| C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType);
+				|| C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting.equals(asyncBatchType);
 	}
 
 	private boolean isDunning(@NonNull final String asyncBatchType)
@@ -175,7 +175,7 @@ class ConcatenatePDFsCommand
 
 	private IQuery<I_C_Printing_Queue> createPrintingQueueQuery(@NonNull final String whereClause)
 	{
-		String itemName;
+		final String itemName;
 		if (isInvoice(asyncBatchType))
 		{
 			itemName = X_C_Printing_Queue.ITEMNAME_Rechnung;
