@@ -9,10 +9,7 @@ chuckNorris()
 // keep the last 20 builds for master and stable, but onkly the last 10 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '20' : '10'
 
-final String MF_SQL_SEED_DUMP_URL_DEFAULT =
-        env.BRANCH_NAME == 'release'
-                ? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump'
-                : 'https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump'
+final String MF_SQL_SEED_DUMP_URL_DEFAULT = 'https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
