@@ -29,9 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderCandidateTest
 {
@@ -68,9 +66,9 @@ public class OrderCandidateTest
 		final OrderCandidate orderCandidate = objectMapper.readValue(orderCand, OrderCandidate.class);
 
 		//when
-		final RuntimeException exception = assertThrows(RuntimeException.class, () -> orderCandidate.getCustomField(bPartnerCustomJsonPath));
+		final String customField = orderCandidate.getCustomField(bPartnerCustomJsonPath);
 
 		//then
-		assertThat(exception.getMessage()).contains("Failed to process order " + orderCandidate.getJsonOrder().getOrderNumber() + " (ID=" + orderCandidate.getJsonOrder().getId() + "); Nothing found on the given customPath: " + bPartnerCustomJsonPath);
+		assertThat(customField).isNull();
 	}
 }

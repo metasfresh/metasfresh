@@ -42,7 +42,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.common.externalsystem.JsonBPartnerLookup;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
@@ -250,11 +249,6 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
-		if (matchingShopware6Mapping != null && matchingShopware6Mapping.getBpartnerLookup() == JsonBPartnerLookup.MetasfreshId)
-		{
-			return null;
-		}
-
 		final JsonRequestContactUpsertBuilder upsertContactRequestBuilder = JsonRequestContactUpsert.builder();
 		upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
 

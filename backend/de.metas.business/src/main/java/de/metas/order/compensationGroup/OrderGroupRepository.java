@@ -55,34 +55,7 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Order_CompensationGroup;
-import org.eevolution.api.ProductBOMId;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -641,7 +614,10 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final List<I_C_OrderLine> regularOrderLines,
 			@Nullable final GroupId groupId)
 	{
-		for (final I_C_OrderLine regularLinePO : regularOrderLines)
+		final List<I_C_OrderLine> sortedOrderLines = regularOrderLines.stream()
+				.sorted(Comparator.comparing(I_C_OrderLine::isGroupCompensationLine))
+				.collect(Collectors.toList());
+		for (final I_C_OrderLine regularLinePO : sortedOrderLines)
 		{
 			if (groupId != null)
 			{
@@ -651,7 +627,7 @@ public class OrderGroupRepository implements GroupRepository
 			{
 				regularLinePO.setC_Order_CompensationGroup_ID(-1);
 			}
-			saveRecord(regularLinePO);
+			save(regularLinePO);
 		}
 	}
 

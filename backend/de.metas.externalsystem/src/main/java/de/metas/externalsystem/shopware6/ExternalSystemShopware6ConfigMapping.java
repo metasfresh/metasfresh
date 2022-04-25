@@ -69,12 +69,6 @@ public class ExternalSystemShopware6ConfigMapping
 	@Nullable
 	String description;
 
-	@Nullable
-	String bPartnerIdJSONPath;
-
-	@Nullable
-	BPartnerLookup bPartnerlookup;
-
 	@Builder
 	public ExternalSystemShopware6ConfigMapping(
 			@NonNull final Integer seqNo,
@@ -88,9 +82,7 @@ public class ExternalSystemShopware6ConfigMapping
 			@Nullable final Boolean isInvoiceEmailEnabled,
 			@Nullable final String sw6CustomerGroup,
 			@Nullable final String sw6PaymentMethod,
-			@Nullable final String description,
-			@Nullable final String bPartnerIdJSONPath,
-			@Nullable final BPartnerLookup bPartnerlookup)
+			@Nullable final String description)
 	{
 		this.seqNo = seqNo;
 		this.docTypeOrderId = DocTypeId.ofRepoIdOrNull(docTypeOrderId);
@@ -104,8 +96,6 @@ public class ExternalSystemShopware6ConfigMapping
 		this.bpartnerLocationIfExists = bpartnerLocationIfExists;
 		this.bpartnerLocationIfNotExists = bpartnerLocationIfNotExists;
 		this.isInvoiceEmailEnabled = isInvoiceEmailEnabled;
-		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
-		this.bPartnerlookup = bPartnerlookup;
 	}
 
 }

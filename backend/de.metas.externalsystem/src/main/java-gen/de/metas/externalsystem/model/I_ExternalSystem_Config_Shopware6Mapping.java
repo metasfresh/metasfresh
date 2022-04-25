@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6Mapping
  *  @author metasfresh (generated) 
@@ -142,27 +141,6 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartnerLocation_IfNotExists = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartnerLocation_IfNotExists", null);
 	String COLUMNNAME_BPartnerLocation_IfNotExists = "BPartnerLocation_IfNotExists";
-
-	/**
-	 * Set Business partner lookup.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBPartnerLookupVia (@Nullable java.lang.String BPartnerLookupVia);
-
-	/**
-	 * Get Business partner lookup.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getBPartnerLookupVia();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartnerLookupVia = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartnerLookupVia", null);
-	String COLUMNNAME_BPartnerLookupVia = "BPartnerLookupVia";
 
 	/**
 	 * Set Auftrags-Belegart.
@@ -343,29 +321,6 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "IsInvoiceEmailEnabled", null);
 	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
-
-	/**
-	 * Set Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setJSONPathConstantBPartnerID (@Nullable java.lang.String JSONPathConstantBPartnerID);
-
-	/**
-	 * Get Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getJSONPathConstantBPartnerID();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "JSONPathConstantBPartnerID", null);
-	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
 
 	/**
 	 * Set Payment Rule.

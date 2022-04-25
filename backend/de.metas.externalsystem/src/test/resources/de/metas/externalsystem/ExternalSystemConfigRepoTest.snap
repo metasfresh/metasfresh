@@ -126,7 +126,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "isActive" : true,
       "productLookup" : "ProductNumber"
@@ -148,7 +147,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "isActive" : false,
       "productLookup" : "ProductNumber"
@@ -177,12 +175,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
-        "description" : "test",
-        "bPartnerIdJSONPath" : "/test/bp",
-        "bPartnerlookup" : "ExternalReference"
+        "description" : "test"
       }
     ],
-    "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "isActive" : true,
     "productLookup" : "ProductNumber"
@@ -203,7 +198,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "isActive" : true,
       "productLookup" : "ProductNumber"
@@ -225,7 +219,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "new-clientId",
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "isActive" : true,
       "productLookup" : "ProductNumber"
