@@ -32,12 +32,14 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.printing.async.spi.impl.PrintingQueuePDFConcatenateWorkpackageProcessor;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -49,7 +51,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_DunningCandidate_Processing;
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 class ConcatenatePDFsCommand
 {
@@ -65,12 +70,28 @@ class ConcatenatePDFsCommand
 	// Params
 	private final AsyncBatchId printingQueueItemsGeneratedAsyncBatchId;
 	private final ClientAndOrgId clientAndOrgId;
+	private final String asyncBatchType;
 
 	@Builder
 	private ConcatenatePDFsCommand(@NonNull final I_C_Async_Batch printingQueueItemsGeneratedAsyncBatch)
 	{
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(printingQueueItemsGeneratedAsyncBatch.getAD_Client_ID(), printingQueueItemsGeneratedAsyncBatch.getAD_Org_ID());
 		this.printingQueueItemsGeneratedAsyncBatchId = AsyncBatchId.ofRepoId(printingQueueItemsGeneratedAsyncBatch.getC_Async_Batch_ID());
+
+		final String oldAsyncBatchType = printingQueueItemsGeneratedAsyncBatch.getC_Async_Batch_Type().getInternalName();
+
+		if (isInvoice(oldAsyncBatchType))
+		{
+			this.asyncBatchType = C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting;
+		}
+		else if (isDunning(oldAsyncBatchType))
+		{
+			this.asyncBatchType = C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting;
+		}
+		else
+		{
+			this.asyncBatchType = null;
+		}
 	}
 
 	public void execute()
@@ -103,8 +124,8 @@ class ConcatenatePDFsCommand
 
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
 				.setContext(ctx)
-				.setC_Async_Batch_Type(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
-				.setName(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
+				.setC_Async_Batch_Type(queryRequest.getAsyncBatchType())
+				.setName(queryRequest.getAsyncBatchType())
 				.setDescription(queryRequest.getQueryName())
 				.setParentAsyncBatchId(printingQueueItemsGeneratedAsyncBatchId)
 				.setOrgId(OrgId.ofRepoId(parentAsyncBatchRecord.getAD_Org_ID()))
@@ -120,7 +141,7 @@ class ConcatenatePDFsCommand
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
-		Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+		final Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
 		final Collection<String> keys = filtersMap.keySet();
 
 		final ArrayList<PrintingQueueQueryRequest> queries = new ArrayList<>();
@@ -132,6 +153,7 @@ class ConcatenatePDFsCommand
 			final PrintingQueueQueryRequest request = PrintingQueueQueryRequest.builder()
 					.queryName(key)
 					.query(query)
+					.asyncBatchType(asyncBatchType)
 					.build();
 			queries.add(request);
 		}
@@ -139,14 +161,41 @@ class ConcatenatePDFsCommand
 		return queries;
 	}
 
+	private boolean isInvoice(@NonNull final String asyncBatchType)
+	{
+		return C_Async_Batch_InternalName_InvoiceCandidate_Processing.equals(asyncBatchType)
+				|| C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting.equals(asyncBatchType);
+	}
+
+	private boolean isDunning(@NonNull final String asyncBatchType)
+	{
+		return C_Async_Batch_InternalName_DunningCandidate_Processing.equals(asyncBatchType)
+				|| C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting.equals(asyncBatchType);
+	}
+
 	private IQuery<I_C_Printing_Queue> createPrintingQueueQuery(@NonNull final String whereClause)
 	{
+		final String itemName;
+		if (isInvoice(asyncBatchType))
+		{
+			itemName = X_C_Printing_Queue.ITEMNAME_Rechnung;
+		}
+		else if (isDunning(asyncBatchType))
+		{
+			itemName = X_C_Printing_Queue.ITEMNAME_Mahnung;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown asyncBatchType: " + asyncBatchType);
+		}
+
 		return queryBL
 				.createQueryBuilder(I_C_Printing_Queue.class)
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_AD_Client_ID, clientAndOrgId.getClientId())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_AD_Org_ID, clientAndOrgId.getOrgId())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, printingQueueItemsGeneratedAsyncBatchId)
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_ItemName, itemName)
 				.filter(TypedSqlQueryFilter.of(whereClause))
 				.create();
 	}

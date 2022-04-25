@@ -122,6 +122,10 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	boolean isAsyncBatchTypeInternalName(@NonNull I_C_Async_Batch asyncBatch, @NonNull String expectedInternalName);
 
+	boolean isAsyncBatchForAutomaticallyInvoicePDFPrinting(@NonNull I_C_Async_Batch asyncBatch);
+
+	boolean isAsyncBatchForAutomaticallyDunningPDFPrinting(@NonNull I_C_Async_Batch asyncBatch);
+
 	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
 
 	AsyncBatchType getAsyncBatchTypeById(@NonNull AsyncBatchTypeId asyncBatchTypeId);
