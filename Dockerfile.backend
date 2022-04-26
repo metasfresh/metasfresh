@@ -6,4 +6,4 @@ COPY --from=metas-mvn-common:latest /root/.m2 /root/.m2/
 
 WORKDIR /backend
 COPY backend .
-RUN mvn clean install
+RUN mvn clean install -DskipTests
