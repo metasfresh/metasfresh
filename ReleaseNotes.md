@@ -11,6 +11,8 @@ Here come the actual release notes:
 
 # metasfresh 5.176 (upcoming RC)
 ## Features
+* metasfresh
+  * [#12837](https://github.com/metasfresh/metasfresh/issues/12837) Shopware Fix order-item/bundle-sorting
 
 ## Fixes
 
