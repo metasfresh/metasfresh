@@ -20,18 +20,18 @@ Feature: ASI support in Product BOM rest-api
       | standard_category                | attributeSet_convenienceSalate   |
 
     And metasfresh contains M_PricingSystems
-      | Identifier | Name  | Value | OPT.IsActive |
-      | ps_SO      | ps_SO | ps_SO | true         |
+      | Identifier | Name    | Value   | OPT.IsActive |
+      | ps_SO_1    | ps_SO_1 | ps_SO_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_SO      | ps_SO                         | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
+      | pl_SO      | ps_SO_1                       | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_SO     | pl_SO                     | plv_SO | 2022-01-02 |
 
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer_SO | customer_SO | customer_SO | Y              | ps_SO                         |
+      | customer_SO | customer_SO | customer_SO | Y              | ps_SO_1                       |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier |
       | customerLocation_SO | customerSO01 | customer_SO              |
@@ -147,7 +147,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO                         |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                       |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S1              | 5          | orderLineAttributeSetInstance            |
@@ -262,7 +262,7 @@ Feature: ASI support in Product BOM rest-api
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.PreparationDate  |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO                         | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                       | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_SO | order_SO              | product_S2              | 5          |
@@ -277,8 +277,8 @@ Feature: ASI support in Product BOM rest-api
 
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | c_111      | DEMAND            | SHIPMENT                  | product_S2              | 2022-01-08T21:00:00Z | -5  | -5                     |                                          |
-      | c_222      | SUPPLY            | PRODUCTION                | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
+      | c_111      | DEMAND            | SHIPMENT                      | product_S2              | 2022-01-08T21:00:00Z | -5  | -5                     |                                          |
+      | c_222      | SUPPLY            | PRODUCTION                    | product_S2              | 2022-01-08T21:00:00Z | 5   | 5                      | bomAttributeSetInstance                  |
 
   @from:cucumber
   Scenario: Create sales order with the same ASI, on complete production candidate is found having the same ASI
@@ -418,7 +418,7 @@ Feature: ASI support in Product BOM rest-api
     And the order identified by order_PO is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | md_po      | SUPPLY            | PURCHASE                  | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
+      | md_po      | SUPPLY            | PURCHASE                      | product_S3              | 2022-01-08T21:00:00Z | 10  | 10                     | po_AttributeSetInstance                  |
 
     And metasfresh contains M_AttributeSetInstance with identifier "orderLineAttributeSetInstance":
   """
@@ -433,7 +433,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO                         | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_1                       | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
@@ -448,5 +448,5 @@ Feature: ASI support in Product BOM rest-api
 
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | c_111      | DEMAND            | SHIPMENT                  | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
-      | c_222      | SUPPLY            | PRODUCTION                | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
+      | c_111      | DEMAND            | SHIPMENT                      | product_S3              | 2022-01-08T21:00:00Z | -20 | -10                    | orderLineAttributeSetInstance            |
+      | c_222      | SUPPLY            | PRODUCTION                    | product_S3              | 2022-01-08T21:00:00Z | 10  | 0                      | orderLineAttributeSetInstance            |
