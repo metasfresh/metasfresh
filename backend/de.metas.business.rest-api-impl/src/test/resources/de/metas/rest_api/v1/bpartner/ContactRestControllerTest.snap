@@ -26,44 +26,48 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
     "externalId" : "externalId-1",
     "handles" : [ ],
-    "id" : {
-      "bpartnerId" : 20,
-      "userId" : 100011
-    },
+    "id" : "20-100011",
     "membershipContact" : false,
     "name" : "jsonContact.name",
     "newsletter" : false,
-    "subjectMatterContact" : false,
-    "roles" : [ ]    
+    "roles" : [ ],
+    "subjectMatterContact" : false
   }
 ]
 
@@ -96,30 +100,37 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -127,17 +138,14 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "externalId" : "contactRecord.externalId",
     "firstName" : "contactRecord.firstName",
     "handles" : [ ],
-    "id" : {
-      "bpartnerId" : 20,
-      "userId" : 30
-    },
+    "id" : "20-30",
     "lastName" : "contactRecord.lastName",
     "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
+    "roles" : [ ],
     "subjectMatterContact" : false,
-    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]
@@ -171,30 +179,37 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -202,17 +217,14 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "externalId" : "contactRecord.externalId",
     "firstName" : "contactRecord.firstName",
     "handles" : [ ],
-    "id" : {
-      "bpartnerId" : 20,
-      "userId" : 30
-    },
+    "id" : "20-30",
     "lastName" : "contactRecord.lastName",
     "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
+    "roles" : [ ],
     "subjectMatterContact" : false,
-    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]
@@ -246,30 +258,37 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -277,17 +296,14 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "externalId" : "contactRecord.externalId",
     "firstName" : "contactRecord.firstName",
     "handles" : [ ],
-    "id" : {
-      "bpartnerId" : 20,
-      "userId" : 30
-    },
+    "id" : "20-30",
     "lastName" : "contactRecord.lastName",
     "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
+    "roles" : [ ],
     "subjectMatterContact" : false,
-    "roles" : [ ],    
     "value" : "contactRecord.value"
   }
 ]
