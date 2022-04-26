@@ -122,6 +122,7 @@ public class CampaignServiceTest
 		final I_MKTG_Campaign campaign = newInstance(I_MKTG_Campaign.class);
 
 		campaign.setMKTG_Platform_ID(platform.getMKTG_Platform_ID());
+		campaign.setName("Campaign for " + platform.getName());
 		save(campaign);
 
 		return campaign;
