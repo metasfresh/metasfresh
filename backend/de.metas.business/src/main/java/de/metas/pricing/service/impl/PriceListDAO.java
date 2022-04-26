@@ -143,6 +143,7 @@ public class PriceListDAO implements IPriceListDAO
 				.createQueryBuilderOutOfTrx(I_M_PricingSystem.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_PricingSystem.COLUMNNAME_Value, value)
+				.orderByDescending(I_M_PricingSystem.COLUMNNAME_AD_Client_ID)
 				.create()
 				.firstIdOnly();
 

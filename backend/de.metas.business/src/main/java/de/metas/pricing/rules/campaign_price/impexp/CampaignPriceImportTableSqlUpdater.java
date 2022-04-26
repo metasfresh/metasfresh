@@ -59,7 +59,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.ProductValue=p.Value AND p.AD_Client_ID in (i.AD_Client_ID,0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) LIMIT 1) ")
+				.append(" WHERE p.isActive='Y' AND i.ProductValue=p.Value AND p.AD_Client_ID in (i.AD_Client_ID,0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -79,7 +79,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) LIMIT 1) ")
+				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
@@ -91,7 +91,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g")
-				.append(" WHERE i.GroupValue=g.Value AND g.AD_Client_ID in (i.AD_Client_ID, 0) LIMIT 1) ")
+				.append(" WHERE g.isActive='Y' AND i.GroupValue=g.Value AND g.AD_Client_ID in (i.AD_Client_ID, 0) ORDER BY g.AD_Client_ID DESC LIMIT 1) ")
 				.append("WHERE C_BP_Group_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -100,21 +100,13 @@ public class CampaignPriceImportTableSqlUpdater
 
 	private static void dbUpdatePricingSystem(final ImportRecordsSelection selection)
 	{
-		StringBuilder sql = new StringBuilder("UPDATE ")
+		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_Pricingsystem ps")
-				.append(" WHERE i.PricingSystem_Value=ps.Value AND ps.AD_Client_ID in (i.AD_Client_ID, 0) LIMIT 1) ")
+				.append(" WHERE ps.isActive='Y' AND i.PricingSystem_Value=ps.Value AND ps.AD_Client_ID in (i.AD_Client_ID, 0) ORDER BY ps.AD_Client_ID DESC LIMIT 1) ")
 				.append("WHERE M_PricingSystem_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PricingSystem,' ")
-				.append("WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(selection.toSqlWhereClause());
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
@@ -123,7 +115,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c")
-				.append(" WHERE i.CountryCode=c.CountryCode LIMIT 1) ")
+				.append(" WHERE i.CountryCode=c.CountryCode) ")
 				.append("WHERE C_Country_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -143,7 +135,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_Currency_ID=(SELECT C_Currency_ID FROM C_Currency c")
-				.append(" WHERE i.ISO_Code=c.ISO_Code  LIMIT 1) ")
+				.append(" WHERE c.isActive='Y' AND i.ISO_Code=c.ISO_Code) ")
 				.append("WHERE C_Currency_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -183,7 +175,7 @@ public class CampaignPriceImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_TaxCategory_ID=(SELECT C_TaxCategory_ID FROM C_TaxCategory tc")
-				.append(" WHERE i.C_TaxCategory_Name=tc.Name AND tc.AD_Client_ID in (i.AD_Client_ID, 0) LIMIT 1) ")
+				.append(" WHERE tc.isActive='Y' AND i.C_TaxCategory_Name=tc.Name AND tc.AD_Client_ID in (i.AD_Client_ID, 0) ORDER BY tc.AD_Client_ID DESC LIMIT 1) ")
 				.append("WHERE C_TaxCategory_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));

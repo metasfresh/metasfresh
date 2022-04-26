@@ -869,9 +869,14 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2894,541237,540692,0,TO_TIMESTAMP('2022-04-20 15:41:13','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2022-04-20 15:41:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2022-04-20T12:41:25.736Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2895,541238,540692,0,TO_TIMESTAMP('2022-04-20 15:41:25','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2022-04-20 15:41:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
 -- 2022-04-20T12:41:42.454Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX C_BPartner_Value_Unique ON C_BPartner (Value,AD_Client_ID)
+CREATE UNIQUE INDEX C_BPartner_Value_Unique ON C_BPartner (Value,AD_Client_ID,AD_Org_ID)
 ;
 
 -- 2022-04-20T12:54:12.333Z
