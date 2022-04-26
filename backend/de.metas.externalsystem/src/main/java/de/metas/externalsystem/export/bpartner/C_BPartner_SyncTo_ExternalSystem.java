@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,19 +24,17 @@ package de.metas.externalsystem.export.bpartner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.data.repository.DataExportAuditRepository;
-import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.i18n.AdMessageKey;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
@@ -47,6 +45,7 @@ import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
+import java.util.Optional;
 
 public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -79,18 +78,17 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
+		final Optional<ProcessPreconditionsResolution> customPreconditions = applyCustomPreconditionsIfAny(context);
+		if (customPreconditions.isPresent())
+		{
+			return customPreconditions.get();
+		}
+
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		if (context.isSingleSelection())
-		{
-			final BPartnerId bPartnerId = BPartnerId.ofRepoId(context.getSingleSelectedRecordId());
-			if (dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId)).isPresent())
-			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_RABBIT_MQ_SENT));
-			}
-		}
+
 		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
@@ -126,6 +124,11 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 		return bPartnerQuery
 				.create()
 				.iterate(I_C_BPartner.class);
+	}
+
+	protected Optional<ProcessPreconditionsResolution> applyCustomPreconditionsIfAny(final @NonNull IProcessPreconditionsContext context)
+	{
+		return Optional.empty();
 	}
 
 	protected abstract ExternalSystemType getExternalSystemType();

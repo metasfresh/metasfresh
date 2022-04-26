@@ -23,7 +23,7 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -112,10 +112,9 @@ public class LULoader
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(tuHU.getM_Locator_ID());
 		final String huStatus = tuHU.getHUStatus();
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
-		final ClearanceStatus huClearanceStatus = ClearanceStatus.ofNullableCode(tuHU.getClearanceStatus());
-		final String huClearanceNote = tuHU.getClearanceNote();
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.ofHU(tuHU);
 
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, huClearanceStatus, huClearanceNote);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, clearanceStatusInfo);
 
 		luInstances.add(luInstance);
 		return luInstance;

@@ -1,29 +1,8 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.location.IDocumentLocationBL;
-import de.metas.location.impl.DummyDocumentLocationBL;
-import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
-import de.metas.user.UserRepository;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Org;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -32,9 +11,12 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.contracts.pricing.SubscriptionPricingRule;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
@@ -45,8 +27,26 @@ import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Org;
+import org.compiere.util.Env;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.
@@ -210,6 +210,7 @@ public class FlatrateTermTestHelper
 	public final void setupModuleInterceptors_Contracts_Full()
 	{
 		final ContractOrderService contractOrderService = new ContractOrderService();
+
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
@@ -226,7 +227,8 @@ public class FlatrateTermTestHelper
 				contractOrderService,
 				documentLocationBL,
 				groupChangesHandler,
-				inoutLinesWithMissingInvoiceCandidateRepo);
+				inoutLinesWithMissingInvoiceCandidateRepo,
+				new CallOrderContractService());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

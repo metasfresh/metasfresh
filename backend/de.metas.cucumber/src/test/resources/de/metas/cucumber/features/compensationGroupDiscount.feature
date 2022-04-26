@@ -116,7 +116,8 @@ Feature: Allow order discount via API (compensation group)
   "externalHeaderId": "externalHeaderId60",
   "inputDataSourceName": "int-Shopware",
   "ship": false,
-  "invoice": false
+  "invoice": false,
+  "closeOrder": false
 }
 """
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'

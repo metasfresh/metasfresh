@@ -37,12 +37,15 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.TechnicalNameEnu
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderCompositeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
@@ -69,7 +72,9 @@ public class OrderFilter implements Processor
 
 		if (orderToImport.isEmpty())
 		{
-			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(false, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
+			final boolean okToImportLater = !isOrderInWorkingState(orderAndCustomId, pInstanceId);
+			//if the order is no longer in working state, then we should not attempt to import it at a later date
+			routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(okToImportLater, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
 			exchange.getIn().setBody(null);
 			return;
 		}
@@ -77,6 +82,25 @@ public class OrderFilter implements Processor
 		routeContext.setOrderCompositeInfo(orderToImport.get());
 		routeContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, orderAndCustomId.getJsonOrder().getCreatedAt().toInstant()));
 		exchange.getIn().setBody(orderAndCustomId);
+	}
+
+	/**
+	 * Checks if the order is in a working state. https://developer.shopware.com/docs/concepts/commerce/checkout-concept/orders
+	 *
+	 * @param orderAndCustomId order to check
+	 * @param adPInstanceId    process instance ID
+	 * @return true if the order is in the working state
+	 */
+	private boolean isOrderInWorkingState(@NonNull final OrderCandidate orderAndCustomId, @Nullable final Integer adPInstanceId)
+	{
+		final JsonOrder order = orderAndCustomId.getJsonOrder();
+		final JsonStateMachine stateMachine = order.getStateMachine();
+		final boolean result = stateMachine == null || !stateMachine.getTechnicalName().equals(TechnicalNameEnum.CANCELLED.getValue());
+		if (!result)
+		{
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Permanently skipping due to StateMachineState=" + stateMachine, adPInstanceId);
+		}
+		return result;
 	}
 
 	private Optional<OrderCandidate> checkOrderState(@NonNull final OrderCandidate orderAndCustomId, @Nullable final Integer adPInstanceId)
@@ -110,12 +134,13 @@ public class OrderFilter implements Processor
 			return Optional.empty();
 		}
 
-		if (orderTransactions.get().getTransactionList().size() > 1)
+		final Optional<JsonOrderTransaction> activeTransaction = getActiveTransaction(order, orderTransactions.get());
+		if (activeTransaction.isEmpty())
 		{
-			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Multiple transactions returned");
+			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping as there are no active transactions available!", adPInstanceId);
+			return Optional.empty();
 		}
-
-		final JsonOrderTransaction orderTransaction = orderTransactions.get().getTransactionList().get(0);
+		final JsonOrderTransaction orderTransaction = activeTransaction.get();
 		final Optional<JsonPaymentMethod> paymentMethod = shopwareClient.getPaymentMethod(orderTransaction.getPaymentMethodId());
 
 		if (paymentMethod.isEmpty())
@@ -127,8 +152,8 @@ public class OrderFilter implements Processor
 		if (!isOrderReadyForImportBasedOnTrx(orderTransaction, paymentMethod.get()))
 		{
 			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Skipping based on transaction status & payment method"
-											 + " transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
-											 + " paymentType = " + paymentMethod.get().getShortName(), adPInstanceId);
+					+ " transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
+					+ " paymentType = " + paymentMethod.get().getShortName(), adPInstanceId);
 			return Optional.empty();
 		}
 
@@ -139,6 +164,27 @@ public class OrderFilter implements Processor
 				.build();
 
 		return Optional.of(orderCompositeInfo);
+	}
+
+	private Optional<JsonOrderTransaction> getActiveTransaction(final JsonOrder order, final JsonOrderTransactions orderTransactions)
+	{
+		final Collection<JsonOrderTransaction> transactionList = orderTransactions.getTransactionList()
+				.stream()
+				.filter(this::isTransactionActive)
+				.collect(Collectors.toSet());
+
+		if (transactionList.size() > 1)
+		{
+			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Multiple active transactions returned");
+		}
+
+		return transactionList.stream().findFirst();
+	}
+
+	private boolean isTransactionActive(final JsonOrderTransaction jsonOrderTransaction)
+	{
+		return Check.isBlank(jsonOrderTransaction.getStateMachine().getTechnicalName())
+				|| !TechnicalNameEnum.CANCELLED.getValue().equals(jsonOrderTransaction.getStateMachine().getTechnicalName());
 	}
 
 	private boolean isOrderReadyForImportBasedOnTrx(@NonNull final JsonOrderTransaction orderTransaction, @NonNull final JsonPaymentMethod paymentMethod)

@@ -82,13 +82,7 @@ class ASIViewRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts, final DocumentId huId)
-	{
-		return toJson(jsonOpts);
-	}
-
-
-	private JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 

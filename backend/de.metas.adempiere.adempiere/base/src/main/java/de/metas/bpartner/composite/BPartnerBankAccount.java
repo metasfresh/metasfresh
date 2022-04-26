@@ -24,6 +24,7 @@ package de.metas.bpartner.composite;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
@@ -94,7 +95,12 @@ public class BPartnerBankAccount
 
 	private final RecordChangeLog changeLog;
 
+	@Nullable
 	private OrgMappingId orgMappingId;
+
+	@Nullable
+	private BankId bankId;
+
 
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
@@ -104,7 +110,8 @@ public class BPartnerBankAccount
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final BankId bankId)
 	{
 		setId(id);
 		this.iban = iban;
@@ -115,6 +122,7 @@ public class BPartnerBankAccount
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+		this.bankId = bankId;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)

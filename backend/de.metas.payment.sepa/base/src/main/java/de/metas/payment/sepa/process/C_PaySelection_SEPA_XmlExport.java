@@ -4,16 +4,19 @@ import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
+import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
@@ -23,32 +26,29 @@ import java.util.Optional;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
- *
+ * <p>
  * Creates SEPA_Export/SEPA_Export_Lines from C_PaySelection/C_PaySelectionLines Create SEPADocument/lines from the export Marshals the lines into an XML
  *
  * @author ad
- *
  */
 public class C_PaySelection_SEPA_XmlExport
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private static final String MSG_NO_SELECTION = "de.metas.payment.sepa.noPaySelection";
+	private static final AdMessageKey MSG_NO_SELECTION = AdMessageKey.of("de.metas.payment.sepa.noPaySelection");
 
 	//
 	// services
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
-	{
-		if (context == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Process " + C_PaySelection_SEPA_XmlExport.class + "only works with context != null");
-		}
+	private final static String REFERENCE_AS_END_TO_END_ID = "ReferenceAsEndToEndId";
+	@Param(parameterName = REFERENCE_AS_END_TO_END_ID)
+	private boolean referenceAsEndToEndId;
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
 		final String tableName = context.getTableName();
 		if (!I_C_PaySelection.Table_Name.equals(tableName))
 		{
@@ -78,18 +78,22 @@ public class C_PaySelection_SEPA_XmlExport
 		final int recordId = getRecord_ID();
 		if (recordId <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(getCtx(), MSG_NO_SELECTION));
+			throw new AdempiereException(MSG_NO_SELECTION);
 		}
 
-		final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(getCtx(), recordId, I_C_PaySelection.class, getTrxName());
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(PaySelectionId.ofRepoId(recordId))
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_PaySelection_ID@ (ID=" + recordId + ")"));
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
 		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
 
+		final SEPAExportContext exportContext = SEPAExportContext.builder()
+				.referenceAsEndToEndId(referenceAsEndToEndId)
+				.build();
 		//
 		// After the export header and lines have been created, marshal the document.
-		final SEPACreditTransferXML xml = sepaDocumentBL.exportCreditTransferXML(sepaExport);
+		final SEPACreditTransferXML xml = sepaDocumentBL.exportCreditTransferXML(sepaExport, exportContext);
 
 		paySelection.setLastSepaExport(SystemTime.asTimestamp());
 		paySelection.setLastSepaExportBy_ID(getAD_User_ID());

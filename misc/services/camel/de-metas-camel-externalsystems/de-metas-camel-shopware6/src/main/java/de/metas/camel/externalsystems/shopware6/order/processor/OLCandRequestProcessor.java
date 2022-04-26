@@ -196,7 +196,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -213,7 +213,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -228,7 +228,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -245,7 +245,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()

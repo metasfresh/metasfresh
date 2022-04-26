@@ -29,4 +29,8 @@ import org.compiere.model.I_M_Shipper;
  */
 public class M_Shipper_StepDefData extends StepDefData<I_M_Shipper>
 {
+	public M_Shipper_StepDefData()
+	{
+		super(I_M_Shipper.class);
+	}
 }

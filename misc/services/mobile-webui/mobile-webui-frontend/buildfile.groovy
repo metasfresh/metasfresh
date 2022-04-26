@@ -88,7 +88,7 @@ Map build(final MvnConf mvnConf,
 
         sh "tar cvzf mobile-frontend-dist-${env.MF_VERSION}.tar.gz build"
 
-        withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: "${env.HOME}/m2-local-repository", options: [artifactsPublisher(disabled: true)]) {
+        withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
             sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=mobile-frontend-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-mobile-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
         }
 
