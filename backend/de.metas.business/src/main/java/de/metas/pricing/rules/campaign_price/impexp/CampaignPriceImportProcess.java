@@ -62,7 +62,7 @@ public class CampaignPriceImportProcess extends SimpleImportProcessTemplate<I_I_
 	@Override
 	public String getImportTableName()
 	{
-		return X_I_Campaign_Price.Table_Name;
+		return I_I_Campaign_Price.Table_Name;
 	}
 
 	@Override
