@@ -50,12 +50,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_BannedManufacturer;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -199,6 +200,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId, trxName);
 	}
 
+	@Nullable
 	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
 	public I_C_BPartner_Product retrieveBPartnerProductAssociation(
 			@CacheCtx final Properties ctx,
@@ -260,7 +262,10 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPProductForCustomer(final I_C_BPartner partner, final I_M_Product product, final OrgId orgId)
+	public I_C_BPartner_Product retrieveBPProductForCustomer(
+			@NonNull final I_C_BPartner partner, 
+			@NonNull final I_M_Product product, 
+			@NonNull final OrgId orgId)
 	{
 
 		// make sure we only pick from the BP product entries for the product given as parameter
@@ -365,7 +370,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
 				.create()
 				.stream()
-				.map(bpartnerProduct -> toProductExclude(bpartnerProduct))
+				.map(BPartnerProductDAO::toProductExclude)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -439,7 +444,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
-		final ProductRepository productRepo = Adempiere.getBean(ProductRepository.class);
+		final ProductRepository productRepo = SpringContextHolder.instance.getBean(ProductRepository.class);
 		final Product product = productRepo.getById(productId);
 		final BPartnerId manufacturerId = product.getManufacturerId();
 

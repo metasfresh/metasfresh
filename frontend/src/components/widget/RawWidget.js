@@ -3,13 +3,13 @@ import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 
-import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
-import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
+import { getWidgetField, shouldPatch } from '../../utils/widgetHelpers';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
+import PropTypes from 'prop-types';
 
 /**
  * @file Class based component.
@@ -17,6 +17,8 @@ import Tooltips from '../tooltips/Tooltips';
  * @extends Component
  */
 export class RawWidget extends PureComponent {
+  mounted = false;
+
   constructor(props) {
     super(props);
 
@@ -49,6 +51,12 @@ export class RawWidget extends PureComponent {
     if (textSelected) {
       rawWidget.current.select();
     }
+
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   /**
@@ -162,14 +170,9 @@ export class RawWidget extends PureComponent {
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
-      this.setState(
-        {
-          isFocused: true,
-        },
-        () => {
-          handleFocus && handleFocus();
-        }
-      );
+      if (this.mounted) {
+        this.setState({ isFocused: true }, () => handleFocus && handleFocus());
+      }
     }, 0);
   };
 
@@ -222,7 +225,7 @@ export class RawWidget extends PureComponent {
   /**
    * @method updateTypedCharacters
    * @summary updates in the state the number of charactes typed
-   * @param {typedText} string
+   * @param {string} typedText
    */
   updateTypedCharacters = (typedText) => {
     const { fieldName } = this.props;
@@ -411,10 +414,9 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: this logic should be removed and adapted below after widgetType === 'MultiListValue' is added
-    const isMultiselect =
+    const isMultiselect = !!(
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
-        ? true
-        : false;
+    );
 
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
@@ -466,9 +468,7 @@ export class RawWidget extends PureComponent {
    */
   isScanQRbuttonPanel = () => {
     const { barcodeScannerType, layoutType } = this.props;
-    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
-      ? true
-      : false;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel';
   };
 
   /**
@@ -679,7 +679,79 @@ export class RawWidget extends PureComponent {
   }
 }
 
-RawWidget.propTypes = RawWidgetPropTypes;
-RawWidget.defaultProps = RawWidgetDefaultProps;
+RawWidget.propTypes = {
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  inProgress: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  textSelected: PropTypes.bool,
+  listenOnKeys: PropTypes.bool,
+  listenOnKeysFalse: PropTypes.func,
+  listenOnKeysTrue: PropTypes.func,
+  widgetData: PropTypes.array,
+  handleFocus: PropTypes.func,
+  handlePatch: PropTypes.func,
+  handleBlur: PropTypes.func,
+  handleProcess: PropTypes.func,
+  handleChange: PropTypes.func,
+  handleBackdropLock: PropTypes.func,
+  handleZoomInto: PropTypes.func,
+  tabId: PropTypes.string,
+  viewId: PropTypes.string,
+  rowId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  windowType: PropTypes.string,
+  fieldName: PropTypes.string,
+  widgetField: PropTypes.string,
+  caption: PropTypes.string,
+  gridAlign: PropTypes.string,
+  type: PropTypes.string,
+  updated: PropTypes.bool,
+  isModal: PropTypes.bool,
+  modalVisible: PropTypes.bool.isRequired,
+  filterWidget: PropTypes.bool,
+  filterId: PropTypes.string,
+  id: PropTypes.number,
+  range: PropTypes.bool,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  subentity: PropTypes.string,
+  subentityId: PropTypes.string,
+  tabIndex: PropTypes.number,
+  dropdownOpenCallback: PropTypes.func,
+  fullScreen: PropTypes.bool,
+  widgetType: PropTypes.string,
+  fields: PropTypes.array,
+  icon: PropTypes.string,
+  entity: PropTypes.string,
+  data: PropTypes.any,
+  closeTableField: PropTypes.func,
+  attribute: PropTypes.bool,
+  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
+  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
+  onBlurWidget: PropTypes.func,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  noLabel: PropTypes.bool,
+  isOpenDatePicker: PropTypes.bool,
+  forceHeight: PropTypes.number,
+  dataEntry: PropTypes.bool,
+  lastFormField: PropTypes.bool,
+  maxLength: PropTypes.number,
+  isFilterActive: PropTypes.bool,
+  isEdited: PropTypes.bool,
+  barcodeScannerType: PropTypes.string,
+  layoutType: PropTypes.string,
+  description: PropTypes.string,
+  captionElement: PropTypes.string,
+  fieldFormGroupClass: PropTypes.string,
+  fieldLabelClass: PropTypes.string,
+  fieldInputClass: PropTypes.string,
+  enableOnClickOutside: PropTypes.func,
+  disableOnClickOutside: PropTypes.func,
+};
+RawWidget.defaultProps = {
+  tabIndex: 0,
+  handleZoomInto: () => {},
+};
 
 export default RawWidget;

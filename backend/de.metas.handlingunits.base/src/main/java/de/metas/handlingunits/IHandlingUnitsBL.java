@@ -585,7 +585,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	boolean isEmptyStorage(I_M_HU hu);
 
-	void setClearanceStatus(final HuId huId,final ClearanceStatus status, final String clearanceNote);
+	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 

@@ -28,11 +28,13 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -64,8 +66,12 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
-			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
-			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
+			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
+
+			final String candidateTypeStr = dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s",I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
+			final CandidateType type = CandidateType.ofCode(candidateTypeStr);
+
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
@@ -73,6 +79,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final Instant time;
 			final String timeInLocalTimeZone = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.DateProjected_LocalTimeZone");
+
 			if (timeInLocalTimeZone != null)
 			{
 				final LocalDateTime localDateTime = LocalDateTime.parse(timeInLocalTimeZone);
@@ -94,6 +101,8 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+			final boolean simulated = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated, false);
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
@@ -103,6 +112,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 					.qty(qty)
 					.atp(atp)
 					.attributeSetInstanceId(attributeSetInstanceIdentifier)
+					.simulated(simulated)
 					.build();
 			materialDispoTableBuilder.row(identifier, tableRow);
 		}

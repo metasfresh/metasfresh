@@ -3,6 +3,7 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -1861,6 +1862,10 @@ public class TimeUtil
 		if (obj == null)
 		{
 			return null;
+		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else if (obj instanceof Instant)
 		{

@@ -66,8 +66,9 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 
 	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
 	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
+	
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
+	private final IOLCandUpdateBL olCandUpdateBL = Services.get(IOLCandUpdateBL.class);
 	private IParams params = null;
 
 	@Override
@@ -131,7 +132,7 @@ public class C_OLCand_SetOverrideValues extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final OLCandUpdateResult result = Services.get(IOLCandUpdateBL.class).updateOLCands(getCtx(), createIterator(), params);
+		final OLCandUpdateResult result = olCandUpdateBL.updateOLCands(getCtx(), createIterator(), params);
 
 		return "@Success@: " + result.getUpdated() + " @Processed@, " + result.getSkipped() + " @Skipped@";
 	}

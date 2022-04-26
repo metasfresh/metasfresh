@@ -13,7 +13,8 @@
         "customerNumber": "customerNumber",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId"
+          "externalReference": "customerId",
+          "customUserId": "userId1"
           }
         },
       "currencyId": "currencyId",

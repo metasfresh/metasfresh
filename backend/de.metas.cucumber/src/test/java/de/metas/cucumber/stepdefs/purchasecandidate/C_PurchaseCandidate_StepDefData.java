@@ -30,4 +30,8 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
  */
 public class C_PurchaseCandidate_StepDefData extends StepDefData<I_C_PurchaseCandidate>
 {
+	public C_PurchaseCandidate_StepDefData()
+	{
+		super(I_C_PurchaseCandidate.class);
+	}
 }

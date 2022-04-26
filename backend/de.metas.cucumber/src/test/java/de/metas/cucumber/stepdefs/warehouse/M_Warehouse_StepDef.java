@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Warehouse_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;

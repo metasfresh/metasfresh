@@ -98,7 +98,7 @@ public class M_HU_CreateReceipt_StepDef
 			assertThat(huInOut).isNotNull();
 
 			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			inOutTable.put(inoutIdentifier, huInOut);
+			inOutTable.putOrReplace(inoutIdentifier, huInOut);
 		}
 	}
 }

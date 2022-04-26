@@ -508,7 +508,7 @@ public class ApiAuditService
 					.apiAuditConfigId(apiAuditConfig.getApiAuditConfigId())
 					.orgId(apiAuditConfig.getOrgId())
 					.roleId(Env.getLoggedRoleId())
-					.userId(Env.getLoggedUserId())
+					.userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM)) // there might be no logged in user yet in the case of /api/v2/auth
 					.status(status)
 					.body(apiRequest.getBody())
 					.method(HttpMethod.ofCodeOptional(apiRequest.getHttpMethod()).orElse(null))

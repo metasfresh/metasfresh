@@ -27,9 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -65,8 +63,9 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
-import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_BPartnerCreatedByUserGroup_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
+import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
 import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
@@ -145,41 +144,6 @@ public class ExternalSystem_Config_StepDef
 
 			final I_AD_PInstance_Para parameter = paramNameToParameter.get(key);
 			assertThat(parameter.getP_String()).isEqualTo(value);
-		}
-	}
-
-	@And("update external system config:")
-	public void update_externalSystem(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
-
-			final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
-			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
-
-			final Optional<IExternalSystemChildConfig> childConfig = externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()), externalSystemType);
-
-			assertThat(childConfig).isPresent();
-
-			final boolean isActive = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_IsActive);
-
-			externalSystemConfig.setIsActive(isActive);
-
-			InterfaceWrapperHelper.save(externalSystemConfig);
-
-			switch (externalSystemType)
-			{
-				case GRSSignum:
-					final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.load(childConfig.get().getId().getRepoId(), I_ExternalSystem_Config_GRSSignum.class);
-					externalSystemConfigGrsSignum.setIsActive(isActive);
-					InterfaceWrapperHelper.saveRecord(externalSystemConfigGrsSignum);
-					break;
-				default:
-					return;
-			}
 		}
 	}
 
@@ -281,18 +245,23 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigRabbitMQ.setAuthToken("notImportant");
 				externalSystemConfigRabbitMQ.setRemoteURL("notImportant");
 				externalSystemConfigRabbitMQ.setRouting_Key("notImportant");
-				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(true);
 				externalSystemConfigRabbitMQ.setIsActive(true);
+
+				final boolean isSyncBPartnersToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncBPartnersToRabbitMQ, false);
+				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(isSyncBPartnersToRabbitMQ);
 
 				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
 				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
-				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_BPartnerCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if(Check.isNotBlank(userGroupIdentifier))
 				{
 					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
 					assertThat(userGroup).isNotNull();
-					externalSystemConfigRabbitMQ.setBPartnerCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
+					externalSystemConfigRabbitMQ.setSubjectCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
 				}
+
+				final boolean isSyncExternalReferencesToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, false);
+				externalSystemConfigRabbitMQ.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
 
 				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
 				break;

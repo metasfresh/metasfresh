@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -199,4 +200,9 @@ public interface IFlatrateBL extends ISingletonService
 
 
 	void ensureOneContractOfGivenType(I_C_Flatrate_Term term,TypeConditions targetConditions);
+
+	/**
+	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
+	 */
+	boolean existsTermForOrderLine(I_C_OrderLine ol);
 }

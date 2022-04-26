@@ -25,12 +25,17 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.bpartner.service.BankAccountQuery;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.location.Location;
+import de.metas.location.LocationRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -167,6 +172,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.XmlVia;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -191,6 +197,8 @@ public class Invoice450FromCrossVersionModelTool
 	private final Map<String, String> zsrToEanPartyMap = new HashMap<>();
 
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final LocationRepository locationRepository = SpringContextHolder.instance.getBean(LocationRepository.class);
+	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final static transient Logger logger = LogManager.getLogger(Invoice450FromCrossVersionModelTool.class);
 
 	private static final long VALIDATION_STATUS_OK = 0L;
@@ -1527,27 +1535,113 @@ public class Invoice450FromCrossVersionModelTool
 	{
 		if (isValidEsrQRCandidate(xAugmentedRequest))
 		{
-			final String qrIban = getQrIbanOrNull(bPartnerId);
-			if (!Check.isBlank(qrIban))
+			final XmlEsr9 esr9 = (XmlEsr9)xAugmentedRequest.getPayload()
+					.getBody().getEsr();
+			final BPartnerBankAccount bankAccount = getBPartnerBankAccountOrNull(bPartnerId);
+
+			if (isValidBankAccountForRequest(esr9, bPartnerId, bankAccount))
 			{
-				final XmlBody body = xAugmentedRequest.getPayload()
-						.getBody();
-				return xAugmentedRequest.withMod(RequestMod.builder()
-						.payloadMod(PayloadMod.builder()
-								.bodyMod(BodyMod
-										.builder()
-										.esr(createEsrQrFromEsr9((XmlEsr9)body.getEsr(), qrIban))
+				if (esr9.getBank() != null)
+				{
+					return augmentUsingExistingBankRecord(xAugmentedRequest, esr9, bankAccount);
+				}
+				final BankId bankId = bankAccount.getBankId();
+				final Bank bank = bankRepository.getById(bankId);
+				if (isValidBankForRequest(bankId, bank))
+				{
+					final Location location = locationRepository.getByLocationId(bank.getLocationId());
+					if (isValidLocationForRequest(location, bank))
+					{
+						return xAugmentedRequest.withMod(RequestMod.builder()
+								.payloadMod(PayloadMod.builder()
+										.bodyMod(BodyMod
+												.builder()
+												.esr(createEsrQrFromEsr9UsingDbInfo(esr9, bankAccount, bank, location))
+												.build())
 										.build())
-								.build())
-						.build());
+								.build());
+					}
+				}
 			}
 		}
 		return xAugmentedRequest;
 	}
 
+	private XmlRequest augmentUsingExistingBankRecord(final XmlRequest xAugmentedRequest, final XmlEsr9 esr9, final BPartnerBankAccount bankAccount)
+	{
+		return xAugmentedRequest.withMod(RequestMod.builder()
+				.payloadMod(PayloadMod.builder()
+						.bodyMod(BodyMod
+								.builder()
+								.esr(createEsrQrFromEsr9WithExistingBank(esr9, bankAccount.getQrIban()))
+								.build())
+						.build())
+				.build());
+	}
+
+	private boolean isValidLocationForRequest(final Location location, final Bank bank)
+	{
+		if (location == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No location found for bank {}", bank);
+			return false;
+		}
+		if (Check.isBlank(location.getPostal()))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No postal code found for location {}", location);
+			return false;
+		}
+		if (Check.isBlank(location.getCity()))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No city found for location {}", location);
+			return false;
+		}
+		if (Check.isBlank(location.getCountryCode()))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No country code found for location {}", location);
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isValidBankForRequest(final BankId bankId, final Bank bank)
+	{
+		if (bank == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank found for bank ID {}", bankId);
+			return false;
+		}
+		if (bank.getLocationId() == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No location found for bank ID {}", bankId);
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isValidBankAccountForRequest(final XmlEsr9 esr9, final BPartnerId bPartnerId, final BPartnerBankAccount bankAccount)
+	{
+		if (bankAccount == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank account found for BPartnerId {}", bPartnerId);
+			return false;
+		}
+		if (bankAccount.getQrIban() == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No QR IBAN found for BankAccount {}", bankAccount.getId());
+			return false;
+		}
+		if (bankAccount.getBankId() == null && esr9.getBank() == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No bank found for BankAccount {} and bank record does not exist in provided XML", bankAccount.getId());
+			return false;
+		}
+		return true;
+	}
+
 	private boolean isValidEsrQRCandidate(final XmlRequest xAugmentedRequest)
 	{
-		return hasValidEsr9ConversionCandidate(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
+		return isXmlEsr9(xAugmentedRequest) && isReferenceNumberConvertible(xAugmentedRequest);
 	}
 
 	/**
@@ -1575,7 +1669,7 @@ public class Invoice450FromCrossVersionModelTool
 				.length() == 27;
 	}
 
-	private XmlEsr createEsrQrFromEsr9(final @NonNull XmlEsr9 esr9, @NonNull final String qrIban)
+	private XmlEsr createEsrQrFromEsr9WithExistingBank(final @NonNull XmlEsr9 esr9, @NonNull final String qrIban)
 	{
 		final XmlEsrQR.XmlEsrQRBuilder xEsrQR = XmlEsrQR.builder();
 
@@ -1589,33 +1683,43 @@ public class Invoice450FromCrossVersionModelTool
 		return xEsrQR.build();
 	}
 
-	/**
-	 * This is needed because the only valid candidates that can be converted to EsrQR are:
-	 * <ol>
-	 *     <li>those of type Esr9</li>
-	 *     <li>those that contain an {@code XmlBank} definition</li> (because Bank is mandatory for EsrQR)
-	 *
-	 * @param xAugmentedRequest the request to check
-	 * @return true if the request
-	 * <ul>
-	 *   <li>has an XmlEsr that is of type Esr9</li>
-	 *   <li>this Esr9 has a {@code XmlBank} defined</li>
-	 */
-	private boolean hasValidEsr9ConversionCandidate(final XmlRequest xAugmentedRequest)
+	private XmlEsr createEsrQrFromEsr9UsingDbInfo(final @NonNull XmlEsr9 esr9, @NonNull final BPartnerBankAccount bankAccount, @NonNull final Bank bank, @NonNull final Location location)
 	{
-		final XmlEsr esr = xAugmentedRequest.getPayload().getBody().getEsr();
-		final boolean result = esr instanceof XmlEsr9 && ((XmlEsr9)esr).getBank() != null;
-		if (!result && esr instanceof XmlEsr9)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ESR9 -> EsrQR conversion not possible because bank record not defined in Esr9, but is mandatory in EsrQR");
-		}
-		return result;
+		final XmlEsrQR.XmlEsrQRBuilder xEsrQR = XmlEsrQR.builder();
+
+		xEsrQR.bank(CoalesceUtil.coalesceSuppliers(esr9::getBank, () -> createEsrBank(bank, location)));
+		xEsrQR.creditor(esr9.getCreditor());
+		xEsrQR.type(jaxbRequestObjectFactory.createEsrQRType().getType());
+		xEsrQR.iban(bankAccount.getQrIban());
+		xEsrQR.referenceNumber(StringUtils.cleanWhitespace(esr9.getReferenceNumber()));
+		xEsrQR.paymentReason(Collections.emptyList());
+
+		return xEsrQR.build();
+	}
+
+	private XmlAddress createEsrBank(final @NonNull Bank bank, @NonNull final Location location)
+	{
+		return XmlAddress.builder()
+				.company(XmlCompany.builder()
+						.companyname(bank.getBankName())
+						.postal(XmlPostal.builder()
+								.zip(location.getPostal())
+								.city(location.getCity())
+								.countryCode(location.getCountryCode())
+								.build())
+						.build())
+				.build();
+	}
+
+	private boolean isXmlEsr9(final XmlRequest xAugmentedRequest)
+	{
+		return xAugmentedRequest.getPayload().getBody().getEsr() instanceof XmlEsr9;
 	}
 
 	@Nullable
-	private String getQrIbanOrNull(final BPartnerId bpartnerID)
+	private BPartnerBankAccount getBPartnerBankAccountOrNull(final BPartnerId bpartnerID)
 	{
-		final BPartnerBankAccount bPartnerBankAccount = bpBankAccountDAO.getBpartnerBankAccount(BankAccountQuery.builder()
+		return bpBankAccountDAO.getBpartnerBankAccount(BankAccountQuery.builder()
 						.bpBankAcctUses(ImmutableSet.of(BPBankAcctUse.DEBIT_OR_DEPOSIT, BPBankAcctUse.DEPOSIT))
 						.containsQRIBAN(true)
 						.bPartnerId(bpartnerID)
@@ -1623,7 +1727,6 @@ public class Invoice450FromCrossVersionModelTool
 				.stream()
 				.findFirst()
 				.orElse(null);
-		return bPartnerBankAccount == null ? null : bPartnerBankAccount.getQrIban();
 	}
 
 }

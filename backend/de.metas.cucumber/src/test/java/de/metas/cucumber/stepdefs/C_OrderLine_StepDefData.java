@@ -29,4 +29,8 @@ import org.compiere.model.I_C_OrderLine;
  */
 public class C_OrderLine_StepDefData extends StepDefData<I_C_OrderLine>
 {
+	public C_OrderLine_StepDefData()
+	{
+		super(I_C_OrderLine.class);
+	}
 }

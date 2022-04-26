@@ -27,4 +27,8 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 
 public class PP_Product_BOMVersions_StepDefData extends StepDefData<I_PP_Product_BOMVersions>
 {
+	public PP_Product_BOMVersions_StepDefData()
+	{
+		super(I_PP_Product_BOMVersions.class);
+	}
 }

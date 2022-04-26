@@ -221,6 +221,8 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
 /**
  * @method mergeColumnInfosIntoViewRow
  * @summary add additional data to row's fields
+ * @param {*} columnInfosByFieldName
+ * @param {object} row
  */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   // mainly guard for unit tests which are not defining fieldsByName property
@@ -245,6 +247,8 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
 
 /**
  * @summary merge field's widget data of the row with additional data
+ * @param {*} columnInfo
+ * @param {object} viewRowField
  */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
@@ -471,7 +475,7 @@ function formatStringWithZeroSplitBy(date, notation) {
  * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the separator
  * @param {string} date
  */
-export async function formatDateWithZeros(date) {
+export function formatDateWithZeros(date) {
   if (typeof date === 'string' && date.includes('.')) {
     return formatStringWithZeroSplitBy(date, '.');
   }

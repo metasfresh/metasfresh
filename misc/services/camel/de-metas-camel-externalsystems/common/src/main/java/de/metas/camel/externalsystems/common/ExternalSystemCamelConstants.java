@@ -83,8 +83,6 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_GET_BPARTNER_PRODUCTS_ROUTE_ID = "To-MF_GetBPartnerProducts-Route";
 
-	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID = "To-MF_LookupExternalReference-Route";
-
 	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 
 	public static final String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
@@ -97,6 +95,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
+
+	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";
 
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 

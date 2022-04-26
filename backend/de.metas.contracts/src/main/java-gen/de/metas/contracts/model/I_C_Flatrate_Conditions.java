@@ -1,9 +1,8 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Conditions
@@ -231,6 +230,32 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+
+	/**
+	 * Get Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscrDiscount_ID();
+
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
+
+
+	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
 	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
 	 *
@@ -277,32 +302,7 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
-
-	/**
-	 * Get Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_SubscrDiscount_ID();
-
-	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
-
-	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
-
-	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
-	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
-
+	
 	/**
 	 * Set Description.
 	 *

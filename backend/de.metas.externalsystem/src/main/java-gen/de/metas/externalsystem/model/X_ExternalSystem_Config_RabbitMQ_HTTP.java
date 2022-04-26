@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO implements I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1579835381L;
+	private static final long serialVersionUID = -456924663L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_RabbitMQ_HTTP (final Properties ctx, final int ExternalSystem_Config_RabbitMQ_HTTP_ID, @Nullable final String trxName)
@@ -35,18 +35,18 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setBPartnerCreatedByUserGroup_ID (final int BPartnerCreatedByUserGroup_ID)
+	public void setSubjectCreatedByUserGroup_ID (final int SubjectCreatedByUserGroup_ID)
 	{
-		if (BPartnerCreatedByUserGroup_ID < 1)
-			set_Value (COLUMNNAME_BPartnerCreatedByUserGroup_ID, null);
+		if (SubjectCreatedByUserGroup_ID < 1)
+			set_Value (COLUMNNAME_SubjectCreatedByUserGroup_ID, null);
 		else
-			set_Value (COLUMNNAME_BPartnerCreatedByUserGroup_ID, BPartnerCreatedByUserGroup_ID);
+			set_Value (COLUMNNAME_SubjectCreatedByUserGroup_ID, SubjectCreatedByUserGroup_ID);
 	}
 
 	@Override
-	public int getBPartnerCreatedByUserGroup_ID()
+	public int getSubjectCreatedByUserGroup_ID()
 	{
-		return get_ValueAsInt(COLUMNNAME_BPartnerCreatedByUserGroup_ID);
+		return get_ValueAsInt(COLUMNNAME_SubjectCreatedByUserGroup_ID);
 	}
 
 	@Override
@@ -128,7 +128,19 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setRemoteURL (final String RemoteURL)
+	public void setIsSyncExternalReferencesToRabbitMQ (final boolean IsSyncExternalReferencesToRabbitMQ)
+	{
+		set_Value (COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, IsSyncExternalReferencesToRabbitMQ);
+	}
+
+	@Override
+	public boolean isSyncExternalReferencesToRabbitMQ() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncExternalReferencesToRabbitMQ);
+	}
+
+	@Override
+	public void setRemoteURL (final java.lang.String RemoteURL)
 	{
 		set_Value (COLUMNNAME_RemoteURL, RemoteURL);
 	}

@@ -2,8 +2,6 @@ package de.metas.ui.web.view;
 
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -42,6 +40,6 @@ public interface IViewRowAttributes
 
 	LookupValuesList getAttributeDropdown(String attributeName);
 
-	JSONViewRowAttributes toJson(final JSONOptions jsonOpts, final DocumentId huId);
+	JSONViewRowAttributes toJson(final JSONOptions jsonOpts);
 
 }
