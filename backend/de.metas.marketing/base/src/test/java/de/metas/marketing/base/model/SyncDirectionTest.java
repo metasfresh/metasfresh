@@ -22,30 +22,29 @@
 
 package de.metas.marketing.base.model;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
-public enum SyncDirection
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class SyncDirectionTest
 {
-	LOCAL_TO_REMOTE,
-	REMOTE_TO_LOCAL;
-
-	public interface CaseMapper<R>
+	@ParameterizedTest
+	@EnumSource(SyncDirection.class)
+	void map(SyncDirection syncDirection)
 	{
-		R localToRemote();
-
-		R remoteToLocal();
-	}
-
-	public <R> R map(final CaseMapper<R> mapper)
-	{
-		switch (this)
+		final SyncDirection.CaseMapper<SyncDirection> caseMapper = new SyncDirection.CaseMapper<SyncDirection>()
 		{
-			case LOCAL_TO_REMOTE:
-				return mapper.localToRemote();
-			case REMOTE_TO_LOCAL:
-				return mapper.remoteToLocal();
-			default:
-				throw new AdempiereException("Unsupported sync direction: " + this);
-		}
+			@Override
+			public SyncDirection localToRemote() {return SyncDirection.LOCAL_TO_REMOTE;}
+
+			@Override
+			public SyncDirection remoteToLocal() {return SyncDirection.REMOTE_TO_LOCAL;}
+		};
+
+		assertThat(syncDirection.map(caseMapper)).isSameAs(syncDirection);
 	}
 }
