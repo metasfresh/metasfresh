@@ -84,6 +84,7 @@ class PickingMobileApplicationTest
 		recorder = helper.newTestRecorder();
 
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
+		Env.setAD_Language(Env.getCtx(), "de_DE");
 
 		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService);
 		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService);
@@ -202,6 +203,8 @@ class PickingMobileApplicationTest
 	@Test
 	void abortJob()
 	{
+		recorder.reportStep("AD_Language", Env.getAD_Language());
+
 		JsonWFProcess wfProcess = startWFProcess();
 
 		workflowRestController.abort(wfProcess.getId());

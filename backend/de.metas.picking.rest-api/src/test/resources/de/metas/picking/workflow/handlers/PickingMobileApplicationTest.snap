@@ -1,6 +1,7 @@
 de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
   "steps" : {
-    "1. After WFProcess started - JsonWFProcess" : {
+    "1. AD_Language" : "de_DE",
+    "2. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
@@ -102,7 +103,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       },
       "id" : "picking-1000000"
     },
-    "2. After WFProcess started - PickingJob" : {
+    "3. After WFProcess started - PickingJob" : {
       "docStatus" : "Drafted",
       "header" : {
         "customerName" : "BPartner1",
@@ -265,7 +266,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "pickingSlot" : null,
       "progress" : "NOT_STARTED"
     },
-    "3. After WFProcess started - HUs" : {
+    "4. After WFProcess started - HUs" : {
       "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
@@ -291,7 +292,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "23" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
       "24" : "      Item:Material"
     },
-    "4. After ABORT - JsonWFProcess" : {
+    "5. After ABORT - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
@@ -393,7 +394,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       },
       "id" : "picking-1000000"
     },
-    "5. After ABORT - PickingJob" : {
+    "6. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
       "header" : {
         "customerName" : "BPartner1",
@@ -556,7 +557,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "pickingSlot" : null,
       "progress" : "NOT_STARTED"
     },
-    "6. After ABORT - HUs" : {
+    "7. After ABORT - HUs" : {
       "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
