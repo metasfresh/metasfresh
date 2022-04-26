@@ -1,0 +1,19 @@
+FROM openjdk:8-jdk-oraclelinux7
+
+RUN yum -y install yum-utils && yum-config-manager --add-repo http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo && yum-config-manager --enable epel-apache-maven && yum install -y apache-maven && yum -y clean all  && rm -rf /var/cache
+
+COPY misc/dev-support/maven/settings.xml /root/.m2/
+
+WORKDIR /parent
+COPY misc/parent-pom .
+RUN mvn clean install -Dmaven.gitcommitid.skip=true
+
+WORKDIR /commons
+COPY misc/de-metas-common .
+RUN mvn clean install -Dmaven.gitcommitid.skip=true
+
+WORKDIR /backend
+COPY backend .
+RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
+
+RUN cd de.metas.adempiere.adempiere/base && mvn surefire:test -Dtest="StringLikeFilterTest"
