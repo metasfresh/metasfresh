@@ -22,7 +22,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -169,11 +168,6 @@ public class ContactPersonRepository
 					.first();
 		}
 		return Optional.ofNullable(contactPersonRecord);
-	}
-
-	public void saveSyncResults(@NonNull final Collection<? extends SyncResult> syncResults)
-	{
-		syncResults.forEach(this::saveSyncResult);
 	}
 
 	public ContactPerson saveSyncResult(@NonNull final SyncResult syncResult)
