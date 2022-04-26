@@ -46,6 +46,9 @@ public class PlatformId implements RepoIdAware
 		return new PlatformId(repoId);
 	}
 
+	@Nullable
+	public static PlatformId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+
 	@JsonCreator
 	public static PlatformId ofString(final String string)
 	{
