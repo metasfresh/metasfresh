@@ -17,6 +17,7 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#12760](https://github.com/metasfresh/metasfresh/issues/12760) Create import/export for C_Campaign_price
   * [#7151](https://github.com/metasfresh/metasfresh/issues/7151) On page switching (in parent view) the includedView for the selected parent row needs to be refreshed
   * [#10032](https://github.com/metasfresh/metasfresh/issues/10032) Cleanup table styles
   * [#11732](https://github.com/metasfresh/metasfresh/issues/11732) webui frontend: improve how the 502 error is displayed to user 
