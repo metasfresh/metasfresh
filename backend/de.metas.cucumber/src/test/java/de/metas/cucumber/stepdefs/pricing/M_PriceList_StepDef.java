@@ -124,7 +124,7 @@ public class M_PriceList_StepDef
 
 		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
 
-		final I_M_PricingSystem m_pricingSystem = pricingSystemId == null ? InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class) : load(pricingSystemId, I_M_PricingSystem.class);
+		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
 
 		m_pricingSystem.setAD_Org_ID(defaultOrgId.getRepoId());
 		m_pricingSystem.setName(name);
