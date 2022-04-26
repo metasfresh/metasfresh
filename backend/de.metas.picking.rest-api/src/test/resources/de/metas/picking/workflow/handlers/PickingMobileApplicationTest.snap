@@ -5,9 +5,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -26,9 +24,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -38,9 +34,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -55,9 +49,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -102,7 +94,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -133,7 +125,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -160,8 +151,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -185,8 +175,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -204,7 +193,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -231,8 +219,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -309,9 +296,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -330,9 +315,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -342,9 +325,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -359,9 +340,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -406,7 +385,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -437,7 +416,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -464,8 +442,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -489,8 +466,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -508,7 +484,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -535,8 +510,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -619,9 +593,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -640,9 +612,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -652,9 +622,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -669,9 +637,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -716,7 +682,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -747,7 +713,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -774,8 +739,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -799,8 +763,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -818,7 +781,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -845,8 +807,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -929,9 +890,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -950,9 +909,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -962,9 +919,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -979,9 +934,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1026,7 +979,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1057,7 +1010,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1084,8 +1036,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -1109,8 +1060,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -1128,7 +1078,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1155,8 +1104,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -1233,9 +1181,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1283,9 +1229,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1330,7 +1274,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1361,7 +1305,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1398,6 +1341,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "25 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1434,6 +1378,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "50 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1454,7 +1399,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1489,8 +1433,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -1572,9 +1515,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1622,9 +1563,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1669,7 +1608,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1700,7 +1639,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1737,6 +1675,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "25 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1773,6 +1712,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "50 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1793,7 +1733,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -1828,8 +1767,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -1917,9 +1855,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -1938,9 +1874,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -1950,9 +1884,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -1967,9 +1899,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2014,7 +1944,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2031,8 +1961,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2051,9 +1980,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -2063,9 +1990,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2080,9 +2005,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2127,7 +2050,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2158,7 +2081,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2185,8 +2107,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -2228,8 +2149,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -2248,7 +2168,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2283,8 +2202,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000003,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -2366,8 +2284,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2386,9 +2303,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -2398,9 +2313,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2415,9 +2328,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2462,7 +2373,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2493,7 +2404,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2520,8 +2430,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -2563,8 +2472,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -2583,7 +2491,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2618,8 +2525,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000003,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -2715,7 +2621,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2742,8 +2647,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -2767,8 +2671,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2786,7 +2689,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -2813,8 +2715,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2895,8 +2796,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2915,9 +2815,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -2927,9 +2825,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2944,9 +2840,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2991,7 +2885,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3022,7 +2916,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3049,8 +2942,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -3074,8 +2966,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3093,7 +2984,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3120,8 +3010,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3205,8 +3094,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3225,9 +3113,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -3237,9 +3123,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3254,9 +3138,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3301,7 +3183,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3332,7 +3214,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3359,8 +3240,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -3402,8 +3282,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -3422,7 +3301,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3449,8 +3327,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3533,9 +3410,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -3554,9 +3429,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -3566,9 +3439,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3583,9 +3454,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3630,7 +3499,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3647,8 +3516,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3667,9 +3535,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -3679,9 +3545,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3696,9 +3560,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3743,7 +3605,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3774,7 +3636,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3801,8 +3662,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -3826,8 +3686,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3845,7 +3704,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -3872,8 +3730,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3950,9 +3807,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "activityId" : "A1",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "currentValue" : null,
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
@@ -3971,9 +3826,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -3983,9 +3836,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -4000,9 +3851,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -4047,7 +3896,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -4078,7 +3927,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4105,8 +3953,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -4130,8 +3977,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4149,7 +3995,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4176,8 +4021,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4269,7 +4113,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4296,8 +4139,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -4321,8 +4163,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4340,7 +4181,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4367,8 +4207,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4449,8 +4288,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -4469,9 +4307,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -4481,9 +4317,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -4498,9 +4332,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -4545,7 +4377,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -4576,7 +4408,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4603,8 +4434,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -4628,8 +4458,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4647,7 +4476,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4674,8 +4502,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -4759,8 +4586,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
           },
-          "isAlwaysAvailableToUser" : false,
-          "validOptions" : null
+          "isAlwaysAvailableToUser" : false
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -4779,9 +4605,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU1"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
@@ -4791,9 +4615,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "displayable" : "LU2"
                   },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -4808,9 +4630,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "displayable" : "LU2"
                 },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -4855,7 +4675,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -4886,7 +4706,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -4913,8 +4732,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -4956,8 +4774,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -4976,7 +4793,6 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -5003,8 +4819,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
