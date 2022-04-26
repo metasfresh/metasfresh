@@ -39,6 +39,7 @@ import java.util.Properties;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_OLCAND_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -77,10 +78,12 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	{
 		final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor = new FailingMockUpsertBPartnerProcessor();
 		final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor = new MockErrorRouteEndpointProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
 
 		prepareRouteForTesting(failingMockUpsertBPartnerProcessor,
 							   mockErrorRouteEndpointProcessor,
+							   successfullyClearOrdersProcessor,
 							   runtimeParamsProcessor);
 
 		context.start();
@@ -88,12 +91,14 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Not relevant!");
 
 		assertThat(mockErrorRouteEndpointProcessor.called).isEqualTo(1);
+		assertThat(successfullyClearOrdersProcessor.getCalled()).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.getCalled()).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(
 			final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor,
 			final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor,
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor olCandClearProcessor,
 			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
@@ -111,6 +116,11 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 										  .skipSendToOriginalEndpoint()
 										  .process(mockErrorRouteEndpointProcessor);
 							  });
+
+		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .process(olCandClearProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)

@@ -38,6 +38,7 @@ public interface ShopwareTestConstants
 
 	String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
 	String MOCK_OL_CAND_CREATE = "mock:olCandCreate";
+	String MOCK_OL_CAND_PROCESS = "mock:olCandProcess";
 	String MOCK_CREATE_PAYMENT = "mock:createPayment";
 	String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 }
