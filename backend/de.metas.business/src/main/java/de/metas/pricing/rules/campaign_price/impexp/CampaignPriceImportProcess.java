@@ -109,11 +109,10 @@ public class CampaignPriceImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		if (newCampaignPrice)
 		{
-			final I_C_Campaign_Price product = createCampaignPrice(importRecord);
-			InterfaceWrapperHelper.save(product);
-			C_Campaign_Price_ID = product.getM_Product_ID();
-			importRecord.setM_Product_ID(C_Campaign_Price_ID);
-			log.trace("Insert Product");
+			final I_C_Campaign_Price campaignPriceRecord = createCampaignPrice(importRecord);
+			InterfaceWrapperHelper.save(campaignPriceRecord);
+			importRecord.setM_Product_ID(campaignPriceRecord.getM_Product_ID());
+			log.trace("Insert C_Campaign_Price ");
 		}
 		else
 		{
