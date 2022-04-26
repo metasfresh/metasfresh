@@ -63,6 +63,11 @@ public class CampaignSyncService
 		return campaignService.saveSyncResult(syncResult);
 	}
 
+	private Campaign syncCampaignLocalToRemoteIfRemoteIdMissing(@NonNull final Campaign campaign)
+	{
+		return campaign.getRemoteId() == null ? syncCampaignLocalToRemote(campaign) : campaign;
+	}
+
 	public void syncCampaigns(
 			@NonNull final PlatformId platformId,
 			@NonNull final SyncDirection syncDirection)
@@ -101,27 +106,18 @@ public class CampaignSyncService
 			@NonNull final List<ContactPerson> contactsToSync,
 			@NonNull SyncDirection syncDirection)
 	{
-		Campaign campaign = campaignService.getById(campaignId);
+		final Campaign campaign = syncCampaignLocalToRemoteIfRemoteIdMissing(campaignService.getById(campaignId));
+
 		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
 
-		final List<? extends SyncResult> syncResults;
-		if (SyncDirection.LOCAL_TO_REMOTE.equals(syncDirection))
+		final List<? extends SyncResult> syncResults = syncDirection.map(new SyncDirection.CaseMapper<List<? extends SyncResult>>()
 		{
-			if (campaign.getRemoteId() == null)
-			{
-				campaign = syncCampaignLocalToRemote(campaign);
-			}
+			@Override
+			public List<? extends SyncResult> localToRemote() {return platformClient.syncContactPersonsLocalToRemote(campaign, contactsToSync);}
 
-			syncResults = platformClient.syncContactPersonsLocalToRemote(campaign, contactsToSync);
-		}
-		else if (SyncDirection.REMOTE_TO_LOCAL.equals(syncDirection))
-		{
-			syncResults = platformClient.syncContactPersonsRemoteToLocal(campaign, contactsToSync);
-		}
-		else
-		{
-			throw new AdempiereException("Invalid sync direction: " + syncDirection);
-		}
+			@Override
+			public List<? extends SyncResult> remoteToLocal() {return platformClient.syncContactPersonsRemoteToLocal(campaign, contactsToSync);}
+		});
 
 		final List<ContactPerson> savedContacts = contactPersonService.saveSyncResults(syncResults);
 		campaignService.addContactPersonsToCampaign(savedContacts, campaignId);
