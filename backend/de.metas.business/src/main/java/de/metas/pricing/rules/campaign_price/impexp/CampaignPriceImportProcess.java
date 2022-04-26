@@ -98,7 +98,7 @@ public class CampaignPriceImportProcess extends SimpleImportProcessTemplate<I_I_
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		final int I_Campaign_Price_ID = importRecord.getI_Campaign_Price_ID();
-		int C_Campaign_Price_ID = importRecord.getC_Campaign_Price_ID();
+		final int C_Campaign_Price_ID = importRecord.getC_Campaign_Price_ID();
 		final boolean newCampaignPrice = C_Campaign_Price_ID <= 0;
 		log.debug("I_Campaign_Price_ID=" + I_Campaign_Price_ID + ", C_Campaign_Price_ID=" + C_Campaign_Price_ID);
 
