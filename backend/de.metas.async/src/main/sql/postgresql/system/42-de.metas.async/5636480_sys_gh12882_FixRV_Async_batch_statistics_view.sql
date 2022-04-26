@@ -1,4 +1,4 @@
---DROP VIEW rv_async_batch_statistics
+DROP VIEW rv_async_batch_statistics
 ;
 
 CREATE OR REPLACE VIEW rv_async_batch_statistics AS

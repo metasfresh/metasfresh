@@ -39,7 +39,6 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -471,8 +470,6 @@ public class ExternalSystemConfigRepo
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
-				.bPartnerlookup(BPartnerLookup.ofCodeOrNull(record.getBPartnerLookupVia()))
-				.bPartnerIdJSONPath(record.getJSONPathConstantBPartnerID())
 				.build();
 	}
 
