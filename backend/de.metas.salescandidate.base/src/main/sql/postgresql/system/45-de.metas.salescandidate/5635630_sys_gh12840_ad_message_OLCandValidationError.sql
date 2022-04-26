@@ -29,3 +29,8 @@ UPDATE AD_Message_Trl SET MsgText='Auftragskandidat {0} kann nicht validiert wer
 UPDATE AD_Message_Trl SET MsgText='Auftragskandidat {0} kann nicht validiert werden',Updated=TO_TIMESTAMP('2022-04-20 10:22:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545121
 ;
 
+-- 2022-04-26T09:56:39.168Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Auftragskandidat {0} kann nicht validiert werden',Updated=TO_TIMESTAMP('2022-04-26 12:56:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545121
+;
+
