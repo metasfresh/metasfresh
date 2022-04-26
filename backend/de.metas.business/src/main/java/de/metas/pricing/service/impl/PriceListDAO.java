@@ -145,7 +145,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_M_PricingSystem.COLUMNNAME_Value, value)
 				.orderByDescending(I_M_PricingSystem.COLUMNNAME_AD_Client_ID)
 				.create()
-				.firstIdOnly();
+				.firstId();
 
 		return PricingSystemId.ofRepoIdOrNull(pricingSystemId);
 	}
