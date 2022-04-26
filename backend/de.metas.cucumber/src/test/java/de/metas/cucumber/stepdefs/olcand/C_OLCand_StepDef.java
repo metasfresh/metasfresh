@@ -132,11 +132,11 @@ public class C_OLCand_StepDef
 
 		if (orderIdentifier == null)
 		{
-			assertThat(compositeResponse.getOrdersResponse()).isEqualTo(null);
+			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
 		}
 		else
 		{
-			processOrderResponse(compositeResponse.getOrdersResponse(), orderIdentifier);
+			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
 		}
 
 		if (shipmentIdentifier == null)

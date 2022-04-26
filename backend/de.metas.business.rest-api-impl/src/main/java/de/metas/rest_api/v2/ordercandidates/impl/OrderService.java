@@ -108,10 +108,12 @@ public class OrderService
 
 		if (result.getEnqueuedWorkPackageIds().isEmpty())
 		{
-			asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestoneId, true);
+			asyncBatchMilestoneObserver.removeObserver(milestoneId);
 		}
-
-		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
+		else
+		{
+			asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
+		}
 	}
 
 	@NonNull

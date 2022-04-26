@@ -77,7 +77,7 @@ public class EligibleOLCandProvider
 	/**
 	 * Decides if there needs to be a new order for 'candidate'.
 	 */
-	public boolean isOrderSplit(
+	public static boolean isOrderSplit(
 			@NonNull final OLCand candidate,
 			@NonNull final OLCand previousCandidate,
 			@NonNull final OLCandAggregation aggregationInfo)
@@ -126,7 +126,7 @@ public class EligibleOLCandProvider
 		return false;
 	}
 
-	private boolean isEligibleOrLog(
+	private static boolean isEligibleOrLog(
 			@NonNull final OLCand cand,
 			@NonNull final InputDataSourceId inputDataSourceId,
 			@Nullable final AsyncBatchId asyncBatchId)
@@ -166,7 +166,7 @@ public class EligibleOLCandProvider
 	}
 
 	@NonNull
-	private OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate, @NonNull final LocalDate defaultDateDoc)
+	private static OLCand prepareOLCandBeforeProcessing(@NonNull final OLCand candidate, @NonNull final LocalDate defaultDateDoc)
 	{
 		if (candidate.getDateDoc() == null)
 		{

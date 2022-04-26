@@ -246,7 +246,7 @@ public class OrderCandidateRestControllerService
 		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
-				.ordersResponse(buildGenerateOrdersResponse(orderIds));
+				.orderResponse(buildGenerateOrdersResponse(orderIds));
 
 		if (request.getShip())
 		{

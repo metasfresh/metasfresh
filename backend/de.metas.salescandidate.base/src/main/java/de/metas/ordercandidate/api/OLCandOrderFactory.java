@@ -457,19 +457,17 @@ class OLCandOrderFactory
 
 	public void addOLCand(@NonNull final OLCand candidate)
 	{
+		validateCandidateOutOfTrx(candidate.unbox());
+
 		try
 		{
-			validateCandidateOutOfTrx(candidate.unbox());
-
 			addOLCand0(candidate);
 
 			olcandBL.markAsProcessed(candidate);
 		}
 		catch (final Exception ex)
 		{
-			olcandBL.markAsError(userInChargeId, candidate, ex);
-
-			olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
+			trxManager.runInNewTrx(() -> olcandBL.markAsError(userInChargeId, candidate, ex));
 
 			throw AdempiereException.wrapIfNeeded(ex);
 		}

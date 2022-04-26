@@ -155,7 +155,7 @@ public class C_OLCandToOrderEnqueuer
 		final IWorkPackageBlockBuilder blockBuilder = getWorkPackageBlockBuilder(request);
 
 		final BiFunction<OLCand, OLCand, Boolean> shouldSplitOrder = (previousCand, currentCand) ->
-				previousCand != null && eligibleOLCandProvider.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
+				previousCand != null && EligibleOLCandProvider.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
 
 		IWorkPackageBuilder workPackageBuilder = null;
 		OLCand previousCandidate = null;
@@ -240,10 +240,9 @@ public class C_OLCandToOrderEnqueuer
 	@NonNull
 	private ILockCommand splitLock(@NonNull final ILock mainLock)
 	{
-		//
 		// Create a new locker which will grab the locked candidate from initial lock
-		// and it will move them to a new owner which is created per workpackage
-		final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ProcessOLCand_" + Instant.now());
+		// and it will move them to a new owner which is created per work package
+		final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ProcessOLCand_" + Instant.now().getMillis());
 		return mainLock
 				.split()
 				.setOwner(workpackageElementsLockOwner)

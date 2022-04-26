@@ -45,6 +45,9 @@ import java.util.stream.Collectors;
 @Component
 public class OLCandRegistry
 {
+
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
 	private final IOLCandListener listeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
 	private final IOLCandValidator validators;
@@ -71,7 +74,7 @@ public class OLCandRegistry
 				.sorted(Comparator.comparing(IOLCandValidator::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 		this.validators = !validators.isEmpty()
-				? new CompositeOLCandValidator(validators)
+				? new CompositeOLCandValidator(validators, errorManager)
 				: NullOLCandValidator.instance;
 	}
 
@@ -158,10 +161,12 @@ public class OLCandRegistry
 	private static final class CompositeOLCandValidator implements IOLCandValidator
 	{
 		private final ImmutableList<IOLCandValidator> validators;
+		private final IErrorManager errorManager;
 
-		private CompositeOLCandValidator(@NonNull final List<IOLCandValidator> validators)
+		private CompositeOLCandValidator(@NonNull final List<IOLCandValidator> validators, @NonNull final IErrorManager errorManager)
 		{
 			this.validators = ImmutableList.copyOf(validators);
+			this.errorManager = errorManager;
 		}
 
 		/** @return {@code 0}. Actually, it doesn't matte for this validator. */
@@ -193,7 +198,7 @@ public class OLCandRegistry
 					olCand.setIsError(true);
 					olCand.setErrorMsg(me.getLocalizedMessage());
 
-					final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+					final AdIssueId issueId = errorManager.createIssue(e);
 					olCand.setAD_Issue_ID(issueId.getRepoId());
 
 					break;

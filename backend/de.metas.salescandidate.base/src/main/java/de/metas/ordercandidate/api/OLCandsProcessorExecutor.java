@@ -167,7 +167,7 @@ public class OLCandsProcessorExecutor
 				final ArrayKey groupingKey = toProcess.get(olCandId);
 				for (final OLCand candOfGroup : grouping.get(groupingKey))
 				{
-					if (currentOrder != null && eligibleOLCandProvider.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
+					if (currentOrder != null && EligibleOLCandProvider.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
 					{
 						currentOrder.completeOrDelete();
 						currentOrder = null;

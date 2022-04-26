@@ -61,14 +61,14 @@ public class JsonProcessCompositeResponseTest
 	{
 
 		final JsonProcessCompositeResponse request = JsonProcessCompositeResponse.builder()
-				.ordersResponse(getJsonGenerateOrdersResponse())
+				.orderResponse(getJsonGenerateOrderResponse())
 				.shipmentResponse(getJsonCreateShipmentResponse())
 				.build();
 
 		testSerializeDeserialize(request);
 	}
 
-	private JsonGenerateOrdersResponse getJsonGenerateOrdersResponse()
+	private JsonGenerateOrdersResponse getJsonGenerateOrderResponse()
 	{
 		return JsonGenerateOrdersResponse.builder()
 				.orderIds(ImmutableList.of(JsonMetasfreshId.of(2)))

@@ -36,7 +36,7 @@ import java.util.List;
 @JsonDeserialize(builder = JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder.class)
 public class JsonProcessCompositeResponse
 {
-	JsonGenerateOrdersResponse ordersResponse;
+	JsonGenerateOrdersResponse orderResponse;
 
 	JsonCreateShipmentResponse shipmentResponse;
 
@@ -44,11 +44,11 @@ public class JsonProcessCompositeResponse
 
 	@Builder
 	JsonProcessCompositeResponse(
-			@JsonProperty("ordersResponse") final JsonGenerateOrdersResponse ordersResponse,
+			@JsonProperty("orderResponse") final JsonGenerateOrdersResponse orderResponse,
 			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
 			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)
 	{
-		this.ordersResponse = ordersResponse;
+		this.orderResponse = orderResponse;
 		this.shipmentResponse = shipmentResponse;
 		this.invoiceInfoResponse = invoiceInfoResponse;
 	}
