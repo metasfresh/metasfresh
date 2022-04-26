@@ -80,6 +80,7 @@ final class EventBus implements IEventBus
 	private final boolean async;
 
 	@Getter
+	@NonNull
 	private final Topic topic;
 
 	private final ExecutorService executorOrNull;

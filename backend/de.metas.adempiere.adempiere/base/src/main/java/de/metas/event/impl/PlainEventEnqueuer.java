@@ -22,6 +22,7 @@
 
 package de.metas.event.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.event.Event;
 import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
@@ -33,6 +34,10 @@ import org.adempiere.util.lang.ImmutablePair;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Enqueue events into an in-memory processing queue
+ */
+@VisibleForTesting
 public class PlainEventEnqueuer implements EventEnqueuer
 {
 	private final EventsQueue eventsQueue = new EventsQueue();

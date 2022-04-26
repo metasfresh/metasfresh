@@ -65,10 +65,13 @@ public interface IEventBus
 	<T> IEventListener subscribeOn(Class<T> type, Consumer<T> eventConsumer);
 
 	/**
-	 * Post given event on this bus.
+	 * Post given event in the underlying bus.
 	 */
 	void processEvent(Event event);
 
+	/**
+	 * Enqueue given event in RabbitMQ.
+	 */
 	void enqueueEvent(Event event);
 
 	/**

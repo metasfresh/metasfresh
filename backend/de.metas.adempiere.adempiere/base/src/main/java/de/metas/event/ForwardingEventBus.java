@@ -33,6 +33,7 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
+	@NonNull
 	public Topic getTopic()
 	{
 		return delegate().getTopic();
