@@ -38,6 +38,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
@@ -72,7 +73,7 @@ class JsonRetrieverServiceTest
 	@BeforeAll
 	static void initStatic()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
