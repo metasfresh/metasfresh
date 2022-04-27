@@ -651,10 +651,7 @@ class MenuOverlay extends Component {
                       this.handleQuery,
                       DEBOUNCE_TIME_SEARCH
                     )}
-                    onKeyDown={this.debounceEventHandler(
-                      this.handleKeyDown,
-                      DEBOUNCE_TIME_SEARCH
-                    )}
+                    onKeyDown={this.handleKeyDown}
                   />
 
                   {query && (
