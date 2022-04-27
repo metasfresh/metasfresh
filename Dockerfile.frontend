@@ -12,7 +12,7 @@ COPY frontend/ .
 
 RUN yarn lint
 # RUN yarn test --ci
-RUN webpack --config webpack.prod.js
+RUN webpack --config webpack.docker.js
 
 
 FROM nginx as runtime

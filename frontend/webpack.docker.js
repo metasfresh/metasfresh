@@ -3,16 +3,13 @@ var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var fs = require('fs');
-const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 
 // check if we have already a config.js file. If we do not we need to create it otherwise webpack will complain that is missing
 if (!fs.existsSync('config.js')) {
   fs.copyFileSync('config.js.dist', 'config.js');
 }
 
-var commitHash = require('child_process')
-  .execSync('git rev-parse --short HEAD')
-  .toString();
+var commitHash = 'hash1234';
 
 const plugins = [
   new webpack.DefinePlugin({
@@ -26,7 +23,6 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: './index.html',
   }),
-  new GitRevisionPlugin(),
   new CopyWebpackPlugin({
     patterns: [
       {
@@ -58,7 +54,7 @@ module.exports = {
   entry: ['./src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
+    filename: 'bundle-ab12zz-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,
@@ -74,7 +70,7 @@ module.exports = {
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name]-[git-revision-hash][ext]',
+          filename: '[path][name]-ab12zz[ext]',
         },
       },
       {
