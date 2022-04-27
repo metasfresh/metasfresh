@@ -131,6 +131,7 @@ public class AdempiereTestHelper
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		Adempiere.enableUnitTestMode();
+		Language.setUseJUnitFixedFormats(false);
 		POJOLookupMap.resetToDefaultNextIdSupplier();
 
 		Check.setDefaultExClass(AdempiereException.class);

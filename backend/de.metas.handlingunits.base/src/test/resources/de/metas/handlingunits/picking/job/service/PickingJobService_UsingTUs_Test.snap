@@ -23,7 +23,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -50,8 +49,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -75,8 +73,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -94,7 +91,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -121,8 +117,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -217,7 +212,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -244,8 +238,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -269,8 +262,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -288,7 +280,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -315,8 +306,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -417,7 +407,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -444,8 +433,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -469,8 +457,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -488,7 +475,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -515,8 +501,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -657,7 +642,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -684,8 +668,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -727,8 +710,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -747,7 +729,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -782,8 +763,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
                     "pickingCandidateId" : 1000003,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -882,7 +862,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -909,8 +888,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
@@ -934,8 +912,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -953,7 +930,6 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
@@ -980,8 +956,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",

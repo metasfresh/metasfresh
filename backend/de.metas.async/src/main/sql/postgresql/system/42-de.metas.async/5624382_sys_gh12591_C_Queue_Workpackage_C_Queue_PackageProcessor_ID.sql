@@ -11,5 +11,7 @@ INSERT INTO t_alter_column values('c_queue_workpackage','C_Queue_PackageProcesso
 INSERT INTO t_alter_column values('c_queue_workpackage','C_Queue_PackageProcessor_ID',null,'NOT NULL',null)
 ;
 
-alter table dlm.c_queue_workpackage_archived alter column c_queue_packageprocessor_id set not null
-;
+-- can't see why we would need this; also, there simple might be old WPs that have no c_queue_packageprocessor_id.
+-- unless we explicitly migrate them for some reason, we can't enforce this 
+-- alter table dlm.c_queue_workpackage_archived alter column c_queue_packageprocessor_id set not null
+-- ;
