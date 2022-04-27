@@ -364,8 +364,8 @@ class MenuOverlay extends Component {
    */
   checkElement = () => {
     const selectedElement = document
-      .getElementsByClassName('menu-overlay-query')[0]
-      .getElementsByClassName('js-menu-item')[0];
+      ?.getElementsByClassName('menu-overlay-query')?.[0]
+      ?.getElementsByClassName('js-menu-item')?.[0];
     if (!selectedElement) {
       return this.rafAsync().then(() => this.checkElement());
     } else {
