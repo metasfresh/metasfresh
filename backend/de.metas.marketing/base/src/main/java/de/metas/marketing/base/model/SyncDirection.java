@@ -1,10 +1,8 @@
-package de.metas.marketing.base.model;
-
 /*
  * #%L
  * marketing-base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +20,32 @@ package de.metas.marketing.base.model;
  * #L%
  */
 
-import lombok.NonNull;
+package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
+import org.adempiere.exceptions.AdempiereException;
 
-public interface DataRecord
+public enum SyncDirection
 {
-	@NonNull
-	PlatformId getPlatformId();
+	LOCAL_TO_REMOTE,
+	REMOTE_TO_LOCAL;
 
-	@Nullable
-	String getRemoteId();
+	public interface CaseMapper<R>
+	{
+		R localToRemote();
+
+		R remoteToLocal();
+	}
+
+	public <R> R map(final CaseMapper<R> mapper)
+	{
+		switch (this)
+		{
+			case LOCAL_TO_REMOTE:
+				return mapper.localToRemote();
+			case REMOTE_TO_LOCAL:
+				return mapper.remoteToLocal();
+			default:
+				throw new AdempiereException("Unsupported sync direction: " + this);
+		}
+	}
 }

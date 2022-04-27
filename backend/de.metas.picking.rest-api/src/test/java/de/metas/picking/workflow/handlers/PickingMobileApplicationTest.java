@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.i18n.Language;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -83,7 +84,12 @@ class PickingMobileApplicationTest
 		helper = new PickingJobTestHelper();
 		recorder = helper.newTestRecorder();
 
+		// Needed because we take snapshots of date/time translatable strings,
+		// and it seems the date/time formats differs from OS to OS or from JVM impl to JVM impl
+		Language.setUseJUnitFixedFormats(true);
+
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
+		Env.setAD_Language(Env.getCtx(), "de_DE");
 
 		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService);
 		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService);
@@ -202,6 +208,8 @@ class PickingMobileApplicationTest
 	@Test
 	void abortJob()
 	{
+		recorder.reportStep("AD_Language", Env.getAD_Language());
+
 		JsonWFProcess wfProcess = startWFProcess();
 
 		workflowRestController.abort(wfProcess.getId());

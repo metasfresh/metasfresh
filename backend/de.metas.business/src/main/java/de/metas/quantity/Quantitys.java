@@ -205,7 +205,7 @@ public class Quantitys
 		return quantity.toBigDecimal();
 	}
 
-	public class QuantityDeserializer extends StdDeserializer<Quantity>
+	public static class QuantityDeserializer extends StdDeserializer<Quantity>
 	{
 		private static final long serialVersionUID = -5406622853902102217L;
 
@@ -239,7 +239,7 @@ public class Quantitys
 		}
 	}
 
-	public class QuantitySerializer extends StdSerializer<Quantity>
+	public static class QuantitySerializer extends StdSerializer<Quantity>
 	{
 		private static final long serialVersionUID = -8292209848527230256L;
 

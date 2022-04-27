@@ -1,10 +1,8 @@
-package de.metas.marketing.base.model;
-
 /*
  * #%L
  * marketing-base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +20,16 @@ package de.metas.marketing.base.model;
  * #L%
  */
 
+package de.metas.marketing.base;
+
+import de.metas.marketing.base.model.ContactPerson;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
+import java.util.Collection;
 
-public interface DataRecord
+public interface ContactPersonListener
 {
-	@NonNull
-	PlatformId getPlatformId();
+	void onContactChanged(final ContactPerson contact);
 
-	@Nullable
-	String getRemoteId();
+	default void onContactsChanged(@NonNull final Collection<ContactPerson> contacts) {contacts.forEach(this::onContactChanged);}
 }

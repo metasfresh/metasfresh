@@ -1,10 +1,8 @@
-package de.metas.marketing.base.model;
-
 /*
  * #%L
- * marketing-base
+ * marketing-cleverreach
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +20,28 @@ package de.metas.marketing.base.model;
  * #L%
  */
 
+package de.metas.marketing.gateway.cleverreach.restapi.models;
+
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
-public interface DataRecord
+@Value
+@Builder
+@Jacksonized
+public class SendEmailActivationFormRequest
 {
-	@NonNull
-	PlatformId getPlatformId();
+	@NonNull String email;
+	@NonNull DoubleOptInData doidata;
 
-	@Nullable
-	String getRemoteId();
+	@Value
+	@Builder
+	@Jacksonized
+	public static class DoubleOptInData
+	{
+		String user_ip;
+		String referer;
+		String user_agent;
+	}
 }
