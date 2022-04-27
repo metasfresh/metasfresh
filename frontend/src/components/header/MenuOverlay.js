@@ -364,8 +364,8 @@ class MenuOverlay extends Component {
    */
   checkElement = () => {
     const selectedElement = document
-      .getElementsByClassName('menu-overlay-query')[0]
-      .getElementsByClassName('js-menu-item')[0];
+      ?.getElementsByClassName('menu-overlay-query')?.[0]
+      ?.getElementsByClassName('js-menu-item')?.[0];
     if (!selectedElement) {
       return this.rafAsync().then(() => this.checkElement());
     } else {
@@ -651,10 +651,7 @@ class MenuOverlay extends Component {
                       this.handleQuery,
                       DEBOUNCE_TIME_SEARCH
                     )}
-                    onKeyDown={this.debounceEventHandler(
-                      this.handleKeyDown,
-                      DEBOUNCE_TIME_SEARCH
-                    )}
+                    onKeyDown={this.handleKeyDown}
                   />
 
                   {query && (
