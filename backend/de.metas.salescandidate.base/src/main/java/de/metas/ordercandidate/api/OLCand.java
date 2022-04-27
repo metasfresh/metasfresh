@@ -135,6 +135,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final AdIssueId adIssueId;
 
+	@Getter
+	private final String headerAggregationKey;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -154,7 +157,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
 			@Nullable final Quantity qtyItemCapacityEff,
-			@Nullable final AdIssueId adIssueId)
+			@Nullable final AdIssueId adIssueId,
+			@Nullable final String headerAggregationKey)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -195,6 +199,8 @@ public final class OLCand implements IProductPriceAware
 		this.qtyShipped = qtyShipped;
 
 		this.adIssueId = adIssueId;
+
+		this.headerAggregationKey = headerAggregationKey;
 	}
 
 	@Override
@@ -454,5 +460,10 @@ public final class OLCand implements IProductPriceAware
 		}
 
 		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
+	}
+
+	public void setHeaderAggregationKey(@NonNull final String headerAggregationKey)
+	{
+		olCandRecord.setHeaderAggregationKey(headerAggregationKey);
 	}
 }

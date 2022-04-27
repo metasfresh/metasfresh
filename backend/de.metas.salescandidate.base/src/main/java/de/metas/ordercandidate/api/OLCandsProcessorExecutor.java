@@ -7,8 +7,8 @@ import de.metas.async.AsyncBatchId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
-import de.metas.ordercandidate.api.source.EligibleOLCandProvider;
 import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.process.PInstanceId;
@@ -66,7 +66,7 @@ public class OLCandsProcessorExecutor
 
 	private final IOLCandListener olCandListeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
-	private final EligibleOLCandProvider eligibleOLCandProvider;
+	private final OLCandProcessingHelper olCandProcessingHelper;
 
 	private final int olCandProcessorId;
 	private final UserId userInChargeId;
@@ -80,7 +80,7 @@ public class OLCandsProcessorExecutor
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			@NonNull final EligibleOLCandProvider eligibleOLCandProvider,
+			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
 			@NonNull final PInstanceId selectionId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
@@ -88,7 +88,7 @@ public class OLCandsProcessorExecutor
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
-		this.eligibleOLCandProvider = eligibleOLCandProvider;
+		this.olCandProcessingHelper = olCandProcessingHelper;
 
 		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
@@ -167,7 +167,7 @@ public class OLCandsProcessorExecutor
 				final ArrayKey groupingKey = toProcess.get(olCandId);
 				for (final OLCand candOfGroup : grouping.get(groupingKey))
 				{
-					if (currentOrder != null && EligibleOLCandProvider.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
+					if (currentOrder != null && OLCandProcessingHelper.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
 					{
 						currentOrder.completeOrDelete();
 						currentOrder = null;
@@ -273,6 +273,6 @@ public class OLCandsProcessorExecutor
 				.asyncBatchId(asyncBatchId)
 				.build();
 
-		return eligibleOLCandProvider.getEligibleOLCand(request);
+		return olCandProcessingHelper.getOLCandsForProcessing(request);
 	}
 }

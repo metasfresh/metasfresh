@@ -185,7 +185,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | AD_Issue_ID.Identifier | IssueSummary                         |
       | issue_olCand_3         | Produkt ist nicht auf der Preisliste |
 
-    And locate C_Queue_WorkPackage by enqueued element
+    And locate last C_Queue_WorkPackage by enqueued element
       | C_Queue_WorkPackage_ID.Identifier | C_Queue_PackageProcessor_ID.InternalName | AD_Table_ID.TableName | Record_ID.Identifier |
       | wp_order_1                        | C_OLCandToOrderWorkpackageProcessor      | C_OLCand              | olCand_1             |
       | wp_order_2                        | C_OLCandToOrderWorkpackageProcessor      | C_OLCand              | olCand_4             |

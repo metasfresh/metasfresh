@@ -30,10 +30,10 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandQuery;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
-import de.metas.ordercandidate.api.source.EligibleOLCandProvider;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.payment.PaymentRule;
@@ -107,14 +107,14 @@ public class OLCandBL implements IOLCandBL
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
-		final EligibleOLCandProvider eligibleOLCandProvider = springContextHolder.getBean(EligibleOLCandProvider.class);
+		final OLCandSPIRegistry olCandSPIRegistry = springContextHolder.getBean(OLCandSPIRegistry.class);
+		final OLCandProcessingHelper olCandProcessingHelper = springContextHolder.getBean(OLCandProcessingHelper.class);
 
 		OLCandsProcessorExecutor.builder()
 				.processorDescriptor(processor)
-				.olCandListeners(olCandRegistry.getListeners())
-				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
-				.eligibleOLCandProvider(eligibleOLCandProvider)
+				.olCandListeners(olCandSPIRegistry.getListeners())
+				.groupingValuesProviders(olCandSPIRegistry.getGroupingValuesProviders())
+				.olCandProcessingHelper(olCandProcessingHelper)
 				.selectionId(selectionId)
 				.asyncBatchId(asyncBatchId)
 				.build()
@@ -533,10 +533,11 @@ public class OLCandBL implements IOLCandBL
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.qtyItemCapacityEff(qtyItemCapacity)
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
+				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
 				.build();
 	}
 
-	private void saveCandidate(final OLCand cand)
+	public void saveCandidate(@NonNull final OLCand cand)
 	{
 		save(cand.unbox());
 	}

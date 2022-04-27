@@ -72,7 +72,7 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 
 		if (candidateIds.isEmpty())
 		{
-			logger.info("No OLCands enqueued to be processed for QueueWorkPackageId: {}", QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No OLCands enqueued to be processed for QueueWorkPackageId: {}", QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
 			return Result.SUCCESS;
 		}
 

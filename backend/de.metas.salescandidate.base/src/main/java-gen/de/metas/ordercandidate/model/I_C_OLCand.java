@@ -1606,6 +1606,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
+	 * Set Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
+
+	/**
+	 * Get Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHeaderAggregationKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_HeaderAggregationKey = new ModelColumn<>(I_C_OLCand.class, "HeaderAggregationKey", null);
+	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
+
+	/**
 	 * Set Import warning message.
 	 *
 	 * <br>Type: String

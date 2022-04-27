@@ -38,12 +38,15 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandProcessorRepository;
-import de.metas.ordercandidate.api.source.EligibleOLCandProvider;
 import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.ordercandidate.api.source.OLCandIterator;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -52,7 +55,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.process.rpl.model.I_C_OLCand;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
@@ -62,7 +64,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -83,14 +85,14 @@ public class C_OLCandToOrderEnqueuer
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo;
-	private final EligibleOLCandProvider eligibleOLCandProvider;
+	private final OLCandProcessingHelper olCandProcessingHelper;
 
 	public C_OLCandToOrderEnqueuer(
 			@NonNull final OLCandProcessorRepository olCandProcessorRepo,
-			@NonNull final EligibleOLCandProvider eligibleOLCandProvider)
+			@NonNull final OLCandProcessingHelper olCandProcessingHelper)
 	{
 		this.olCandProcessorRepo = olCandProcessorRepo;
-		this.eligibleOLCandProvider = eligibleOLCandProvider;
+		this.olCandProcessingHelper = olCandProcessingHelper;
 	}
 
 	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId)
@@ -145,30 +147,39 @@ public class C_OLCandToOrderEnqueuer
 	@NonNull
 	private ImmutableList<QueueWorkPackageId> enqueueWorkPackages(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
 	{
-		final List<OLCand> candidates = getEligibleOLCand(request);
+		setHeaderAggregationKey(request);
 
-		if (candidates.isEmpty())
+		final Iterator<OLCand> olCandIterator = getOrderedOLCandIterator(request);
+
+		if (!olCandIterator.hasNext())
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** No candidate pulled to be processed from C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest: {}", request);
 			return ImmutableList.of();
 		}
 
 		final IWorkPackageBlockBuilder blockBuilder = getWorkPackageBlockBuilder(request);
 
 		final BiFunction<OLCand, OLCand, Boolean> shouldSplitOrder = (previousCand, currentCand) ->
-				previousCand != null && EligibleOLCandProvider.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
+				previousCand != null && OLCandProcessingHelper.isOrderSplit(currentCand, previousCand, request.getOlCandProcessorDescriptor().getAggregationInfo());
 
 		IWorkPackageBuilder workPackageBuilder = null;
 		OLCand previousCandidate = null;
 
 		final ImmutableList.Builder<QueueWorkPackageId> enqueuedWorkPackageCollector = ImmutableList.builder();
 
-		for (final OLCand currentCandidate : candidates)
+		while (olCandIterator.hasNext())
 		{
-			final OLCandId currentCandidateId = OLCandId.ofRepoId(currentCandidate.getId());
-			final TableRecordReference candidateRecordReference = TableRecordReference.of(I_C_OLCand.Table_Name, currentCandidateId);
+			final OLCand currentCandidate = olCandIterator.next();
+
+			final TableRecordReference candidateRecordReference = TableRecordReference.of(I_C_OLCand.Table_Name, OLCandId.ofRepoId(currentCandidate.getId()));
 
 			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidateRecordReference))
 			{
+				if (!olCandProcessingHelper.checkEligibleAndLog(currentCandidate, request.getAsyncBatchId()))
+				{
+					continue;
+				}
+
 				if (shouldSplitOrder.apply(previousCandidate, currentCandidate))
 				{
 					enqueuedWorkPackageCollector.add(workPackageBuilder.buildAndGetId());
@@ -195,7 +206,7 @@ public class C_OLCandToOrderEnqueuer
 	}
 
 	@NonNull
-	private List<OLCand> getEligibleOLCand(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
+	private OLCandIterator getOrderedOLCandIterator(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
 	{
 		final GetEligibleOLCandRequest eligibleOLCandRequest = GetEligibleOLCandRequest.builder()
 				.selection(request.getOrderLineCandSelectionId())
@@ -204,7 +215,7 @@ public class C_OLCandToOrderEnqueuer
 				.asyncBatchId(request.getAsyncBatchId())
 				.build();
 
-		return eligibleOLCandProvider.getEligibleOLCand(eligibleOLCandRequest);
+		return olCandProcessingHelper.getOrderedOLCandIterator(eligibleOLCandRequest);
 	}
 
 	@NonNull
@@ -259,6 +270,25 @@ public class C_OLCandToOrderEnqueuer
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_C_OLCand.class, selectionId)
 				.acquire();
+	}
+
+	private void setHeaderAggregationKey(@NonNull final C_OLCandToOrderEnqueuer.EnqueueWorkPackageRequest request)
+	{
+		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
+
+		final OLCandIterator olCandIterator = getOrderedOLCandIterator(request);
+		final OLCandProcessorDescriptor olCandProcessorDescriptor = request.getOlCandProcessorDescriptor();
+
+		while (olCandIterator.hasNext())
+		{
+			final OLCand candidate = olCandIterator.next();
+
+			final String headerAggregationKey = olCandProcessorDescriptor.getAggregationInfo().computeHeaderAggregationKey(candidate);
+
+			candidate.setHeaderAggregationKey(headerAggregationKey);
+
+			olCandBL.saveCandidate(candidate);
+		}
 	}
 
 	@Builder

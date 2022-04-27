@@ -27,16 +27,16 @@ public class OLCandValidatorService
 
 	private final ThreadLocal<Boolean> validationProcessInProgress = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-	private final OLCandRegistry olCandRegistry;
+	private final OLCandSPIRegistry olCandSPIRegistry;
 
-	public OLCandValidatorService(@NonNull final OLCandRegistry olCandRegistry)
+	public OLCandValidatorService(@NonNull final OLCandSPIRegistry olCandSPIRegistry)
 	{
-		this.olCandRegistry = olCandRegistry;
+		this.olCandSPIRegistry = olCandSPIRegistry;
 	}
 
 	public I_C_OLCand validate(@NonNull final I_C_OLCand olCand)
 	{
-		final IOLCandValidator validators = olCandRegistry.getValidators();
+		final IOLCandValidator validators = olCandSPIRegistry.getValidators();
 
 		// 08072
 		// before validating, unset the isError and set the error message on null.

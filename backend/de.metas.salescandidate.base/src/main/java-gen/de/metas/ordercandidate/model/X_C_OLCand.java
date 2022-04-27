@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -675460172L;
+	private static final long serialVersionUID = 1128591430L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1129,6 +1129,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getHandOver_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_User_ID);
+	}
+
+	@Override
+	public void setHeaderAggregationKey (final @Nullable java.lang.String HeaderAggregationKey)
+	{
+		set_Value (COLUMNNAME_HeaderAggregationKey, HeaderAggregationKey);
+	}
+
+	@Override
+	public java.lang.String getHeaderAggregationKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
 
 	@Override

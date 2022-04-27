@@ -36,6 +36,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -48,6 +49,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Queue_WorkPackage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private final StepDefData<I_C_Queue_WorkPackage> workPackageTable;
 	private final StepDefData<I_C_Queue_Element> queueElementTable;
@@ -63,7 +65,7 @@ public class C_Queue_WorkPackage_StepDef
 		this.candidateTable = candidateTable;
 	}
 
-	@And("locate C_Queue_WorkPackage by enqueued element")
+	@And("locate last C_Queue_WorkPackage by enqueued element")
 	public void locate_C_Queue_WorkPackage_by_enqueued_element(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
@@ -74,7 +76,7 @@ public class C_Queue_WorkPackage_StepDef
 			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_AD_Table_ID + "." + I_AD_Table.COLUMNNAME_TableName);
 			final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_Element.COLUMNNAME_Record_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-			final I_AD_Table adTable = loadTable(tableName);
+			final I_AD_Table adTable = tableDAO.retrieveTable(tableName);
 
 			switch (adTable.getTableName())
 			{
@@ -105,7 +107,7 @@ public class C_Queue_WorkPackage_StepDef
 			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_AD_Table_ID + "." + I_AD_Table.COLUMNNAME_TableName);
 			final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_Element.COLUMNNAME_Record_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-			final I_AD_Table adTable = loadTable(tableName);
+			final I_AD_Table adTable = tableDAO.retrieveTable(tableName);
 
 			switch (adTable.getTableName())
 			{
@@ -142,8 +144,13 @@ public class C_Queue_WorkPackage_StepDef
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, reference.getRecord_ID())
 				.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, I_C_Queue_WorkPackage.class)
 				.addInSubQueryFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID, I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID, queueBlockWithGivenPackageProcessorQuery)
+				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Created)
 				.create()
-				.firstOnlyNotNull(I_C_Queue_WorkPackage.class);
+				.firstOptional(I_C_Queue_WorkPackage.class)
+				.orElseThrow(() -> new AdempiereException("No C_Queue_WorkPackage found for TableRecordReference and PackageProcessorName")
+						.appendParametersToMessage()
+						.setParameter("TableRecordReference", reference)
+						.setParameter("PackageProcessorName", packageProcessorName));
 
 		workPackageTable.putOrReplace(workPackageIdentifier, workPackage);
 	}
@@ -158,19 +165,13 @@ public class C_Queue_WorkPackage_StepDef
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
 				.create()
-				.firstOnlyNotNull(I_C_Queue_Element.class);
+				.firstOptional(I_C_Queue_Element.class)
+				.orElseThrow(() -> new AdempiereException("No C_Queue_Element found for QueueWorkPackageId and TableRecordReference")
+						.appendParametersToMessage()
+						.setParameter("QueueWorkPackageId", workPackageId)
+						.setParameter("TableRecordReference", recordReference));
 
 		assertThat(queueElement).isNotNull();
 		queueElementTable.putOrReplace(queueElementIdentifier, queueElement);
-	}
-
-	@NonNull
-	private I_AD_Table loadTable(@NonNull final String tableName)
-	{
-		return queryBL.createQueryBuilder(I_AD_Table.class)
-				.addEqualsFilter(I_AD_Table.COLUMNNAME_TableName, tableName)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnlyNotNull(I_AD_Table.class);
 	}
 }

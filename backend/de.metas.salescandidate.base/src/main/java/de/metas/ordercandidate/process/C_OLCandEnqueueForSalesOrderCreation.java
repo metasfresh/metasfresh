@@ -1,9 +1,6 @@
 package de.metas.ordercandidate.process;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.async.AsyncBatchId;
-import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
 import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -18,13 +15,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
 /**
- * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
+ * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is manually triggered from AD_Window=540095
  * <p>
- * The actual work is done by {@link IOLCandBL#process(OLCandProcessorDescriptor, AsyncBatchId)}
+ * The actual work is done by {@link de.metas.ordercandidate.api.OLCandsProcessorExecutor#process()}
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-public class ProcessOLCands extends JavaProcess
+public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

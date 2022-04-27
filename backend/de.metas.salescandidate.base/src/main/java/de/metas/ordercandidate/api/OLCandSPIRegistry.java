@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 
 @Component
-public class OLCandRegistry
+public class OLCandSPIRegistry
 {
 
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -52,7 +52,7 @@ public class OLCandRegistry
 	private final IOLCandGroupingProvider groupingValuesProviders;
 	private final IOLCandValidator validators;
 
-	public OLCandRegistry(
+	public OLCandSPIRegistry(
 			final Optional<List<IOLCandListener>> optionalListeners,
 			final Optional<List<IOLCandGroupingProvider>> optionalGroupingValuesProviders,
 			final Optional<List<IOLCandValidator>> optionalValidators)

@@ -34,6 +34,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandAggregation;
 import de.metas.ordercandidate.api.OLCandAggregationColumn;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,36 +43,55 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class EligibleOLCandProvider
+public class OLCandProcessingHelper
 {
-	private static final Logger logger = LogManager.getLogger(EligibleOLCandProvider.class);
+	private static final Logger logger = LogManager.getLogger(OLCandProcessingHelper.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
+	private final InputDataSourceId processorDataDestinationId;
+
+	public OLCandProcessingHelper()
+	{
+		this.processorDataDestinationId = Services.get(IInputDataSourceDAO.class)
+				.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+	}
 
 	@NonNull
-	public List<OLCand> getEligibleOLCand(@NonNull final GetEligibleOLCandRequest request)
+	public List<OLCand> getOLCandsForProcessing(@NonNull final GetEligibleOLCandRequest request)
 	{
-		final InputDataSourceId processorDataDestinationId = inputDataSourceDAO
-				.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+		final OLCandIterator olCandIterator = getOrderedOLCandIterator(request);
 
+		final ImmutableList.Builder<OLCand> candidatesCollector = ImmutableList.builder();
+
+		while (olCandIterator.hasNext())
+		{
+			final OLCand currentCandidate = olCandIterator.next();
+
+			if (!checkEligibleAndLog(currentCandidate, request.getAsyncBatchId()))
+			{
+				continue;
+			}
+
+			final OLCand candidate = prepareOLCandBeforeProcessing(currentCandidate, defaultDateDoc);
+			candidatesCollector.add(candidate);
+		}
+
+		return candidatesCollector.build();
+	}
+
+	@NonNull
+	public OLCandIterator getOrderedOLCandIterator(@NonNull final GetEligibleOLCandRequest request)
+	{
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
-		return queryBL.createQueryBuilder(I_C_OLCand.class)
-				.setOnlySelection(request.getSelection())
-				.create()
-				.stream()
-				.map(candidateRecord -> olCandBL.toOLCand(candidateRecord, request.getOrderDefaults()))
-				.filter(candidate -> isEligibleOrLog(candidate, processorDataDestinationId, request.getAsyncBatchId()))
-				.map(candidate -> prepareOLCandBeforeProcessing(candidate, defaultDateDoc))
-				.sorted(request.getAggregationInfo().getOrderingComparator())
-				.collect(ImmutableList.toImmutableList());
+		return new OLCandIterator(getOrderedOLCandIterator(request.getSelection()), olCandBL, request.getOrderDefaults());
 	}
 
 	/**
@@ -126,9 +146,8 @@ public class EligibleOLCandProvider
 		return false;
 	}
 
-	private static boolean isEligibleOrLog(
+	public boolean checkEligibleAndLog(
 			@NonNull final OLCand cand,
-			@NonNull final InputDataSourceId inputDataSourceId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		if (cand.isProcessed())
@@ -150,9 +169,9 @@ public class EligibleOLCandProvider
 		}
 
 		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
-		if (!Objects.equals(candDataDestinationId, inputDataSourceId))
+		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
 		{
-			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, inputDataSourceId, cand);
+			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
 			return false;
 		}
 
@@ -163,6 +182,16 @@ public class EligibleOLCandProvider
 		}
 
 		return true;
+	}
+
+	@NonNull
+	private Iterator<I_C_OLCand> getOrderedOLCandIterator(@NonNull final PInstanceId selection)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.setOnlySelection(selection)
+				.orderBy(I_C_OLCand.COLUMNNAME_HeaderAggregationKey)
+				.create()
+				.iterate(I_C_OLCand.class);
 	}
 
 	@NonNull
