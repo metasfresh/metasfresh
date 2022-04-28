@@ -239,25 +239,27 @@ class MenuOverlay extends Component {
         onKeyDown={(e) => this.handleKeyDown(e)}
       >
         <div className="menu-overlay-top-spacer" />
-        <div>
-          <span
-            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-            onClick={(e) => {
-              if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
+        {siteName !== 'Dashboard' && (
+          <div>
+            <span
+              className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+              onClick={(e) => {
+                if (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
 
-              dispatch(closeModal());
-              dispatch(clearMasterData());
-              dispatch(setBreadcrumb([]));
-              history.push('/');
-            }}
-            tabIndex={0}
-          >
-            Dashboard
-          </span>
-        </div>
+                dispatch(closeModal());
+                dispatch(clearMasterData());
+                dispatch(setBreadcrumb([]));
+                history.push('/');
+              }}
+              tabIndex={0}
+            >
+              Dashboard
+            </span>
+          </div>
+        )}
         {siteName !== 'Sitemap' && (
           <div>
             <span
