@@ -35,6 +35,8 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -52,7 +54,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
@@ -281,9 +282,9 @@ public class M_PriceList_StepDef
 	private void createM_ProductPrice(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product product = productTable.get(productIdentifier);
-		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
 
+		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
@@ -292,13 +293,17 @@ public class M_PriceList_StepDef
 		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_M_PriceList_Version priceListVersion = priceListVersionTable.get(plvIdentifier);
+
+		final I_M_ProductPrice existingProductPrice = ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, ProductId.ofRepoId(productId));
 
 		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 
-		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
+		final I_M_ProductPrice productPrice = existingProductPrice == null ? InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class) : existingProductPrice;
 
-		productPrice.setM_PriceList_Version_ID(priceListVersionTable.get(plvIdentifier).getM_PriceList_Version_ID());
-		productPrice.setM_Product_ID(product.getM_Product_ID());
+		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
+
+		productPrice.setM_Product_ID(productId);
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
