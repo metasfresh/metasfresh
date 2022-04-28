@@ -40,7 +40,7 @@ class MenuOverlayItem extends Component {
         this.handleClick(elementId, type);
       }
     } else if (type === 'group') {
-      handleClickOnFolder(e, nodeId);
+      handleClickOnFolder && handleClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
       openModal(elementId + '', 'process', caption);
     }
