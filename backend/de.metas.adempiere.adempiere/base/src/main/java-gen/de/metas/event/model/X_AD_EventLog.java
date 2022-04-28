@@ -16,19 +16,19 @@ import java.util.Properties;
 public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 {
 
-	private static final long serialVersionUID = -1988122161L;
+	private static final long serialVersionUID = 1490465060L;
 
-    /** Standard Constructor */
-    public X_AD_EventLog(final Properties ctx, final int AD_EventLog_ID, @Nullable final String trxName)
-    {
-      super (ctx, AD_EventLog_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_AD_EventLog (final Properties ctx, final int AD_EventLog_ID, @Nullable final String trxName)
+	{
+		super (ctx, AD_EventLog_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_AD_EventLog(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_AD_EventLog (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -41,14 +41,14 @@ public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 	@Override
 	public void setAD_EventLog_ID (final int AD_EventLog_ID)
 	{
-		if (AD_EventLog_ID < 1) 
+		if (AD_EventLog_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_EventLog_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_EventLog_ID, AD_EventLog_ID);
 	}
 
 	@Override
-	public int getAD_EventLog_ID() 
+	public int getAD_EventLog_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_EventLog_ID);
 	}
@@ -84,7 +84,7 @@ public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 	}
 
 	@Override
-	public java.sql.Timestamp getEventTime() 
+	public java.sql.Timestamp getEventTime()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_EventTime);
 	}
@@ -101,15 +101,13 @@ public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 		return get_ValueAsString(COLUMNNAME_EventTopicName);
 	}
 
-	/** 
+	/**
 	 * EventTypeName AD_Reference_ID=540802
 	 * Reference name: EventTypeName
 	 */
 	public static final int EVENTTYPENAME_AD_Reference_ID=540802;
 	/** LOCAL = LOCAL */
 	public static final String EVENTTYPENAME_LOCAL = "LOCAL";
-	/** REMOTE = REMOTE */
-	public static final String EVENTTYPENAME_REMOTE = "REMOTE";
 	/** DISTRIBUTED = DISTRIBUTED */
 	public static final String EVENTTYPENAME_DISTRIBUTED = "DISTRIBUTED";
 	@Override
@@ -131,7 +129,7 @@ public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 	}
 
 	@Override
-	public boolean isError() 
+	public boolean isError()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsError);
 	}
@@ -143,7 +141,7 @@ public class X_AD_EventLog extends PO implements I_AD_EventLog, I_Persistent
 	}
 
 	@Override
-	public boolean isErrorAcknowledged() 
+	public boolean isErrorAcknowledged()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsErrorAcknowledged);
 	}

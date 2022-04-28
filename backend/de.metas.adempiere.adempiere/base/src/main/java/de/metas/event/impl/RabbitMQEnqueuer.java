@@ -26,7 +26,7 @@ import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventEnqueuer;
 import de.metas.event.Topic;
-import de.metas.event.remote.RabbitMQEventBusConfiguration;
+import de.metas.event.remote.RabbitMQDestinationResolver;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -46,20 +46,26 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	private static final transient Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
 
 	private final AmqpTemplate amqpTemplate;
+	private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
 
-	public RabbitMQEnqueuer(@NonNull final AmqpTemplate amqpTemplate)
+	public RabbitMQEnqueuer(
+			@NonNull final AmqpTemplate amqpTemplate,
+			@NonNull final RabbitMQDestinationResolver rabbitMQDestinationResolver)
 	{
 		this.amqpTemplate = amqpTemplate;
+		this.rabbitMQDestinationResolver = rabbitMQDestinationResolver;
 	}
 
 	@Override
 	public void enqueueDistributedEvent(final Event event, final Topic topic)
 	{
-		final String queueName = RabbitMQEventBusConfiguration.getAMQPQueueNameByTopicName(topic.getName());
-
-		amqpTemplate.convertAndSend(queueName,
-									event,
-									getMessagePostProcessor(topic));
+		final String amqpExchangeName = rabbitMQDestinationResolver.getAMQPExchangeNameByTopicName(topic.getName());
+		final String routingKey = ""; // ignored for fan-out exchanges
+		amqpTemplate.convertAndSend(
+				amqpExchangeName,
+				routingKey,
+				event,
+				getMessagePostProcessor(topic));
 
 		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
 	}
@@ -67,13 +73,11 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	@Override
 	public void enqueueLocalEvent(final Event event, final Topic topic)
 	{
-		final String amqpExchangeName = RabbitMQEventBusConfiguration.getAMQPExchangeNameByTopicName(topic.getName());
-		final String routingKey = ""; // ignored for fan-out exchanges
-		amqpTemplate.convertAndSend(
-				amqpExchangeName,
-				routingKey,
-				event,
-				getMessagePostProcessor(topic));
+		final String queueName = rabbitMQDestinationResolver.getAMQPQueueNameByTopicName(topic.getName());
+
+		amqpTemplate.convertAndSend(queueName,
+									event,
+									getMessagePostProcessor(topic));
 
 		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
 	}

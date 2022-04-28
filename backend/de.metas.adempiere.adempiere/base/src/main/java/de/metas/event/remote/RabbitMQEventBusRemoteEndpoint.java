@@ -17,15 +17,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
-
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 
 /*
  * #%L

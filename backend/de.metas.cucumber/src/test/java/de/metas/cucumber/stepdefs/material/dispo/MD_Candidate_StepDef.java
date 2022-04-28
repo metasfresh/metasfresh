@@ -384,13 +384,14 @@ public class MD_Candidate_StepDef
 		postMaterialEventService.enqueueEventNow(event);
 	}
 
-	@And("metasfresh has no MD_Candidate for identifier {string}")
-	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")
+	public void metasfresh_has_no_md_cand_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
 	{
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
-		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
-		assertThat(candidateRecord).isNull();
+		final Supplier<Boolean> candidateWasDeleted = () -> MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId()) == null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
