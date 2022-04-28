@@ -424,19 +424,19 @@ public class ExternalSystemConfigRepo
 		}
 
 		return configBuilder
-				.id(externalSystemShopware6ConfigId)
-				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
-				.clientSecret(config.getClient_Secret())
-				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
-				.clientId(config.getClient_Id())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
-				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.clientId(config.getClient_Id())
+				.clientSecret(config.getClient_Secret())
 				.emailJSONPath(config.getJSONPathEmail())
-				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
-				.shopwareIdJSONPath(config.getJSONPathShopwareID())
+				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
+				.id(externalSystemShopware6ConfigId)
 				.isActive(config.isActive())
+				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
+				.parentId(parentConfigId)
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
+				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.build();
 	}
 
