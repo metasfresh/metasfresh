@@ -433,6 +433,8 @@ public class ExternalSystemConfigRepo
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.emailJSONPath(config.getJSONPathEmail())
+				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
+				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.isActive(config.isActive())
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
@@ -458,18 +460,18 @@ public class ExternalSystemConfigRepo
 	private ExternalSystemShopware6ConfigMapping toExternalSystemShopware6ConfigMapping(@NonNull final I_ExternalSystem_Config_Shopware6Mapping record)
 	{
 		return ExternalSystemShopware6ConfigMapping.builder()
-				.docTypeOrderId(record.getC_DocTypeOrder_ID())
-				.paymentRule(record.getPaymentRule())
-				.paymentTermId(record.getC_PaymentTerm_ID())
-				.sw6CustomerGroup(record.getSW6_Customer_Group())
-				.sw6PaymentMethod(record.getSW6_Payment_Method())
-				.description(record.getDescription())
-				.seqNo(record.getSeqNo())
-				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
+				.description(record.getDescription())
+				.docTypeOrderId(record.getC_DocTypeOrder_ID())
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
+				.paymentRule(record.getPaymentRule())
+				.paymentTermId(record.getC_PaymentTerm_ID())
+				.seqNo(record.getSeqNo())
+				.sw6CustomerGroup(record.getSW6_Customer_Group())
+				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.build();
 	}
 
