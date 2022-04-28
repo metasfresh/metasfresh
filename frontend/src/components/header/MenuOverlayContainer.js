@@ -72,7 +72,6 @@ class MenuOverlayContainer extends Component {
 
         {type !== 'group' && (
           <MenuOverlayItem
-            printChildren={false}
             {...{
               showBookmarks,
               openModal,

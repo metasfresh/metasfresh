@@ -14,8 +14,11 @@ class MenuOverlayItem extends Component {
     }
   }
 
-  clickedItem = (e, elementId, nodeId, type) => {
+  clickedItem = (e) => {
     const {
+      elementId,
+      nodeId,
+      type,
       handleClickOnFolder,
       handleNewRedirect,
       openModal,
@@ -70,12 +73,10 @@ class MenuOverlayItem extends Component {
       case 'Backspace':
         e.preventDefault();
         back(e);
-        overlay.focus();
+        overlay && overlay.focus();
         break;
       case 'Enter':
-        e.preventDefault();
-        document.activeElement.childNodes[0].click();
-        overlay && overlay.focus();
+        this.clickedItem(e);
         break;
       case 'Escape':
         e.preventDefault();
@@ -114,7 +115,7 @@ class MenuOverlayItem extends Component {
     } else {
       if (parentElem.nextSibling) {
         const listChildren = parentElem.nextSibling.childNodes;
-        if (listChildren.length == 1) {
+        if (listChildren.length === 1) {
           listChildren[0].focus();
         } else {
           if (listChildren[1].classList.contains('js-menu-item')) {
@@ -175,12 +176,8 @@ class MenuOverlayItem extends Component {
     const {
       nodeId,
       type,
-      elementId,
       caption,
-      children,
-      handleClickOnFolder,
       query,
-      printChildren,
       favorite,
       onUpdateData,
       transparentBookmarks,
@@ -190,10 +187,7 @@ class MenuOverlayItem extends Component {
       <span
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        className={
-          'menu-overlay-expanded-link js-menu-item ' +
-          (!printChildren ? 'menu-overlay-expanded-link-spaced ' : '')
-        }
+        className="menu-overlay-expanded-link js-menu-item menu-overlay-expanded-link-spaced "
       >
         {!query && (
           <BookmarkButton
@@ -207,12 +201,8 @@ class MenuOverlayItem extends Component {
           >
             {this.iconByType(type)}
             <span
-              className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
-              onClick={(e) => {
-                children
-                  ? handleClickOnFolder(e, nodeId)
-                  : this.clickedItem(e, elementId, nodeId, type);
-              }}
+              className="menu-overlay-link"
+              onClick={(e) => this.clickedItem(e)}
             >
               {caption}
             </span>
@@ -224,47 +214,13 @@ class MenuOverlayItem extends Component {
             {this.iconByType(type)}
             <span
               className={
-                children
-                  ? ''
-                  : type === 'group'
+                type === 'group'
                   ? 'query-clickable-group'
                   : 'query-clickable-link'
               }
-              onClick={
-                children
-                  ? ''
-                  : (e) => this.clickedItem(e, elementId, nodeId, type)
-              }
+              onClick={(e) => this.clickedItem(e)}
             >
-              <span className="query-menu-item">
-                {children
-                  ? children.map((item, id) => (
-                      <span key={id} className="query-results">
-                        <span className="query-caption">
-                          {id === 0 ? caption + ' / ' : '/'}
-                        </span>
-                        <span
-                          title={item.caption}
-                          className={
-                            type === 'group'
-                              ? 'query-clickable-group'
-                              : 'query-clickable-link'
-                          }
-                          onClick={(e) =>
-                            this.clickedItem(
-                              e,
-                              item.elementId,
-                              item.nodeId,
-                              item.type
-                            )
-                          }
-                        >
-                          {item.caption}
-                        </span>
-                      </span>
-                    ))
-                  : caption}
-              </span>
+              <span className="query-menu-item">{caption}</span>
             </span>
           </span>
         )}
@@ -291,11 +247,9 @@ MenuOverlayItem.propTypes = {
   type: PropTypes.string,
   elementId: PropTypes.string,
   caption: PropTypes.string,
-  printChildren: PropTypes.any,
   favorite: PropTypes.bool,
   onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
-  children: PropTypes.node,
   breadcrumb: PropTypes.array,
 };
 
