@@ -386,11 +386,6 @@ class MenuOverlay extends Component {
     });
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleKeyDown = (e) => {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
@@ -470,6 +465,7 @@ class MenuOverlay extends Component {
       case 'Enter':
         e.preventDefault();
         if (
+          firstQueryItem &&
           firstQueryItem.className.includes('menu-overlay-search-item-focused')
         ) {
           firstQueryItem.classList.remove('menu-overlay-search-item-focused');
