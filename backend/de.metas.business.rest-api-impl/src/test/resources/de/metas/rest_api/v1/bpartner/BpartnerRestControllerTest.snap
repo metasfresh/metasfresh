@@ -253,45 +253,26 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
 } ]
 
 
-de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_create=[
-  {
-    "bankAccounts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "C_BP_BankAccount",
-          "recordId" : {
-            "keyColumnNames" : [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName" : {
-              "C_BP_BankAccount_ID" : 50
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "currencyId" : 100010,
-        "iban" : "INITIAL-IBAN-1",
-        "swiftCode" : "INITIAL-SWIFTCODE-1",
-        "id" : {
-          "repoId" : 50,
-          "bpartnerId" : 20
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_create=[ {
+  "bankAccounts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BP_BankAccount_ID" ],
+        "keysByColumnName" : {
+          "C_BP_BankAccount_ID" : 50
         }
       },
       "tableName" : "C_BP_BankAccount"
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
@@ -447,204 +428,27 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
   "orgId" : 10
 } ]
 
-de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_update_extContactIdentifier=[
-  {
-    "bankAccounts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "C_BP_BankAccount",
-          "recordId" : {
-            "keyColumnNames" : [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName" : {
-              "C_BP_BankAccount_ID" : 50
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "currencyId" : 100010,
-        "iban" : "INITIAL-IBAN-1",
-        "swiftCode" : "INITIAL-SWIFTCODE-1",
-        "id" : {
-          "repoId" : 50,
-          "bpartnerId" : 20
-        }
-      },
-      "tableName" : "C_BP_BankAccount"
-    },
-    "currencyId" : 100010,
-    "iban" : "INITIAL-IBAN-1",
-    "id" : {
-      "bpartnerId" : 20,
-      "repoId" : 50
-    }
-  } ],
-  "bpartner" : {
-    "active" : true,
-    "changeLog" : {
-      "createdByUserId" : 30,
-      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
-      "entries" : [ ],
-      "lastChangedByUserId" : 30,
-      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
-      "recordId" : {
-        "keyColumnNames" : [ "C_BPartner_ID" ],
-        "keysByColumnName" : {
-          "C_BPartner_ID" : 20
-        }
-      },
-      "tableName" : "C_BPartner"
-    },
-    "company" : false,
-    "customer" : true,
-    "excludeFromPromotions" : false,
-    "externalId" : "fghij",
-    "groupId" : 15,
-    "id" : 20,
-    "identifiedByExternalReference" : false,
-    "name" : "bpartnerRecord.name",
-    "value" : "bpartnerRecord.value",
-    "vatId" : "VATaxID",
-    "vendor" : true
-  },
-  "contacts" : [ {
-    "active" : true,
-    "changeLog" : {
-      "createdByUserId" : 30,
-      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
-      "entries" : [ ],
-      "lastChangedByUserId" : 30,
-      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
-      "recordId" : {
-        "keyColumnNames" : [ "AD_User_ID" ],
-        "keysByColumnName" : {
-          "AD_User_ID" : 30
-        }
-      },
-      "tableName" : "AD_User"
-    },
-    "contactType" : {
-      "billToDefault" : false,
-      "defaultContact" : false,
-      "purchase" : false,
-      "purchaseDefault" : false,
-      "sales" : false,
-      "salesDefault" : false,
-      "shipToDefault" : false
-    },
-    "email" : "contactRecord.email",
-    "externalId" : "contactRecord.externalId",
-    "firstName" : "contactRecord.firstName",
-    "handles" : [ ],
-    "id" : "20-30",
-    "lastName" : "contactRecord.lastName",
-    "membershipContact" : false,
-    "name" : "jsonContact.name-UPDATED",
-    "newsletter" : false,
-    "phone" : "contactRecord.phone",
-    "roles" : [ ],
-    "subjectMatterContact" : false,
-    "value" : "contactRecord.value"
-  } ],
-  "locations" : [ {
-    "active" : true,
-    "address1" : "locationRecord.address1",
-    "address2" : "locationRecord.address2",
-    "changeLog" : {
-      "createdByUserId" : 30,
-      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
-      "entries" : [ ],
-      "lastChangedByUserId" : 30,
-      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
-      "recordId" : {
-        "keyColumnNames" : [ "C_BPartner_Location_ID" ],
-        "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 40
-        }
-      },
-      "tableName" : "C_BPartner_Location"
-    },
-    "city" : "locationRecord.city",
-    "countryCode" : "countryRecord.countryCode",
-    "district" : "postalRecord.district",
-    "ephemeral" : false,
-    "existingLocationId" : 100009,
-    "externalId" : "bpartnerLocation.externalId",
-    "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
-    "handles" : [ ],
-    "id" : {
-      "bpartnerId" : 20,
-      "repoId" : 40
-    },
-    "locationType" : {
-      "billTo" : false,
-      "billToDefault" : false,
-      "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
-    },
-    "poBox" : "locationRecord.poBox",
-    "postal" : "locationRecord.postal",
-    "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
-  } ],
-  "orgId" : 10
-} ]
 
-de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[
-  {
-    "bankAccounts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "C_BP_BankAccount",
-          "recordId" : {
-            "keyColumnNames" : [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName" : {
-              "C_BP_BankAccount_ID" : 50
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "currencyId" : 100010,
-        "iban" : "INITIAL-IBAN-1",
-        "swiftCode" : "INITIAL-SWIFTCODE-1",
-        "id" : {
-          "repoId" : 50,
-          "bpartnerId" : 20
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_update_extContactIdentifier=[ {
+  "bankAccounts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BP_BankAccount_ID" ],
+        "keysByColumnName" : {
+          "C_BP_BankAccount_ID" : 50
         }
       },
       "tableName" : "C_BP_BankAccount"
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
@@ -766,45 +570,167 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
 } ]
 
 
-de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_create=[
-  {
-    "bankAccounts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "C_BP_BankAccount",
-          "recordId" : {
-            "keyColumnNames" : [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName" : {
-              "C_BP_BankAccount_ID" : 50
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "currencyId" : 100010,
-        "iban" : "INITIAL-IBAN-1",
-        "swiftCode" : "INITIAL-SWIFTCODE-1",
-        "id" : {
-          "repoId" : 50,
-          "bpartnerId" : 20
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[ {
+  "bankAccounts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BP_BankAccount_ID" ],
+        "keysByColumnName" : {
+          "C_BP_BankAccount_ID" : 50
         }
       },
       "tableName" : "C_BP_BankAccount"
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
+    "id" : {
+      "bpartnerId" : 20,
+      "repoId" : 50
+    }
+  } ],
+  "bpartner" : {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_ID" : 20
+        }
+      },
+      "tableName" : "C_BPartner"
+    },
+    "company" : false,
+    "customer" : true,
+    "excludeFromPromotions" : false,
+    "externalId" : "fghij",
+    "groupId" : 15,
+    "id" : 20,
+    "identifiedByExternalReference" : false,
+    "name" : "bpartnerRecord.name",
+    "value" : "bpartnerRecord.value",
+    "vatId" : "VATaxID",
+    "vendor" : true
+  },
+  "contacts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "AD_User_ID" ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 30
+        }
+      },
+      "tableName" : "AD_User"
+    },
+    "contactType" : {
+      "billToDefault" : false,
+      "defaultContact" : false,
+      "purchase" : false,
+      "purchaseDefault" : false,
+      "sales" : false,
+      "salesDefault" : false,
+      "shipToDefault" : false
+    },
+    "email" : "contactRecord.email",
+    "externalId" : "contactRecord.externalId",
+    "firstName" : "contactRecord.firstName",
+    "handles" : [ ],
+    "id" : "20-30",
+    "lastName" : "contactRecord.lastName",
+    "membershipContact" : false,
+    "name" : "jsonContact.name-UPDATED",
+    "newsletter" : false,
+    "phone" : "contactRecord.phone",
+    "roles" : [ ],
+    "subjectMatterContact" : false,
+    "value" : "contactRecord.value"
+  } ],
+  "locations" : [ {
+    "active" : true,
+    "address1" : "locationRecord.address1",
+    "address2" : "locationRecord.address2",
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_Location_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_Location_ID" : 40
+        }
+      },
+      "tableName" : "C_BPartner_Location"
+    },
+    "city" : "locationRecord.city",
+    "countryCode" : "countryRecord.countryCode",
+    "district" : "postalRecord.district",
+    "ephemeral" : false,
+    "existingLocationId" : 100009,
+    "externalId" : "bpartnerLocation.externalId",
+    "gln" : "bpartnerLocationRecord.gln",
+    "handOverLocation" : false,
+    "handles" : [ ],
+    "id" : {
+      "bpartnerId" : 20,
+      "repoId" : 40
+    },
+    "locationType" : {
+      "billTo" : false,
+      "billToDefault" : false,
+      "shipTo" : false,
+      "shipToDefault" : false,
+      "visitorsAddress" : false
+    },
+    "poBox" : "locationRecord.poBox",
+    "postal" : "locationRecord.postal",
+    "region" : "locationRecord.regionName",
+    "remitTo" : false,
+    "replicationLookupDefault" : false,
+    "visitorsAddress" : false
+  } ],
+  "orgId" : 10
+} ]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_create=[ {
+  "bankAccounts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BP_BankAccount_ID" ],
+        "keysByColumnName" : {
+          "C_BP_BankAccount_ID" : 50
+        }
+      },
+      "tableName" : "C_BP_BankAccount"
+    },
+    "currencyId" : 100010,
+    "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50

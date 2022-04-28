@@ -1,42 +1,23 @@
-de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
-  {
-    "bankAccounts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "C_BP_BankAccount",
-          "recordId" : {
-            "keyColumnNames" : [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName" : {
-              "C_BP_BankAccount_ID" : 50
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
-          },
-          "entries" : [ ]
-        },
-        "currencyId" : 100010,
-        "iban" : "INITIAL-IBAN-1",
-         "swiftCode" : "INITIAL-SWIFTCODE-1",
-        "id" : {
-          "repoId" : 50,
-          "bpartnerId" : 20
+de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[ {
+  "bankAccounts" : [ {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:53.544Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BP_BankAccount_ID" ],
+        "keysByColumnName" : {
+          "C_BP_BankAccount_ID" : 50
         }
       },
       "tableName" : "C_BP_BankAccount"
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
