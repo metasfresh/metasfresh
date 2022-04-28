@@ -592,14 +592,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
 			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
+
+			//
+			// 12904: in case of an Adjustment Invoice(price diff), get price from invoice line
+			final boolean isIlaInvoiceAnAdjInvoice=Services.get(IInvoiceBL.class)
+					         .isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
+
+			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
+					         ila.getC_InvoiceLine().getPriceActual():
+					         ic.getPriceActual();
+
 			//
 			// 07202: We update the net amount invoice according to price UOM.
 			// final BigDecimal priceActual = ic.getPriceActual();
 			final ProductPrice priceActual = ProductPrice.builder()
-					.money(Money.of(ic.getPriceActual(), icCurrencyId))
-					.productId(productId)
-					.uomId(icUomId)
-					.build();
+							.money(Money.of(usedPriceActual, icCurrencyId))
+							.productId(productId)
+							.uomId(icUomId)
+							.build();
+
 
 			final Quantity qtyInvoicedInUOM = extractQtyInvoiced(ila);
 
