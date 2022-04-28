@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,25 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.async.processor.descriptor.model;
 
-import de.metas.common.util.Check;
-import lombok.AllArgsConstructor;
+import de.metas.async.processor.QueuePackageProcessorId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-/**
- * Json representation of `de.metas.externalsystem.shopware6.BPartnerLookup`
- */
-
-@AllArgsConstructor
-public enum JsonBPartnerLookup
+@Value
+@Builder
+public class QueuePackageProcessor
 {
-	MetasfreshId,
-	ExternalReference;
+	@NonNull
+	QueuePackageProcessorId queuePackageProcessorId;
+
+	@NonNull
+	String classname;
 
 	@Nullable
-	public static JsonBPartnerLookup valueOfNullable(@Nullable final String value)
-	{
-		if (Check.isBlank(value))
-		{
-			return null;
-		}
-
-		return JsonBPartnerLookup.valueOf(value);
-	}
+	String internalName;
 }
-

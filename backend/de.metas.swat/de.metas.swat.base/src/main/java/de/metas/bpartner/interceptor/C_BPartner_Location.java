@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
@@ -54,25 +53,6 @@ public class C_BPartner_Location
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.bpartner.callout.C_BPartner_Location());
 	}
-	// metas-ts: Commenting out de.metas.terminable related code, because it assumes that the columns C_BPartner_Location.Next_ID and C_BPartner_Location.ValidTo exist
-	/*
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Next_ID })
-	public void updateNextLocation(I_C_BPartner_Location bpLocation)
-	{
-		Services.get(IBPartnerBL.class).updateNextLocation(bpLocation);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidTo })
-	public void noTerminationInPast(I_C_BPartner_Location bpLocation)
-	{
-		if (Services.get(IBPartnerBL.class).isTerminatedInThePast(bpLocation))
-		{
-			throw new AdempiereException("@AddressTerminatedInThePast@");
-		}
-	}
-	*/
 
 	/**
 	 * Update {@link I_C_BPartner_Location#COLUMNNAME_Address} field right before new. Updating on TYPE_BEFORE_CHANGE is not needed because C_Location_ID is not changing and if user edits the address,

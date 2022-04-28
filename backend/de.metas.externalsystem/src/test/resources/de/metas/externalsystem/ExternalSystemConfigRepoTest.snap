@@ -258,7 +258,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
@@ -292,7 +291,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
@@ -325,9 +323,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
-        "description" : "test",
-        "bPartnerIdJSONPath" : "/test/bp",
-        "bPartnerlookup" : "ExternalReference"
+        "description" : "test"
       }
     ],
     "uomShopwareMappingList" : [
@@ -337,7 +333,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "shopwareCode" : "shopwareCode"
       }
     ],
-    "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
     "isActive" : true,
@@ -368,7 +363,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
@@ -396,7 +390,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,
       "isActive" : true,

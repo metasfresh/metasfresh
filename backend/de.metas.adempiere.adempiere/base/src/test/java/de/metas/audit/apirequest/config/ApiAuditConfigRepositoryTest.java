@@ -92,6 +92,7 @@ public class ApiAuditConfigRepositoryTest
 		config.setKeepRequestDays(101);
 		config.setKeepResponseBodyDays(102);
 		config.setKeepResponseDays(103);
+		config.setKeepErroredRequestDays(104);
 		config.setMethod(HttpMethod.PUT.getCode());
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");

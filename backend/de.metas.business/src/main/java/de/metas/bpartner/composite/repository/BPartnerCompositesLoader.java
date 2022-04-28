@@ -79,6 +79,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -377,6 +378,7 @@ final class BPartnerCompositesLoader
 				.locationType(extractBPartnerLocationType(bPartnerLocationRecord))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
 				.build();

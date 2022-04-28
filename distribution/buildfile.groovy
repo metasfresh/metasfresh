@@ -74,7 +74,7 @@ Map build(final MvnConf mvnConf) {
                 String helmValuesGroupId='de.metas.kubernetes'
                 String helmValuesArtifactId='helm'
                 String helmValuesClassifier='values'
-                withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: "${env.HOME}/m2-local-repository", options: [artifactsPublisher(disabled: true)]) {
+                withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
                     sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes/minikube/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
                 }
 

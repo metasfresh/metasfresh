@@ -5,6 +5,7 @@ import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.processor.impl.QueueProcessorsExecutor;
 import de.metas.logging.LogManager;
 import de.metas.migration.async.MockedExecuteSQLWorkpackageProcessor.ExecuteSQLWorkpackageExpectation;
@@ -52,7 +53,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 		helper.assignPackageProcessor(processorDef, MockedExecuteSQLWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
-		processorsExecutor.addQueueProcessor(processorDef);
+		processorsExecutor.addQueueProcessor(QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef));
 	}
 
 	@Override

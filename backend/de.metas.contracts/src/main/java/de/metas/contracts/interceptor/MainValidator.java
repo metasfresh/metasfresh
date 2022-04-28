@@ -23,6 +23,7 @@ package de.metas.contracts.interceptor;
  */
 
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
@@ -183,6 +184,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Order());
 		engine.addModelValidator(new C_OrderLine(groupChangesHandler));
 		engine.addModelValidator(new C_Invoice_Rejection_Detail());
+		engine.addModelValidator(new C_BPartner_Location());
 
 		// 03742
 		engine.addModelValidator(new C_Flatrate_Transition());
