@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-ordercandidates
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,20 @@
  * #L%
  */
 
-package de.metas.common.ordercandidates.v2.response;
+package de.metas.ordercandidate.api.async;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
+import com.google.common.collect.ImmutableList;
+import de.metas.async.QueueWorkPackageId;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Map;
-
 @Value
-@Builder
-@JsonDeserialize(builder = JsonOLCandClearingResponse.JsonOLCandClearingResponseBuilder.class)
-public class JsonOLCandClearingResponse
+public class OlCandEnqueueResult
 {
-	@JsonProperty("successfullyCleared")
-	boolean successfullyCleared;
+	ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds;
 
-	@JsonProperty("olCandIdToValidationStatus")
-	Map<Integer, Boolean> olCandIdToValidationStatus;
+	public OlCandEnqueueResult(@NonNull final ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds)
+	{
+		this.enqueuedWorkPackageIds = enqueuedWorkPackageIds;
+	}
 }
