@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de.metas.async
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,21 +20,13 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api.async;
+package de.metas.async.api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IEnqueueResult;
-import lombok.NonNull;
-import lombok.Value;
 
-@Value
-public class OlCandEnqueueResult implements IEnqueueResult
+import java.util.List;
+
+public interface IEnqueueResult
 {
-	ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds;
-
-	public OlCandEnqueueResult(@NonNull final ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds)
-	{
-		this.enqueuedWorkPackageIds = enqueuedWorkPackageIds;
-	}
+	List<QueueWorkPackageId> getEnqueuedWorkPackageIds();
 }

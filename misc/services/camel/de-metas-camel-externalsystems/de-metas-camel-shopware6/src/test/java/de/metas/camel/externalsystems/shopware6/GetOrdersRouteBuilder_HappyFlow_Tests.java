@@ -49,6 +49,7 @@ import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -154,7 +155,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 
 	protected static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = HAPPY_FLOW + "65_JsonESRuntimeParameterUpsertRequest.json";
 
-	private static final String JSON_OL_CAND_PROCESS_REQUEST = HAPPY_FLOW + "70_JsonOLCandProcessRequest.json";
+	protected static final String JSON_OL_CAND_PROCESS_REQUEST = HAPPY_FLOW + "70_JsonOLCandProcessRequest.json";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()

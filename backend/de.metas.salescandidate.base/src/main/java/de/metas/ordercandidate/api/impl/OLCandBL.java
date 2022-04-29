@@ -24,6 +24,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -504,6 +505,8 @@ public class OLCandBL implements IOLCandBL
 		final DocTypeId orderDocTypeId = getOrderDocTypeId(orderDefaults, olCandRecord);
 		final Quantity qtyItemCapacity = effectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
+		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
 
 		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
 				? null
@@ -530,8 +533,13 @@ public class OLCandBL implements IOLCandBL
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
+				.salesRepInternalId(salesRepInternalId)
+				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.qtyItemCapacityEff(qtyItemCapacity)
+				.bpartnerName(olCandRecord.getBPartnerName())
+				.email(olCandRecord.getEMail())
+				.phone(olCandRecord.getPhone())
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
 				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
 				.build();

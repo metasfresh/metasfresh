@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,21 +20,15 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api.async;
+package de.metas.cucumber.stepdefs.issue;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IEnqueueResult;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_AD_Issue;
 
-@Value
-public class OlCandEnqueueResult implements IEnqueueResult
+public class AD_Issue_StepDefData extends StepDefData<I_AD_Issue>
 {
-	ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds;
-
-	public OlCandEnqueueResult(@NonNull final ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds)
+	public AD_Issue_StepDefData()
 	{
-		this.enqueuedWorkPackageIds = enqueuedWorkPackageIds;
+		super(I_AD_Issue.class);
 	}
 }
