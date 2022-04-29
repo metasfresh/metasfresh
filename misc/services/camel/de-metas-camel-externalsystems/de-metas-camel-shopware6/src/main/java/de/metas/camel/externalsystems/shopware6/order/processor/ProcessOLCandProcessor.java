@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
-public class ClearOrdersProcessor implements Processor
+public class ProcessOLCandProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
@@ -48,10 +48,13 @@ public class ClearOrdersProcessor implements Processor
 			return;
 		}
 
-		final List<JsonOLCandClearRequest> olCandClearRequests = context.getImportedExternalHeaderIds().stream()
-				.map(externalHeaderId -> JsonOLCandClearRequest.builder()
+		final List<JsonOLCandProcessRequest> olCandClearRequests = context.getImportedExternalHeaderIds().stream()
+				.map(externalHeaderId -> JsonOLCandProcessRequest.builder()
 						.externalHeaderId(externalHeaderId)
 						.inputDataSourceName(DATA_SOURCE_INT_SHOPWARE)
+						.ship(false)
+						.invoice(false)
+						.closeOrder(false)
 						.build())
 				.collect(Collectors.toList());
 

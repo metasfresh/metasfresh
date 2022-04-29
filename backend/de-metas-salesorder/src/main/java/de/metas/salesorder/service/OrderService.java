@@ -37,6 +37,7 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
+import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -57,8 +58,6 @@ import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
-import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
-import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
 @Service
 public class OrderService
@@ -69,7 +68,7 @@ public class OrderService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	
+
 	private final AsyncBatchService asyncBatchService;
 
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;

@@ -202,4 +202,10 @@ public abstract class StepDefData<T>
 		}
 
 	}
+
+	@NonNull
+	public Optional<T> getOptional(@NonNull final String identifier)
+	{
+		return Optional.ofNullable(records.get(identifier));
+	}
 }
