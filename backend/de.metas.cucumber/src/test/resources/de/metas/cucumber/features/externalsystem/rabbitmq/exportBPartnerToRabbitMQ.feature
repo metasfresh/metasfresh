@@ -4,15 +4,22 @@ Feature: Validate BPartner is sent to RabbitMQ
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Export bpartner when created via rest-api
-    Given metasfresh contains AD_UserGroup:
+    Given metasfresh contains AD_Users:
+      | AD_User_ID.Identifier | Name     | OPT.EMail          | OPT.Login |
+      | testUser_1            | testUser | testUser@email.com | testUser  |
+    And load AD_Roles
+      | AD_Role_ID.Identifier | Name  |
+      | userRole              | WebUI |
+    And user has role
+      | AD_User_ID.Identifier | AD_Role_ID.Identifier |
+      | testUser_1            | userRole              |
+    And the existing user with login 'testUser' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh contains AD_UserGroup:
       | AD_UserGroup_ID.Identifier | Name        | IsActive | OPT.Description         |
       | userGroup_1                | userGroup_1 | true     | userGroup_1 description |
-    And load AD_User:
-      | AD_User_ID.Identifier | Login      |
-      | metasfresh_user       | metasfresh |
     And metasfresh contains AD_UserGroup_User_Assign:
       | AD_UserGroup_User_Assign_ID.Identifier | AD_UserGroup_ID.Identifier | AD_User_ID.Identifier | IsActive |
-      | userGroupAssign_1                      | userGroup_1                | metasfresh_user       | true     |
+      | userGroupAssign_1                      | userGroup_1                | testUser_1            | true     |
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.SubjectCreatedByUserGroup_ID.Identifier | OPT.IsSyncBPartnersToRabbitMQ |
       | config_1                            | RabbitMQ | autoExportRabbitMQ  | true                                 | userGroup_1                                 | true                          |
@@ -41,8 +48,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name             | OPT.CompanyName     | OPT.CreatedBy   | OPT.Language |
-      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_company_export | metasfresh_user | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name             | OPT.CompanyName     | OPT.CreatedBy | OPT.Language |
+      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_company_export | testUser_1    | de           |
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | created_bpartner         | config_1                            |
@@ -53,8 +60,8 @@ Feature: Validate BPartner is sent to RabbitMQ
   Scenario: When C_BPartner_Location is changed, a proper camel-request is sent to rabbit-mq
     Given all the export audit data is reset
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue | OPT.IsSyncBPartnersToRabbitMQ |
-      | config_1                            | RabbitMQ | testRabbitMQ_26032022        | true                          |
+      | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue   | OPT.IsSyncBPartnersToRabbitMQ |
+      | config_1                            | RabbitMQ | testRabbitMQ_26032022 | true                          |
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | config_1                            | p_1                        |
@@ -79,3 +86,6 @@ Feature: Validate BPartner is sent to RabbitMQ
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_1               | config_1                            |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | config_1                            |
