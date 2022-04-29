@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12840](https://github.com/metasfresh/metasfresh/issues/12840) Overhaul C_OLcand => C_Order processing
   * [#12837](https://github.com/metasfresh/metasfresh/issues/12837) Shopware Fix order-item/bundle-sorting
 
 ## Fixes
