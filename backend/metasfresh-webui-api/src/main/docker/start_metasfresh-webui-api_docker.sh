@@ -110,7 +110,7 @@ run_metasfresh()
  -Dspring.rabbitmq.password=${rabbitmq_password}"
 
   # Allow loading jars from /opt/metasfresh/external-lib.
-  # This assumes that the app uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
+  # This assumes that the webapi uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
   # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
  local external_lib_params="-Dloader.path=/opt/metasfresh/external-lib"
 
