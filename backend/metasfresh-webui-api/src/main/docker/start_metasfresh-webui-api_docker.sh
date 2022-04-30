@@ -109,6 +109,11 @@ run_metasfresh()
  -Dspring.rabbitmq.username=${rabbitmq_user}\
  -Dspring.rabbitmq.password=${rabbitmq_password}"
 
+  # Allow loading jars from /opt/metasfresh/external-lib.
+  # This assumes that the app uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
+  # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+ local external_lib_params="-Dloader.path=/opt/metasfresh/external-lib"
+
  # thx to https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e
  #local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) * 100 / 70 )) -XX:MaxRAMFraction=1"
  local MEMORY_PARAMS="-Xmx512M"
@@ -120,6 +125,7 @@ run_metasfresh()
  -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${es_params} \
  ${rabbitmq_params} \
+ ${external_lib_params} \
  ${metasfresh_admin_params} \
  ${metasfresh_db_connectionpool_params}\
  ${webui_frontend_url_params} \
