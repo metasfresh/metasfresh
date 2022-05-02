@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.money.CurrencyId;
@@ -225,6 +226,12 @@ public class InvoiceHeaderImplBuilder
 			{
 				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
 			}
+		}
+
+
+		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		{
+			this.billTo = billTo.withContactId(null);
 		}
 	}
 
