@@ -63,8 +63,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
+      "syncBPartnerToRabbitMQ" : true
     }
   }
 ]
@@ -82,8 +82,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
     "syncExternalReferencesToRabbitMQ" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true
   }
 ]
 
@@ -106,8 +106,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
+      "syncBPartnerToRabbitMQ" : true
     }
   }
 ]
@@ -126,9 +126,21 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerLocationIdJSONPath" : "JSONPathConstantBPartnerLocationID",
       "salesRepJSONPath" : "/test/salesrep",
+      "emailJSONPath" : "JSONPathEmail",
+      "freightCostNormalVatConfig" : {
+        "productId" : 20,
+        "vatRates" : "1,2"
+      },
+      "freightCostReducedVatConfig" : {
+        "productId" : 30,
+        "vatRates" : "3,4"
+      },
       "isActive" : true,
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
+      "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
+      "shopwareIdJSONPath" : "JSONPathShopwareID"
     }
   }
 ]
@@ -276,8 +288,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
         "syncExternalReferencesToRabbitMQ" : false,
-        "syncBPartnerToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
+        "syncBPartnerToRabbitMQ" : false
       }
     }
   ]

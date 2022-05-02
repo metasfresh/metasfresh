@@ -280,7 +280,7 @@ public class ImportOrdersRouteContext
 	public ExternalIdentifier getMetasfreshId()
 	{
 		final String id = getId(metasfreshIdJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return ExternalIdentifier.builder()
 					.identifier(id)
@@ -294,7 +294,7 @@ public class ImportOrdersRouteContext
 	public ExternalIdentifier getUserId()
 	{
 		final String id = getId(shopwareIdJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return ExternalIdentifier.builder()
 					.identifier(ExternalIdentifierFormat.formatExternalId(id))
@@ -318,7 +318,7 @@ public class ImportOrdersRouteContext
 		}
 		final OrderCandidate order = getOrderNotNull();
 		final String id = order.getCustomField(bpLocationCustomJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return id;
 		}

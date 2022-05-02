@@ -120,7 +120,16 @@ class ExternalSystemConfigRepoTest
 		childRecord.setClient_Id("id");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setExternalSystemValue("testShopware6Value");
+		childRecord.setFreightCost_NormalVAT_Rates("1,2");
+		childRecord.setFreightCost_Reduced_VAT_Rates("3,4");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
+		childRecord.setJSONPathConstantBPartnerLocationID("JSONPathConstantBPartnerLocationID");
+		childRecord.setJSONPathEmail("JSONPathEmail");
+		childRecord.setJSONPathMetasfreshID("JSONPathMetasfreshID");
+		childRecord.setJSONPathShopwareID("JSONPathShopwareID");
+		childRecord.setM_FreightCost_NormalVAT_Product_ID(20);
+		childRecord.setM_FreightCost_ReducedVAT_Product_ID(30);
+		childRecord.setM_PriceList_ID(40);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		saveRecord(childRecord);
 
