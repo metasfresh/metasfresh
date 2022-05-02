@@ -11,16 +11,10 @@ services:
       interval: 5s
       timeout: 2s
       start_period: 10s
-      retries: 24
+      retries: 120
     deploy:
       mode: replicated
       replicas: 1
-
-  db-init:
-    image: metas-db-init:latest
-    depends_on:
-      db:
-        condition: service_healthy
       
   rabbitmq:
     image: rabbitmq:3.9.13-management
@@ -58,8 +52,8 @@ services:
     environment:
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
-      db-init:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 1
@@ -73,8 +67,8 @@ services:
     environment:
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
-      db-init:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 1

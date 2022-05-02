@@ -21,9 +21,7 @@ jobs:
       - name: build-frontend
         run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:latest .
       - name: build-db
-        run: docker buildx build -f Dockerfile.db -t mazorn/metas-db:latest .
-      - name: build-db-init
-        run: docker buildx build -f Dockerfile.db-init -t mazorn/metas-db-init:latest .
+        run: docker buildx build -f Dockerfile.db-standalone -t mazorn/metas-db:latest .
 
       - name: push-images
         run: |
