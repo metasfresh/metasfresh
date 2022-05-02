@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1248532788L;
+	private static final long serialVersionUID = 1064656034L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -91,6 +91,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getBase_PricingSystem_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Base_PricingSystem_ID);
+	}
+
+	@Override
+	public void setBPartner_QtyItemCapacity (final @Nullable BigDecimal BPartner_QtyItemCapacity)
+	{
+		set_ValueNoCheck (COLUMNNAME_BPartner_QtyItemCapacity, BPartner_QtyItemCapacity);
+	}
+
+	@Override
+	public BigDecimal getBPartner_QtyItemCapacity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BPartner_QtyItemCapacity);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -487,6 +500,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
+	{
+		if (C_UOM_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
+	}
+
+	@Override
+	public int getC_UOM_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -611,6 +639,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getExplodedFrom_BOMLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExplodedFrom_BOMLine_ID);
+	}
+
+	@Override
+	public void setExternalSeqNo (final int ExternalSeqNo)
+	{
+		set_Value (COLUMNNAME_ExternalSeqNo, ExternalSeqNo);
+	}
+
+	@Override
+	public int getExternalSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSeqNo);
 	}
 
 	@Override
@@ -1466,6 +1506,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setQtyEnteredInBPartnerUOM (final @Nullable BigDecimal QtyEnteredInBPartnerUOM)
+	{
+		set_Value (COLUMNNAME_QtyEnteredInBPartnerUOM, QtyEnteredInBPartnerUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyEnteredInBPartnerUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyEnteredInPriceUOM (final @Nullable BigDecimal QtyEnteredInPriceUOM)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyEnteredInPriceUOM, QtyEnteredInPriceUOM);
@@ -1702,7 +1755,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		throw new IllegalArgumentException ("TradeBom_Product_ID is virtual column");	}
 
 	@Override
-	public int getTradeBom_Product_ID() 
+	public int getTradeBom_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_TradeBom_Product_ID);
 	}

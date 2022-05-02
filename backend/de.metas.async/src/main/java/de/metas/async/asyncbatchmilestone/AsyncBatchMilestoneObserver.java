@@ -127,7 +127,7 @@ public class AsyncBatchMilestoneObserver
 		}
 	}
 
-	private void removeObserver(@NonNull final AsyncBatchMilestoneId id)
+	public void removeObserver(@NonNull final AsyncBatchMilestoneId id)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{

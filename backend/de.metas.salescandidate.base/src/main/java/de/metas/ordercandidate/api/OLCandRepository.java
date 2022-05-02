@@ -66,14 +66,6 @@ public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
-	{
-		return RelationTypeOLCandSource.builder()
-				.orderDefaults(processor.getDefaults())
-				.olCandProcessorId(processor.getId())
-				.build();
-	}
-
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
@@ -282,6 +274,11 @@ public class OLCandRepository
 		if (request.getQtyShipped() != null)
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
+		}
+
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
 		}
 
 		saveRecord(olCandWithIssuesInterface);

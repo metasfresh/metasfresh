@@ -237,6 +237,7 @@ public class JsonConverters
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
+				.qtyItemCapacity(request.getQtyItemCapacity())
 				//
 				;
 	}
