@@ -25,12 +25,12 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OLCandRequestProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OrderFilter;
 import de.metas.camel.externalsystems.shopware6.order.processor.PaymentRequestProcessor;
+import de.metas.camel.externalsystems.shopware6.order.processor.ProcessOLCandProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.RuntimeParametersProcessor;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import lombok.NonNull;
@@ -50,13 +50,13 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 {
 	public static final String GET_ORDERS_ROUTE_ID = "Shopware6-getOrders";
 	public static final String PROCESS_ORDER_ROUTE_ID = "Shopware6-processOrder";
-	public static final String CLEAR_ORDERS_ROUTE_ID = "Shopware6-clearOrders";
+	public static final String PROCESS_OLCAND_ROUTE_ID = "Shopware6-processOLCand";
 	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Shopware6-upsertRuntimeParams";
 
 	public static final String GET_ORDERS_PROCESSOR_ID = "SW6Orders-GetOrdersProcessorId";
 	public static final String CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID = "SW6Orders-CreateBPartnerUpsertReqProcessorId";
 	public static final String OLCAND_REQ_PROCESSOR_ID = "SW6Orders-OLCandRequestProcessorId";
-	public static final String CLEAR_OLCAND_PROCESSOR_ID = "SW6Orders-ClearOLCandProcessorId";
+	public static final String PROCESS_OLCAND_PROCESSOR_ID = "SW6Orders-ProcessOLCandProcessorId";
 	public static final String FILTER_ORDER_PROCESSOR_ID = "SW6Orders-FilterOrderProcessorId";
 	public static final String PAYMENT_REQUEST_PROCESSOR_ID = "SW6Orders-PaymentRequestProcessorId";
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "SW6Orders-RuntimeParamsProcessorId";
@@ -87,7 +87,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
-				.to(direct(CLEAR_ORDERS_ROUTE_ID))
+				.to(direct(PROCESS_OLCAND_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
 						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
@@ -122,14 +122,20 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 					.to(direct(MF_ERROR_ROUTE_ID))
 				.end();
 
-		from(direct(CLEAR_ORDERS_ROUTE_ID))
-				.routeId(CLEAR_ORDERS_ROUTE_ID)
+		from(direct(PROCESS_OLCAND_ROUTE_ID))
+				.routeId(PROCESS_OLCAND_ROUTE_ID)
 				.log("Route invoked")
-				.process(new ClearOrdersProcessor()).id(CLEAR_OLCAND_PROCESSOR_ID)
-				.split(body())
-					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to clear orders: ${body}")
-					.to(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
-				.end();
+				.process(new ProcessOLCandProcessor()).id(PROCESS_OLCAND_PROCESSOR_ID)
+				.choice()
+					.when(body().isNull())
+						.log(LoggingLevel.INFO, "Nothing to do! No OLCand was imported!")
+					.otherwise()
+						.split(body())
+							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to process OLCand: ${body}")
+							.to(direct(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID))
+						.end()
+					.end()
+				.endChoice();
 
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)

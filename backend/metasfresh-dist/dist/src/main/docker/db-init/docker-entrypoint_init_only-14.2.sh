@@ -141,7 +141,7 @@ if [ "$1" = 'postgres' ]; then
 		echo
 
 		psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
-
+		
 		echo
 		for f in /docker-entrypoint-initdb.d/*; do
 			case "$f" in
@@ -159,6 +159,35 @@ if [ "$1" = 'postgres' ]; then
 		echo
 		echo 'PostgreSQL init process complete; ready for start up.'
 		echo
+	else 
+		# Always run migration scripts - in out case that's provision_metasfresh_db.sh.
+		# For this we need to start the DB also if $PGDATA/PG_VERSION is there, then run the SQL and then stop the DB again.
+		
+		# internal start of server in order to allow set-up using psql-client
+		# does not listen on external TCP/IP and waits until start finishes
+		PGUSER="${PGUSER:-postgres}" \
+		pg_ctl -D "$PGDATA" \
+			-o "-c listen_addresses='localhost'" \
+			-w start
+
+		file_env 'POSTGRES_USER' 'postgres'
+		file_env 'POSTGRES_DB' "$POSTGRES_USER"
+
+		psql=( psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB")
+		
+		echo
+		for f in /docker-entrypoint-initdb.d/*; do
+			case "$f" in
+				*.sh)     echo "$0: running $f"; . "$f" ;;
+				*.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
+				*.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
+				*)        echo "$0: ignoring $f" ;;
+			esac
+			echo
+		done
+		
+		PGUSER="${PGUSER:-postgres}" \
+		pg_ctl -D "$PGDATA" -m fast -w stop
 	fi
 fi
 

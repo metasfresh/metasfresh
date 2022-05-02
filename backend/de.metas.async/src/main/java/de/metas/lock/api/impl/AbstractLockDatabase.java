@@ -22,6 +22,7 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
@@ -42,10 +43,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Abstract lock database which does not implement any database specific logic.
@@ -330,57 +329,35 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	@Override
 	@NonNull
-	public final <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query,@NonNull final Class<T> clazz)
+	public final <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query, @NonNull final Class<T> clazz)
 	{
-		final int maxLockRetries = 50;
 		final ILockCommand lockCommand = new LockCommand(this)
 				.setOwner(LockOwner.NONE);
 
-		final ArrayList<T> lockedModels = new ArrayList<>();
+		final ImmutableList.Builder<T> lockedModelsCollector = ImmutableList.builder();
 
-		int retryCounter = 0;
-		while (retryCounter < maxLockRetries)
+		final List<T> models = query.list(clazz);
+
+		if (models == null || models.isEmpty())
 		{
-			final List<T> models = query.list(clazz);
-
-			if (models == null || models.isEmpty())
-			{
-				return lockedModels;
-			}
-
-			final ArrayList<T> modelsToLock = new ArrayList<>(models);
-
-			final ListIterator<T> modelsToLockItr = modelsToLock.listIterator();
-
-			while (modelsToLockItr.hasNext())
-			{
-				final T modelToLock = modelsToLockItr.next();
-
-				final TableRecordReference record = TableRecordReference.of(modelToLock);
-
-				if (lockRecord(lockCommand, record))
-				{
-					lockedModels.add(modelToLock);
-					modelsToLockItr.remove();
-				}
-			}
-
-			if (!lockedModels.isEmpty())
-			{
-				break;
-			}
-
-			retryCounter++;
+			return ImmutableList.of();
 		}
 
-		if (lockedModels.isEmpty())
+		models.forEach(model -> {
+			final TableRecordReference record = TableRecordReference.of(model);
+
+			if (lockRecord(lockCommand, record))
+			{
+				lockedModelsCollector.add(model);
+			}
+		});
+
+		final ImmutableList<T> lockedModels = lockedModelsCollector.build();
+
+		if (lockedModels.size() != models.size())
 		{
-			// We attempted to select and lock multiple items 'maxLockRetries' times in a row
-			// and every time the items we selected (at select time they weren't locked yet) were then locked by another
-			// DB-client before we could lock it. This means that we are either too slow to do anything meaningful at all
-			// or that there are already way too many clients attempting to find work on this table
-			logger.info("Unable to select and lock a record in {} after {} retries."
-								+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work.", query.getTableName(), maxLockRetries);
+			logger.warn("*** retrieveAndLockMultipleRecords: not all retrieved records could be locked! expectedLockedSize: {}, actualLockedSize: {}"
+					, models.size(), lockedModels.size());
 		}
 
 		return lockedModels;

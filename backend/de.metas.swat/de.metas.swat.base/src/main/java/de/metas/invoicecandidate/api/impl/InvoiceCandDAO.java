@@ -63,6 +63,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -766,6 +767,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void invalidateCandsFor(@NonNull final IQuery<I_C_Invoice_Candidate> icQuery)
 	{
+		// insert all C_Invoice_Candidate_Recompute records with a ChunkUUID so we know later what was added now.
 		final String chunkUUID = UUID.randomUUID().toString();
 
 		final int count = icQuery
@@ -780,8 +782,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.execute()
 				.getRowsInserted();
 
-		logger.debug("Invalidated {} invoice candidates for {}", new Object[] { count, icQuery });
+		logger.info("Invalidated {} invoice candidates with chunkUUID={} and query={}", count, chunkUUID, icQuery);
 
+		// collect the different C_Async_Batch_IDs (including null) of the ICs that we just created recompute-records for
 		final List<Integer> asyncBatchIDs = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_ChunkUUID, chunkUUID)
 				.create()
@@ -791,6 +794,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Schedule an update for invalidated invoice candidates
 		if (count > 0)
 		{
+			// create an equ
 			asyncBatchIDs.stream()
 					.map(AsyncBatchId::ofRepoIdOrNone)
 					.map(asyncBatchId -> InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName(), AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId)))
@@ -1617,7 +1621,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ic)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
-				.setLimit(1)
+				.setLimit(QueryLimit.ONE)
 				.create()
 				.anyMatch();
 	}

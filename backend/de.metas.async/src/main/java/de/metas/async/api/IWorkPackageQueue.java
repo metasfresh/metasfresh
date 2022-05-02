@@ -184,4 +184,6 @@ public interface IWorkPackageQueue
 	Set<QueuePackageProcessorId> getQueuePackageProcessorIds();
 
 	QueueProcessorId getQueueProcessorId();
+
+	int assignAsyncBatchForProcessing(AsyncBatchId asyncBatchId);
 }

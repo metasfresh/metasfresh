@@ -125,6 +125,7 @@ public class C_Flatrate_Term
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
+			ensureDocTypesExist(I_C_DocType.DocSubType_CallOrder);
 		}
 	}
 

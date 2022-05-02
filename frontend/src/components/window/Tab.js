@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
+import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
 const Tab = ({
   children,
@@ -17,14 +18,16 @@ const Tab = ({
 }) => {
   useEffect(() => {
     if (docId && queryOnActivate) {
+      const query = toOrderBysCommaSeparatedString(orderBy);
+
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, orderBy }).then((res) => {
+        fetchTab({ tabId, windowId, docId, query }).then((res) => {
           if (res.length) {
             onChange && onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, orderBy }).then(() => {
+        fetchTab({ tabId, windowId, docId, query }).then(() => {
           onChange && onChange();
         });
       }

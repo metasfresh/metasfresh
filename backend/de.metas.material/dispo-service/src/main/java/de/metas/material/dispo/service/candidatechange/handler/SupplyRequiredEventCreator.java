@@ -15,6 +15,7 @@ import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /*
  * #%L
@@ -41,6 +42,7 @@ import java.math.BigDecimal;
 @UtilityClass
 public class SupplyRequiredEventCreator
 {
+	@NonNull
 	public static SupplyRequiredEvent createSupplyRequiredEvent(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty,
@@ -65,6 +67,7 @@ public class SupplyRequiredEventCreator
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
+	@NonNull
 	private static SupplyRequiredDescriptor createSupplyRequiredDescriptor(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty,
@@ -72,6 +75,7 @@ public class SupplyRequiredEventCreator
 	{
 		final SupplyRequiredDescriptorBuilder descriptorBuilder = createAndInitSupplyRequiredDescriptor(
 				demandCandidate, requiredAdditionalQty);
+
 		if (supplyCandidateId != null)
 		{
 			descriptorBuilder.supplyCandidateId(supplyCandidateId.getRepoId());
@@ -91,14 +95,20 @@ public class SupplyRequiredEventCreator
 		return descriptorBuilder.build();
 	}
 
+	@NonNull
 	private static SupplyRequiredDescriptorBuilder createAndInitSupplyRequiredDescriptor(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty)
 	{
+		final String traceId = Optional.ofNullable(candidate.getDemandDetail()).map(DemandDetail::getTraceId).orElse(null);
+		final BigDecimal fullDemandQty = candidate.getMaterialDescriptor().getQuantity();
+
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId().getRepoId())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientAndOrgId()))
-				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(candidate.getClientAndOrgId(), traceId))
+				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
+				.fullDemandQty(fullDemandQty)
+				.simulated(candidate.isSimulated());
 	}
 
 }

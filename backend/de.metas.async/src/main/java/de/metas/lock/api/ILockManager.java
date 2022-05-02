@@ -23,9 +23,11 @@ package de.metas.lock.api;
  */
 
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -154,4 +156,6 @@ public interface ILockManager extends ISingletonService
 	<T> IQuery<T> addNotLockedClause(IQuery<T> query);
 	
 	int removeAutoCleanupLocks();
+
+	ExistingLockInfo getLockInfo(TableRecordReference tableRecordReference, LockOwner lockOwner);
 }

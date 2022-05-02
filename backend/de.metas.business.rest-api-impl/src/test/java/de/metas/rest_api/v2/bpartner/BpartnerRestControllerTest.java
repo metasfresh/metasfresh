@@ -73,6 +73,7 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -147,7 +148,7 @@ class BpartnerRestControllerTest
 	@BeforeAll
 	static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll

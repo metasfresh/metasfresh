@@ -29,6 +29,7 @@ import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -73,4 +74,6 @@ public interface ILockDatabase
 	<T> IQuery<T> addNotLockedClause(IQuery<T> query);
 
 	int removeAutoCleanupLocks();
+
+	ExistingLockInfo getLockInfo(TableRecordReference tableRecordReference, LockOwner lockOwner);
 }

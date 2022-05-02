@@ -650,6 +650,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setPrice_UOM_ID(cand.getPrice_UOM_ID()); // 06942
 				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
+				invoiceLine.setC_Flatrate_Term_ID(cand.getC_Flatrate_Term_ID());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)

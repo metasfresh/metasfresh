@@ -181,6 +181,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
+		if (supplyRequiredDescriptor.isSimulated())
+		{
+			return;
+		}
+
 		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier

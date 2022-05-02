@@ -10,6 +10,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.OnOverDelivery;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
@@ -18,7 +19,10 @@ import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateP
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -29,6 +33,7 @@ import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PickedHuAndQty;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.picking.service.impl.ShipmentSchedulesSupplier;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -85,6 +90,8 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -94,7 +101,12 @@ public class ProcessHUsAndPickingCandidateCommand
 	@Nullable
 	private final PPOrderId ppOrderId;
 
-	final private Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
+	//
+	// State
+	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
+	private final Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
+
+	private static final AdMessageKey MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED = AdMessageKey.of("OnlyClearedHusCanBePicked");
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -116,6 +128,7 @@ public class ProcessHUsAndPickingCandidateCommand
 			}
 		}
 
+		validateClearedHUs(pickingCandidates, additionalPickFromHuIds);
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
@@ -131,6 +144,10 @@ public class ProcessHUsAndPickingCandidateCommand
 		this.onOverDelivery = onOverDelivery;
 
 		this.ppOrderId = ppOrderId;
+
+		this.shipmentSchedulesSupplier = ShipmentSchedulesSupplier.builder()
+				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.build();
 	}
 
 	public ImmutableList<PickingCandidate> perform()
@@ -212,6 +229,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 		itemsToPack.forEach(itemToPack -> {
 			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
+					.shipmentSchedulesSupplier(shipmentSchedulesSupplier)
 					.itemToPack(itemToPack)
 					.onOverDelivery(onOverDelivery)
 					.pickFromHU(hu)
@@ -307,4 +325,25 @@ public class ProcessHUsAndPickingCandidateCommand
 		return item != null ? item.getPickedHUId() : initialHuId;
 	}
 
+	private void validateClearedHUs(@NonNull final List<PickingCandidate> pickingCandidates, @NonNull final Set<HuId> additionalPickFromHuIds)
+	{
+		final ImmutableSet.Builder<HuId> huIdCollector = ImmutableSet.builder();
+
+		pickingCandidates
+				.stream()
+				.map(PickingCandidate::getPickFrom)
+				.map(PickFrom::getHuId)
+				.filter(Objects::nonNull)
+				.forEach(huIdCollector::add);
+
+		final ImmutableSet<HuId> husToValidate = huIdCollector.addAll(additionalPickFromHuIds).build();
+
+		final boolean anyNotClearedHUs = husToValidate.stream()
+				.anyMatch(huId -> !handlingUnitsBL.isHUHierarchyCleared(huId));
+
+		if (anyNotClearedHUs)
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED));
+		}
+	}
 }

@@ -69,14 +69,6 @@ public class OLCandRepository
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
-	{
-		return RelationTypeOLCandSource.builder()
-				.orderDefaults(processor.getDefaults())
-				.olCandProcessorId(processor.getId())
-				.build();
-	}
-
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
@@ -314,6 +306,11 @@ public class OLCandRepository
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
+
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
 
 		saveRecord(olCandWithIssuesInterface);
 

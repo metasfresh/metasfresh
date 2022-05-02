@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -127,6 +128,25 @@ public class AsyncBatchService
 	}
 
 	@NonNull
+	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		asyncBatchObserver.observeOn(asyncBatchId);
+
+		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
+		else
+		{
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+
+		return result;
+	}
+
+	@NonNull
 	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
 	{
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
@@ -135,7 +155,7 @@ public class AsyncBatchService
 
 		if (!startMonitoringFrom.isPresent())
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {} not monitored! Return empty list!", asyncBatchId);
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
 			return ImmutableList.of();
 		}
 
@@ -145,12 +165,44 @@ public class AsyncBatchService
 														asyncBatchId, startMonitoringFrom.get(), workPackages.size());
 
 		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
-				.filter(workPackage -> workPackage.getCreated().toInstant().getEpochSecond() >= startMonitoringFrom.get().getEpochSecond())
+				.filter(workPackage -> qualifiesForBatchProcessingStatus(workPackage, startMonitoringFrom.get()))
 				.collect(ImmutableList.toImmutableList());
 
 		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
 														asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
 
 		return filteredWPs;
+	}
+
+	/**
+	 *
+	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
+	 * <br/>
+	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * <br/>
+	 * <br/>
+	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
+	 * <br/>
+	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * <br/>
+	 * <br/>
+	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
+	 * <br/>
+	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
+	 */
+	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)
+	{
+		final boolean wasCreatedAfterMonitorStarted = workPackage.getCreated().toInstant().getEpochSecond() >= startMonitoringFrom.getEpochSecond();
+
+		final boolean wasProcessedAfterMonitorStarted = workPackage.getUpdated().toInstant().getEpochSecond() >= startMonitoringFrom.getEpochSecond()
+				&& (workPackage.isProcessed() || workPackage.isError())
+				&& workPackage.getSkippedAt() == null;
+
+		final boolean isPendingProcessingNoSkipping = !workPackage.isError()
+				&& !workPackage.isProcessed()
+				&& workPackage.isReadyForProcessing()
+				&& workPackage.getSkippedAt() == null;
+
+		return wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping;
 	}
 }

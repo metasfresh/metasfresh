@@ -1,15 +1,13 @@
 package de.metas.async.api.impl;
 
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.common.util.time.SystemTime;
-import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,7 +32,8 @@ public class AsyncBatchBLTest
 		AdempiereTestHelper.get().init();
 		this.ctx = Env.getCtx();
 
-		this.asyncBatchBL = (AsyncBatchBL)Services.get(IAsyncBatchBL.class);
+		this.asyncBatchBL = new AsyncBatchBL();
+		this.asyncBatchBL.setUseMetasfreshSystemTime(true);
 
 		this.now = de.metas.common.util.time.SystemTime.asTimestamp();
 		SystemTime.setFixedTimeSource(TimeUtil.asZonedDateTime(now));
@@ -58,7 +57,8 @@ public class AsyncBatchBLTest
 		final Duration timeToWait = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
 
 		//then
-		Assert.assertEquals(TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1)), timeToWait.toMillis());
+		final long expected = TimeUtil.getMillisBetween(now, TimeUtil.addMillis(LastProcessed, 1));
+		Assertions.assertThat(timeToWait.toMillis()).isEqualTo(expected);
 	}
 
 	private I_C_Async_Batch newAsyncBatch()

@@ -23,11 +23,13 @@ package de.metas.async;
  */
 
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
+import de.metas.async.processor.impl.SynchronousQueueProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.common.util.time.SystemTime;
 import de.metas.lock.api.ILockManager;
@@ -260,5 +262,10 @@ public class Helper
 		}
 		logger.trace("Finished after " + retryCount + " retries => size=" + size);
 		Thread.sleep(200); // without further delay, the future we wait for might still not be "done"
+	}
+
+	public SynchronousQueueProcessor newSynchronousQueueProcessor(final IWorkPackageQueue workpackageQueueForProcessing)
+	{
+		return new SynchronousQueueProcessor(workpackageQueueForProcessing, NOPWorkpackageLogsRepository.instance);
 	}
 }

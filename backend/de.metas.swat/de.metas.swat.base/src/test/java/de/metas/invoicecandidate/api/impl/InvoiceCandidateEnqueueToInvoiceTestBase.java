@@ -1,11 +1,11 @@
 package de.metas.invoicecandidate.api.impl;
 
+import de.metas.async.Helper;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -68,6 +68,7 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 	protected Properties ctx;
 	protected I_C_BPartner bpartner1;
 	protected ILoggable loggable;
+	protected Helper helper;
 
 	protected List<I_C_Invoice_Candidate> invoiceCandidates;
 	protected IInvoiceCandidateEnqueueResult enqueueResult;
@@ -87,6 +88,7 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 
 		this.ctx = Env.getCtx();
 		this.loggable = Loggables.console();
+		this.helper = new Helper();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}
@@ -166,8 +168,7 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		// Process all workpackages synchronously
 		final IWorkPackageQueue workpackagesQueue = Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, workpackageProcessorClass);
-		final IQueueProcessor workpackagesQueueProcessor = Services.get(IQueueProcessorFactory.class)
-				.createSynchronousQueueProcessor(workpackagesQueue);
+		final IQueueProcessor workpackagesQueueProcessor = helper.newSynchronousQueueProcessor(workpackagesQueue);
 
 		SynchronousProcessorPlanner.executeNow(workpackagesQueueProcessor);
 

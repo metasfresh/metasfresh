@@ -239,25 +239,27 @@ class MenuOverlay extends Component {
         onKeyDown={(e) => this.handleKeyDown(e)}
       >
         <div className="menu-overlay-top-spacer" />
-        <div>
-          <span
-            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-            onClick={(e) => {
-              if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
+        {siteName !== 'Dashboard' && (
+          <div>
+            <span
+              className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+              onClick={(e) => {
+                if (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
 
-              dispatch(closeModal());
-              dispatch(clearMasterData());
-              dispatch(setBreadcrumb([]));
-              history.push('/');
-            }}
-            tabIndex={0}
-          >
-            Dashboard
-          </span>
-        </div>
+                dispatch(closeModal());
+                dispatch(clearMasterData());
+                dispatch(setBreadcrumb([]));
+                history.push('/');
+              }}
+              tabIndex={0}
+            >
+              Dashboard
+            </span>
+          </div>
+        )}
         {siteName !== 'Sitemap' && (
           <div>
             <span
@@ -364,8 +366,8 @@ class MenuOverlay extends Component {
    */
   checkElement = () => {
     const selectedElement = document
-      .getElementsByClassName('menu-overlay-query')[0]
-      .getElementsByClassName('js-menu-item')[0];
+      ?.getElementsByClassName('menu-overlay-query')?.[0]
+      ?.getElementsByClassName('js-menu-item')?.[0];
     if (!selectedElement) {
       return this.rafAsync().then(() => this.checkElement());
     } else {
@@ -386,11 +388,6 @@ class MenuOverlay extends Component {
     });
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleKeyDown = (e) => {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
@@ -470,6 +467,7 @@ class MenuOverlay extends Component {
       case 'Enter':
         e.preventDefault();
         if (
+          firstQueryItem &&
           firstQueryItem.className.includes('menu-overlay-search-item-focused')
         ) {
           firstQueryItem.classList.remove('menu-overlay-search-item-focused');
@@ -651,10 +649,7 @@ class MenuOverlay extends Component {
                       this.handleQuery,
                       DEBOUNCE_TIME_SEARCH
                     )}
-                    onKeyDown={this.debounceEventHandler(
-                      this.handleKeyDown,
-                      DEBOUNCE_TIME_SEARCH
-                    )}
+                    onKeyDown={this.handleKeyDown}
                   />
 
                   {query && (

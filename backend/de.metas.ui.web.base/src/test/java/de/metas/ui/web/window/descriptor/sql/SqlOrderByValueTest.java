@@ -7,7 +7,7 @@ import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class SqlOrderByValueTest
 {
@@ -71,17 +71,17 @@ class SqlOrderByValueTest
 		{
 			final SqlOrderByValue sqlOrderByValue = SqlOrderByValue.builder()
 					.sqlSelectValue(SqlSelectValue.builder()
-							.virtualColumnSql("virtualColumnSql")
-							.columnNameAlias("columnNameAlias")
+							.virtualColumnSql(ColumnSql.ofSql("SELECT Name FROM M_Product WHERE M_Product.M_Product_ID=C_OrderLine.M_Product_ID", "C_OrderLine"))
+							.columnNameAlias("ProductName")
 							.build())
-					.joinOnTableNameOrAlias("joinOnTableNameOrAlias2")
+					.joinOnTableNameOrAlias("master")
 					.build();
 
 			assertThat(sqlOrderByValue.isNull()).isFalse();
 			assertThat(sqlOrderByValue.toSqlUsingColumnNameAlias())
-					.isEqualTo("joinOnTableNameOrAlias2.columnNameAlias");
+					.isEqualTo("master.ProductName");
 			assertThat(sqlOrderByValue.toSourceSqlExpression().evaluate(Evaluatees.empty(), IExpressionEvaluator.OnVariableNotFound.Fail))
-					.isEqualTo("virtualColumnSql");
+					.isEqualTo("(SELECT Name FROM M_Product WHERE M_Product.M_Product_ID=master.M_Product_ID)");
 		}
 	}
 
