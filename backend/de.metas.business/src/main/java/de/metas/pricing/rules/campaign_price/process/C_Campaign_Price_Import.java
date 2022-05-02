@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-ordercandidates
+ * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,15 @@
  * #L%
  */
 
-package de.metas.common.ordercandidates.v2.response;
+package de.metas.pricing.rules.campaign_price.process;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.Value;
+import org.compiere.model.I_I_Campaign_Price;
+import org.compiere.process.AbstractImportJavaProcess;
 
-import java.util.Map;
-
-@Value
-@Builder
-@JsonDeserialize(builder = JsonOLCandClearingResponse.JsonOLCandClearingResponseBuilder.class)
-public class JsonOLCandClearingResponse
+public class C_Campaign_Price_Import extends AbstractImportJavaProcess<I_I_Campaign_Price>
 {
-	@JsonProperty("successfullyCleared")
-	boolean successfullyCleared;
-
-	@JsonProperty("olCandIdToValidationStatus")
-	Map<Integer, Boolean> olCandIdToValidationStatus;
+	public C_Campaign_Price_Import()
+	{
+		super(I_I_Campaign_Price.class);
+	}
 }

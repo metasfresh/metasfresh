@@ -64,7 +64,11 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PricingSystem getPricingSystemById(@Nullable PricingSystemId pricingSystemId);
 
+	@NonNull
 	PricingSystemId getPricingSystemIdByValue(String value);
+
+	@Nullable
+	PricingSystemId getPricingSystemIdByValueOrNull(String value);
 
 	@Nullable
 	I_M_PriceList getById(@Nullable PriceListId priceListId);

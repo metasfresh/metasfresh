@@ -16,6 +16,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "accountNo" : "accountNo",
       "routingNo" : "routingNo",
       "IBAN" : "iban",
+      "SwiftCode" : "SwiftCode",
       "paymentReference" : "payReference",
       "regionName" : "region",
       "addressLine1" : "addr1",

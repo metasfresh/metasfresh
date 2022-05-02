@@ -100,7 +100,7 @@ BEGIN
         END LOOP;
 
     v_sql := 'SELECT t.TableName, t.KeyColumnName, t.Record_ID, t.C_AcctSchema_ID, t.C_ValidCombination_ColumnName, t.C_ValidCombination_ID FROM (' || v_sql || ') t';
-    RAISE NOTICE 'get_C_ValidCombination_Records: sql: %', v_sql;
+    RAISE DEBUG 'get_C_ValidCombination_Records: sql: %', v_sql;
 
     RETURN QUERY EXECUTE v_sql;
 END;

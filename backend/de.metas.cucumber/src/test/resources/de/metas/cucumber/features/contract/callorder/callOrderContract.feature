@@ -53,7 +53,7 @@ Feature: Call order contract
     And there is no M_ShipmentSchedule for C_Order order_1
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | orderLine_1               | order_1               | 2022-03-03  | call_order_product      | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
@@ -68,8 +68,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product      | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType |
@@ -78,13 +78,13 @@ Feature: Call order contract
       | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | callOrderLine_1 | callOrder_1           | call_order_product      | 2          |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_1           | callOrder_1           | 2022-03-04  | call_order_product      | 2          | 0            | 0           | 6     | 0        | EUR          | false     | PCE                   | KRT                       |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | callOrderLine_1           | callOrder_contract_1              |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_1           | callOrder_1           | 2022-03-04  | call_order_product      | 2          | 0            | 0           | 8     | 0        | EUR          | false     | PCE                   | KRT                       |
 
     When the order identified by callOrder_1 is completed
@@ -333,7 +333,7 @@ Feature: Call order contract
     And there is no M_ReceiptSchedule for C_OrderLine po_orderLine
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | po_orderLine              | po_order              | 2022-03-03  | call_order_product_PO   | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
@@ -348,8 +348,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product_PO   | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.POReference |
@@ -358,13 +358,13 @@ Feature: Call order contract
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | callOrderLine_po | callOrder_po          | call_order_product_PO   | 2          |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_po          | callOrder_po          | 2022-03-04  | call_order_product_PO   | 2          | 0            | 0           | 6     | 0        | EUR          | false     | PCE                   | KRT                       |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | callOrderLine_po          | callOrder_contract_1              |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_po          | callOrder_po          | 2022-03-04  | call_order_product_PO   | 2          | 0            | 0           | 8     | 0        | EUR          | false     | PCE                   | KRT                       |
 
     When the order identified by callOrder_po is completed

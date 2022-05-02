@@ -413,20 +413,22 @@ public class ExternalSystemConfigRepo
 		}
 
 		return configBuilder
-				.id(externalSystemShopware6ConfigId)
-				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
-				.clientSecret(config.getClient_Secret())
-				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
-				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
-				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
-				.clientId(config.getClient_Id())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
-				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.clientId(config.getClient_Id())
+				.clientSecret(config.getClient_Secret())
 				.emailJSONPath(config.getJSONPathEmail())
+				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
+				.id(externalSystemShopware6ConfigId)
 				.isActive(config.isActive())
-				.value(config.getExternalSystemValue())
+				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
+				.parentId(parentConfigId)
+				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
+				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.shopwareIdJSONPath(config.getJSONPathShopwareID())
+				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
+				.value(config.getExternalSystemValue())
 				.build();
 	}
 
@@ -450,18 +452,18 @@ public class ExternalSystemConfigRepo
 	private ExternalSystemShopware6ConfigMapping toExternalSystemShopware6ConfigMapping(@NonNull final I_ExternalSystem_Config_Shopware6Mapping record)
 	{
 		return ExternalSystemShopware6ConfigMapping.builder()
-				.docTypeOrderId(record.getC_DocTypeOrder_ID())
-				.paymentRule(record.getPaymentRule())
-				.paymentTermId(record.getC_PaymentTerm_ID())
-				.sw6CustomerGroup(record.getSW6_Customer_Group())
-				.sw6PaymentMethod(record.getSW6_Payment_Method())
-				.description(record.getDescription())
-				.seqNo(record.getSeqNo())
-				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
+				.description(record.getDescription())
+				.docTypeOrderId(record.getC_DocTypeOrder_ID())
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
+				.paymentRule(record.getPaymentRule())
+				.paymentTermId(record.getC_PaymentTerm_ID())
+				.seqNo(record.getSeqNo())
+				.sw6CustomerGroup(record.getSW6_Customer_Group())
+				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.build();
 	}
 

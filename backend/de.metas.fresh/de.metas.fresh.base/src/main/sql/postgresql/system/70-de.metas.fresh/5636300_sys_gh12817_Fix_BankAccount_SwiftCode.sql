@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de.metas.fresh.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,15 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api;
+-- UI Element: Bankkonto -> Konto.Swift code
+-- Column: C_BP_BankAccount.SwiftCode
+-- 2022-04-20T17:35:10.451Z
+UPDATE AD_UI_Element SET SeqNo=22,Updated=TO_TIMESTAMP('2022-04-20 18:35:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=605326
+;
 
-import lombok.NonNull;
-import lombok.Value;
+-- UI Element: Geschäftspartner -> Bankkonto.Swift code
+-- Column: C_BP_BankAccount.SwiftCode
+-- 2022-04-20T17:39:10.153Z
+UPDATE AD_UI_Element SET SeqNo=32,Updated=TO_TIMESTAMP('2022-04-20 18:39:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=605327
+;
 
-@Value
-public class OLCandValidationResult
-{
-	@NonNull
-	OLCandId olCandId;
-
-	boolean isOk;
-
-	public static OLCandValidationResult ok(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, true);
-	}
-
-	public static OLCandValidationResult error(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, false);
-	}
-}
