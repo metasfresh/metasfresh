@@ -30,5 +30,4 @@ jobs:
           docker push mazorn/metas-app:latest
           docker push mazorn/metas-frontend:latest
           docker push mazorn/metas-db:latest
-          docker push mazorn/metas-db-init:latest
           docker logout
