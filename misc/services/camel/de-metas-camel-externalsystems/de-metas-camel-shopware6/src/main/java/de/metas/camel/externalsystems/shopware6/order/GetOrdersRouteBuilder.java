@@ -101,6 +101,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 							.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
 						.otherwise()
 							.process(new CreateBPartnerUpsertReqProcessor()).id(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+				// TODO: don't upsert the bpartner if the sync-advise sais "read-only"
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
 							.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 
