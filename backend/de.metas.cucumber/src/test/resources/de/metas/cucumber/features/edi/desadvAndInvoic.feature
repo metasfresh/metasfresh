@@ -54,7 +54,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | Identifier           | C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsInfiniteCapacity | IsAllowAnyProduct | Name                 | IsDefaultForProduct |
-      | 4010035                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_1 x 10 PCE | false               |
+      | 4010001                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_1 x 10 PCE | false               |
 
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -83,7 +83,7 @@ Feature: desadv and invoic
       "productIdentifier": "val-desadvProduct_29042022_1",
       "qty": 10,
       "uomCode": "TU",
-      "packingMaterialId": 4010035,
+      "packingMaterialId": 4010001,
       "qtyItemCapacity": 5,
       "poReference": "poReference_29042022_1",
       "warehouseCode": null,
@@ -224,7 +224,7 @@ Feature: desadv and invoic
       | p_1                     | PCE                    | TU                   | 0.1          |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | Identifier           | C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsInfiniteCapacity | IsAllowAnyProduct | Name                 | IsDefaultForProduct |
-      | 4010005                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_2 x 10 PCE | false               |
+      | 4010002                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_2 x 10 PCE | false               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        |
@@ -249,12 +249,11 @@ Feature: desadv and invoic
         "contactIdentifier": null
       },
       "dateRequired": "2021-04-15",
-      "flatrateConditionsId": 0,
       "orderDocType": "SalesOrder",
       "productIdentifier": "val-desadvProduct_02052022_2",
       "qty": 10,
       "uomCode": "PCE",
-      "packingMaterialId": 4010005,
+      "packingMaterialId": 4010002,
       "qtyItemCapacity": 5,
       "poReference": "poReference_02052022_2",
       "warehouseCode": null,
@@ -385,7 +384,7 @@ Feature: desadv and invoic
       | p_1        | desadvProduct_03052022_3 | true      |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | Identifier           | C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsInfiniteCapacity | IsAllowAnyProduct | Name                 | IsDefaultForProduct |
-      | 4010005                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_3 x 10 PCE | false               |
+      | 4010003                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_3 x 10 PCE | false               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -410,12 +409,11 @@ Feature: desadv and invoic
         "contactIdentifier": null
       },
       "dateRequired": "2021-04-15",
-      "flatrateConditionsId": 0,
       "orderDocType": "SalesOrder",
       "productIdentifier": "val-desadvProduct_03052022_3",
       "qty": 10,
       "uomCode": "PCE",
-      "packingMaterialId": 4010005,
+      "packingMaterialId": 4010003,
       "qtyItemCapacity": 5,
       "poReference": "poReference_03052022_3",
       "warehouseCode": null,
@@ -580,7 +578,6 @@ Feature: desadv and invoic
         "contactIdentifier": null
       },
       "dateRequired": "2021-04-15",
-      "flatrateConditionsId": 0,
       "orderDocType": "SalesOrder",
       "productIdentifier": "val-desadvProduct_03052022_4",
       "qty": 10,
@@ -671,3 +668,171 @@ Feature: desadv and invoic
     And validate created edi desadv line
       | Identifier | EDI_Desadv_ID.Identifier | C_UOM_ID.X12DE355 | Line | M_Product_ID.Identifier | QtyEntered | QtyDeliveredInUOM | QtyOrdered | C_UOM_Invoice_ID.X12DE355 | QtyDeliveredInInvoiceUOM | QtyItemCapacity | C_UOM_BPartner_ID.X12DE355 | QtyEnteredInBPartnerUOM | BPartner_QtyItemCapacity | QtyDeliveredInStockingUOM |
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | KGM                       | 1.25                     | 5               | PCE                        | 5                       | 5                        | 5                         |
+
+  @from:cucumber
+  Scenario:
+
+  in:
+  C_UOM_Conversion:
+  - PCE/KGM (1/4)
+
+  M_ProductPrice:
+  - C_UOM_ID.X12DE355 = PCE
+
+  M_HU_PI_Item_Product
+  - Qty = 10
+
+  C_OLCand:
+  - IsManualPrice = true
+  - C_UOM_ID.X12DE355 = KGM
+  - C_Internal_UOM_Id.X12DE355 = KGM
+  - Qty = 10
+  - QtyItemCapacity = 5
+  - PackingMaterialId.Qty = 10
+
+  out:
+  C_OrderLine
+  - C_UOM_BPartner_ID.X12DE355 = KGM
+  - QtyOrdered = 40
+  - BPartner_QtyItemCapacity = 5
+  - QtyEnteredInBPartnerUOM = 10
+  - QtyEntered = 10
+  - C_UOM_ID.X12DE355 = KGM
+  - QtyItemCapacity = 10
+
+  DesadvLine
+  - QtyEntered = 10
+  - QtyOrdered = 40
+  - QtyDeliveredInUOM = 5
+  - C_UOM_Invoice_ID.X12DE355 = PCE
+  - C_UOM_BPartner_ID.X12DE355 = KGM
+  - QtyEnteredInBPartnerUOM = 5
+  - BPartner_QtyItemCapacity = 5
+
+    Given metasfresh contains M_Products:
+      | Identifier | Name                     | IsStocked |
+      | p_1        | desadvProduct_03052022_5 | true      |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE                    | KGM                  | 0.25         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | Identifier           | C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | IsInfiniteCapacity | IsAllowAnyProduct | Name                 | IsDefaultForProduct |
+      | 4010005                 | hu_pi_item_product_1 | PCE               | 3008003                    | p_1                     | 10  | 2021-04-01 | false              | false             | IFCO_Test_5 x 10 PCE | false               |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
+      | endcustomer_1 | Endcustomer_03052022_5 | N            | Y              | 2000837                       | true                     | true                     |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | l_1        | 5555555555555 | endcustomer_1            | true                | true         |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
+    """
+{
+      "orgCode": "001",
+      "externalLineId": "externalLineId03052022_5",
+      "externalHeaderId": "externalHeaderId03052022_5",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+        "bpartnerIdentifier": "gln-5555555555555",
+        "bpartnerLocationIdentifier": "gln-5555555555555",
+        "contactIdentifier": null
+      },
+      "dateRequired": "2021-04-15",
+      "orderDocType": "SalesOrder",
+      "productIdentifier": "val-desadvProduct_03052022_5",
+      "qty": 10,
+      "uomCode": "KGM",
+      "packingMaterialId": 4010005,
+      "poReference": "poReference_03052022_5",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "dateCandidate": "2021-04-15",
+      "qtyItemCapacity": 5,
+      "line": 1,
+      "isManualPrice": true,
+      "currencyCode": "EUR",
+      "price": 50,
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "description": "lineDescription",
+      "dateOrdered": "2021-04-15"
+    }
+    """
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+        """
+{
+  "externalHeaderId": "externalHeaderId03052022_5",
+  "inputDataSourceName": "int-Shopware",
+  "ship": false,
+  "invoice": false
+}
+"""
+    And process metasfresh response
+      | Order.Identifier |
+      | o_1              |
+
+    And validate created order
+      | Order.Identifier | externalId                 | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | o_1              | externalHeaderId03052022_5 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_5 | true      | CO        |
+
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | Order.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1              | 2021-04-15  | p_1                     | 0            | 40         | 0           | 50    | 0        | EUR          | true      | KGM                            | true              | 5                            | 10                          | 10             | KGM                   | 10                  |
+    And after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
+      | s_s_1                            | 20                        |
+
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'o_1'
+
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
+    """
+{
+  "createShipmentRequest": {
+    "shipmentList": [
+      {
+        "shipmentScheduleIdentifier ": {
+          "externalHeaderId": "externalHeaderId03052022_5",
+          "externalLineId": "externalLineId03052022_5"
+        }
+      }
+    ]
+  },
+  "invoice": true,
+  "closeShipmentSchedule": true
+}
+"""
+    And process metasfresh response
+      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
+      | null             | shipment_1          | invoice_1          |
+
+    And validate created shipments
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | shipment_1          | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_5 | true      | CO        |
+
+    And validate the created shipment lines
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_UOM_ID.X12DE355 |
+      | shipment_1          | p_1                     | 20          | true      | PCE                   |
+
+    And validate created invoices
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference            | paymentTerm   | processed | docStatus |
+      | invoice_1          | endcustomer_1            | l_1                               | poReference_03052022_5 | 30 Tage netto | true      | CO        |
+
+    And validate created invoice lines
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered | OPT.QtyEnteredInBPartnerUOM | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.C_UOM_ID.X12DE355 |
+      | invoice_1          | p_1                     | 20          | true      | 20             | 5                           | KGM                            | PCE                   |
+
+    And validate created edi desadv
+      | Identifier | C_Order_ID.Identifier | SumDeliveredInStockingUOM | SumOrderedInStockingUOM |
+      | edi_1      | o_1                   | 20                        | 40                      |
+
+    And validate created edi desadv line
+      | Identifier | EDI_Desadv_ID.Identifier | C_UOM_ID.X12DE355 | Line | M_Product_ID.Identifier | QtyEntered | QtyDeliveredInUOM | QtyOrdered | C_UOM_Invoice_ID.X12DE355 | QtyDeliveredInInvoiceUOM | QtyItemCapacity | C_UOM_BPartner_ID.X12DE355 | QtyEnteredInBPartnerUOM | BPartner_QtyItemCapacity | QtyDeliveredInStockingUOM |
+      | edi_l_1    | edi_1                    | KGM               | 1    | p_1                     | 10         | 5                 | 40         | PCE                       | 20                       | 10              | KGM                        | 5                       | 5                        | 20                        |

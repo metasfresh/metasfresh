@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -97,11 +98,15 @@ public class M_InOut_Line_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		if (Check.isNotBlank(x12de355Code))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
 
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
-		assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 	}
 }
