@@ -125,7 +125,9 @@ public interface PerformanceMonitoringService
 
 		CACHE_OPERATION("cache-operation"),
 
-		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
+		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
+
+		PO("po");
 
 		Type(final String code)
 		{
@@ -148,7 +150,9 @@ public interface PerformanceMonitoringService
 
 		EVENT_SEND("event-send"),
 
-		EVENT_RECEIVE("event-receive");
+		EVENT_RECEIVE("event-receive"),
+
+		SAVE("save");
 
 		SubType(final String code)
 		{

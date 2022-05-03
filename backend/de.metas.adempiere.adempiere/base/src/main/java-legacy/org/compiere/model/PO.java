@@ -34,6 +34,8 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
@@ -69,6 +71,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -2841,7 +2844,21 @@ public abstract class PO
 		boolean success = false;
 		try
 		{
-			saveEx();
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+			final String tableName = get_TableName();
+
+			service.monitorSpan(
+					() -> saveEx(),
+					PerformanceMonitoringService.SpanMetadata
+							.builder()
+							.name("save " + tableName)
+							.type(PerformanceMonitoringService.Type.PO.getCode())
+							.subType(PerformanceMonitoringService.SubType.SAVE.getCode())
+							.label("tableName", tableName)
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
+							.build());
 			success = true;
 		}
 		catch (final Exception e)
