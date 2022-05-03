@@ -96,7 +96,6 @@ public final class AggregationEngine
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -647,47 +646,43 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+		final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
+		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+
 		final InvoiceDocBaseType docBaseType;
 
+		// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
+		if (totalAmt.signum() < 0)
+		{
+			if (invoiceIsSOTrx)
+			{
+				docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
+			}
+			else
+			{
+				docBaseType = InvoiceDocBaseType.VendorCreditMemo;
+			}
+		}
 		//
 		// Case: Invoice DocType was preset
-		if (invoiceHeader.getC_DocTypeInvoice() != null)
+		else if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
-			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
 			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 		}
 		//
 		// Case: no invoice DocType was set
-		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
+		// We need to find out the DocBaseType based on Total Amount (which is positive) and IsSOTrx
 		else
 		{
-			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
-
 			if (invoiceIsSOTrx)
 			{
-				if (totalAmt.signum() < 0)
-				{
-					// AR Credit Memo Invoice (sales)
-					docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
-				}
-				else
-				{
-					// Regular AR Invoice (sales)
-					docBaseType = InvoiceDocBaseType.CustomerInvoice;
-				}
+				docBaseType = InvoiceDocBaseType.CustomerInvoice;
 			}
 			else
 			{
-				if (totalAmt.signum() < 0)
-				{
-					docBaseType = InvoiceDocBaseType.VendorCreditMemo;
-				}
-				else
-				{
-					docBaseType = InvoiceDocBaseType.VendorInvoice;
-				}
+				docBaseType = InvoiceDocBaseType.VendorInvoice;
 			}
 		}
 
