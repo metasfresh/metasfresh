@@ -26,7 +26,12 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -52,15 +57,16 @@ public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	public C_OrderLine_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
@@ -158,7 +164,7 @@ public class C_OrderLine_StepDef
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-			final Integer qtyOrdered = DataTableUtil.extractIntForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
@@ -189,6 +195,56 @@ public class C_OrderLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
+		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(uomBPartner355Code))
+		{
+			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomBPartner355Code));
+			assertThat(orderLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
+		}
+
+		final String isManualPriceStr = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_IsManualPrice);
+
+		if (Check.isNotBlank(isManualPriceStr))
+		{
+			final boolean isManualPrice = StringUtils.toBoolean(isManualPriceStr);
+			assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
+		}
+
+		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
+
+		if (Check.isNotBlank(bPartnerQtyItemCapacity))
+		{
+			assertThat(orderLine.getBPartner_QtyItemCapacity()).isEqualByComparingTo(bPartnerQtyItemCapacity);
+		}
+
+		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
+		if (qtyEnteredInBPartnerUOM != null)
+		{
+			assertThat(orderLine.getQtyEnteredInBPartnerUOM()).isEqualByComparingTo(qtyEnteredInBPartnerUOM);
+		}
+
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEntered);
+		if (qtyEntered != null)
+		{
+			assertThat(orderLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+		}
+
+		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(uomCode))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
+			assertThat(orderLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
+
+		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+
+		if (qtyItemCapacity != null)
+		{
+			assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
+		}
+
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
 		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
@@ -196,7 +252,7 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
+		assertThat(orderLine.getQtyOrdered()).isEqualByComparingTo(qtyordered);
 		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
