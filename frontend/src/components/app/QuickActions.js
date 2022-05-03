@@ -23,8 +23,6 @@ import QuickActionsDropdown from './QuickActionsDropdown';
  * @extends Component
  */
 export class QuickActions extends Component {
-  mounted = false;
-
   constructor(props) {
     super(props);
 
@@ -37,8 +35,6 @@ export class QuickActions extends Component {
 
   componentWillUnmount = () => {
     const { deleteQuickActions, viewId, windowId } = this.props;
-
-    this.mounted = false;
 
     deleteQuickActions(windowId, viewId);
   };

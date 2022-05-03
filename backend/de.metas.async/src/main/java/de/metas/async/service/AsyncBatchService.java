@@ -135,7 +135,7 @@ public class AsyncBatchService
 
 		if (!startMonitoringFrom.isPresent())
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {} not monitored! Return empty list!", asyncBatchId);
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
 			return ImmutableList.of();
 		}
 

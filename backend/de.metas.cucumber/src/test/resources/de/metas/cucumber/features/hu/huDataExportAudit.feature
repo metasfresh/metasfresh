@@ -85,9 +85,9 @@ Feature: Handling unit data export audit
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | cu_data_export                  | Exported-Standalone | GRSConfig_HU                        | pInstance_exportHU         |
-    And update external system config:
-      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
-      | GRSConfig_HU                        | GRS  | false    |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | GRSConfig_HU                        |
 
   Scenario: When M_HU is changed, a proper camel-request is sent to rabbit-mq
     Given add external system parent-child pair
@@ -122,6 +122,6 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_HU                        | createdTU              |
       | GRSConfig_HU                        | createdCU              |
-    And update external system config:
-      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
-      | GRSConfig_HU                        | GRS  | false    |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | GRSConfig_HU                        |

@@ -293,15 +293,23 @@ export class DraggableWrapper extends Component {
     );
   };
 
-  renderLogo = () => {
+  renderEmptyPage = () => {
+    const { editmode } = this.props;
     const { indicators, indicatorsLoaded } = this.state;
 
-    return indicators.length > 0 || !indicatorsLoaded ? (
-      false
-    ) : (
+    // Don't show logo if edit mode is active
+    if (editmode) return null;
+
+    // Don't show logo if indicators/KPIs are not loaded yet
+    if (!indicatorsLoaded) return null;
+
+    // Don't show logo if we have indicators/KPIs
+    if (indicators.length > 0) return null;
+
+    return (
       <div className="dashboard-wrapper dashboard-logo-wrapper">
         <div className="logo-wrapper">
-          <img src={logo} />
+          <img src={logo} alt="logo" />
         </div>
       </div>
     );
@@ -329,50 +337,48 @@ export class DraggableWrapper extends Component {
         </div>
       );
 
+    if (!cards.length) return false;
+
     return (
       <div className="kpis-wrapper">
-        {cards.length > 0
-          ? cards.map((item, id) => {
-              return (
-                <DndWidget
-                  key={id}
-                  index={id}
-                  id={item.id}
-                  moveCard={this.moveCard}
-                  addCard={this.addCard}
-                  onDrop={this.onDrop}
-                  removeCard={this.removeCard}
-                  entity={'cards'}
-                  className={
-                    'draggable-widget ' +
-                    (idMaximized === item.id
-                      ? 'draggable-widget-maximize '
-                      : '')
-                  }
-                  transparent={!editmode}
-                >
-                  <ChartWidget
-                    key={item.id}
-                    id={item.id}
-                    index={id}
-                    chartType={item.kpi.chartType}
-                    caption={item.caption}
-                    fields={item.kpi.fields}
-                    groupBy={item.kpi.groupByField}
-                    kpi={true}
-                    moveCard={this.moveCard}
-                    idMaximized={idMaximized}
-                    maximizeWidget={this.maximizeWidget}
-                    text={item.caption}
-                    data={item.data}
-                    noData={item.fetchOnDrop}
-                    handleChartOptions={this.handleChartOptions}
-                    {...{ editmode }}
-                  />
-                </DndWidget>
-              );
-            })
-          : this.renderLogo()}
+        {cards.map((item, id) => {
+          return (
+            <DndWidget
+              key={id}
+              index={id}
+              id={item.id}
+              moveCard={this.moveCard}
+              addCard={this.addCard}
+              onDrop={this.onDrop}
+              removeCard={this.removeCard}
+              entity={'cards'}
+              className={
+                'draggable-widget ' +
+                (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
+              }
+              transparent={!editmode}
+            >
+              <ChartWidget
+                key={item.id}
+                id={item.id}
+                index={id}
+                chartType={item.kpi.chartType}
+                caption={item.caption}
+                fields={item.kpi.fields}
+                groupBy={item.kpi.groupByField}
+                kpi={true}
+                moveCard={this.moveCard}
+                idMaximized={idMaximized}
+                maximizeWidget={this.maximizeWidget}
+                text={item.caption}
+                data={item.data}
+                noData={item.fetchOnDrop}
+                handleChartOptions={this.handleChartOptions}
+                {...{ editmode }}
+              />
+            </DndWidget>
+          );
+        })}
       </div>
     );
   };
@@ -522,6 +528,7 @@ export class DraggableWrapper extends Component {
             {this.renderKpis()}
           </div>
           {editmode && <Sidenav addCard={this.addCard} />}
+          {this.renderEmptyPage()}
         </div>
       </DndProvider>
     );

@@ -30,4 +30,8 @@ import de.metas.cucumber.stepdefs.StepDefData;
  */
 public class C_LicenseFeeSettingsLine_StepDefData extends StepDefData<I_C_LicenseFeeSettingsLine>
 {
+	public C_LicenseFeeSettingsLine_StepDefData()
+	{
+		super(I_C_LicenseFeeSettingsLine.class);
+	}
 }

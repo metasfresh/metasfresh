@@ -58,7 +58,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -196,7 +198,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -213,7 +215,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -228,7 +230,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getEffectiveCustomerId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -245,7 +247,7 @@ public class OLCandRequestProcessor implements Processor
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
 				.filter(items -> !items.isEmpty())
-				.map(items -> getMetasfreshIdForExternalIdentifier(items, bPartnerExternalIdentifier))
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
 				.orElse(null);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -451,13 +453,60 @@ public class OLCandRequestProcessor implements Processor
 
 		final MutableInt sequence = new MutableInt(ORDER_LINE_SEQUENCE_INITIAL_VALUE);
 
+		final HashMap<String, List<JsonOLCandCreateRequest>> groupKey2CompensationLines = new HashMap<>();
+
+		olCandCreateRequests.stream()
+				.filter(req -> req.getOrderLineGroup() != null && !req.getOrderLineGroup().isGroupMainItem())
+				.forEach(req -> {
+					final ArrayList<JsonOLCandCreateRequest> requests = new ArrayList<>();
+					requests.add(req);
+
+					groupKey2CompensationLines.merge(req.getOrderLineGroup().getGroupKey(), requests, (l1, l2) -> {
+						l1.addAll(l2);
+						return l1;
+					});
+				});
+
 		olCandCreateRequests
 				.stream()
-				.map(request -> request.toBuilder()
-						.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
-						.build())
-				.forEach(bulkRequestBuilder::request);
+				.filter(request -> request.getOrderLineGroup() == null || request.getOrderLineGroup().isGroupMainItem())
+				.sorted(getLineComparatorNullsLast())
+				.forEach(request -> {
+					final List<JsonOLCandCreateRequest> compensationLines = groupKey2CompensationLines.get(request.getExternalLineId());
+
+					if (compensationLines != null)
+					{
+						compensationLines
+								.stream()
+								.sorted(getLineComparatorNullsLast())
+								.map(line -> line.toBuilder()
+										.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+										.build())
+								.forEach(bulkRequestBuilder::request);
+					}
+
+					bulkRequestBuilder.request(request.toBuilder()
+													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+													   .build());
+				});
 
 		return bulkRequestBuilder.build();
+	}
+
+	private static Comparator<JsonOLCandCreateRequest> getLineComparatorNullsLast()
+	{
+		return (l1, l2) -> {
+			if (l1.getLine() == null)
+			{
+				return 1;
+			}
+
+			if (l2.getLine() == null)
+			{
+				return -1;
+			}
+
+			return l1.getLine().compareTo(l2.getLine());
+		};
 	}
 }

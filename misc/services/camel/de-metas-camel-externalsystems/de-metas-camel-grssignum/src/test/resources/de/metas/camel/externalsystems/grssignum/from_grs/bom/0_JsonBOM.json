@@ -13,6 +13,7 @@
     {
       "ARTNR": "ProductValue1",
       "ARTNRID": "ProductId1",
+      "HERKUNFTSLAND": "countryCode",
       "POS": 1,
       "ANTEIL": 50,
       "UOM": "KGM"

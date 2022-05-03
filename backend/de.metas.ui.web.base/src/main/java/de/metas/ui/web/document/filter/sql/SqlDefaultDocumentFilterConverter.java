@@ -432,26 +432,9 @@ import java.util.List;
 			@NonNull final SqlSelectValue columnSql,
 			@NonNull final SqlOptions sqlOpts)
 	{
-		if (sqlOpts.isUseTableAlias())
-		{
-			SqlSelectValue columnSqlEffective = columnSql;
-			columnSqlEffective = columnSqlEffective.withJoinOnTableNameOrAlias(sqlOpts.getTableAlias());
-
-			if (columnSqlEffective.isVirtualColumn())
-			{
-				final String virtualColumnSql = replaceTableNameWithTableAlias(
-						columnSqlEffective.getVirtualColumnSql(),
-						sqlOpts.getTableAlias());
-				columnSqlEffective = columnSqlEffective.withVirtualColumnSql(virtualColumnSql);
-			}
-
-			return columnSqlEffective;
-		}
-		else
-		{
-			return columnSql;
-		}
-
+		return sqlOpts.isUseTableAlias()
+				? columnSql.withJoinOnTableNameOrAlias(sqlOpts.getTableAlias())
+				: columnSql;
 	}
 
 	private String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableAlias)

@@ -30,4 +30,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
  */
 public class M_ShipmentSchedule_ExportAudit_StepDefData extends StepDefData<I_M_ShipmentSchedule_ExportAudit>
 {
+	public M_ShipmentSchedule_ExportAudit_StepDefData()
+	{
+		super(I_M_ShipmentSchedule_ExportAudit.class);
+	}
 }

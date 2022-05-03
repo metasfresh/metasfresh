@@ -57,7 +57,7 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBPartnerCreatedByUserGroup_ID (int BPartnerCreatedByUserGroup_ID);
+	void setSubjectCreatedByUserGroup_ID (int SubjectCreatedByUserGroup_ID);
 
 	/**
 	 * Get Users Group.
@@ -66,10 +66,10 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getBPartnerCreatedByUserGroup_ID();
+	int getSubjectCreatedByUserGroup_ID();
 
-	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_AD_UserGroup> COLUMN_BPartnerCreatedByUserGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "BPartnerCreatedByUserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
-	String COLUMNNAME_BPartnerCreatedByUserGroup_ID = "BPartnerCreatedByUserGroup_ID";
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_AD_UserGroup> COLUMN_SubjectCreatedByUserGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "SubjectCreatedByUserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_SubjectCreatedByUserGroup_ID = "SubjectCreatedByUserGroup_ID";
 
 	/**
 	 * Get Created.
@@ -231,6 +231,29 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 
 	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsSyncBPartnersToRabbitMQ = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsSyncBPartnersToRabbitMQ", null);
 	String COLUMNNAME_IsSyncBPartnersToRabbitMQ = "IsSyncBPartnersToRabbitMQ";
+
+	/**
+	 * Set Send partner references.
+	 * If ticked, then selected external references to business partners can be initially sent to RabbitMQ with an action in the External Reference window. After they have been sent once, they are automatically resent when changes are made.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncExternalReferencesToRabbitMQ (boolean IsSyncExternalReferencesToRabbitMQ);
+
+	/**
+	 * Get Send partner references.
+	 * If ticked, then selected external references to business partners can be initially sent to RabbitMQ with an action in the External Reference window. After they have been sent once, they are automatically resent when changes are made.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncExternalReferencesToRabbitMQ();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsSyncExternalReferencesToRabbitMQ = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsSyncExternalReferencesToRabbitMQ", null);
+	String COLUMNNAME_IsSyncExternalReferencesToRabbitMQ = "IsSyncExternalReferencesToRabbitMQ";
 
 	/**
 	 * Set Remote-URL.

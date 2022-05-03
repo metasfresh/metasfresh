@@ -18,6 +18,9 @@ DECLARE
     bomLineProduct               varchar;
     bomProductPrice              numeric;
     bomProductCost               numeric;
+    subBomID                     numeric;
+    subBomPrice                  numeric;
+    subBomCost                   numeric;
     bomProductPriceDifferencePct numeric;
     result                       de_metas_endcustomer_fresh_reports.pp_product_bom_pricing_result;
     DIGITS_TO_ROUND              integer := 2;
@@ -27,7 +30,7 @@ BEGIN
     ELSE
         filterCriteria := 'pp_product_bom_id = ' || p_pp_product_bom_id;
     END IF;
-    FOR bom IN EXECUTE FORMAT('SELECT * FROM PP_PRODUCT_BOM WHERE IsActive=''Y'' AND %s', filterCriteria)
+    FOR bom IN EXECUTE FORMAT('SELECT * FROM PP_PRODUCT_BOM WHERE IsActive=''Y'' AND docstatus = ''CO'' AND  %s ORDER BY name', filterCriteria)
         LOOP
             SELECT value, name FROM m_product WHERE m_product_id = bom.m_product_id INTO result.ProductValue, result.ProductName;
             SELECT name FROM c_uom WHERE c_uom_id = bom.c_uom_id INTO result.UOM;
@@ -40,10 +43,21 @@ BEGIN
                 result.ProductPriceDifference := '0%';
             END IF;
             result.ProductsListPriceDifferences := '';
-            FOR bomLine IN SELECT * FROM PP_PRODUCT_BOMLINE WHERE pp_product_bom_id = bom.pp_product_bom_id AND isactive = 'Y' AND componenttype = 'CO'
+            FOR bomLine IN SELECT * FROM PP_PRODUCT_BOMLINE WHERE pp_product_bom_id = bom.pp_product_bom_id AND isactive = 'Y' AND componenttype = 'CO' ORDER BY pp_product_bomline_id
                 LOOP
                     bomLineProduct := (SELECT name FROM m_product WHERE m_product_id = bomLine.m_product_id);
-                    bomProductPriceDifferencePct := de_metas_endcustomer_fresh_reports.get_Product_Price_Difference_Pct(bomLine.m_product_id, p_priceListId, p_onDate);
+                    subBomID := (SELECT pp_product_bom_id FROM pp_product_bom WHERE m_product_id = bomLine.m_product_id AND isactive = 'Y' AND docstatus = 'CO' ORDER BY validFrom DESC LIMIT 1);
+                    IF subBomID IS NOT NULL THEN
+                        subBomPrice := de_metas_endcustomer_fresh_reports.get_BOM_Product_Price(subBomID, p_priceListId, p_onDate);
+                        subBomCost := de_metas_endcustomer_fresh_reports.get_BOM_Product_Cost(subBomID, p_priceListId, p_onDate);
+                        IF bomProductPrice > 0 THEN
+                            bomProductPriceDifferencePct := (subBomPrice - subBomCost) * 100 / subBomCost;
+                        ELSE
+                            bomProductPriceDifferencePct := 0;
+                        END IF;
+                    ELSE
+                        bomProductPriceDifferencePct := de_metas_endcustomer_fresh_reports.get_Product_Price_Difference_Pct(bomLine.m_product_id, p_priceListId, p_onDate);
+                    END IF;
                     result.ProductsListPriceDifferences := result.ProductsListPriceDifferences || bomLineProduct || ': ' || ROUND(bomProductPriceDifferencePct, DIGITS_TO_ROUND) || '%' || e'\n';
                 END LOOP;
             IF (LENGTH(result.ProductsListPriceDifferences) > 0) THEN
@@ -52,7 +66,7 @@ BEGIN
             RETURN NEXT result;
         END LOOP;
     RETURN;
-END;
+END
 $BODY$
 ;
 
