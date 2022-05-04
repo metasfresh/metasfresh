@@ -19,6 +19,7 @@ Feature: Production dispo scenarios
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0124_150
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
@@ -190,9 +191,11 @@ Feature: Production dispo scenarios
       | c_l_1_2    | SUPPLY            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 10  | 0                      |
       | c_l_2_1    | DEMAND            | PRODUCTION                    | p_3                     | 2021-04-16T21:00:00Z | -10 | -10                    |
       | c_l_2_2    | SUPPLY            |                               | p_3                     | 2021-04-16T21:00:00Z | 10  | 0                      |
+
   @from:cucumber
+  @Id:S0129.1_130
   Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
-  Partial stock for main product, enough stock for component (S0129.1_130)
+  Partial stock for main product, enough stock for component
     Given metasfresh contains M_Products:
       | Identifier | Name                                  | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_04042022_1             | standard_category                    |
@@ -267,7 +270,8 @@ Feature: Production dispo scenarios
       | c_l_1_1    | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -2  | 0                      |
 
   @from:cucumber
-  Scenario: Close production candidate (S0129.2_110)
+  @Id:S0129.2_110
+  Scenario: Close production candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_04042022_2           | standard_category                    |
@@ -341,7 +345,8 @@ Feature: Production dispo scenarios
       | c_l_1_2                    | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    |
 
   @from:cucumber
-  Scenario: Production candidate is closed after it has been processed (S0129.2_120)
+  @Id:S0129.2_120
+  Scenario: Production candidate is closed after it has been processed
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_04042022_3           | standard_category                    |
