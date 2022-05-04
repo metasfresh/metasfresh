@@ -97,7 +97,7 @@ public class M_InOut_Line_StepDef
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 
 		if (Check.isNotBlank(x12de355Code))
 		{
