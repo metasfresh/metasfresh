@@ -185,6 +185,14 @@ public final class Debouncer<T>
 
 	}
 
+	public int getCurrentBufferSize()
+	{
+		synchronized (lock)
+		{
+			return buffer.size();
+		}
+	}
+
 	/*
 	public static void main(String[] args) throws InterruptedException
 	{
