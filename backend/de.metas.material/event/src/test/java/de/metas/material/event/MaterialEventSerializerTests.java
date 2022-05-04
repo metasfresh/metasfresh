@@ -135,7 +135,7 @@ public class MaterialEventSerializerTests
 		//
 		// Test via materialEventConverter
 		{
-			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent, null);
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
 			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
 
 			assertThat(deserializedEvent).isEqualTo(originalEvent);

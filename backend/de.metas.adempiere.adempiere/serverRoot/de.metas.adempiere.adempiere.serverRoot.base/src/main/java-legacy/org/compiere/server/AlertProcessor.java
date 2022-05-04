@@ -69,7 +69,7 @@ import de.metas.util.Services;
  */
 public class AlertProcessor extends AdempiereServer
 {
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.alerts.UserNotifications");
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.alerts.UserNotifications");
 
 	public AlertProcessor(MAlertProcessor model)
 	{

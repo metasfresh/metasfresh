@@ -193,6 +193,6 @@ public class MaterialEventObserver
 				.build();
 
 		SpringContextHolder.instance.getBean(PostMaterialEventService.class)
-				.postEventAsync(allEventsProcessedEvent);
+				.enqueueEventNow(allEventsProcessedEvent);
 	}
 }
