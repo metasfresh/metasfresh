@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		features = "src/test/resources/de/metas/cucumber/features/edi/desadvAndInvoic.feature",
 		glue = "de.metas.cucumber.stepdefs",
 		tags = "not @ignore", // use this tag to temporatily ignore single scenarios
 		// tags = "@dev:runOnlyThisOne", // use this tag to run only particular scenarios
