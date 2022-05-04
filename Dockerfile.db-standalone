@@ -24,5 +24,3 @@ RUN cd /tmp/sql \
 	&& find -type f -regextype egrep -not -regex ".*\/([0-9]{5,7})_.*" -delete \
 	&& mkdir /docker-entrypoint-initdb.d/migrations \
 	&& mcp '*/*.sql' '/docker-entrypoint-initdb.d/migrations/#2---#1.sql'
-
-EXPOSE 5432
