@@ -8,3 +8,4 @@
 
 # Explicitly declare files to always have CRLF line endings on checkout.
 *.properties text eol=crlf
+*.xml text eol=crlf
