@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,30 +20,11 @@
  * #L%
  */
 
-package de.metas.material.event;
+package de.metas.event;
 
-import de.metas.util.JSONObjectMapper;
-import org.springframework.stereotype.Service;
-
-@Service
-public class JacksonMaterialEventSerializer
+public interface EventEnqueuer
 {
-	public static final transient JacksonMaterialEventSerializer instance = new JacksonMaterialEventSerializer();
+	void enqueueDistributedEvent(Event event, Topic topic);
 
-	private final JSONObjectMapper<MaterialEvent> delegate;
-
-	private JacksonMaterialEventSerializer()
-	{
-		delegate = JSONObjectMapper.forClass(MaterialEvent.class);
-	}
-
-	public String toString(final MaterialEvent event)
-	{
-		return delegate.writeValueAsString(event);
-	}
-
-	public MaterialEvent fromString(final String eventStr)
-	{
-		return delegate.readValue(eventStr);
-	}
+	void enqueueLocalEvent(Event event, Topic topic);
 }

@@ -1,25 +1,22 @@
 package de.metas.inventory.event;
 
-import java.util.Collection;
-
-import de.metas.document.engine.DocStatus;
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -54,7 +51,7 @@ public class InventoryUserNotificationsProducer
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.inventory.UserNotifications");
+	public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.inventory.UserNotifications");
 
 	/** M_Inventory internal use */
 	private static final AdWindowId WINDOW_INTERNAL_INVENTORY = AdWindowId.ofRepoId(341); // FIXME: HARDCODED

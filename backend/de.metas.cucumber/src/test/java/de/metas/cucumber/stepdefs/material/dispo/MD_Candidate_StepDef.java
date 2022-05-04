@@ -45,7 +45,6 @@ import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -59,7 +58,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -123,7 +121,7 @@ public class MD_Candidate_StepDef
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
 
-		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
+		postMaterialEventService.enqueueEventNow(shipmentScheduleCreatedEvent);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
@@ -266,15 +264,16 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event, null);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 
-	@And("metasfresh has no MD_Candidate for identifier {string}")
-	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")
+	public void metasfresh_has_no_md_cand_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
 	{
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
-		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
-		assertThat(candidateRecord).isNull();
+		final Supplier<Boolean> candidateWasDeleted = () -> MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId()) == null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 }
