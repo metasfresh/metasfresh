@@ -3,6 +3,11 @@
 DELETE FROM AD_RelationType WHERE AD_RelationType_ID=540101
 ;
 
+delete from ad_pinstance_log where ad_pinstance_id in (select ad_pinstance_id from ad_pinstance where ad_scheduler_id=550015);
+delete from ad_pinstance_para where ad_pinstance_id in (select ad_pinstance_id from ad_pinstance where ad_scheduler_id=550015);
+delete from ad_pinstance where ad_scheduler_id=550015;
+
+update c_olcandprocessor set ad_scheduler_id=null where ad_scheduler_id=550015; 
 
 DELETE FROM ad_schedulerlog WHERE AD_Scheduler_ID=550015
 ;
