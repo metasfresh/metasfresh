@@ -651,25 +651,23 @@ public final class AggregationEngine
 
 		final InvoiceDocBaseType docBaseType;
 
-		// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
-		if (totalAmt.signum() < 0)
-		{
-			if (invoiceIsSOTrx)
-			{
-				docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
-			}
-			else
-			{
-				docBaseType = InvoiceDocBaseType.VendorCreditMemo;
-			}
-		}
 		//
 		// Case: Invoice DocType was preset
-		else if (invoiceHeader.getC_DocTypeInvoice() != null)
+		if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+
+			// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
+			if (totalAmt.signum() < 0)
+			{
+				docBaseType = flipDocBaseType(invoiceDocBaseType, invoiceIsSOTrx);
+			}
+			else
+			{
+				docBaseType = invoiceDocBaseType;
+			}
 		}
 		//
 		// Case: no invoice DocType was set
@@ -678,11 +676,27 @@ public final class AggregationEngine
 		{
 			if (invoiceIsSOTrx)
 			{
-				docBaseType = InvoiceDocBaseType.CustomerInvoice;
+				if (totalAmt.signum() < 0)
+				{
+					// AR Credit Memo Invoice (sales)
+					docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
+				}
+				else
+				{
+					// Regular AR Invoice (sales)
+					docBaseType = InvoiceDocBaseType.CustomerInvoice;
+				}
 			}
 			else
 			{
-				docBaseType = InvoiceDocBaseType.VendorInvoice;
+				if (totalAmt.signum() < 0)
+				{
+					docBaseType = InvoiceDocBaseType.VendorCreditMemo;
+				}
+				else
+				{
+					docBaseType = InvoiceDocBaseType.VendorInvoice;
+				}
 			}
 		}
 
@@ -695,6 +709,28 @@ public final class AggregationEngine
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	private InvoiceDocBaseType flipDocBaseType(final InvoiceDocBaseType docBaseType, final boolean invoiceIsSOTrx)
+	{
+		if (docBaseType.isCreditMemo())
+		{
+			if (invoiceIsSOTrx)
+			{
+				return InvoiceDocBaseType.CustomerInvoice;
+			}
+			else
+			{
+				return InvoiceDocBaseType.VendorInvoice;
+			}
+		}
+
+		if (invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.CustomerCreditMemo;
+		}
+
+		return InvoiceDocBaseType.VendorCreditMemo;
 	}
 
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)
