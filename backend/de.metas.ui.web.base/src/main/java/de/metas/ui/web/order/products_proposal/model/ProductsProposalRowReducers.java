@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -10,6 +11,9 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRe
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_M_ProductPrice;
 
 /*
  * #%L
@@ -65,6 +69,26 @@ public class ProductsProposalRowReducers
 		if (request.getQty() != null)
 		{
 			newRowBuilder.qty(request.getQty().orElse(null));
+
+			final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(row.getProductPriceId(), I_M_ProductPrice.class);
+			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice)
+					|| Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict))
+			{
+				final BigDecimal qtyEntered = request.getQty().get();
+				if(Objects.nonNull(qtyEntered) && qtyEntered.signum() > 0)
+				{
+					//
+					//12896: get scaled price
+					final ProductProposalScalePrice scalePrice = ProductProposalScalePrice.builder()
+							.productPriceId(row.getProductPriceId())
+							.qtyEntered(qtyEntered)
+							.build();
+
+					final BigDecimal newUserEnteredPriceValue = scalePrice.scalePrice();
+					final ProductProposalPrice newPrice = row.getPrice().withUserEnteredPriceValue(newUserEnteredPriceValue);
+					newRowBuilder.price(newPrice);
+				}
+			}
 		}
 
 		if (request.getPrice() != null)
