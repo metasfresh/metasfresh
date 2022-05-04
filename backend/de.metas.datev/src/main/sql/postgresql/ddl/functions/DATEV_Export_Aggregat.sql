@@ -1,6 +1,3 @@
-DROP FUNCTION IF EXISTS datev_export_aggregat(numeric)
-;
-
 CREATE FUNCTION datev_export_aggregat(p_datev_export_id numeric)
     RETURNS TABLE("Umsatz (ohne Soll-/Haben-Kennzeichen)" numeric, "Soll-/Haben-Kennzeichen" character, "Währung" character varying, konto character varying, gegenkonto integer, belegdatum date, belegfeld1 character varying, steuersatz numeric, land character, steuer character varying, referenz character varying)
     STABLE
