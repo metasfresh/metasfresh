@@ -278,8 +278,7 @@ public class PaymentAllocationBuilder
 			}
 		}
 
-		if (paymentVendorDocuments.size() > 1
-				|| payableVendorDocuments_NoCreditMemos.size() > 1)
+		if (paymentVendorDocuments.size() > 1)
 		{
 			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
 		}
