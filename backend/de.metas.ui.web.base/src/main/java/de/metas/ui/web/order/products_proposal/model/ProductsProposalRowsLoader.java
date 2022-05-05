@@ -68,6 +68,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_ProductPrice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -246,17 +247,24 @@ public final class ProductsProposalRowsLoader
 		return ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId));
 	}
 
-	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
+	private ProductProposalPrice extractProductProposalPrice(@NonNull final I_M_ProductPrice productPrice)
 	{
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());
-		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId));
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
+		final Amount priceListPrice = Amount.of(productPrice.getPriceStd(), getCurrencyCode(priceListVersionId));
 
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
+
+		final ProductProposalScalePrice scalePrice = ProductProposalScalePrice.isProductPriceUseScalePrice(productPrice) ?
+				                                     ProductProposalScalePrice.builder()
+						                                                      .productPriceId(ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID()))
+						                                                      .build() :
+				                                     null;
 
 		return ProductProposalPrice.builder()
 				.priceListPrice(priceListPrice)
 				.campaignPrice(campaignPrice)
+				.scalePrice(scalePrice)
 				.build();
 	}
 

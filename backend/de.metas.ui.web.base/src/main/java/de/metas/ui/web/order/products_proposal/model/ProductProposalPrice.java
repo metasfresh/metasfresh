@@ -43,6 +43,9 @@ public class ProductProposalPrice
 	@Getter
 	private final CurrencyCode currencyCode;
 
+	@Getter
+	private final BigDecimal userEnteredQty;
+
 	private final Amount priceListPrice;
 	private final ProductProposalCampaignPrice campaignPrice;
 
@@ -54,12 +57,16 @@ public class ProductProposalPrice
 	@Getter
 	private final boolean priceListPriceUsed;
 
+	@Getter
+	private final boolean scalePriceUsed;
+
 	@Builder(toBuilder = true)
 	private ProductProposalPrice(
 			@NonNull final Amount priceListPrice,
 			@Nullable final ProductProposalCampaignPrice campaignPrice,
+			@Nullable final ProductProposalScalePrice scalePrice,
 			@Nullable final BigDecimal userEnteredPriceValue,
-			@Nullable final ProductProposalScalePrice scalePrice)
+			@Nullable final BigDecimal userEnteredQty)
 	{
 		this.priceListPrice = priceListPrice;
 		this.campaignPrice = campaignPrice;
@@ -67,6 +74,8 @@ public class ProductProposalPrice
 
 		//
 		this.currencyCode = priceListPrice.getCurrencyCode();
+		this.userEnteredQty = userEnteredQty;
+
 		if (campaignPrice != null && !currencyCode.equals(campaignPrice.getCurrencyCode()))
 		{
 			throw new AdempiereException("" + campaignPrice + " and " + priceListPrice + " shall have the same currency");
@@ -81,10 +90,10 @@ public class ProductProposalPrice
 		{
 			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getAsBigDecimal();
 		}
-		// else if(scalePrice != null)
-		// {
-		// 	this.userEnteredPriceValue = scalePrice.scalePrice();
-		// }
+		else if(scalePrice != null)
+		{
+			this.userEnteredPriceValue = scalePrice.withQty(userEnteredQty);
+		}
 		else
 		{
 			this.userEnteredPriceValue = priceListPrice.getAsBigDecimal();
@@ -95,6 +104,9 @@ public class ProductProposalPrice
 		this.campaignPriceUsed = this.campaignPrice != null
 				&& !priceListPriceUsed
 				&& this.campaignPrice.amountValueComparingEqualsTo(this.userEnteredPriceValue);
+
+		this.scalePriceUsed = this.scalePrice != null
+		                      &&  this.userEnteredQty != null;
 	}
 
 	public Amount getUserEnteredPrice()
@@ -127,13 +139,19 @@ public class ProductProposalPrice
 		return toBuilder().priceListPrice(priceListPrice).build();
 	}
 
-	// public ProductProposalPrice withScalePrice(@NonNull final ProductProposalScalePrice scalePrice)
-	// {
-	// 	if (this.scalePrice != null && this.scalePrice.equals(scalePrice))
-	// 	{
-	// 		return this;
-	// 	}
-	//
-	// 	return toBuilder().scalePrice(scalePrice).build();
-	// }
+	public ProductProposalPrice withUserEnteredQty(@NonNull final BigDecimal qtyEntered)
+	{
+		if (this.scalePrice != null
+				&& this.userEnteredQty != null
+				&& this.userEnteredQty.compareTo(qtyEntered) == 0 )
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.userEnteredPriceValue(null) // override user price and recalculate based on quantity
+				.scalePrice(scalePrice)
+				.userEnteredQty(qtyEntered)
+				.build();
+	}
 }

@@ -71,19 +71,16 @@ public class ProductsProposalRowReducers
 			newRowBuilder.qty(request.getQty().orElse(null));
 
 			final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(row.getProductPriceId(), I_M_ProductPrice.class);
-			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice)
-					|| Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict))
+			if (ProductProposalScalePrice.isProductPriceUseScalePrice(productPrice))
 			{
-				final BigDecimal qtyEntered = request.getQty().orElse(BigDecimal.ZERO);
+				final BigDecimal qtyEntered = request.getQty().orElse(BigDecimal.ONE);
 				if(qtyEntered.signum() >= 0)
 				{
 					final ProductProposalScalePrice scalePrice = ProductProposalScalePrice.builder()
 							.productPriceId(row.getProductPriceId())
-							.qtyEntered(qtyEntered)
 							.build();
 
-					final BigDecimal newUserEnteredPriceValue = scalePrice.scalePrice();
-					final ProductProposalPrice newPrice = row.getPrice().withUserEnteredPriceValue(newUserEnteredPriceValue);
+					final ProductProposalPrice newPrice = row.getPrice().withUserEnteredQty(qtyEntered);
 					newRowBuilder.price(newPrice);
 				}
 			}

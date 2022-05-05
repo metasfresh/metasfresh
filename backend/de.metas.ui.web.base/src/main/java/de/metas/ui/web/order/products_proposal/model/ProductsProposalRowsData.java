@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.pricing.ProductPriceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
@@ -235,7 +238,10 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		if (existingRow != null)
 		{
 			patchRow(existingRow.getId(), RowUpdate.builder()
-					.price(createPrice(request.getProductId(), request.getPriceListPrice()))
+					.price(createPrice(request.getProductId(),
+									   request.getPriceListPrice(),
+									   request.getCopiedFromProductPriceId()
+					))
 					.lastShipmentDays(request.getLastShipmentDays())
 
 					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
@@ -247,13 +253,26 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		}
 	}
 
-	private ProductProposalPrice createPrice(@NonNull final ProductId productId, @NonNull final Amount priceListPrice)
+	private ProductProposalPrice createPrice(@NonNull final ProductId productId,
+			                                 @NonNull final Amount priceListPrice,
+			                                 @Nullable final ProductPriceId productPriceId)
 	{
 		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
+
+		final I_M_ProductPrice productPrice = Objects.nonNull(productPriceId) ?
+				InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class) :
+				null;
+
+		final ProductProposalScalePrice scalePrice = Objects.nonNull(productPrice) && ProductProposalScalePrice.isProductPriceUseScalePrice(productPrice) ?
+				ProductProposalScalePrice.builder()
+						.productPriceId(productPriceId)
+						.build():
+				null;
 
 		return ProductProposalPrice.builder()
 				.priceListPrice(priceListPrice)
 				.campaignPrice(campaignPrice)
+				.scalePrice(scalePrice)
 				.build();
 	}
 
@@ -263,7 +282,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
-				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
+				.price(createPrice(request.getProductId(), request.getPriceListPrice(), request.getCopiedFromProductPriceId()))
 				.packingMaterialId(request.getPackingMaterialId())
 				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())

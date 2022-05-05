@@ -52,15 +52,15 @@ public final class ProductProposalScalePrice
 	@NonNull
 	private final ProductPriceId productPriceId;
 
-	@NonNull
-	private final BigDecimal qtyEntered;
 
-	public BigDecimal scalePrice()
+	public BigDecimal withQty(final BigDecimal qtyEntered)
 	{
+		final BigDecimal qty = qtyEntered != null && qtyEntered.signum() > 0 ? qtyEntered: BigDecimal.ONE;
+
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class );
 		final I_M_ProductScalePrice scalePrice = Services.get(IProductPA.class)
 				.retrieveOrCreateScalePrices(productPriceId.getRepoId()
-				, qtyEntered
+				, qty
 				, false // createNew
 				, ITrx.TRXNAME_None);
 
@@ -68,14 +68,20 @@ public final class ProductProposalScalePrice
 		{
 			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice))
 			{
-				return productPrice.getPriceList();
+				return productPrice.getPriceStd();
 			}
 			else
 			{
 				throw new AdempiereException(AdMessageKey.of("NoScalePrice"), qtyEntered);
 			}
 		}
-		return scalePrice.getPriceList();
+		return scalePrice.getPriceStd();
+	}
+
+	public static boolean isProductPriceUseScalePrice(@NonNull final I_M_ProductPrice productPrice)
+	{
+		return Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice)
+				|| Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict);
 	}
 
 }
