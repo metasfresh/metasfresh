@@ -671,7 +671,7 @@ public final class AggregationEngine
 		}
 		//
 		// Case: no invoice DocType was set
-		// We need to find out the DocBaseType based on Total Amount (which is positive) and IsSOTrx
+		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
 			if (invoiceIsSOTrx)
