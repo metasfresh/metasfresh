@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
@@ -43,11 +44,13 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_STORE_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -73,12 +76,14 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
 							   successfullyClearOrdersProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
+							   successfullyCalledGetOrderPage,
 							   GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build(),
 							   JSON_ORDER_LINES_DO_NOT_RENUMBER);
 
@@ -127,6 +132,7 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
@@ -138,12 +144,14 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyClearOrdersProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCreatePaymentProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage mockSuccessfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
 							   successfullyClearOrdersProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
+							   mockSuccessfullyCalledGetOrderPage,
 							   GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build(),
 							   JSON_ORDER_LINES_DO_RENUMBER);
 
@@ -192,6 +200,7 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(mockSuccessfullyCalledGetOrderPage.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 
 	}
@@ -202,13 +211,19 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
 			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
+			final MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage,
 			final JsonExternalSystemRequest request,
 			final String jsonOLPath) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 									  .replace()
-									  .process(new MockGetOrdersProcessor(request, jsonOLPath)));
+									  .process(new MockBuildOrdersContextProcessor(request, jsonOLPath, 1, JSON_ORDERS_RESOURCE_PATH, ExternalSystemConstants.DEFAULT_ORDER_PAGE_SIZE)));
+
+		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
+							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)
+									  .after()
+									  .process(successfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
