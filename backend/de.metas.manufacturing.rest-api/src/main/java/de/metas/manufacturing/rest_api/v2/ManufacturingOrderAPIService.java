@@ -25,6 +25,7 @@ package de.metas.manufacturing.rest_api.v2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.manufacturing.v2.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -35,6 +36,7 @@ import de.metas.product.ProductRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -112,4 +114,16 @@ class ManufacturingOrderAPIService
 		return command.execute();
 	}
 
+	@NonNull
+	public JsonResponseManufacturingOrder getManufacturingOrderByMetasfreshId(final int ppOrderMetasfreshId)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrderMetasfreshId);
+
+		final ManufacturingOrdersExportById command = ManufacturingOrdersExportById.builder()
+				.ppOrderId(ppOrderId)
+				.productRepository(productRepo)
+				.build();
+
+		return command.execute();
+	}
 }

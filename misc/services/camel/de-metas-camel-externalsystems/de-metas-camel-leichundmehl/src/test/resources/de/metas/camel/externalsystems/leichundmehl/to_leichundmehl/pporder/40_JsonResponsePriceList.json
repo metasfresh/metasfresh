@@ -1,0 +1,22 @@
+{
+  "prices": [
+    {
+      "productId": 22222,
+      "productCode": "P002737",
+      "price": 2.0,
+      "currencyCode": "EUR",
+      "taxCategoryId": 1000010,
+      "isSOTrx": true,
+      "countryCode": "DE"
+    },
+    {
+      "productId": 2005577,
+      "productCode": "P002737",
+      "price": 1.42,
+      "currencyCode": "CHF",
+      "taxCategoryId": 1000002,
+      "isSOTrx": true,
+      "countryCode": "CH"
+    }
+  ]
+}

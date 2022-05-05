@@ -2,6 +2,7 @@ package de.metas.common.product.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,6 +42,7 @@ import java.util.List;
 
 @Value
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
@@ -84,7 +86,7 @@ public class JsonProduct
 	String externalId;
 
 	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
-	@NonNull
+	@Nullable
 	@JsonProperty("uom")
 	String uom;
 

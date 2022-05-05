@@ -27,8 +27,10 @@ import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
+import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
@@ -47,6 +49,11 @@ import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.pricing.command.GetPriceListCommand;
+import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -77,15 +84,24 @@ public class ProductPriceRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
 	private final PriceListRestService priceListRestService;
+	private final ProductRestService productRestService;
+	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
+	private final JsonRetrieverService jsonRetrieverService;
 
 	public ProductPriceRestService(
-			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			final ProductPriceRepository productPriceRepository,
-			final PriceListRestService priceListRestService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ProductPriceRepository productPriceRepository,
+			@NonNull final PriceListRestService priceListRestService,
+			@NonNull final ProductRestService productRestService,
+			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productPriceRepository = productPriceRepository;
 		this.priceListRestService = priceListRestService;
+		this.productRestService = productRestService;
+		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
 
 	@NonNull
@@ -107,6 +123,20 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
+	public JsonResponsePriceList productPriceSearch(@NonNull final JsonRequestProductPriceSearch request)
+	{
+		return GetPriceListCommand.builder()
+				.productRestService(productRestService)
+				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
+				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))
+				.productIdentifier(ExternalIdentifier.of(request.getProductIdentifier()))
+				.targetDate(request.getTargetDate())
+				.jsonRetrieverService(jsonRetrieverService)
+				.build()
+				.execute();
+	}
+
+	@NonNull
 	private JsonResponseUpsert upsertProductPricesWithinTrx(
 			@NonNull final String priceListVersionIdentifier,
 			@NonNull final JsonRequestProductPriceUpsert request)
@@ -116,7 +146,7 @@ public class ProductPriceRestService
 		final List<JsonResponseUpsertItem> responseList =
 				request.getRequestItems()
 						.stream()
-						.map(reqItem ->  upsertProductPricesItem(priceListVersionIdentifier, reqItem, syncAdvise))
+						.map(reqItem -> upsertProductPricesItem(priceListVersionIdentifier, reqItem, syncAdvise))
 						.collect(Collectors.toList());
 
 		return JsonResponseUpsert.builder().responseItems(responseList).build();

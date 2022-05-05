@@ -73,6 +73,13 @@ public class ExternalSystemConstants
 	public static final String PARAM_HU_ID = "HUId";
 	public static final String PARAM_TENANT_ID = "TenantId";
 
+	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
+	public static final String PARAM_FTP_HOST = "FTP_Host";
+	public static final String PARAM_FTP_PORT = "FTP_Port";
+	public static final String PARAM_FTP_USERNAME = "FTP_Username";
+	public static final String PARAM_FTP_PASSWORD = "FTP_Password";
+	public static final String PARAM_FTP_DIRECTORY = "FTP_Directory";
+
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
 }

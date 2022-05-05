@@ -200,6 +200,20 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public ImmutableList<I_M_ProductPrice> retrieveProductPrices(
+			@NonNull final PriceListVersionId priceListVersionId,
+			final ProductId productId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.stream().collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
 	public Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return Services.get(IQueryBL.class)

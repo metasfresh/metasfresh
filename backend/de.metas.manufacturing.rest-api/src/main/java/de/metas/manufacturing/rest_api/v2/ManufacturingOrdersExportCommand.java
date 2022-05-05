@@ -29,7 +29,6 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -179,13 +178,16 @@ final class ManufacturingOrdersExportCommand
 				.documentNo(order.getDocumentNo())
 				.description(StringUtils.trimBlankToNull(order.getDescription()))
 				.finishGoodProduct(toJsonProduct(ProductId.ofRepoId(order.getM_Product_ID())))
-				.qtyToProduce(toJsonQuantity(qtyToProduce))
+				.qtyToProduce(JsonConverter.toJsonQuantity(qtyToProduce))
 				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone))
+				.datePromised(TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone))
 				.dateStartSchedule(TimeUtil.asZonedDateTime(order.getDateStartSchedule(), timeZone))
+				.productId(JsonMetasfreshId.of(order.getM_Product_ID()))
+				.bpartnerId(JsonMetasfreshId.ofOrNull(order.getC_BPartner_ID()))
 				.components(getBOMLinesByOrderId(orderId)
-						.stream()
-						.map(this::toJson)
-						.collect(ImmutableList.toImmutableList()))
+									.stream()
+									.map(this::toJson)
+									.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -195,7 +197,7 @@ final class ManufacturingOrdersExportCommand
 		return JsonResponseManufacturingOrderBOMLine.builder()
 				.componentType(bomLine.getComponentType())
 				.product(toJsonProduct(ProductId.ofRepoId(bomLine.getM_Product_ID())))
-				.qty(toJsonQuantity(qtyRequiredToIssue))
+				.qty(JsonConverter.toJsonQuantity(qtyRequiredToIssue))
 				.build();
 	}
 
@@ -211,14 +213,6 @@ final class ManufacturingOrdersExportCommand
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
 				.stocked(product.isStocked())
-				.build();
-	}
-
-	private JsonQuantity toJsonQuantity(@NonNull final Quantity qty)
-	{
-		return JsonQuantity.builder()
-				.qty(qty.toBigDecimal())
-				.uomCode(qty.getX12DE355().getCode())
 				.build();
 	}
 

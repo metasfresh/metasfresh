@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.product;
 import de.metas.Profiles;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
+import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
@@ -110,6 +111,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
+					.productRestService(productRestService)
 					.externalSystemType(externalSystemType)
 					.externalSystemConfigValue(externalSystemChildConfigValue)
 					.adLanguage(adLanguage)
@@ -151,6 +153,31 @@ public class ProductsRestController
 		final JsonResponseUpsert responseUpsert = productRestService.upsertProducts(orgCode, request);
 
 		return ResponseEntity.ok().body(responseUpsert);
+	}
+
+	@ApiOperation("Retrieve product by product identifier.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Product successfully retrieved"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@GetMapping("{orgCode}/{externalIdentifier}")
+	public ResponseEntity<?> getByExternalIdentifier(
+			@PathVariable("orgCode") @Nullable final String orgCode,
+			@PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
+	{
+		try
+		{
+			final JsonProduct product = productRestService.retrieveProduct(orgCode, externalIdentifier);
+			return ResponseEntity.ok().body(product);
+		}
+		catch (final Exception ex)
+		{
+			logger.error(ex.getMessage(), ex);
+
+			return ResponseEntity.badRequest().body(ex);
+		}
 	}
 
 	private void logExportedProducts(
