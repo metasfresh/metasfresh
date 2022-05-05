@@ -49,7 +49,7 @@ public final class Async_Constants
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	/**
@@ -57,7 +57,7 @@ public final class Async_Constants
 	 */
 	public static final Topic WORKPACKAGE_LIFECYCLE_TOPIC = Topic.builder()
 			.name("de.metas.async.WorkpackageLifeCycle")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	public static final int C_OlCandProcessor_ID_Default = 1000003;
