@@ -1,3 +1,6 @@
+DROP VIEW RV_DATEV_Export_Fact_Acct_Invoice
+;
+
 CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype, fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id) AS
 SELECT CASE
            WHEN fa.amtacctdr <> 0::numeric THEN 'S'
@@ -6,16 +9,16 @@ SELECT CASE
        (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id)
                                                                                         AS Currency,
        CASE
-           WHEN fa.amtsourcedr <> 0::numeric THEN ev.value
-                                             ELSE ev2.value
+           WHEN fa.amtacctdr <> 0::numeric THEN ev.value
+                                           ELSE ev2.value
        END                                                                              AS dr_account,
        CASE
-           WHEN fa.amtsourcedr <> 0::numeric THEN ev2.value
-                                             ELSE ev.value
+           WHEN fa.amtacctdr <> 0::numeric THEN ev2.value
+                                           ELSE ev.value
        END                                                                              AS cr_account,
        CASE
-           WHEN fa.amtsourcedr <> 0::numeric THEN fa.amtsourcedr
-                                             ELSE fa.amtsourcecr
+           WHEN fa.amtacctdr <> 0::numeric THEN fa.amtacctdr
+                                           ELSE fa.amtacctcr
        END                                                                              AS amt,
        a.name                                                                           AS activityname,
        a.c_activity_id,
