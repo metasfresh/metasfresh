@@ -21,7 +21,7 @@ jobs:
       - name: build-frontend
         run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:latest .
       - name: build-db
-        run: docker buildx build -f Dockerfile.db-standalone -t mazorn/metas-db:latest .
+        run: docker buildx build -f Dockerfile.db-standalone -t metas-db:latest -t mazorn/metas-db:latest .
       - name: build-db-preloaded
         run: docker buildx build -f Dockerfile.db-preloaded -t mazorn/metas-db:preloaded .
 
