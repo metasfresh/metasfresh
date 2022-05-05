@@ -244,7 +244,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Currency} +": "+ $F{currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="279" y="10" width="90" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4"/>
@@ -258,7 +258,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + ": "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
 			</textField>
 			<rectangle>
 				<reportElement key="rectangle-1" x="35" y="105" width="521" height="13" backcolor="#808080" uuid="61f811ea-e2b3-488f-9055-ad26f9453b76"/>
@@ -299,7 +299,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{DefaultAcct} + " "+ $P{defaultAcc}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DefaultAcct} + ": "+ $P{defaultAcc}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="35" y="76" width="163" height="12" uuid="0b4c1c14-7861-4c88-b4f6-b34aab0519b7"/>
@@ -320,7 +320,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Org} +" "+$F{orgname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Org} +": "+$F{orgname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
