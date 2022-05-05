@@ -79,8 +79,8 @@ public class RetrieveProductsProcessor implements Processor
 		exchange.getIn().setBody(buildGetProductsCamelRequest(request));
 
 		exchange.setProperty(PushProductsRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, new NextImportSinceTimestamp(Instant.parse(updatedAfter)));
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
+		exchange.setProperty(PushProductsRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
+		exchange.setProperty(PushProductsRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
 	}
 
 	private GetProductsCamelRequest buildGetProductsCamelRequest(@NonNull final JsonExternalSystemRequest request)
