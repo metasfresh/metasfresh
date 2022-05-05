@@ -74,11 +74,9 @@ public class ProductsProposalRowReducers
 			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice)
 					|| Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict))
 			{
-				final BigDecimal qtyEntered = request.getQty().get();
-				if(Objects.nonNull(qtyEntered) && qtyEntered.signum() > 0)
+				final BigDecimal qtyEntered = request.getQty().orElse(BigDecimal.ZERO);
+				if(qtyEntered.signum() >= 0)
 				{
-					//
-					//12896: get scaled price
 					final ProductProposalScalePrice scalePrice = ProductProposalScalePrice.builder()
 							.productPriceId(row.getProductPriceId())
 							.qtyEntered(qtyEntered)

@@ -46,6 +46,8 @@ public class ProductProposalPrice
 	private final Amount priceListPrice;
 	private final ProductProposalCampaignPrice campaignPrice;
 
+	private final ProductProposalScalePrice scalePrice;
+
 	@Getter
 	private final boolean campaignPriceUsed;
 
@@ -56,10 +58,12 @@ public class ProductProposalPrice
 	private ProductProposalPrice(
 			@NonNull final Amount priceListPrice,
 			@Nullable final ProductProposalCampaignPrice campaignPrice,
-			@Nullable final BigDecimal userEnteredPriceValue)
+			@Nullable final BigDecimal userEnteredPriceValue,
+			@Nullable final ProductProposalScalePrice scalePrice)
 	{
 		this.priceListPrice = priceListPrice;
 		this.campaignPrice = campaignPrice;
+		this.scalePrice = scalePrice;
 
 		//
 		this.currencyCode = priceListPrice.getCurrencyCode();
@@ -77,6 +81,10 @@ public class ProductProposalPrice
 		{
 			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getAsBigDecimal();
 		}
+		// else if(scalePrice != null)
+		// {
+		// 	this.userEnteredPriceValue = scalePrice.scalePrice();
+		// }
 		else
 		{
 			this.userEnteredPriceValue = priceListPrice.getAsBigDecimal();
@@ -118,4 +126,14 @@ public class ProductProposalPrice
 
 		return toBuilder().priceListPrice(priceListPrice).build();
 	}
+
+	// public ProductProposalPrice withScalePrice(@NonNull final ProductProposalScalePrice scalePrice)
+	// {
+	// 	if (this.scalePrice != null && this.scalePrice.equals(scalePrice))
+	// 	{
+	// 		return this;
+	// 	}
+	//
+	// 	return toBuilder().scalePrice(scalePrice).build();
+	// }
 }

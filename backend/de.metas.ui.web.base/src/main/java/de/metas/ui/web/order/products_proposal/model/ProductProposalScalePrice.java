@@ -68,7 +68,7 @@ public final class ProductProposalScalePrice
 		{
 			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice))
 			{
-				return scalePrice.getPriceList();
+				return productPrice.getPriceList();
 			}
 			else
 			{
