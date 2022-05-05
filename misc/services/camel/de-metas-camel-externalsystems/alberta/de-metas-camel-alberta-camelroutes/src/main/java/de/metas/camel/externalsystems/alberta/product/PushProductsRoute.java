@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.alberta.product;
 
 import de.metas.camel.externalsystems.alberta.product.processor.PrepareAlbertaArticlesProcessor;
+import de.metas.camel.externalsystems.alberta.product.processor.ProductsRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.product.processor.PushArticlesProcessor;
 import de.metas.camel.externalsystems.alberta.product.processor.RetrieveProductsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
@@ -45,6 +46,7 @@ import static de.metas.camel.externalsystems.alberta.CamelRouteUtil.setupJackson
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_PRODUCTS_ROUTE_ID;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class PushProductsRoute extends RouteBuilder
@@ -55,6 +57,10 @@ public class PushProductsRoute extends RouteBuilder
 	public static final String RETRIEVE_PRODUCTS_PROCESSOR_ID = "GetProductsFromMetasfreshProcessor";
 	public static final String PREPARE_ARTICLE_PROCESSOR_ID = "PrepareArticleProcessor";
 	public static final String PUSH_ARTICLE_PROCESSOR_ID = "PushArticleProcessor";
+
+	public static final String PRODUCTS_UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-Products-upsertRuntimeParams";
+	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-Products-RuntimeParamsProcessorId";
+
 
 	private final ProcessLogger processLogger;
 
@@ -105,6 +111,12 @@ public class PushProductsRoute extends RouteBuilder
 					.otherwise()
 						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.endChoice();
+
+		from(direct(PRODUCTS_UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(PRODUCTS_UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+				.log("Route invoked")
+				.process(new ProductsRuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
+				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID));
 		//@formatter:on
 	}
 

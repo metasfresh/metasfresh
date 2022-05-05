@@ -33,4 +33,9 @@ public interface PushProductsRouteConstants
 	String ALBERTA_EXTERNAL_REFERENCE_SYSTEM = "ALBERTA";
 	//keep in sync with de.metas.externalreference.product.ProductExternalReferenceType.PRODUCT
 	String PRODUCT_EXTERNAL_REFERENCE_TYPE = "Product";
+
+
+	String ROUTE_PROPERTY_UPDATED_AFTER = "updatedAfter";
+	String ROUTE_PROPERTY_COMMAND = "command";
+	String ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID = "externalSystemConfigId";
 }
