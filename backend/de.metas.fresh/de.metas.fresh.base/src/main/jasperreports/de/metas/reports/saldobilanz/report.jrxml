@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -26,37 +26,84 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.saldobilanz_Report (
+		<![CDATA[SELECT r.*, o.Name as orgName FROM report.saldobilanz_Report (
 $P{Date},
 $P{defaultAcc},
 $P{showCurrencyExchange},
 $P{ad_org_id},
 $P{IncludePostingTypeStatistical},
-$P{ExcludeYearEndBooking}
-);]]>
+$P{ExcludeYearEndBooking} 
+) as r, ad_org o where o.ad_org_id=$P{ad_org_id}]]>
 	</queryString>
-	<field name="parentname1" class="java.lang.String"/>
-	<field name="parentvalue1" class="java.lang.String"/>
-	<field name="parentname2" class="java.lang.String"/>
-	<field name="parentvalue2" class="java.lang.String"/>
-	<field name="parentname3" class="java.lang.String"/>
-	<field name="parentvalue3" class="java.lang.String"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="namevalue" class="java.lang.String"/>
-	<field name="accounttype" class="java.lang.String"/>
-	<field name="sameyearsum" class="java.math.BigDecimal"/>
-	<field name="lastyearsum" class="java.math.BigDecimal"/>
-	<field name="eurosaldo" class="java.math.BigDecimal"/>
-	<field name="l3_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l3_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="l2_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l2_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="c_calendar_id" class="java.math.BigDecimal"/>
-	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="currency" class="java.lang.String"/>
+	<field name="parentname1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname1"/>
+	</field>
+	<field name="parentvalue1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue1"/>
+	</field>
+	<field name="parentname2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname2"/>
+	</field>
+	<field name="parentvalue2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue2"/>
+	</field>
+	<field name="parentname3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname3"/>
+	</field>
+	<field name="parentvalue3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue3"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="namevalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="namevalue"/>
+	</field>
+	<field name="accounttype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="accounttype"/>
+	</field>
+	<field name="sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sameyearsum"/>
+	</field>
+	<field name="lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="lastyearsum"/>
+	</field>
+	<field name="eurosaldo" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
+	</field>
+	<field name="l3_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l3_sameyearsum"/>
+	</field>
+	<field name="l3_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l3_lastyearsum"/>
+	</field>
+	<field name="l2_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l2_sameyearsum"/>
+	</field>
+	<field name="l2_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l2_lastyearsum"/>
+	</field>
+	<field name="l1_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l1_sameyearsum"/>
+	</field>
+	<field name="l1_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l1_lastyearsum"/>
+	</field>
+	<field name="c_calendar_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_calendar_id"/>
+	</field>
+	<field name="c_elementvalue_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_elementvalue_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="orgname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="orgname"/>
+	</field>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -184,7 +231,7 @@ $P{ExcludeYearEndBooking}
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="77" splitType="Stretch">
+		<band height="123" splitType="Stretch">
 			<textField>
 				<reportElement x="206" y="10" width="73" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893"/>
 				<textElement markup="none">
@@ -193,37 +240,9 @@ $P{ExcludeYearEndBooking}
 				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="47" width="50" height="12" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="87" y="47" width="259" height="12" uuid="21c2a674-61a4-4668-b689-b0264221a282"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="353" y="47" width="102" height="12" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="454" y="47" width="102" height="12" uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="247" y="23" width="100" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae"/>
+				<reportElement x="35" y="40" width="100" height="12" uuid="15cb15a1-6dd2-4b73-a4f6-8f0fbce298ae"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
@@ -235,22 +254,92 @@ $P{ExcludeYearEndBooking}
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="206" y="35" width="163" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a"/>
+				<reportElement x="35" y="52" width="163" height="12" uuid="8c9642e4-6a41-4d9a-a336-0037f2d02d8a"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{IncludePostingTypeStatistical} + " "+ $P{IncludePostingTypeStatistical}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="rectangle-1" x="35" y="105" width="521" height="13" backcolor="#808080" uuid="61f811ea-e2b3-488f-9055-ad26f9453b76"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="37" y="106" width="50" height="12" forecolor="#FFFFFF" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="87" y="106" width="259" height="12" forecolor="#FFFFFF" uuid="21c2a674-61a4-4668-b689-b0264221a282"/>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="353" y="106" width="102" height="12" forecolor="#FFFFFF" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="454" y="106" width="102" height="12" forecolor="#FFFFFF" uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="35" y="64" width="163" height="12" uuid="36ff4228-cdb8-4f6f-86cd-750ce0d96782"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DefaultAcct} + " "+ $P{defaultAcc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="35" y="76" width="163" height="12" uuid="0b4c1c14-7861-4c88-b4f6-b34aab0519b7"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ExcludeYearEndBooking} + " "+ $P{ExcludeYearEndBooking}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="35" y="88" width="163" height="12" uuid="8fea8a95-0417-443b-923f-8dd446935d9c"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{consistency_check} + " "+ $P{consistency_check}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="35" y="28" width="100" height="12" uuid="e57a55c7-a475-4c90-bf85-fdd460867c66"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Org} +" "+$F{orgname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="24" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-4" stretchType="ContainerBottom" x="35" y="0" width="521" height="11" backcolor="#FFFFCC" uuid="f1593da2-325c-4206-82c5-a3857ad6e8ad">
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{lvl1_COUNT}.intValue()%2)==1)]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField>
 				<reportElement x="37" y="0" width="50" height="12" isRemoveLineWhenBlank="true" uuid="3b1734bc-2684-4024-a509-7ac2a65ce3ee">
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{namevalue}]]></textFieldExpression>
 			</textField>
@@ -259,7 +348,7 @@ $P{ExcludeYearEndBooking}
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -268,7 +357,7 @@ $P{ExcludeYearEndBooking}
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sameyearsum}]]></textFieldExpression>
 			</textField>
@@ -277,7 +366,7 @@ $P{ExcludeYearEndBooking}
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lastyearsum}]]></textFieldExpression>
 			</textField>
@@ -286,7 +375,7 @@ $P{ExcludeYearEndBooking}
 					<printWhenExpression><![CDATA[!($F{parentvalue1}.equals($F{namevalue}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["(" + $F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP ) + " EUR)"]]></textFieldExpression>
 			</textField>
@@ -303,7 +392,7 @@ $P{ExcludeYearEndBooking}
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
 			</textField>
@@ -323,7 +412,7 @@ $P{ExcludeYearEndBooking}
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="37" y="0" width="100" height="20" uuid="bc66c4cd-350c-4c34-97cb-15a5775ac715"/>
 				<textElement>
-					<font size="8"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
