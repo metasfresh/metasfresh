@@ -23,7 +23,10 @@
 package de.metas.camel.externalsystems.alberta.product.processor;
 
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
+import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -59,6 +62,11 @@ public class RetrieveProductsProcessor implements Processor
 		final String tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
+		final String updatedAfter = CoalesceUtil.coalesceNotNull(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
+
 		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
 				.apiKey(apiKey)
 				.tenant(tenant)
@@ -69,6 +77,10 @@ public class RetrieveProductsProcessor implements Processor
 		exchange.setProperty(ROUTE_PROPERTY_ALBERTA_PRODUCT_API, albertaProductApi);
 
 		exchange.getIn().setBody(buildGetProductsCamelRequest(request));
+
+		exchange.setProperty(PushProductsRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, new NextImportSinceTimestamp(Instant.parse(updatedAfter)));
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
 	}
 
 	private GetProductsCamelRequest buildGetProductsCamelRequest(@NonNull final JsonExternalSystemRequest request)
