@@ -21,9 +21,11 @@ RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
 # works now with the locale being set
 RUN cd de.metas.adempiere.adempiere/base && mvn surefire:test -Dtest="StringLikeFilterTest"
 
-# works with junit update to 5.7.0 and disablinf of failing tests
+# works with junit update to 5.7.0 and disabling of failing tests
 RUN cd /backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_request && mvn surefire:test
 
-# some tests under de.metas.payment.esr are fixed with linux eol for *.xml files (could break unit tests under windows)
-# a single one still failes though
+# works with linux eol and disabling of failing tests
 RUN cd /backend/de.metas.payment.esr && mvn surefire:test
+
+# one more
+RUN cd de.metas.material/dispo-service && mvn surefire:test
