@@ -8,9 +8,13 @@ jobs:
       - name: print-vars
         run: env
       - name: sanitize-ref-name
-        run: 'SANITIZED_REF_NAME=$(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')'
+        outputs:
+          sanitized-ref-name: ${{ steps.step1.outputs.test }}
+        steps:
+          - id: step1
+            run: 'echo "::set-output name=test:: $(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
       - name: print-sanitizef-ref-name
-        run: echo $SANITIZED_REF_NAME
+        run: echo ${{needs.sanitize-ref-name.outputs.sanitized-ref-name}}
       - name: build-commons
         run: docker buildx build -f Dockerfile.common -t metas-mvn-common:latest .
       - name: build-backend
