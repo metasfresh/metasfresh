@@ -111,6 +111,14 @@ public class BPartnerInfo
 				: this;
 	}
 
+
+	public BPartnerInfo withContactId(@Nullable final BPartnerContactId	contactId)
+	{
+		return !BPartnerContactId.equals(this.contactId, contactId)
+				? toBuilder().contactId(contactId).build()
+				: this;
+	}
+
 	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()
 	{
 		if (bpartnerLocationId == null)
