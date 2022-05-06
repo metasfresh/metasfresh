@@ -16,4 +16,8 @@ WORKDIR /backend
 COPY backend .
 RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
 
+# this works
 RUN cd de.metas.adempiere.adempiere/base && mvn surefire:test -Dtest="StringLikeFilterTest"
+
+# and this as well
+RUN cd /backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_request && mvn surefire:test
