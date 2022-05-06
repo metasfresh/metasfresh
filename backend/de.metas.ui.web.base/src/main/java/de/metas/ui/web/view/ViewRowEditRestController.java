@@ -107,6 +107,7 @@ public class ViewRowEditRestController
 		final IEditableView view = getEditableView(viewId);
 		final RowEditingContext editingCtx = createRowEditingContext(rowId);
 		view.patchViewRow(editingCtx, fieldChangeRequests);
+		view.invalidateRowById(rowId);
 
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
