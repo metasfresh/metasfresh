@@ -1,19 +1,16 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.ProductsProposalRowBuilder;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowSaved;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.X_M_ProductPrice;
+
+import java.math.BigDecimal;
 
 /*
  * #%L

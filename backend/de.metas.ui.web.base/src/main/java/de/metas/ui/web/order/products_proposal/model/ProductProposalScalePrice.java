@@ -52,17 +52,18 @@ public final class ProductProposalScalePrice
 	@NonNull
 	private final ProductPriceId productPriceId;
 
-
 	public BigDecimal withQty(final BigDecimal qtyEntered)
 	{
-		final BigDecimal qty = qtyEntered != null && qtyEntered.signum() > 0 ? qtyEntered: BigDecimal.ONE;
+		final BigDecimal qty = qtyEntered != null && qtyEntered.signum() > 0 ?
+				qtyEntered :
+				BigDecimal.ONE;
 
-		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class );
+		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
 		final I_M_ProductScalePrice scalePrice = Services.get(IProductPA.class)
 				.retrieveOrCreateScalePrices(productPriceId.getRepoId()
-				, qty
-				, false // createNew
-				, ITrx.TRXNAME_None);
+						, qty
+						, false // createNew
+						, ITrx.TRXNAME_None);
 
 		if (Objects.isNull(scalePrice))
 		{

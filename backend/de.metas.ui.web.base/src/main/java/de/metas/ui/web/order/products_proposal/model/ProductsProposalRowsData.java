@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.ProductPriceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -45,6 +44,7 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_M_ProductPrice;
 
 /*
  * #%L
@@ -282,7 +282,9 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
-				.price(createPrice(request.getProductId(), request.getPriceListPrice(), request.getCopiedFromProductPriceId()))
+				.price(createPrice(request.getProductId(),
+								   request.getPriceListPrice(),
+								   request.getCopiedFromProductPriceId()))
 				.packingMaterialId(request.getPackingMaterialId())
 				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())
