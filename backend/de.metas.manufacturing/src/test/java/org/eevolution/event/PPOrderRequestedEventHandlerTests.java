@@ -58,6 +58,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.validator.PP_Order;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -95,6 +96,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 @ExtendWith(AdempiereTestWatcher.class)
+@Disabled
 public class PPOrderRequestedEventHandlerTests
 {
 	private static final MaterialDispoGroupId PPORDER_POJO_GROUPID = MaterialDispoGroupId.ofInt(33);
