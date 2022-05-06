@@ -1313,4 +1313,19 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1)
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
+	}
 }

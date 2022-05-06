@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -493,31 +492,6 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
 	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Incoterms.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Incoterms_ID (int C_Incoterms_ID);
-
-	/**
-	 * Get Incoterms.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Incoterms_ID();
-
-	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
-
-	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
-	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Invoice.
@@ -1040,27 +1014,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_DunningGrace = "DunningGrace";
 
 	/**
-	 * Set eMail.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setEMail (@Nullable java.lang.String EMail);
-
-	/**
-	 * Get eMail.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getEMail();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_EMail = new ModelColumn<>(I_C_Invoice.class, "EMail", null);
-	String COLUMNNAME_EMail = "EMail";
-
-	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1513,7 +1466,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
-	 * Set Price List.
+	 * Set Preisliste.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1523,7 +1476,7 @@ public interface I_C_Invoice
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Price List.
+	 * Get Preisliste.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1954,4 +1907,25 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_UserFlag = new ModelColumn<>(I_C_Invoice.class, "UserFlag", null);
 	String COLUMNNAME_UserFlag = "UserFlag";
+
+	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 }

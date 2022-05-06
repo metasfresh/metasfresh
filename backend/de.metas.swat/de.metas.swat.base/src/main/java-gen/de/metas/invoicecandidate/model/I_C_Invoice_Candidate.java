@@ -31,28 +31,28 @@ public interface I_C_Invoice_Candidate
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
+
 	/**
 	 * Set Inputsource.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
 	 * Get Inputsource.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	int getAD_InputDataSource_ID();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "AD_InputDataSource_ID", null);
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
 
 	/**
 	 * Set Statusmeldung.

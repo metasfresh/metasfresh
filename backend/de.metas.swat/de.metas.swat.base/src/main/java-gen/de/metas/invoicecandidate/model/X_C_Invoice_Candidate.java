@@ -35,17 +35,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+
 	@Override
 	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
 	{
-		throw new IllegalArgumentException ("AD_InputDataSource_ID is virtual column");	}
+		if (AD_InputDataSource_ID < 1)
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
 
 	@Override
 	public int getAD_InputDataSource_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
-
 	@Override
 	public void setAD_Note_ID (final int AD_Note_ID)
 	{
