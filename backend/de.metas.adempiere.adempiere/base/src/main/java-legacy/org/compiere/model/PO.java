@@ -1752,7 +1752,21 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+			final String tableName = get_TableName();
+
+			return service.monitorSpan(
+					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record
+					PerformanceMonitoringService.SpanMetadata
+							.builder()
+							.name("save " + tableName)
+							.type(PerformanceMonitoringService.Type.PO.getCode())
+							.subType(PerformanceMonitoringService.SubType.LOAD.getCode())
+							.label("tableName", tableName)
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
+							.build());
 		}
 		finally
 		{

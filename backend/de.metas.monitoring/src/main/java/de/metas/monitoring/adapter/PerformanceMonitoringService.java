@@ -152,7 +152,9 @@ public interface PerformanceMonitoringService
 
 		EVENT_RECEIVE("event-receive"),
 
-		SAVE("save");
+		SAVE("save"),
+
+		LOAD("load");
 
 		SubType(final String code)
 		{
