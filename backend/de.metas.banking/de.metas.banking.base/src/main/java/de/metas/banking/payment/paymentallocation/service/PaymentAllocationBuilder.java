@@ -216,8 +216,8 @@ public class PaymentAllocationBuilder
 		}
 
 		//
-		// Make sure that we allow allocation one document per type for vendor documents
-		assertOnlyOneVendorDocType(payableDocuments, paymentDocuments);
+		// Make sure that we allow allocation one payment for vendor documents
+		assertOnlyOnePaymentVendorDocType(paymentDocuments);
 
 		final ImmutableList.Builder<AllocationLineCandidate> allocationCandidates = ImmutableList.builder();
 
@@ -254,34 +254,17 @@ public class PaymentAllocationBuilder
 	}
 
 	/***
-	 * Do not allow to allocate more then one document type for vendor documents
+	 * Do not allow to allocate more then one payment for vendor documents
 	 */
-	private void assertOnlyOneVendorDocType(
-			final List<PayableDocument> payableDocuments,
-			final List<PaymentDocument> paymentDocuments)
+	private void assertOnlyOnePaymentVendorDocType(final List<PaymentDocument> paymentDocuments)
 	{
 		final List<PaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
 				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
-		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
-		for (final PayableDocument payable : payableDocuments)
+		if (paymentVendorDocuments.size() > 1)
 		{
-			if (!payable.getSoTrx().isPurchase())
-			{
-				continue;
-			}
-
-			if (!payable.isCreditMemo())
-			{
-				payableVendorDocuments_NoCreditMemos.add(payable);
-			}
-		}
-
-		if (paymentVendorDocuments.size() > 1
-				|| payableVendorDocuments_NoCreditMemos.size() > 1)
-		{
-			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
+			throw new MultipleVendorDocumentsException(paymentVendorDocuments);
 		}
 	}
 
