@@ -177,7 +177,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				.map(ExistingLockInfo::getCreated);
 	}
 
-	private void removeObserver(@NonNull final AsyncBatchId id)
+	public void removeObserver(@NonNull final AsyncBatchId id)
 	{
 		if (asyncBatch2Completion.get(id) == null)
 		{

@@ -60,7 +60,7 @@ public class OrderUserNotifications
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.order.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final Logger logger = LogManager.getLogger(OrderUserNotifications.class);

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -122,6 +123,25 @@ public class AsyncBatchService
 		final T result = trxManager.callInNewTrx(supplier::get);
 
 		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+
+		return result;
+	}
+
+	@NonNull
+	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		asyncBatchObserver.observeOn(asyncBatchId);
+
+		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
+		else
+		{
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
 
 		return result;
 	}

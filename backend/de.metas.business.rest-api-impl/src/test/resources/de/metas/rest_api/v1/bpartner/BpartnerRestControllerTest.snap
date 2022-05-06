@@ -272,6 +272,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
@@ -447,6 +448,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
@@ -587,6 +589,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
@@ -727,6 +730,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     },
     "currencyId" : 100010,
     "iban" : "INITIAL-IBAN-1",
+    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50

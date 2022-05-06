@@ -94,6 +94,6 @@ public class DD_OrderLine_PostMaterialEvent
 				.toWarehouseId(warehouseToId)
 				.build();
 
-		postMaterialEventService.postEventAsync(event);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 }

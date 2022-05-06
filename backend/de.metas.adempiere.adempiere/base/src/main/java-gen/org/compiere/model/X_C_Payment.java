@@ -1193,6 +1193,18 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setIBAN (final @Nullable java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	@Override
+	public java.lang.String getIBAN()
+	{
+		return get_ValueAsString(COLUMNNAME_IBAN);
+	}
+
+	@Override
 	public void setRoutingNo (final @Nullable java.lang.String RoutingNo)
 	{
 		set_Value (COLUMNNAME_RoutingNo, RoutingNo);

@@ -45,7 +45,7 @@ public class RevolutExportCsvRow
 						 RevolutExportCSVColumn.AccountNo,
 						 RevolutExportCSVColumn.RoutingNo,
 						 RevolutExportCSVColumn.IBAN,
-						 RevolutExportCSVColumn.BIC,
+						 RevolutExportCSVColumn.SwiftCode,
 						 RevolutExportCSVColumn.RecipientBankCountryName,
 						 RevolutExportCSVColumn.Currency,
 						 RevolutExportCSVColumn.Amount,

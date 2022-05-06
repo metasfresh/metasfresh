@@ -43,9 +43,10 @@ BEGIN
            UNNEST(STRING_TO_ARRAY(ev.default_account, ',')) AS default_account,
            FALSE::boolean                                   AS is_duplicate
     FROM c_elementvalue ev
-    WHERE ev.c_element_id = 1000001
+    WHERE ev.c_element_id = v_C_Element_ID
       AND ev.isactive = 'Y'
       AND ev.default_account IS NOT NULL;
+    --
     UPDATE tmp_elementvalue_default_account t
     SET is_duplicate='Y'
     WHERE EXISTS(SELECT 1 FROM tmp_elementvalue_default_account t2 WHERE t2.default_account = t.default_account AND t2.value < t.value);
@@ -86,9 +87,16 @@ BEGIN
     -- Update each accounting column
     FOR v_row IN (SELECT *
                   FROM tmp_accounting_tables_and_columns t
-                       -- WHERE in_C_AcctSchema_Default
                   ORDER BY t.tablename, t.columnname)
         LOOP
+            IF (v_row.ismandatory = 'Y' AND v_row.default_validcombination_id IS NULL) THEN
+                IF (v_row.default_accountno IS NULL) THEN
+                    RAISE WARNING '%.% is mandatory but there is no C_ElementValue with Default_Account=%', v_row.tablename, v_row.columnname, v_row.columnname;
+                ELSE
+                    RAISE WARNING 'No default valid combination but the column is mandatory: %', v_row;
+                END IF;
+            END IF;
+
             EXECUTE 'update ' || v_row.tablename || ' set '
                         || v_row.columnname || ' = ' || (CASE WHEN v_row.default_validcombination_id IS NOT NULL THEN v_row.default_validcombination_id::text ELSE 'null' END)
                         || ', updated=now(), updatedby=0'
