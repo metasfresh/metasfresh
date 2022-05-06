@@ -11,7 +11,7 @@ jobs:
         id: sanitize
         run: 'echo "::set-output name=sanitized-ref-name:: $(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
       - name: print-sanitizef-ref-name
-        run: echo "abc123xyz${{ steps.sanitize.outputs.sanitized-ref-name }}"
+        run: echo "abc123xyz${{steps.sanitize.outputs.sanitized-ref-name}}"
       - name: build-commons
         run: docker buildx build -f Dockerfile.common -t metas-mvn-common:latest .
       - name: build-backend
