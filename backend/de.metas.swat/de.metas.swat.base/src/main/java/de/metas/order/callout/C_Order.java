@@ -45,6 +45,8 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.Optional;
 
+import static de.metas.common.util.CoalesceUtil.firstNotBlank;
+
 @Callout(I_C_Order.class)
 public class C_Order
 {
@@ -179,9 +181,10 @@ public class C_Order
 
 		if (userRecord.isPresent())
 		{
-			order.setBPartnerName(CoalesceUtil.coalesce(bPartnerLocationRecord.getBPartnerName(), userRecord.get().getName()));
-			order.setEMail(CoalesceUtil.coalesce(bPartnerLocationRecord.getEMail(), userRecord.get().getEMail()));
-			order.setPhone(CoalesceUtil.coalesce(bPartnerLocationRecord.getPhone(), userRecord.get().getPhone()));
+			final I_AD_User user = userRecord.get();
+			order.setBPartnerName(firstNotBlank(user.getName(), bPartnerLocationRecord.getBPartnerName()));
+			order.setEMail(firstNotBlank(user.getEMail(), bPartnerLocationRecord.getEMail()));
+			order.setPhone(firstNotBlank(user.getPhone(), bPartnerLocationRecord.getPhone()));
 		}
 		else
 		{
