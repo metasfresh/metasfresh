@@ -48,7 +48,8 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 
 /*
  * #%L
@@ -232,7 +233,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any(), null);
+				.postEventNow(Mockito.any(), eq(null));
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
