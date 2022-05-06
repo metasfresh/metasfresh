@@ -80,8 +80,10 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 	{
 		final File file = createNewTemporaryPDFFile(workpackage);
 		final Document document = new Document();
+		final FileOutputStream fos = new FileOutputStream(file, false);
 
-		try (final FileOutputStream fos = new FileOutputStream(file, false))
+		// don't create FileOutputStream in try-catch; will cause the an exception becuase will be closed too early
+		try
 		{
 			final PdfCopy copy = new PdfCopy(document, fos);
 			document.open();
@@ -106,11 +108,12 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 					printingQueueBL.setProcessedAndSave(pq);
 				}
 			}
-			return file;
 		}
 		finally
 		{
 			document.close();
+			fos.close();
+			return file;
 		}
 	}
 
