@@ -5,6 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: print-vars
+        run: env
+      - name: sanitize-ref-name
+        run: 'SANITIZED_REF_NAME=$(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')'
       - name: build-commons
         run: docker buildx build -f Dockerfile.common -t metas-mvn-common:latest .
       - name: build-backend
@@ -13,24 +17,24 @@ jobs:
         run: docker buildx build -f Dockerfile.camel -t metas-mvn-camel:latest .
       
       - name: build-api
-        run: docker buildx build -f Dockerfile.backend.api -t mazorn/metas-api:latest .
+        run: docker buildx build -f Dockerfile.backend.api -t mazorn/metas-api:$SANITIZED_REF_NAME .
       - name: build-app
-        run: docker buildx build -f Dockerfile.backend.app -t mazorn/metas-app:latest .
+        run: docker buildx build -f Dockerfile.backend.app -t mazorn/metas-app:$SANITIZED_REF_NAME .
       - name: build-externalsystems
-        run: docker buildx build -f Dockerfile.camel.externalsystems -t metas-externalsystems:latest .
+        run: docker buildx build -f Dockerfile.camel.externalsystems -t metas-externalsystems:$SANITIZED_REF_NAME .
       - name: build-frontend
-        run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:latest .
+        run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:$SANITIZED_REF_NAME .
       - name: build-db
-        run: docker buildx build -f Dockerfile.db-standalone -t metas-db:latest -t mazorn/metas-db:latest .
+        run: docker buildx build -f Dockerfile.db-standalone -t metas-db:latest -t mazorn/metas-db:$SANITIZED_REF_NAME .
       - name: build-db-preloaded
-        run: docker buildx build -f Dockerfile.db-preloaded -t mazorn/metas-db:preloaded .
+        run: docker buildx build -f Dockerfile.db-preloaded -t mazorn/metas-db:$SANITIZED_REF_NAME-preloaded .
 
       - name: push-images
         run: |
           echo "cdcc4a12-e97d-479a-85d3-9cb006aa771c" | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-api:latest
-          docker push mazorn/metas-app:latest
-          docker push mazorn/metas-frontend:latest
-          docker push mazorn/metas-db:latest
-          docker push mazorn/metas-db:preloaded
+          docker push mazorn/metas-api:$SANITIZED_REF_NAME
+          docker push mazorn/metas-app:$SANITIZED_REF_NAME
+          docker push mazorn/metas-frontend:$SANITIZED_REF_NAME
+          docker push mazorn/metas-db:$SANITIZED_REF_NAME
+          docker push mazorn/metas-db:$SANITIZED_REF_NAME-preloaded
           docker logout
