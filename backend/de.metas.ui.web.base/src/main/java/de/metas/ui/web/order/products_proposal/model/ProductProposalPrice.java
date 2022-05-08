@@ -92,7 +92,7 @@ public class ProductProposalPrice
 		}
 		else if(scalePrice != null)
 		{
-			this.userEnteredPriceValue = scalePrice.withQty(userEnteredQty);
+			this.userEnteredPriceValue = scalePrice.withQty(userEnteredQty).get().toBigDecimal();
 		}
 		else
 		{

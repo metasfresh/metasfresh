@@ -25,6 +25,8 @@ package de.metas.ui.web.order.products_proposal.model;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.IProductPA;
 import de.metas.quantity.Quantity;
@@ -37,28 +39,35 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_ProductPrice;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Builder
 @EqualsAndHashCode
 @ToString
 public final class ProductProposalScalePrice
 {
+	public static final String MSG_NO_SCALE_PRICE = "NoScalePrice";
+
 	@NonNull
 	private final ProductPriceId productPriceId;
 
-	public BigDecimal withQty(final BigDecimal qtyEntered)
+	public Optional<Money> withQty(@Nullable final BigDecimal qtyEntered)
 	{
 		final BigDecimal qty = qtyEntered != null && qtyEntered.signum() > 0 ?
 				qtyEntered :
 				BigDecimal.ONE;
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
+		final CurrencyId currencyId = retrieveCurrencyIdFromProductPrice(productPrice);
+
 		final I_M_ProductScalePrice scalePrice = Services.get(IProductPA.class)
 				.retrieveOrCreateScalePrices(productPriceId.getRepoId()
 						, qty
@@ -69,20 +78,27 @@ public final class ProductProposalScalePrice
 		{
 			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice))
 			{
-				return productPrice.getPriceStd();
+				return Optional.of(Money.of(productPrice.getPriceStd(), currencyId));
 			}
 			else
 			{
-				throw new AdempiereException(AdMessageKey.of("NoScalePrice"), qtyEntered);
+				throw new AdempiereException(AdMessageKey.of(MSG_NO_SCALE_PRICE), qtyEntered);
 			}
 		}
-		return scalePrice.getPriceStd();
+
+		return Optional.of(Money.of(scalePrice.getPriceStd(), currencyId));
 	}
 
 	public static boolean isProductPriceUseScalePrice(@NonNull final I_M_ProductPrice productPrice)
 	{
 		return Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice)
 				|| Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict);
+	}
+
+	public static CurrencyId retrieveCurrencyIdFromProductPrice(@NonNull final I_M_ProductPrice productPrice)
+	{
+		final I_M_PriceList_Version priceListVersion = InterfaceWrapperHelper.load(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+		return CurrencyId.ofRepoId(priceListVersion.getM_PriceList().getC_Currency_ID());
 	}
 
 }
