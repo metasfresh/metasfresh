@@ -15,6 +15,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -27,6 +29,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -81,6 +84,7 @@ import java.util.Set;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
 	private PurchaseOrderFromItemFactory(
@@ -112,11 +116,14 @@ import java.util.Set;
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
+						purchaseOrderItem.getAttributeSetInstanceId(),
+						UomId.ofRepoId(purchaseOrderItem.getUomId()) // note that all purchaseOrderItems need to have the same UOM anyways, or the follosing addQty will fail
+				)
 				.orElseGet(orderFactory::newOrderLine)
-				.productId(purchaseOrderItem.getProductId());
+				.productId(purchaseOrderItem.getProductId())
+				.asiId(purchaseOrderItem.getAttributeSetInstanceId());
 
-		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
+		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty()); 
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
@@ -178,8 +185,8 @@ import java.util.Set;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
 			final ZonedDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
-
-			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised())))
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone)))
 			{
 				deviatingDatePromised = true;
 			}

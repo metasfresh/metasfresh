@@ -281,11 +281,13 @@ public class PurchaseCandidate
 		return getImmutableFields().getOrgId();
 	}
 
+	@NonNull
 	public ProductId getProductId()
 	{
 		return getImmutableFields().getProductId();
 	}
 
+	@NonNull
 	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
 		return getImmutableFields().getAttributeSetInstanceId();
