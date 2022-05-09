@@ -71,7 +71,7 @@ const Calendar = ({ className = 'container' }) => {
       )}
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        defaultView="resourceTimeline"
+        initialView="resourceTimeline"
         plugins={[
           dayGridPlugin,
           timeGridPlugin,
