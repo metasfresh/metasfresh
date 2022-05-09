@@ -107,10 +107,6 @@ public class RecordWindowFinder
 			? new DefaultGenericZoomIntoTableInfoRepository()
 			: new TestingGenericZoomIntoTableInfoRepository();
 
-	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository = !Adempiere.isUnitTestMode()
-			? SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class)
-			: NullCustomizedWindowInfoMapRepository.instance;
-
 	//
 	// Parameters
 	@NonNull private final String _tableName;
@@ -391,7 +387,7 @@ public class RecordWindowFinder
 	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final TableInfoCacheKey key)
 	{
 		return tableInfoRepository.retrieveTableInfo(key.getTableName(), key.isIgnoreExcludeFromZoomTargetsFlag())
-				.withCustomizedWindowIds(customizedWindowInfoMapRepository.get());
+				.withCustomizedWindowIds(getCustomizedWindowInfoMapRepository().get());
 	}
 
 	private SOTrx getRecordSOTrxEffective()
@@ -449,6 +445,14 @@ public class RecordWindowFinder
 			logger.warn("Failed retrieving parent record ID from current record. Returning empty. \n\tthis={} \n\tSQL: {}", this, sql, ex);
 			return Optional.empty();
 		}
+	}
+
+	@NonNull
+	private CustomizedWindowInfoMapRepository getCustomizedWindowInfoMapRepository()
+	{
+		return !Adempiere.isUnitTestMode()
+				? SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class)
+				: NullCustomizedWindowInfoMapRepository.instance;
 	}
 
 	@Value
