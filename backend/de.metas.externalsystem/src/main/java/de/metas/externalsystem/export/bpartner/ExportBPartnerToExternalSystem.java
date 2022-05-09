@@ -151,6 +151,12 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 		}
 	}
 
+	@Override
+	public int getCurrentPendingItems()
+	{
+		return syncBPartnerDebouncer.getCurrentBufferSize();
+	}
+
 	@NonNull
 	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bpartnerId);
 

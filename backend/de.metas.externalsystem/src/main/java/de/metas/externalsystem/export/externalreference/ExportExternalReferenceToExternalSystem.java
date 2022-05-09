@@ -153,6 +153,12 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 		}
 	}
 
+	@VisibleForTesting
+	public int getCurrentPendingItems()
+	{
+		return this.syncExternalReferenceDebouncer.getCurrentBufferSize();
+	}
+
 	@NonNull
 	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ExternalReferenceId externalReferenceId);
 

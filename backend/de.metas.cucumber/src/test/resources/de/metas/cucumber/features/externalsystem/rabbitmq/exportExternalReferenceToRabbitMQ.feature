@@ -148,6 +148,8 @@ Feature: Validate external reference is sent to RabbitMQ
       | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                 |
       | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
 
+    And there are no pending items for export to external system via: 'ExportExternalReferenceToRabbitMQService'
+
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue       | OPT.IsSyncExternalReferencesToRabbitMQ |
       | config_1                            | RabbitMQ | externalReferenceAudit_S2 | true                                   |
@@ -191,9 +193,6 @@ Feature: Validate external reference is sent to RabbitMQ
       | dataExport_BPartner             | Exported-Standalone | config_1                            | p_1                        |
       | dataExport_BPLocation           | Exported-Standalone | config_1                            | p_1                        |
       | dataExport_BPContact            | Exported-Standalone | config_1                            | p_1                        |
-
-    # we need to make sure the ExportExternalReference Debouncer is empty before changing the external reference
-    And we wait for 500 ms
 
     And the following S_ExternalReference is changed:
       | S_ExternalReference_ID.Identifier | OPT.Version |
