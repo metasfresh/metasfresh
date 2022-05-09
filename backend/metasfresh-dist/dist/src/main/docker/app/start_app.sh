@@ -31,6 +31,10 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # self
 app_host=${APP_HOST:-app}
 
+# report
+jasper_report_servlet_url=${METASFRESH_JASPER_REPORT_SERVLET_URL:-NONE}
+jasper_barcode_servlet_url=${METASFRESH_JASPER_BARCODE_SERVLET_URL:-NONE}
+
 # debug
 debug_port=${DEBUG_PORT:-8790}
 debug_suspend=${DEBUG_SUSPEND:-n}
@@ -62,6 +66,9 @@ echo_variable_values()
  echo ""
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
+ echo ""
+ echo "METASFRESH_JASPER_REPORT_SERVLET_URL=${jasper_report_servlet_url}"
+ echo "METASFRESH_JASPER_BARCODE_SERVLET_URL=${jasper_barcode_servlet_url}"
 }
 
 set_properties()
@@ -102,6 +109,18 @@ run_metasfresh()
 	metasfresh_es_enable_params=""
  fi
 
+ if [ "$jasper_report_servlet_url" != "NONE" ];
+ then
+  metasfresh_report_params="-Dde.metas.adempiere.report.jasper.JRServerServlet=${jasper_report_servlet_url}"
+ else
+  metasfresh_report_params=""
+ fi
+
+ if [ "jasper_barcode_servlet_url" != "NONE" ];
+ then
+  metasfresh_report_params="${metasfresh_report_params}-Dde.metas.adempiere.report.barcode.BarcodeServlet=${jasper_barcode_servlet_url}"
+ fi
+
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
  # MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
  # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
@@ -130,6 +149,7 @@ run_metasfresh()
  ${external_lib_params} \
  ${metasfresh_db_connectionpool_params} \
  ${metasfresh_admin_params} \
+ ${metasfresh_report_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  org.springframework.boot.loader.JarLauncher
