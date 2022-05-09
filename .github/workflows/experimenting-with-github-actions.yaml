@@ -35,10 +35,10 @@ jobs:
       - name: push-images
         run: |
           echo "cdcc4a12-e97d-479a-85d3-9cb006aa771c" | docker login --username mazorn --password-stdin
-          docker push --all-tags mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }}
-          docker push --all-tags mazorn/metas-app:${{ steps.sanitize.outputs.sanitized-ref-name }}
-          docker push --all-tags mazorn/metas-frontend:${{ steps.sanitize.outputs.sanitized-ref-name }}
-          docker push --all-tags mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}
+          docker push mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }}
+          docker push mazorn/metas-app:${{ steps.sanitize.outputs.sanitized-ref-name }}
+          docker push mazorn/metas-frontend:${{ steps.sanitize.outputs.sanitized-ref-name }}
+          docker push mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}
           docker logout
 
 # docker push --all-tags mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-preloaded
