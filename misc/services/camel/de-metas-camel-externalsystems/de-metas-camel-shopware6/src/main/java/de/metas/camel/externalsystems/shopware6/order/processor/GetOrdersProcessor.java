@@ -35,6 +35,7 @@ import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -148,6 +149,7 @@ public class GetOrdersProcessor implements Processor
 				.taxProductIdProvider(getTaxProductIdProvider(request))
 				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
 				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
+				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.build();
 	}
 

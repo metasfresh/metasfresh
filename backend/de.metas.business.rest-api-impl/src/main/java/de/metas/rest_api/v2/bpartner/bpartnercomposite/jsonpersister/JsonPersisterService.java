@@ -88,6 +88,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -958,6 +959,16 @@ public class JsonPersisterService
 		if (jsonBPartner.isMemoIsSet())
 		{
 			bpartner.setMemo(jsonBPartner.getMemo());
+		}
+
+		// priceListId
+		if (jsonBPartner.isPriceListIdSet())
+		{
+			final Integer priceListId = JsonMetasfreshId.toValue(jsonBPartner.getPriceListId());
+			if (priceListId != null)
+			{
+				bpartner.setCustomerPricingSystemId(PricingSystemId.ofRepoIdOrNull(priceListId));
+			}
 		}
 
 		return BooleanWithReason.TRUE;

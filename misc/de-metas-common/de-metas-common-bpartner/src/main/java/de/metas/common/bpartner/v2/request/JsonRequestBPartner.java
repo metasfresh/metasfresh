@@ -31,6 +31,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
@@ -129,8 +131,6 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean poInvoiceRuleSet;
 
-
-
 	@ApiModelProperty(position = 110)
 	private String url;
 
@@ -162,6 +162,12 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(hidden = true)
 	private boolean globalIdset;
+
+	@ApiModelProperty(position = 150, //
+			value = "Translates to `C_BPartner.GlobalId`")
+	private JsonMetasfreshId priceListId;
+
+	private boolean priceListIdSet;
 
 	@ApiModelProperty(position = 160, //
 			value = "Translates to `C_BPartner.VATaxId`")
@@ -308,5 +314,14 @@ public class JsonRequestBPartner
 	{
 		this.memo = memo;
 		this.memoIsSet = true;
+	}
+
+	public void setPriceListId(@Nullable final JsonMetasfreshId priceListId)
+	{
+		if (JsonMetasfreshId.toValue(priceListId) != null)
+		{
+			this.priceListId = priceListId;
+			this.priceListIdSet = true;
+		}
 	}
 }

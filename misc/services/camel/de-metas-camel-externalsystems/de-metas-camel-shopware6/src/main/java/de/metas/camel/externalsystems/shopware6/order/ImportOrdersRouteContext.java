@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
@@ -137,6 +138,9 @@ public class ImportOrdersRouteContext
 
 	@NonNull
 	private JsonProductLookup jsonProductLookup;
+
+	@Nullable
+	private PriceListBasicInfo priceListBasicInfo;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()

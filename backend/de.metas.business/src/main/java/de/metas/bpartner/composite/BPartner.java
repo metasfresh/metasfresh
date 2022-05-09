@@ -157,7 +157,7 @@ public class BPartner
 	private boolean identifiedByExternalReference;
 
 	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	private PricingSystemId customerPricingSystemId;
 
 	private final PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
