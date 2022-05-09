@@ -118,7 +118,8 @@ run_metasfresh()
 
  if [ "jasper_barcode_servlet_url" != "NONE" ];
  then
-  metasfresh_report_params="${metasfresh_report_params}-Dde.metas.adempiere.report.barcode.BarcodeServlet=${jasper_barcode_servlet_url}"
+  metasfresh_report_params="${metasfresh_report_params}\
+  -Dde.metas.adempiere.report.barcode.BarcodeServlet=${jasper_barcode_servlet_url}"
  fi
 
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
