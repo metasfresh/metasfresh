@@ -21,7 +21,9 @@ Feature: create production order
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate (S0129.1_100) (S0129.2_100)
+  @Id:S0129.1_100
+  @Id:S0129.2_100
+  Scenario:  The manufacturing order is created from a manufacturing order candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_1           | standard_category                    |
@@ -151,7 +153,10 @@ Feature: create production order
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it (S0129.2_130) (S0129.2_150) (S0129.2_170)
+  @Id:S0129.2_130
+  @Id:S0129.2_150
+  @Id:S0129.2_170
+  Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it
     # Basic setup
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
@@ -405,7 +410,8 @@ Feature: create production order
       | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
+  @Id:S0129.2_200
+  Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_111      | trackedProduct_4           | standard_category                    |
