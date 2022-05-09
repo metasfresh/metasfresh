@@ -373,7 +373,8 @@ public class ImportOrdersRouteContext
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
 	}
 
-	public void incrementPageIndex() {
+	public void incrementPageIndex()
+	{
 		this.ordersResponsePageIndex++;
 	}
 }

@@ -139,7 +139,7 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockBuildOrdersContextProcessor(externalSystemRequest, 1, JSON_ORDERS_RESOURCE_PATH, ExternalSystemConstants.DEFAULT_ORDER_PAGE_SIZE)));
+									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockBuildOrdersContextProcessor(externalSystemRequest, 1, JSON_ORDERS_RESOURCE_PATH, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE)));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
 							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)

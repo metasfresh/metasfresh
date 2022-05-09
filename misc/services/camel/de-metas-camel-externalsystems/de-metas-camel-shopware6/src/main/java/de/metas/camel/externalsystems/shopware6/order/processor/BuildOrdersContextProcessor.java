@@ -110,7 +110,7 @@ public class BuildOrdersContextProcessor implements Processor
 																	shopwareClient,
 																	currencyInfoProvider,
 																	salutationInfoProvider,
-																	ExternalSystemConstants.DEFAULT_ORDER_PAGE_SIZE);
+																	ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE);
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}

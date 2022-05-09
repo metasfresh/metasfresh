@@ -287,10 +287,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	{
 		protected int called = 0;
 
-		public MockBuildOrdersContextProcessor()
-		{
-		}
-
 		@Override
 		public void process(final Exchange exchange) throws IOException
 		{
@@ -322,7 +318,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 					shopwareClient,
 					currencyInfoProvider,
 					salutationInfoProvider,
-					ExternalSystemConstants.DEFAULT_ORDER_PAGE_SIZE);
+					ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE);
 
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 		}
@@ -396,7 +392,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			final String orders = loadAsString(JSON_ORDERS_RESOURCE_PATH);
 
 			final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper
-					.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_ORDER_PAGE_SIZE));
+					.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE));
 
 			Mockito.doReturn(ResponseEntity.ok(orders))
 					.when(shopwareClientSpy)
