@@ -48,6 +48,8 @@ import org.compiere.model.X_C_Order;
 
 import static de.metas.common.util.CoalesceUtil.firstNotBlank;
 
+import static de.metas.common.util.CoalesceUtil.firstNotBlank;
+
 @Callout(I_C_Order.class)
 public class C_Order
 {
