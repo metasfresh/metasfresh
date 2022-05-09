@@ -702,7 +702,7 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (totalAmt.signum() < 0)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
