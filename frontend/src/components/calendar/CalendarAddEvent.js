@@ -25,11 +25,6 @@ const CalendarAddEvent = ({
   const [selectedCalendar, setSelectedCalendar] = React.useState(
     calendars && calendars[0]
   );
-  const [isCalendarFieldFocused, setIsCalendarFieldFocused] =
-    React.useState(false);
-  const [isCalendarFieldToggled, setIsCalendarFieldToggled] =
-    React.useState(false);
-
   const [title, setTitle] = React.useState('');
 
   const handleClickOK = () => {
@@ -50,17 +45,10 @@ const CalendarAddEvent = ({
       <div>
         <div>Calendar:</div>
         <div>
-          <RawList
-            rank="primary"
-            list={calendars || []}
+          <CalendarsList
+            calendars={calendars}
+            selectedCalendar={selectedCalendar}
             onSelect={setSelectedCalendar}
-            selected={selectedCalendar}
-            isFocused={isCalendarFieldFocused}
-            isToggled={isCalendarFieldToggled}
-            onOpenDropdown={() => setIsCalendarFieldToggled(true)}
-            onCloseDropdown={() => setIsCalendarFieldToggled(false)}
-            onFocus={() => setIsCalendarFieldFocused(true)}
-            onBlur={() => setIsCalendarFieldFocused(false)}
           />
         </div>
       </div>
@@ -88,10 +76,38 @@ const CalendarAddEvent = ({
 
 CalendarAddEvent.propTypes = {
   calendars: PropTypes.array.isRequired,
-  date: PropTypes.string.isRequired,
+  date: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   allDay: PropTypes.bool,
   onAddEvent: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+};
+
+const CalendarsList = ({ calendars, selectedCalendar, onSelect }) => {
+  const [isCalendarFieldFocused, setIsCalendarFieldFocused] =
+    React.useState(false);
+  const [isCalendarFieldToggled, setIsCalendarFieldToggled] =
+    React.useState(false);
+
+  return (
+    <RawList
+      rank="primary"
+      list={calendars || []}
+      onSelect={onSelect}
+      selected={selectedCalendar}
+      isFocused={isCalendarFieldFocused}
+      isToggled={isCalendarFieldToggled}
+      onOpenDropdown={() => setIsCalendarFieldToggled(true)}
+      onCloseDropdown={() => setIsCalendarFieldToggled(false)}
+      onFocus={() => setIsCalendarFieldFocused(true)}
+      onBlur={() => setIsCalendarFieldFocused(false)}
+    />
+  );
+};
+
+CalendarsList.propTypes = {
+  calendars: PropTypes.array.isRequired,
+  selectedCalendar: PropTypes.object,
+  onSelect: PropTypes.func.isRequired,
 };
 
 export default CalendarAddEvent;
