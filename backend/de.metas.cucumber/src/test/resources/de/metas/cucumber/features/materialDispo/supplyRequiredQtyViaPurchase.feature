@@ -19,6 +19,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0124_130
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased;
   No stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -101,6 +102,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
 
   @from:cucumber
+  @Id:S0124_130
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Partial stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -189,6 +191,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
 
   @from:cucumber
+  @Id:S0124_130
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Stock available at demand time, no supply needed
     Given metasfresh contains M_Products:
