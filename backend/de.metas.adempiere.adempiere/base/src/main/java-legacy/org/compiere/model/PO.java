@@ -2858,21 +2858,7 @@ public abstract class PO
 		boolean success = false;
 		try
 		{
-			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
-			final String tableName = get_TableName();
-
-			service.monitorSpan(
-					() -> saveEx(),
-					PerformanceMonitoringService.SpanMetadata
-							.builder()
-							.name("save " + tableName)
-							.type(PerformanceMonitoringService.Type.PO.getCode())
-							.subType(PerformanceMonitoringService.SubType.SAVE.getCode())
-							.label("tableName", tableName)
-							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
-							.build());
+			saveEx();
 			success = true;
 		}
 		catch (final Exception e)
@@ -2895,6 +2881,24 @@ public abstract class PO
 	 * @see #save()
 	 */
 	public final void saveEx() throws AdempiereException
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		final String tableName = get_TableName();
+
+		service.monitorSpan(
+				() -> saveEx0(),
+				PerformanceMonitoringService.SpanMetadata
+						.builder()
+						.name("save " + tableName)
+						.type(PerformanceMonitoringService.Type.PO.getCode())
+						.subType(PerformanceMonitoringService.SubType.SAVE.getCode())
+						.label("tableName", tableName)
+						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
+						.build());
+	}
+	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
