@@ -16,26 +16,20 @@ RUN mvn clean install -Dmaven.gitcommitid.skip=true
 
 WORKDIR /backend
 COPY backend .
-RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
-
-# works now with the locale being set
-RUN cd de.metas.adempiere.adempiere/base && mvn surefire:test -Dtest="StringLikeFilterTest"
-
-# works with junit update to 5.7.0 and disabling of failing tests
-RUN cd /backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_request && mvn surefire:test
-
-# works with linux eol and disabling of failing tests
-RUN cd /backend/de.metas.payment.esr && mvn surefire:test
-
-# works with disabling of failing tests
-RUN cd de.metas.material/dispo-service && mvn surefire:test
-
-# last failures
-RUN cd de.metas.vertical.pharma.msv3.server && mvn surefire:test
+RUN mvn clean install -Dmaven.gitcommitid.skip=true
 
 
-# the promised land minus de.metas.vertical.pharma.msv3/.../IntegrationTest.java
-# RUN mvn surefire:test -Dtest='!IntegrationTest.java, **/Test*.java, **/*Test.java, **/*TestCase.java, **/*Tests.java' -DfailIfNoTests=false
-
-# the promised land
+# HISTORY OF ISSUES
+# RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
+# works now with the locale being set:
+# RUN cd de.metas.adempiere.adempiere/base && mvn surefire:test -Dtest="StringLikeFilterTest"
+# works with junit update to 5.7.0 and disabling of failing tests:
+# RUN cd /backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_request && mvn surefire:test
+# works with linux eol and disabling of failing tests:
+# RUN cd /backend/de.metas.payment.esr && mvn surefire:test
+# works with disabling of failing tests:
+# RUN cd de.metas.material/dispo-service && mvn surefire:test
+# works with removing deprecated db MVCC option :
+# RUN cd de.metas.vertical.pharma.msv3.server && mvn surefire:test
+# the promised land:
 # RUN mvn surefire:test
