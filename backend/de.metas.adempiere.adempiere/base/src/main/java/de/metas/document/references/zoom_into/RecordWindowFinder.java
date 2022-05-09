@@ -396,7 +396,7 @@ public class RecordWindowFinder
 	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final TableInfoCacheKey key)
 	{
 		return tableInfoRepository.retrieveTableInfo(key.getTableName(), key.isIgnoreExcludeFromZoomTargetsFlag())
-				.withCustomizedWindowIds(getCustomizedWindowInfoMapRepository().get());
+				.withCustomizedWindowIds(customizedWindowInfoMapRepository.get());
 	}
 
 	private SOTrx getRecordSOTrxEffective()
