@@ -18,6 +18,8 @@ Here come the actual release notes:
   * [#12837](https://github.com/metasfresh/metasfresh/issues/12837) Shopware Fix order-item/bundle-sorting
 
 ## Fixes
+* metasfresh
+  * [#12919](https://github.com/metasfresh/metasfresh/pull/12925) fix flaky 'exportExternalReferenceToRabbitMQ.feature' scenario #12925
 
 # metasfresh 5.175 (current RC)
 ## Features
