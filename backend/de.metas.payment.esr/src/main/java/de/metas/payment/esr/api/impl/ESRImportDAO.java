@@ -384,25 +384,14 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText,
-			final int excludeESRImportLineID)
+	public List<I_ESR_ImportLine> fetchSimilarESRLine(@NonNull final I_ESR_ImportLine esrImportLine)
 	{
-		if (esrImportLineText == null)
-		{
-			return Collections.emptyList();
-		}
-
-		final String strippedText = esrImportLineText.trim();
-
-		final IQueryBuilder<I_ESR_ImportLine> esrimportLineIQueryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true);
-
-		if (excludeESRImportLineID > 0)
-		{
-			esrimportLineIQueryBuilder.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, excludeESRImportLineID);
-		}
-		return esrimportLineIQueryBuilder
+				.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, esrImportLine.getESR_ImportLine_ID())
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_Amount, esrImportLine.getAmount())
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID, esrImportLine.getC_Invoice_ID())
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_PaymentDate, esrImportLine.getPaymentDate())
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}
@@ -437,7 +426,7 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .build())
 				.stream().iterator();
 
-		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
+		final List<I_ESR_ImportLine> lines = fetchSimilarESRLine(esrLine);
 
 		while (paymentIdIterator.hasNext())
 		{
