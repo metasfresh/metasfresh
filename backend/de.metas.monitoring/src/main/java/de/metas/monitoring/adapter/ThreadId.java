@@ -24,6 +24,7 @@ package de.metas.monitoring.adapter;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated
 public class ThreadId
 {
 	// Atomic integer containing the next thread ID to be assigned

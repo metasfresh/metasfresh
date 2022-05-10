@@ -27,12 +27,12 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -45,6 +45,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final MeterRegistry meterRegistry;
 	private final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService;
 	private final ThreadLocal<Integer> step = ThreadLocal.withInitial(() -> 1);
+	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService,
@@ -61,9 +62,11 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	{
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		mkTagIfNotNull("ThreadId", String.valueOf(ThreadId.get())).ifPresent(tags::add);
+		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
+		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
+		depth.set(depth.get() + 1);
 
 		final Callable<V> callableToUse;
 		if (apmPerformanceMonitoringService.isPresent())
@@ -74,7 +77,10 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			callableToUse = callable;
 		}
-		return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
+		try(final IAutoCloseable ignored = this.reduceDepth())
+		{
+			return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
+		}
 	}
 
 	@Override
@@ -87,9 +93,11 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
 		mkTagIfNotNull("SubType", metadata.getSubType()).ifPresent(tags::add);
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
-		mkTagIfNotNull("ThreadId", String.valueOf(ThreadId.get())).ifPresent(tags::add);
+		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
+		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
+		depth.set(depth.get() + 1);
 
 		final Callable<V> callableToUse;
 		if (apmPerformanceMonitoringService.isPresent())
@@ -100,8 +108,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			callableToUse = callable;
 		}
-
-		return recordCallable(callableToUse, tags, "mf." + metadata.getType());
+		try(final IAutoCloseable ignored = this.reduceDepth()){
+			return recordCallable(callableToUse, tags, "mf." + metadata.getType());
+		}
 	}
 
 	private ArrayList<Tag> createTagsFromLabels(@NonNull final Map<String, String> labels)
@@ -139,5 +148,12 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
+	}
+
+	private IAutoCloseable reduceDepth()
+	{
+		return () -> {
+			depth.set(depth.get() - 1);
+		};
 	}
 }

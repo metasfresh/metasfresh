@@ -1761,7 +1761,7 @@ public abstract class PO
 					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record
 					PerformanceMonitoringService.SpanMetadata
 							.builder()
-							.name("save " + tableName)
+							.name("load " + tableName)
 							.type(PerformanceMonitoringService.Type.PO.getCode())
 							.subType(PerformanceMonitoringService.SubType.LOAD.getCode())
 							.label("tableName", tableName)
