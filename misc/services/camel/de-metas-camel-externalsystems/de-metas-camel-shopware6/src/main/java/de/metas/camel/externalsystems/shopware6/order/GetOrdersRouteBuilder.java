@@ -27,7 +27,6 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.BuildOrdersContextProcessor;
-import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersPageProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OLCandRequestProcessor;
@@ -47,7 +46,6 @@ import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -93,7 +91,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.process(new BuildOrdersContextProcessor(processLogger, producerTemplate)).id(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 				.to(direct(PROCESS_ORDERS_PAGE_ROUTE_ID))
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
-				.to(direct(CLEAR_ORDERS_ROUTE_ID))
+				.to(direct(PROCESS_OLCAND_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
 						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
@@ -102,7 +100,6 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.end()
 				.process(new GetOrdersPageProcessor()).id(GET_ORDERS_PAGE_PROCESSOR_ID)
-				.to(direct(STORE_RAW_DATA_ROUTE))
 				.split(body())
 					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()

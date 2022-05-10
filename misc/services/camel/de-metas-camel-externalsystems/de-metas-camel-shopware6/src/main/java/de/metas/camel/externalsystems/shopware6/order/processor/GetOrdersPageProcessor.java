@@ -32,7 +32,6 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ROUTE_PROPERTY_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 public class GetOrdersPageProcessor implements Processor
@@ -51,8 +50,6 @@ public class GetOrdersPageProcessor implements Processor
 		final GetOrdersResponse ordersToProcess = routeContext.getShopwareClient().getOrders(shopware6QueryRequest, salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
-
-		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
 
 		routeContext.setMoreOrdersAvailable(ordersToProcess.getRawSize() >= pageAndLimitValues.getLimit());
 		routeContext.incrementPageIndex();
