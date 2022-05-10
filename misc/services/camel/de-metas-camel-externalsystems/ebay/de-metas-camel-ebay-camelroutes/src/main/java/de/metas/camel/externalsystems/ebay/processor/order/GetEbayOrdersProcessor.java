@@ -111,7 +111,9 @@ public class GetEbayOrdersProcessor implements Processor
 
 		final OAuth2Api oAuth2Api = Optional.ofNullable(exchange.getIn().getHeader(ROUTE_PROPERTY_EBAY_AUTH_CLIENT, OAuth2Api.class))
 				.orElseGet(OAuth2Api::new);
-		
+
+		this.prepareApiCredentials(request.getParameters(), oAuth2Api);
+
 		final OAuthResponse oauth2Response = oAuth2Api.getAccessToken(apiMode.getEnvironment(), request.getParameters().get(ExternalSystemConstants.PARAM_API_USER_REFRESH_TOKEN), SCOPE_LIST);
 		
 
@@ -174,6 +176,24 @@ public class GetEbayOrdersProcessor implements Processor
 			throw new RuntimeException("Ebay:Failed to aquire access token! " + Instant.now());
 		}
 
+	}
+
+	private void prepareApiCredentials(@NonNull final Map<String, String> parameters, @NonNull final OAuth2Api oAuth2Api) throws IOException
+	{
+		final ApiMode apiMode = ApiMode.valueOf(parameters.get(ExternalSystemConstants.PARAM_API_MODE));
+
+		final Map<String, String> mapCredentialUtil = new HashMap<>();
+		mapCredentialUtil.put(CredentialParams.APP_ID.getValue(), parameters.get(ExternalSystemConstants.PARAM_APP_ID));
+		mapCredentialUtil.put(CredentialParams.CERT_ID.getValue(), parameters.get(ExternalSystemConstants.PARAM_CERT_ID));
+		mapCredentialUtil.put(CredentialParams.REDIRECT_URI.getValue(), parameters.get(ExternalSystemConstants.PARAM_REDIRECT_URL));
+
+		final Map<String, Map<String, String>> parentMap = new HashMap<>();
+		parentMap.put(apiMode.getValue(), mapCredentialUtil);
+
+		final Yaml yaml = new Yaml();
+		final String output = yaml.dump(parentMap);
+
+		CredentialUtil.load(output);
 	}
 	
 	@NonNull
